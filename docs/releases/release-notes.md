@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2026-07-30
+
+- Generic whitelist compatibility lookup now reuses indexed key shapes, preventing ordinary generic method calls from repeatedly scanning the full CLR member catalog during compilation.
+
 ## 2026-07-29
 
 - `ECMAScript.Style` is the independent ECMAScript ecosystem package for framework-neutral CSS-in-JS. Its sole public facade is the lowercase static class `css`; consumers may use qualified calls such as `css.style(...)` and `css.px(...)`, or direct `style(...)` and `px(...)` calls through a static using.
@@ -10,6 +14,12 @@
 - Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
 - RenderTreeBuilder helpers can compose output after root-level local declarations while declarations inside an open element or component frame remain explicitly rejected.
 - CLR runtime modules now annotate imported hashed JavaScript helper declarations with their authored CLR member names, making packaged runtime output easier to inspect without changing runtime behavior.
+- Nullable `GetValueOrDefault()` calls now emit the correct default for the underlying value type, including booleans, characters, 64-bit integers, and enums.
+- Compiler-generated temporary names are stable across repository relocations and parallel Git worktrees instead of depending on absolute source paths.
+- BigInt-mapped increment and decrement operations now preserve BigInt operands for locals and mapped indexers, including `Int128` and `UInt128` values.
+- Generated modules now publish and import the `System.Guid` runtime implementation for parsing, formatting, equality, and hash-code operations.
+- Character-to-number and number-to-character conversions preserve UTF-16 code units, and nested conditional-access initializers emit valid ECMAScript expressions.
+- Custom interpolated-string handler additions now report a source-located compiler diagnostic instead of leaking an internal range exception; handler creation, addition, and append protocols remain explicitly unsupported.
 
 ## 2026-07-28
 

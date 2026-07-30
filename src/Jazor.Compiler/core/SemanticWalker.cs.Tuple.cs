@@ -2,6 +2,8 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +19,25 @@ namespace Jazor.Compiler;
 /// </remarks>
 public partial class SemanticWalker
 {
+	private readonly struct TupleValueSource
+	{
+		public TupleValueSource(IOperation operation)
+		{
+			Operation = operation;
+			AstExpression = null;
+		}
+
+		public TupleValueSource(Expression astExpression)
+		{
+			Operation = null;
+			AstExpression = astExpression;
+		}
+
+		public IOperation? Operation { get; }
+
+		public Expression? AstExpression { get; }
+	}
+
 	private static string GetTupleRuntimeFieldName(IFieldSymbol field)
 		=> Util.GetConfigOrSymbolName(field);
 
@@ -24,8 +45,16 @@ public partial class SemanticWalker
 		=> IsStructuralType(namedType);
 
 	private bool TryGetStructuralRuntimePropertyName(INamedTypeSymbol structuralType, int index, out string propertyName)
+		=> TryGetStructuralRuntimeProperty(structuralType, index, out propertyName, out _);
+
+	private bool TryGetStructuralRuntimeProperty(
+		INamedTypeSymbol structuralType,
+		int index,
+		out string propertyName,
+		out ITypeSymbol propertyType)
 	{
 		propertyName = null!;
+		propertyType = null!;
 
 		if (StructuralRecordSupport.IsStructuralRecordType(structuralType))
 		{
@@ -44,6 +73,7 @@ public partial class SemanticWalker
 			propertyName = property is null
 				? parameter.Name
 				: Util.GetConfigOrSymbolName(property);
+			propertyType = property?.Type ?? parameter.Type;
 			return true;
 		}
 
@@ -53,7 +83,17 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		propertyName = Util.GetConfigOrSymbolName(members[index]);
+		var member = members[index];
+		propertyName = Util.GetConfigOrSymbolName(member);
+		propertyType = member switch
+		{
+			IPropertySymbol property => property.Type,
+			IFieldSymbol field => field.Type,
+			_ => null!
+		};
+		if (propertyType is null)
+			return false;
+
 		return true;
 	}
 
@@ -121,7 +161,7 @@ public partial class SemanticWalker
 		if (HasSameTupleRuntimeShape(sourceTupleType, targetTupleType))
 			return null;
 
-		return BuildTupleProjection(operation.Operand, sourceTupleType, targetTupleType, argument);
+		return BuildTupleProjection(new TupleValueSource(operation.Operand), sourceTupleType, targetTupleType, argument);
 	}
 
 	/// <summary>
@@ -140,7 +180,7 @@ public partial class SemanticWalker
 		if (source.Type is INamedTypeSymbol sourceTupleType && sourceTupleType.IsTupleType &&
 			targetType is INamedTypeSymbol targetTupleType && targetTupleType.IsTupleType &&
 			!HasSameTupleRuntimeShape(sourceTupleType, targetTupleType))
-			return BuildTupleProjection(source, sourceTupleType, targetTupleType, argument);
+			return BuildTupleProjection(new TupleValueSource(source), sourceTupleType, targetTupleType, argument);
 
 		return Translate<Expression>(source, argument);
 	}
@@ -220,17 +260,18 @@ public partial class SemanticWalker
 	/// 3. 复杂表达式：先整体缓存，再按字段读取，避免重复求值。
 	/// </summary>
 	private Expression BuildTupleProjection(
-		object source,
+		TupleValueSource source,
 		INamedTypeSymbol sourceType,
 		INamedTypeSymbol targetType,
 		SenseArgument argument)
 	{
-		ITupleOperation? tupleLiteral = source as ITupleOperation;
+		var sourceOperation = source.Operation;
+		ITupleOperation? tupleLiteral = sourceOperation as ITupleOperation;
 		Expression? sourceExpression = null;
 		Expression? cachedSourceInitialization = null;
 		if (tupleLiteral is null)
 		{
-			if (source is IOperation sourceOperationForProjection)
+			if (sourceOperation is { } sourceOperationForProjection)
 			{
 				if (ShouldCacheTupleSource(sourceOperationForProjection))
 				{
@@ -249,7 +290,7 @@ public partial class SemanticWalker
 					sourceExpression = Translate<Expression>(sourceOperationForProjection, argument);
 				}
 			}
-			else if (source is Expression expression)
+			else if (source.AstExpression is { } expression)
 			{
 				sourceExpression = expression;
 			}
@@ -265,9 +306,9 @@ public partial class SemanticWalker
 				targetField.Type is INamedTypeSymbol nestedTargetType && nestedTargetType.IsTupleType)
 			{
 				// 嵌套 tuple 仍然按“位置匹配、目标名字落地”的同一规则递归 remap。
-				var nestedSource = tupleLiteral is not null
-					? (object)tupleLiteral.Elements[index]
-					: new MemberExpression(sourceExpression!, new Identifier(GetTupleRuntimeFieldName(sourceField)), false, false);
+				TupleValueSource nestedSource = tupleLiteral is not null
+					? new TupleValueSource(tupleLiteral.Elements[index])
+					: new TupleValueSource(new MemberExpression(sourceExpression!, new Identifier(GetTupleRuntimeFieldName(sourceField)), false, false));
 				value = BuildTupleProjection(nestedSource, nestedSourceType, nestedTargetType, argument);
 			}
 			else if (tupleLiteral is not null)
@@ -293,7 +334,7 @@ public partial class SemanticWalker
 			? projection
 			: new SequenceExpression(NodeList.From<Expression>(cachedSourceInitialization, projection));
 
-		return source is IOperation operationForOrigin
+		return sourceOperation is { } operationForOrigin
 			? WithOriginIfMissing(result, operationForOrigin)
 			: result;
 	}
@@ -370,9 +411,38 @@ public partial class SemanticWalker
 		// const temp = func(2,5);
 		// let zzz = temp.aaa;
 		// let yyy = temp.Item2;
-		var expressions = new List<Expression>();
-		Deconstruct(operation.Target, operation.Value.Type!, operation.Value, expressions);
-		return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+		DeconstructionInfo? deconstructionInfo =
+			operation.SemanticModel is { } semanticModel &&
+			operation.Syntax is AssignmentExpressionSyntax assignmentSyntax
+				? semanticModel.GetDeconstructionInfo(assignmentSyntax)
+				: null;
+		var preparations = new List<Expression>();
+		var writes = new List<Expression>();
+		Deconstruct(
+			operation.Target,
+			operation.Value.Type!,
+			new TupleValueSource(operation.Value),
+			deconstructionInfo,
+			preparations,
+			writes);
+		preparations.AddRange(writes);
+		return WithOrigin(new SequenceExpression(NodeList.From(preparations)), operation);
+
+		static DeconstructionInfo? GetNestedDeconstructionInfo(DeconstructionInfo? current, int index)
+		{
+			if (current is not { } info ||
+				info.Nested.IsDefaultOrEmpty ||
+				index >= info.Nested.Length)
+			{
+				return null;
+			}
+
+			return info.Nested[index];
+		}
+
+		static bool HasDeconstructionBinding(DeconstructionInfo? current)
+			=> current is { } info &&
+				(info.Method is not null || !info.Nested.IsDefaultOrEmpty);
 
 		/// <summary>
 		/// 从 value 获取某个 tuple 槽位的值表达式。
@@ -385,31 +455,32 @@ public partial class SemanticWalker
 		/// <param name="tempVar">临时变量（用于 invocation 场景）</param>
 		/// <param name="argument">上下文参数</param>
 		/// <returns>字段值表达式，失败返回 null</returns>
-		Expression? GetTupleFieldValue(object value, IFieldSymbol field, int index, Identifier? tempVar, SenseArgument argument)
+		Expression? GetTupleFieldValue(TupleValueSource value, IFieldSymbol field, int index, Identifier? tempVar, SenseArgument argument)
 		{
 			var fieldName = GetTupleRuntimeFieldName(field);
 			if (tempVar is not null)
 				return new MemberExpression(tempVar, new Identifier(fieldName), false, false);
-			if (value is ILocalReferenceOperation localRef)
+
+			var valueOperation = value.Operation;
+			if (valueOperation is ILocalReferenceOperation localRef)
 			{
 				var obj = new Identifier(localRef.Local.Name);
 				return new MemberExpression(obj, new Identifier(fieldName), false, false);
 			}
-			if (value is ITupleOperation tupleOp)
+			if (valueOperation is ITupleOperation tupleOp)
 				return Translate<Expression>(tupleOp.Elements[index], argument);
-			if (value is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
+			if (valueOperation is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
 			{
 				return Translate<Expression>(conversionTuple.Elements[index], argument);
 			}
-			if (value is IOperation op)
+			if (valueOperation is { } operationValue)
 			{
-				var tupleExpr = Translate<Expression>(op, argument);
+				var tupleExpr = Translate<Expression>(operationValue, argument);
 				return new MemberExpression(tupleExpr, new Identifier(fieldName), false, false);
 			}
-			if (value is Expression expr)
-			{
+			if (value.AstExpression is { } expr)
 				return new MemberExpression(expr, new Identifier(fieldName), false, false);
-			}
+
 			return null;
 		}
 
@@ -445,12 +516,12 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		static bool ShouldCacheTupleField(object value, int index, HashSet<ILocalSymbol> targetLocals)
+		static bool ShouldCacheTupleField(TupleValueSource value, int index, HashSet<ILocalSymbol> targetLocals)
 		{
 			if (targetLocals.Count == 0)
 				return false;
 
-			return value switch
+			return value.Operation switch
 			{
 				// 只有右侧某个元素会读取左侧目标局部变量时，才需要把“槽位值”单独缓存。
 				// 这样既能保证 swap / 自引用解构正确，又不会对所有元素都无差别引入临时变量。
@@ -560,7 +631,15 @@ public partial class SemanticWalker
 			}
 		}
 
-		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs, bool declareTargets = false, string tupleSlot = "")
+		void Deconstruct(
+			IOperation target,
+			ITypeSymbol valueType,
+			TupleValueSource value,
+			DeconstructionInfo? bindingInfo,
+			List<Expression> preparations,
+			List<Expression> writes,
+			bool declareTargets = false,
+			string tupleSlot = "")
 		{
 			if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
 			{
@@ -577,7 +656,7 @@ public partial class SemanticWalker
 				CollectTargetLocals(tupleTarget, targetLocals);
 
 				Identifier? tempVar = null;
-				if (value is IOperation valueOperation && ShouldCacheTupleSource(valueOperation))
+				if (value.Operation is { } valueOperation && ShouldCacheTupleSource(valueOperation))
 				{
 					// 复杂源值先整体缓存，再按字段读取。
 					// 这样 deconstruct 仍按位置展开，但不会重复求值。
@@ -585,7 +664,7 @@ public partial class SemanticWalker
 					var init = Translate<Expression>(valueOperation, argument);
 					var declarator = new VariableDeclarator(tempVar, null);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
-					exprs.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+					preparations.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
 				}
 
 				var cachedValues = new Expression?[tupleTarget.Elements.Length];
@@ -612,7 +691,7 @@ public partial class SemanticWalker
 						var cacheId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.TupleFieldCache(slotSite)));
 						var cacheDecl = new VariableDeclarator(cacheId, null);
 						argument.AddVarDeclarator(cacheDecl, _recursionDepth);
-						exprs.Add(new AssignmentExpression(Operator.Assignment, cacheId, fieldValue));
+						preparations.Add(new AssignmentExpression(Operator.Assignment, cacheId, fieldValue));
 						cachedValues[index] = cacheId;
 					}
 					else
@@ -635,17 +714,26 @@ public partial class SemanticWalker
 						return;
 					}
 
-					if (field.Type.IsTupleType)
+					var nestedBinding = GetNestedDeconstructionInfo(bindingInfo, index);
+					if (field.Type.IsTupleType || HasDeconstructionBinding(nestedBinding))
 					{
-						Deconstruct(element, field.Type, right, exprs, declareTargets, ComposeTupleSlot(tupleSlot, index));
+						Deconstruct(
+							element,
+							field.Type,
+							new TupleValueSource(right),
+							nestedBinding,
+							preparations,
+							writes,
+							declareTargets,
+							ComposeTupleSlot(tupleSlot, index));
 					}
 					else
-						AppendDeconstructionWrite(element, right, exprs, declareTargets || element is IDeclarationExpressionOperation);
+						AppendDeconstructionWrite(element, right, writes, declareTargets || element is IDeclarationExpressionOperation);
 				}
 			}
 			else if (valueType is INamedTypeSymbol recordType &&
 					 ShouldLowerStructurally(recordType) &&
-					 value is IOperation recordExpr)
+					 value.Operation is { } recordExpr)
 			{
 				ITupleOperation tupleResult;
 				bool isDeclarationExpressionTarget = false;
@@ -669,7 +757,7 @@ public partial class SemanticWalker
 					var init = Translate<Expression>(recordExpr, argument);
 					var declarator = new VariableDeclarator(tempVar, null);
 					argument.AddVarDeclarator(declarator, _recursionDepth);
-					exprs.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+					preparations.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
 				}
 
 				var recordExprValue = tempVar is null
@@ -682,26 +770,52 @@ public partial class SemanticWalker
 					if (element is IDiscardOperation)
 						continue;
 
-					if (!TryGetStructuralRuntimePropertyName(recordType, index, out var propertyName))
+					if (!TryGetStructuralRuntimeProperty(
+						recordType,
+						index,
+						out var propertyName,
+						out var sourceMemberType))
 					{
 						HandleTransformationFailure<Node>(target, $"Structural type '{recordType.ToDisplayString(Jazor.Common.Format.NameFormat)}' could not resolve positional member {index} for deconstruction.");
 						return;
 					}
 
 					var right = new MemberExpression(recordExprValue, new Identifier(propertyName), false, false);
-					var tupleTarget = tupleResult.Type as INamedTypeSymbol;
-					var targetFieldType = tupleTarget?.TupleElements.Length > index
-						? tupleTarget.TupleElements[index].Type
-						: element.Type;
+					var nestedBinding = GetNestedDeconstructionInfo(bindingInfo, index);
 
-					if (targetFieldType?.IsTupleType == true)
-						Deconstruct(element, targetFieldType, right, exprs, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation, ComposeTupleSlot(tupleSlot, index));
+					if (sourceMemberType.IsTupleType || HasDeconstructionBinding(nestedBinding))
+						Deconstruct(
+							element,
+							sourceMemberType,
+							new TupleValueSource(right),
+							nestedBinding,
+							preparations,
+							writes,
+							isDeclarationExpressionTarget || element is IDeclarationExpressionOperation,
+							ComposeTupleSlot(tupleSlot, index));
 					else
-						AppendDeconstructionWrite(element, right, exprs, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation);
+						AppendDeconstructionWrite(element, right, writes, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation);
 				}
 			}
-			else if (valueType.TypeKind == TypeKind.Class && value is IOperation expr)
+			else if (bindingInfo?.Method is IMethodSymbol method &&
+				(value.Operation is not null || value.AstExpression is not null))
 			{
+				if (method.IsExtensionMethod)
+				{
+					HandleTransformationFailure<Node>(
+						target,
+						$"Extension Deconstruct method '{method.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because source extension methods do not have a receiver-member runtime slot.");
+					return;
+				}
+
+				if (valueType.TypeKind == TypeKind.Struct)
+				{
+					HandleTransformationFailure<Node>(
+						target,
+						$"Custom Deconstruct on struct type '{valueType.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because member struct runtime declarations are not emitted.");
+					return;
+				}
+
 				// 自定义 Deconstruct 与 tuple 直接字段访问是两条路径：
 				// 1. tuple 解构：按对象字段直接展开；
 				// 2. 自定义 Deconstruct：先调用实例 Deconstruct(...)，
@@ -722,11 +836,9 @@ public partial class SemanticWalker
 				}
 
 				List<Expression> args = [];
-				List<(int Index, Identifier Id)> nestedRefs = [];
 				var assignmentTargets = new IOperation?[tupleResult.Elements.Length];
 				var nestedAssignmentIds = new Identifier?[tupleResult.Elements.Length];
 				var skipAssignments = new bool[tupleResult.Elements.Length];
-				var tupleType = (INamedTypeSymbol)tupleResult.Type!;
 				for (var index = 0; index < tupleResult.Elements.Length; index++)
 				{
 					var element = tupleResult.Elements[index];
@@ -762,7 +874,6 @@ public partial class SemanticWalker
 
 						args.Add(id);
 						nestedAssignmentIds[index] = id;
-						nestedRefs.Add((index, id));
 					}
 					else if (element is ILocalReferenceOperation localReference)
 					{
@@ -783,33 +894,21 @@ public partial class SemanticWalker
 				// 当前编译器约定把它 lower 成：
 				// - 普通参数调用
 				// - 返回一个数组，数组元素就是原本 out 参数的输出值
-				IMethodSymbol method;
-				if (expr is IInvocationOperation invocation)
-					method = invocation.TargetMethod;
-				else
-				{
-					var candidate = valueType
-						.GetMembers()
-						.OfType<IMethodSymbol>()
-						.FirstOrDefault(x => x.Name == "Deconstruct" && x.Parameters.Length == args.Count);
-					if (candidate is null)
-					{
-						HandleTransformationFailure<Node>(operation,
-							$"No Deconstruct method with {args.Count} parameters found on type '{valueType.ToDisplayString()}'.");
-						return;
-					}
-					method = candidate;
-				}
-
-				var obj = Translate<Expression>(expr, argument);
-				var prop = new Identifier(Util.GetConfigOrSymbolName(method));
-				var func = new MemberExpression(obj, prop, false, false);
-				var call = new CallExpression(func, NodeList.From(args), false);
+				var obj = value.Operation is { } valueOperation
+					? Translate<Expression>(valueOperation, argument)
+					: value.AstExpression!;
+				var methodName = GetCurrentModuleDeclaredOrConfigName(method);
+				var callee = new MemberExpression(
+					obj,
+					new Identifier(methodName),
+					computed: false,
+					optional: false);
+				var call = new CallExpression(callee, NodeList.From(args), optional: false);
 				var deconstructName = AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult());
 				var deconstructId = new Identifier(deconstructName);
 				var deconstructDecl = new VariableDeclarator(deconstructId, null);
 				argument.AddVarDeclarator(deconstructDecl, _recursionDepth);
-				exprs.Add(new AssignmentExpression(Operator.Assignment, deconstructId, call));
+				preparations.Add(new AssignmentExpression(Operator.Assignment, deconstructId, call));
 
 				// 从返回数组中取值，再回写到目标变量或临时嵌套 tuple 引用。
 				for (var i = 0; i < args.Count; i++)
@@ -821,20 +920,20 @@ public partial class SemanticWalker
 					var member = new MemberExpression(deconstructId, indexer, computed: true, optional: false);
 					if (nestedAssignmentIds[i] is { } nestedAssignmentId)
 					{
-						exprs.Add(new AssignmentExpression(Operator.Assignment, nestedAssignmentId, member));
+						preparations.Add(new AssignmentExpression(Operator.Assignment, nestedAssignmentId, member));
+						Deconstruct(
+							tupleResult.Elements[i],
+							method.Parameters[i].Type,
+							new TupleValueSource(nestedAssignmentId),
+							GetNestedDeconstructionInfo(bindingInfo, i),
+							preparations,
+							writes,
+							tupleSlot: ComposeTupleSlot(tupleSlot, i));
 						continue;
 					}
 
 					if (assignmentTargets[i] is { } assignmentTarget)
-						AppendDeconstructionWrite(assignmentTarget, member, exprs);
-				}
-
-				// 如果 out 参数对应的是嵌套 tuple，这里继续递归展开。
-				foreach (var (index, id) in nestedRefs)
-				{
-					var parameter = method.Parameters[index];
-					var element = tupleResult.Elements[index];
-					Deconstruct(element, parameter.Type, id, expressions, tupleSlot: ComposeTupleSlot(tupleSlot, index));
+						AppendDeconstructionWrite(assignmentTarget, member, writes);
 				}
 			}
 			else
@@ -886,8 +985,8 @@ public partial class SemanticWalker
 		var isEq = operation.OperatorKind == BinaryOperatorKind.Equals;
 
 		var result = BuildTupleBinaryExpression(
-			(operation.LeftOperand, operation.LeftOperand.Type!),
-			(operation.RightOperand, operation.RightOperand.Type!),
+			(new TupleValueSource(operation.LeftOperand), operation.LeftOperand.Type!),
+			(new TupleValueSource(operation.RightOperand), operation.RightOperand.Type!),
 			isEq,
 			argument);
 
@@ -937,25 +1036,26 @@ public partial class SemanticWalker
 	/// 比较场景和 remap / deconstruct 一样，也可能多次读取同一个 tuple 源值。
 	/// 因此这里会把复杂操作数先缓存成一个表达式入口，后续统一按字段读取。
 	/// </summary>
-	private TupleOperandResult ProcessTupleOperand(object target, SenseArgument argument)
+	private TupleOperandResult ProcessTupleOperand(TupleValueSource target, SenseArgument argument)
 	{
-		if (target is ITupleOperation tuple)
+		var operation = target.Operation;
+		if (operation is ITupleOperation tuple)
 			return new TupleOperandResult(null, tuple, null);
-		if (target is IOperation op)
+		if (operation is { } operationValue)
 		{
-			if (ShouldCacheTupleSource(op))
+			if (ShouldCacheTupleSource(operationValue))
 			{
-				var id = new Identifier(AllocateUniqueName(op, argument, LoweringSite.TupleBinaryOperandCache()));
-				var init = Translate<Expression>(op, argument);
+				var id = new Identifier(AllocateUniqueName(operationValue, argument, LoweringSite.TupleBinaryOperandCache()));
+				var init = Translate<Expression>(operationValue, argument);
 				var declarator = new VariableDeclarator(id, null);
 				argument.AddVarDeclarator(declarator, _recursionDepth);
 				var initialization = new AssignmentExpression(Operator.Assignment, id, init);
 				return new TupleOperandResult(id, null, initialization);
 			}
 
-			return new TupleOperandResult(Translate<Expression>(op, argument), null, null);
+			return new TupleOperandResult(Translate<Expression>(operationValue, argument), null, null);
 		}
-		if (target is Expression expr)
+		if (target.AstExpression is { } expr)
 			return new TupleOperandResult(expr, null, null);
 
 		return default;
@@ -980,8 +1080,8 @@ public partial class SemanticWalker
 	}
 
 	private Expression? BuildTupleBinaryExpression(
-		(object Target, ITypeSymbol Type) left,
-		(object Target, ITypeSymbol Type) right,
+		(TupleValueSource Target, ITypeSymbol Type) left,
+		(TupleValueSource Target, ITypeSymbol Type) right,
 		bool isEq,
 		SenseArgument argument)
 	{
@@ -1006,11 +1106,11 @@ public partial class SemanticWalker
 			if (leftField.Type.IsTupleType)
 			{
 				var subLeft = leftResult.TupleOperation is not null
-					? (object)leftResult.TupleOperation.Elements[index]
-					: GetTupleElementExpression(leftResult, leftField, index, argument)!;
+					? new TupleValueSource(leftResult.TupleOperation.Elements[index])
+					: new TupleValueSource(GetTupleElementExpression(leftResult, leftField, index, argument)!);
 				var subRight = rightResult.TupleOperation is not null
-					? (object)rightResult.TupleOperation.Elements[index]
-					: GetTupleElementExpression(rightResult, rightField, index, argument)!;
+					? new TupleValueSource(rightResult.TupleOperation.Elements[index])
+					: new TupleValueSource(GetTupleElementExpression(rightResult, rightField, index, argument)!);
 
 				var subResult = BuildTupleBinaryExpression(
 					(subLeft, leftField.Type),

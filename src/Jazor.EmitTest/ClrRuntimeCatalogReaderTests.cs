@@ -263,11 +263,12 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(charModule.Content, "code === 8287");
         StringAssert.Contains(charModule.Content, "code === 12288");
         StringAssert.Contains(charModule.Content, "return isControlCode(c);");
-        StringAssert.Contains(charModule.Content, "return c >= \"A\" && c <= \"Z\" || c >= \"a\" && c <= \"z\";");
+        StringAssert.Contains(charModule.Content, "return c.charCodeAt(0) >= \"A\".charCodeAt(0) && c.charCodeAt(0) <= \"Z\".charCodeAt(0) || c.charCodeAt(0) >= \"a\".charCodeAt(0) && c.charCodeAt(0) <= \"z\".charCodeAt(0);");
         StringAssert.Contains(charModule.Content, "getCodeUnitFromChar(_5ad63706a889c294(s, index))");
         Assert.IsFalse(charModule.Content.Contains("typeof value !== \"number\"", StringComparison.Ordinal), charModule.Content);
         Assert.IsFalse(charModule.Content.Contains("return [false, 0];", StringComparison.Ordinal), charModule.Content);
         Assert.IsFalse(charModule.Content.Contains("return c < 32 || c === 127;", StringComparison.Ordinal), charModule.Content);
+        Assert.IsFalse(charModule.Content.Contains("return c >= \"A\" && c <= \"Z\"", StringComparison.Ordinal), charModule.Content);
     }
 
     [TestMethod]
@@ -325,10 +326,10 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlySetCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function isReadOnlyDictionaryCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlyDictionaryCarrier");
-        StringAssert.Contains(runtimeModule.Content, "Object.hasOwn(instance, \"__jazor$readonly\")");
-        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly_set", StringComparison.Ordinal), runtimeModule.Content);
-        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly_dictionary", StringComparison.Ordinal), runtimeModule.Content);
-        Assert.IsFalse(runtimeModule.Content.Contains("Object.getOwnPropertyDescriptor(instance, \"__jazor$readonly\")", StringComparison.Ordinal), runtimeModule.Content);
+        StringAssert.Contains(runtimeModule.Content, "let readOnlyCarriers = new WeakSet;");
+        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.has(instance)");
+        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.add(instance)");
+        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly", StringComparison.Ordinal), runtimeModule.Content);
     }
 
     [TestMethod]

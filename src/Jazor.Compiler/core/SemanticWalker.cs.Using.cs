@@ -369,8 +369,36 @@ public partial class SemanticWalker
 		if (TryResolveUsingDisposeMethod(resourceType, methodName, out var disposeMethod))
 			return disposeMethod;
 
-		if (TryResolveUsingDisposeInterfaceImplementation(resourceType, interfaceDisplayName, methodName, out disposeMethod))
+		if (resourceType is ITypeParameterSymbol typeParameter &&
+			TryResolveUsingTypeParameterDisposeMethod(
+				typeParameter,
+				interfaceDisplayName,
+				methodName,
+				out disposeMethod))
+		{
+			if (disposeMethod.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+			{
+				return HandleTransformationFailure<IMethodSymbol>(
+					originOperation,
+					$"Using resource type '{resourceType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' " +
+					$"resolves {methodName}() to an explicit interface implementation, which does not have a supported JavaScript runtime slot.");
+			}
+
 			return disposeMethod;
+		}
+
+		if (TryResolveUsingDisposeInterfaceImplementation(resourceType, interfaceDisplayName, methodName, out disposeMethod))
+		{
+			if (disposeMethod.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+			{
+				return HandleTransformationFailure<IMethodSymbol>(
+					originOperation,
+					$"Using resource type '{resourceType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' " +
+					$"resolves {methodName}() to an explicit interface implementation, which does not have a supported JavaScript runtime slot.");
+			}
+
+			return disposeMethod;
+		}
 
 		if (requireInterfaceFallback &&
 			TryResolveUsingDisposeMethodByInterface(resourceType, interfaceDisplayName, methodName, out disposeMethod))
@@ -379,6 +407,44 @@ public partial class SemanticWalker
 		return HandleTransformationFailure<IMethodSymbol>(
 			originOperation,
 			$"Using resource type '{resourceType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not expose a supported {methodName}() member.");
+	}
+
+	private static bool TryResolveUsingTypeParameterDisposeMethod(
+		ITypeParameterSymbol typeParameter,
+		string interfaceDisplayName,
+		string methodName,
+		out IMethodSymbol disposeMethod)
+	{
+		foreach (var constraintType in typeParameter.ConstraintTypes)
+		{
+			if (constraintType is ITypeParameterSymbol nestedTypeParameter &&
+				TryResolveUsingTypeParameterDisposeMethod(
+					nestedTypeParameter,
+					interfaceDisplayName,
+					methodName,
+					out disposeMethod))
+			{
+				return true;
+			}
+
+			if (TryResolveUsingDisposeMethod(constraintType, methodName, out disposeMethod) ||
+				TryResolveUsingDisposeInterfaceImplementation(
+					constraintType,
+					interfaceDisplayName,
+					methodName,
+					out disposeMethod) ||
+				TryResolveUsingDisposeMethodByInterface(
+					constraintType,
+					interfaceDisplayName,
+					methodName,
+					out disposeMethod))
+			{
+				return true;
+			}
+		}
+
+		disposeMethod = null!;
+		return false;
 	}
 
 	private static UsingDisposalKind GetUsingDisposalKind(bool isAsynchronous)

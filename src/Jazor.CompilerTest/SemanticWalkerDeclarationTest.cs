@@ -1182,6 +1182,34 @@ public sealed class SemanticWalkerDeclarationTest
     }
 
     [TestMethod]
+    public void Visit_OutDiscard_DoesNotAssignToUndefined()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    if (int.TryParse(""123"", out _))
+                    {
+                        Console.WriteLine(""parsed"");
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let v$0;
+  if (v$0 = _16e2a901535b765e(""123"", undefined), v$0[0]) {
+    console.log(""parsed"");
+  }
+}", script);
+    }
+
+    [TestMethod]
     public void Visit_OutDeclaration_DateOnlyTryParse()
     {
         var block = GetBlockOperation(@"

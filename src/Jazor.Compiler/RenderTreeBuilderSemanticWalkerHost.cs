@@ -1352,7 +1352,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         }
 
         return new OperationTransformationException(
-            operation.Kind,
+            operation,
             "RenderTreeBuilder method '" +
             signature +
                 "' is not supported by render-context v1 lowering. Supported v1 methods: OpenElement(int, string), CloseElement(), OpenRegion(int), CloseRegion(), OpenComponent<T>(int) and OpenComponent(int, typeof(T)) for [ECMAScriptModule] components, CloseComponent(), AddContent(int, string/object/RenderFragment/MarkupString), AddContent<TValue>(int, RenderFragment<TValue>, TValue), AddMarkupContent(int, string), AddAttribute(int, string[, value]), AddAttribute(int, RenderTreeFrame), AddMultipleAttributes(int, IEnumerable<KeyValuePair<string, object>>), AddComponentParameter(int, string, object) including RenderFragment and RenderFragment<T> slot parameters, SetKey(object), SetUpdatesAttributeName(string), SetAttributeValue(int, object), AddNamedEvent(string, string), AddElementReferenceCapture(int, Action<ElementReference>), AddComponentReferenceCapture(int, Action<object>), AddComponentRenderMode(IComponentRenderMode), Clear(), GetFrames(), Dispose(), and RenderTreeBuilder(). Dynamic Type OpenComponent remains unsupported." +

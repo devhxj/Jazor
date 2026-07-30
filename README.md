@@ -38,11 +38,12 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Latest Updates
 
-### 2026-07-29
+### 2026-07-30
 
 - `ECMAScript.Style` is the independent ECMAScript ecosystem package for typed CSS-in-JS. It provides a lowercase `css` facade, native-union value domains, typed composition helpers, an explicit `raw(...)` escape hatch, and the single debug entry `style.mjs`.
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 - CLR runtime modules annotate hashed JavaScript helper declarations with their authored CLR member names for easier package inspection.
+- Generic whitelist compatibility lookup now reuses indexed key shapes, avoiding repeated full-catalog scans when compiling ordinary generic method calls.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

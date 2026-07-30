@@ -7,6 +7,15 @@ namespace Jazor.ComplierTest;
 public sealed class JavaScriptAstFactoryTests
 {
     [TestMethod]
+    public void CreateStringLiteral_NullValue_ThrowsArgumentNullException()
+    {
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
+            () => JavaScriptAstFactory.CreateStringLiteral(null!));
+
+        Assert.AreEqual("value", exception.ParamName);
+    }
+
+    [TestMethod]
     public void CreateStringLiteral_EscapesAllJavaScriptSourceHazards()
     {
         var value = "\"\\\0" + "1\a\b\f\n\r\t\v\u001F\u2028\u2029";
@@ -36,5 +45,15 @@ public sealed class JavaScriptAstFactoryTests
 
         Assert.AreEqual(value, literal.Value);
         Assert.AreEqual("\"\\uD800x\\uDC00\"", literal.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void CreateStringLiteral_TerminalSurrogates_UseUnicodeEscapes()
+    {
+        var leadingLow = JavaScriptAstFactory.CreateStringLiteral(new string(['\uDC00', 'x']));
+        var trailingHigh = JavaScriptAstFactory.CreateStringLiteral(new string(['x', '\uD800']));
+
+        Assert.AreEqual("\"\\uDC00x\"", leadingLow.ToKnRECMAScript());
+        Assert.AreEqual("\"x\\uD800\"", trailingHigh.ToKnRECMAScript());
     }
 }

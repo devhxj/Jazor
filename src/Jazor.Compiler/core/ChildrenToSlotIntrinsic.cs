@@ -333,27 +333,22 @@ internal static class ChildrenToSlotIntrinsic
 		out INamedTypeSymbol slotType)
 	{
 		slotType = null!;
-		if (method.Parameters.Length == 0 ||
-			method.Parameters[0].Type is not INamedTypeSymbol { IsGenericType: true } parameterType)
+		if (method.Parameters[0].Type is not INamedTypeSymbol { IsGenericType: true } parameterType)
 		{
 			return false;
 		}
 
-		if (method.TypeArguments.Length == 1 &&
-			method.TypeArguments[0] is INamedTypeSymbol slotComponentSlotType &&
-			parameterType.TypeArguments.Length == 1 &&
+		if (parameterType.TypeArguments.Length == 1 &&
 			IsSameOriginalDefinition(parameterType, hostContracts.SlotComponent) &&
-			SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[0], method.TypeArguments[0]))
+			parameterType.TypeArguments[0] is INamedTypeSymbol slotComponentSlotType)
 		{
 			slotType = slotComponentSlotType;
 			return true;
 		}
 
-		if (method.TypeArguments.Length == 2 &&
-			method.TypeArguments[1] is INamedTypeSymbol componentSlotType &&
-			parameterType.TypeArguments.Length == 2 &&
+		if (parameterType.TypeArguments.Length == 2 &&
 			IsSameOriginalDefinition(parameterType, hostContracts.TypedComponent) &&
-			SymbolEqualityComparer.Default.Equals(parameterType.TypeArguments[1], method.TypeArguments[1]))
+			parameterType.TypeArguments[1] is INamedTypeSymbol componentSlotType)
 		{
 			slotType = componentSlotType;
 			return true;

@@ -346,7 +346,21 @@ enum 的路线应定义为：
 
 如果当前实现里仍然存在 `Object.freeze({...})` 式的枚举声明输出，它只能被视为过渡态，而不是长期路线本身。
 
-### 8.3 interface：只作为契约，不发射 runtime artifact
+### 8.3 CLR 内部 carrier：由静态适配签名隐式推导
+
+Jazor.CLR 中的 `RuntimeModule.JDateTime`、`JTimeSpan`、`JQueue<T>` 等类型只是内部值 carrier。它们与对应 CLR 类型的关系已经由静态适配方法的强类型签名表达，不应再通过显式特性、平行注册表、名称猜测、隐藏 marker 或对象结构判别重复声明。
+
+Generator 应使用 Roslyn 符号对齐 `[Jazor(...)]` 指向的 CLR member 与适配方法：实例 receiver、普通参数、构造结果和返回值中对应的类型位置共同给出 CLR 类型到内部 carrier 的映射。例如 `DateTime DateTime.Add(TimeSpan)` 对应 `JDateTime Add(JDateTime instance, JTimeSpan value)`，自然得到 `DateTime -> JDateTime` 与 `TimeSpan -> JTimeSpan`。
+
+该映射只描述值的运行时承载方式：
+
+- `is`、声明模式与 `as` 可以据此进行 nominal carrier 判别；
+- CLR 成员仍按 Roslyn 已绑定 symbol 进入对应 Module 的 Alias / Inline / Import / Compile 路线；
+- carrier constructor 不是映射 CLR 类型的 `typeof(T)` / `System.Type` token；
+- 多个 CLR 类型可以在当前受支持语义范围内共享同一个 carrier，这不是映射冲突；
+- 缺少可推导 carrier 时必须保留现有 native lowering 或显式失败，不能回退到同形对象检查。
+
+### 8.4 interface：只作为契约，不发射 runtime artifact
 
 interface 的路线应定义为：
 
@@ -369,7 +383,7 @@ interface 的路线应定义为：
 - 某些 `IEnumerable<T>` / `IList<T>` / runtime host 接口能参与 lowering；
 - 但 nested interface declaration 本身仍然不应被输出成 JS 声明。
 
-### 8.4 继承：支持受控的 JS-compatible 子集，超出子集显式失败
+### 8.5 继承：支持受控的 JS-compatible 子集，超出子集显式失败
 
 JavaScript 原生支持 `class extends`、`super(...)` 和 prototype dispatch。  
 因此对于与 JS 语义足够接近的 C# class inheritance，compiler 的目标不应是永久拒绝，而应是支持一个清晰、受控的子集。
@@ -424,7 +438,7 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 
 也就是说，如果某个成员类声明了非 `object` 基类，但当前场景不在上述已支持子集内，就必须直接失败，而不是生成 `superClass: null`、省略 `super(...)`、或者把 `base` 悄悄变成 `this` 的错误 class shape。
 
-### 8.5 成员类构造函数重载：单 `constructor` + 稳定 helper + selector 分派
+### 8.6 成员类构造函数重载：单 `constructor` + 稳定 helper + selector 分派
 
 成员类构造函数重载不能照搬普通方法重载路线。  
 原因不是“签名 hash 不够”，而是 JavaScript class runtime shape 只允许一个真实 `constructor`。

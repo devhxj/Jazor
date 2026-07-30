@@ -540,6 +540,22 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return false;
     }
 
+    private static bool TryGetWhiteListRuntimeValueCarrier(
+        ITypeSymbol typeSymbol,
+        out RuntimeValueCarrierReference runtimeValueCarrier)
+    {
+        var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
+            entry.RuntimeValueCarrier is not null)
+        {
+            runtimeValueCarrier = entry.RuntimeValueCarrier;
+            return true;
+        }
+
+        runtimeValueCarrier = null!;
+        return false;
+    }
+
     private List<string> FindIncompatibleWhiteListAliasTypes(IOperation operation, ITypeSymbol targetType, string runtimeAlias)
     {
         var conflicts = new List<string>();

@@ -87,6 +87,19 @@ public static class DateOnlyModule
 		return day >= 1 && day <= daysInMonth;
 	}
 
+	private static bool HasIsoDatePrefix(string text)
+		=> text.Length >= 10
+			&& text[4] == '-'
+			&& text[7] == '-'
+			&& IsAsciiDigit(text[0])
+			&& IsAsciiDigit(text[1])
+			&& IsAsciiDigit(text[2])
+			&& IsAsciiDigit(text[3])
+			&& IsAsciiDigit(text[5])
+			&& IsAsciiDigit(text[6])
+			&& IsAsciiDigit(text[8])
+			&& IsAsciiDigit(text[9]);
+
 	private static RuntimeModule.JDateOnly ParseCore(string s)
 	{
 		var text = s.Trim();
@@ -95,6 +108,10 @@ public static class DateOnlyModule
 
 		if (TryParseIsoDate(text, out var year, out var month, out var day))
 			return new RuntimeModule.JDateOnly(year, month, day);
+
+		// JS Date 会归一化无效 ISO 日期；DateOnly 必须保留 CLR 的严格日历边界。
+		if (HasIsoDatePrefix(text))
+			throw new Error($"FormatException: String '{s}' was not recognized as a valid DateOnly.");
 
 		var parsed = new Date(text);
 		if (IsNaN(parsed.GetTime()))
@@ -198,11 +215,8 @@ public static class DateOnlyModule
 	[Jazor(Op.Import, "System.DateOnly.DayOfYear.get")]
 	public static Number _6eb4f28206445ae2(RuntimeModule.JDateOnly instance)
 	{
-		var date = RuntimeModule.CreateUtcDate(instance.Year, instance.Month, instance.Day);
-		var start = RuntimeModule.CreateUtcDate(instance.Year, 1, 0);
-		var diff = date.GetTime() - start.GetTime();
-		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.FloorFn(diff / oneDay);
+		var firstDayNumber = new RuntimeModule.JDateOnly(instance.Year, 1, 1).DayNumber;
+		return instance.DayNumber - firstDayNumber + 1;
 	}
 
 	/// <summary>

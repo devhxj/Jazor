@@ -1409,168 +1409,63 @@ public partial class SemanticWalker
 				new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
 				TypeOfExpr(value, CreateStringLiteral("object")));
 
+		else if (TryGetWhiteListRuntimeValueCarrier(typeSymbol, out var runtimeValueCarrier))
+		{
+			var carrierConstructor = context?.BindImportSpecifier(runtimeValueCarrier.Path, runtimeValueCarrier.Name)
+				?? new Identifier(runtimeValueCarrier.Name);
+			result = InstanceOfExpr(value, carrierConstructor);
+		}
 		else
 		{
-			var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat);
-			if (displayName == "System.DateTime")
-			{
-				var date = new MemberExpression(value, new Identifier("date"), computed: false, optional: false);
-				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
-				var subMillisecondTicks = new MemberExpression(value, new Identifier("subMillisecondTicks"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new LogicalExpression(
-							Operator.LogicalAnd,
-							InstanceOfExpr(date, new Identifier("Date")),
-							TypeOfExpr(kind, CreateStringLiteral("number"))),
-						TypeOfExpr(subMillisecondTicks, CreateStringLiteral("bigint"))));
-			}
-			else if (displayName == "System.DateOnly")
-			{
-				var year = new MemberExpression(value, new Identifier("year"), computed: false, optional: false);
-				var month = new MemberExpression(value, new Identifier("month"), computed: false, optional: false);
-				var day = new MemberExpression(value, new Identifier("day"), computed: false, optional: false);
-				var dayNumber = new MemberExpression(value, new Identifier("dayNumber"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new LogicalExpression(
-							Operator.LogicalAnd,
-							TypeOfExpr(year, CreateStringLiteral("number")),
-							TypeOfExpr(month, CreateStringLiteral("number"))),
-						new LogicalExpression(
-							Operator.LogicalAnd,
-							TypeOfExpr(day, CreateStringLiteral("number")),
-							TypeOfExpr(dayNumber, CreateStringLiteral("number")))));
-			}
-			else if (displayName == "System.DateTimeOffset")
-			{
-				var utcDateTime = new MemberExpression(value, new Identifier("utcDateTime"), computed: false, optional: false);
-				var offsetTicks = new MemberExpression(value, new Identifier("offsetTicks"), computed: false, optional: false);
-				var utcSubMillisecondTicks = new MemberExpression(value, new Identifier("utcSubMillisecondTicks"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new LogicalExpression(
-							Operator.LogicalAnd,
-							InstanceOfExpr(utcDateTime, new Identifier("Date")),
-							TypeOfExpr(offsetTicks, CreateStringLiteral("bigint"))),
-						TypeOfExpr(utcSubMillisecondTicks, CreateStringLiteral("bigint"))));
-			}
-			else if (displayName == "System.TimeOnly")
-			{
-				var ticks = new MemberExpression(value, new Identifier("ticks"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					TypeOfExpr(ticks, CreateStringLiteral("bigint")));
-			}
-			else if (displayName == "System.TimeSpan")
-			{
-				var ticks = new MemberExpression(value, new Identifier("ticks"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					TypeOfExpr(ticks, CreateStringLiteral("bigint")));
-			}
-			else if (displayName == "System.Collections.Generic.Queue<T>")
-			{
-				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
-				var items = new MemberExpression(value, new Identifier("items"), computed: false, optional: false);
-				var head = new MemberExpression(value, new Identifier("head"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, CreateStringLiteral("queue")),
-						new LogicalExpression(
-							Operator.LogicalAnd,
-							new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false),
-							TypeOfExpr(head, CreateStringLiteral("number")))));
-			}
-			else if (displayName == "System.Collections.Generic.Stack<T>")
-			{
-				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
-				var items = new MemberExpression(value, new Identifier("items"), computed: false, optional: false);
-				result = new LogicalExpression(
-					Operator.LogicalAnd,
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
-					new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, CreateStringLiteral("stack")),
-						new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false)));
-			}
-			else
-			{
-				var (mapper, typeName) = GetMapperType(typeSymbol);
+			var (mapper, typeName) = GetMapperType(typeSymbol);
 
-				// Interface types aliased to Object do not carry a reliable runtime discriminator in JS.
-				// For these cases, only fold at compile-time when Roslyn metadata can prove the outcome.
-				// If not provable, keep the explicit unsupported boundary instead of producing unsound runtime checks.
-				if (typeSymbol.TypeKind == TypeKind.Interface && mapper == TypeMapper.Object)
+			if (typeSymbol.SpecialType == SpecialType.System_Object)
+			{
+				result = new NonLogicalBinaryExpression(Operator.Inequality, value, Null);
+			}
+			// Interface types aliased to Object do not carry a reliable runtime discriminator in JS.
+			// For these cases, only fold at compile-time when Roslyn metadata can prove the outcome.
+			// If not provable, keep the explicit unsupported boundary instead of producing unsound runtime checks.
+			else if (typeSymbol.TypeKind == TypeKind.Interface && mapper == TypeMapper.Object)
+			{
+				if (TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(operation, typeSymbol, out var folded))
 				{
-					if (TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(operation, typeSymbol, out var folded))
+					result = folded switch
 					{
-						result = folded switch
-						{
-							InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
-							InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
-							InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
-							_ => null
-						};
-					}
-					else
-						return HandleTransformationFailure<Expression>(operation, BuildUnsupportedErasedInterfaceIsTypeCheckMessage(operation, typeSymbol));
-				}
-				else
-				{
-					result = mapper switch
-					{
-						TypeMapper.String => TypeOfExpr(value, CreateStringLiteral("string")),
-						TypeMapper.Number => TypeOfExpr(value, CreateStringLiteral("number")),
-						TypeMapper.BigInt => TypeOfExpr(value, CreateStringLiteral("bigint")),
-						TypeMapper.Object => new LogicalExpression(
-							Operator.LogicalAnd,
-							new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
-							TypeOfExpr(value, CreateStringLiteral("object"))),
-						TypeMapper.Boolean => TypeOfExpr(value, CreateStringLiteral("boolean")),
-						TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
-						TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
-						TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
-						TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-						TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
+						InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
+						InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
+						InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
 						_ => null
 					};
 				}
+				else
+					return HandleTransformationFailure<Expression>(operation, BuildUnsupportedErasedInterfaceIsTypeCheckMessage(operation, typeSymbol));
+			}
+			else if (mapper == TypeMapper.Object && TryGetWhiteListTypeAlias(typeSymbol, out var runtimeAlias) && runtimeAlias == "Object")
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' uses an erased Object alias without an inferred Jazor.CLR runtime carrier, so its runtime type test cannot be lowered soundly.");
+			}
+			else
+			{
+				result = mapper switch
+				{
+					TypeMapper.String => TypeOfExpr(value, CreateStringLiteral("string")),
+					TypeMapper.Number => TypeOfExpr(value, CreateStringLiteral("number")),
+					TypeMapper.BigInt => TypeOfExpr(value, CreateStringLiteral("bigint")),
+					TypeMapper.Object => new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
+					TypeMapper.Boolean => TypeOfExpr(value, CreateStringLiteral("boolean")),
+					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+					TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+					TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+					TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
+					_ => null
+				};
 			}
 		}
 
@@ -1734,6 +1629,8 @@ public partial class SemanticWalker
 	{
 		if (operation is IIsTypeOperation isTypeOperation)
 			return isTypeOperation.ValueOperand;
+		if (operation is IConversionOperation { IsTryCast: true } conversionOperation)
+			return conversionOperation.Operand;
 
 		// Only walk through wrappers that preserve the same pattern input (`not` / `and` / `or`).
 		// Do not cross recursive/property/list/positional pattern boundaries because they can

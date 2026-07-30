@@ -91,6 +91,10 @@ Local diagnostic scripting rule:
 
 Follow the existing code style: 4-space indentation in both C# and TypeScript, file-scoped namespaces in C#, `PascalCase` for public types and test classes, `camelCase` for locals and parameters, and leading underscores for private fields. Keep partial compiler logic grouped by concern using names like `SemanticWalker.cs.Pattern.cs`. Avoid hand-editing obviously generated files unless the generation source is part of the change.
 
+Commenting rule:
+- 代码注释可以根据上下文适当使用中文/英文混合表达；关键代码、容易误用或容易回归的代码必须补充简洁注释，优先说明设计原因、隐含约束、求值/生命周期顺序和副作用，而不是逐行翻译实现。
+- 保持注释与代码行为同步。普通且自解释的代码不强制添加注释；复杂 lowering、协议边界、稳定性约束、错误处理分支和 workaround 应在代码附近留下中英文混合的 orienting comment，便于不同语言背景的维护者快速确认不能随意修改的原因。
+
 Implementation scope rule:
 - 只实现当前产品契约所必需的代码。绝对禁止添加未由 GOAL、SPEC 或现有失败场景要求的认证、权限、安全审计、对抗性校验、兼容 fallback 和预防性抽象。
 - 只允许保留数据正确性、格式约束、确定性、错误传播以及验收必要的检查，绝对禁止过度兜底和防御性编程。
@@ -99,6 +103,12 @@ Whitelist generation rule:
 - `src/Jazor.Compiler/WhiteList.cs.Generate.cs` is generated output and must not be edited manually.
 - After changing CLR whitelist sources (for example `src/Jazor.CLR/module/*Module.cs` with `[Jazor(...)]` mappings), regenerate via `dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj` and commit the regenerated whitelist file together with source changes.
 - `Op.Discard` mappings stay in CLR module source declarations as unsupported/todo markers and are not emitted into `WhiteList.cs.Generate.cs`.
+
+CLR carrier inference rule:
+- Jazor.CLR static adapter signatures are the single source of truth for CLR-type-to-internal-carrier relationships. Infer those relationships by aligning the Roslyn symbol named by `[Jazor(...)]` with the adapter method's receiver, parameter, constructor-result, and return symbols.
+- Internal carrier types such as `RuntimeModule.JDateTime` are implementation-only value wrappers. Do not add explicit carrier attributes, parallel registries, naming-based compiler special cases, hidden marker properties, or structural shape tests to identify them.
+- A carrier relationship may support runtime value discrimination for `is`, declaration patterns, and `as`; it must not redirect CLR member dispatch away from the mapped module and must not be exposed as the `typeof(T)` / `System.Type` token for the mapped CLR type.
+- Multiple CLR types may intentionally use the same internal carrier when the supported CLR slice has that representation. This is not a conflict and must not trigger invented one-to-one validation.
 
 Whitelist key contract rule:
 - Persisted whitelist keys have one canonical contract. If `[Jazor(...)]` explicitly provides the member/type string, store that authored string unchanged.
@@ -160,7 +170,7 @@ Compiler implementation route rule:
 - Treat interfaces as contracts only: they may participate in analysis, host projection, and whitelist/implementation lookup, but they do not emit runtime declarations.
 - For `is`/type-pattern checks against interface types that erase to `Object` at runtime, prefer Roslyn-driven compile-time folding when and only when the result is provable: emit `true`, `false`, or an explicit non-null check (`value !== null`) as appropriate. Preserve single-evaluation and side-effect order of the tested expression; if the result is not statically provable, keep an explicit unsupported failure rather than emitting unsound runtime heuristics, and make the diagnostic actionable by naming the source static type and target interface.
 - For inheritance, the currently supported slice is same-module member-class inheritance with stable base-before-derived emission, `extends`, explicit `: base(...)` to `super(...)`, synthesized `super()` for derived classes without an explicit constructor, `base.Method(...)`/`base.Property`/`base.Property = value` lowering to `super`, base-method-group forwarding, and normal prototype dispatch. Keep explicit failures for base field access, `this(...)` constructor chaining, external base types, and any constructor-initializer protocol that has not been implemented end-to-end; never silently erase inheritance.
-- For member-class constructor overloads, use one real JS `constructor` plus stable `$ctor_<hash>` helper methods and `arguments.length` dispatch. Support only overload sets uniquely dispatchable by accepted argument count, bind optional defaults inside the selected branch, emit per-branch `super(...)` before helper execution for derived classes, keep dispatcher/helper insertion stable at the first explicit constructor slot, and explicitly reject overlap, `this(...)`, external-base constructor protocols, and `ref/out/in/params`-driven dispatch.
+- For member-class constructor overloads, use one real JS `constructor` plus stable `$ctor_<hash>` helper methods and a selector supplied from the Roslyn-bound constructor symbol at every Jazor-compiled call site, including cross-module calls. Do not add an `arguments.length` fallback: same-arity overloads and overlapping optional-parameter ranges are valid because dispatch is symbol-bound, while external calls without a selector must fail explicitly. Bind optional defaults inside the selected branch, emit per-branch `super(...)` before helper execution for derived classes, keep dispatcher/helper insertion stable at the first explicit constructor slot, and explicitly reject `this(...)`, external-base constructor protocols, and `ref/out/in/params`-driven dispatch.
 - Keep the output boundary layered: `AstConverter` owns module-level AST, writer/`ESGenerator` own JavaScript text plus module/source-map catalog carriers, and `Jazor.Emit` owns `.mjs` / `.mjs.map` / manifest / bundle materialization. Do not collapse these back into a vague “compiler directly writes files” model.
 - Keep the import and compile mainline fixed: `SemanticWalker` collects `ImportSpecifier`s, `SenseArgument` flushes them, `AstConverter` merges them and emits module-header `ImportDeclaration`s with stable dedupe/order/alias behavior; consumer-side member dispatch remains `Compile -> Alias -> Inline -> Import -> normal lowering`, with `throw` from `Compile_*` treated as claimed-and-failed rather than silently falling back.
 - Keep host semantics layered: `Alias` for simple name remaps, `Inline` for stable local expression templates, `Import` for explicit helper/module seams, and `Compile` for complex AST-level host semantics. If a host behavior needs context-sensitive AST construction or protocol-level lowering, prefer upgrading it to `Compile` rather than extending `Inline`.

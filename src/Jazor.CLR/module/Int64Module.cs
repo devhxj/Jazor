@@ -117,20 +117,22 @@ public static class Int64Module
 			throw new Error("ArgumentNullException: String cannot be null.");
 
 		var trimmed = s.Trim();
+		BigInt result;
 		try
 		{
-			var result = BigIntFn(trimmed);
-			// Check long range: -9223372036854775808 to 9223372036854775807
-			var minValue = BigIntFn("-9223372036854775808");
-			var maxValue = BigIntFn("9223372036854775807");
-			if (result < minValue || result > maxValue)
-				throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int64.");
-			return result;
+			result = BigIntFn(trimmed);
 		}
 		catch
 		{
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int64.");
 		}
+
+		// 仅转换失败属于 FormatException；范围验证必须保留 OverflowException。
+		var minValue = BigIntFn("-9223372036854775808");
+		var maxValue = BigIntFn("9223372036854775807");
+		if (result < minValue || result > maxValue)
+			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int64.");
+		return result;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit signed integer equivalent.</summary>
@@ -216,7 +218,8 @@ public static class Int64Module
 	public static BigInt _77fd605bbb6ce669(BigInt value)
 	{
 		var count = BigInt.Zero;
-		var v = value;
+		// CLR long uses a fixed 64-bit two's-complement representation for bit operations.
+		var v = NormalizeRotateBits(value);
 		while (v > BigInt.Zero)
 		{
 			count = count + (v & BigInt.One);

@@ -1121,7 +1121,7 @@ public sealed class SemanticWalkerTupleTest
   let v$0, v$1, w, j, g, z;
   let point = new Point(1, { a: 2, b: 3 });
   let x;
-  v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
+  v$1 = point.Deconstruct(x, v$0), v$0 = v$1[1], x = v$1[0], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
@@ -1193,7 +1193,7 @@ public sealed class SemanticWalkerTupleTest
   let v$0, v$1, w, j, g, z;
   let point = new Point(1, { a: 2, b: 3 });
   let x;
-  v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
+  v$1 = point.Deconstruct(x, v$0), v$0 = v$1[1], x = v$1[0], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
@@ -2363,7 +2363,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(@"{
   let points = [{ item1: 1, Item2: 2 }, { Item1: 3, Item2: 4 }, { Item1: 5, Item2: 6 }];
-  for (let { x: x, y: y } of points) {
+  for (let { item1: x, item2: y } of points) {
     console.log(x + "","" + y);
   }
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2415,6 +2415,4 @@ public sealed class SemanticWalkerTupleTest
     #endregion
 }
 #endregion
-
-
 

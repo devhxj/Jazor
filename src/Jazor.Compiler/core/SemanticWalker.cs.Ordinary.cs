@@ -261,8 +261,14 @@ public partial class SemanticWalker
 
 		var id = new Identifier(operation.Symbol.Name);
 		var parameters = new List<Node>();
+		var refParameters = new List<Expression>();
 		foreach (var param in operation.Symbol.Parameters)
-			parameters.Add(new Identifier(param.Name));
+		{
+			var parameter = new Identifier(param.Name);
+			parameters.Add(parameter);
+			if (param.RefKind is RefKind.Out or RefKind.Ref)
+				refParameters.Add(parameter);
+		}
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
 		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LocalFunctionBody());
@@ -274,6 +280,8 @@ public partial class SemanticWalker
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
+		if (refParameters.Count > 0)
+			body = RefOutReturnProtocol.Apply(body, refParameters, !operation.Symbol.ReturnsVoid);
 
 		// 检查函数是否为async或generator
 		var isAsync = operation.Symbol.IsAsync;
@@ -576,10 +584,13 @@ public partial class SemanticWalker
 	/// 1. Number 与 BigInt 之间的显式转换需要生成转换函数调用
 	///    - Number → BigInt: 生成 BigInt(value) 调用
 	///    - BigInt → Number: 生成 Number(value) 调用
-	/// 2. 其他类型转换在 JavaScript 中可以安全忽略，因为 JS 是动态类型语言
+	/// 2. C# as 转换必须保留运行时 try-cast 语义
+	///    - 匹配目标运行时类型时返回原值
+	///    - 不匹配时返回 null
+	///    - 可能有副作用的操作数只求值一次
+	/// 3. 其他类型转换在 JavaScript 中可以安全忽略，因为 JS 是动态类型语言
 	///    - 装箱/拆箱: JS 无需区分值类型和引用类型
 	///    - 引用类型转换: JS 运行时动态检查
-	///    - as 转换: 语义等价于直接访问
 	///
 	/// C# 示例 → JavaScript 转换结果：
 	///   (long)42           → BigInt(42)      // int 转 long，需要显式转换
@@ -587,7 +598,7 @@ public partial class SemanticWalker
 	///   (int)someLong      → Number(someLong) // long 转 int，需要显式转换
 	///   (ulong)count       → BigInt(count)   // uint 转 ulong
 	///   (int)3.14          → 3.14            // float 转 int，忽略转换
-	///   obj as string      → obj             // as 转换，直接返回
+	///   obj as string      → typeof obj === "string" ? obj : null
 	///   (BaseType)derived  → derived         // 引用类型强转，直接返回
 	///   object o = 42      → 42              // 装箱，忽略
 	///   int i = (int)o     → o               // 拆箱，忽略
@@ -619,6 +630,9 @@ public partial class SemanticWalker
 		// }
 		var expr = Translate<Expression>(operation.Operand, argument);
 
+		if (operation.IsTryCast)
+			return TranslateTryCast(operation, argument, expr);
+
 		if (operation.OperatorMethod is not null)
 		{
 			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [expr], out _);
@@ -637,6 +651,37 @@ public partial class SemanticWalker
 		{
 			var targetType = GetMapperType(operation.Type);
 			var operandType = GetMapperType(operation.Operand.Type);
+			var targetIsChar = operation.Type.SpecialType == SpecialType.System_Char;
+			var operandIsChar = operation.Operand.Type.SpecialType == SpecialType.System_Char;
+
+			if (operandIsChar && targetType.Mapper is TypeMapper.Number or TypeMapper.BigInt)
+			{
+				var codeUnit = new CallExpression(
+					new MemberExpression(expr, new Identifier("charCodeAt"), computed: false, optional: false),
+					NodeList.From<Expression>(new NumericLiteral(0, "0")),
+					optional: false);
+				return targetType.Mapper == TypeMapper.BigInt
+					? new CallExpression(new Identifier("BigInt"), NodeList.From<Expression>(codeUnit), optional: false)
+					: codeUnit;
+			}
+
+			if (targetIsChar && operandType.Mapper is TypeMapper.Number or TypeMapper.BigInt)
+			{
+				if (operation.IsChecked)
+				{
+					return HandleTransformationFailure<Node>(
+						operation,
+						"Checked numeric-to-char conversion is not supported because JavaScript String.fromCharCode applies unchecked UInt16 coercion.");
+				}
+
+				var codeUnit = operandType.Mapper == TypeMapper.BigInt
+					? new CallExpression(new Identifier("Number"), NodeList.From(expr), optional: false)
+					: expr;
+				return new CallExpression(
+					new MemberExpression(new Identifier("String"), new Identifier("fromCharCode"), computed: false, optional: false),
+					NodeList.From(codeUnit),
+					optional: false);
+			}
 
 			// Number → BigInt: (long)1 → BigInt(1)
 			if (operandType.Mapper == TypeMapper.Number && targetType.Mapper == TypeMapper.BigInt)
@@ -648,8 +693,38 @@ public partial class SemanticWalker
 		}
 
 		// 其他情况：直接返回操作数（JavaScript 是动态类型）
-		// 包括：装箱/拆箱、引用类型转换、as 转换等
+		// 包括：装箱/拆箱、引用类型强制转换等
 		return expr;
+	}
+
+	private Expression TranslateTryCast(
+		IConversionOperation operation,
+		SenseArgument argument,
+		Expression operand)
+	{
+		if (operation.Type is null)
+			return HandleTransformationFailure<Expression>(operation, "Try-cast conversion is missing its target type.");
+
+		// Roslyn has already proven implicit and identity conversions cannot fail.
+		if (operation.Conversion.IsImplicit)
+			return operand;
+
+		var targetType = UnwrapNullableValueType(operation.Type);
+		Expression input = operand;
+		Expression? initialization = null;
+		if (NeedsSingleEvaluationCaching(operand))
+		{
+			var tempId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.TryCastInput()));
+			argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+			initialization = new AssignmentExpression(Operator.Assignment, tempId, operand);
+			input = tempId;
+		}
+
+		var match = CreateTypeMatchExpr(operation, targetType, input, nullable: false, context: argument);
+		var result = new ConditionalExpression(match, input, Null);
+		return initialization is null
+			? result
+			: new SequenceExpression(NodeList.From<Expression>(initialization, result));
 	}
 
 	private bool CanPassThroughIntrinsicConversion(IConversionOperation operation)
@@ -703,6 +778,9 @@ public partial class SemanticWalker
 		// 先转换 Operation，然后通过 PatternInput 传递给 WhenNotNull
 		var whenNotNullArg = argument.WithPatternInput(operand);
 		var whenNotNull = Translate<Expression>(operation.WhenNotNull, whenNotNullArg);
+		if (whenNotNull is SequenceExpression)
+			return whenNotNull;
+
 		return new ChainExpression(whenNotNull);
 	}
 
@@ -1826,7 +1904,8 @@ public partial class SemanticWalker
 				return WithOrigin(WrapTarget(new SequenceExpression(NodeList.From(expressions))), operation);
 			}
 
-			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod) &&
+				!CanPassThroughIntrinsicIncrementOrDecrement(operation))
 				return HandleTransformationFailure<Node>(
 					operation,
 					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript update semantics.");
@@ -1875,17 +1954,28 @@ public partial class SemanticWalker
 			if (mapped is not null)
 				return mapped;
 
-			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod) &&
+				!CanPassThroughIntrinsicIncrementOrDecrement(operation))
 				return HandleTransformationFailure<Expression>(
 					operation,
 					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
 		}
 
-		var one = new NumericLiteral(1, "1");
+		var targetType = operation.Target.Type ?? operation.Type;
+		Expression one = targetType is not null && GetMapperType(targetType).Mapper == TypeMapper.BigInt
+			? new BigIntLiteral(System.Numerics.BigInteger.One, "1n")
+			: new NumericLiteral(1, "1");
 		return new NonLogicalBinaryExpression(
 			operation.Kind == OperationKind.Increment ? Operator.Addition : Operator.Subtraction,
 			operand,
 			one);
+	}
+
+	private static bool CanPassThroughIntrinsicIncrementOrDecrement(IIncrementOrDecrementOperation operation)
+	{
+		var targetType = operation.Target.Type ?? operation.Type;
+		return targetType is not null &&
+			GetMapperType(targetType).Mapper is TypeMapper.Number or TypeMapper.BigInt;
 	}
 
 	private bool TryPreparePropertyMutationAccess(

@@ -2,6 +2,7 @@ using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Jazor.Compiler;
@@ -85,26 +86,53 @@ internal static class WhiteListLookup
 		matchedKey = null!;
 		value = default!;
 
-		if (!TryBuildGenericParameterOrdinalMap(lookupKey, out var lookupGenericParameters))
+		if (!TryNormalizeDeclaredGenericParameters(lookupKey, out var normalizedLookupKey))
 			return false;
 
-		foreach (var candidate in mappings)
-		{
-			if (!TryBuildGenericParameterOrdinalMap(candidate.Key, out var candidateGenericParameters))
-				continue;
-
-			if (!string.Equals(
-					RewriteDeclaredGenericParameters(lookupKey, lookupGenericParameters),
-					RewriteDeclaredGenericParameters(candidate.Key, candidateGenericParameters),
-					StringComparison.Ordinal))
-				continue;
-
-			matchedKey = candidate.Key;
-			value = candidate.Value;
+		var index = GenericParameterKeyIndexCache<T>.Mappings.GetValue(
+			mappings,
+			static source => new GenericParameterKeyIndex(source.Keys));
+		if (index.TryGetKey(normalizedLookupKey, out matchedKey) &&
+			mappings.TryGetValue(matchedKey, out value))
 			return true;
-		}
 
 		return false;
+	}
+
+	private static bool TryNormalizeDeclaredGenericParameters(string text, out string normalized)
+	{
+		normalized = null!;
+		if (!TryBuildGenericParameterOrdinalMap(text, out var genericParameters))
+			return false;
+
+		normalized = RewriteDeclaredGenericParameters(text, genericParameters);
+		return true;
+	}
+
+	private sealed class GenericParameterKeyIndex
+	{
+		private readonly Dictionary<string, string> _keysByShape = new(StringComparer.Ordinal);
+
+		public GenericParameterKeyIndex(IEnumerable<string> keys)
+		{
+			foreach (var key in keys)
+			{
+				if (!TryNormalizeDeclaredGenericParameters(key, out var shape) ||
+					_keysByShape.ContainsKey(shape))
+					continue;
+
+				_keysByShape.Add(shape, key);
+			}
+		}
+
+		public bool TryGetKey(string shape, out string key)
+			=> _keysByShape.TryGetValue(shape, out key!);
+	}
+
+	private static class GenericParameterKeyIndexCache<T>
+		where T : notnull
+	{
+		public static readonly ConditionalWeakTable<Dictionary<string, T>, GenericParameterKeyIndex> Mappings = new();
 	}
 
 	private static bool TryBuildGenericParameterOrdinalMap(string text, out Dictionary<string, int> genericParameters)

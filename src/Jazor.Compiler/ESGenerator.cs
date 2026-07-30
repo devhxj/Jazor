@@ -39,6 +39,14 @@ public sealed class ESGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor DuplicateModuleOutputPath = new(
+        id: "JAZORG003",
+        title: "Duplicate JavaScript module output path",
+        messageFormat: "JavaScript module path '{0}' is produced by multiple module types: {1}",
+        category: "Jazor.Compiler",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact> SourceMapArtifactFactory = static (
         node,
         generatedFileName,
@@ -119,10 +127,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             return;
 
         var seenTypes = new HashSet<string>(StringComparer.Ordinal);
-        var generatedModules = new List<GeneratedModuleInfo>();
-        var sourceContentLookup = BuildSourceContentLookup(compilation);
-        var sourceRootPath = TryGetCompilationSourceRoot(compilation);
-
+        var generationPlans = new List<ModuleGenerationPlan>();
         foreach (var candidate in candidates)
         {
             var typeName = candidate.ClassSymbol.ToDisplayString();
@@ -131,12 +136,46 @@ public sealed class ESGenerator : IIncrementalGenerator
 
             try
             {
+                generationPlans.Add(new ModuleGenerationPlan(
+                    candidate,
+                    typeName,
+                    GetRelativePath(candidate)));
+            }
+            catch (Exception ex)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    ModuleGenerationFailed,
+                    candidate.Location,
+                    typeName,
+                    ex.Message));
+            }
+        }
+
+        if (generationPlans.Count == 0)
+            return;
+
+        var duplicatePaths = ReportDuplicateModuleOutputPaths(context, generationPlans);
+        var validPlans = generationPlans
+            .Where(plan => !duplicatePaths.Contains(plan.RelativePath))
+            .ToArray();
+        if (validPlans.Length == 0)
+            return;
+
+        var generatedModules = new List<GeneratedModuleInfo>();
+        var sourceContentLookup = BuildSourceContentLookup(compilation);
+        var sourceRootPath = TryGetCompilationSourceRoot(compilation);
+
+        foreach (var plan in validPlans)
+        {
+            var candidate = plan.Candidate;
+
+            try
+            {
                 var converter = new AstConverter(
                     candidate.ClassSymbol,
                     candidate.SemanticModel,
                     new AstConverterOptions(AstConverterProfile.ClrRuntime));
                 var module = converter.Convert().GetAwaiter().GetResult();
-                var relativePath = GetRelativePath(candidate);
                 GeneratedJavaScriptArtifact? artifact = null;
                 string content;
 
@@ -151,7 +190,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                         var sourceMapArtifactFactory = SourceMapArtifactFactoryOverride.Value ?? SourceMapArtifactFactory;
                         artifact = sourceMapArtifactFactory(
                             module,
-                            relativePath,
+                            plan.RelativePath,
                             true,
                             sourceRootPath,
                             sourcePath => TryReadSourceContentFromCompilation(sourceContentLookup, sourcePath));
@@ -161,7 +200,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                         context.ReportDiagnostic(Diagnostic.Create(
                             SourceMapGenerationFailed,
                             candidate.Location,
-                            typeName,
+                            plan.TypeName,
                             ex.Message));
                     }
 
@@ -170,12 +209,12 @@ public sealed class ESGenerator : IIncrementalGenerator
 
                 generatedModules.Add(new GeneratedModuleInfo(
                     assemblyName,
-                    typeName,
-                    typeName,
-                    relativePath,
+                    plan.TypeName,
+                    plan.TypeName,
+                    plan.RelativePath,
                     content,
                     artifact?.JsHash ?? ComputeSha256Hex(content),
-                    artifact is null ? null : BuildSourceMapRelativePath(relativePath),
+                    artifact is null ? null : BuildSourceMapRelativePath(plan.RelativePath),
                     artifact?.SourceMapContent,
                     artifact?.MapHash));
             }
@@ -184,7 +223,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(
                     ModuleGenerationFailed,
                     candidate.Location,
-                    typeName,
+                    plan.TypeName,
                     ex.Message));
             }
         }
@@ -209,6 +248,42 @@ public sealed class ESGenerator : IIncrementalGenerator
                 "Jazor.Generated.ModuleSourceMapCatalog.g.cs",
                 BuildModuleSourceMapCatalogSource(assemblyName, sourceMapModules));
         }
+    }
+
+    private static HashSet<string> ReportDuplicateModuleOutputPaths(
+        SourceProductionContext context,
+        IReadOnlyList<ModuleGenerationPlan> generationPlans)
+    {
+        var duplicateGroups = generationPlans
+            .GroupBy(static plan => plan.RelativePath, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => new DuplicateModulePathGroup(
+                group.Select(static plan => plan.RelativePath)
+                    .OrderBy(static path => path, StringComparer.Ordinal)
+                    .First(),
+                group.OrderBy(static plan => plan.TypeName, StringComparer.Ordinal)
+                    .ThenBy(static plan => plan.RelativePath, StringComparer.Ordinal)
+                    .ToArray()))
+            .OrderBy(static group => group.Path, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static group => group.Path, StringComparer.Ordinal)
+            .ToArray();
+
+        var duplicatePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var group in duplicateGroups)
+        {
+            duplicatePaths.Add(group.Path);
+            var typeNames = string.Join(", ", group.Plans.Select(static plan => plan.TypeName));
+            foreach (var plan in group.Plans)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DuplicateModuleOutputPath,
+                    plan.Candidate.Location,
+                    group.Path,
+                    typeNames));
+            }
+        }
+
+        return duplicatePaths;
     }
 
     private static string BuildModuleCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
@@ -585,6 +660,15 @@ public sealed class ESGenerator : IIncrementalGenerator
         SemanticModel SemanticModel,
         Location Location,
         string? ConfiguredImportPath);
+
+    private sealed record ModuleGenerationPlan(
+        ModuleCandidate Candidate,
+        string TypeName,
+        string RelativePath);
+
+    private sealed record DuplicateModulePathGroup(
+        string Path,
+        IReadOnlyList<ModuleGenerationPlan> Plans);
 
     private sealed record GeneratedModuleInfo(
         string AssemblyName,

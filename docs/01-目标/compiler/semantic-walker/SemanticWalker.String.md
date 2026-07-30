@@ -52,16 +52,17 @@ $"Hello {name}!"
 
 换言之，这一层只保留“表达式插入模板字符串”的核心语义。
 
-### 3. 编译器拆分出来的插值拼接树
+### 3. 自定义 handler 的插值拼接树
 
-`VisitInterpolatedStringAddition(...)` 处理 `IInterpolatedStringAdditionOperation`。
+`IInterpolatedStringAdditionOperation` 只会出现在多个插值字符串转换到自定义 interpolated-string handler 的协议中。它不是普通字符串拼接，也不是标准插值字符串的另一种表示。
 
-Roslyn 在某些情况下会把插值内容表示成二叉拼接树，而不是直接给出最终模板结构。当前实现会递归压平这棵树，再重建：
+当前编译器不支持自定义 interpolated-string handler，因此 `VisitInterpolatedStringAddition(...)` 与 handler creation/append operation 保持同一边界：
 
-- `quasis`
-- `expressions`
+- 抛出 `OperationTransformationException`
+- 保留 `OperationKind.InterpolatedStringAddition`
+- 通过既有报告回调提供源码位置和可操作诊断
 
-最后统一生成 `TemplateLiteral`。
+不能把该 operation 直接转换为 JavaScript `TemplateLiteral`，因为自定义 handler 的构造、条件求值和 `AppendLiteral` / `AppendFormatted` 方法可能携带任意用户语义。
 
 ### 4. 标准插值字符串
 
@@ -131,30 +132,11 @@ $"Hello World"
 
 这说明当前设计并不执着于“源代码写了 `$""` 就必须保留模板字符串外形”，而是优先落成更直接的 JS 结果。
 
-### 4. `IInterpolatedStringAdditionOperation` 会做 raw 转义修正
+### 4. 标准插值与自定义 handler 必须分开
 
-`VisitInterpolatedStringAddition(...)` 内部的 `CookedToRaw(...)` 会显式处理这些字符：
+`VisitInterpolatedString(...)` 负责可直接落成 JavaScript 模板字符串的标准 C# 插值字符串。
 
-- `` ` ``
-- `\`
-- `$`
-- `\r`
-- `\n`
-- `\t`
-
-这是为了保证生成的 `TemplateValue` 同时持有：
-
-- C# 已解释后的 cooked 值
-- JS 模板字符串需要的 raw 值
-
-### 5. `VisitInterpolatedString(...)` 和 `VisitInterpolatedStringAddition(...)` 不是重复实现
-
-两者都生成模板字符串，但入口不同：
-
-- 一个处理标准 `IInterpolatedStringOperation`
-- 一个处理编译器展开后的 addition 树
-
-它们共同服务于“把插值语义稳定落成 JS 模板字符串”，而不是两个相互竞争的分支。
+`VisitInterpolatedStringAddition(...)` 属于自定义 handler conversion，当前显式拒绝。两者虽然都含有插值语法，但运行时合同不同，不能共享模板字符串 lowering。
 
 ## 现状与典型结果
 
@@ -246,6 +228,7 @@ let formatted = `Pi: ${pi}`;
 
 - 插值格式说明符的运行时实现
 - `CultureInfo` / 本地化格式化
+- 自定义 interpolated-string handler creation、addition 和 append 协议
 - 全部 `string` 实例方法和静态方法映射
 
 ## 相关测试

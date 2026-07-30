@@ -686,7 +686,7 @@ public static class StringModule
 	///<summary>Splits a string into substrings based on a specified delimiting character and, optionally, options.</summary>
 	[Jazor(Op.Import ,"string.Split(char, System.StringSplitOptions)")]
 	public static string[] _d8080c573d45b4b4(string instance, Number separator, object options)
-		=> ApplySplitOptions(instance.Split(separator.ToString()), options);
+		=> ApplySplitOptions(instance.Split(separator.ToString(), NumberFn(instance.Length + 1)), options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting character and, optionally, options.        Splits a string into a maximum number of substrings based on the provided character separator, optionally omitting empty substrings from the result.</summary>
 	[Jazor(Op.Import ,"string.Split(char, int, System.StringSplitOptions)")]
@@ -983,7 +983,12 @@ public static class StringModule
 	///<summary>Splits a string into substrings that are based on the provided string separator.</summary>
 	[Jazor(Op.Import ,"string.Split(string, System.StringSplitOptions)")]
 	public static string[] _189761f781df8770(string instance, string? separator, object options)
-		=> ApplySplitOptions(instance.Split(separator), options);
+	{
+		if (separator == null)
+			return ApplySplitOptions([instance], options);
+
+		return ApplySplitOptions(instance.Split(separator, NumberFn(instance.Length + 1)), options);
+	}
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting string and, optionally, options.</summary>
 	[Jazor(Op.Import ,"string.Split(string, int, System.StringSplitOptions)")]
@@ -996,7 +1001,7 @@ public static class StringModule
 			return ApplySplitOptions([instance], options);
 
 		if (string.IsNullOrEmpty(separator))
-			return ApplySplitOptions(instance.Split(separator), options);
+			return ApplySplitOptions([instance], options);
 
 		var trimEntries = false;
 		var removeEmptyEntries = false;

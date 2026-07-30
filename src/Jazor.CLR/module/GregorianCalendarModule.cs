@@ -53,7 +53,7 @@ public static class GregorianCalendarModule
 	private static void ValidateEra(Number era)
 	{
 		EnsureWholeNumber(era, "ArgumentOutOfRangeException: Era must be a whole number.");
-		if (era != CurrentEra && era != _fa491b52106d378d())
+		if (era != CurrentEra && era != 1)
 			throw new Error("ArgumentOutOfRangeException: Era value was not valid.");
 	}
 

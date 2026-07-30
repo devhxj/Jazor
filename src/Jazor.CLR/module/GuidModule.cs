@@ -3,6 +3,7 @@ namespace Jazor.CLR;
 /// <summary>
 /// System.Guid 与 UUID 字符串的映射。
 /// </summary>
+[ECMAScriptModule("System/GuidModule.js")]
 [Jazor(Op.Alias, "System.Guid", "String")]
 public static class GuidModule
 {

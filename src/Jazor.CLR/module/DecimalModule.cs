@@ -169,22 +169,36 @@ public static class DecimalModule
 		return digits;
 	}
 
+	private static Array<object?> PreserveParts(BigInt unscaled, Number scale)
+	{
+		var absolute = unscaled < BigInt.Zero ? -unscaled : unscaled;
+		while (scale > 0
+			&& (scale > MaxFractionDigits || absolute > MaxDecimalUnscaled)
+			&& unscaled % BigIntFn(10) == BigInt.Zero)
+		{
+			unscaled /= BigIntFn(10);
+			scale--;
+			absolute = unscaled < BigInt.Zero ? -unscaled : unscaled;
+		}
+
+		if (scale < 0 || scale > MaxFractionDigits)
+			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
+		if (absolute > MaxDecimalUnscaled)
+			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
+
+		return CreateParts(unscaled, scale);
+	}
+
 	private static Array<object?> NormalizeParts(BigInt unscaled, Number scale)
 	{
-		if (unscaled == BigInt.Zero)
-			return CreateParts(BigInt.Zero, 0);
-
+		var parts = PreserveParts(unscaled, scale);
+		unscaled = GetUnscaled(parts);
+		scale = GetScale(parts);
 		while (scale > 0 && unscaled % BigIntFn(10) == BigInt.Zero)
 		{
 			unscaled /= BigIntFn(10);
 			scale--;
 		}
-
-		if (scale < 0 || scale > MaxFractionDigits)
-			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
-		var absolute = unscaled < BigInt.Zero ? -unscaled : unscaled;
-		if (absolute > MaxDecimalUnscaled)
-			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
 
 		return CreateParts(unscaled, scale);
 	}
@@ -260,13 +274,13 @@ public static class DecimalModule
 		if (negative && unscaled != BigInt.Zero)
 			unscaled = -unscaled;
 
-		return NormalizeParts(unscaled, scale);
+		return PreserveParts(unscaled, scale);
 	}
 
 	private static string NormalizeDecimal(string value)
 	{
 		var parts = ParseDecimal(value);
-		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
+		return FormatNormalizedDecimal(GetUnscaled(parts), GetScale(parts));
 	}
 
 	private static string RemoveAllOccurrences(string value, string token)
@@ -368,8 +382,11 @@ public static class DecimalModule
 		return text;
 	}
 
-	private static string ParseDecimalExternal(string value, Number style, object? provider)
+	private static string ParseDecimalExternal(string? value, Number style, object? provider)
 	{
+		if (value == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
 		var normalized = NormalizeExternalDecimalText(value, style, provider);
 		var parts = ParseDecimal(normalized, HasStyle(style, AllowExponentStyle));
 		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
@@ -377,11 +394,9 @@ public static class DecimalModule
 
 	private static string FormatDecimal(BigInt unscaled, Number scale)
 	{
-		var normalized = NormalizeParts(unscaled, scale);
-		unscaled = GetUnscaled(normalized);
-		scale = GetScale(normalized);
-		if (unscaled == BigInt.Zero)
-			return "0";
+		var preserved = PreserveParts(unscaled, scale);
+		unscaled = GetUnscaled(preserved);
+		scale = GetScale(preserved);
 
 		var negative = unscaled < BigInt.Zero;
 		var absolute = negative ? -unscaled : unscaled;
@@ -397,10 +412,28 @@ public static class DecimalModule
 		return negative ? "-" + text : text;
 	}
 
+	private static string FormatNormalizedDecimal(BigInt unscaled, Number scale)
+	{
+		var normalized = NormalizeParts(unscaled, scale);
+		return FormatDecimal(GetUnscaled(normalized), GetScale(normalized));
+	}
+
+	private static string PreserveDecimal(string value)
+	{
+		var parts = ParseDecimal(value);
+		return FormatDecimal(GetUnscaled(parts), GetScale(parts));
+	}
+
 	private static string FormatDecimalToScale(string value, Number scale)
 	{
 		var parts = ParseDecimal(value);
 		var unscaled = GetUnscaled(parts);
+		var sourceScale = GetScale(parts);
+		if (sourceScale < scale)
+			unscaled *= Pow10(scale - sourceScale);
+		else if (sourceScale > scale)
+			unscaled /= Pow10(sourceScale - scale);
+
 		var negative = unscaled < BigInt.Zero;
 		var absolute = negative ? -unscaled : unscaled;
 		var digits = absolute.ToString()!;
@@ -497,11 +530,11 @@ public static class DecimalModule
 	private static string FormatDecimalWithFormat(string value, string? format, object? provider)
 	{
 		if (format == null || format.Length == 0)
-			return NormalizeDecimal(value);
+			return PreserveDecimal(value);
 
 		var specifier = format[0];
 		if ((specifier == 'G' || specifier == 'g') && format.Length == 1)
-			return NormalizeDecimal(value);
+			return PreserveDecimal(value);
 		if (specifier == 'F' || specifier == 'f')
 		{
 			var precision = ParsePrecision(format, DefaultFixedPrecision);
@@ -527,7 +560,7 @@ public static class DecimalModule
 
 	private static string CreateDecimalFromNumber(Number value)
 	{
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
 
 		return NormalizeDecimal(value.ToString());
@@ -696,7 +729,7 @@ public static class DecimalModule
 		else
 			denominator *= Pow10(-scaleDelta);
 
-		return FormatDecimal(DivideAndRound(numerator, denominator), MaxFractionDigits);
+		return FormatNormalizedDecimal(DivideAndRound(numerator, denominator), MaxFractionDigits);
 	}
 
 	private static string RemainderDecimal(string left, string right)
@@ -774,7 +807,11 @@ public static class DecimalModule
 	}
 
 	private static bool IsIntegerDecimal(string value)
-		=> GetScale(ParseDecimal(value)) == 0;
+	{
+		var parts = ParseDecimal(value);
+		var scale = GetScale(parts);
+		return scale == 0 || GetUnscaled(parts) % Pow10(scale) == BigInt.Zero;
+	}
 
 	private static Number GetStringHashCode(string text)
 	{
@@ -921,8 +958,7 @@ public static class DecimalModule
 		if (value == null)
 			return 1;
 
-		var other = value as string;
-		if (other == null)
+		if (value is not string other)
 			throw new Error("ArgumentException: Object must be of type Decimal.");
 
 		return _ca8a78810233056c(instance, other);
@@ -951,8 +987,7 @@ public static class DecimalModule
 	[Jazor(Op.Import, "override decimal.Equals(object)")]
 	public static bool _8abe47785e51f122(string instance, object? value)
 	{
-		var other = value as string;
-		return other != null && CompareDecimal(instance, other) == 0;
+		return value is string other && CompareDecimal(instance, other) == 0;
 	}
 
 	/// <summary>
@@ -993,7 +1028,7 @@ public static class DecimalModule
 	/// </summary>
 	[Jazor(Op.Import, "override decimal.ToString()")]
 	public static string _65a0e4fe8ccdd829(string instance)
-		=> NormalizeDecimal(instance);
+		=> PreserveDecimal(instance);
 
 	/// <summary>
 	/// C#: instance.ToString(format)
@@ -1319,7 +1354,7 @@ public static class DecimalModule
 	///<summary>Returns the value of the <see cref="T:System.Decimal" /> operand (the sign of the operand is unchanged).</summary>
 	[Jazor(Op.Import ,"static decimal.operator +(decimal)")]
 	public static string _53fb6447e19a3943(string d)
-		=> NormalizeDecimal(d);
+		=> PreserveDecimal(d);
 
 	///<summary>Negates the value of the specified <see cref="T:System.Decimal" /> operand.</summary>
 	[Jazor(Op.Import ,"static decimal.operator -(decimal)")]
@@ -1407,11 +1442,13 @@ public static class DecimalModule
 	[Jazor(Op.Import ,"static decimal.Clamp(decimal, decimal, decimal)")]
 	public static string _e886400fbfdbdaaa(string value, string min, string max)
 	{
+		if (CompareDecimal(min, max) > 0)
+			throw new Error("ArgumentException: min must be less than or equal to max.");
 		if (CompareDecimal(value, min) < 0)
-			return NormalizeDecimal(min);
+			return PreserveDecimal(min);
 		if (CompareDecimal(value, max) > 0)
-			return NormalizeDecimal(max);
-		return NormalizeDecimal(value);
+			return PreserveDecimal(max);
+		return PreserveDecimal(value);
 	}
 
 	///<summary>Copies the sign of a value to the sign of another value.</summary>
@@ -1425,12 +1462,12 @@ public static class DecimalModule
 	///<summary>Compares two values to compute which is greater.</summary>
 	[Jazor(Op.Import ,"static decimal.Max(decimal, decimal)")]
 	public static string _872018e11335480a(string x, string y)
-		=> CompareDecimal(x, y) >= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+		=> CompareDecimal(x, y) >= 0 ? PreserveDecimal(x) : PreserveDecimal(y);
 
 	///<summary>Compares two values to compute which is lesser.</summary>
 	[Jazor(Op.Import ,"static decimal.Min(decimal, decimal)")]
 	public static string _ceb21f954af742e7(string x, string y)
-		=> CompareDecimal(x, y) <= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+		=> CompareDecimal(x, y) < 0 ? PreserveDecimal(x) : PreserveDecimal(y);
 
 	///<summary>Computes the sign of a value.</summary>
 	[Jazor(Op.Import ,"static decimal.Sign(decimal)")]
@@ -1471,10 +1508,7 @@ public static class DecimalModule
 	///<summary>Determines if a value represents an even integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsEvenInteger(decimal)")]
 	public static bool _9d28fa751d24ce2e(string value)
-	{
-		var parts = ParseDecimal(value);
-		return GetScale(parts) == 0 && GetUnscaled(parts) % BigIntFn(2) == BigInt.Zero;
-	}
+		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntFn(2) == BigInt.Zero;
 
 	///<summary>Determines if a value represents an integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsInteger(decimal)")]
@@ -1489,10 +1523,7 @@ public static class DecimalModule
 	///<summary>Determines if a value represents an odd integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsOddInteger(decimal)")]
 	public static bool _38587400d9c44cb5(string value)
-	{
-		var parts = ParseDecimal(value);
-		return GetScale(parts) == 0 && GetUnscaled(parts) % BigIntFn(2) != BigInt.Zero;
-	}
+		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntFn(2) != BigInt.Zero;
 
 	///<summary>Determines if a value is positive.</summary>
 	[Jazor(Op.Import ,"static decimal.IsPositive(decimal)")]
@@ -1507,10 +1538,10 @@ public static class DecimalModule
 		var ay = AbsDecimal(y);
 		var comparison = CompareDecimal(ax, ay);
 		if (comparison > 0)
-			return NormalizeDecimal(x);
+			return PreserveDecimal(x);
 		if (comparison < 0)
-			return NormalizeDecimal(y);
-		return CompareDecimal(x, y) >= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+			return PreserveDecimal(y);
+		return CompareDecimal(x, y) >= 0 ? PreserveDecimal(x) : PreserveDecimal(y);
 	}
 
 	///<summary>Compares two values to compute which is lesser.</summary>
@@ -1521,10 +1552,10 @@ public static class DecimalModule
 		var ay = AbsDecimal(y);
 		var comparison = CompareDecimal(ax, ay);
 		if (comparison < 0)
-			return NormalizeDecimal(x);
+			return PreserveDecimal(x);
 		if (comparison > 0)
-			return NormalizeDecimal(y);
-		return CompareDecimal(x, y) <= 0 ? NormalizeDecimal(x) : NormalizeDecimal(y);
+			return PreserveDecimal(y);
+		return CompareDecimal(x, y) <= 0 ? PreserveDecimal(x) : PreserveDecimal(y);
 	}
 
 	///<summary>Tries to parse a string into a value.</summary>

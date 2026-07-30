@@ -1,3 +1,5 @@
+using Acornima;
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -661,6 +663,147 @@ public sealed class SemanticWalkerOrdinaryTest
 
   }
 
+  [TestMethod]
+  public void Visit_Conversion_AsString_EmitsRuntimeTypeGuard()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    string text = value as string;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let text = typeof value === ""string"" ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsClass_EmitsNominalRuntimeTypeGuard()
+  {
+    var block = GetBlockOperation(@"
+            [ECMAScript]
+            sealed class Customer { }
+
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    Customer customer = value as Customer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let customer = value instanceof Customer ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsClass_SideEffectingOperandEvaluatesOnce()
+  {
+    var block = GetBlockOperation(@"
+            [ECMAScript]
+            sealed class Customer { }
+
+            class TestClass
+            {
+                object GetValue() => new Customer();
+
+                void TestMethod()
+                {
+                    Customer customer = GetValue() as Customer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let v$0;
+  let customer = (v$0 = this.GetValue(), v$0 instanceof Customer ? v$0 : null);
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsNullableInt_UsesUnderlyingRuntimeType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    int? number = value as int?;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let number = typeof value === ""number"" ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsNullableDateTime_UsesInferredCarrierGuard()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    DateTime? dateTime = value as DateTime?;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let dateTime = value instanceof JDateTime ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsImplicitBaseType_RemainsPassThrough()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    object value = text as object;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = text;
+}", script);
+  }
+
   /// <summary>
   /// 测试 VisitInvocation - 实例方法调用操作
   /// </summary>
@@ -741,6 +884,32 @@ public sealed class SemanticWalkerOrdinaryTest
   let length = str?.length;
 }", script);
 
+  }
+
+  [TestMethod]
+  public void Visit_VariableDeclaratorWithConditionalAccessSequence_ParenthesizesInitializer()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(string? value)
+                {
+                    var normalized = value?.Trim()?.ToLower();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    var body = Assert.IsInstanceOfType<BlockStatement>(node);
+    var declaration = Assert.IsInstanceOfType<VariableDeclaration>(body.Body.Last());
+    var initializer = declaration.Declarations[0].Init;
+    Assert.IsInstanceOfType<SequenceExpression>(initializer);
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let normalized = (");
+    _ = new Parser().ParseScript(script);
   }
 
   /// <summary>
@@ -3148,6 +3317,100 @@ public sealed class SemanticWalkerOrdinaryTest
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_Conversion_CharArithmetic_PreservesUtf16CodeUnitSemantics()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(char value)
+                {
+                    var shifted = value + 32;
+                    var lower = (char)shifted;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let shifted = value.charCodeAt(0) + 32;
+  let lower = String.fromCharCode(shifted);
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_CharToInt64_ConvertsCodeUnitBeforeBigInt()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(char value)
+                {
+                    long codeUnit = value;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let codeUnit = BigInt(value.charCodeAt(0));
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_Int64ToChar_ConvertsBigIntThroughNumber()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(long codeUnit)
+                {
+                    var value = (char)codeUnit;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let value = String.fromCharCode(Number(codeUnit));
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_CheckedNumericToChar_ReportsUnsupportedCoercion()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(int codeUnit)
+                {
+                    var value = checked((char)codeUnit);
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    Assert.AreEqual(OperationKind.Conversion, exception.Kind);
+    StringAssert.Contains(exception.Message ?? string.Empty, "Checked numeric-to-char conversion is not supported");
+  }
+
   #endregion
 
   #region 一元运算符额外测试
@@ -4954,7 +5217,83 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "value ?? null");
+    StringAssert.Contains(script, "value ?? 0");
+  }
+
+  [TestMethod]
+  [DataRow("bool?", "false")]
+  [DataRow("char?", "\"\\0\"")]
+  [DataRow("long?", "0n")]
+  public void Visit_Nullable_GetValueOrDefault_UsesUnderlyingValueTypeDefault(
+    string nullableType,
+    string expectedDefault)
+  {
+    var block = GetBlockOperation($$"""
+            class TestClass
+            {
+                void TestMethod({{nullableType}} value)
+                {
+                    var actual = value.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, $"value ?? {expectedDefault}");
+  }
+
+  [TestMethod]
+  public void Visit_NullableEnum_GetValueOrDefault_UsesUnderlyingZeroValue()
+  {
+    var block = GetBlockOperation("""
+            enum ReleaseState
+            {
+                Pending,
+                Running,
+                Completed
+            }
+
+            class TestClass
+            {
+                void TestMethod(ReleaseState? state)
+                {
+                    var actual = state.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "state ?? 0");
+  }
+
+  [TestMethod]
+  public void Visit_GenericNullable_GetValueOrDefault_ReportsErasedDefaultLimitation()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod<T>(T? value) where T : struct
+                {
+                    var actual = value.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    Assert.AreEqual(OperationKind.Invocation, exception.Kind);
+    StringAssert.Contains(
+      exception.Message ?? string.Empty,
+      "default(T) is not supported because the runtime type parameter may be a value type");
   }
 
   [TestMethod]

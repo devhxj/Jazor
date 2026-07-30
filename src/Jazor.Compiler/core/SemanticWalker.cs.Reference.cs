@@ -115,29 +115,7 @@ public partial class SemanticWalker
 	}
 
 	private static string? GetModuleImportPath(ITypeSymbol symbol)
-	{
-		foreach (var attribute in symbol.GetAttributes())
-		{
-			var attributeName = attribute.AttributeClass?.ToDisplayString();
-			if (attributeName is not ("ECMAScript.ECMAScriptModuleAttribute" or "ECMAScript.ECMAScriptAttribute"))
-				continue;
-
-			if (attribute.ConstructorArguments.Length != 1)
-				continue;
-
-			var importArgument = attribute.ConstructorArguments[0];
-			if (importArgument.Kind == TypedConstantKind.Array ||
-				importArgument.Value is not string importPath ||
-				string.IsNullOrWhiteSpace(importPath))
-			{
-				continue;
-			}
-
-			return ECMAScriptModulePath.NormalizeImportSpecifier(importPath);
-		}
-
-		return null;
-	}
+		=> Util.GetECMAScriptModuleImportPath(symbol);
 
 	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
 	{
@@ -267,11 +245,11 @@ public partial class SemanticWalker
 		}
 
 		var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (displayName is "System.DateTime" or "System.DateOnly" or "System.DateTimeOffset" or "System.TimeOnly" or "System.TimeSpan")
+		if (TryGetWhiteListRuntimeValueCarrier(typeSymbol, out _))
 		{
 			return HandleTransformationFailure<Expression>(
 				operation,
-				$"Type '{displayName}' does not expose a stable runtime type token because it lowers to a shaped carrier rather than a single JavaScript constructor.");
+				$"Type '{displayName}' does not expose a stable runtime type token because its internal value carrier does not represent the CLR type and its mapped members.");
 		}
 
 		var (mapper, typeName) = GetMapperType(typeSymbol);
@@ -327,10 +305,7 @@ public partial class SemanticWalker
 		if (targetSyntax is null)
 			return null;
 
-		var target = TryBuildStaticHostExpressionFromSyntax(targetSyntax);
-		if (target is null)
-			target = ConvertFromSyntaxNode(targetSyntax) as Expression;
-		return target;
+		return TryBuildStaticHostExpressionFromSyntax(targetSyntax);
 	}
 
 	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
@@ -2463,6 +2438,17 @@ private bool TryExpandEcmascriptParamsArgument(
 		if (instance is not null && IsErasedUnionProjectionProperty(operation.Property))
 			return WithOriginIfMissing(instance, operation);
 
+		if (operation.Property.IsIndexer &&
+			operation.Property.Parameters.Length == 1 &&
+			IsSystemRangeType(operation.Property.Parameters[0].Type) &&
+			operation.Arguments.Length == 1 &&
+			TryGetRangeArgument(operation.Arguments[0].Value, out _))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Range-based indexer '{operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in JavaScript conversion. Expose an int-based slice member or configure a whitelist mapping.");
+		}
+
 		var arguments = new List<Expression>(operation.Arguments.Length);
 		foreach (var propertyArgument in operation.Arguments)
 		{
@@ -2747,7 +2733,7 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var refParas = new List<Expression>();
+		var refParas = new List<Expression?>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
 		// 处理方法调用的参数
@@ -2779,7 +2765,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
 			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-				refParas.Add(right);
+				refParas.Add(arg.Value is IDiscardOperation ? null : right);
 
 			// 当作普通参数传入
 			arguments.Add(right);
@@ -2801,7 +2787,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			invocationOperation: operation);
 		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
 
-		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression> refs, in SenseArgument ctx)
+		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression?> refs, in SenseArgument ctx)
 		{
 			var expressions = new List<Expression>();
 			if (refs.Count > 0)
@@ -2814,10 +2800,13 @@ private bool TryExpandEcmascriptParamsArgument(
 				expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
 				for (var i = 0; i < refs.Count; i++)
 				{
+					if (refs[i] is null)
+						continue;
+
 					var index = hasReturns ? i + 1 : i;
 					var indexer = new NumericLiteral(index, index.ToString());
 					var member = new MemberExpression(tempId, indexer, computed: true, optional: false);
-					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i], member);
+					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i]!, member);
 					expressions.Add(assignExpr);
 				}
 				// 最后如果有返回调用结果

@@ -101,20 +101,22 @@ public static class UInt64Module
 			throw new Error("ArgumentNullException: String cannot be null.");
 
 		var trimmed = s.Trim();
+		BigInt result;
 		try
 		{
-			var result = BigIntFn(trimmed);
-			// Check ulong range: 0 to 18446744073709551615
-			var minValue = BigIntFn("0");
-			var maxValue = BigIntFn("18446744073709551615");
-			if (result < minValue || result > maxValue)
-				throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
-			return result;
+			result = BigIntFn(trimmed);
 		}
 		catch
 		{
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt64.");
 		}
+
+		// 仅转换失败属于 FormatException；无符号范围验证必须保留 OverflowException。
+		var minValue = BigIntFn("0");
+		var maxValue = BigIntFn("18446744073709551615");
+		if (result < minValue || result > maxValue)
+			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
+		return result;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit unsigned integer equivalent.</summary>

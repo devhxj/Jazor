@@ -56,12 +56,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         options?.Profile ?? AstConverterProfile.Standard);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
+    private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
+    private HashSet<string>? _moduleDeclaredBindings;
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
     private IReadOnlyDictionary<ISymbol, string> ModuleDeclaredNames => _declaredNameOverrides ?? _moduleNamePlan.DeclaredNames;
 
     private HashSet<string> ReservedImportNames => _moduleNamePlan.ReservedImportNames;
+
+    private HashSet<string> ModuleDeclaredBindings
+        => _moduleDeclaredBindings ??= new HashSet<string>(ModuleDeclaredNames.Values, System.StringComparer.Ordinal);
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -171,6 +176,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Where(specifier => ShouldRetainImportSpecifier(specifier, referencedIdentifiers))
                 .ToArray();
 
+            if (uniqueSpecifiers.Length > 0 &&
+                string.Equals(
+                    ECMAScriptModulePath.NormalizeImportSpecifier(pair.Key),
+                    _currentModuleImportPath,
+                    System.StringComparison.Ordinal))
+            {
+                var importedNames = string.Join(
+                    ", ",
+                    uniqueSpecifiers.Select(GetImportedSpecifierName));
+                throw new NotSupportedException(
+                    $"Import '{importedNames}' resolves to the current module '{_currentModuleImportPath}', " +
+                    "but that module does not declare a matching local binding.");
+            }
+
             foreach (var declaration in ImportDeclarationFactory.Create(
                          pair.Key,
                          uniqueSpecifiers))
@@ -192,6 +211,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             ImportDefaultSpecifier @default => referencedIdentifiers.Contains(@default.Local.Name),
             ImportNamespaceSpecifier @namespace => referencedIdentifiers.Contains(@namespace.Local.Name),
             _ => true
+        };
+
+    private static string GetImportedSpecifierName(ImportDeclarationSpecifier specifier)
+        => specifier switch
+        {
+            ImportSpecifier named when named.Imported is Identifier identifier => identifier.Name,
+            ImportSpecifier named when named.Imported is StringLiteral literal => literal.Value,
+            ImportDefaultSpecifier => "default",
+            ImportNamespaceSpecifier => "*",
+            _ => specifier.Local.Name
         };
 
     private void MergeImports(in SenseArgument argument)
@@ -222,7 +251,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// </summary>
     private SenseArgument CreateImportAwareArgument(Sense sense)
         => new SenseArgument(sense, UseImportAliases: true)
-            .WithImportContext(_importBindings, _importLocalBindings, ReservedImportNames);
+            .WithImportContext(
+                _importBindings,
+                _importLocalBindings,
+                ReservedImportNames,
+                _currentModuleImportPath,
+                ModuleDeclaredBindings);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree
@@ -397,7 +431,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
 
         if (refParas.Count > 0)
-            body = ApplyRefOutReturnProtocol(body, refParas, hasReturn);
+            body = RefOutReturnProtocol.Apply(body, refParas, hasReturn);
 
         var localName = GetModuleDeclaredName(symbol);
         var identifier = new Identifier(localName);
@@ -539,7 +573,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static ExportNamedDeclaration CreateNamedExport(string localName, string exportName)
         => new ExportNamedDeclaration(
             null!,
-            NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier(exportName))]),
+            NodeList.From([
+                new ExportSpecifier(
+                    new Identifier(localName),
+                    JavaScriptAstFactory.CreateModuleExportName(exportName))
+            ]),
             null,
             NodeList.From<ImportAttribute>([]));
 
@@ -1460,48 +1498,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return statements;
     }
 
-    private static FunctionBody ApplyRefOutReturnProtocol(FunctionBody body, IReadOnlyList<Expression> refParas, bool hasReturn)
-    {
-        var returnExpr = new ArrayExpression(NodeList.From<Expression?>(BuildReturnElements(null, refParas, hasReturn)));
-        var rewriter = new RefOutReturnRewriter(refParas, hasReturn);
-        var rewritten = (FunctionBody)(rewriter.Visit(body) ?? body);
-        if (!hasReturn)
-        {
-            var statements = rewritten.Body.ToList();
-            statements.Add(new ReturnStatement(returnExpr));
-            rewritten = new FunctionBody(NodeList.From(statements), rewritten.Strict);
-        }
-
-        return rewritten;
-
-        static List<Expression> BuildReturnElements(Expression? returnValue, IReadOnlyList<Expression> refs, bool hasReturnValue)
-        {
-            var items = new List<Expression>();
-            if (hasReturnValue)
-                items.Add(returnValue ?? new Identifier("undefined"));
-            items.AddRange(refs);
-            return items;
-        }
-    }
-
-    private sealed class RefOutReturnRewriter(IReadOnlyList<Expression> refParas, bool hasReturn) : AstRewriter
-    {
-        public bool HasReturnStatement { get; private set; }
-
-        protected override object? VisitReturnStatement(ReturnStatement node)
-        {
-            HasReturnStatement = true;
-            var elements = new List<Expression>();
-            if (hasReturn)
-                elements.Add(node.Argument ?? new Identifier("undefined"));
-            elements.AddRange(refParas);
-            return new ReturnStatement(new ArrayExpression(NodeList.From<Expression?>(elements)));
-        }
-
-        protected override object VisitFunctionExpression(FunctionExpression node) => node;
-        protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
-    }
-
     private static Expression CreateLiteralExpression(object? value)
     {
         if (value is not null && TryCreateSpecialLiteralExpression(value, out var special))
@@ -1513,17 +1509,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             bool b => new BooleanLiteral(b, b.ToString().ToLowerInvariant()),
             char c => JavaScriptAstFactory.CreateStringLiteral(c.ToString()),
             string s => JavaScriptAstFactory.CreateStringLiteral(s),
-            sbyte sb => new NumericLiteral(sb, sb.ToString(CultureInfo.InvariantCulture)),
-            byte b => new NumericLiteral(b, b.ToString(CultureInfo.InvariantCulture)),
-            short s => new NumericLiteral(s, s.ToString(CultureInfo.InvariantCulture)),
-            ushort us => new NumericLiteral(us, us.ToString(CultureInfo.InvariantCulture)),
-            int i => new NumericLiteral(i, i.ToString(CultureInfo.InvariantCulture)),
-            uint ui => new NumericLiteral(ui, ui.ToString(CultureInfo.InvariantCulture)),
-            long l => new BigIntLiteral(new BigInteger(l), $"{l.ToString(CultureInfo.InvariantCulture)}n"),
-            ulong ul => new BigIntLiteral(new BigInteger(ul), $"{ul.ToString(CultureInfo.InvariantCulture)}n"),
-            double d => new NumericLiteral(d, d.ToString("R", CultureInfo.InvariantCulture)),
-            float f => new NumericLiteral(f, f.ToString("R", CultureInfo.InvariantCulture)),
-            decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
+            sbyte sb => JavaScriptAstFactory.CreateNumericExpression(sb, sb.ToString(CultureInfo.InvariantCulture)),
+            byte b => JavaScriptAstFactory.CreateNumericExpression(b, b.ToString(CultureInfo.InvariantCulture)),
+            short s => JavaScriptAstFactory.CreateNumericExpression(s, s.ToString(CultureInfo.InvariantCulture)),
+            ushort us => JavaScriptAstFactory.CreateNumericExpression(us, us.ToString(CultureInfo.InvariantCulture)),
+            int i => JavaScriptAstFactory.CreateNumericExpression(i, i.ToString(CultureInfo.InvariantCulture)),
+            uint ui => JavaScriptAstFactory.CreateNumericExpression(ui, ui.ToString(CultureInfo.InvariantCulture)),
+            long l => JavaScriptAstFactory.CreateBigIntExpression(new BigInteger(l), $"{l.ToString(CultureInfo.InvariantCulture)}n"),
+            ulong ul => JavaScriptAstFactory.CreateBigIntExpression(new BigInteger(ul), $"{ul.ToString(CultureInfo.InvariantCulture)}n"),
+            double d => JavaScriptAstFactory.CreateNumericExpression(d, d.ToString("R", CultureInfo.InvariantCulture)),
+            float f => JavaScriptAstFactory.CreateNumericExpression(f, f.ToString("R", CultureInfo.InvariantCulture)),
+            decimal dec => JavaScriptAstFactory.CreateNumericExpression(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
             _ => throw new NotSupportedException($"Unsupported literal type: {value.GetType()}")
         };
     }
@@ -1536,7 +1532,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var raw = value is IFormattable formattable
                 ? formattable.ToString("R", CultureInfo.InvariantCulture)
                 : number.ToString("R", CultureInfo.InvariantCulture);
-            expression = new NumericLiteral(number, raw);
+            expression = JavaScriptAstFactory.CreateNumericExpression(number, raw);
             return true;
         }
 
@@ -1595,7 +1591,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private void ValidateModuleExportPolicy()
     {
-        foreach (var member in _classSymbol.GetMembers())
+        var exportedNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
+        foreach (var member in EnumerateModuleMembersForConversion())
         {
             if (!ShouldIncludeModuleMember(member))
                 continue;
@@ -1603,19 +1600,21 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    ValidateModuleExportPolicy(field);
+                    ValidateModuleExportPolicy(field, exportedNames);
                     break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    ValidateModuleExportPolicy(method);
+                    ValidateModuleExportPolicy(method, exportedNames);
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    ValidateModuleExportPolicy(type);
+                    ValidateModuleExportPolicy(type, exportedNames);
                     break;
             }
         }
     }
 
-    private void ValidateModuleExportPolicy(ISymbol symbol)
+    private void ValidateModuleExportPolicy(
+        ISymbol symbol,
+        Dictionary<string, ISymbol> exportedNames)
     {
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             return;
@@ -1626,6 +1625,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException(
                 $"Jazor module export does not support default export. Member '{symbol.ToDisplayString(Format.NameFormat)}' resolves to export name 'default'. Use a named export instead.");
         }
+
+        if (exportedNames.TryGetValue(exportName, out var existingSymbol))
+        {
+            throw new NotSupportedException(
+                $"Jazor module export does not support duplicate named export '{exportName}'. " +
+                $"Members '{existingSymbol.ToDisplayString(Format.NameFormat)}' and " +
+                $"'{symbol.ToDisplayString(Format.NameFormat)}' resolve to the same export name. " +
+                "Use unique named exports instead.");
+        }
+
+        exportedNames.Add(exportName, symbol);
     }
 
     private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol, AstConverterProfile profile)
@@ -1701,11 +1711,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         AstConverterProfile profile)
     {
         var preferredName = GetPreferredModuleDeclaredName(symbol, profile);
-        if (!localNames.Contains(preferredName) && usedDeclaredNames.Add(preferredName))
+        if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(preferredName) &&
+            !localNames.Contains(preferredName) &&
+            usedDeclaredNames.Add(preferredName))
+        {
             return preferredName;
+        }
 
         var sourceName = GetSourceDeclaredNameCandidate(symbol);
-        if (!string.IsNullOrEmpty(sourceName) &&
+        if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(sourceName) &&
             !localNames.Contains(sourceName!) &&
             usedDeclaredNames.Add(sourceName!))
         {

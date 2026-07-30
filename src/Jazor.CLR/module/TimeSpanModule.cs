@@ -77,10 +77,10 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan CreateFromTruncatedTicks(Number value)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 		if (value > MaxTimeSpanTicksAsDouble || value < MinTimeSpanTicksAsDouble)
@@ -93,10 +93,10 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan CreateFromRoundedTicks(Number value)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 		var rounded = RoundToEven(value);
@@ -186,7 +186,7 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan MultiplyByDouble(RuntimeModule.JTimeSpan instance, Number factor)
 	{
-		if (DoubleModule._24e14b276e0c7e30(factor) || !DoubleModule._aed2927097617729(factor))
+		if (DoubleModule.IsNaNCore(factor) || !DoubleModule.IsFiniteCore(factor))
 			return CreateFromRoundedTicks(NumberFn(instance.Ticks) * factor);
 
 		var ratio = GetFiniteDoubleRatio(factor);
@@ -195,7 +195,7 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan DivideByDouble(RuntimeModule.JTimeSpan instance, Number divisor)
 	{
-		if (DoubleModule._24e14b276e0c7e30(divisor) || !DoubleModule._aed2927097617729(divisor) || divisor == 0d)
+		if (DoubleModule.IsNaNCore(divisor) || !DoubleModule.IsFiniteCore(divisor) || divisor == 0d)
 			return CreateFromRoundedTicks(NumberFn(instance.Ticks) / divisor);
 
 		var ratio = GetFiniteDoubleRatio(divisor);
@@ -301,6 +301,56 @@ public static class TimeSpanModule
 			+ fractionTicks;
 
 		return new RuntimeModule.JTimeSpan(negative ? -totalTicks : totalTicks);
+	}
+
+	private static string FormatCore(RuntimeModule.JTimeSpan instance, string? format)
+	{
+		if (format == null || format.Length == 0 || format == "c")
+			return instance.ToString();
+
+		if (format != "g" && format != "G")
+			return instance.ToString();
+
+		var negative = instance.Ticks < BigInt.Zero;
+		var absolute = negative ? -instance.Ticks : instance.Ticks;
+		var days = absolute / TicksPerDay;
+		var hours = NumberFn((absolute / TicksPerHour) % BigIntFn(24));
+		var minutes = NumberFn((absolute / TicksPerMinute) % BigIntFn(60));
+		var seconds = NumberFn((absolute / TicksPerSecond) % BigIntFn(60));
+		var fraction = absolute % TicksPerSecond;
+
+		// g 与 G 的天/小时宽度和小数保留规则不同；均直接从 ticks 计算以避免 carrier 状态分叉。
+		var text = negative ? "-" : "";
+		if (format == "G")
+		{
+			return text
+				+ days.ToString()
+				+ ":"
+				+ RuntimeModule.Pad2(hours)
+				+ ":"
+				+ RuntimeModule.Pad2(minutes)
+				+ ":"
+				+ RuntimeModule.Pad2(seconds)
+				+ "."
+				+ RuntimeModule.Pad7(fraction);
+		}
+
+		if (days > BigInt.Zero)
+			text += days.ToString() + ":";
+
+		text += hours.ToString()
+			+ ":"
+			+ RuntimeModule.Pad2(minutes)
+			+ ":"
+			+ RuntimeModule.Pad2(seconds);
+		if (fraction == BigInt.Zero)
+			return text;
+
+		var fractionText = RuntimeModule.Pad7(fraction);
+		while (fractionText.EndsWith("0"))
+			fractionText = fractionText.Substring(0, fractionText.Length - 1);
+
+		return text + "." + fractionText;
 	}
 
 	//System.TimeSpan.NanosecondsPerTick = 100;
@@ -445,8 +495,8 @@ public static class TimeSpanModule
 	[Jazor(Op.Import, "System.TimeSpan.Microseconds.get")]
 	public static Number _b5ff892bced87c7a(RuntimeModule.JTimeSpan instance)
 	{
-		// TicksPerMicrosecond = 10, MicrosecondsPerSecond = 1000000
-		return NumberFn((instance.Ticks / BigIntFn(10)) % BigIntFn(1000000));
+		// Microseconds 是毫秒内分量，不是秒内累计微秒。
+		return NumberFn((instance.Ticks / BigIntFn(10)) % BigIntFn(1000));
 	}
 
 	/// <summary>
@@ -456,8 +506,8 @@ public static class TimeSpanModule
 	[Jazor(Op.Import, "System.TimeSpan.Nanoseconds.get")]
 	public static Number _95472c42904823fa(RuntimeModule.JTimeSpan instance)
 	{
-		// NanosecondsPerTick = 100, NanosecondsPerSecond = 1000000000
-		return NumberFn((instance.Ticks * BigIntFn(100)) % BigIntFn(1000000000));
+		// 每 tick 为 100ns，Nanoseconds 是微秒内分量。
+		return NumberFn((instance.Ticks * BigIntFn(100)) % BigIntFn(1000));
 	}
 
 	/// <summary>
@@ -868,12 +918,12 @@ public static class TimeSpanModule
 	///<summary>Converts the value of the current <see cref="T:System.TimeSpan" /> object to its equivalent string representation by using the specified format.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.ToString(string)")]
 	public static string _95c4c385ed7aa2da(RuntimeModule.JTimeSpan instance, string? format)
-		=> instance.ToString();
+		=> FormatCore(instance, format);
 
 	///<summary>Converts the value of the current <see cref="T:System.TimeSpan" /> object to its equivalent string representation by using the specified format and culture-specific formatting information.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.ToString(string, System.IFormatProvider)")]
 	public static string _49fbba4d75df94f7(RuntimeModule.JTimeSpan instance, string? format, Intl.NumberFormat? formatProvider)
-		=> instance.ToString();
+		=> FormatCore(instance, format);
 
 	///<summary>Tries to format the value of the current timespan number instance into the provided span of characters.</summary>
 	[Jazor(Op.Discard ,"System.TimeSpan.TryFormat(System.Span<char>, out int, System.ReadOnlySpan<char>, System.IFormatProvider)")]

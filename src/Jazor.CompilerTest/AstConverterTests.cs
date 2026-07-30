@@ -18,6 +18,12 @@ public sealed class AstConverterTests
     private static void AssertScriptEqual(string expected, string? actual)
         => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
+    private static void AssertContainsCount(string actual, string expected, int count)
+    {
+        var actualCount = actual.Split([expected], StringSplitOptions.None).Length - 1;
+        Assert.AreEqual(count, actualCount, $"Expected '{expected}' to appear {count} time(s), but found {actualCount}.{Environment.NewLine}{actual}");
+    }
+
     private static string PropertyBackingFieldName(INamedTypeSymbol containingType, string propertyName)
     {
         var property = containingType.GetMembers(propertyName).OfType<IPropertySymbol>().Single();
@@ -2792,8 +2798,8 @@ export function get_P7() {
   return _aa3181446f60dc6e;
 }
 export function set_P7(value) {
-  let __cacc$db228d45b7e701d8a374d195;
-  _aa3181446f60dc6e = (__cacc$db228d45b7e701d8a374d195 = value, __cacc$db228d45b7e701d8a374d195 == null ? undefined : __cacc$db228d45b7e701d8a374d195.trim());
+  let __cacc$7089c50d965b6db792c99228;
+  _aa3181446f60dc6e = (__cacc$7089c50d965b6db792c99228 = value, __cacc$7089c50d965b6db792c99228 == null ? undefined : __cacc$7089c50d965b6db792c99228.trim());
 }
 export function get_P8() {
   return B;
@@ -15858,6 +15864,193 @@ export function create() {{
     }
 
     [TestMethod]
+    public async Task Convert_CrossModuleMemberClassSameArityConstructors_EmitBoundSelectors()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public sealed class JValue
+                    {
+                        public JValue(int value) { }
+                        public JValue(string value) { }
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static RuntimeModule.JValue CreateInt()
+                        => new RuntimeModule.JValue(1);
+
+                    public static RuntimeModule.JValue CreateString()
+                        => new RuntimeModule.JValue("text");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
+        var root = semanticModel.SyntaxTree.GetRoot();
+        var consumer = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "ConsumerModule")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var valueType = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "JValue")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var intSelector = ConstructorHelperName(valueType, "int");
+        var stringSelector = ConstructorHelperName(valueType, "string");
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { JValue } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, $"return new JValue(\"{intSelector}\", 1);");
+        StringAssert.Contains(script, $"return new JValue(\"{stringSelector}\", \"text\");");
+    }
+
+    [TestMethod]
+    public async Task Convert_CrossModuleMemberClassTryCast_ImportsRuntimeTypeGuard()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public sealed class JDateTime
+                    {
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/DateTimeModule.js")]
+                public static class DateTimeModule
+                {
+                    public static RuntimeModule.JDateTime TryConvert(object value)
+                        => value as RuntimeModule.JDateTime;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "DateTimeModule");
+        var root = semanticModel.SyntaxTree.GetRoot();
+        var moduleType = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "DateTimeModule")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(moduleType, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { JDateTime } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, "return value instanceof JDateTime ? value : null;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClrCarrierTypeChecks_EmitStableDedupedImportsIncludingSharedCarrier()
+    {
+        var code = """
+            using System;
+            using System.Globalization;
+
+            public static class TestClass
+            {
+                public static bool IsDateTime(object value) => value is DateTime;
+
+                public static bool IsDateTimeAgain(object value) => value is DateTime;
+
+                public static bool IsCalendar(object value) => value is Calendar;
+
+                public static bool IsGregorianCalendar(object value) => value is GregorianCalendar;
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(module);
+        Assert.IsNotNull(script);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        Assert.AreEqual("System/RuntimeModule.js", ((StringLiteral)import.Source).Value);
+        var importedNames = import.Specifiers
+            .OfType<ImportSpecifier>()
+            .Select(static specifier => ((Identifier)specifier.Imported).Name)
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "JDateTime", "JGregorianCalendar" }, importedNames);
+        AssertContainsCount(script, "value instanceof JDateTime", 2);
+        AssertContainsCount(script, "value instanceof JGregorianCalendar", 2);
+        Assert.IsFalse(script.Contains("value.date", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("value.kind", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("value.items", StringComparison.Ordinal), script);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClrCarrierTypeCheck_WhenCarrierNameIsShadowed_UsesStableImportAlias()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static bool IsDateTime(object value)
+                {
+                    var JDateTime = 1;
+                    return JDateTime > 0 && value is DateTime;
+                }
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        var carrierBinding = ImportBindingName("System/RuntimeModule.js", "JDateTime");
+        StringAssert.Contains(script, $"import {{ JDateTime as {carrierBinding} }} from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, $"value instanceof {carrierBinding}");
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithEqualityComparerConcreteAndInterface_EmitsStableDedupedImports()
     {
         var code = """
@@ -16009,6 +16202,115 @@ export function create() {{
   return { value: 1 } === { value: 1 };
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithRepeatedGuidCalls_EmitsOneGuidModuleImportWithUniqueSpecifiers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string ParseCompact(string input)
+                    => Guid.Parse(input).ToString("N");
+
+                public static Guid ParseAgain(string input)
+                    => Guid.Parse(input);
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+
+        Assert.IsNotNull(module);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        Assert.AreEqual("System/GuidModule.js", ((StringLiteral)import.Source).Value);
+        var importedNames = import.Specifiers
+            .OfType<ImportSpecifier>()
+            .Select(static specifier => ((Identifier)specifier.Imported).Name)
+            .ToArray();
+        Assert.HasCount(2, importedNames);
+        Assert.HasCount(importedNames.Length, importedNames.Distinct(StringComparer.Ordinal));
+        _ = new Acornima.Parser().ParseModule(module.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public async Task Convert_CurrentModuleImportTarget_ReusesDeclaredLocalBinding()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("System/StringModule.js")]
+            public static class TestClass
+            {
+                public static string _5ad63706a889c294(string instance, int index)
+                    => instance.Substring(index, 1);
+
+                public static char ReadFirst(string value) => value[0];
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(module);
+        Assert.IsEmpty(module.Body.OfType<ImportDeclaration>());
+        StringAssert.Contains(script, "return _5ad63706a889c294(value, 0);");
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_CurrentModuleImportWithoutLocalBinding_ThrowsActionableDiagnostic()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("System/StringModule.js")]
+            public static class TestClass
+            {
+                public static char ReadFirst(string value) => value[0];
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => converter.Convert());
+
+        StringAssert.Contains(exception.Message, "_5ad63706a889c294");
+        StringAssert.Contains(exception.Message, "System/StringModule.js");
+        StringAssert.Contains(exception.Message, "does not declare a matching local binding");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithConditionalAccessSequenceFieldInitializer_EmitsParseableModule()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static string? Value = GetValue()?.Trim()?.ToLower();
+
+                private static string? GetValue() => null;
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let value = (");
+        _ = new Acornima.Parser().ParseModule(script);
     }
 
     #endregion

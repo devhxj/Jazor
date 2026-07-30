@@ -11,6 +11,7 @@ internal enum LoweringSiteKind
 {
     CreationTemp,
     ConditionalAccessInput,
+    TryCastInput,
     LockValueTemp,
     UsingResourceTemp,
     MethodReferenceReceiver,
@@ -44,6 +45,7 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
         {
             LoweringSiteKind.CreationTemp => "creation",
             LoweringSiteKind.ConditionalAccessInput => "cacc",
+            LoweringSiteKind.TryCastInput => "trycast",
             LoweringSiteKind.LockValueTemp => "lock",
             LoweringSiteKind.UsingResourceTemp => "using",
             LoweringSiteKind.MethodReferenceReceiver => "mrecv",
@@ -69,6 +71,9 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
 
     public static LoweringSite ConditionalAccessInput()
         => new(LoweringSiteKind.ConditionalAccessInput);
+
+    public static LoweringSite TryCastInput()
+        => new(LoweringSiteKind.TryCastInput);
 
     public static LoweringSite LockValueTemp(string slot)
         => new(LoweringSiteKind.LockValueTemp, slot);

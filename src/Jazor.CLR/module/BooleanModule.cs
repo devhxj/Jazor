@@ -69,7 +69,10 @@ public static class BooleanModule
 	[Jazor(Op.Import, "static bool.Parse(string)")]
 	public static bool _5dbf54319ebc8dfe(string? value)
 	{
-		var str = value?.Trim()?.ToLower();
+		if (value == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
+		var str = value.Trim().ToLower();
 		if (str == "true")
 			return true;
 		else if (str == "false")
@@ -86,7 +89,10 @@ public static class BooleanModule
 	[Jazor(Op.Import, "static bool.TryParse(string, out bool)")]
 	public static Array<object?> _dada4bbdacd7aa19(string? value, bool result)
 	{
-		var str = value?.Trim()?.ToLower();
+		if (value == null)
+			return [false, false];
+
+		var str = value.Trim().ToLower();
 		if (str == "true")
 			return [true, true];
 		else if (str == "false")

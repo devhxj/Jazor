@@ -141,8 +141,20 @@ public partial class SemanticWalker
 			constructor.ContainingType is not INamedTypeSymbol containingType)
 			return false;
 
-		return TryGetCurrentModuleDeclaredName(containingType, out _) &&
-			containingType.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) > 1;
+		if (containingType.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) <= 1)
+			return false;
+
+		if (TryGetCurrentModuleDeclaredName(containingType, out _))
+			return true;
+
+		for (var current = containingType.ContainingType; current is not null; current = current.ContainingType)
+		{
+			if (current.GetAttributes().Any(static attribute =>
+				attribute.AttributeClass?.ToDisplayString() == Util.ECMAScriptModuleAttributeMetadataName))
+				return true;
+		}
+
+		return false;
 	}
 
 	private bool IsIntrinsicObjectCreationFallbackAllowed(IMethodSymbol constructor, ITypeSymbol constructedType)
