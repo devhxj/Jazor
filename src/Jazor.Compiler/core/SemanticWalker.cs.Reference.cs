@@ -831,69 +831,13 @@ public partial class SemanticWalker
 		return new MemberExpression(runtimeHost, property, computed, optional);
 	}
 
-	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
+	private Expression GetFieldName(IFieldSymbol symbol)
 	{
-		if (TryBuildStringEnumLiteral(symbol, out var enumLiteral))
-			return enumLiteral;
-
-		// 检查是否是特殊常量字段（如 double.PositiveInfinity, double.NaN 等）
-		if (symbol.ContainingType is not null && symbol.IsConst)
-		{
-			// 处理特殊常量字段
-			return (symbol.Name, symbol.ContainingType.SpecialType) switch
-			{
-				// 浮点类型特殊常量
-				(nameof(double.PositiveInfinity), SpecialType.System_Double) or
-				(nameof(float.PositiveInfinity), SpecialType.System_Single) => new Identifier("Infinity"),
-
-				(nameof(double.NegativeInfinity), SpecialType.System_Double) or
-				(nameof(float.NegativeInfinity), SpecialType.System_Single) => new Identifier("-Infinity"),
-
-				(nameof(double.NaN), SpecialType.System_Double) or
-				(nameof(float.NaN), SpecialType.System_Single) => new Identifier("NaN"),
-
-				(nameof(double.Epsilon), SpecialType.System_Double) or
-				(nameof(float.Epsilon), SpecialType.System_Single) =>
-					new MemberExpression(
-						new Identifier("Number"),
-						new Identifier("EPSILON"), computed: false, optional: false),
-
-				// double 的最大/最小值与 JavaScript Number 范围一致
-				(nameof(double.MaxValue), SpecialType.System_Double) =>
-					new MemberExpression(
-						new Identifier("Number"),
-						new Identifier("MAX_VALUE"), computed: false, optional: false),
-				(nameof(double.MinValue), SpecialType.System_Double) =>
-					new NonUpdateUnaryExpression(
-						Operator.UnaryNegation,
-						new MemberExpression(
-							new Identifier("Number"),
-							new Identifier("MAX_VALUE"), computed: false, optional: false)),
-
-				// float 的边界值需要保留 C# 单精度语义，不能退化成 JS 的 double 极值
-				(nameof(float.MaxValue), SpecialType.System_Single) =>
-					new NumericLiteral(float.MaxValue, float.MaxValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-				(nameof(float.MinValue), SpecialType.System_Single) =>
-					new NumericLiteral(float.MinValue, float.MinValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-
-				// long 的边界值在当前映射中属于 bigint
-				(nameof(long.MaxValue), SpecialType.System_Int64) =>
-					new BigIntLiteral(new System.Numerics.BigInteger(long.MaxValue), $"{long.MaxValue}n"),
-				(nameof(long.MinValue), SpecialType.System_Int64) =>
-					new BigIntLiteral(new System.Numerics.BigInteger(long.MinValue), $"{long.MinValue}n"),
-
-				// decimal 最大/最小值保持为精确数值字面量
-				(nameof(decimal.MaxValue), SpecialType.System_Decimal) =>
-					new NumericLiteral((double)decimal.MaxValue, decimal.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-				(nameof(decimal.MinValue), SpecialType.System_Decimal) =>
-					new NumericLiteral((double)decimal.MinValue, decimal.MinValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-
-				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
-				_ => symbol.HasConstantValue
-					? BuildValueLiteral(symbol.Type, symbol.ConstantValue) ?? Null
-					: new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol))
-			};
-		}
+		// CLR host constants have already passed through WhiteList above this fallback.
+		// Keep source-defined constants on the shared literal path so there is only one
+		// place that owns numeric width, string-enum and special-value semantics.
+		if (symbol.IsConst)
+			return BuildValueLiteral(symbol.Type, symbol.ConstantValue)!;
 
 		return new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol));
 	}
@@ -2260,7 +2204,7 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			// 隐式接收者（如对象初始化器中的字段引用）
 			// 如果是常量字段，返回字面量；否则返回字段名
-			var fieldExpr = GetFieldName(operation, operation.Field);
+			var fieldExpr = GetFieldName(operation.Field);
 			return WithOriginIfMissing(fieldExpr, operation);
 		}
 
@@ -2284,7 +2228,7 @@ private bool TryExpandEcmascriptParamsArgument(
 				return WithOriginIfMissing(stringEnumLiteral, operation);
 
 			if (operation.Field.IsConst)
-				return WithOriginIfMissing(GetFieldName(operation, operation.Field), operation);
+				return WithOriginIfMissing(GetFieldName(operation.Field), operation);
 
 			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
 				importedMember is not null)
@@ -2304,7 +2248,7 @@ private bool TryExpandEcmascriptParamsArgument(
 		}
 
 		var fallback = operation.Instance is null
-			? GetFieldName(operation, operation.Field)
+			? GetFieldName(operation.Field)
 			: property;
 		return WithOriginIfMissing(fallback, operation);
 	}
