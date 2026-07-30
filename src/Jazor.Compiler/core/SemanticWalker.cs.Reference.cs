@@ -1673,7 +1673,7 @@ private bool TryExpandEcmascriptParamsArgument(
 				?? new NumericLiteral(0, "0");
 			var endExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.RightOperand, GetLengthExpr, argument)
 				?? GetLengthExpr();
-			arguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr, GetLengthExpr);
+			arguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr);
 		}
 		else
 		{
@@ -1814,17 +1814,12 @@ private bool TryExpandEcmascriptParamsArgument(
 
 	private IPropertySymbol ResolveImplicitIndexerProperty(IImplicitIndexerReferenceOperation operation)
 	{
-		return operation.IndexerSymbol switch
-		{
-			IPropertySymbol property => property,
-			IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => property,
-			IMethodSymbol method => HandleTransformationFailure<IPropertySymbol>(
-				operation,
-				$"Implicit indexer symbol '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not assignable because it does not lower to a property-style setter."),
-			_ => HandleTransformationFailure<IPropertySymbol>(
-				operation,
-				$"Implicit indexer target on '{operation.Instance.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' does not expose a property-style setter.")
-		};
+		if (operation.IndexerSymbol is IPropertySymbol property)
+			return property;
+
+		return HandleTransformationFailure<IPropertySymbol>(
+			operation,
+			$"Implicit indexer target on '{operation.Instance.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' does not expose the property symbol required for assignment.");
 	}
 
 	private Expression BuildImplicitIndexerSetterAssignment(
@@ -1994,116 +1989,16 @@ private bool TryExpandEcmascriptParamsArgument(
 		IOperation ownerOperation,
 		ISymbol indexerSymbol,
 		Expression startExpr,
-		Expression endExpr,
-		Func<Expression> getLengthExpr)
+		Expression endExpr)
 	{
-		return indexerSymbol switch
-		{
-			IPropertySymbol property => BuildImplicitRangePropertyArguments(ownerOperation, property, startExpr, endExpr, getLengthExpr),
-			IMethodSymbol method when method.AssociatedSymbol is IPropertySymbol property => BuildImplicitRangePropertyArguments(ownerOperation, property, startExpr, endExpr, getLengthExpr),
-			IMethodSymbol method => BuildImplicitRangeMethodArguments(ownerOperation, method, startExpr, endExpr, getLengthExpr),
-			_ => HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Unsupported implicit range indexer symbol '{indexerSymbol.Kind}' for '{indexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}'.")
-		};
-	}
-
-	private List<Expression> BuildImplicitRangeMethodArguments(
-		IOperation ownerOperation,
-		IMethodSymbol method,
-		Expression startExpr,
-		Expression endExpr,
-		Func<Expression> getLengthExpr)
-	{
-		if (method.Parameters.Length == 1)
-		{
-			if (IsSystemRangeType(method.Parameters[0].Type))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Range-based slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in implicit range lowering. Expose an int-based Slice/Substring overload or configure a whitelist mapping.");
-			}
-
-			if (method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Implicit range slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters.");
-			}
-
-			if (!ReferenceEquals(endExpr, getLengthExpr()))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded range because it only accepts a single int parameter.");
-			}
-
-			return [startExpr];
-		}
-
-		if (method.Parameters.Length != 2 ||
+		if (indexerSymbol is not IMethodSymbol method ||
+			method.Parameters.Length != 2 ||
 			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
 			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
 		{
 			return HandleUnsupportedSliceArguments(
 				ownerOperation,
-				$"Implicit range slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose int-compatible Slice(start, length) semantics.");
-		}
-
-		return
-		[
-			startExpr,
-			BuildImplicitRangeLengthExpression(startExpr, endExpr)
-		];
-	}
-
-	private List<Expression> BuildImplicitRangePropertyArguments(
-		IOperation ownerOperation,
-		IPropertySymbol property,
-		Expression startExpr,
-		Expression endExpr,
-		Func<Expression> getLengthExpr)
-	{
-		if (!property.IsIndexer || property.Parameters.Length == 0)
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Unsupported implicit range property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}'.");
-		}
-
-		if (property.Parameters.Length == 1)
-		{
-			if (IsSystemRangeType(property.Parameters[0].Type))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Range-based indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in implicit range lowering. Expose an int-based slice member or configure a whitelist mapping.");
-			}
-
-			if (property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Implicit range indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters.");
-			}
-
-			if (!ReferenceEquals(endExpr, getLengthExpr()))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded range because it only accepts a single int parameter.");
-			}
-
-			return [startExpr];
-		}
-
-		if (property.Parameters.Length != 2 ||
-			property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
-			property.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Implicit range indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose int-compatible start/length semantics.");
+				$"Implicit range symbol '{indexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must be a Slice/Substring-style method with two int parameters.");
 		}
 
 		return

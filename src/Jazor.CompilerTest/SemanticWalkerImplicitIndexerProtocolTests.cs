@@ -237,6 +237,16 @@ internal static class ImplicitIndexerProtocolCatalog
             [],
             []),
         Success(
+            "index.from-start-conversion",
+            "form=index;bound=from-start;operand=explicit-Index-conversion;access=read",
+            """
+                        var buffer = new LengthBuffer();
+                        var value = buffer[(Index)NextOffset()];
+                """,
+            ["buffer[ImplicitIndexerProtocolScenarios.nextOffset()]"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()"],
+            []),
+        Success(
             "index.complex-receiver",
             "form=index;bound=from-end;receiver=invocation;operand=invocation;evaluation=single",
             """
