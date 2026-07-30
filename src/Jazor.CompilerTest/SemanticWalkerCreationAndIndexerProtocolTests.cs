@@ -109,6 +109,18 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_MultiParameterIndexerAssignment_RejectsUnrepresentableJavaScriptTarget()
+    {
+        var block = GetBlockOperation(
+            "var holder = new MatrixSetter { [0, 1] = new Nested { Value = 7 } };");
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Indexed initializer target could not be translated");
+    }
+
+    [TestMethod]
     public void Visit_DictionaryIndexerMemberInitializer_UsesMappedGetterAfterInsertion()
     {
         var block = GetBlockOperation("""
@@ -136,6 +148,45 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
         Assert.AreEqual(1, CountOccurrences(script, "_e73dbdff85c46ddc(v$0, \"primary\")"));
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_DictionaryMemberCollectionInitializer_UsesMappedAddInSourceOrder()
+    {
+        var block = GetBlockOperation("""
+            var holder = new CollectionHolder
+            {
+                Map =
+                {
+                    { "one", 1 },
+                    { "two", 2 }
+                }
+            };
+            """);
+
+        var script = VisitBlock(block);
+
+        var firstAdd = "_39d6e632c4c102f9(v$0.map, \"one\", 1)";
+        var secondAdd = "_39d6e632c4c102f9(v$0.map, \"two\", 2)";
+        StringAssert.Contains(script, firstAdd);
+        StringAssert.Contains(script, secondAdd);
+        Assert.IsLessThan(script.IndexOf(secondAdd, StringComparison.Ordinal), script.IndexOf(firstAdd, StringComparison.Ordinal));
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_SourceCollectionInitializer_CallsDeclaredAddInSourceOrder()
+    {
+        var block = GetBlockOperation("var bag = new SourceBag { 1, 2 }; ");
+
+        var script = VisitBlock(block);
+
+        var firstAdd = "v$0.add(1)";
+        var secondAdd = "v$0.add(2)";
+        StringAssert.Contains(script, firstAdd);
+        StringAssert.Contains(script, secondAdd);
+        Assert.IsLessThan(script.IndexOf(secondAdd, StringComparison.Ordinal), script.IndexOf(firstAdd, StringComparison.Ordinal));
         ParseScript(script);
     }
 
@@ -191,6 +242,24 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             """
             {
               let payload = { child: { name: "John", age: 30 } };
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_StructuralRecordFieldAssignment_ProducesObjectLiteralMember()
+    {
+        var block = GetBlockOperation(
+            "var payload = new FieldValueEnvelope { Label = \"ready\" }; ");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let payload = { label: "ready" };
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
@@ -289,6 +358,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     {
         var source = $$"""
             using System;
+            using System.Collections.Generic;
             using System.ComponentModel;
 
             public sealed class TestClass
@@ -320,6 +390,30 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                     public Nested this[int row, int column] => new();
                 }
 
+                public sealed class MatrixSetter
+                {
+                    public Nested this[int row, int column]
+                    {
+                        set { }
+                    }
+                }
+
+                public sealed class CollectionHolder
+                {
+                    public Dictionary<string, int> Map { get; } = new();
+                }
+
+                public sealed class SourceBag : IEnumerable<int>
+                {
+                    public void Add(int value) { }
+
+                    public IEnumerator<int> GetEnumerator()
+                        => ((IEnumerable<int>)Array.Empty<int>()).GetEnumerator();
+
+                    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+                        => GetEnumerator();
+                }
+
                 public sealed record ChildProps
                 {
                     [Description("@#name")]
@@ -342,6 +436,11 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                 public sealed record FieldEnvelope
                 {
                     public ChildProps Child = new();
+                }
+
+                public sealed record FieldValueEnvelope
+                {
+                    public string? Label;
                 }
 
                 public sealed class Buffer
