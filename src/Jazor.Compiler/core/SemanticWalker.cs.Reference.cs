@@ -41,6 +41,23 @@ public partial class SemanticWalker
 		"WeakSet",
 	};
 
+	// 这些 JavaScript Array 方法保证返回新的 Array；LINQ ToArray/ToList 可直接接管该结果。
+	// reverse/sort/fill 等返回原 receiver 的方法不得加入，否则会破坏物化操作的复制语义。
+	private static readonly HashSet<string> FreshArrayResultMethodNames = new(StringComparer.Ordinal)
+	{
+		"concat",
+		"filter",
+		"flat",
+		"flatMap",
+		"map",
+		"slice",
+		"splice",
+		"toReversed",
+		"toSorted",
+		"toSpliced",
+		"with",
+	};
+
 	/// <summary>
 	/// 获取初始化器成员的名称，优先检查白名单别名
 	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
@@ -1065,17 +1082,7 @@ public partial class SemanticWalker
 				return true;
 
 			case CallExpression { Callee: MemberExpression { Property: Identifier { Name: var methodName } } }:
-				return methodName is
-					"concat" or
-					"filter" or
-					"flat" or
-					"flatMap" or
-					"map" or
-					"slice" or
-					"splice" or
-					"toReversed" or
-					"toSorted" or
-					"toSpliced";
+				return FreshArrayResultMethodNames.Contains(methodName);
 
 			default:
 				return false;

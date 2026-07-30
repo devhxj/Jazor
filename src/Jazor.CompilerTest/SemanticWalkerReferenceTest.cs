@@ -8137,6 +8137,107 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_EnumerableMaterialization_NewSizedArrayReusesFreshAllocation()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod(int length)
+				{
+					var values = System.Linq.Enumerable.ToArray(new int[length]);
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let values = (__src => {
+			    if (__src == null)
+			      throw new TypeError("source");
+			    return __src;
+			  })(new Array(length));
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_EnumerableMaterialization_ArrayCopyProducersReuseFreshResults()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var source = Array<int>.Of(3, 1, 2);
+					var from = System.Linq.Enumerable.ToArray<int>((int[])Array<int>.From((int[])source));
+					var of = System.Linq.Enumerable.ToList<int>((int[])Array<int>.Of(1, 2));
+					var concatenated = System.Linq.Enumerable.ToArray<int>((int[])source.Concat(4));
+					var filtered = System.Linq.Enumerable.ToList<int>((int[])source.Filter(value => value > 1));
+					var flattened = System.Linq.Enumerable.ToArray<object?>((object?[])Array<Array<int>>.Of(source).Flat());
+					var flatMapped = System.Linq.Enumerable.ToList<int>((int[])source.FlatMap(value => value + 1));
+					var mapped = System.Linq.Enumerable.ToArray<int>((int[])source.Map(value => value * 2));
+					var sliced = System.Linq.Enumerable.ToList<int>((int[])source.Slice(1));
+					var spliced = System.Linq.Enumerable.ToArray<int>((int[])source.Splice(1, 1));
+					var reversed = System.Linq.Enumerable.ToList<int>((int[])source.ToReversed());
+					var sorted = System.Linq.Enumerable.ToArray<int>((int[])source.ToSorted());
+					var replaced = System.Linq.Enumerable.ToList<int>((int[])source.ToSpliced(1, 1, 9));
+					var updated = System.Linq.Enumerable.ToArray<int>((int[])source.With(0, 8));
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "})(Array.from(source));");
+		StringAssert.Contains(script, "})(Array.of(1, 2));");
+		StringAssert.Contains(script, "})(source.concat(4));");
+		StringAssert.Contains(script, "})(source.filter(value =>");
+		StringAssert.Contains(script, "})(Array.of(source).flat());");
+		StringAssert.Contains(script, "})(source.flatMap(value =>");
+		StringAssert.Contains(script, "})(source.map(value =>");
+		StringAssert.Contains(script, "})(source.slice(1));");
+		StringAssert.Contains(script, "})(source.splice(1, 1));");
+		StringAssert.Contains(script, "})(source.toReversed());");
+		StringAssert.Contains(script, "})(source.toSorted());");
+		StringAssert.Contains(script, "})(source.toSpliced(1, 1, 9));");
+		StringAssert.Contains(script, "})(source.with(0, 8));");
+		Assert.AreEqual(-1, script.IndexOf("return Array.from(__src);", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
+	public void Visit_Reference_EnumerableMaterialization_ArrayMutatorsStillCopyAliasedResults()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod(Array<int> source)
+				{
+					var reversed = System.Linq.Enumerable.ToArray<int>((int[])source.Reverse());
+					var sorted = System.Linq.Enumerable.ToList<int>((int[])source.Sort());
+					var filled = System.Linq.Enumerable.ToArray<int>((int[])source.Fill(0));
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "})(source.reverse());");
+		StringAssert.Contains(script, "})(source.sort());");
+		StringAssert.Contains(script, "})(source.fill(0));");
+		Assert.AreEqual(3, script.Split(["return Array.from(__src);"], StringSplitOptions.None).Length - 1);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ExtensionMethod_OnCustomIList_UsesDirectArrayFastPath()
 	{
 		var block = GetBlockOperation(@"
