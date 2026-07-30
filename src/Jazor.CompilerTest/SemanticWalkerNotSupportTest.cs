@@ -352,6 +352,79 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
+    public void VisitTypeOf_Tuple_NotSupported()
+    {
+        const string code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var type = typeof((int X, int Y));
+                }
+            }
+            """;
+
+        var block = GetBlockOperation(code);
+        AssertUnsupportedDirect(
+            block,
+            static x => FindFirstOperation<ITypeOfOperation>(x),
+            static (walker, operation) => walker.VisitTypeOf(operation, new()),
+            "does not expose a stable runtime type token");
+
+        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "does not expose a stable runtime type token");
+    }
+
+    [TestMethod]
+    public void VisitTypeOf_Interface_NotSupported()
+    {
+        const string code = """
+            interface IService
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var type = typeof(IService);
+                }
+            }
+            """;
+
+        var block = GetBlockOperation(code);
+        AssertUnsupportedDirect(
+            block,
+            static x => FindFirstOperation<ITypeOfOperation>(x),
+            static (walker, operation) => walker.VisitTypeOf(operation, new()),
+            "does not expose a stable runtime type token");
+
+        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "does not expose a stable runtime type token");
+    }
+
+    [TestMethod]
+    public void VisitTypeOf_ErasedTypeParameter_NotSupported()
+    {
+        const string code = """
+            class TestClass
+            {
+                void TestMethod<T>()
+                {
+                    var type = typeof(T);
+                }
+            }
+            """;
+
+        var block = GetBlockOperation(code);
+        AssertUnsupportedDirect(
+            block,
+            static x => FindFirstOperation<ITypeOfOperation>(x),
+            static (walker, operation) => walker.VisitTypeOf(operation, new()),
+            "does not expose a stable runtime type token");
+
+        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "does not expose a stable runtime type token");
+    }
+
+    [TestMethod]
     public void VisitTypeOf_DateTime_NotSupported()
     {
         const string code = """

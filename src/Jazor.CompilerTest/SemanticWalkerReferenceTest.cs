@@ -19,7 +19,10 @@ public sealed class SemanticWalkerReferenceTest
 	/// <param name="code"></param>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException"></exception>
-	private static IBlockOperation GetBlockOperation(string code, string assemblyName = "TestAssembly")
+	private static IBlockOperation GetBlockOperation(
+		string code,
+		string assemblyName = "TestAssembly",
+		params MetadataReference[] additionalReferences)
 	{
 		var usings = @"
         global using System;
@@ -30,7 +33,8 @@ public sealed class SemanticWalkerReferenceTest
 		global using static ECMAScript.Global;";
 
 		var references = TestMetadataReferences.Net11
-			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+			.AddRange(additionalReferences);
 		var compilation = CSharpCompilation.Create(
 			assemblyName: assemblyName,
 			syntaxTrees: [
@@ -6141,6 +6145,128 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let value = """";
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringEnumMemberNaming_UsesExplicitDescriptionAndSymbolFallbacks()
+	{
+		var block = GetBlockOperation("""
+            using System;
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [String]
+            enum WireStatus
+            {
+                [ECMAScriptName("in-progress")]
+                InProgress,
+
+                [Description("@#done")]
+                Done,
+
+                [Description("documentation only")]
+                Documented,
+
+                Unconfigured,
+
+                [Obsolete]
+                [Description("@#retired")]
+                Retired
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var named = WireStatus.InProgress;
+                    var described = WireStatus.Done;
+                    var documented = WireStatus.Documented;
+                    var unconfigured = WireStatus.Unconfigured;
+                    var retired = WireStatus.Retired;
+                }
+            }
+            """);
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let named = "in-progress";
+              let described = "done";
+              let documented = "Documented";
+              let unconfigured = "Unconfigured";
+              let retired = "retired";
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PiniaActionArgsView_UsesComputedNumericSlots()
+	{
+		var piniaReference = MetadataReference.CreateFromFile(typeof(ECMAScript.Pinia.ActionArgsView<,>).Assembly.Location);
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(ECMAScript.Pinia.ActionArgsView<int, string> args)
+                {
+                    var first = args.Arg0;
+                    var second = args.Arg1;
+                }
+            }
+            """, additionalReferences: piniaReference);
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let first = args[0];
+              let second = args[1];
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_QuotedComputedAliases_UseStringMemberKeys()
+	{
+		var block = GetBlockOperation("""
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScript]
+            [Description("@#")]
+            abstract class JavaScriptRecord
+            {
+                [Description("@#[\"display-name\"]")]
+                public extern string DisplayName { get; }
+
+                [Description("@#['status-code']")]
+                public extern string StatusCode { get; }
+            }
+
+            class TestClass
+            {
+                void TestMethod(JavaScriptRecord record)
+                {
+                    var displayName = record.DisplayName;
+                    var statusCode = record.StatusCode;
+                }
+            }
+            """);
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let displayName = record["display-name"];
+              let statusCode = record["status-code"];
+            }
+            """, script);
 	}
 
 	[TestMethod]
