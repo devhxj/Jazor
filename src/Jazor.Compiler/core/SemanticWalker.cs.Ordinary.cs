@@ -2261,107 +2261,46 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitWith(IWithOperation operation, SenseArgument argument)
 	{
-		// with表达式的直接AST转换
-		// C# 示例：person with { Name = "John" } 表示创建一个新对象，复制原对象并修改指定属性
-		//         point with { X = 10 } 表示复制point对象并更新X属性
-		// 转换结果：生成JavaScript的对象展开语法 { ...original, property: newValue }
-		// 语义等价：C# record的with表达式在运行时语义上等同于JavaScript的对象展开
-
-		// 获取原始对象
 		var operand = Translate<Expression>(operation.Operand, argument);
-
-		// 处理初始化器（要修改的属性）
 		var properties = new List<Node>
 		{
-            // 添加展开元素（复制原始对象的所有属性）
             new SpreadElement(operand)
 		};
 
-		// 处理初始化器中的新属性
-		// 获取初始化器中的所有初始化操作
 		foreach (var initializer in operation.Initializer.Initializers)
 		{
-			if (initializer is IMemberInitializerOperation memberInit)
+			if (initializer is not ISimpleAssignmentOperation assignment)
 			{
-				// 获取成员名称（支持特性别名）
-				string memberName;
-				ITypeSymbol? targetType;
-				if (memberInit.InitializedMember is IFieldSymbol f)
-				{
-					memberName = ResolveInitializerAssignmentMemberName(
-						memberInit,
-						f,
-						"with-expression member assignment",
-						f.ContainingType);
-					targetType = f.Type;
-				}
-				else if (memberInit.InitializedMember is IPropertySymbol p)
-				{
-					memberName = ResolveInitializerAssignmentMemberName(
-						memberInit,
-						p,
-						"with-expression member assignment",
-						p.ContainingType);
-					targetType = p.Type;
-				}
-				else
-					return HandleTransformationFailure<Node>(operation.Initializer, "With initializer could not be translated to JavaScript.");
-
-				// 获取初始化值
-				var initValue = TranslateTupleForTarget(memberInit.Initializer, targetType, argument);
-				// 根据AST节点构造规范，使用PropertyDefinition创建对象属性
-				// 确保生成正确的属性语法：{ ...original, propertyName: value }
-				properties.Add(new ObjectProperty(
-					kind: PropertyKind.Init,
-					key: CreateObjectPropertyKey(memberName),
-					value: initValue,
-					computed: false,
-					shorthand: false,
-					method: false
-				));
+				return HandleTransformationFailure<Node>(
+					operation.Initializer,
+					"With initializer must bind to a property or field assignment.");
 			}
-			else
+
+			var member = GetObjectInitializerMemberSymbol(assignment);
+			var targetType = member switch
 			{
-				// 对于其他类型的初始化器，需要确保生成正确的属性语法
-				var initNode = Visit(initializer, argument);
+				IPropertySymbol property => property.Type,
+				IFieldSymbol field => field.Type,
+				_ => null
+			};
+			if (member is null || targetType is null)
+				return HandleTransformationFailure<Node>(operation.Initializer, "With initializer target could not be resolved.");
 
-				// 如果初始化器不是PropertyDefinition，需要包装成PropertyDefinition
-				// 这样可以确保生成正确的JavaScript对象属性语法
-				if (initNode is PropertyDefinition)
-					properties.Add(initNode);
-				else if (initNode is AssignmentExpression assignment)
-				{
-					// 如果是赋值表达式，提取左侧作为属性名，右侧作为值
-					var key = assignment.Left switch
-					{
-						Identifier i => i,
-						MemberExpression m => m.Property as Identifier,
-						_ => null
-					};
-
-					if (key is not null)
-					{
-						properties.Add(new ObjectProperty(
-							kind: PropertyKind.Init,
-							key: key,
-							value: assignment.Right,
-							computed: false,
-							shorthand: false,
-							method: false
-						));
-					}
-					else
-						return HandleTransformationFailure<Node>(operation, "With initializer has unrecognized left-hand side expression.");
-				}
-				else
-					return HandleTransformationFailure<Node>(operation, "With initializer could not be translated to JavaScript.");
-
-			}
+			var memberName = ResolveInitializerAssignmentMemberName(
+				assignment,
+				member,
+				"with-expression member assignment",
+				member.ContainingType);
+			var value = TranslateTupleForTarget(assignment.Value, targetType, argument);
+			properties.Add(new ObjectProperty(
+				kind: PropertyKind.Init,
+				key: CreateObjectPropertyKey(memberName),
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false));
 		}
 
-
-		// 根据编译时优化原则，直接生成最简洁的JavaScript对象字面量
-		// 返回对象表达式：{ ...original, property: value }
 		return new ObjectExpression(NodeList.From<Node>(properties));
 	}
 
@@ -2380,8 +2319,7 @@ public partial class SemanticWalker
 	/// <remarks>
 	/// 特性参数限制：必须是编译时常量（基本类型、字符串、枚举、typeof、null、数组）
 	/// 只处理实现了 IECMAScript 接口的特性，其他特性忽略
-	/// 使用 operation.Operation 获取 IObjectCreationOperation，通过 IOperation 转换参数值
-	/// 通过语法节点的 NameEquals 判断是否命名参数
+	/// 构造参数和命名初始化器都直接从绑定的 IObjectCreationOperation 转换
 	/// </remarks>
 	public override Node? VisitAttribute(IAttributeOperation operation, SenseArgument argument)
 	{
