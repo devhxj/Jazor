@@ -29,6 +29,8 @@ internal static class ClrRuntimeDateTimeScenarios
         Failure("datetime.ctor.components-invalid-kind", "System.DateTime.DateTime(int, int, int, int, int, int, System.DateTimeKind)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(3)], "ArgumentException"),
         Success("datetime.ctor.microsecond", "System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.DateTimeKind)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(7), Number(1)], Text("2024-01-02T03:04:05.0060070")),
         Failure("datetime.ctor.microsecond-out-of-range", "System.DateTime.DateTime(int, int, int, int, int, int, int, int)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(1000)], "ArgumentOutOfRangeException"),
+        Success("datetime.ctor.components-millisecond", "System.DateTime.DateTime(int, int, int, int, int, int, int)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6)], Text("2024-01-02T03:04:05.0060000")),
+        Success("datetime.ctor.date-only-time-only-unspecified", "System.DateTime.DateTime(System.DateOnly, System.TimeOnly)", [DateOnly(2024, 2, 29), TimeOnly(23, 59, 58, 999, 999)], Text("2024-02-29T23:59:58.9999990")),
         Success("datetime.ctor.date-only-time-only", "System.DateTime.DateTime(System.DateOnly, System.TimeOnly, System.DateTimeKind)", [DateOnly(2024, 2, 29), TimeOnly(23, 59, 58, 999, 999), Number(1)], Text("2024-02-29T23:59:58.9999990")),
 
         Success("datetime.property.date", "System.DateTime.Date.get", [PreciseUtc()], Text("2024-01-02T00:00:00.0000000")),
@@ -69,8 +71,10 @@ internal static class ClrRuntimeDateTimeScenarios
         Success("datetime.compare-to-object.null", "System.DateTime.CompareTo(object)", [PreciseUtc(), Null()], Number(1)),
         Success("datetime.compare-to-object.datetime", "System.DateTime.CompareTo(object)", [PreciseUtc(), Date(2024, 1, 3, 0, 0, 0, 0, 0)], Number(-1)),
         Failure("datetime.compare-to-object.wrong-type", "System.DateTime.CompareTo(object)", [PreciseUtc(), Number(1)], "ArgumentException"),
+        Success("datetime.compare-to.datetime", "System.DateTime.CompareTo(System.DateTime)", [PreciseUtc(), Date(2024, 1, 3, 0, 0, 0, 0, 0)], Number(-1)),
         Success("datetime.equals-object.same-ticks", "override System.DateTime.Equals(object)", [PreciseUtc(), Invoke("static System.DateTime.SpecifyKind(System.DateTime, System.DateTimeKind)", PreciseUtc(), Number(0))], Bool(true)),
         Success("datetime.equals-object.wrong-type", "override System.DateTime.Equals(object)", [PreciseUtc(), Number(1)], Bool(false)),
+        Success("datetime.equals.datetime-same-ticks", "System.DateTime.Equals(System.DateTime)", [PreciseUtc(), Invoke("static System.DateTime.SpecifyKind(System.DateTime, System.DateTimeKind)", PreciseUtc(), Number(0))], Bool(true)),
         Success("datetime.equals-static.different", "static System.DateTime.Equals(System.DateTime, System.DateTime)", [PreciseUtc(), Date(2024, 1, 3, 0, 0, 0, 0, 1)], Bool(false)),
         Success("datetime.operator.equal", "static System.DateTime.operator ==(System.DateTime, System.DateTime)", [PreciseUtc(), Invoke("static System.DateTime.SpecifyKind(System.DateTime, System.DateTimeKind)", PreciseUtc(), Number(2))], Bool(true)),
         Success("datetime.operator.not-equal", "static System.DateTime.operator !=(System.DateTime, System.DateTime)", [PreciseUtc(), Date(2024, 1, 3, 0, 0, 0, 0, 1)], Bool(true)),
@@ -92,10 +96,12 @@ internal static class ClrRuntimeDateTimeScenarios
         Success("datetime.binary.utc-roundtrip-kind", "System.DateTime.Kind.get", [Invoke("static System.DateTime.FromBinary(long)", Invoke("System.DateTime.ToBinary()", PreciseUtc()))], Number(1)),
         Success("datetime.file-time.utc-epoch", "static System.DateTime.FromFileTimeUtc(long)", [Big(0)], Text("1601-01-01T00:00:00.0000000")),
         Success("datetime.file-time.utc-roundtrip", "System.DateTime.ToFileTimeUtc()", [Invoke("static System.DateTime.FromFileTimeUtc(long)", Big("133486382450060079"))], Big("133486382450060079")),
+        Success("datetime.file-time.local-roundtrip", "System.DateTime.ToFileTime()", [Invoke("static System.DateTime.FromFileTime(long)", Big("133486382450060079"))], Big("133486382450060079")),
         Failure("datetime.file-time.negative", "static System.DateTime.FromFileTimeUtc(long)", [Big(-1)], "ArgumentOutOfRangeException"),
         Success("datetime.oa-date.zero", "static System.DateTime.FromOADate(double)", [Number(0)], Text("1899-12-30T00:00:00.0000000")),
         Success("datetime.oa-date.roundtrip", "System.DateTime.ToOADate()", [Invoke("static System.DateTime.FromOADate(double)", Number(45293.5))], Number(45293.5)),
         Success("datetime.daylight-saving.utc", "System.DateTime.IsDaylightSavingTime()", [PreciseUtc()], Bool(false)),
+        Success("datetime.to-local-time.kind", "System.DateTime.Kind.get", [Invoke("System.DateTime.ToLocalTime()", PreciseUtc())], Number(2)),
         Success("datetime.to-universal.utc-no-op", "System.DateTime.ToUniversalTime()", [PreciseUtc()], Text(PreciseText)),
 
         Success("datetime.subtract.datetime", "System.DateTime.Subtract(System.DateTime)", [Date(2024, 1, 3, 2, 3, 4, 0, 0), Invoke("System.DateTime.AddTicks(long)", Date(2024, 1, 2, 0, 0, 0, 0, 0), Big(-5))], Text("1.02:03:04.0000005")),
@@ -114,6 +120,13 @@ internal static class ClrRuntimeDateTimeScenarios
         Success("datetime.format.custom-trimmed-fraction", "System.DateTime.ToString(string, System.IFormatProvider)", [Invoke("System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.DateTimeKind)", Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(700), Number(0)), Text("HH:mm:ss.FFFFFFF"), Text("")], Text("03:04:05.0067")),
         Success("datetime.format.german-date-separator", "System.DateTime.ToString(string, System.IFormatProvider)", [PreciseUtc(), Text("dd/MM/yyyy"), Text("de-DE")], Text("02.01.2024")),
         Failure("datetime.format.invalid-standard", "System.DateTime.ToString(string, System.IFormatProvider)", [PreciseUtc(), Text("X"), Text("")], "FormatException"),
+        Success("datetime.format.roundtrip-without-provider", "System.DateTime.ToString(string)", [PreciseUtc(), Text("O")], Text("2024-01-02T03:04:05.0060079Z")),
+        Success("datetime.format.default-roundtrip", "static System.DateTime.Parse(string)", [Invoke("override System.DateTime.ToString()", Date(2024, 1, 2, 3, 4, 5, 0, 0))], Text("2024-01-02T03:04:05.0000000")),
+        Success("datetime.format.long-date-roundtrip", "static System.DateTime.Parse(string)", [Invoke("System.DateTime.ToLongDateString()", Date(2024, 1, 2, 0, 0, 0, 0, 0))], Text("2024-01-02T00:00:00.0000000")),
+        Success("datetime.format.short-date-roundtrip", "static System.DateTime.Parse(string)", [Invoke("System.DateTime.ToShortDateString()", Date(2024, 1, 2, 0, 0, 0, 0, 0))], Text("2024-01-02T00:00:00.0000000")),
+        Success("datetime.format.long-time-hour", "System.DateTime.Hour.get", [Invoke("static System.DateTime.Parse(string)", Invoke("System.DateTime.ToLongTimeString()", Date(2024, 1, 2, 3, 4, 5, 0, 0)))], Number(3)),
+        Success("datetime.format.short-time-hour", "System.DateTime.Hour.get", [Invoke("static System.DateTime.Parse(string)", Invoke("System.DateTime.ToShortTimeString()", Date(2024, 1, 2, 3, 4, 5, 0, 0)))], Number(3)),
+        Success("datetime.hash-code.precise-value", "override System.DateTime.GetHashCode()", [PreciseUtc()], Number(1914478608)),
 
         Success("datetime.parse.iso-unspecified", "static System.DateTime.Parse(string)", [Text("2024-01-02T03:04:05.0060079")], Text(PreciseText)),
         Success("datetime.parse.iso-whitespace", "static System.DateTime.Parse(string)", [Text("  2024-02-29 23:59:58  ")], Text("2024-02-29T23:59:58.0000000")),
@@ -127,10 +140,21 @@ internal static class ClrRuntimeDateTimeScenarios
         Failure("datetime.parse.conflicting-assumptions", "static System.DateTime.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)", [Text("2024-01-02"), Text(""), Number(96)], "ArgumentException"),
         Failure("datetime.parse.roundtrip-conflict", "static System.DateTime.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)", [Text("2024-01-02"), Text(""), Number(144)], "ArgumentException"),
         Failure("datetime.parse.undefined-style", "static System.DateTime.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)", [Text("2024-01-02"), Text(""), Number(256)], "ArgumentException"),
+        Success("datetime.parse.provider", "static System.DateTime.Parse(string, System.IFormatProvider)", [Text("2024-01-02T03:04:05.0060079"), Text("")], Text(PreciseText)),
+        Success("datetime.parse.span-provider", "static System.DateTime.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)", [Text("2024-01-02T03:04:05.0060079"), Text("")], Text(PreciseText)),
+        Success("datetime.parse.span-provider-styles", "static System.DateTime.Parse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)", [Text("2024-01-02T03:04:05.0060079"), Text(""), Number(0)], Text(PreciseText)),
         Success("datetime.try-parse.valid", "static System.DateTime.TryParse(string, out System.DateTime)", [Text("2024-01-02T03:04:05.0060079"), Invoke("System.DateTime.DateTime()")], Array(Bool(true), Text(PreciseText))),
         Success("datetime.try-parse.invalid", "static System.DateTime.TryParse(string, out System.DateTime)", [Text("not-a-date"), PreciseUtc()], Array(Bool(false), Text(MinText))),
         Success("datetime.try-parse.null", "static System.DateTime.TryParse(string, out System.DateTime)", [Null(), PreciseUtc()], Array(Bool(false), Text(MinText))),
-        Failure("datetime.try-parse.invalid-style", "static System.DateTime.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTime)", [Text("2024-01-02"), Text(""), Number(256), Invoke("System.DateTime.DateTime()")], "ArgumentException")
+        Success("datetime.try-parse.provider", "static System.DateTime.TryParse(string, System.IFormatProvider, out System.DateTime)", [Text("2024-01-02T03:04:05.0060079"), Text(""), Invoke("System.DateTime.DateTime()")], Array(Bool(true), Text(PreciseText))),
+        Success("datetime.try-parse.span", "static System.DateTime.TryParse(System.ReadOnlySpan<char>, out System.DateTime)", [Text("2024-01-02T03:04:05.0060079"), Invoke("System.DateTime.DateTime()")], Array(Bool(true), Text(PreciseText))),
+        Success("datetime.try-parse.span-provider", "static System.DateTime.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out System.DateTime)", [Text("2024-01-02T03:04:05.0060079"), Text(""), Invoke("System.DateTime.DateTime()")], Array(Bool(true), Text(PreciseText))),
+        Success("datetime.try-parse.span-provider-styles", "static System.DateTime.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTime)", [Text("2024-01-02T03:04:05.0060079"), Text(""), Number(0), Invoke("System.DateTime.DateTime()")], Array(Bool(true), Text(PreciseText))),
+        Failure("datetime.try-parse.invalid-style", "static System.DateTime.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTime)", [Text("2024-01-02"), Text(""), Number(256), Invoke("System.DateTime.DateTime()")], "ArgumentException"),
+
+        Success("datetime.current.now-kind", "System.DateTime.Kind.get", [Invoke("static System.DateTime.Now.get")], Number(2)),
+        Success("datetime.current.today-kind", "System.DateTime.Kind.get", [Invoke("static System.DateTime.Today.get")], Number(2)),
+        Success("datetime.current.utc-now-kind", "System.DateTime.Kind.get", [Invoke("static System.DateTime.UtcNow.get")], Number(1))
     ];
 
     private static ClrRuntimeValue Date(

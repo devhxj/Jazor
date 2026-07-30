@@ -9,6 +9,24 @@ internal static class ClrRuntimeGuidScenarios
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
         new(
+            "guid.ctor.default-empty",
+            "System.Guid.Guid()",
+            ModulePath,
+            [],
+            ClrRuntimeValue.Text(EmptyGuid)),
+        new(
+            "guid.ctor.normalizes-string",
+            "System.Guid.Guid(string)",
+            ModulePath,
+            [ClrRuntimeValue.Text("00112233445566778899AABBCCDDEEFF")],
+            ClrRuntimeValue.Text(CanonicalGuid)),
+        new(
+            "guid.constant.empty",
+            "static readonly System.Guid.Empty",
+            ModulePath,
+            [],
+            ClrRuntimeValue.Text(EmptyGuid)),
+        new(
             "guid.parse.uppercase-d-format",
             "static System.Guid.Parse(string)",
             ModulePath,
@@ -19,6 +37,12 @@ internal static class ClrRuntimeGuidScenarios
             "static System.Guid.Parse(string)",
             ModulePath,
             [ClrRuntimeValue.Text("00112233445566778899AABBCCDDEEFF")],
+            ClrRuntimeValue.Text(CanonicalGuid)),
+        new(
+            "guid.parse.span-uppercase-d-format",
+            "static System.Guid.Parse(System.ReadOnlySpan<char>)",
+            ModulePath,
+            [ClrRuntimeValue.Text("00112233-4455-6677-8899-AABBCCDDEEFF")],
             ClrRuntimeValue.Text(CanonicalGuid)),
         new(
             "guid.try-parse.valid-braced-format",
@@ -33,14 +57,38 @@ internal static class ClrRuntimeGuidScenarios
             [ClrRuntimeValue.Text("not-a-guid"), ClrRuntimeValue.Null()],
             ClrRuntimeValue.Array(ClrRuntimeValue.Boolean(false), ClrRuntimeValue.Text(EmptyGuid))),
         new(
+            "guid.try-parse.span-valid-parenthesized-format",
+            "static System.Guid.TryParse(System.ReadOnlySpan<char>, out System.Guid)",
+            ModulePath,
+            [ClrRuntimeValue.Text("(00112233-4455-6677-8899-AABBCCDDEEFF)"), ClrRuntimeValue.Null()],
+            ClrRuntimeValue.Array(ClrRuntimeValue.Boolean(true), ClrRuntimeValue.Text(CanonicalGuid))),
+        new(
             "guid.format.lowercase-n-specifier",
             "System.Guid.ToString(string)",
             ModulePath,
             [ClrRuntimeValue.Text(CanonicalGuid), ClrRuntimeValue.Text("n")],
             ClrRuntimeValue.Text("00112233445566778899aabbccddeeff")),
         new(
+            "guid.format.provider-braced-specifier",
+            "System.Guid.ToString(string, System.IFormatProvider)",
+            ModulePath,
+            [ClrRuntimeValue.Text(CanonicalGuid), ClrRuntimeValue.Text("B"), ClrRuntimeValue.Null()],
+            ClrRuntimeValue.Text("{00112233-4455-6677-8899-aabbccddeeff}")),
+        new(
+            "guid.format.default-override",
+            "override System.Guid.ToString()",
+            ModulePath,
+            [ClrRuntimeValue.Text("00112233445566778899AABBCCDDEEFF")],
+            ClrRuntimeValue.Text(CanonicalGuid)),
+        new(
             "guid.equals.normalized-value",
             "System.Guid.Equals(System.Guid)",
+            ModulePath,
+            [ClrRuntimeValue.Text(CanonicalGuid), ClrRuntimeValue.Text("00112233445566778899AABBCCDDEEFF")],
+            ClrRuntimeValue.Boolean(true)),
+        new(
+            "guid.equals.object-normalized-value",
+            "override System.Guid.Equals(object)",
             ModulePath,
             [ClrRuntimeValue.Text(CanonicalGuid), ClrRuntimeValue.Text("00112233445566778899AABBCCDDEEFF")],
             ClrRuntimeValue.Boolean(true)),

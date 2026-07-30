@@ -34,7 +34,15 @@ internal static class ClrRuntimeCharScenarios
         Success("char.convert-to-utf32.surrogate-pair", "static char.ConvertToUtf32(string, int)", [Text(GrinningFace), Number(0)], Number(128512)),
         Success("char.convert-to-utf32.bmp-code-unit", "static char.ConvertToUtf32(string, int)", [Text("A"), Number(0)], Number(65)),
         Success("char.numeric-value.ascii-digit", "static char.GetNumericValue(char)", [Text("7")], Number(7)),
-        Success("char.numeric-value.nondigit", "static char.GetNumericValue(char)", [Text("A")], Number(-1))
+        Success("char.numeric-value.nondigit", "static char.GetNumericValue(char)", [Text("A")], Number(-1)),
+        Success("char.numeric-value.string-index", "static char.GetNumericValue(string, int)", [Text("a7"), Number(1)], Number(7)),
+        Success("char.control.string-index", "static char.IsControl(string, int)", [Text("A\0"), Number(1)], Bool(true)),
+        Success("char.high-surrogate.string-index", "static char.IsHighSurrogate(string, int)", [Text(GrinningFace), Number(0)], Bool(true)),
+        Success("char.low-surrogate.string-index", "static char.IsLowSurrogate(string, int)", [Text(GrinningFace), Number(1)], Bool(true)),
+        Success("char.lower.string-index", "static char.IsLower(string, int)", [Text("xY"), Number(0)], Bool(true)),
+        Success("char.surrogate.string-index", "static char.IsSurrogate(string, int)", [Text(GrinningFace), Number(0)], Bool(true)),
+        Success("char.upper.string-index", "static char.IsUpper(string, int)", [Text("xY"), Number(1)], Bool(true)),
+        Success("char.white-space.string-index", "static char.IsWhiteSpace(string, int)", [Text("A\u00A0"), Number(1)], Bool(true))
     ];
 
     private static ClrRuntimeScenario Success(

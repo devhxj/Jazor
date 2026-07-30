@@ -606,14 +606,138 @@ public static class DateTimeModule
 		if (locale.Length == 0)
 			return FormatInvariantTime(instance, includeSeconds);
 
+		if (!includeSeconds)
+		{
+			return FormatLocaleDateTime(
+				instance.Date,
+				locale,
+				new Intl.DateTimeFormatOptions(
+					Hour: Intl.NumericTwoDigit.TwoDigit,
+					Minute: Intl.NumericTwoDigit.TwoDigit,
+					Hour12: false));
+		}
+
 		return FormatLocaleDateTime(
 			instance.Date,
 			locale,
 			new Intl.DateTimeFormatOptions(
 				Hour: Intl.NumericTwoDigit.TwoDigit,
 				Minute: Intl.NumericTwoDigit.TwoDigit,
-				Second: includeSeconds ? Intl.NumericTwoDigit.TwoDigit : null,
+				Second: Intl.NumericTwoDigit.TwoDigit,
 				Hour12: false));
+	}
+
+	private static bool TryParseAsciiNumber(string text, out int value)
+	{
+		value = 0;
+		if (text.Length == 0)
+			return false;
+
+		for (var index = 0; index < text.Length; index++)
+		{
+			var character = text[index];
+			if (character < '0' || character > '9')
+				return false;
+
+			value = value * 10 + character - '0';
+		}
+
+		return true;
+	}
+
+	private static string? FindNextLiteral(Intl.FormatPart[] parts, int startIndex)
+	{
+		for (var index = startIndex; index < parts.Length; index++)
+		{
+			if (parts[index].Type == "literal" && parts[index].Value.Length > 0)
+				return parts[index].Value;
+		}
+
+		return null;
+	}
+
+	private static bool TryGetLocalizedLongMonth(
+		Intl.DateTimeFormat formatter,
+		string text,
+		out int month)
+	{
+		for (var candidate = 1; candidate <= 12; candidate++)
+		{
+			var parts = formatter.FormatToParts(CreateLocalDate(2006, candidate, 22));
+			for (var index = 0; index < parts.Length; index++)
+			{
+				if (parts[index].Type == "month" && parts[index].Value == text)
+				{
+					month = candidate;
+					return true;
+				}
+			}
+		}
+
+		month = 0;
+		return false;
+	}
+
+	private static bool TryParseLocalizedLongDate(string text, out int year, out int month, out int day)
+	{
+		year = 0;
+		month = 0;
+		day = 0;
+
+		var locale = GetProviderLocale(null);
+		if (locale.Length == 0)
+			return false;
+
+		var formatter = new Intl.DateTimeFormat(
+			locale,
+			new Intl.DateTimeFormatOptions(
+				Weekday: Intl.LongShortNarrow.Long,
+				Year: Intl.NumericTwoDigit.Numeric,
+				Month: Intl.LongShortNarrow.Long,
+				Day: Intl.NumericTwoDigit.TwoDigit));
+		var parts = formatter.FormatToParts(CreateLocalDate(2006, 11, 22));
+		var offset = 0;
+		for (var index = 0; index < parts.Length; index++)
+		{
+			var part = parts[index];
+			if (part.Type == "literal")
+			{
+				if (!text.Substring(offset).StartsWith(part.Value))
+					return false;
+				offset += part.Value.Length;
+				continue;
+			}
+
+			var nextLiteral = FindNextLiteral(parts, index + 1);
+			var end = nextLiteral == null ? text.Length : text.IndexOf(nextLiteral, offset);
+			if (end < offset)
+				return false;
+
+			var value = text.Substring(offset, end - offset);
+			offset = end;
+			if (part.Type == "year")
+			{
+				if (!TryParseAsciiNumber(value, out year))
+					return false;
+			}
+			else if (part.Type == "day")
+			{
+				if (!TryParseAsciiNumber(value, out day))
+					return false;
+			}
+			else if (part.Type == "month")
+			{
+				if (!TryParseAsciiNumber(value, out month)
+					&& !TryGetLocalizedLongMonth(formatter, value, out month))
+					return false;
+			}
+		}
+
+		if (offset != text.Length || year < 1 || month < 1 || month > 12 || day < 1)
+			return false;
+
+		var date = CreateLocalDate(year, month, day);
+		return date.GetFullYear() == year && date.GetMonth() + 1 == month && date.GetDate() == day;
 	}
 
 	private static string FormatRoundtripDateTime(RuntimeModule.JDateTime instance)
@@ -1358,6 +1482,9 @@ public static class DateTimeModule
 
 		if (TryParseIsoDate(s, out var year, out var month, out var day))
 			return new RuntimeModule.JDateTime(CreateLocalDate(year, month, day), DateTimeKindUnspecified);
+
+		if (TryParseLocalizedLongDate(s, out var localizedYear, out var localizedMonth, out var localizedDay))
+			return new RuntimeModule.JDateTime(CreateLocalDate(localizedYear, localizedMonth, localizedDay), DateTimeKindUnspecified);
 
 		if (TryParseIsoDateTime(s, out year, out month, out day, out var hour, out var minute, out var second, out var millisecond, out var subMillisecondTicks, out var kind, out var offsetTicks))
 		{
