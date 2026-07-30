@@ -98,6 +98,37 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_ListIndexedObjectInitializer_CompletesValueThroughMappedSetter()
+    {
+        var block = GetBlockOperation("""
+            var values = new List<Nested>(new[] { new Nested() })
+            {
+                [NextIndex()] = new Nested { Value = 9 }
+            };
+            """);
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let values = (() => {
+                let v$0 = Array.from([new Nested]);
+                _c16a7960302ea054(v$0, TestClass.nextIndex(), (() => {
+                  let v$1 = new Nested;
+                  v$1.value = 9;
+                  return v$1;
+                })());
+                return v$0;
+              })();
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_MultiParameterIndexerMemberInitializer_RejectsUnrepresentableJavaScriptTarget()
     {
         var block = GetBlockOperation("var holder = new MatrixHolder { [0, 1] = { Value = 7 } };");

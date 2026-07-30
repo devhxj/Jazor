@@ -46,6 +46,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 - CLR runtime 模块会在 hash 后的 JavaScript helper 声明前标注原始 CLR 成员名，便于检查包内产物。
 - SourceMap 现按标准化语法树完整路径解析 `sourcesContent`，不同目录下的同名文件不会再发生内容混淆。
 - 映射后的复合赋值与递增/递减会对带副作用的字段、属性和 ECMAScript 索引器目标保持单次求值。
+- 嵌套对象初始化器会先完成右值构造再调用映射 setter，并对计算目标保持单次求值，setter 不会观察到半初始化对象。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
