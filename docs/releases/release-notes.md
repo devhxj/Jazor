@@ -8,6 +8,7 @@
 - Composite property, tuple, and nested list patterns now evaluate each member input once, preventing repeated C# or JavaScript getter side effects while preserving pattern order and results.
 - Nested object initializers now complete their values before assigning a property or indexer, so computed targets are evaluated once and setters cannot observe partially initialized objects.
 - Unsupported standalone `System.Index` and `System.Range` values now produce explicit, source-located diagnostics that direct authors to contextual `^` and `..` indexer or slice usage.
+- Source-map source content now resolves through exact normalized syntax-tree paths, so files with the same name in different directories retain their own `sourcesContent` instead of relying on ambiguous filename fallback.
 
 ## 2026-07-29
 

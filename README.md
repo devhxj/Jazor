@@ -49,6 +49,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 - Composite property, tuple, and nested list patterns evaluate each member input once, so getters cannot run repeatedly during one pattern match.
 - Nested object initializers complete their values before assigning a property or indexer, preserving single evaluation of computed targets and preventing setters from observing partially initialized objects.
 - Unsupported standalone `System.Index` and `System.Range` values now report explicit diagnostics that point to contextual `^` and `..` indexer usage.
+- Source maps resolve `sourcesContent` by exact normalized syntax-tree path, keeping same-named files in different directories correctly isolated.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

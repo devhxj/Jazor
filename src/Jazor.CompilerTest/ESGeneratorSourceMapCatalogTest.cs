@@ -74,6 +74,86 @@ public sealed class ESGeneratorSourceMapCatalogTest
     }
 
     [TestMethod]
+    public void RunGenerator_SourceContentLookup_DistinguishesSameNamedFilesByNormalizedTreePath()
+    {
+        const string attributeSource = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+            """;
+        const string alphaSource = """
+            [ECMAScript.ECMAScriptModule("modules/alpha")]
+            public static class AlphaModule
+            {
+                public static int Read() => 11;
+            }
+            """;
+        const string betaSource = """
+            [ECMAScript.ECMAScriptModule("modules/beta")]
+            public static class BetaModule
+            {
+                public static int Read() => 22;
+            }
+            """;
+
+        var sourceRoot = Path.Combine(Path.GetTempPath(), "jazor-esgenerator-source-content");
+        var attributePath = Path.Combine(sourceRoot, "Contracts", "ECMAScriptModuleAttribute.cs");
+        var alphaPath = Path.Combine(sourceRoot, "Alpha", "SharedModule.cs");
+        var betaPath = Path.Combine(sourceRoot, "Beta", "SharedModule.cs");
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "SourceMapCatalog.DuplicateFileNames.Generated",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(attributeSource, TestMetadataReferences.PreviewParseOptions, path: attributePath),
+                CSharpSyntaxTree.ParseText(alphaSource, TestMetadataReferences.PreviewParseOptions, path: alphaPath),
+                CSharpSyntaxTree.ParseText(betaSource, TestMetadataReferences.PreviewParseOptions, path: betaPath)
+            ],
+            references: TestMetadataReferences.Net11,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var probes = new Dictionary<string, SourceContentProbe>(StringComparer.Ordinal);
+
+        using var _ = OverrideSourceMapArtifactFactoryForTest(
+            (_, generatedFileName, _, observedSourceRoot, readSourceContent) =>
+            {
+                probes.Add(
+                    generatedFileName,
+                    new SourceContentProbe(
+                        observedSourceRoot,
+                        readSourceContent!(alphaPath),
+                        readSourceContent(betaPath.Replace('\\', '/')),
+                        readSourceContent("SharedModule.cs"),
+                        readSourceContent(" ")));
+                return new GeneratedJavaScriptArtifact("export {};", "{}", "js-hash", "map-hash");
+            });
+
+        var (outputCompilation, runResult) = RunGeneratorWithResult(compilation);
+
+        Assert.HasCount(2, probes);
+        foreach (var probe in probes.Values)
+        {
+            Assert.AreEqual(Path.GetFullPath(sourceRoot), probe.SourceRoot);
+            Assert.AreEqual(alphaSource, probe.AlphaContent);
+            Assert.AreEqual(betaSource, probe.BetaContent);
+            Assert.IsNull(probe.AmbiguousFileNameContent);
+            Assert.IsNull(probe.BlankPathContent);
+        }
+
+        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
+        Assert.HasCount(0, diagnostics, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
+        var errors = outputCompilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(0, errors, string.Join(Environment.NewLine, errors.Select(static item => item.ToString())));
+    }
+
+    [TestMethod]
     public void RunGenerator_StaticModule_WhenSourceMapGenerationFails_ReportsWarningAndFallsBackToJsOnlyCatalog()
     {
         var compilation = CreateCompilation(
@@ -237,4 +317,11 @@ public sealed class ESGeneratorSourceMapCatalogTest
             _asyncLocal.Value = _value;
         }
     }
+
+    private sealed record SourceContentProbe(
+        string? SourceRoot,
+        string? AlphaContent,
+        string? BetaContent,
+        string? AmbiguousFileNameContent,
+        string? BlankPathContent);
 }
