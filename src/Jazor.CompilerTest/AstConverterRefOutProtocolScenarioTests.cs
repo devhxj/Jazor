@@ -53,6 +53,48 @@ public sealed class AstConverterRefOutProtocolScenarioTests
         _ = new Parser().ParseModule(module.ToKnRECMAScript());
     }
 
+    [TestMethod]
+    public async Task Convert_RefOutProtocol_DoesNotRewriteNestedLambdaReturn()
+    {
+        const string scenarioId = "ast-converter-ref-out.nested-lambda-return";
+        const string source = """
+            public static class TestModule
+            {
+                public static int IncrementAndRead(ref int value)
+                {
+                    System.Func<int> seed = () => 1;
+                    value++;
+                    return value + seed();
+                }
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module, scenarioId);
+        var exportedMethod = module!.Body.OfType<ExportNamedDeclaration>().Single();
+        Assert.IsInstanceOfType<FunctionDeclaration>(exportedMethod.Declaration, scenarioId);
+        var outerFunction = (FunctionDeclaration)exportedMethod.Declaration;
+        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single();
+        var seedInitializer = seedDeclaration.Declarations.Single().Init;
+
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(seedInitializer, scenarioId);
+        var lambda = (ArrowFunctionExpression)seedInitializer;
+        Assert.IsInstanceOfType<FunctionBody>(lambda.Body, scenarioId);
+        var lambdaReturn = ((FunctionBody)lambda.Body).Body.OfType<ReturnStatement>().Single();
+        Assert.IsInstanceOfType<NumericLiteral>(lambdaReturn.Argument, scenarioId);
+
+        var outerReturn = outerFunction.Body.Body.OfType<ReturnStatement>().Single();
+        Assert.IsInstanceOfType<ArrayExpression>(outerReturn.Argument, scenarioId);
+        var protocolResult = (ArrayExpression)outerReturn.Argument;
+        Assert.HasCount(2, protocolResult.Elements, scenarioId);
+        Assert.IsInstanceOfType<BinaryExpression>(protocolResult.Elements[0], scenarioId);
+        Assert.IsInstanceOfType<Identifier>(protocolResult.Elements[1], scenarioId);
+        Assert.AreEqual("value", ((Identifier)protocolResult.Elements[1]!).Name, scenarioId);
+
+        _ = new Parser().ParseModule(module.ToKnRECMAScript());
+    }
+
     private static RefOutFixture CompileModule(string source, string scenarioId)
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
