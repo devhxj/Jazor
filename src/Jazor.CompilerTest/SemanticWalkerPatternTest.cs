@@ -6622,7 +6622,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "person.Address", 1);
-    AssertStringContainsJsNaming(script, "(v$1 = person.Address, v$1 instanceof Address && v$1 != null && \"City\" in v$1 && v$1.City === \"NYC\")", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$2 = person.Address, v$2 instanceof Address && v$2 != null && \"City\" in v$2 && v$2.City === \"NYC\")", StringComparison.Ordinal);
     AssertStringContainsJsNaming(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
   }
 
@@ -6651,9 +6651,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "person.Address", 1);
-    AssertStringContainsJsNaming(script, "(v$1 = person.Address, v$1 instanceof Address && v$1 != null", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "v$1.City === \"NYC\"", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "v$1.Zip > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$2 = person.Address, v$2 instanceof Address && v$2 != null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "v$2.City === \"NYC\"", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "v$2.Zip > 0", StringComparison.Ordinal);
   }
 
   /// <summary>

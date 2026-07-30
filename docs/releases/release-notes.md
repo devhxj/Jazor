@@ -5,6 +5,7 @@
 - Generic whitelist compatibility lookup now reuses indexed key shapes, preventing ordinary generic method calls from repeatedly scanning the full CLR member catalog during compilation.
 - Inline-backed CLR and host calls now preserve C# receiver and argument evaluation order, eager timing, and single-evaluation semantics when templates repeat, omit, reorder, conditionally consume, or capture placeholders in deferred functions.
 - Composite property, tuple, and nested list patterns now evaluate each member input once, preventing repeated C# or JavaScript getter side effects while preserving pattern order and results.
+- Nested object initializers now complete their values before assigning a property or indexer, so computed targets are evaluated once and setters cannot observe partially initialized objects.
 - Unsupported standalone `System.Index` and `System.Range` values now produce explicit, source-located diagnostics that direct authors to contextual `^` and `..` indexer or slice usage.
 
 ## 2026-07-29

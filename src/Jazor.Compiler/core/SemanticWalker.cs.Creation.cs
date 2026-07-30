@@ -103,34 +103,30 @@ public partial class SemanticWalker
 		if (mappedConstructor is not null)
 			expr = mappedConstructor;
 		
-		if (assignObj is not null)
-			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
-
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
 			if (Util.IsECMAScriptRuntimeType(operation.Type) &&
 				Util.HasNameResolutionBoundary(operation.Type))
-				return RecursiveObjectOrCollectionInitializer(operation.Initializer, argument);
+			{
+				expr = RecursiveObjectOrCollectionInitializer(operation.Initializer, argument);
+			}
 
-			if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
+			else if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
 			{
 				expr = collectionLiteral;
-				if (assignObj is not null)
-					expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
-				return expr;
 			}
-
-			if (assignObj is null)
-				return BuildObjectOrCollectionInitializer(expr, operation.Initializer, argument)!;
 			else
 			{
-				var exprs = new List<Expression> { expr };
-				var initExprs = BuildObjectCreationInitializer(assignObj, operation.Initializer, argument);
-				exprs.AddRange(initExprs);
-				return new SequenceExpression(NodeList.From(exprs));
+				// Nested object creation must complete before the outer property/indexer setter runs.
+				// JavaScript evaluates an assignment target before its RHS, so wrapping only after
+				// the IIFE also preserves receiver/key evaluation order without rereading the target.
+				expr = BuildObjectOrCollectionInitializer(expr, operation.Initializer, argument)!;
 			}
 		}
+
+		if (assignObj is not null)
+			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
 
 		return expr;
 	}

@@ -59,6 +59,45 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_NestedIndexerMemberInitializer_EvaluatesIndexOnce()
+    {
+        var block = GetBlockOperation("var holder = new IndexedHolder { [NextIndex()] = { Value = 5 } };");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "v$1 = v$0[TestClass.nextIndex()]");
+        StringAssert.Contains(script, "v$1.value = 5");
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_IndexedObjectInitializer_EvaluatesIndexOnceAndCompletesValueBeforeAssignment()
+    {
+        var block = GetBlockOperation("var holder = new IndexedHolder { [NextIndex()] = new Nested { Value = 6 } };");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let holder = (() => {
+                let v$0 = new IndexedHolder;
+                v$0[TestClass.nextIndex()] = (() => {
+                  let v$1 = new Nested;
+                  v$1.value = 6;
+                  return v$1;
+                })();
+                return v$0;
+              })();
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_MultiDimensionalArrayAllocation_AllocatesIndependentNestedArrays()
     {
         var block = GetBlockOperation("var grid = new int[2, 3];");
@@ -129,6 +168,19 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     private static void ParseScript(string script)
         => _ = new Parser().ParseScript(script);
 
+    private static int CountOccurrences(string value, string fragment)
+    {
+        var count = 0;
+        var offset = 0;
+        while ((offset = value.IndexOf(fragment, offset, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            offset += fragment.Length;
+        }
+
+        return count;
+    }
+
     private static TOperation FindOperation<TOperation>(IOperation root)
         where TOperation : class, IOperation
         => root.DescendantsAndSelf().OfType<TOperation>().First();
@@ -151,6 +203,17 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                     public Nested FieldNested = new();
                 }
 
+                public sealed class IndexedHolder
+                {
+                    private readonly Nested[] values = [new(), new()];
+
+                    public Nested this[int index]
+                    {
+                        get => values[index];
+                        set => values[index] = value;
+                    }
+                }
+
                 public sealed class Buffer
                 {
                     public int Length => 3;
@@ -163,6 +226,8 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
                     public int[] this[Range range] => [];
                 }
+
+                private static int NextIndex() => 0;
 
                 public void TestMethod()
                 {

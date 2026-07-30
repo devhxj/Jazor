@@ -46,6 +46,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 - Generic whitelist compatibility lookup now reuses indexed key shapes, avoiding repeated full-catalog scans when compiling ordinary generic method calls.
 - Inline-backed CLR and host calls preserve C# receiver and argument evaluation order, timing, and single-evaluation semantics when templates repeat, omit, reorder, or defer placeholders.
 - Composite property, tuple, and nested list patterns evaluate each member input once, so getters cannot run repeatedly during one pattern match.
+- Nested object initializers complete their values before assigning a property or indexer, preserving single evaluation of computed targets and preventing setters from observing partially initialized objects.
 - Unsupported standalone `System.Index` and `System.Range` values now report explicit diagnostics that point to contextual `^` and `..` indexer usage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.

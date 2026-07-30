@@ -886,9 +886,15 @@ public sealed class SemanticWalkerCreationTest
         AssertScriptEqual(
 @"(() => {
   let v$0 = new Outer;
-  v$0.Middle = new Middle;
-  v$0.Middle.Inner = new Inner;
-  v$0.Middle.Inner.Value = 42;
+  v$0.Middle = (() => {
+    let v$0 = new Middle;
+    v$0.Inner = (() => {
+      let v$0 = new Inner;
+      v$0.Value = 42;
+      return v$0;
+    })();
+    return v$0;
+  })();
   return v$0;
 })()", script);
 
@@ -936,8 +942,11 @@ public sealed class SemanticWalkerCreationTest
   let v$0 = new MyClass(1, 2);
   v$0.Prop1 = ""value1"";
   v$0.Prop2 = 42;
-  v$0.Nested = new NestedClass;
-  v$0.Nested.NestedProp = ""nested"";
+  v$0.Nested = (() => {
+    let v$0 = new NestedClass;
+    v$0.NestedProp = ""nested"";
+    return v$0;
+  })();
   return v$0;
 })()", script);
 
@@ -2177,8 +2186,11 @@ public sealed class SemanticWalkerCreationTest
   let list = [];
   list.push((() => {
     let v$0 = new Outer;
-    v$0.Inner = new Inner;
-    v$0.Inner.Value = 42;
+    v$0.Inner = (() => {
+      let v$1 = new Inner;
+      v$1.Value = 42;
+      return v$1;
+    })();
     return v$0;
   })().Inner.Value);
 }", script);
@@ -2340,10 +2352,19 @@ public sealed class SemanticWalkerCreationTest
         AssertScriptEqual(
 @"(() => {
   let v$0 = new A;
-  v$0.B = new B;
-  v$0.B.C = new C;
-  v$0.B.C.D = new D;
-  v$0.B.C.D.Value = 999;
+  v$0.B = (() => {
+    let v$0 = new B;
+    v$0.C = (() => {
+      let v$0 = new C;
+      v$0.D = (() => {
+        let v$0 = new D;
+        v$0.Value = 999;
+        return v$0;
+      })();
+      return v$0;
+    })();
+    return v$0;
+  })();
   return v$0;
 })()", script);
 
@@ -3070,8 +3091,11 @@ public sealed class SemanticWalkerCreationTest
         AssertScriptEqual(@"{
   let outer = (() => {
     let v$0 = new OuterClass;
-    v$0.Inner = new InnerClass;
-    v$0.Inner.Value = 100;
+    v$0.Inner = (() => {
+      let v$1 = new InnerClass;
+      v$1.Value = 100;
+      return v$1;
+    })();
     return v$0;
   })();
 }", script);
@@ -3496,8 +3520,11 @@ public sealed class SemanticWalkerCreationTest
         AssertScriptEqual(@"{
   let obj = (() => {
     let v$0 = new OuterClass;
-    v$0.Inner = new InnerClass;
-    v$0.Inner.Value = 42;
+    v$0.Inner = (() => {
+      let v$1 = new InnerClass;
+      v$1.Value = 42;
+      return v$1;
+    })();
     return v$0;
   })();
 }", script);
@@ -4092,8 +4119,11 @@ public sealed class SemanticWalkerCreationTest
         AssertScriptEqual(@"{
   let outer = (() => {
     let v$0 = new Outer;
-    v$0.Inner = new Inner;
-    v$0.Inner.Value = 42;
+    v$0.Inner = (() => {
+      let v$1 = new Inner;
+      v$1.Value = 42;
+      return v$1;
+    })();
     return v$0;
   })();
 }", script);
