@@ -190,8 +190,10 @@ internal static class ClrRuntimeTestHost
               let fn;
               switch (value.scalar) {
                 case "IsEven": fn = item => typeof item === "number" && item % 2 === 0; break;
+                case "IsEvenIndex": fn = (_, index) => index % 2 === 0; break;
                 case "IsPositive": fn = item => typeof item === "number" && item > 0; break;
                 case "DoubleNumber": fn = item => item * 2; break;
+                case "AddIndex": fn = (item, index) => item + index; break;
                 case "CompareDescending": fn = (left, right) => right - left; break;
                 default: throw new Error(`Unsupported CLR runtime callable kind: ${value.scalar}`);
               }

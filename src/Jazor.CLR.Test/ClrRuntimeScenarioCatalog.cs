@@ -21,8 +21,10 @@ internal enum ClrRuntimeValueKind
 internal enum ClrRuntimeCallableKind
 {
     IsEven,
+    IsEvenIndex,
     IsPositive,
     DoubleNumber,
+    AddIndex,
     CompareDescending
 }
 
@@ -114,6 +116,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeSetScenarios.InterfaceSet,
         .. ClrRuntimeDictionaryScenarios.All,
         .. ClrRuntimeIntegralScenarios.All,
+        .. ClrRuntimeReadOnlyCollectionScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,
