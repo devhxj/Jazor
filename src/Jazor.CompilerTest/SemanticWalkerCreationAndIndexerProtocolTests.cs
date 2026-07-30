@@ -98,6 +98,75 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_MultiParameterIndexerMemberInitializer_RejectsUnrepresentableJavaScriptTarget()
+    {
+        var block = GetBlockOperation("var holder = new MatrixHolder { [0, 1] = { Value = 7 } };");
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "only supports a single translated index argument");
+    }
+
+    [TestMethod]
+    public void Visit_StructuralRecordPrimaryConstructorSpreadLiteral_FlattensMembersInOrder()
+    {
+        var block = GetBlockOperation(
+            "var payload = new SpreadEnvelope(\"x\", new ChildProps { Name = \"John\", Age = 30 });");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let payload = {
+                prefix: "x",
+                name: "John",
+                age: 30
+              };
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_StructuralRecordNestedPropertyInitializer_ProducesNestedObjectLiteral()
+    {
+        var block = GetBlockOperation(
+            "var payload = new PropertyEnvelope { Child = { Name = \"John\", Age = 30 } };");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let payload = { child: { name: "John", age: 30 } };
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_StructuralRecordNestedFieldInitializer_ProducesNestedObjectLiteral()
+    {
+        var block = GetBlockOperation(
+            "var payload = new FieldEnvelope { Child = { Name = \"John\", Age = 30 } };");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let payload = { child: { name: "John", age: 30 } };
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_MultiDimensionalArrayAllocation_AllocatesIndependentNestedArrays()
     {
         var block = GetBlockOperation("var grid = new int[2, 3];");
@@ -189,6 +258,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     {
         var source = $$"""
             using System;
+            using System.ComponentModel;
 
             public sealed class TestClass
             {
@@ -212,6 +282,35 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                         get => values[index];
                         set => values[index] = value;
                     }
+                }
+
+                public sealed class MatrixHolder
+                {
+                    public Nested this[int row, int column] => new();
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description("@#name")]
+                    public string? Name { get; set; }
+
+                    [Description("@#age")]
+                    public int Age { get; set; }
+                }
+
+                public sealed record SpreadEnvelope(
+                    [property: Description("@#prefix")] string Prefix,
+                    [property: ECMAScript.Spread] ChildProps Child);
+
+                public sealed record PropertyEnvelope
+                {
+                    [Description("@#child")]
+                    public ChildProps Child { get; init; } = new();
+                }
+
+                public sealed record FieldEnvelope
+                {
+                    public ChildProps Child = new();
                 }
 
                 public sealed class Buffer
@@ -239,7 +338,11 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         var compilation = CSharpCompilation.Create(
             assemblyName: "CreationAndIndexerProtocolScenarios",
             syntaxTrees: [syntaxTree],
-            references: TestMetadataReferences.Net11,
+            references:
+            [
+                .. TestMetadataReferences.Net11,
+                MetadataReference.CreateFromFile(typeof(ECMAScript.SpreadAttribute).Assembly.Location)
+            ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
