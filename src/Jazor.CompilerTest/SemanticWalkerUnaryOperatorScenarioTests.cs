@@ -10,6 +10,17 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerUnaryOperatorScenarioTests
 {
+    private static readonly Lazy<ScenarioOperationSet> Operations = new(() =>
+        ScenarioOperationSet.Create(
+            "UnaryOperatorScenarios",
+            "UnaryOperatorScenarios",
+            UnaryOperatorScenarioCatalog.All
+                .Select(static (scenario, index) => new ScenarioOperationSource(
+                    scenario.Id,
+                    $"Scenario{index:D4}",
+                    scenario.Source))
+                .ToArray()));
+
     public static IEnumerable<TestDataRow<UnaryOperatorScenario>> Cases
         => UnaryOperatorScenarioCatalog.All.Select(static scenario =>
             new TestDataRow<UnaryOperatorScenario>(scenario)
@@ -35,7 +46,7 @@ public sealed class SemanticWalkerUnaryOperatorScenarioTests
     [DynamicData(nameof(Cases))]
     public void Visit_UnaryOperatorScenario_ProducesDeterministicParsableJavaScript(UnaryOperatorScenario scenario)
     {
-        var block = GetBlockOperation(scenario.Source);
+        var block = Operations.Value.GetBlock(scenario.Id);
         var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
         var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
@@ -45,37 +56,6 @@ public sealed class SemanticWalkerUnaryOperatorScenarioTests
         _ = new Parser().ParseScript(first);
     }
 
-    private static IBlockOperation GetBlockOperation(string body)
-    {
-        var source = $$"""
-            using System;
-
-            public sealed class UnaryOperatorScenarios
-            {
-                private static void Consume<T>(T value) { }
-
-                public void TestMethod()
-                {
-            {{body}}
-                }
-            }
-            """;
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
-        var compilation = CSharpCompilation.Create(
-            assemblyName: "UnaryOperatorScenarios",
-            syntaxTrees: [syntaxTree],
-            references: TestMetadataReferences.Net11,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var errors = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
-        Assert.HasCount(0, errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
-
-        var method = syntaxTree.GetRoot().DescendantNodes()
-            .OfType<MethodDeclarationSyntax>()
-            .Single(static declaration => declaration.Identifier.ValueText == "TestMethod");
-        return Assert.IsInstanceOfType<IBlockOperation>(compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
-    }
 }
 
 public sealed record UnaryOperatorScenario(
