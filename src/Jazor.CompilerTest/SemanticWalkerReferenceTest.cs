@@ -1363,6 +1363,13 @@ public sealed class SemanticWalkerReferenceTest
 					var parsed = Half.Parse(text);
 					var sum = left + right;
 					var power = Half.IsPow2(parsed);
+					var rounded = Half.Round(left);
+					var remainder = Half.Ieee754Remainder(left, right);
+					var exponent = Half.ILogB(left);
+					var clamped = Half.Clamp(parsed, left, right);
+					var root = Half.RootN(left, 3);
+					var odd = Half.IsOddInteger(left);
+					var sine = Half.Sin(left);
                     var abs = Half.Abs(left);
                     var compare = left.CompareTo(right);
                     Half result;
@@ -1379,8 +1386,15 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let max = 65504;
   let parsed = _14d80007aa3543a1(text);
-  let sum = left + right;
+  let sum = Math.f16round(left + right);
   let power = _8b5f0cb98ef4522c(parsed);
+  let rounded = _8654f1427404f736(left);
+  let remainder = _18006f6446bcf954(left, right);
+  let exponent = _32ebc25218ce32e0(left);
+  let clamped = _6335905a4e3a886f(parsed, left, right);
+  let root = _7d0e51fe4ac37ce8(left, 3);
+  let odd = Number.isInteger(left) && left % 2 !== 0;
+  let sine = Math.f16round(Math.sin(left));
   let abs = Math.abs(left);
   let compare = isNaN(left) ? isNaN(right) ? 0 : -1 : isNaN(right) ? 1 : left < right ? -1 : left > right ? 1 : 0;
   let result;
@@ -1405,6 +1419,9 @@ public sealed class SemanticWalkerReferenceTest
 					var compare = left.CompareTo(right);
                     var rotated = Int128.RotateLeft(left, 3);
                     var magnitude = Int128.MaxMagnitude(left, right);
+					var absolute = Int128.Abs(left);
+					var copiedSign = Int128.CopySign(left, right);
+					var clamped = Int128.Clamp(parsed, left, right);
                     Int128 result;
                     var success = Int128.TryParse(text, out result);
                 }
@@ -1426,6 +1443,9 @@ public sealed class SemanticWalkerReferenceTest
   let compare = left < right ? -1 : left > right ? 1 : 0;
   let rotated = _d432cd8596dae24f(left, 3);
   let magnitude = _829ea04f38a9820e(left, right);
+  let absolute = _bc93f10cc4270d3d(left);
+  let copiedSign = _2f2f3fb10237971f(left, right);
+  let clamped = _587401c79d5e216e(parsed, left, right);
   let result;
   let success = (v$0 = _14ac4f353ddae82c(text, result), result = v$0[1], v$0[0]);
 }", script);
@@ -1463,7 +1483,7 @@ public sealed class SemanticWalkerReferenceTest
   let difference = BigInt.asUintN(128, left - right);
   let quotient = _30e28339559d8888(left, right);
   let shifted = BigInt.asUintN(128, left << BigInt(129 & 127));
-  let value = parsed < left ? left : parsed > right ? right : parsed;
+  let value = _a545c5c1dd9b956a(parsed, left, right);
   let rotated = _a2bab5c9eaffb253(value, 7);
   let result;
   let success = (v$0 = _8845ce18c94ffbb4(text, result), result = v$0[1], v$0[0]);

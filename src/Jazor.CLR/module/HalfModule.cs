@@ -1,16 +1,80 @@
 namespace Jazor.CLR;
 
 /// <summary>
-/// System.Half 映射为 JavaScript Number；成员语义与 DoubleModule 共用浮点核心。
+/// System.Half 映射为 JavaScript Number；通用浮点判定与 DoubleModule 共用核心。
 /// </summary>
 /// <remarks>
-/// JavaScript 不提供 binary16 运算载体，因此表达式结果按 Number 保存；Half 自身的边界常量、
-/// normal/subnormal 判定和 CLR 成员契约仍使用 binary16 的定义。
+/// Number 只是 Half 的无损 carrier。所有产生新 Half 值的运算必须经过 Math.f16round，
+/// 不能把 binary64 中间结果直接暴露为 Half，否则后续比较和成员调用都会观察到错误精度。
 /// </remarks>
 [ECMAScriptModule("System/HalfModule.js")]
 [Jazor(Op.Alias, "System.Half", "Number")]
 public static class HalfModule
 {
+	private static Number RoundToHalf(Number value)
+		=> Math.F16roundFn(value);
+
+	private static Number RoundToEven(Number value)
+	{
+		if (!DoubleModule.IsFiniteCore(value) || value == 0)
+			return value;
+
+		var floor = Math.FloorFn(value);
+		var fraction = value - floor;
+		var rounded = fraction < 0.5
+			? floor
+			: (fraction > 0.5 ? floor + 1 : (floor % 2 == 0 ? floor : floor + 1));
+
+		return rounded == 0 && value < 0 ? -0 : rounded;
+	}
+
+	private static Number Ieee754RemainderCore(Number left, Number right)
+	{
+		if (IsNaN(left) || IsNaN(right) || !DoubleModule.IsFiniteCore(left) || right == 0)
+			return Number.NaN;
+		if (!DoubleModule.IsFiniteCore(right))
+			return left;
+
+		var remainder = left - right * RoundToEven(left / right);
+		if (remainder == 0 && (left < 0 || Object.Is(left, -0)))
+			return -0;
+
+		return RoundToHalf(remainder);
+	}
+
+	private static Number ILogBCore(Number value)
+	{
+		if (IsNaN(value) || !DoubleModule.IsFiniteCore(value))
+			return 2147483647;
+		if (value == 0)
+			return -2147483648;
+
+		return Math.FloorFn(Math.Log2Fn(Math.AbsFn(value)));
+	}
+
+	private static Number ClampCore(Number value, Number min, Number max)
+	{
+		if (min > max)
+			throw new Error("ArgumentException: 'min' cannot be greater than max.");
+
+		return value < min ? min : (value > max ? max : value);
+	}
+
+	private static Number RootNCore(Number value, Number degree)
+	{
+		if (degree == 0)
+			return Number.NaN;
+
+		var oddDegree = degree % 2 != 0;
+		// -0 is valid for even roots and must become +0; finite negative values and -Infinity are not.
+		if (value < 0 && !oddDegree)
+			return Number.NaN;
+
+		var magnitude = Math.PowFn(Math.AbsFn(value), 1 / degree);
+		var negativeResult = oddDegree && (value < 0 || Object.Is(value, -0));
+		return RoundToHalf(negativeResult ? -magnitude : magnitude);
+	}
+
 	[Jazor(Op.Discard ,"System.Half.Half()")]
 	public extern static Number _e57fa2730afaf850();
 
@@ -97,7 +161,7 @@ public static class HalfModule
 		if (!DoubleModule.TryParseCore(text, out var value))
 			throw new Error($"FormatException: The input string '{text}' was not in a correct format.");
 
-		return value;
+		return RoundToHalf(value);
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its single-precision floating-point number equivalent.</summary>
@@ -124,7 +188,7 @@ public static class HalfModule
 		if (!DoubleModule.TryParseCore(text, out var value))
 			return [false, 0];
 
-		return [true, value];
+		return [true, RoundToHalf(value)];
 	}
 
 	///<summary>Converts the span representation of a number to its half-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
@@ -361,7 +425,7 @@ public static class HalfModule
 	public extern static Number _e5c3410a6fc7ae9a();
 
 	///<summary>Adds two values together to compute their sum.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator +(System.Half, System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator +(System.Half, System.Half)", "Math.f16round(__arg1 + __arg2)")]
 	public extern static Number _15e83b166d64a525(Number left, Number right);
 
 	///<summary>Determines if a value is a power of two.</summary>
@@ -370,39 +434,39 @@ public static class HalfModule
 		=> DoubleModule.IsPow2Core(value);
 
 	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log2(System.Half)", "Math.log2(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Log2(System.Half)", "Math.f16round(Math.log2(__arg1))")]
 	public extern static Number _50e42d91eadd858c(Number value);
 
 	///<summary>Decrements a value.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator --(System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator --(System.Half)", "Math.f16round(__arg1 - 1)")]
 	public extern static Number _21dce893594e6a88(Number value);
 
 	///<summary>Divides two values together to compute their quotient.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator /(System.Half, System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator /(System.Half, System.Half)", "Math.f16round(__arg1 / __arg2)")]
 	public extern static Number _31bd8106aec1d697(Number left, Number right);
 
 	///<summary>Computes <code data-dev-comment-type="c">E</code> raised to a given power.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp(System.Half)", "Math.exp(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp(System.Half)", "Math.f16round(Math.exp(__arg1))")]
 	public extern static Number _a7fa6fea71e1af01(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">E</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.ExpM1(System.Half)", "(Math.exp(__arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.ExpM1(System.Half)", "Math.f16round(Math.exp(__arg1) - 1)")]
 	public extern static Number _07444142f58d0e8b(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp2(System.Half)", "Math.pow(2, __arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp2(System.Half)", "Math.f16round(Math.pow(2, __arg1))")]
 	public extern static Number _e8d9bbc26b41707d(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp2M1(System.Half)", "(Math.pow(2, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp2M1(System.Half)", "Math.f16round(Math.pow(2, __arg1) - 1)")]
 	public extern static Number _538126e3a652c9d4(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp10(System.Half)", "Math.pow(10, __arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp10(System.Half)", "Math.f16round(Math.pow(10, __arg1))")]
 	public extern static Number _530bc0e2964110b9(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp10M1(System.Half)", "(Math.pow(10, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp10M1(System.Half)", "Math.f16round(Math.pow(10, __arg1) - 1)")]
 	public extern static Number _eb941b49b9a77bf8(Number value);
 
 	///<summary>Computes the ceiling of a value.</summary>
@@ -422,8 +486,9 @@ public static class HalfModule
 	public extern static Number _d6fe3bcb6907fd7d(Number value);
 
 	///<summary>Rounds a value to the nearest integer using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
-	[Jazor(Op.Inline, "static System.Half.Round(System.Half)", "Math.round(__arg1)")]
-	public extern static Number _8654f1427404f736(Number value);
+	[Jazor(Op.Import, "static System.Half.Round(System.Half)")]
+	public static Number _8654f1427404f736(Number value)
+		=> RoundToEven(value);
 
 	///<summary>Rounds a value to a specified number of fractional-digits using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
 	[Jazor(Op.Discard ,"static System.Half.Round(System.Half, int)")]
@@ -454,11 +519,11 @@ public static class HalfModule
 	public extern static Number _0ad265f6bb77407b();
 
 	///<summary>Computes the arc-tangent of the quotient of two values.</summary>
-	[Jazor(Op.Inline, "static System.Half.Atan2(System.Half, System.Half)", "Math.atan2(__arg1, __arg2)")]
+	[Jazor(Op.Inline, "static System.Half.Atan2(System.Half, System.Half)", "Math.f16round(Math.atan2(__arg1, __arg2))")]
 	public extern static Number _bf44d164259c15da(Number y, Number x);
 
 	///<summary>Computes the arc-tangent for the quotient of two values and divides the result by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.Atan2Pi(System.Half, System.Half)", "(Math.atan2(__arg1, __arg2) / Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.Atan2Pi(System.Half, System.Half)", "Math.f16round(Math.atan2(__arg1, __arg2) / Math.PI)")]
 	public extern static Number _8ad72e09d77426ab(Number y, Number x);
 
 	///<summary>Decrements a value to the smallest value that compares less than a given value.</summary>
@@ -470,99 +535,102 @@ public static class HalfModule
 	public extern static Number _3bbda0fdee7bad1d(Number x);
 
 	///<summary>Computes the fused multiply-add of three values.</summary>
-	[Jazor(Op.Inline, "static System.Half.FusedMultiplyAdd(System.Half, System.Half, System.Half)", "(__arg1 * __arg2 + __arg3)")]
+	[Jazor(Op.Inline, "static System.Half.FusedMultiplyAdd(System.Half, System.Half, System.Half)", "Math.f16round(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _92059353d5f47f52(Number left, Number right, Number addend);
 
 	///<summary>Computes the remainder of two values as specified by IEEE 754.</summary>
-	[Jazor(Op.Inline, "static System.Half.Ieee754Remainder(System.Half, System.Half)", "(__arg1 - __arg2 * Math.round(__arg1 / __arg2))")]
-	public extern static Number _18006f6446bcf954(Number left, Number right);
+	[Jazor(Op.Import, "static System.Half.Ieee754Remainder(System.Half, System.Half)")]
+	public static Number _18006f6446bcf954(Number left, Number right)
+		=> Ieee754RemainderCore(left, right);
 
 	///<summary>Computes the integer logarithm of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.ILogB(System.Half)", "Math.log2(__arg1)")]
-	public extern static Number _32ebc25218ce32e0(Number value);
+	[Jazor(Op.Import, "static System.Half.ILogB(System.Half)")]
+	public static Number _32ebc25218ce32e0(Number value)
+		=> ILogBCore(value);
 
 	///<summary>Performs a linear interpolation between two values based on the given weight.</summary>
-	[Jazor(Op.Inline, "static System.Half.Lerp(System.Half, System.Half, System.Half)", "(__arg1 + (__arg2 - __arg1) * __arg3)")]
+	[Jazor(Op.Inline, "static System.Half.Lerp(System.Half, System.Half, System.Half)", "Math.f16round(__arg1 + (__arg2 - __arg1) * __arg3)")]
 	public extern static Number _281b31dd3063e35c(Number value1, Number value2, Number amount);
 
 	///<summary>Computes an estimate of the reciprocal of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.ReciprocalEstimate(System.Half)", "(1 / __arg1)")]
+	[Jazor(Op.Inline, "static System.Half.ReciprocalEstimate(System.Half)", "Math.f16round(1 / __arg1)")]
 	public extern static Number _3c5166982a7e4c6b(Number value);
 
 	///<summary>Computes an estimate of the reciprocal square root of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.ReciprocalSqrtEstimate(System.Half)", "(1 / Math.sqrt(__arg1))")]
+	[Jazor(Op.Inline, "static System.Half.ReciprocalSqrtEstimate(System.Half)", "Math.f16round(1 / Math.sqrt(__arg1))")]
 	public extern static Number _9701aebe42f29e01(Number value);
 
 	///<summary>Computes the product of a value and its base-radix raised to the specified power.</summary>
-	[Jazor(Op.Inline, "static System.Half.ScaleB(System.Half, int)", "(__arg1 * Math.pow(2, __arg2))")]
+	[Jazor(Op.Inline, "static System.Half.ScaleB(System.Half, int)", "Math.f16round(__arg1 * Math.pow(2, __arg2))")]
 	public extern static Number _1c84d26a02360b31(Number value, Number exponent);
 
 	///<summary>Computes the hyperbolic arc-cosine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Acosh(System.Half)", "Math.acosh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Acosh(System.Half)", "Math.f16round(Math.acosh(__arg1))")]
 	public extern static Number _3ffeec9c67d15db1(Number value);
 
 	///<summary>Computes the hyperbolic arc-sine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Asinh(System.Half)", "Math.asinh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Asinh(System.Half)", "Math.f16round(Math.asinh(__arg1))")]
 	public extern static Number _99ed70dc8a7f8541(Number value);
 
 	///<summary>Computes the hyperbolic arc-tangent of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Atanh(System.Half)", "Math.atanh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Atanh(System.Half)", "Math.f16round(Math.atanh(__arg1))")]
 	public extern static Number _91d301b6cc6ed854(Number value);
 
 	///<summary>Computes the hyperbolic cosine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Cosh(System.Half)", "Math.cosh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Cosh(System.Half)", "Math.f16round(Math.cosh(__arg1))")]
 	public extern static Number _89ad7d31e186ff0b(Number value);
 
 	///<summary>Computes the hyperbolic sine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Sinh(System.Half)", "Math.sinh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Sinh(System.Half)", "Math.f16round(Math.sinh(__arg1))")]
 	public extern static Number _9983bab097d002c4(Number value);
 
 	///<summary>Computes the hyperbolic tangent of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Tanh(System.Half)", "Math.tanh(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Tanh(System.Half)", "Math.f16round(Math.tanh(__arg1))")]
 	public extern static Number _9b05dfb4dacbab50(Number value);
 
 	///<summary>Increments a value.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator ++(System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator ++(System.Half)", "Math.f16round(__arg1 + 1)")]
 	public extern static Number _8a130a46c2e685e4(Number value);
 
 	///<summary>Computes the natural (<code data-dev-comment-type="c">base-E</code> logarithm of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log(System.Half)", "Math.log(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Log(System.Half)", "Math.f16round(Math.log(__arg1))")]
 	public extern static Number _1d346e947c93796a(Number value);
 
 	///<summary>Computes the logarithm of a value in the specified base.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log(System.Half, System.Half)", "(Math.log(__arg1) / Math.log(__arg2))")]
+	[Jazor(Op.Inline, "static System.Half.Log(System.Half, System.Half)", "Math.f16round(Math.log(__arg1) / Math.log(__arg2))")]
 	public extern static Number _e9543dba526157bb(Number value, Number newBase);
 
 	///<summary>Computes the base-10 logarithm of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log10(System.Half)", "Math.log10(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Log10(System.Half)", "Math.f16round(Math.log10(__arg1))")]
 	public extern static Number _bf18fa93c9143ce7(Number value);
 
 	///<summary>Computes the natural (<code data-dev-comment-type="c">base-E</code>) logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline, "static System.Half.LogP1(System.Half)", "Math.log1p(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.LogP1(System.Half)", "Math.f16round(Math.log1p(__arg1))")]
 	public extern static Number _c7bfbccbaa6f0096(Number value);
 
 	///<summary>Computes the base-2 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log2P1(System.Half)", "Math.log2(__arg1 + 1)")]
+	[Jazor(Op.Inline, "static System.Half.Log2P1(System.Half)", "Math.f16round(Math.log2(__arg1 + 1))")]
 	public extern static Number _307d0b18233ab939(Number value);
 
 	///<summary>Computes the base-10 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log10P1(System.Half)", "Math.log10(__arg1 + 1)")]
+	[Jazor(Op.Inline, "static System.Half.Log10P1(System.Half)", "Math.f16round(Math.log10(__arg1 + 1))")]
 	public extern static Number _6ef95ef69ba65637(Number value);
 
 	///<summary>Divides two values together to compute their modulus or remainder.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator %(System.Half, System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator %(System.Half, System.Half)", "Math.f16round(__arg1 % __arg2)")]
 	public extern static Number _ef99ab16caf9d04c(Number left, Number right);
 
 	[Jazor(Op.Inline, "static System.Half.MultiplicativeIdentity.get", "1")]
 	public extern static Number _9135806cbc71006f();
 
 	///<summary>Multiplies two values together to compute their product.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator *(System.Half, System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator *(System.Half, System.Half)", "Math.f16round(__arg1 * __arg2)")]
 	public extern static Number _d5faf45c7aa80143(Number left, Number right);
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Clamp(System.Half, System.Half, System.Half)", "Math.max(__arg2, Math.min(__arg1, __arg3))")]
-	public extern static Number _6335905a4e3a886f(Number value, Number min, Number max);
+	[Jazor(Op.Import, "static System.Half.Clamp(System.Half, System.Half, System.Half)")]
+	public static Number _6335905a4e3a886f(Number value, Number min, Number max)
+		=> ClampCore(value, min, max);
 
 	[Jazor(Op.Discard ,"static System.Half.ClampNative(System.Half, System.Half, System.Half)")]
 	public extern static Number _de3198267b6b5ced(Number value, Number min, Number max);
@@ -629,7 +697,7 @@ public static class HalfModule
 	public extern static bool _e66f4bcfa8cccdb0(Number value);
 
 	///<summary>Determines if a value represents an odd integral number.</summary>
-	[Jazor(Op.Inline, "static System.Half.IsOddInteger(System.Half)", "(__arg1 % 2 !== 0)")]
+	[Jazor(Op.Inline, "static System.Half.IsOddInteger(System.Half)", "(Number.isInteger(__arg1) && __arg1 % 2 !== 0)")]
 	public extern static bool _3ddd2a35067d173b(Number value);
 
 	///<summary>Determines if a value is positive.</summary>
@@ -670,23 +738,24 @@ public static class HalfModule
 		=> _83de0b9fe4433805(text, result);
 
 	///<summary>Computes a value raised to a given power.</summary>
-	[Jazor(Op.Inline, "static System.Half.Pow(System.Half, System.Half)", "Math.pow(__arg1, __arg2)")]
+	[Jazor(Op.Inline, "static System.Half.Pow(System.Half, System.Half)", "Math.f16round(Math.pow(__arg1, __arg2))")]
 	public extern static Number _a9f3147e8b57f5de(Number x, Number y);
 
 	///<summary>Computes the cube-root of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Cbrt(System.Half)", "Math.cbrt(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Cbrt(System.Half)", "Math.f16round(Math.cbrt(__arg1))")]
 	public extern static Number _1d0363fd6fc39e64(Number value);
 
 	///<summary>Computes the hypotenuse given two values representing the lengths of the shorter sides in a right-angled triangle.</summary>
-	[Jazor(Op.Inline, "static System.Half.Hypot(System.Half, System.Half)", "Math.hypot(__arg1, __arg2)")]
+	[Jazor(Op.Inline, "static System.Half.Hypot(System.Half, System.Half)", "Math.f16round(Math.hypot(__arg1, __arg2))")]
 	public extern static Number _94164ba89e051cf0(Number x, Number y);
 
 	///<summary>Computes the n-th root of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.RootN(System.Half, int)", "Math.pow(__arg1, 1 / __arg2)")]
-	public extern static Number _7d0e51fe4ac37ce8(Number value, Number root);
+	[Jazor(Op.Import, "static System.Half.RootN(System.Half, int)")]
+	public static Number _7d0e51fe4ac37ce8(Number value, Number root)
+		=> RootNCore(value, root);
 
 	///<summary>Computes the square-root of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Sqrt(System.Half)", "Math.sqrt(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Sqrt(System.Half)", "Math.f16round(Math.sqrt(__arg1))")]
 	public extern static Number _4608c310544c0ac0(Number value);
 
 	[Jazor(Op.Inline, "static System.Half.NegativeOne.get", "-1")]
@@ -701,76 +770,76 @@ public static class HalfModule
 	public extern static Array<object?> _6fa9b6d3f9d71caa(string s, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Subtracts two values to compute their difference.</summary>
-	[Jazor(Op.Allowed, "static System.Half.operator -(System.Half, System.Half)")]
+	[Jazor(Op.Inline, "static System.Half.operator -(System.Half, System.Half)", "Math.f16round(__arg1 - __arg2)")]
 	public extern static Number _4de7f1e76d25cbdb(Number left, Number right);
 
 	///<summary>Computes the arc-cosine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Acos(System.Half)", "Math.acos(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Acos(System.Half)", "Math.f16round(Math.acos(__arg1))")]
 	public extern static Number _6c9a2c09639714a9(Number value);
 
 	///<summary>Computes the arc-cosine of a value and divides the result by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.AcosPi(System.Half)", "(Math.acos(__arg1) / Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.AcosPi(System.Half)", "Math.f16round(Math.acos(__arg1) / Math.PI)")]
 	public extern static Number _60947bcda33f22db(Number value);
 
 	///<summary>Computes the arc-sine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Asin(System.Half)", "Math.asin(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Asin(System.Half)", "Math.f16round(Math.asin(__arg1))")]
 	public extern static Number _0cc0e377c100101a(Number value);
 
 	///<summary>Computes the arc-sine of a value and divides the result by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.AsinPi(System.Half)", "(Math.asin(__arg1) / Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.AsinPi(System.Half)", "Math.f16round(Math.asin(__arg1) / Math.PI)")]
 	public extern static Number _a8e63edad634e02a(Number value);
 
 	///<summary>Computes the arc-tangent of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Atan(System.Half)", "Math.atan(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Atan(System.Half)", "Math.f16round(Math.atan(__arg1))")]
 	public extern static Number _ebe5ac26d95fa5ae(Number value);
 
 	///<summary>Computes the arc-tangent of a value and divides the result by pi.</summary>
-	[Jazor(Op.Inline, "static System.Half.AtanPi(System.Half)", "(Math.atan(__arg1) / Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.AtanPi(System.Half)", "Math.f16round(Math.atan(__arg1) / Math.PI)")]
 	public extern static Number _1be733fe261ea3a9(Number value);
 
 	///<summary>Computes the cosine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Cos(System.Half)", "Math.cos(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Cos(System.Half)", "Math.f16round(Math.cos(__arg1))")]
 	public extern static Number _5f075fcf895d9a14(Number value);
 
 	///<summary>Computes the cosine of a value that has been multipled by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.CosPi(System.Half)", "Math.cos(__arg1 * Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.CosPi(System.Half)", "Math.f16round(Math.cos(__arg1 * Math.PI))")]
 	public extern static Number _16198dd6405a834b(Number value);
 
 	///<summary>Converts a given value from degrees to radians.</summary>
-	[Jazor(Op.Inline, "static System.Half.DegreesToRadians(System.Half)", "(__arg1 * Math.PI / 180)")]
+	[Jazor(Op.Inline, "static System.Half.DegreesToRadians(System.Half)", "Math.f16round(__arg1 * Math.PI / 180)")]
 	public extern static Number _0aaa0b1877e6ba97(Number value);
 
 	///<summary>Converts a given value from radians to degrees.</summary>
-	[Jazor(Op.Inline, "static System.Half.RadiansToDegrees(System.Half)", "(__arg1 * 180 / Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.RadiansToDegrees(System.Half)", "Math.f16round(__arg1 * 180 / Math.PI)")]
 	public extern static Number _172656f071e3da5f(Number value);
 
 	///<summary>Computes the sine of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Sin(System.Half)", "Math.sin(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Sin(System.Half)", "Math.f16round(Math.sin(__arg1))")]
 	public extern static Number _cb4eed588629026f(Number value);
 
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import, "static System.Half.SinCos(System.Half)")]
 	public static (Number Sin, Number Cos) _7bdc16d36920d5d9(Number value)
-		=> (Sin: Math.SinFn(value), Cos: Math.CosFn(value));
+		=> (Sin: RoundToHalf(Math.SinFn(value)), Cos: RoundToHalf(Math.CosFn(value)));
 
 	///<summary>Computes the sine and cosine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>
 	[Jazor(Op.Import, "static System.Half.SinCosPi(System.Half)")]
 	public static (Number SinPi, Number CosPi) _a1628326328dadd0(Number value)
 	{
 		var angle = value * Math.PI;
-		return (Math.SinFn(angle), Math.CosFn(angle));
+		return (RoundToHalf(Math.SinFn(angle)), RoundToHalf(Math.CosFn(angle)));
 	}
 
 	///<summary>Computes the sine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.SinPi(System.Half)", "Math.sin(__arg1 * Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.SinPi(System.Half)", "Math.f16round(Math.sin(__arg1 * Math.PI))")]
 	public extern static Number _b4ba144dc45ba16f(Number value);
 
 	///<summary>Computes the tangent of a value.</summary>
-	[Jazor(Op.Inline, "static System.Half.Tan(System.Half)", "Math.tan(__arg1)")]
+	[Jazor(Op.Inline, "static System.Half.Tan(System.Half)", "Math.f16round(Math.tan(__arg1))")]
 	public extern static Number _6b99822ac69f068e(Number value);
 
 	///<summary>Computes the tangent of a value that has been multipled by <code data-dev-comment-type="c">pi</code>.</summary>
-	[Jazor(Op.Inline, "static System.Half.TanPi(System.Half)", "Math.tan(__arg1 * Math.PI)")]
+	[Jazor(Op.Inline, "static System.Half.TanPi(System.Half)", "Math.f16round(Math.tan(__arg1 * Math.PI))")]
 	public extern static Number _74069ea6e6a4facb(Number value);
 
 	///<summary>Computes the unary negation of a value.</summary>

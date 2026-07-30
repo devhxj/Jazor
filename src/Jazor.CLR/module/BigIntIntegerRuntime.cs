@@ -55,7 +55,17 @@ internal static class BigIntIntegerRuntime
 		return [true, value];
 	}
 
-	internal static (BigInt Quotient, BigInt Remainder) DivRem(BigInt left, BigInt right)
+	internal static (BigInt Quotient, BigInt Remainder) DivRemSigned(BigInt left, BigInt right, BigInt minValue)
+	{
+		if (right == BigInt.Zero)
+			throw new Error("DivideByZeroException");
+		if (left == minValue && right == -BigInt.One)
+			throw new Error("OverflowException");
+
+		return (Quotient: left / right, Remainder: left % right);
+	}
+
+	internal static (BigInt Quotient, BigInt Remainder) DivRemUnsigned(BigInt left, BigInt right)
 	{
 		if (right == BigInt.Zero)
 			throw new Error("DivideByZeroException");
@@ -87,6 +97,36 @@ internal static class BigIntIntegerRuntime
 			throw new Error("DivideByZeroException");
 
 		return left % right;
+	}
+
+	internal static BigInt AbsSigned(BigInt value, BigInt minValue)
+	{
+		if (value == minValue)
+			throw new Error("OverflowException");
+
+		return value < BigInt.Zero ? -value : value;
+	}
+
+	internal static BigInt CopySignSigned(BigInt value, BigInt sign, BigInt minValue)
+	{
+		if (value == minValue)
+		{
+			if (sign >= BigInt.Zero)
+				throw new Error("OverflowException");
+
+			return minValue;
+		}
+
+		var magnitude = value < BigInt.Zero ? -value : value;
+		return sign < BigInt.Zero ? -magnitude : magnitude;
+	}
+
+	internal static BigInt Clamp(BigInt value, BigInt min, BigInt max)
+	{
+		if (min > max)
+			throw new Error("ArgumentException: 'min' cannot be greater than max.");
+
+		return value < min ? min : (value > max ? max : value);
 	}
 
 	internal static BigInt LeadingZeroCount(BigInt value, Number bitWidth, BigInt mask)

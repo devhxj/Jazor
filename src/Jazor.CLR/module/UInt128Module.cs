@@ -294,7 +294,7 @@ public static class UInt128Module
 	///<summary>Computes the quotient and remainder of two values.</summary>
 	[Jazor(Op.Import, "static System.UInt128.DivRem(System.UInt128, System.UInt128)")]
 	public static (BigInt Quotient, BigInt Remainder) _8796a5402e48210c(BigInt left, BigInt right)
-		=> BigIntIntegerRuntime.DivRem(left, right);
+		=> BigIntIntegerRuntime.DivRemUnsigned(left, right);
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.LeadingZeroCount(System.UInt128)")]
@@ -420,8 +420,9 @@ public static class UInt128Module
 	public extern static Array<object?> _08f69578289009db(BigInt left, BigInt right, BigInt lower);
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Inline, "static System.UInt128.Clamp(System.UInt128, System.UInt128, System.UInt128)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
-	public extern static BigInt _a545c5c1dd9b956a(BigInt value, BigInt min, BigInt max);
+	[Jazor(Op.Import, "static System.UInt128.Clamp(System.UInt128, System.UInt128, System.UInt128)")]
+	public static BigInt _a545c5c1dd9b956a(BigInt value, BigInt min, BigInt max)
+		=> BigIntIntegerRuntime.Clamp(value, min, max);
 
 	///<summary>Compares two values to compute which is greater.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.Max(System.UInt128, System.UInt128)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]

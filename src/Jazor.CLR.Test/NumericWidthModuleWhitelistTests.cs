@@ -11,8 +11,13 @@ public sealed class NumericWidthModuleWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.HalfModule), "System.Half", "Number");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.NaN.get", Op.Inline);
-		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.operator +(System.Half, System.Half)", Op.Allowed);
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.operator +(System.Half, System.Half)", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Parse(string)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Round(System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Ieee754Remainder(System.Half, System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.ILogB(System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Clamp(System.Half, System.Half, System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.RootN(System.Half, int)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.MaxMagnitude(System.Half, System.Half)", Op.Import, "System/HalfModule.js");
 	}
 
@@ -25,6 +30,9 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.operator /(System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Parse(string)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.RotateLeft(System.Int128, int)", Op.Import, "System/Int128Module.js");
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Abs(System.Int128)", Op.Import, "System/Int128Module.js");
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.CopySign(System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Clamp(System.Int128, System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
 	}
 
 	[TestMethod]
@@ -36,6 +44,7 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.operator %(System.UInt128, System.UInt128)", Op.Import, "System/UInt128Module.js");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Parse(string)", Op.Import, "System/UInt128Module.js");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.RotateRight(System.UInt128, int)", Op.Import, "System/UInt128Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Clamp(System.UInt128, System.UInt128, System.UInt128)", Op.Import, "System/UInt128Module.js");
 	}
 
 	private static void AssertTypeAlias(Type type, string member, string alias)

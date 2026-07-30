@@ -280,7 +280,7 @@ public static class Int128Module
 	///<summary>Computes the quotient and remainder of two values.</summary>
 	[Jazor(Op.Import, "static System.Int128.DivRem(System.Int128, System.Int128)")]
 	public static (BigInt Quotient, BigInt Remainder) _ca96ebfbc2a38481(BigInt left, BigInt right)
-		=> BigIntIntegerRuntime.DivRem(left, right);
+		=> BigIntIntegerRuntime.DivRemSigned(left, right, MinValueCore);
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
 	[Jazor(Op.Import, "static System.Int128.LeadingZeroCount(System.Int128)")]
@@ -406,12 +406,14 @@ public static class Int128Module
 	public extern static Array<object?> _d32138c04ddcda2e(BigInt left, BigInt right, BigInt lower);
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
-	[Jazor(Op.Inline, "static System.Int128.Clamp(System.Int128, System.Int128, System.Int128)", "(__arg1 < __arg2 ? __arg2 : (__arg1 > __arg3 ? __arg3 : __arg1))")]
-	public extern static BigInt _587401c79d5e216e(BigInt value, BigInt min, BigInt max);
+	[Jazor(Op.Import, "static System.Int128.Clamp(System.Int128, System.Int128, System.Int128)")]
+	public static BigInt _587401c79d5e216e(BigInt value, BigInt min, BigInt max)
+		=> BigIntIntegerRuntime.Clamp(value, min, max);
 
 	///<summary>Copies the sign of a value to the sign of another value.</summary>
-	[Jazor(Op.Inline, "static System.Int128.CopySign(System.Int128, System.Int128)", "(__arg2 < 0n ? (__arg1 < 0n ? __arg1 : -__arg1) : (__arg1 < 0n ? -__arg1 : __arg1))")]
-	public extern static BigInt _2f2f3fb10237971f(BigInt value, BigInt sign);
+	[Jazor(Op.Import, "static System.Int128.CopySign(System.Int128, System.Int128)")]
+	public static BigInt _2f2f3fb10237971f(BigInt value, BigInt sign)
+		=> BigIntIntegerRuntime.CopySignSigned(value, sign, MinValueCore);
 
 	///<summary>Compares two values to compute which is greater.</summary>
 	[Jazor(Op.Inline, "static System.Int128.Max(System.Int128, System.Int128)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
@@ -432,8 +434,9 @@ public static class Int128Module
 	public extern static BigInt _69aaad155ef75bb3();
 
 	///<summary>Computes the absolute of a value.</summary>
-	[Jazor(Op.Inline, "static System.Int128.Abs(System.Int128)", "(__arg1 < 0n ? -__arg1 : __arg1)")]
-	public extern static BigInt _bc93f10cc4270d3d(BigInt value);
+	[Jazor(Op.Import, "static System.Int128.Abs(System.Int128)")]
+	public static BigInt _bc93f10cc4270d3d(BigInt value)
+		=> BigIntIntegerRuntime.AbsSigned(value, MinValueCore);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.Int128.CreateChecked<TOther>(TOther)")]
