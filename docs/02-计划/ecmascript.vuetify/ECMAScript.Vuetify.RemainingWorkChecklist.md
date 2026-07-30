@@ -5,6 +5,46 @@
 > Positioning: 基于 `src/ECMAScript.Vuetify/` 当前真实代码、`src/Jazor.CompilerTest/` / `src/Jazor.EmitTest/` / `src/Jazor.RazorVue.Sg.Test/` 现有守护，以及当前 RazorVue 目标入口整理的下一阶段执行清单。
 > Scope: 当前关注点不是“是否存在 Vuetify 代理”，而是“作为 `ECMAScript.Vue3` 环境下的 Vuetify 代理层，代理是否足够完整、authoring 是否足够易用、自定义参数与 CSS 路径是否足够清晰可生产使用”。
 
+## 0. 2026-07-29 评审记录
+
+> Status: 待处理。以下结论以当前 `ECMAScript.Vuetify` 源码、仓库根目录的 Vuetify `3.8.0` 类型定义，以及现有测试项目为准。
+
+### RVT-001 P1: `VDataTable` 缺少高价值 scoped slot 合同
+
+`VDataTable` 当前只建模了固定的表头选择/展开槽和结构槽，未覆盖官方的动态 `header.${string}` / `item.${string}` 槽，也未覆盖 `loader`、`data-table-group`、`data-table-select`、`item.data-table-select`、`item.data-table-expand` 等槽。`AdditionalAttributes` 不能传递 slot，因此业务无法通过 RazorVue 定制普通列的 header/item 内容。
+
+处理要求：
+
+1. 为按列 header/item 槽建立 `NamePattern` 合同，并提供与 Vuetify slot payload 对应的上下文类型。
+2. 补齐上述高频固定槽；零参数槽保持 `RenderFragment`，有 payload 的槽使用 `RenderFragment<TContext>`。
+3. 增加 Razor SG 到 Vue render-function 的回归，验证带点号和动态槽名输出正确，且不会把 slot 名误作为 Vue directive modifier。
+
+验收：`VDataTable` 可以从 Razor authoring 表达任意列 key 的 header/item 槽、选择/展开槽和 loader 槽，生成产物可由 Vuetify `3.8.0` 正常消费。
+
+### RVT-002 P1: 前端 Vuetify 版本契约没有随包交付
+
+绑定以 Vuetify `3.8.0` 定义建模，但 `ECMAScript.Vuetify` NuGet 包只携带 .NET 程序集并依赖 `Jazor`。当前仅 TodoList sample 的 Deno import map 固定 `vuetify@3.8.0`。普通消费者没有可发现、可复制的版本约束，升级后尤其可能在 labs export 与 slot/prop 合同上发生运行时漂移。
+
+处理要求：
+
+1. 在包 README 明确支持的 Vuetify 版本与宿主 bootstrap 责任。
+2. 提供可直接使用的 Deno import-map/npm 安装配置，包含 `vuetify`、`vuetify/components`、`vuetify/labs/components` 和 `vuetify/styles`。
+3. 版本升级时以本地 `.d.ts` 与 component export/authoring metadata 对照作为发布门槛。
+
+验收：新消费者无需阅读 sample 源码即可完成与绑定版本一致的 Vuetify 安装、样式导入和 `createVuetify()` 安装。
+
+### RVT-003 P2: 缺少 authoring metadata 的 lowering 回归矩阵
+
+现有 `EcmaScriptVueProxyTests` 主要断言公开 C# 类型，浏览器 smoke 只验证直接导入 `VBtn`。Razor SG 测试工程目前没有直接引用 `ECMAScript.Vuetify`，因此 `VueLibraryComponent`、`VueProp`、`VueLibraryEmit` 和 `VueSlot` 的实际降级行为缺少组件库级回归守护。
+
+处理要求：
+
+1. 为 Razor SG 测试工程增加对 `ECMAScript.Vuetify` 的测试引用。
+2. 建立覆盖矩阵：普通 props/emits、`SelectedValue` 到 `modelValue`、`AdditionalAttributes` 合并、labs import、固定/动态/带点号 slot。
+3. 保留最少一条从 `.razor` 到 bundle/browser 的真实 Vuetify 组件交互 smoke，而非仅验证包导入。
+
+验收：关键元数据映射发生变更时，测试能报告具体组件、参数或 slot 的产物偏差。
+
 ## 1. 当前判断
 
 `ECMAScript.Vuetify` 现在已经具备“两层能力”：
