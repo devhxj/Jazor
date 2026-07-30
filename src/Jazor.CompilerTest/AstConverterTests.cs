@@ -18,6 +18,12 @@ public sealed class AstConverterTests
     private static void AssertScriptEqual(string expected, string? actual)
         => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
+    private static void AssertContainsCount(string actual, string expected, int count)
+    {
+        var actualCount = actual.Split([expected], StringSplitOptions.None).Length - 1;
+        Assert.AreEqual(count, actualCount, $"Expected '{expected}' to appear {count} time(s), but found {actualCount}.{Environment.NewLine}{actual}");
+    }
+
     private static string PropertyBackingFieldName(INamedTypeSymbol containingType, string propertyName)
     {
         var property = containingType.GetMembers(propertyName).OfType<IPropertySymbol>().Single();
@@ -15803,6 +15809,193 @@ export function create() {{
         Assert.IsFalse(script.Contains("RuntimeModule,", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return isReadOnlyDictionaryCarrier(value);");
         StringAssert.Contains(script, "return markAsReadOnlyDictionaryCarrier(value);");
+    }
+
+    [TestMethod]
+    public async Task Convert_CrossModuleMemberClassSameArityConstructors_EmitBoundSelectors()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public sealed class JValue
+                    {
+                        public JValue(int value) { }
+                        public JValue(string value) { }
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static RuntimeModule.JValue CreateInt()
+                        => new RuntimeModule.JValue(1);
+
+                    public static RuntimeModule.JValue CreateString()
+                        => new RuntimeModule.JValue("text");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
+        var root = semanticModel.SyntaxTree.GetRoot();
+        var consumer = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "ConsumerModule")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var valueType = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "JValue")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var intSelector = ConstructorHelperName(valueType, "int");
+        var stringSelector = ConstructorHelperName(valueType, "string");
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { JValue } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, $"return new JValue(\"{intSelector}\", 1);");
+        StringAssert.Contains(script, $"return new JValue(\"{stringSelector}\", \"text\");");
+    }
+
+    [TestMethod]
+    public async Task Convert_CrossModuleMemberClassTryCast_ImportsRuntimeTypeGuard()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public sealed class JDateTime
+                    {
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/DateTimeModule.js")]
+                public static class DateTimeModule
+                {
+                    public static RuntimeModule.JDateTime TryConvert(object value)
+                        => value as RuntimeModule.JDateTime;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "DateTimeModule");
+        var root = semanticModel.SyntaxTree.GetRoot();
+        var moduleType = root.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "DateTimeModule")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(moduleType, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { JDateTime } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, "return value instanceof JDateTime ? value : null;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClrCarrierTypeChecks_EmitStableDedupedImportsIncludingSharedCarrier()
+    {
+        var code = """
+            using System;
+            using System.Globalization;
+
+            public static class TestClass
+            {
+                public static bool IsDateTime(object value) => value is DateTime;
+
+                public static bool IsDateTimeAgain(object value) => value is DateTime;
+
+                public static bool IsCalendar(object value) => value is Calendar;
+
+                public static bool IsGregorianCalendar(object value) => value is GregorianCalendar;
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(module);
+        Assert.IsNotNull(script);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        Assert.AreEqual("System/RuntimeModule.js", ((StringLiteral)import.Source).Value);
+        var importedNames = import.Specifiers
+            .OfType<ImportSpecifier>()
+            .Select(static specifier => ((Identifier)specifier.Imported).Name)
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "JDateTime", "JGregorianCalendar" }, importedNames);
+        AssertContainsCount(script, "value instanceof JDateTime", 2);
+        AssertContainsCount(script, "value instanceof JGregorianCalendar", 2);
+        Assert.IsFalse(script.Contains("value.date", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("value.kind", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("value.items", StringComparison.Ordinal), script);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClrCarrierTypeCheck_WhenCarrierNameIsShadowed_UsesStableImportAlias()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static bool IsDateTime(object value)
+                {
+                    var JDateTime = 1;
+                    return JDateTime > 0 && value is DateTime;
+                }
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        var carrierBinding = ImportBindingName("System/RuntimeModule.js", "JDateTime");
+        StringAssert.Contains(script, $"import {{ JDateTime as {carrierBinding} }} from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(script, $"value instanceof {carrierBinding}");
+        _ = new Acornima.Parser().ParseModule(script);
     }
 
     [TestMethod]

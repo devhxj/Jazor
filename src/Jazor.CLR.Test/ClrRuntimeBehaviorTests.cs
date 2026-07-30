@@ -20,11 +20,44 @@ public sealed class ClrRuntimeBehaviorTests
         {
             var mapping = ClrRuntimeMappingCatalog.GetImport(scenario.Member);
             Assert.AreEqual(scenario.ModulePath, mapping.ModulePath, scenario.Id);
+            foreach (var invocation in EnumerateInvocations(scenario.Arguments))
+            {
+                var invocationMapping = ClrRuntimeMappingCatalog.GetImport(invocation.Member);
+                Assert.AreEqual(invocation.ModulePath, invocationMapping.ModulePath, scenario.Id);
+                Assert.AreEqual(invocation.ExportName, invocationMapping.ExportName, scenario.Id);
+            }
+
             Assert.AreNotEqual(scenario.ExpectedValue is null, scenario.ExpectedErrorContains is null, scenario.Id);
             if (scenario.ExpectedArguments is not null)
             {
                 Assert.IsNotNull(scenario.ExpectedValue, scenario.Id);
                 Assert.HasCount(scenario.Arguments.Count, scenario.ExpectedArguments, scenario.Id);
+            }
+        }
+    }
+
+    private static IEnumerable<ClrRuntimeInvocationValue> EnumerateInvocations(
+        IEnumerable<ClrRuntimeValue> values)
+    {
+        foreach (var value in values)
+        {
+            if (value.Invocation is not null)
+            {
+                yield return value.Invocation;
+                foreach (var nested in EnumerateInvocations(value.Invocation.Arguments))
+                    yield return nested;
+            }
+
+            if (value.Items is not null)
+            {
+                foreach (var nested in EnumerateInvocations(value.Items))
+                    yield return nested;
+            }
+
+            if (value.Properties is not null)
+            {
+                foreach (var nested in EnumerateInvocations(value.Properties.Values))
+                    yield return nested;
             }
         }
     }

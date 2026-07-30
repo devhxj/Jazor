@@ -31,12 +31,11 @@ public static class RuntimeModule
 		return result;
 	}
 
-	private const string ReadOnlyCarrierMarker = "__jazor$readonly";
 	private const string ReadOnlyCarrierMutationMessage = "NotSupportedException: Collection is read-only.";
+	private static readonly WeakSet ReadOnlyCarriers = new();
 
 	internal static bool IsReadOnlySetCarrier<T>(Set<T> instance)
-		=> instance is not null &&
-		   Object.HasOwn(instance, ReadOnlyCarrierMarker);
+		=> instance != null && ReadOnlyCarriers.Has(instance);
 
 	private static Set<T> ThrowReadOnlySetAdd<T>(T item)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
@@ -49,20 +48,13 @@ public static class RuntimeModule
 
 	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
 	{
-		if (instance is null)
+		if (instance == null)
 			throw new Error("NullReferenceException: instance is null.");
 
-		// Keep the marker API idempotent so repeated wrapping paths remain stable.
 		if (IsReadOnlySetCarrier(instance))
 			return instance;
 
-		Object.DefineProperty(instance, ReadOnlyCarrierMarker, new ECMAScript.PropertyDescriptor
-		{
-			Value = true,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
+		ReadOnlyCarriers.Add(instance);
 
 		// Set cannot be made read-only via Object.freeze; override mutators on the carrier.
 		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptor
@@ -90,8 +82,7 @@ public static class RuntimeModule
 	}
 
 	internal static bool IsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
-		=> instance is not null &&
-		   Object.HasOwn(instance, ReadOnlyCarrierMarker);
+		=> instance != null && ReadOnlyCarriers.Has(instance);
 
 	private static Map<TKey, TValue> ThrowReadOnlyDictionarySet<TKey, TValue>(TKey key, TValue value)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
@@ -104,20 +95,13 @@ public static class RuntimeModule
 
 	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
 	{
-		if (instance is null)
+		if (instance == null)
 			throw new Error("NullReferenceException: instance is null.");
 
-		// Keep the marker API idempotent so repeated wrapping paths remain stable.
 		if (IsReadOnlyDictionaryCarrier(instance))
 			return instance;
 
-		Object.DefineProperty(instance, ReadOnlyCarrierMarker, new ECMAScript.PropertyDescriptor
-		{
-			Value = true,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
+		ReadOnlyCarriers.Add(instance);
 
 		// Map cannot be made read-only via Object.freeze; override mutators on the carrier.
 		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
@@ -347,9 +331,6 @@ public static class RuntimeModule
 
 	public sealed class JQueue<T>
 	{
-		[Description("@#kind")]
-		public string Kind { get; }
-
 		[Description("@#items")]
 		public Array<T> Items { get; }
 
@@ -358,7 +339,6 @@ public static class RuntimeModule
 
 		public JQueue()
 		{
-			this.Kind = "queue";
 			this.Items = new Array<T>();
 			this.Head = 0;
 		}
@@ -374,7 +354,6 @@ public static class RuntimeModule
 
 		public JQueue(IEnumerable<T> collection)
 		{
-			this.Kind = "queue";
 			this.Items = MaterializeArray(collection, "ArgumentNullException: collection cannot be null.");
 			this.Head = 0;
 		}
@@ -382,15 +361,11 @@ public static class RuntimeModule
 
 	public sealed class JStack<T>
 	{
-		[Description("@#kind")]
-		public string Kind { get; }
-
 		[Description("@#items")]
 		public Array<T> Items { get; }
 
 		public JStack()
 		{
-			this.Kind = "stack";
 			this.Items = [];
 		}
 
@@ -405,7 +380,6 @@ public static class RuntimeModule
 
 		public JStack(IEnumerable<T> collection)
 		{
-			this.Kind = "stack";
 			this.Items = MaterializeArray(collection, "ArgumentNullException: collection cannot be null.");
 		}
 	}

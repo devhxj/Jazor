@@ -10,6 +10,7 @@ internal enum ClrRuntimeValueKind
     Array,
     Record,
     Callable,
+    RuntimeInvocation,
     Undefined
 }
 
@@ -21,11 +22,18 @@ internal enum ClrRuntimeCallableKind
     CompareDescending
 }
 
+internal sealed record ClrRuntimeInvocationValue(
+    string Member,
+    string ModulePath,
+    string ExportName,
+    IReadOnlyList<ClrRuntimeValue> Arguments);
+
 internal sealed record ClrRuntimeValue(
     ClrRuntimeValueKind Kind,
     string? Scalar = null,
     IReadOnlyList<ClrRuntimeValue>? Items = null,
-    IReadOnlyDictionary<string, ClrRuntimeValue>? Properties = null)
+    IReadOnlyDictionary<string, ClrRuntimeValue>? Properties = null,
+    ClrRuntimeInvocationValue? Invocation = null)
 {
     public static ClrRuntimeValue Null() => new(ClrRuntimeValueKind.Null);
 
@@ -57,6 +65,14 @@ internal sealed record ClrRuntimeValue(
     public static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind)
         => new(ClrRuntimeValueKind.Callable, kind.ToString());
 
+    public static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
+    {
+        var mapping = ClrRuntimeMappingCatalog.GetImport(member);
+        return new(
+            ClrRuntimeValueKind.RuntimeInvocation,
+            Invocation: new(member, mapping.ModulePath, mapping.ExportName, arguments));
+    }
+
     public static ClrRuntimeValue Undefined() => new(ClrRuntimeValueKind.Undefined);
 }
 
@@ -84,7 +100,8 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeMathScenarios.All,
         .. ClrRuntimeBigIntegerScenarios.All,
         .. ClrRuntimeBigIntegerBinaryScenarios.All,
-        .. ClrRuntimeDecimalScenarios.All
+        .. ClrRuntimeDecimalScenarios.All,
+        .. ClrRuntimeDateTimeScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)

@@ -326,10 +326,10 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlySetCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function isReadOnlyDictionaryCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlyDictionaryCarrier");
-        StringAssert.Contains(runtimeModule.Content, "Object.hasOwn(instance, \"__jazor$readonly\")");
-        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly_set", StringComparison.Ordinal), runtimeModule.Content);
-        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly_dictionary", StringComparison.Ordinal), runtimeModule.Content);
-        Assert.IsFalse(runtimeModule.Content.Contains("Object.getOwnPropertyDescriptor(instance, \"__jazor$readonly\")", StringComparison.Ordinal), runtimeModule.Content);
+        StringAssert.Contains(runtimeModule.Content, "let readOnlyCarriers = new WeakSet;");
+        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.has(instance)");
+        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.add(instance)");
+        Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly", StringComparison.Ordinal), runtimeModule.Content);
     }
 
     [TestMethod]

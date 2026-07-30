@@ -44,6 +44,7 @@ public static class DateTimeModule
 	private static Number DateTimeStylesAssumeLocal => 32;
 	private static Number DateTimeStylesAssumeUniversal => 64;
 	private static Number DateTimeStylesRoundtripKind => 128;
+	private static Number AllowedDateTimeStylesMask => 255;
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
@@ -886,6 +887,22 @@ public static class DateTimeModule
 		return day >= 1 && day <= daysInMonth;
 	}
 
+	private static bool HasIsoDatePrefix(string text)
+	{
+		if (text.Length < 10 || text[4] != '-' || text[7] != '-')
+			return false;
+
+		for (var i = 0; i < 10; i++)
+		{
+			if (i == 4 || i == 7)
+				continue;
+			if (!IsAsciiDigit(text[i]))
+				return false;
+		}
+
+		return true;
+	}
+
 	private static BigInt CreateUtcDateTimeTicks(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond)
 	{
 		var utc = RuntimeModule.CreateUtcDate(year, month, day);
@@ -1139,21 +1156,12 @@ public static class DateTimeModule
 		return BigIntFn(integralPart) * ticksPerUnit + BigIntFn(Math.TruncFn(fractionalPart * NumberFn(ticksPerUnit)));
 	}
 
-	private static Number GetDateTimeStylesValue(object styles)
-	{
-		if (styles is Number numberStyle)
-			return numberStyle;
-		if (styles is System.Globalization.DateTimeStyles enumStyle)
-			return NumberFn((int)enumStyle);
-		if (styles == null)
-			return 0;
-
-		throw new Error("ArgumentException: Invalid DateTimeStyles value.");
-	}
+	private static Number GetDateTimeStylesValue(System.Globalization.DateTimeStyles styles)
+		=> NumberFn((int)styles);
 
 	private static void ValidateDateTimeStyles(Number styles)
 	{
-		if (styles < 0 || Math.FloorFn(styles) != styles)
+		if (styles < 0 || Math.FloorFn(styles) != styles || (styles & ~AllowedDateTimeStylesMask) != 0)
 			throw new Error("ArgumentException: Invalid DateTimeStyles value.");
 
 		var hasRoundtripKind = (styles & DateTimeStylesRoundtripKind) != 0;
@@ -1166,7 +1174,7 @@ public static class DateTimeModule
 			throw new Error("ArgumentException: AssumeLocal and AssumeUniversal cannot both be set.");
 	}
 
-	private static RuntimeModule.JDateTime ApplyDateTimeStyles(RuntimeModule.JDateTime value, string input, object styles)
+	private static RuntimeModule.JDateTime ApplyDateTimeStyles(RuntimeModule.JDateTime value, string input, System.Globalization.DateTimeStyles styles)
 	{
 		var styleValue = GetDateTimeStylesValue(styles);
 		ValidateDateTimeStyles(styleValue);
@@ -1322,11 +1330,16 @@ public static class DateTimeModule
 		return BigIntFn(digits.Substring(3, 4));
 	}
 
-	private static RuntimeModule.JDateTime ParseCore(string input)
+	private static RuntimeModule.JDateTime ParseCore(string? input)
 	{
+		if (input == null)
+			throw new Error("ArgumentNullException: String cannot be null.");
+
 		var s = input.Trim();
 		if (s.Length == 0)
 			throw new Error("FormatException: String was not recognized as a valid DateTime.");
+		if (HasIsoDatePrefix(s) && !TryParseIsoDate(s.Substring(0, 10), out _, out _, out _))
+			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTime.");
 
 		if (TryParseTimeOnly(s, out var timeHour, out var timeMinute, out var timeSecond, out var timeMillisecond, out var timeSubMillisecondTicks, out var timeKind, out var timeOffsetTicks))
 		{
@@ -1787,12 +1800,12 @@ public static class DateTimeModule
 
 	///<summary>Converts the string representation of a date and time to its <see cref="T:System.DateTime" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateTime.Parse(string, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public static RuntimeModule.JDateTime _7372e5e0d8ba24a6(string s, Intl.NumberFormat? provider, object styles)
+	public static RuntimeModule.JDateTime _7372e5e0d8ba24a6(string s, Intl.NumberFormat? provider, System.Globalization.DateTimeStyles styles)
 		=> ApplyDateTimeStyles(ParseCore(s), s, styles);
 
 	///<summary>Converts a memory span that contains string representation of a date and time to its <see cref="T:System.DateTime" /> equivalent by using culture-specific format information and a formatting style.</summary>
 	[Jazor(Op.Import ,"static System.DateTime.Parse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles)")]
-	public static RuntimeModule.JDateTime _2c85f5b20ae7559e(string s, Intl.NumberFormat? provider, object styles)
+	public static RuntimeModule.JDateTime _2c85f5b20ae7559e(string s, Intl.NumberFormat? provider, System.Globalization.DateTimeStyles styles)
 		=> ApplyDateTimeStyles(ParseCore(s), s, styles);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTime" /> equivalent using the specified format and culture-specific format information. The format of the string representation must match the specified format exactly.</summary>
@@ -1934,7 +1947,7 @@ public static class DateTimeModule
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTime" /> equivalent using the specified culture-specific format information and formatting style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateTime.TryParse(string, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTime)")]
-	public static Array<object?> _34043b1eb3a8183a(string? s, Intl.NumberFormat? provider, object styles, RuntimeModule.JDateTime result)
+	public static Array<object?> _34043b1eb3a8183a(string? s, Intl.NumberFormat? provider, System.Globalization.DateTimeStyles styles, RuntimeModule.JDateTime result)
 	{
 		ValidateDateTimeStyles(GetDateTimeStylesValue(styles));
 		if (s == null || s.Length == 0)
@@ -1951,7 +1964,7 @@ public static class DateTimeModule
 
 	///<summary>Converts the span representation of a date and time to its <see cref="T:System.DateTime" /> equivalent using the specified culture-specific format information and formatting style, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Import ,"static System.DateTime.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, System.Globalization.DateTimeStyles, out System.DateTime)")]
-	public static Array<object?> _6e8546b461b48646(string s, Intl.NumberFormat? provider, object styles, RuntimeModule.JDateTime result)
+	public static Array<object?> _6e8546b461b48646(string s, Intl.NumberFormat? provider, System.Globalization.DateTimeStyles styles, RuntimeModule.JDateTime result)
 		=> _34043b1eb3a8183a(s, provider, styles, result);
 
 	///<summary>Converts the specified string representation of a date and time to its <see cref="T:System.DateTime" /> equivalent using the specified format, culture-specific format information, and style. The format of the string representation must match the specified format exactly. The method returns a value that indicates whether the conversion succeeded.</summary>

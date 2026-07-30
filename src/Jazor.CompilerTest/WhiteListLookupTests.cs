@@ -51,6 +51,36 @@ public sealed class WhiteListLookupTests
 		Assert.IsFalse(members.Contains("static ECMAScript.BigInt.Zero.get"), "Legacy generator-side stripping of 'extern' must not remain in persisted whitelist keys.");
 	}
 
+	[TestMethod]
+	[DataRow("System.Globalization.Calendar", "JGregorianCalendar")]
+	[DataRow("System.Globalization.GregorianCalendar", "JGregorianCalendar")]
+	[DataRow("System.DateTime", "JDateTime")]
+	[DataRow("System.DateOnly", "JDateOnly")]
+	[DataRow("System.DateTimeOffset", "JDateTimeOffset")]
+	[DataRow("System.TimeOnly", "JTimeOnly")]
+	[DataRow("System.TimeSpan", "JTimeSpan")]
+	[DataRow("System.Collections.Generic.Queue<T>", "JQueue")]
+	[DataRow("System.Collections.Generic.Stack<T>", "JStack")]
+	public void WhiteListTypes_RuntimeValueCarrier_IsInferredFromClrAdapterSignatures(
+		string clrType,
+		string expectedCarrier)
+	{
+		var carrier = GetRuntimeValueCarrier(clrType);
+
+		Assert.IsNotNull(carrier);
+		Assert.AreEqual(expectedCarrier, GetPropertyValue<string>(carrier, "Name"));
+		Assert.AreEqual("System/RuntimeModule.js", GetPropertyValue<string>(carrier, "Path"));
+	}
+
+	[TestMethod]
+	[DataRow("object")]
+	[DataRow("System.Collections.Generic.EqualityComparer<T>")]
+	[DataRow("System.Collections.Generic.Comparer<T>")]
+	public void WhiteListTypes_NonCarrierObjectAliases_DoNotAcquireRuntimeCarrier(string clrType)
+	{
+		Assert.IsNull(GetRuntimeValueCarrier(clrType));
+	}
+
 	private static IMethodSymbol CompileGetterSymbol(string code)
 	{
 		var compilation = CSharpCompilation.Create(
@@ -111,5 +141,32 @@ public sealed class WhiteListLookupTests
 		var members = membersField.GetValue(null) as System.Collections.IDictionary;
 		Assert.IsNotNull(members);
 		return members;
+	}
+
+	private static object? GetRuntimeValueCarrier(string clrType)
+	{
+		var whiteListType = typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!;
+		var typesField = whiteListType.GetField("Types", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+
+		Assert.IsNotNull(typesField);
+		var types = typesField.GetValue(null) as System.Collections.IDictionary;
+		Assert.IsNotNull(types);
+		Assert.IsTrue(types.Contains(clrType), $"Whitelist type '{clrType}' was not generated.");
+
+		var entry = types[clrType];
+		Assert.IsNotNull(entry);
+		return entry.GetType()
+			.GetProperty("RuntimeValueCarrier", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)!
+			.GetValue(entry);
+	}
+
+	private static T GetPropertyValue<T>(object instance, string propertyName)
+	{
+		var property = instance.GetType().GetProperty(
+			propertyName,
+			BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+		Assert.IsNotNull(property);
+		return (T)property.GetValue(instance)!;
 	}
 }

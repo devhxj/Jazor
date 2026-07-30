@@ -130,16 +130,27 @@ internal static class ClrRuntimeTestHost
         const [scenarioPath, resultPath] = Deno.args;
         const scenarios = JSON.parse(await Deno.readTextFile(scenarioPath));
 
-        function decode(value) {
+        async function decodeAll(values) {
+          const decoded = [];
+          for (const value of values)
+            decoded.push(await decode(value));
+          return decoded;
+        }
+
+        async function decode(value) {
           switch (value.kind) {
             case "null": return null;
             case "string": return value.scalar;
             case "number": return Number(value.scalar);
             case "boolean": return value.scalar === "true";
             case "bigInt": return BigInt(value.scalar);
-            case "array": return value.items.map(decode);
-            case "record": return Object.fromEntries(
-              Object.entries(value.properties).map(([name, item]) => [name, decode(item)]));
+            case "array": return await decodeAll(value.items);
+            case "record": {
+              const entries = [];
+              for (const [name, item] of Object.entries(value.properties))
+                entries.push([name, await decode(item)]);
+              return Object.fromEntries(entries);
+            }
             case "callable": {
               let fn;
               switch (value.scalar) {
@@ -152,6 +163,16 @@ internal static class ClrRuntimeTestHost
               Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
               return fn;
             }
+            case "runtimeInvocation": {
+              const invocation = value.invocation;
+              const runtimeModule = await import(`./${invocation.modulePath}`);
+              const runtimeFunction = runtimeModule[invocation.exportName];
+              if (typeof runtimeFunction !== "function")
+                throw new Error(
+                  `Missing nested runtime export ${invocation.exportName} in ${invocation.modulePath}`);
+              const args = await decodeAll(invocation.arguments);
+              return await runtimeFunction(...args);
+            }
             case "undefined": return undefined;
             default: throw new Error(`Unsupported CLR runtime value kind: ${value.kind}`);
           }
@@ -161,6 +182,12 @@ internal static class ClrRuntimeTestHost
           if (value === null) return { kind: "null" };
           if (value === undefined) return { kind: "undefined" };
           if (Array.isArray(value)) return { kind: "array", items: value.map(encode) };
+          if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
+            const primitive = value[Symbol.toPrimitive]("string");
+            if (primitive === value)
+              throw new Error("Runtime carrier returned itself from Symbol.toPrimitive");
+            return encode(primitive);
+          }
           switch (typeof value) {
             case "string": return { kind: "string", scalar: value };
             case "number": return {
@@ -192,7 +219,7 @@ internal static class ClrRuntimeTestHost
             const runtimeFunction = runtimeModule[scenario.exportName];
             if (typeof runtimeFunction !== "function")
               throw new Error(`Missing runtime export ${scenario.exportName} in ${scenario.modulePath}`);
-            const args = scenario.arguments.map(decode);
+            const args = await decodeAll(scenario.arguments);
             const value = await runtimeFunction(...args);
             results.push({
               id: scenario.id,

@@ -569,10 +569,13 @@ public partial class SemanticWalker
 	/// 1. Number 与 BigInt 之间的显式转换需要生成转换函数调用
 	///    - Number → BigInt: 生成 BigInt(value) 调用
 	///    - BigInt → Number: 生成 Number(value) 调用
-	/// 2. 其他类型转换在 JavaScript 中可以安全忽略，因为 JS 是动态类型语言
+	/// 2. C# as 转换必须保留运行时 try-cast 语义
+	///    - 匹配目标运行时类型时返回原值
+	///    - 不匹配时返回 null
+	///    - 可能有副作用的操作数只求值一次
+	/// 3. 其他类型转换在 JavaScript 中可以安全忽略，因为 JS 是动态类型语言
 	///    - 装箱/拆箱: JS 无需区分值类型和引用类型
 	///    - 引用类型转换: JS 运行时动态检查
-	///    - as 转换: 语义等价于直接访问
 	///
 	/// C# 示例 → JavaScript 转换结果：
 	///   (long)42           → BigInt(42)      // int 转 long，需要显式转换
@@ -580,7 +583,7 @@ public partial class SemanticWalker
 	///   (int)someLong      → Number(someLong) // long 转 int，需要显式转换
 	///   (ulong)count       → BigInt(count)   // uint 转 ulong
 	///   (int)3.14          → 3.14            // float 转 int，忽略转换
-	///   obj as string      → obj             // as 转换，直接返回
+	///   obj as string      → typeof obj === "string" ? obj : null
 	///   (BaseType)derived  → derived         // 引用类型强转，直接返回
 	///   object o = 42      → 42              // 装箱，忽略
 	///   int i = (int)o     → o               // 拆箱，忽略
@@ -611,6 +614,9 @@ public partial class SemanticWalker
 		//     void MyMethod() { }
 		// }
 		var expr = Translate<Expression>(operation.Operand, argument);
+
+		if (operation.IsTryCast)
+			return TranslateTryCast(operation, argument, expr);
 
 		if (operation.OperatorMethod is not null)
 		{
@@ -672,8 +678,38 @@ public partial class SemanticWalker
 		}
 
 		// 其他情况：直接返回操作数（JavaScript 是动态类型）
-		// 包括：装箱/拆箱、引用类型转换、as 转换等
+		// 包括：装箱/拆箱、引用类型强制转换等
 		return expr;
+	}
+
+	private Expression TranslateTryCast(
+		IConversionOperation operation,
+		SenseArgument argument,
+		Expression operand)
+	{
+		if (operation.Type is null)
+			return HandleTransformationFailure<Expression>(operation, "Try-cast conversion is missing its target type.");
+
+		// Roslyn has already proven implicit and identity conversions cannot fail.
+		if (operation.Conversion.IsImplicit)
+			return operand;
+
+		var targetType = UnwrapNullableValueType(operation.Type);
+		Expression input = operand;
+		Expression? initialization = null;
+		if (NeedsSingleEvaluationCaching(operand))
+		{
+			var tempId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.TryCastInput()));
+			argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+			initialization = new AssignmentExpression(Operator.Assignment, tempId, operand);
+			input = tempId;
+		}
+
+		var match = CreateTypeMatchExpr(operation, targetType, input, nullable: false, context: argument);
+		var result = new ConditionalExpression(match, input, Null);
+		return initialization is null
+			? result
+			: new SequenceExpression(NodeList.From<Expression>(initialization, result));
 	}
 
 	private bool CanPassThroughIntrinsicConversion(IConversionOperation operation)

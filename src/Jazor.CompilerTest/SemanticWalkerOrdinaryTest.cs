@@ -663,6 +663,147 @@ public sealed class SemanticWalkerOrdinaryTest
 
   }
 
+  [TestMethod]
+  public void Visit_Conversion_AsString_EmitsRuntimeTypeGuard()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    string text = value as string;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let text = typeof value === ""string"" ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsClass_EmitsNominalRuntimeTypeGuard()
+  {
+    var block = GetBlockOperation(@"
+            [ECMAScript]
+            sealed class Customer { }
+
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    Customer customer = value as Customer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let customer = value instanceof Customer ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsClass_SideEffectingOperandEvaluatesOnce()
+  {
+    var block = GetBlockOperation(@"
+            [ECMAScript]
+            sealed class Customer { }
+
+            class TestClass
+            {
+                object GetValue() => new Customer();
+
+                void TestMethod()
+                {
+                    Customer customer = GetValue() as Customer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let v$0;
+  let customer = (v$0 = this.GetValue(), v$0 instanceof Customer ? v$0 : null);
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsNullableInt_UsesUnderlyingRuntimeType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    int? number = value as int?;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let number = typeof value === ""number"" ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsNullableDateTime_UsesInferredCarrierGuard()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    DateTime? dateTime = value as DateTime?;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let dateTime = value instanceof JDateTime ? value : null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsImplicitBaseType_RemainsPassThrough()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    object value = text as object;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = text;
+}", script);
+  }
+
   /// <summary>
   /// 测试 VisitInvocation - 实例方法调用操作
   /// </summary>

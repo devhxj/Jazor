@@ -34,6 +34,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
         new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     var types = new List<(string Op, string Member, string? Value, string? ModulePath)>();
     var members = new List<(string TypeName, string Op, string Member, string? Value, string? ModulePath)>();
+    var adapterMethods = new List<(string TargetType, string TargetMember, IMethodSymbol Implementation)>();
     var seenTypes = new HashSet<string>(StringComparer.Ordinal);
     var seenMembers = new HashSet<string>(StringComparer.Ordinal);
     var attributedTypeSyntaxCount = 0;
@@ -65,12 +66,12 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
 
             var typeName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
             var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
+            var mappedTypeName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
 
             if (typeOp != nameof(Op.Compile))
             {
-                var memberName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
-                if (seenTypes.Add(memberName))
-                    types.Add((typeOp, memberName, typeValue, modulePath));
+                if (seenTypes.Add(mappedTypeName))
+                    types.Add((typeOp, mappedTypeName, typeValue, modulePath));
             }
 
             foreach (var memberDeclaration in typeDeclaration.Members)
@@ -96,6 +97,14 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
                 if (member.Kind == SymbolKind.Method && memberName is not null && value is null)
                     value = member.Name;
 
+                if (member is IMethodSymbol implementationMethod &&
+                    memberName is not null &&
+                    type.IsStatic &&
+                    type.ContainingNamespace?.ToDisplayString() == "Jazor.CLR")
+                {
+                    adapterMethods.Add((mappedTypeName, memberName, implementationMethod));
+                }
+
                 if (member is IPropertySymbol property)
                 {
                     if (property.GetMethod is not null)
@@ -120,12 +129,17 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
         }
     }
 
-    Console.WriteLine($"whitelist attributed types syntax={attributedTypeSyntaxCount}, symbols={attributedTypeSymbolCount}, types={types.Count}, members={members.Count}");
+    var runtimeValueCarriers = InferRuntimeValueCarriers(
+        compilation,
+        types.Select(static entry => entry.Member).ToHashSet(StringComparer.Ordinal),
+        adapterMethods);
+
+    Console.WriteLine($"whitelist attributed types syntax={attributedTypeSyntaxCount}, symbols={attributedTypeSymbolCount}, types={types.Count}, members={members.Count}, runtimeCarriers={runtimeValueCarriers.Count}");
 
     var jazorCompilerDir = Path.Combine(repoRoot, "src", "Jazor.Compiler");
     var typesInit = string.Join(Split, types
         .OrderBy(x => x.Op)
-        .Select(n => $"types[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)});"));
+        .Select(n => $"types[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatRuntimeValueCarrier(runtimeValueCarriers.GetValueOrDefault(n.Member))});"));
     var membersInit = string.Join(Split, members
         .Where(x => x.Op != nameof(Op.Compile))
         .Select(n => $"members[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatModulePath(n.Op, n.ModulePath)});"));
@@ -213,9 +227,9 @@ public partial class SemanticWalker
 ");
 
     WhiteList.ReplaceForCurrentProcess(
-        types.Select(static entry => new KeyValuePair<string, WhiteListValue>(
+        types.Select(entry => new KeyValuePair<string, WhiteListValue>(
             entry.Member,
-            CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath))),
+            CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath, runtimeValueCarriers.GetValueOrDefault(entry.Member)))),
         members
             .Where(static entry => entry.Op != nameof(Op.Compile))
             .Select(static entry => new KeyValuePair<string, WhiteListValue>(
@@ -229,13 +243,208 @@ static string FormatValue(string op, string? str)
 static string FormatModulePath(string op, string? str)
     => op != nameof(Op.Import) || str is null ? "" : $", \"{SharedGeneration.EscapeForCSharpStringLiteral(str)}\"";
 
-static WhiteListValue CreateWhiteListValue(string opName, string? value, string? modulePath)
+static string FormatRuntimeValueCarrier(RuntimeValueCarrierReference? carrier)
+    => carrier is null
+        ? ""
+        : $", null, new(\"{SharedGeneration.EscapeForCSharpStringLiteral(carrier.Name)}\", \"{SharedGeneration.EscapeForCSharpStringLiteral(carrier.Path)}\")";
+
+static WhiteListValue CreateWhiteListValue(
+    string opName,
+    string? value,
+    string? modulePath,
+    RuntimeValueCarrierReference? runtimeValueCarrier = null)
 {
     var op = Enum.Parse<Op>(opName, ignoreCase: false);
+    if (runtimeValueCarrier is not null)
+        return new WhiteListValue(op, value, path: null, runtimeValueCarrier);
+
     return op switch
     {
         Op.Allowed => new WhiteListValue(op),
         Op.Import => new WhiteListValue(op, value, modulePath),
         _ => new WhiteListValue(op, value)
     };
+}
+
+static Dictionary<string, RuntimeValueCarrierReference> InferRuntimeValueCarriers(
+    Compilation compilation,
+    HashSet<string> mappedTypes,
+    IEnumerable<(string TargetType, string TargetMember, IMethodSymbol Implementation)> adapters)
+{
+    var targetTypes = ResolveTargetTypes(compilation, mappedTypes);
+    var targetMethods = targetTypes.ToDictionary(
+        static pair => pair.Key,
+        static pair => BuildTargetMethodLookup(pair.Value),
+        StringComparer.Ordinal);
+    var carrierSymbols = new Dictionary<string, INamedTypeSymbol>(StringComparer.Ordinal);
+
+    foreach (var adapter in adapters)
+    {
+        if (!targetMethods.TryGetValue(adapter.TargetType, out var methods) ||
+            !methods.TryGetValue(adapter.TargetMember, out var targetMethod))
+        {
+            continue;
+        }
+
+        foreach (var pair in AlignAdapterTypes(targetMethod, adapter.Implementation))
+        {
+            var targetName = pair.Target.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            if (!mappedTypes.Contains(targetName) ||
+                !TryGetInternalRuntimeValueCarrier(pair.Implementation, out var carrier))
+            {
+                continue;
+            }
+
+            var originalCarrier = carrier.OriginalDefinition;
+            if (carrierSymbols.TryGetValue(targetName, out var existing))
+            {
+                if (!SymbolEqualityComparer.Default.Equals(existing, originalCarrier))
+                {
+                    throw new InvalidOperationException(
+                        $"Jazor.CLR adapter signatures map '{targetName}' to both " +
+                        $"'{existing.ToDisplayString(Format.NameFormat)}' and " +
+                        $"'{originalCarrier.ToDisplayString(Format.NameFormat)}'.");
+                }
+
+                continue;
+            }
+
+            carrierSymbols.Add(targetName, originalCarrier);
+        }
+    }
+
+    return carrierSymbols.ToDictionary(
+        static pair => pair.Key,
+        static pair => new RuntimeValueCarrierReference(
+            Util.GetConfigOrSymbolName(pair.Value),
+            GetRuntimeModulePath(pair.Value)),
+        StringComparer.Ordinal);
+}
+
+static Dictionary<string, INamedTypeSymbol> ResolveTargetTypes(
+    Compilation compilation,
+    HashSet<string> targetNames)
+{
+    var result = new Dictionary<string, INamedTypeSymbol>(StringComparer.Ordinal);
+
+    VisitNamespace(compilation.GlobalNamespace);
+    return result;
+
+    void VisitNamespace(INamespaceSymbol @namespace)
+    {
+        foreach (var type in @namespace.GetTypeMembers())
+            VisitType(type);
+
+        foreach (var child in @namespace.GetNamespaceMembers())
+            VisitNamespace(child);
+    }
+
+    void VisitType(INamedTypeSymbol type)
+    {
+        var original = type.OriginalDefinition;
+        var displayName = original.ToDisplayString(Format.NameFormat);
+        if (targetNames.Contains(displayName))
+            result.TryAdd(displayName, original);
+
+        foreach (var nested in type.GetTypeMembers())
+            VisitType(nested);
+    }
+}
+
+static Dictionary<string, IMethodSymbol> BuildTargetMethodLookup(INamedTypeSymbol type)
+{
+    var result = new Dictionary<string, IMethodSymbol>(StringComparer.Ordinal);
+    foreach (var member in type.GetMembers())
+    {
+        if (member is IMethodSymbol method)
+            Add(method);
+        else if (member is IPropertySymbol property)
+        {
+            if (property.GetMethod is not null)
+                Add(property.GetMethod);
+            if (property.SetMethod is not null)
+                Add(property.SetMethod);
+        }
+        else if (member is IEventSymbol @event)
+        {
+            if (@event.AddMethod is not null)
+                Add(@event.AddMethod);
+            if (@event.RemoveMethod is not null)
+                Add(@event.RemoveMethod);
+        }
+    }
+
+    return result;
+
+    void Add(IMethodSymbol method)
+        => result.TryAdd(method.OriginalDefinition.ToDisplayString(Format.NameFormat), method.OriginalDefinition);
+}
+
+static IEnumerable<(ITypeSymbol Target, ITypeSymbol Implementation)> AlignAdapterTypes(
+    IMethodSymbol target,
+    IMethodSymbol implementation)
+{
+    var parameterOffset = 0;
+    if (target.MethodKind == MethodKind.Constructor)
+    {
+        if (!implementation.ReturnsVoid)
+            yield return (target.ContainingType, implementation.ReturnType);
+    }
+    else
+    {
+        if (!target.IsStatic && implementation.Parameters.Length > 0)
+        {
+            yield return (target.ContainingType, implementation.Parameters[0].Type);
+            parameterOffset = 1;
+        }
+
+        if (!target.ReturnsVoid && !implementation.ReturnsVoid)
+            yield return (target.ReturnType, implementation.ReturnType);
+    }
+
+    var parameterCount = Math.Min(target.Parameters.Length, implementation.Parameters.Length - parameterOffset);
+    for (var index = 0; index < parameterCount; index++)
+        yield return (target.Parameters[index].Type, implementation.Parameters[index + parameterOffset].Type);
+}
+
+static bool TryGetInternalRuntimeValueCarrier(
+    ITypeSymbol implementationType,
+    out INamedTypeSymbol carrier)
+{
+    carrier = implementationType as INamedTypeSymbol ?? null!;
+    if (carrier is null ||
+        carrier.TypeKind != TypeKind.Class ||
+        carrier.IsStatic ||
+        carrier.DeclaringSyntaxReferences.Length == 0 ||
+        carrier.ContainingNamespace?.ToDisplayString() != "Jazor.CLR")
+    {
+        return false;
+    }
+
+    return TryGetRuntimeModulePath(carrier, out _);
+}
+
+static string GetRuntimeModulePath(INamedTypeSymbol carrier)
+{
+    if (TryGetRuntimeModulePath(carrier, out var path))
+        return path;
+
+    throw new InvalidOperationException(
+        $"Internal runtime carrier '{carrier.ToDisplayString(Format.NameFormat)}' is not contained in an ECMAScript module.");
+}
+
+static bool TryGetRuntimeModulePath(INamedTypeSymbol carrier, out string path)
+{
+    for (ITypeSymbol? current = carrier; current is not null; current = current.ContainingType)
+    {
+        var modulePath = Util.GetECMAScriptModuleImportPath(current);
+        if (!string.IsNullOrWhiteSpace(modulePath))
+        {
+            path = modulePath!;
+            return true;
+        }
+    }
+
+    path = string.Empty;
+    return false;
 }

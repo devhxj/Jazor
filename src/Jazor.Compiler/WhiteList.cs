@@ -4,6 +4,8 @@ namespace Jazor.Compiler;
 
 partial interface IWhiteList { }
 
+internal sealed record RuntimeValueCarrierReference(string Name, string Path);
+
 internal sealed class WhiteListValue
 {
 	public Op Op { get; }
@@ -12,11 +14,20 @@ internal sealed class WhiteListValue
 
 	public string? Path { get; }
 
+	public RuntimeValueCarrierReference? RuntimeValueCarrier { get; }
+
 	public WhiteListValue(Op op) => Op = op;
 
 	public WhiteListValue(Op op, string? value) => (Op, Value) = (op, value);
 
 	public WhiteListValue(Op op, string? value, string? path) => (Op, Value, Path) = (op, value, path);
+
+	public WhiteListValue(
+		Op op,
+		string? value,
+		string? path,
+		RuntimeValueCarrierReference runtimeValueCarrier)
+		=> (Op, Value, Path, RuntimeValueCarrier) = (op, value, path, runtimeValueCarrier);
 }
 
 internal static partial class WhiteList

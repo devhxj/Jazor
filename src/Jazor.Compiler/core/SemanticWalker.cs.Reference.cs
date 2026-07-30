@@ -238,11 +238,11 @@ public partial class SemanticWalker
 		}
 
 		var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (displayName is "System.DateTime" or "System.DateOnly" or "System.DateTimeOffset" or "System.TimeOnly" or "System.TimeSpan")
+		if (TryGetWhiteListRuntimeValueCarrier(typeSymbol, out _))
 		{
 			return HandleTransformationFailure<Expression>(
 				operation,
-				$"Type '{displayName}' does not expose a stable runtime type token because it lowers to a shaped carrier rather than a single JavaScript constructor.");
+				$"Type '{displayName}' does not expose a stable runtime type token because its internal value carrier does not represent the CLR type and its mapped members.");
 		}
 
 		var (mapper, typeName) = GetMapperType(typeSymbol);
@@ -2715,7 +2715,7 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var refParas = new List<Expression>();
+		var refParas = new List<Expression?>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
 		// 处理方法调用的参数
@@ -2747,7 +2747,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
 			// ref 引用 或 out 变量引用，记住顺序
 			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-				refParas.Add(right);
+				refParas.Add(arg.Value is IDiscardOperation ? null : right);
 
 			// 当作普通参数传入
 			arguments.Add(right);
@@ -2769,7 +2769,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			invocationOperation: operation);
 		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
 
-		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression> refs, in SenseArgument ctx)
+		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression?> refs, in SenseArgument ctx)
 		{
 			var expressions = new List<Expression>();
 			if (refs.Count > 0)
@@ -2782,10 +2782,13 @@ private bool TryExpandEcmascriptParamsArgument(
 				expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
 				for (var i = 0; i < refs.Count; i++)
 				{
+					if (refs[i] is null)
+						continue;
+
 					var index = hasReturns ? i + 1 : i;
 					var indexer = new NumericLiteral(index, index.ToString());
 					var member = new MemberExpression(tempId, indexer, computed: true, optional: false);
-					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i], member);
+					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i]!, member);
 					expressions.Add(assignExpr);
 				}
 				// 最后如果有返回调用结果

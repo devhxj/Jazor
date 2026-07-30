@@ -427,7 +427,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = new Object;
-  let result = obj != null && typeof obj === ""object"";
+  let result = obj != null;
 }", script);
   }
 
@@ -456,7 +456,31 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"obj != null && typeof obj === ""object""", script);
+    Assert.AreEqual(@"obj != null", script);
+  }
+
+  [TestMethod]
+  public void Visit_IsType_Object_AllowsErasedPrimitiveValuesByCheckingOnlyNullishness()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object number, object text)
+                {
+                    bool numberResult = number is object;
+                    bool textResult = text is object;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let numberResult = number != null;
+  let textResult = text != null;
+}", script);
   }
 
   /// <summary>
@@ -2388,7 +2412,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = _ee9dd166a34a2fa5();
-  let result = obj !== null && typeof obj === ""object"" && (obj.date instanceof Date && typeof obj.kind === ""number"" && typeof obj.subMillisecondTicks === ""bigint"");
+  let result = obj instanceof JDateTime;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
   }
@@ -2441,6 +2465,52 @@ public sealed class SemanticWalkerPatternTest
     {
       _ = walker.Visit(block, new());
     });
+  }
+
+  [TestMethod]
+  public void Visit_IsType_ConcreteObjectAliasWithoutCarrier_ThrowsActionableDiagnostic()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool result = obj is EqualityComparer<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    StringAssert.Contains(exception.Message, "System.Collections.Generic.EqualityComparer<T>");
+    StringAssert.Contains(exception.Message, "without an inferred Jazor.CLR runtime carrier");
+  }
+
+  [TestMethod]
+  public void Visit_IsType_CalendarAndGregorianCalendar_UseSharedInferredCarrier()
+  {
+    var block = GetBlockOperation(@"
+            using System.Globalization;
+
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool calendar = obj is Calendar;
+                    bool gregorian = obj is GregorianCalendar;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let calendar = obj instanceof JGregorianCalendar;
+  let gregorian = obj instanceof JGregorianCalendar;
+}", script);
   }
 
   /// <summary>
@@ -3026,7 +3096,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = _5f8053a9657a0844();
-  let result = obj !== null && typeof obj === ""object"" && (typeof obj.year === ""number"" && typeof obj.month === ""number"" && (typeof obj.day === ""number"" && typeof obj.dayNumber === ""number""));
+  let result = obj instanceof JDateOnly;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -3053,7 +3123,7 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = _12b4f3f1dc14bea9();
-  let result = obj !== null && typeof obj === ""object"" && (obj.utcDateTime instanceof Date && typeof obj.offsetTicks === ""bigint"" && typeof obj.utcSubMillisecondTicks === ""bigint"");
+  let result = obj instanceof JDateTimeOffset;
 }", script);
   }
 
@@ -3081,7 +3151,7 @@ public sealed class SemanticWalkerPatternTest
 
     StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
     AssertContainsCount(script, "= GetValue(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 !== null && typeof v$0 === \"object\" && (v$0.utcDateTime instanceof Date && typeof v$0.offsetTicks === \"bigint\" && typeof v$0.utcSubMillisecondTicks === \"bigint\"));", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 instanceof JDateTimeOffset);", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -3104,7 +3174,7 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = _ea05a56d08fbd4f9();
-  let result = obj !== null && typeof obj === ""object"" && (obj.kind === ""queue"" && (Array.isArray(obj.items) && typeof obj.head === ""number""));
+  let result = obj instanceof JQueue;
 }", script);
   }
 
@@ -3128,7 +3198,7 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = _7d15fcc03d17599b();
-  let result = obj !== null && typeof obj === ""object"" && (obj.kind === ""stack"" && Array.isArray(obj.items));
+  let result = obj instanceof JStack;
 }", script);
   }
 
@@ -3155,7 +3225,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = _5af0f6ad850e6702();
-  let result = obj !== null && typeof obj === ""object"" && typeof obj.ticks === ""bigint"";
+  let result = obj instanceof JTimeSpan;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -3237,7 +3307,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = _9f78f92d0753f4cf();
-  let result = obj !== null && typeof obj === ""object"" && typeof obj.ticks === ""bigint"";
+  let result = obj instanceof JTimeOnly;
 }".Replace("\r\n", "\n"),
         script?.Replace("\r\n", "\n"));
 
@@ -7399,7 +7469,7 @@ line2"";
 
     AssertScriptEqual(@"{
   let now = _ee9dd166a34a2fa5();
-  if (now !== null && typeof now === ""object"" && (now.date instanceof Date && typeof now.kind === ""number"" && typeof now.subMillisecondTicks === ""bigint"") && now != null && _9d56b09432f81c05(now) === 2024) {
+  if (now instanceof JDateTime && now != null && _9d56b09432f81c05(now) === 2024) {
     console.log(""match"");
   }
 }", script);
