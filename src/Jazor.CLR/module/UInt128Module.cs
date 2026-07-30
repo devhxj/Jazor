@@ -65,7 +65,7 @@ public static class UInt128Module
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.Parse(string)")]
-	public static BigInt _30fed79ec71cc7e4(string? text)
+	public static BigInt _30fed79ec71cc7e4(string text)
 		=> BigIntIntegerRuntime.Parse(text, MinValueCore, MaxValueCore, "UInt128");
 
 	///<summary>Parses a string into a value.</summary>
@@ -74,7 +74,7 @@ public static class UInt128Module
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.Parse(string, System.IFormatProvider)")]
-	public static BigInt _6d4342f227a4fbad(string? text, Intl.NumberFormat? provider)
+	public static BigInt _6d4342f227a4fbad(string text, Intl.NumberFormat? provider)
 		=> _30fed79ec71cc7e4(text);
 
 	///<summary>Parses a string into a value.</summary>

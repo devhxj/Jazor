@@ -103,6 +103,34 @@ public sealed class NumericWidthModuleWhitelistTests
 		}
 	}
 
+	[TestMethod]
+	public void GeneratedNumericScaffolds_PreserveParseNullabilityContract()
+	{
+		var nullability = new NullabilityInfoContext();
+
+		foreach (var moduleType in new[]
+		{
+			typeof(Jazor.CLR.HalfModule),
+			typeof(Jazor.CLR.Int128Module),
+			typeof(Jazor.CLR.UInt128Module)
+		})
+		{
+			var clrTypeName = GetClrTypeName(moduleType);
+			var methods = moduleType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+			foreach (var member in new[]
+			{
+				$"static {clrTypeName}.Parse(string)",
+				$"static {clrTypeName}.Parse(string, System.IFormatProvider)"
+			})
+			{
+				var method = methods.Single(candidate =>
+					candidate.GetCustomAttribute<JazorAttribute>()?.Member == member);
+				var text = method.GetParameters()[0];
+				Assert.AreEqual(NullabilityState.NotNull, nullability.Create(text).ReadState, member);
+			}
+		}
+	}
+
 	private static void AssertTypeAlias(Type type, string member, string alias)
 	{
 		var attribute = type.GetCustomAttribute<JazorAttribute>();

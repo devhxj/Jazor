@@ -154,7 +154,7 @@ public static class HalfModule
 
 	///<summary>Converts the string representation of a number to its half-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Import, "static System.Half.Parse(string)")]
-	public static Number _14d80007aa3543a1(string? text)
+	public static Number _14d80007aa3543a1(string text)
 	{
 		if (text == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
@@ -170,7 +170,7 @@ public static class HalfModule
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Import, "static System.Half.Parse(string, System.IFormatProvider)")]
-	public static Number _92b036ecc84de08d(string? text, Intl.NumberFormat? provider)
+	public static Number _92b036ecc84de08d(string text, Intl.NumberFormat? provider)
 		=> _14d80007aa3543a1(text);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
