@@ -5347,6 +5347,130 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_CompoundAssignment_Field_MappedOperatorCachesSideEffectingReceiver()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			class Holder
+			{
+				public TimeSpan Value;
+			}
+
+			class TestClass
+			{
+				Holder GetHolder() => new();
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetHolder().Value += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0;
+			  v$0 = this.getHolder(), v$0.value = _24670e70abc0feb8(v$0.value, increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_AutoProperty_MappedOperatorCachesSideEffectingReceiver()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			class Holder
+			{
+				public TimeSpan Value { get; set; }
+			}
+
+			class TestClass
+			{
+				Holder GetHolder() => new();
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetHolder().Value += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0;
+			  v$0 = this.getHolder(), v$0.value = _24670e70abc0feb8(v$0.value, increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_EcmaScriptIndexer_MappedOperatorCachesReceiverAndIndex()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			class Holder
+			{
+				public TimeSpan this[int index] { get => default; set { } }
+			}
+
+			class TestClass
+			{
+				Holder GetHolder() => new();
+				int NextIndex() => 0;
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetHolder()[NextIndex()] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1;
+			  v$0 = this.getHolder(), v$1 = this.nextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_UserOperatorWithoutMappingThrows()
+	{
+		var block = GetBlockOperation("""
+			sealed class DomainNumber
+			{
+				public static DomainNumber operator +(DomainNumber left, DomainNumber right) => left;
+			}
+
+			class TestClass
+			{
+				void TestMethod(DomainNumber left, DomainNumber right)
+				{
+					left += right;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+		StringAssert.Contains(exception.Message, "requires an explicit whitelist mapping");
+	}
+
+	[TestMethod]
 	public void Visit_IncrementOrDecrement_ArrayElement_MappedPostfixCachesReceiverAndIndex()
 	{
 		var block = GetBlockOperation("""
@@ -5370,6 +5494,39 @@ public sealed class SemanticWalkerReferenceTest
 			{
 			  let v$0, v$1, v$2;
 			  let before = (v$0 = this.getValues(), v$1 = this.nextIndex(), (v$2 = v$0[v$1], v$0[v$1] = BigInt.asIntN(128, v$2 + 1n), v$2));
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_Field_MappedPostfixCachesSideEffectingReceiver()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			class Holder
+			{
+				public Int128 Value;
+			}
+
+			class TestClass
+			{
+				Holder GetHolder() => new();
+
+				void TestMethod()
+				{
+					Int128 before = GetHolder().Value++;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1;
+			  let before = (v$0 = this.getHolder(), (v$1 = v$0.value, v$0.value = BigInt.asIntN(128, v$1 + 1n), v$1));
 			}
 			""", script);
 	}

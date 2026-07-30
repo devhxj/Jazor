@@ -1283,6 +1283,15 @@ public partial class SemanticWalker
 		else
 		{
 			left = Translate<Expression>(operation.Target, argument);
+			if (operation.OperatorMethod is not null)
+			{
+				targetInitializations = [];
+				left = PrepareRepeatedReadWriteTarget(
+					left,
+					operation,
+					argument,
+					targetInitializations);
+			}
 		}
 
 		var right = Translate<Expression>(operation.Value, argument);
@@ -1844,6 +1853,15 @@ public partial class SemanticWalker
 		else
 		{
 			preparedTarget = Translate<Expression>(operation.Target, argument);
+			if (operation.OperatorMethod is not null)
+			{
+				targetInitializations = [];
+				preparedTarget = PrepareRepeatedReadWriteTarget(
+					preparedTarget,
+					operation,
+					argument,
+					targetInitializations);
+			}
 		}
 
 		Expression WrapTarget(Expression expression)
@@ -2055,6 +2073,38 @@ public partial class SemanticWalker
 				 (member.Computed && member.Property is Identifier or Literal)) => true,
 			_ => false
 		};
+
+	// mapped operator 会把一个 C# 左值拆成独立 read/write AST；先物化 member 组成部分，
+	// 才能同时保持 receiver/key 单次求值以及它们先于 RHS 的求值顺序。
+	private Expression PrepareRepeatedReadWriteTarget(
+		Expression target,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		List<Expression> initializations)
+	{
+		if (CanDuplicateReadWriteTarget(target) ||
+			target is not MemberExpression { Optional: false } member)
+			return target;
+
+		var instance = MaterializePropertyMutationOperand(
+			(Expression)member.Object,
+			ownerOperation,
+			argument,
+			initializations,
+			"target");
+		var property = (Expression)member.Property;
+		if (member.Computed)
+		{
+			property = MaterializePropertyMutationOperand(
+				property,
+				ownerOperation,
+				argument,
+				initializations,
+				"targetKey");
+		}
+
+		return new MemberExpression(instance, property, member.Computed, optional: false);
+	}
 
 	private bool IsImportedModuleStaticFieldMutation(IFieldReferenceOperation fieldReference, SenseArgument argument)
 	{

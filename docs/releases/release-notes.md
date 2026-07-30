@@ -9,6 +9,7 @@
 - Nested object initializers now complete their values before assigning a property or indexer, so computed targets are evaluated once and setters cannot observe partially initialized objects.
 - Unsupported standalone `System.Index` and `System.Range` values now produce explicit, source-located diagnostics that direct authors to contextual `^` and `..` indexer or slice usage.
 - Source-map source content now resolves through exact normalized syntax-tree paths, so files with the same name in different directories retain their own `sourcesContent` instead of relying on ambiguous filename fallback.
+- Mapped compound assignment and increment/decrement now evaluate direct member receivers and index keys once before the right-hand side, including side-effecting fields, properties, and ECMAScript indexers.
 
 ## 2026-07-29
 
