@@ -23,13 +23,11 @@
 - `try/catch` lowering 的合成异常参数
 - 引用缓存、对象初始化 IIFE 内的临时变量
 
-这里的“稳定”不是指“换机器、换 checkout 路径、换工作区后仍必须完全同名”。
-
-当前接受的稳定边界是：
+当前稳定边界是：
 
 - 同一份源码
-- 同一路径
 - 同一编译上下文
+- 不同机器、checkout 根目录和源文件路径
 - 无关空白、注释、无关语义改动尽量不影响名称
 
 只要在这个边界内可复现、并且始终编译出正确代码，就满足当前要求。
@@ -73,13 +71,11 @@
 - 建立根发射作用域
 - 为当前 operation 树建立 session 内部 identity 索引
 
-`OwnerKey` 当前允许使用规范化后的绝对路径：
+`OwnerKey` 由 Roslyn enclosing symbol 的 `OriginalDefinition` 生成：
 
-- 路径变化会导致名字变化
-- 这是允许的
-- 它只承担“文档/编译单元隔离盐值”的职责
-
-换言之，`filepath` 可以用，但只放在 session / document 这一层。
+- 不包含绝对路径、checkout 根目录或 source span
+- 同一符号在不同机器和源目录下保持一致
+- 缺失 semantic model/enclosing symbol 时明确失败，不启用 syntax/path fallback
 
 ### 2. `EmissionScopeContext`
 
@@ -179,13 +175,12 @@
 
 当前模型可以概括为：
 
-> 路径只负责 owner 隔离，scope 只负责词法层级，真正的名称稳定性由 lowering owner 语义驱动。
+> 符号负责 owner 隔离，scope 只负责词法层级，真正的名称稳定性由 lowering owner 语义驱动。
 
 具体来说：
 
-- `filepath` 允许出现在 `OwnerKey`
-- `filepath` 不进入 `ScopeKey`
-- `filepath` 不直接参与具体 lowering owner 的语义构造
+- `OriginalDefinition` 的稳定符号名进入 `OwnerKey`
+- `filepath` 不进入 `OwnerKey`、`ScopeKey` 或 lowering owner key
 - `ScopeKey` 只表达 emitted lexical scope
 - `StableKey` 才是最终名称的稳定主键
 - `IdentityKey` 只是 session 内部辅助键

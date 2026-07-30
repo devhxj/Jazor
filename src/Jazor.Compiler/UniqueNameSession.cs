@@ -1,8 +1,6 @@
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -86,39 +84,9 @@ internal sealed class UniqueNameSession
 
     private static string CreateOwnerKey(IOperation root)
     {
-        var symbol = root.SemanticModel?.GetEnclosingSymbol(root.Syntax.SpanStart);
-        if (symbol is not null)
-            return "symbol|" + symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-
-        var builder = new StringBuilder();
-        builder.Append("syntax|").Append(CreateDocumentKey(root)).Append('|');
-        builder.Append(root.Kind).Append('|');
-        builder.Append(root.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
-        builder.Append('|').Append(HashHex(root.Syntax.ToFullString(), 24));
-        return builder.ToString();
-    }
-
-    private static string CreateDocumentKey(IOperation root)
-    {
-        var filePath = NormalizePath(root.Syntax.SyntaxTree.FilePath);
-        return string.IsNullOrEmpty(filePath)
-            ? "<memory>"
-            : Path.GetFileName(filePath);
-    }
-
-    private static string NormalizePath(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return string.Empty;
-
-        var nonNullPath = path!;
-        var normalized = nonNullPath.Replace('\\', '/');
-        if (Path.IsPathRooted(nonNullPath))
-            normalized = Path.GetFullPath(nonNullPath).Replace('\\', '/');
-
-        normalized = normalized.TrimEnd('/');
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? normalized.ToLowerInvariant()
-            : normalized;
+        var symbol = root.SemanticModel?.GetEnclosingSymbol(root.Syntax.SpanStart)
+            ?? throw new System.InvalidOperationException(
+                $"Jazor cannot allocate stable names for '{root.Kind}' without a Roslyn enclosing symbol.");
+        return "symbol|" + symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
     }
 }
