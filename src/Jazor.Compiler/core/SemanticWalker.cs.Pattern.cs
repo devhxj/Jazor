@@ -1942,12 +1942,6 @@ public partial class SemanticWalker
 		for (var index = 0; index < operations.Count; index++)
 		{
 			var operation = operations[index];
-			if (operation is IUsingDeclarationOperation usingDeclaration)
-			{
-				pendingStatements.AddRange(LowerUsingDeclarationToPatternSwitchCaseStatements(usingDeclaration, operations, index + 1, context));
-				break;
-			}
-
 			if (operation is IBranchOperation branchOperation)
 			{
 				switch (branchOperation.BranchKind)
@@ -1972,20 +1966,6 @@ public partial class SemanticWalker
 		}
 
 		return pendingStatements;
-	}
-
-	private List<Statement> LowerUsingDeclarationToPatternSwitchCaseStatements(
-		IUsingDeclarationOperation operation,
-		IReadOnlyList<IOperation> siblingOperations,
-		int nextIndex,
-		SenseArgument context)
-	{
-		var disposalKind = GetUsingDisposalKind(operation.IsAsynchronous);
-		var resources = BindUsingDeclarationResources(operation, context, disposalKind);
-		var bodyStatements = TranslatePatternSwitchCaseBodyStatements(
-			siblingOperations.Skip(nextIndex).ToArray(),
-			context);
-		return BuildUsingTryFinallyStatements(resources, bodyStatements, context);
 	}
 
 	/// <summary>

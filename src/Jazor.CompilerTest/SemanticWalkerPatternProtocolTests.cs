@@ -423,7 +423,22 @@ internal static class PatternProtocolCatalog
                         bool matches = buffer is [1, .. var middle, 4];
                 """,
             "Range-based slice property",
-            "Expose a Slice(int, int) member")
+            "Expose a Slice(int, int) member"),
+        Failure(
+            "switch.continue-iife",
+            "switch=pattern;enclosing=loop;branch=continue;result=rejected",
+            """
+                        while (true)
+                        {
+                            switch ((object)GetNumber())
+                            {
+                                case int:
+                                    continue;
+                            }
+                        }
+            """,
+            "Continue statements inside pattern-matching switch",
+            "IIFE boundary")
     ];
 
     private static PatternProtocolSuccessCase Success(

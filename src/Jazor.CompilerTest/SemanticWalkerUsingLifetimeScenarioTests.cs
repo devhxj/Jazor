@@ -471,6 +471,34 @@ internal static class UsingLifetimeScenarioCatalog
             expectedLeadingCall: "before",
             expectedProtectedCall: "after"),
         Success(
+            "pattern-switch-case-declaration",
+            "pattern-switch-case-using-declaration-wraps-tail-and-break",
+            """
+            class TestClass
+            {
+                class Resource : System.IDisposable { public void Dispose() { } }
+                void After() { }
+
+                void TestMethod(object value)
+                {
+                    switch (value)
+                    {
+                        case int:
+                        {
+                            using var resource = new Resource();
+                            After();
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+            }
+            """,
+            [Member("resource", "dispose")],
+            expectedReturn: true,
+            expectedProtectedCall: "after"),
+        Success(
             "consecutive-declarations",
             "consecutive-declarations-nest-lifetimes",
             """
