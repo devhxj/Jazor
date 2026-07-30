@@ -4453,6 +4453,26 @@ line2"";
   }
 
   [TestMethod]
+  public void Visit_TypePattern_RuntimeTypeParameter_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(object value)
+                {
+                    bool result = value is T;
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(() =>
+      new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(exception.Message, "Target='T'", StringComparison.Ordinal);
+    StringAssert.Contains(exception.Message, "Mapper='Unknown'", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
   public void Visit_TypePattern_Interface_DirectInterfaceParameter_FoldsToNonNullCheck()
   {
     var block = GetBlockOperation(@"

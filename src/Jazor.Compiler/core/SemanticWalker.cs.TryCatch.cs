@@ -158,7 +158,7 @@ public partial class SemanticWalker
                 var group = groups[index];
                 var fallback = chain;
                 var body = BuildGroupBody(group.Clauses, fallback, sharedCatchParam, !hoistSharedCatchParamOutsideGroups);
-                var test = CreateTypeMatchExpr(operation, group.ExceptionType, tryParam, nullable: false, context: mergedCatchArg);
+                var test = CreateTypeMatchExpr(operation, group.ExceptionType, tryParam, context: mergedCatchArg);
                 // 同一 JS 运行时类型的多个 catch 需要先聚合到一个分支里，
                 // 这样 when 过滤失败时才能继续尝试同组后续 catch，而不是提前 rethrow。
                 chain = new IfStatement(test, body, fallback);
@@ -291,7 +291,6 @@ public partial class SemanticWalker
             operation,
             operation.ExceptionType,
             exceptionParam,
-            nullable: false,
             context: argument);
         var notMatch = new NonUpdateUnaryExpression(Operator.LogicalNot, test);
         return new IfStatement(notMatch, new ThrowStatement(exceptionParam), null);

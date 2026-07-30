@@ -843,7 +843,7 @@ public partial class SemanticWalker
 
 		var mapper = GetMapperType(carrierType).Mapper;
 		if (mapper is TypeMapper.Array or TypeMapper.String)
-			return CreateTypeMatchExpr(operation, carrierType, targetExpr, nullable: false, context: argument);
+			return CreateTypeMatchExpr(operation, carrierType, targetExpr, context: argument);
 
 		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
 	}
@@ -1266,13 +1266,11 @@ public partial class SemanticWalker
 	/// <param name="operation"></param>
 	/// <param name="typeSymbol"></param>
 	/// <param name="value"></param>
-	/// <param name="nullable"></param>
+	/// <param name="context"></param>
 	/// <returns></returns>
-	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null, SenseArgument? context = null)
+	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, SenseArgument context)
 	{
-		Expression? initialization = null;
-		if (context is SenseArgument cacheContext)
-			value = StabilizePatternExpression(operation, value, cacheContext, "type", out initialization);
+		value = StabilizePatternExpression(operation, value, context, "type", out var initialization);
 
 		Expression? result;
 		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
@@ -1283,8 +1281,7 @@ public partial class SemanticWalker
 
 		else if (TryGetWhiteListRuntimeValueCarrier(typeSymbol, out var runtimeValueCarrier))
 		{
-			var carrierConstructor = context?.BindImportSpecifier(runtimeValueCarrier.Path, runtimeValueCarrier.Name)
-				?? new Identifier(runtimeValueCarrier.Name);
+			var carrierConstructor = context.BindImportSpecifier(runtimeValueCarrier.Path, runtimeValueCarrier.Name);
 			result = InstanceOfExpr(value, carrierConstructor);
 		}
 		else
@@ -1339,13 +1336,6 @@ public partial class SemanticWalker
 					_ => null
 				};
 			}
-		}
-
-		// 判断可空
-		if (nullable ?? IsNullableType(typeSymbol))
-		{
-			var expr = new NonLogicalBinaryExpression(Operator.Equality, value, Null);
-			result = result is null ? expr : new LogicalExpression(Operator.LogicalOr, result, expr);
 		}
 
 		if (result is null)

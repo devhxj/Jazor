@@ -689,7 +689,7 @@ public partial class SemanticWalker
 			input = tempId;
 		}
 
-		var match = CreateTypeMatchExpr(operation, targetType, input, nullable: false, context: argument);
+		var match = CreateTypeMatchExpr(operation, targetType, input, context: argument);
 		var result = new ConditionalExpression(match, input, Null);
 		return initialization is null
 			? result
