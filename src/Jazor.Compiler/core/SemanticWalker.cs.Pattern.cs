@@ -1852,12 +1852,6 @@ public partial class SemanticWalker
 			}
 		}
 
-		if (TryGetStructuralSourceDataCarrierMemberOrder(namedType, out var members) &&
-			index < members.Length)
-		{
-			return Util.GetConfigOrSymbolName(members[index]);
-		}
-
 		var message = $"Cannot determine property name for structural type '{namedType.Name}' at position {index}. " +
 			$"Ensure the type has a matching structural member shape.";
 		var location = operation.Syntax.GetLocation();

@@ -493,16 +493,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 method.Parameters.Length == 0);
 
     private bool IsStructuralType(ITypeSymbol? typeSymbol)
-        => StructuralRecordSupport.IsStructuralType(typeSymbol, IsStructuralSourceDataCarrierType);
+        => StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
 
     private bool IsStructuralMember(ISymbol? symbol)
-        => StructuralRecordSupport.IsStructuralMember(symbol, IsStructuralSourceDataCarrierType);
+        => StructuralRecordSupport.IsStructuralRecordMember(symbol);
 
     private bool IsNonStructuralRuntimeMember(ISymbol? symbol, ITypeSymbol? hostType = null)
-        => StructuralRecordSupport.IsNonStructuralRuntimeMember(symbol, hostType, IsStructuralSourceDataCarrierType);
+        => StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(symbol, hostType);
 
     private bool IsStructuralRuntimeSemanticInvocation(IInvocationOperation? invocation)
-        => StructuralRecordSupport.IsStructuralRuntimeSemanticInvocation(invocation, IsStructuralSourceDataCarrierType);
+        => StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(invocation);
 
     private bool IsDirectlySupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
     {
@@ -1038,12 +1038,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private readonly Dictionary<string, string> _testNameAliases = new(System.StringComparer.Ordinal);
     private readonly Dictionary<IOperation, string> _semanticNameKeyCache =
         new(ReferenceEqualityComparer<IOperation>.Instance);
-    private readonly Dictionary<ITypeSymbol, bool> _structuralSourceDataCarrierTypeCache =
-        new(SymbolEqualityComparer.Default);
-    private readonly Dictionary<IMethodSymbol, ImmutableArray<ISymbol>> _structuralSourceDataCarrierConstructorMemberMapCache =
-        new(SymbolEqualityComparer.Default);
-    private readonly HashSet<IMethodSymbol> _nonStructuralSourceDataCarrierConstructors =
-        new(SymbolEqualityComparer.Default);
 
     private readonly Action<Location, string?>? _report;
 
@@ -1058,8 +1052,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private UniqueNameSession? _uniqueNameSession;
 
     public SemanticWalkerHost? Host { get; set; }
-
-    public bool AllowStructuralSourceDataCarrierLowering { get; set; }
 
     public SemanticWalker()
     {
@@ -1092,209 +1084,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     public SemanticWalker(Action<Location, string?> report):this() => _report = report;
 
     public SemanticWalker(Action<Location, string?> report, CancellationToken cancellationToken) : this(cancellationToken) => _report = report;
-
-    private bool IsStructuralSourceDataCarrierType(INamedTypeSymbol typeSymbol)
-    {
-        if (!AllowStructuralSourceDataCarrierLowering)
-            return false;
-
-        if (_structuralSourceDataCarrierTypeCache.TryGetValue(typeSymbol, out var cached))
-            return cached;
-
-        if (!TryGetStructuralSourceDataCarrierMemberOrder(typeSymbol, out _))
-        {
-            _structuralSourceDataCarrierTypeCache[typeSymbol] = false;
-            return false;
-        }
-
-        _structuralSourceDataCarrierTypeCache[typeSymbol] = true;
-        return true;
-    }
-
-    private bool TryGetStructuralSourceDataCarrierMemberOrder(
-        INamedTypeSymbol typeSymbol,
-        out ImmutableArray<ISymbol> members)
-    {
-        members = default;
-
-        if (!AllowStructuralSourceDataCarrierLowering ||
-            typeSymbol.IsRecord ||
-            typeSymbol.IsAnonymousType ||
-            typeSymbol.IsTupleType ||
-            typeSymbol.TypeKind is not (TypeKind.Class or TypeKind.Struct) ||
-            !typeSymbol.Locations.Any(static location => location.IsInSource))
-        {
-            return false;
-        }
-
-        if (typeSymbol.TypeParameters.Length != 0 ||
-            typeSymbol.IsStatic ||
-            typeSymbol.IsAbstract ||
-            typeSymbol.IsRefLikeType)
-        {
-            return false;
-        }
-
-        if (typeSymbol.BaseType is INamedTypeSymbol baseType &&
-            baseType.SpecialType != SpecialType.System_Object &&
-            baseType.SpecialType != SpecialType.System_ValueType)
-        {
-            return false;
-        }
-
-        if (typeSymbol.AllInterfaces.Length != 0)
-            return false;
-
-        var orderedMembers = new List<ISymbol>();
-		foreach (var property in typeSymbol.GetMembers().OfType<IPropertySymbol>())
-		{
-			if (property.IsStatic ||
-				property.IsIndexer ||
-				property.Parameters.Length != 0 ||
-				property.IsAbstract ||
-				!property.Locations.Any(static location => location.IsInSource))
-			{
-				return false;
-			}
-
-			if (property.SetMethod is not null &&
-				!property.SetMethod.IsInitOnly &&
-				property.SetMethod.DeclaredAccessibility != Accessibility.Private &&
-				!StructuralRecordSupport.IsSourceDeclaredAutoPropertyCandidate(property))
-			{
-				return false;
-			}
-
-            if (property.GetMethod is null)
-                return false;
-
-            orderedMembers.Add(property);
-        }
-
-        foreach (var field in typeSymbol.GetMembers().OfType<IFieldSymbol>())
-        {
-            if (field.IsStatic)
-                return false;
-
-            if (field.AssociatedSymbol is not null)
-                continue;
-
-            if (!field.Locations.Any(static location => location.IsInSource))
-                return false;
-
-            if (!field.IsReadOnly)
-                return false;
-
-            orderedMembers.Add(field);
-        }
-
-        foreach (var member in typeSymbol.GetMembers())
-        {
-            switch (member)
-            {
-                case IMethodSymbol method:
-                    if (method.MethodKind is MethodKind.Constructor or MethodKind.PropertyGet or MethodKind.PropertySet)
-                        continue;
-
-                    return false;
-                case IEventSymbol:
-                    return false;
-            }
-        }
-
-        if (orderedMembers.Count == 0)
-            return false;
-
-        orderedMembers.Sort(static (left, right) =>
-        {
-            var leftStart = left.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceSpan.Start ?? int.MaxValue;
-            var rightStart = right.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceSpan.Start ?? int.MaxValue;
-            var byLocation = leftStart.CompareTo(rightStart);
-            if (byLocation != 0)
-                return byLocation;
-
-            return string.Compare(left.Name, right.Name, StringComparison.Ordinal);
-        });
-
-        members = orderedMembers.ToImmutableArray();
-        return true;
-    }
-
-    private bool TryGetStructuralSourceDataCarrierConstructorMemberMap(
-        IMethodSymbol constructor,
-        out ImmutableArray<ISymbol> memberMap)
-    {
-        if (_structuralSourceDataCarrierConstructorMemberMapCache.TryGetValue(constructor, out memberMap))
-            return true;
-
-        if (_nonStructuralSourceDataCarrierConstructors.Contains(constructor))
-        {
-            memberMap = default;
-            return false;
-        }
-
-        if (constructor.MethodKind != MethodKind.Constructor ||
-            constructor.ContainingType is not INamedTypeSymbol containingType ||
-            !TryGetStructuralSourceDataCarrierMemberOrder(containingType, out var orderedMembers))
-        {
-            _nonStructuralSourceDataCarrierConstructors.Add(constructor);
-            memberMap = default;
-            return false;
-        }
-
-        if (constructor.Parameters.Length > orderedMembers.Length)
-        {
-            _nonStructuralSourceDataCarrierConstructors.Add(constructor);
-            memberMap = default;
-            return false;
-        }
-
-        var mappedMembers = ImmutableArray.CreateBuilder<ISymbol>(constructor.Parameters.Length);
-        var usedMemberIndices = new HashSet<int>();
-        foreach (var parameter in constructor.Parameters)
-        {
-            var parameterType = parameter.Type;
-            var matchedIndex = -1;
-            for (var index = 0; index < orderedMembers.Length; index++)
-            {
-                if (usedMemberIndices.Contains(index))
-                    continue;
-
-                var candidate = orderedMembers[index];
-                if (!string.Equals(candidate.Name, parameter.Name, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var candidateType = candidate switch
-                {
-                    IPropertySymbol property => property.Type,
-                    IFieldSymbol field => field.Type,
-                    _ => null
-                };
-                if (candidateType is null ||
-                    !SymbolEqualityComparer.Default.Equals(candidateType, parameterType))
-                {
-                    continue;
-                }
-
-                matchedIndex = index;
-                break;
-            }
-
-            if (matchedIndex < 0)
-            {
-                _nonStructuralSourceDataCarrierConstructors.Add(constructor);
-                memberMap = default;
-                return false;
-            }
-
-            usedMemberIndices.Add(matchedIndex);
-            mappedMembers.Add(orderedMembers[matchedIndex]);
-        }
-
-        memberMap = mappedMembers.ToImmutable();
-        _structuralSourceDataCarrierConstructorMemberMapCache[constructor] = memberMap;
-        return true;
-    }
 
 	private static SourceOrigin CreateOrigin(IOperation operation, bool isSynthetic = false, string? name = null)
 	{

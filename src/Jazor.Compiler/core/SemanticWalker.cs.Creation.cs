@@ -190,9 +190,6 @@ public partial class SemanticWalker
 	private bool ShouldLowerStructurally(ITypeSymbol? typeSymbol)
 		=> IsStructuralType(typeSymbol);
 
-	private bool ShouldLowerRecordStructurally(ITypeSymbol? typeSymbol)
-		=> StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
-
 	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
 		=> Util.HasECMAScriptSupportMarkerBaseType(typeSymbol);
 
@@ -205,7 +202,6 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Expression>(operation, "Structural type could not be translated to JavaScript.");
 
 		var memberOrder = BuildStructuralMemberOrderMap(namedType);
-		var isStructuralRecord = StructuralRecordSupport.IsStructuralRecordType(namedType);
 		var members = new List<(Node Node, string Name, int Order)>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
@@ -220,19 +216,13 @@ public partial class SemanticWalker
 			if (IsStaticallyKnownNull(arg.Value))
 				continue;
 
-			if (!TryResolveStructuralConstructorMember(
+			ResolveStructuralConstructorMember(
 				namedType,
-				operation.Constructor,
 				parameter,
 				index,
 				out var structuralMember,
 				out var keyName,
-				out var targetType))
-			{
-				return HandleTransformationFailure<Expression>(
-					operation,
-					$"Structural type '{namedType.ToDisplayString(Format.NameFormat)}' could not resolve constructor member for argument '{parameter?.Name ?? index.ToString(System.Globalization.CultureInfo.InvariantCulture)}'.");
-			}
+				out var targetType);
 
 			var property = structuralMember as IPropertySymbol;
 			if (property is not null && TryGetSpreadAttribute(property, out _))
@@ -265,8 +255,7 @@ public partial class SemanticWalker
 			}
 		}
 
-		if (isStructuralRecord)
-			AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
+		AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
 
 		Expression expr = new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
 		if (assignObj is not null)
@@ -278,18 +267,13 @@ public partial class SemanticWalker
 	private Dictionary<string, int> BuildStructuralMemberOrderMap(INamedTypeSymbol type)
 	{
 		var order = new Dictionary<string, int>(System.StringComparer.Ordinal);
-		IEnumerable<ISymbol> members = StructuralRecordSupport.IsStructuralRecordType(type)
-			? EnumerateNamedTypeHierarchyBaseFirst(type)
-				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-			: TryGetStructuralSourceDataCarrierMemberOrder(type, out var structuralMembers)
-				? structuralMembers
-				: [];
+		var members = EnumerateNamedTypeHierarchyBaseFirst(type)
+			.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>());
 
 		var index = 0;
 		foreach (var member in members)
 		{
-			if (member is IPropertySymbol { IsStatic: true } ||
-				member is IFieldSymbol { IsStatic: true })
+			if (member.IsStatic)
 				continue;
 
 			var memberName = Util.GetConfigOrSymbolName(member);
@@ -303,48 +287,22 @@ public partial class SemanticWalker
 		return order;
 	}
 
-	private bool TryResolveStructuralConstructorMember(
+	private void ResolveStructuralConstructorMember(
 		INamedTypeSymbol type,
-		IMethodSymbol? constructor,
 		IParameterSymbol? parameter,
 		int index,
 		out ISymbol member,
 		out string memberName,
 		out ITypeSymbol? memberType)
 	{
-		member = null!;
-		memberName = string.Empty;
-		memberType = null;
-
-		if (StructuralRecordSupport.IsStructuralRecordType(type))
-		{
-			memberName = ResolveEcmascriptRecordPropertyName(type, parameter, index);
-			var property = ResolveEcmascriptRecordProperty(type, parameter);
-			member = property is not null
-				? property
-				: parameter is not null
-					? parameter
-					: type;
-			memberType = property?.Type ?? parameter?.Type;
-			return true;
-		}
-
-		if (constructor is null ||
-			!TryGetStructuralSourceDataCarrierConstructorMemberMap(constructor, out var memberMap) ||
-			index >= memberMap.Length)
-		{
-			return false;
-		}
-
-		member = memberMap[index];
-		memberName = Util.GetConfigOrSymbolName(member);
-		memberType = member switch
-		{
-			IPropertySymbol property => property.Type,
-			IFieldSymbol field => field.Type,
-			_ => parameter?.Type
-		};
-		return true;
+		memberName = ResolveEcmascriptRecordPropertyName(type, parameter, index);
+		var property = ResolveEcmascriptRecordProperty(type, parameter);
+		member = property is not null
+			? property
+			: parameter is not null
+				? parameter
+				: type;
+		memberType = property?.Type ?? parameter?.Type;
 	}
 
 	private static int GetRecordStructuralMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)

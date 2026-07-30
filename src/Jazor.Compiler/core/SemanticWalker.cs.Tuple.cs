@@ -56,44 +56,22 @@ public partial class SemanticWalker
 		propertyName = null!;
 		propertyType = null!;
 
-		if (StructuralRecordSupport.IsStructuralRecordType(structuralType))
-		{
-			var constructor = structuralType.Constructors
-				.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
-			if (constructor is null)
-				return false;
-
-			var parameter = constructor.Parameters[index];
-			var property = EnumerateNamedTypeHierarchyBaseFirst(structuralType)
-				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-				.FirstOrDefault(member =>
-					!member.IsStatic &&
-					string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
-
-			propertyName = property is null
-				? parameter.Name
-				: Util.GetConfigOrSymbolName(property);
-			propertyType = property?.Type ?? parameter.Type;
-			return true;
-		}
-
-		if (!TryGetStructuralSourceDataCarrierMemberOrder(structuralType, out var members) ||
-			index >= members.Length)
-		{
-			return false;
-		}
-
-		var member = members[index];
-		propertyName = Util.GetConfigOrSymbolName(member);
-		propertyType = member switch
-		{
-			IPropertySymbol property => property.Type,
-			IFieldSymbol field => field.Type,
-			_ => null!
-		};
-		if (propertyType is null)
+		var constructor = structuralType.Constructors
+			.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
+		if (constructor is null)
 			return false;
 
+		var parameter = constructor.Parameters[index];
+		var property = EnumerateNamedTypeHierarchyBaseFirst(structuralType)
+			.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+			.FirstOrDefault(member =>
+				!member.IsStatic &&
+				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+
+		propertyName = property is null
+			? parameter.Name
+			: Util.GetConfigOrSymbolName(property);
+		propertyType = property?.Type ?? parameter.Type;
 		return true;
 	}
 
