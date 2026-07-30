@@ -57,15 +57,16 @@ public static class CultureInfoModule
 
 		var locale = new Intl.Locale(normalized);
 		var language = locale.Language;
-		var script = locale.Script;
-		var region = locale.Region;
+		// Intl omits absent subtags as undefined; normalize at this host boundary so CLR string checks remain valid.
+		var script = locale.Script ?? "";
+		var region = locale.Region ?? "";
 		if (region != null && region.Length != 0)
 		{
 			if (script != null && script.Length != 0)
 				return language + "-" + script;
 			if (language == "zh")
 			{
-				var maximizedScript = locale.Maximize().Script;
+				var maximizedScript = locale.Maximize().Script ?? "";
 				if (maximizedScript != null && maximizedScript.Length != 0)
 					return language + "-" + maximizedScript;
 			}
@@ -384,8 +385,8 @@ public static class CultureInfoModule
 		var resolved = supported[0]!;
 		var locale = new Intl.Locale(resolved).Maximize();
 		var language = locale.Language;
-		var region = locale.Region;
-		var script = locale.Script;
+		var region = locale.Region ?? "";
+		var script = locale.Script ?? "";
 		if (region == null || region.Length == 0)
 			return resolved;
 		if (resolved == "zh" || resolved == "zh-Hans")
