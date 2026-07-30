@@ -8003,6 +8003,91 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_EnumerableMaterialization_ClrArrayAndListFactoriesReuseFreshArrays()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(System.Collections.Generic.IEnumerable<int> source)
+                {
+                    var empty = System.Linq.Enumerable.ToList(System.Array.Empty<int>());
+                    var literal = System.Linq.Enumerable.ToArray(new[] { 1, 2 });
+                    var copied = System.Linq.Enumerable.ToList(new System.Collections.Generic.List<int>(source));
+                }
+            }
+            """);
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let empty = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })([]);
+              let literal = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })([1, 2]);
+              let copied = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })(Array.from(source));
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_EnumerableMaterialization_ListTransformsReuseFreshArrays()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var filtered = System.Linq.Enumerable.ToList(
+                        new System.Collections.Generic.List<int> { 1, 2, 3 }.FindAll(value => value > 1));
+                    var sliced = System.Linq.Enumerable.ToArray(
+                        new System.Collections.Generic.List<int> { 1, 2, 3 }.Slice(1, 2));
+                    var copied = System.Linq.Enumerable.ToList(
+                        new System.Collections.Generic.List<int> { 1, 2, 3 }.ToArray());
+                }
+            }
+            """);
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let filtered = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })([1, 2, 3].filter(value => {
+                return value > 1;
+              }));
+              let sliced = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })([1, 2, 3].slice(1, 1 + 2));
+              let copied = (__src => {
+                if (__src == null)
+                  throw new TypeError("source");
+                return __src;
+              })([1, 2, 3].slice());
+            }
+            """, script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ExtensionMethod_OnCustomIList_UsesDirectArrayFastPath()
 	{
 		var block = GetBlockOperation(@"
