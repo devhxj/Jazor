@@ -146,9 +146,6 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 return RewriteEventCallbackInvoke(instance, arguments);
         }
 
-        if (TryRewriteCurrentComponentPropertyAccessorInvocation(operation, arguments, out var propertyAccessorExpression))
-            return propertyAccessorExpression;
-
         if (!IsCurrentComponentMethod(operation.TargetMethod, operation.Instance))
             return null;
 
@@ -222,44 +219,6 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         }
 
         return null;
-    }
-
-    private bool TryRewriteCurrentComponentPropertyAccessorInvocation(
-        IInvocationOperation operation,
-        IReadOnlyList<Expression> arguments,
-        out Expression expression)
-    {
-        expression = null!;
-
-        if (operation.TargetMethod.AssociatedSymbol is not IPropertySymbol property ||
-            !IsCurrentComponentProperty(property, operation.Instance))
-        {
-            return false;
-        }
-
-        if (operation.TargetMethod.MethodKind == MethodKind.PropertyGet && arguments.Count == 0)
-        {
-            expression = IsParameterProperty(property)
-                ? BuildPropsAccess(property)
-                : IsAutoProperty(property)
-                    ? BuildStateAccess(property)
-                    : new CallExpression(
-                        new Identifier(GetMemberName(property)),
-                        NodeList.Empty<Expression>(),
-                        optional: false);
-            return true;
-        }
-
-        if (operation.TargetMethod.MethodKind == MethodKind.PropertySet)
-        {
-            throw new OperationTransformationException(
-                operation,
-                "Current-component property setter invocation '" +
-                property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
-                "' is not supported by RazorVue current-component rewrite v1; use assignment syntax so lowering can preserve the target surface.");
-        }
-
-        return false;
     }
 
     private Expression RewriteEventCallbackFactoryCreate(IInvocationOperation operation, SenseArgument argument)
