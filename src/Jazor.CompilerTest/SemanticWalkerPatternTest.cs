@@ -2208,9 +2208,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     AssertStringContainsJsNaming(script, "let data =", StringComparison.Ordinal);
-    AssertContainsCount(script, "data.Inner", 3);
-    AssertStringContainsJsNaming(script, "data.Inner != null", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "\"Value\" in data.Inner && data.Inner.Value > 0", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Inner", 1);
+    AssertStringContainsJsNaming(script, "(v$0 = data.Inner, v$0 != null && \"Value\" in v$0 && v$0.Value > 0)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2689,11 +2688,11 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertStringContainsJsNaming(script, "let x, s;", StringComparison.Ordinal);
-    AssertContainsCount(script, "tuple.Item1", 2);
-    AssertContainsCount(script, "tuple.Item2", 2);
-    AssertStringContainsJsNaming(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let v$0, x, v$1, s;", StringComparison.Ordinal);
+    AssertContainsCount(script, "tuple.Item1", 1);
+    AssertContainsCount(script, "tuple.Item2", 1);
+    AssertStringContainsJsNaming(script, "(v$0 = tuple.Item1, typeof v$0 === \"number\" && (x = v$0, true))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$1 = tuple.Item2, typeof v$1 === \"string\" && (s = v$1, true))", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2717,11 +2716,11 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertStringContainsJsNaming(script, "let x, s;", StringComparison.Ordinal);
-    AssertContainsCount(script, "tuple.Item1", 2);
-    AssertContainsCount(script, "tuple.Item2", 2);
-    AssertStringContainsJsNaming(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let v$0, x, v$1, s;", StringComparison.Ordinal);
+    AssertContainsCount(script, "tuple.Item1", 1);
+    AssertContainsCount(script, "tuple.Item2", 1);
+    AssertStringContainsJsNaming(script, "(v$0 = tuple.Item1, typeof v$0 === \"number\" && (x = v$0, true))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$1 = tuple.Item2, typeof v$1 === \"string\" && (s = v$1, true))", StringComparison.Ordinal);
     AssertStringContainsJsNaming(script, "&& x > 0;", StringComparison.Ordinal);
   }
 
@@ -3426,10 +3425,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "nested[0]", 4);
-    AssertContainsCount(script, "nested[1]", 4);
-    StringAssert.Contains(script, "Array.isArray(nested[0]) && nested[0].length === 2 && nested[0][0] === 1 && nested[0][1] === 2", StringComparison.Ordinal);
-    StringAssert.Contains(script, "Array.isArray(nested[1]) && nested[1].length === 2 && nested[1][0] === 3 && nested[1][1] === 4", StringComparison.Ordinal);
+    AssertContainsCount(script, "nested[0]", 1);
+    AssertContainsCount(script, "nested[1]", 1);
+    StringAssert.Contains(script, "(v$0 = nested[0], Array.isArray(v$0) && v$0.length === 2 && v$0[0] === 1 && v$0[1] === 2)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(v$1 = nested[1], Array.isArray(v$1) && v$1.length === 2 && v$1[0] === 3 && v$1[1] === 4)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3453,10 +3452,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "nested[0]", 3);
-    AssertContainsCount(script, "nested[1]", 3);
-    StringAssert.Contains(script, "Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1", StringComparison.Ordinal);
-    StringAssert.Contains(script, "Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4", StringComparison.Ordinal);
+    AssertContainsCount(script, "nested[0]", 1);
+    AssertContainsCount(script, "nested[1]", 1);
+    StringAssert.Contains(script, "(v$0 = nested[0], Array.isArray(v$0) && v$0.length >= 1 && v$0[0] === 1)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(v$1 = nested[1], Array.isArray(v$1) && v$1.length >= 1 && v$1[0] === 4)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3702,7 +3701,8 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertStringContainsJsNaming(script, "\"Inner\" in data && (data.Inner != null && \"Value\" in data.Inner && data.Inner.Value === 42)", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Inner", 1);
+    AssertStringContainsJsNaming(script, "\"Inner\" in data && (v$0 = data.Inner, v$0 != null && \"Value\" in v$0 && v$0.Value === 42)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3993,7 +3993,8 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "\"length\" in value && (value.length > 0 && value.length < 10)", StringComparison.Ordinal);
+    AssertContainsCount(script, "value.Length", 1);
+    StringAssert.Contains(script, "\"length\" in value && (v$0 = value.length, v$0 > 0 && v$0 < 10)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4791,7 +4792,7 @@ line2"";
 
     Assert.IsNotNull(script);
     AssertStringContainsJsNaming(script, "\"Name\" in obj", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "obj.Name != null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$0 = obj.Name, v$0 != null)", StringComparison.Ordinal);
     Assert.IsFalse(script.Contains("&& false", StringComparison.Ordinal));
     AssertContainsCount(script, "obj.Name", 1);
   }
@@ -5436,8 +5437,8 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "obj.length", 2);
-    StringAssert.Contains(script, "\"length\" in obj && (obj.length > 0 && obj.length < 100)", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Length", 1);
+    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5461,9 +5462,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "data.Outer", 5);
-    AssertContainsCount(script, "data.Outer.Middle", 3);
-    AssertStringContainsJsNaming(script, "\"Inner\" in data.Outer.Middle && data.Outer.Middle.Inner > 0", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Outer", 1);
+    AssertContainsCount(script, "v$0.Middle", 1);
+    AssertStringContainsJsNaming(script, "(v$0 = data.Outer, v$0 != null && \"Middle\" in v$0 && (v$1 = v$0.Middle, v$1 != null && \"Inner\" in v$1 && v$1.Inner > 0))", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5487,10 +5488,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "obj.Items", 7);
-    AssertStringContainsJsNaming(script, "let first;", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true)", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "\"length\" in obj.Items && obj.Items.length > 0", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Items", 1);
+    AssertStringContainsJsNaming(script, "let v$0, first;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(v$0 = obj.Items, Array.isArray(v$0) && v$0.Length >= 1 && (first = v$0[0], true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"length\" in v$0 && v$0.Length > 0", StringComparison.Ordinal);
   }
 
   #endregion
@@ -5547,9 +5548,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertStringContainsJsNaming(script, "let v;", StringComparison.Ordinal);
-    AssertContainsCount(script, "obj.Inner", 3);
-    AssertStringContainsJsNaming(script, "\"Inner\" in obj && (obj.Inner != null && \"Value\" in obj.Inner && (v = obj.Inner.Value, true))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let v$0, v;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Inner", 1);
+    AssertStringContainsJsNaming(script, "\"Inner\" in obj && (v$0 = obj.Inner, v$0 != null && \"Value\" in v$0 && (v = v$0.Value, true))", StringComparison.Ordinal);
   }
 
   #endregion
@@ -5867,10 +5868,10 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertStringContainsJsNaming(script, "\"Level1\" in data", StringComparison.Ordinal);
-    AssertContainsCount(script, "data.Level1", 7);
-    AssertContainsCount(script, "data.Level1.Level2", 5);
-    AssertContainsCount(script, "data.Level1.Level2.Level3", 3);
-    AssertStringContainsJsNaming(script, "\"Value\" in data.Level1.Level2.Level3 && data.Level1.Level2.Level3.Value > 0", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Level1", 1);
+    AssertContainsCount(script, "v$0.Level2", 1);
+    AssertContainsCount(script, "v$1.Level3", 1);
+    AssertStringContainsJsNaming(script, "(v$0 = data.Level1, v$0 != null && \"Level2\" in v$0 && (v$1 = v$0.Level2, v$1 != null && \"Level3\" in v$1 && (v$2 = v$1.Level3, v$2 != null && \"Value\" in v$2 && v$2.Value > 0)))", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5894,8 +5895,8 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "obj.length", 2);
-    StringAssert.Contains(script, "\"length\" in obj && (obj.length > 0 && obj.length < 100)", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Length", 1);
+    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
     StringAssert.Contains(script, "|| typeof obj === \"number\";", StringComparison.Ordinal);
   }
 
@@ -6125,8 +6126,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "obj.A", 11);
-    AssertStringContainsJsNaming(script, "\"F\" in obj.A.B.C.D.E && obj.A.B.C.D.E.F === 42", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.A", 1);
+    AssertContainsCount(script, "v$0.B", 1);
+    AssertContainsCount(script, "v$1.C", 1);
+    AssertContainsCount(script, "v$2.D", 1);
+    AssertContainsCount(script, "v$3.E", 1);
+    AssertStringContainsJsNaming(script, "(v$4 = v$3.E, v$4 != null && \"F\" in v$4 && v$4.F === 42)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -6616,8 +6621,8 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "person.Address", 4);
-    AssertStringContainsJsNaming(script, "(person.Address instanceof Address && person.Address != null && \"City\" in person.Address && person.Address.City === \"NYC\")", StringComparison.Ordinal);
+    AssertContainsCount(script, "person.Address", 1);
+    AssertStringContainsJsNaming(script, "(v$1 = person.Address, v$1 instanceof Address && v$1 != null && \"City\" in v$1 && v$1.City === \"NYC\")", StringComparison.Ordinal);
     AssertStringContainsJsNaming(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
   }
 
@@ -6645,9 +6650,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertContainsCount(script, "person.Address", 6);
-    AssertStringContainsJsNaming(script, "person.Address.City === \"NYC\"", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "person.Address.Zip > 0", StringComparison.Ordinal);
+    AssertContainsCount(script, "person.Address", 1);
+    AssertStringContainsJsNaming(script, "(v$1 = person.Address, v$1 instanceof Address && v$1 != null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "v$1.City === \"NYC\"", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "v$1.Zip > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -7405,12 +7411,14 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let v$0;");
+    StringAssert.Contains(script, "let v$0, v$1;");
     StringAssert.Contains(script, "v$0 = { state: { value: firstRender } }");
     StringAssert.Contains(script, "v$0 != null");
     StringAssert.Contains(script, "\"state\" in v$0");
-    StringAssert.Contains(script, "v$0.state != null");
-    StringAssert.Contains(script, "\"value\" in v$0.state && v$0.state.value === true");
+    AssertContainsCount(script, "v$0.State", 1);
+    StringAssert.Contains(script, "v$1 = v$0.state");
+    StringAssert.Contains(script, "v$1 != null");
+    StringAssert.Contains(script, "\"value\" in v$1 && v$1.value === true");
     StringAssert.Contains(script, "console.log(\"match\");");
   }
 

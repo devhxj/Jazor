@@ -56,6 +56,9 @@ public sealed class SemanticWalkerPatternProtocolTests
         foreach (var fragment in testCase.ExpectedJavaScriptFragments)
             StringAssert.Contains(first, fragment, testCase.Id);
 
+        foreach (var fragment in testCase.SingleOccurrenceJavaScriptFragments)
+            Assert.AreEqual(1, CountOccurrences(first, fragment), $"{testCase.Id}: {fragment}");
+
         _ = new Parser().ParseScript(first);
     }
 
@@ -111,6 +114,20 @@ public sealed class SemanticWalkerPatternProtocolTests
                     public int[] this[Range range] => [];
                 }
 
+                public sealed class BoundedSliceBuffer
+                {
+                    public int Length => 4;
+                    public int this[int index] => index + 1;
+                    public int[] Slice(int start, int length) => [];
+                }
+
+                public sealed class PropertyPatternSource
+                {
+                    private int reads;
+                    public int Reads => reads;
+                    public int Value => ++reads;
+                }
+
                 private static LengthBuffer GetLengthBuffer() => new();
                 private static void Consume<T>(T value) { }
 
@@ -141,13 +158,29 @@ public sealed class SemanticWalkerPatternProtocolTests
             .Zip(methodBlocks, static (id, block) => (id, block))
             .ToDictionary(static item => item.id, static item => item.block, StringComparer.Ordinal);
     }
+
+    private static int CountOccurrences(string value, string fragment)
+    {
+        var count = 0;
+        var offset = 0;
+        while ((offset = value.IndexOf(fragment, offset, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            offset += fragment.Length;
+        }
+
+        return count;
+    }
 }
 
 public sealed record PatternProtocolSuccessCase(
     string Id,
     string Dimension,
     string Body,
-    IReadOnlyList<string> ExpectedJavaScriptFragments);
+    IReadOnlyList<string> ExpectedJavaScriptFragments)
+{
+    public IReadOnlyList<string> SingleOccurrenceJavaScriptFragments { get; init; } = [];
+}
 
 public sealed record PatternProtocolFailureCase(
     string Id,
@@ -231,7 +264,98 @@ internal static class PatternProtocolCatalog
                 """,
             "Array.isArray(values)",
             "values.length >= 1",
-            "rest = values.slice(1, 1 + (values.length - 1))")
+            "rest = values.slice(1, 1 + (values.length - 1))"),
+        Success(
+            "nested.fixed-arrays",
+            "carrier=int[][];pattern=nested-list;position=all;shape=fixed",
+            """
+                        int[][] values = [[1, 2], [3, 4]];
+                        bool matches = values is [[1, 2], [3, 4]];
+            """,
+            "Array.isArray(values)",
+            "v$0 = values[0]",
+            "Array.isArray(v$0)",
+            "v$0[0] === 1",
+            "v$1 = values[1]",
+            "Array.isArray(v$1)",
+            "v$1[1] === 4"),
+        Success(
+            "nested.after-discard-slice",
+            "carrier=int[][];pattern=nested-list;position=after-slice;index=from-end",
+            """
+                        int[][] values = [[1, 2], [3, 4]];
+                        bool matches = values is [.., [3, 4]];
+            """,
+            "values.length >= 1",
+            "v$0 = values[values.length - 1]",
+            "Array.isArray(v$0)",
+            "v$0[0] === 3",
+            "v$0[1] === 4"),
+        Success(
+            "slice.array.tail",
+            "carrier=int[];slice=intrinsic-array;position=tail;binding=declaration",
+            """
+                        int[] values = [1, 2, 3, 4];
+                        if (values is [var first, .. var tail])
+                        {
+                            Consume(first);
+                            Consume(tail.Length);
+                        }
+                """,
+            "values.length >= 1",
+            "first = values[0]",
+            "tail = values.slice(1)"),
+        Success(
+            "slice.array.middle",
+            "carrier=int[];slice=intrinsic-array;position=middle;binding=declaration",
+            """
+                        int[] values = [1, 2, 3, 4];
+                        if (values is [1, .. var middle, 4])
+                            Consume(middle.Length);
+                """,
+            "values.length >= 2",
+            "values[0] === 1",
+            "middle = values.slice(1, -1)",
+            "values[values.length - 1] === 4"),
+        Success(
+            "slice.custom-bounded-method",
+            "carrier=custom;slice=Slice(int,int);position=middle;length=cached;binding=declaration",
+            """
+                        var buffer = new BoundedSliceBuffer();
+                        if (buffer is [1, .. var middle, 4])
+                            Consume(middle.Length);
+                """,
+            "v$0 = buffer.length",
+            "v$0 >= 2",
+            "buffer[0] === 1",
+            "middle = buffer.slice(1, v$0 - 2)",
+            "buffer[v$0 - 1] === 4"),
+        Success(
+            "slice.array-recursive-subpattern",
+            "carrier=int[];slice=intrinsic-array;subpattern=recursive-property;binding=none",
+            """
+                        int[] values = [1, 2];
+                        bool matches = values is [.. { Length: 2 }];
+                """,
+            "values.length >= 0",
+            "v$0 = values.slice(0)",
+            "Array.isArray(v$0)",
+            "v$0.length === 2"),
+        Success(
+            "binary.property-getter-input",
+            "carrier=source-class;input=property-getter;pattern=relational-and;evaluation=single",
+            """
+                        var holder = new PropertyPatternSource();
+                        bool matches = holder.Value is > 0 and < 10;
+                        Consume(matches);
+                        Consume(holder.Reads);
+            """,
+            "v$0 = holder.value",
+            "v$0 > 0",
+            "v$0 < 10") with
+            {
+                SingleOccurrenceJavaScriptFragments = ["holder.value"]
+            }
     ];
 
     public static IReadOnlyList<PatternProtocolFailureCase> FailureCases { get; } =

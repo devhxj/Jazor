@@ -640,7 +640,13 @@ public partial class SemanticWalker
 
 		// 稳定化 PatternInput 以避免副作用表达式重复求值
 		var targetExpr = GetPatternRefrence(operation, argument);
-		targetExpr = StabilizePatternExpression(operation, targetExpr, argument, "relational", out var initialization);
+		targetExpr = StabilizePatternExpression(
+			operation,
+			targetExpr,
+			argument,
+			"relational",
+			out var initialization,
+			cacheMemberAccess: false);
 
 		// 获取右操作数（比较值）
 		var right = Translate<Expression>(operation.Value, argument);
@@ -1369,12 +1375,14 @@ public partial class SemanticWalker
 		Expression expression,
 		SenseArgument argument,
 		string slot,
-		out Expression? initialization)
+		out Expression? initialization,
+		bool cacheMemberAccess = true)
 	{
 		initialization = null;
-		// Only cache expressions that may have side effects.
-		// Pure property access chains (obj, obj.Property, obj.Property.Nested) are safe to evaluate multiple times.
-		if (!NeedsSingleEvaluationCaching(expression) || IsPurePropertyAccessChain(expression))
+		// Member access can invoke a C# getter or a JavaScript Proxy/getter. Only a caller
+		// that emits exactly one read may opt out of caching a syntactically stable chain.
+		if (!NeedsSingleEvaluationCaching(expression) ||
+			(!cacheMemberAccess && IsPurePropertyAccessChain(expression)))
 			return expression;
 
 		var tempId = new Identifier(AllocateUniqueName(ownerOperation, argument, LoweringSite.PatternInputCache(slot)));
