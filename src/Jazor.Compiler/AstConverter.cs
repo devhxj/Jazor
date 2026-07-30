@@ -427,7 +427,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
 
         if (refParas.Count > 0)
-            body = ApplyRefOutReturnProtocol(body, refParas, hasReturn);
+            body = RefOutReturnProtocol.Apply(body, refParas, hasReturn);
 
         var localName = GetModuleDeclaredName(symbol);
         var identifier = new Identifier(localName);
@@ -1453,49 +1453,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
 
         return statements;
-    }
-
-    private static FunctionBody ApplyRefOutReturnProtocol(FunctionBody body, IReadOnlyList<Expression> refParas, bool hasReturn)
-    {
-        var returnExpr = new ArrayExpression(NodeList.From<Expression?>(BuildReturnElements(null, refParas, hasReturn)));
-        var rewriter = new RefOutReturnRewriter(refParas, hasReturn);
-        var rewritten = (FunctionBody)(rewriter.Visit(body) ?? body);
-        if (!hasReturn)
-        {
-            var statements = rewritten.Body.ToList();
-            statements.Add(new ReturnStatement(returnExpr));
-            rewritten = new FunctionBody(NodeList.From(statements), rewritten.Strict);
-        }
-
-        return rewritten;
-
-        static List<Expression> BuildReturnElements(Expression? returnValue, IReadOnlyList<Expression> refs, bool hasReturnValue)
-        {
-            var items = new List<Expression>();
-            if (hasReturnValue)
-                items.Add(returnValue ?? new Identifier("undefined"));
-            items.AddRange(refs);
-            return items;
-        }
-    }
-
-    private sealed class RefOutReturnRewriter(IReadOnlyList<Expression> refParas, bool hasReturn) : AstRewriter
-    {
-        public bool HasReturnStatement { get; private set; }
-
-        protected override object? VisitReturnStatement(ReturnStatement node)
-        {
-            HasReturnStatement = true;
-            var elements = new List<Expression>();
-            if (hasReturn)
-                elements.Add(node.Argument ?? new Identifier("undefined"));
-            elements.AddRange(refParas);
-            return new ReturnStatement(new ArrayExpression(NodeList.From<Expression?>(elements)));
-        }
-
-        protected override object VisitFunctionExpression(FunctionExpression node) => node;
-        protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
-        protected override object VisitFunctionDeclaration(FunctionDeclaration node) => node;
     }
 
     private static Expression CreateLiteralExpression(object? value)

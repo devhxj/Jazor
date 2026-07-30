@@ -254,8 +254,14 @@ public partial class SemanticWalker
 
 		var id = new Identifier(operation.Symbol.Name);
 		var parameters = new List<Node>();
+		var refParameters = new List<Expression>();
 		foreach (var param in operation.Symbol.Parameters)
-			parameters.Add(new Identifier(param.Name));
+		{
+			var parameter = new Identifier(param.Name);
+			parameters.Add(parameter);
+			if (param.RefKind is RefKind.Out or RefKind.Ref)
+				refParameters.Add(parameter);
+		}
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
 		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LocalFunctionBody());
@@ -267,6 +273,8 @@ public partial class SemanticWalker
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
+		if (refParameters.Count > 0)
+			body = RefOutReturnProtocol.Apply(body, refParameters, !operation.Symbol.ReturnsVoid);
 
 		// 检查函数是否为async或generator
 		var isAsync = operation.Symbol.IsAsync;
