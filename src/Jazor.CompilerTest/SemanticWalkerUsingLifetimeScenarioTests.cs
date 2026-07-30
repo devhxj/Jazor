@@ -582,6 +582,110 @@ internal static class UsingLifetimeScenarioCatalog
             """,
             [Import("resource", DisposeAsyncImport, awaited: true)]),
         Success(
+            "generic-interface-statement-sync",
+            "generic-idisposable-constraint-statement",
+            """
+            class TestClass
+            {
+                void TestMethod<T>(T resource) where T : System.IDisposable
+                {
+                    using (resource) { }
+                }
+            }
+            """,
+            [Import("resource", DisposeImport)]),
+        Success(
+            "generic-transitive-constraint-sync",
+            "generic-transitive-idisposable-constraint",
+            """
+            class TestClass
+            {
+                void TestMethod<T, U>(T resource)
+                    where T : U
+                    where U : System.IDisposable
+                {
+                    using (resource) { }
+                }
+            }
+            """,
+            [Import("resource", DisposeImport)]),
+        Success(
+            "generic-struct-declaration-sync",
+            "generic-struct-idisposable-constraint-declaration",
+            """
+            class TestClass
+            {
+                void TestMethod<T>(T candidate) where T : struct, System.IDisposable
+                {
+                    using T resource = candidate;
+                }
+            }
+            """,
+            [Import("resource", DisposeImport)]),
+        Success(
+            "generic-derived-interface-sync",
+            "generic-derived-idisposable-interface-constraint",
+            """
+            class TestClass
+            {
+                interface IResource : System.IDisposable { }
+
+                void TestMethod<T>(T resource) where T : IResource
+                {
+                    using (resource) { }
+                }
+            }
+            """,
+            [Import("resource", DisposeImport)]),
+        Success(
+            "generic-class-constraint-sync",
+            "generic-class-with-idisposable-contract-constraint",
+            """
+            class TestClass
+            {
+                class ResourceBase : System.IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                void TestMethod<T>(T resource) where T : ResourceBase
+                {
+                    using (resource) { }
+                }
+            }
+            """,
+            [Member("resource", "dispose")]),
+        Success(
+            "generic-interface-statement-async",
+            "generic-iasyncdisposable-constraint-statement",
+            """
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod<T>(T resource)
+                    where T : System.IAsyncDisposable
+                {
+                    await using (resource) { }
+                }
+            }
+            """,
+            [Import("resource", DisposeAsyncImport, awaited: true)]),
+        Success(
+            "generic-derived-interface-declaration-async",
+            "generic-derived-iasyncdisposable-interface-declaration",
+            """
+            class TestClass
+            {
+                interface IAsyncResource : System.IAsyncDisposable { }
+
+                async System.Threading.Tasks.Task TestMethod<T>(T candidate)
+                    where T : IAsyncResource
+                {
+                    await using T resource = candidate;
+                }
+            }
+            """,
+            [Import("resource", DisposeAsyncImport, awaited: true)]),
+        Success(
             "dispose-overload-filter",
             "zero-parameter-dispose-overload-is-selected",
             """
@@ -667,6 +771,24 @@ internal static class UsingLifetimeScenarioCatalog
                 async System.Threading.Tasks.Task TestMethod()
                 {
                     await using var resource = new Resource();
+                }
+            }
+            """,
+            "explicit interface implementation"),
+        Failure(
+            "generic-class-explicit-interface-sync",
+            "generic-class-constraint-preserves-explicit-dispose-rejection",
+            """
+            class TestClass
+            {
+                class ResourceBase : System.IDisposable
+                {
+                    void System.IDisposable.Dispose() { }
+                }
+
+                void TestMethod<T>(T resource) where T : ResourceBase
+                {
+                    using (resource) { }
                 }
             }
             """,
