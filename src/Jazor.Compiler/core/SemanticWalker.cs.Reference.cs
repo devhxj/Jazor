@@ -1422,7 +1422,7 @@ private bool TryExpandEcmascriptParamsArgument(
 					"Range indexing is only supported on the final array dimension.");
 			}
 
-			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations, allowRange: true);
+			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations);
 		}
 
 		return expr;
@@ -1434,9 +1434,6 @@ private bool TryExpandEcmascriptParamsArgument(
 		List<Expression> initializations,
 		bool cacheForRepeatedReadWrite = false)
 	{
-		if (operation.Indices.Length == 0)
-			return HandleTransformationFailure<Expression>(operation, "Array assignment requires at least one index.");
-
 		Expression expr = Translate<Expression>(operation.ArrayReference, argument);
 		// 自定义 operator 会把复合更新展开成 target = helper(target, rhs)。
 		// receiver、索引和中间维度必须先物化，确保 read/write 两端复用同一引用组成部分。
@@ -1450,23 +1447,17 @@ private bool TryExpandEcmascriptParamsArgument(
 				"array");
 		}
 
+		// Roslyn 只会为可赋值数组左值提供非空、非 Range 的索引集合；
+		// array[Range] 是产生新数组的读取表达式，不会进入 mutation target。
 		for (var i = 0; i < operation.Indices.Length; i++)
 		{
 			var indexOperation = operation.Indices[i];
-			if (indexOperation is IRangeOperation)
-			{
-				return HandleTransformationFailure<Expression>(
-					operation,
-					"Array range access is not assignable in JavaScript lowering.");
-			}
-
 			expr = BuildArrayIndexAccess(
 				operation,
 				expr,
 				indexOperation,
 				argument,
 				initializations,
-				allowRange: false,
 				cacheIndexForRepeatedReadWrite: cacheForRepeatedReadWrite);
 			if (cacheForRepeatedReadWrite && i < operation.Indices.Length - 1)
 			{
@@ -1488,7 +1479,6 @@ private bool TryExpandEcmascriptParamsArgument(
 		IOperation indexOperation,
 		SenseArgument argument,
 		List<Expression> initializations,
-		bool allowRange,
 		bool cacheIndexForRepeatedReadWrite = false)
 	{
 		if (RequiresArrayReceiverCaching(indexOperation))
@@ -1513,13 +1503,6 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		if (indexOperation is IRangeOperation range)
 		{
-			if (!allowRange)
-			{
-				return HandleTransformationFailure<Expression>(
-					ownerOperation,
-					"Array range access is not assignable in JavaScript lowering.");
-			}
-
 			var start = TryUnwrapArrayFromEndIndex(range.LeftOperand, out var leftUnary)
 				? BuildArrayFromEndIndex(target, leftUnary, argument)
 				: Translate<Expression>(range.LeftOperand, argument, null);

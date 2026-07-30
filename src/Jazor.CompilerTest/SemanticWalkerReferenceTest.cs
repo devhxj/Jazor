@@ -5318,6 +5318,35 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_CompoundAssignment_MultidimensionalArray_MappedOperatorCachesCompleteTarget()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				TimeSpan[,] GetValues() => new TimeSpan[1, 1];
+				int NextRow() => 0;
+				int NextColumn() => 0;
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetValues()[NextRow(), NextColumn()] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1, v$2, v$3;
+			  v$0 = this.getValues(), v$1 = this.nextRow(), v$2 = v$0[v$1], v$3 = this.nextColumn(), v$2[v$3] = _24670e70abc0feb8(v$2[v$3], increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
 	public void Visit_IncrementOrDecrement_ArrayElement_MappedPostfixCachesReceiverAndIndex()
 	{
 		var block = GetBlockOperation("""
