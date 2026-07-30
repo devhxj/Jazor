@@ -90,6 +90,10 @@ Local diagnostic scripting rule:
 
 Follow the existing code style: 4-space indentation in both C# and TypeScript, file-scoped namespaces in C#, `PascalCase` for public types and test classes, `camelCase` for locals and parameters, and leading underscores for private fields. Keep partial compiler logic grouped by concern using names like `SemanticWalker.cs.Pattern.cs`. Avoid hand-editing obviously generated files unless the generation source is part of the change.
 
+Commenting rule:
+- 代码注释可以根据上下文适当使用中文/英文混合表达；关键代码、容易误用或容易回归的代码必须补充简洁注释，优先说明设计原因、隐含约束、求值/生命周期顺序和副作用，而不是逐行翻译实现。
+- 保持注释与代码行为同步。普通且自解释的代码不强制添加注释；复杂 lowering、协议边界、稳定性约束、错误处理分支和 workaround 应在代码附近留下中英文混合的 orienting comment，便于不同语言背景的维护者快速确认不能随意修改的原因。
+
 Implementation scope rule:
 - 只实现当前产品契约所必需的代码。绝对禁止添加未由 GOAL、SPEC 或现有失败场景要求的认证、权限、安全审计、对抗性校验、兼容 fallback 和预防性抽象。
 - 只允许保留数据正确性、格式约束、确定性、错误传播以及验收必要的检查，绝对禁止过度兜底和防御性编程。
