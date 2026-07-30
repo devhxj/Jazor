@@ -1,0 +1,189 @@
+using Acornima;
+using Jazor.Compiler;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
+
+namespace Jazor.ComplierTest;
+
+[TestClass]
+public sealed class SemanticWalkerCreationAndIndexerProtocolTests
+{
+    [TestMethod]
+    public void Visit_NestedPropertyMemberInitializer_UsesStructuredInitializerProtocol()
+    {
+        var block = GetBlockOperation("var holder = new Holder { Nested = { Value = 1 } };");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "new Holder");
+        StringAssert.Contains(script, ".nested.value = 1");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedFieldMemberInitializer_UsesStructuredInitializerProtocol()
+    {
+        var block = GetBlockOperation("var holder = new Holder { FieldNested = { Value = 2 } };");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "new Holder");
+        StringAssert.Contains(script, ".fieldNested.value = 2");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_MemberInitializerProperty_ProducesObjectProperty()
+    {
+        var block = GetBlockOperation("var holder = new Holder { Nested = { Value = 3 } };");
+        var operation = FindOperation<IMemberInitializerOperation>(block);
+
+        var script = new SemanticWalker(true).VisitMemberInitializer(operation, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.AreEqual("nested: (v$0.value = 3)", script);
+        _ = new Parser().ParseExpression($"({{{script}}})");
+    }
+
+    [TestMethod]
+    public void Visit_MemberInitializerField_ProducesObjectProperty()
+    {
+        var block = GetBlockOperation("var holder = new Holder { FieldNested = { Value = 4 } };");
+        var operation = FindOperation<IMemberInitializerOperation>(block);
+
+        var script = new SemanticWalker(true).VisitMemberInitializer(operation, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.AreEqual("fieldNested: (v$0.value = 4)", script);
+        _ = new Parser().ParseExpression($"({{{script}}})");
+    }
+
+    [TestMethod]
+    public void Visit_MultiDimensionalArrayAllocation_AllocatesIndependentNestedArrays()
+    {
+        var block = GetBlockOperation("var grid = new int[2, 3];");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "new Array(2).fill().map(() => new Array(3))");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_ThreeDimensionalArrayAllocation_RecursivelyAllocatesIndependentNestedArrays()
+    {
+        var block = GetBlockOperation("var cube = new int[2, 3, 4];");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "new Array(2).fill().map(() => new Array(3).fill().map(() => new Array(4)))");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_CustomIndexerFromEndRead_UsesLengthAndSingleIndexerAccess()
+    {
+        var block = GetBlockOperation("var buffer = new Buffer(); var last = buffer[^1];");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "buffer.length - 1");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_CustomIndexerFromEndCompoundAssignment_CachesReadWriteTarget()
+    {
+        var block = GetBlockOperation("var buffer = new Buffer(); buffer[^1] += 2;");
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(
+            script,
+            "v$0 = buffer.length - 1, v$1 = buffer[v$0] + 2, buffer[v$0] = v$1, v$1");
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_CustomIndexerRangeRead_RejectsUnsupportedRangeIndexer()
+    {
+        var block = GetBlockOperation("var buffer = new Buffer(); var tail = buffer[1..^1];");
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Range-based indexer");
+        StringAssert.Contains(exception.Message, "Expose an int-based slice member");
+    }
+
+    private static string VisitBlock(IBlockOperation block)
+    {
+        var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+        var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(first);
+        Assert.AreEqual(first, second);
+        return first;
+    }
+
+    private static void ParseScript(string script)
+        => _ = new Parser().ParseScript(script);
+
+    private static TOperation FindOperation<TOperation>(IOperation root)
+        where TOperation : class, IOperation
+        => root.DescendantsAndSelf().OfType<TOperation>().First();
+
+    private static IBlockOperation GetBlockOperation(string body)
+    {
+        var source = $$"""
+            using System;
+
+            public sealed class TestClass
+            {
+                public sealed class Nested
+                {
+                    public int Value { get; set; }
+                }
+
+                public sealed class Holder
+                {
+                    public Nested Nested { get; } = new();
+                    public Nested FieldNested = new();
+                }
+
+                public sealed class Buffer
+                {
+                    public int Length => 3;
+
+                    public int this[int index]
+                    {
+                        get => index;
+                        set { }
+                    }
+
+                    public int[] this[Range range] => [];
+                }
+
+                public void TestMethod()
+                {
+                    {{body}}
+                }
+            }
+            """;
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "CreationAndIndexerProtocolScenarios",
+            syntaxTrees: [syntaxTree],
+            references: TestMetadataReferences.Net11,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(0, errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+
+        var method = syntaxTree.GetRoot().DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(static declaration => declaration.Identifier.ValueText == "TestMethod");
+        return Assert.IsInstanceOfType<IBlockOperation>(compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
+    }
+}

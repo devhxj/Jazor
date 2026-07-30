@@ -2431,6 +2431,17 @@ private bool TryExpandEcmascriptParamsArgument(
 		if (instance is not null && IsErasedUnionProjectionProperty(operation.Property))
 			return WithOriginIfMissing(instance, operation);
 
+		if (operation.Property.IsIndexer &&
+			operation.Property.Parameters.Length == 1 &&
+			IsSystemRangeType(operation.Property.Parameters[0].Type) &&
+			operation.Arguments.Length == 1 &&
+			TryGetRangeArgument(operation.Arguments[0].Value, out _))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Range-based indexer '{operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in JavaScript conversion. Expose an int-based slice member or configure a whitelist mapping.");
+		}
+
 		var arguments = new List<Expression>(operation.Arguments.Length);
 		foreach (var propertyArgument in operation.Arguments)
 		{
