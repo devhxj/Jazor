@@ -4607,6 +4607,70 @@ line2"";
     AssertContainsCount(script, "new NonComparable", 1);
   }
 
+  [TestMethod]
+  public void Visit_TypePattern_Interface_AnonymousObject_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object value = new { Count = 1 };
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = { Count: 1 };
+  let result = false;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_ArrayCreation_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object value = new int[3];
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = new Array(3);
+  let result = false;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_ExplicitObjectConversion_PreservesRuntimeType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool result = (object)""value"" is IComparable;
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let result = true;
+}", script);
+  }
+
   /// <summary>
   /// 测试 Visit - Interface TypePattern 对 null 字面量折叠为 false
   /// </summary>
