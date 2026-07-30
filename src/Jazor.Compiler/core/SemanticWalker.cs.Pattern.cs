@@ -1449,50 +1449,44 @@ public partial class SemanticWalker
 		if (interfaceType.TypeKind != TypeKind.Interface)
 			return false;
 
-		// Direct interface match
 		if (SymbolEqualityComparer.Default.Equals(runtimeType, interfaceType))
 			return true;
 
-		// Handle constructed generic types with variance (e.g., IEnumerable<string> is IEnumerable<object>)
-		// For covariant interfaces like IEnumerable<out T>, a more specific type argument is assignable
-		if (runtimeType is INamedTypeSymbol namedRuntime && interfaceType is INamedTypeSymbol namedInterface)
-		{
-			if (namedInterface.IsGenericType && namedRuntime.IsGenericType)
-			{
-				var runtimeTypeArgs = namedRuntime.TypeArguments;
-				var interfaceTypeArgs = namedInterface.TypeArguments;
+		if (runtimeType is INamedTypeSymbol namedRuntime)
+			return namedRuntime.AllInterfaces.Any(candidate =>
+				SymbolEqualityComparer.Default.Equals(candidate, interfaceType));
 
-				if (runtimeTypeArgs.Length == interfaceTypeArgs.Length)
+		if (runtimeType is not ITypeParameterSymbol typeParameter)
+			return false;
+
+		// Generic constraints are the only runtime contract available for T. Follow T : U
+		// chains as Roslyn symbols and stop on cycles instead of guessing from emitted values.
+		var pending = new Stack<ITypeParameterSymbol>();
+		var visited = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+		pending.Push(typeParameter);
+		while (pending.Count > 0)
+		{
+			foreach (var constraint in pending.Pop().ConstraintTypes)
+			{
+				if (!visited.Add(constraint))
+					continue;
+
+				if (SymbolEqualityComparer.Default.Equals(constraint, interfaceType))
+					return true;
+
+				if (constraint is INamedTypeSymbol namedConstraint &&
+					namedConstraint.AllInterfaces.Any(candidate =>
+						SymbolEqualityComparer.Default.Equals(candidate, interfaceType)))
 				{
-					// Check if runtime type implements this interface considering variance
-					foreach (var iface in namedRuntime.AllInterfaces)
-					{
-						// Skip if already constructed (cannot construct again)
-						if (iface.IsGenericType && !iface.IsUnboundGenericType)
-						{
-							// For already-constructed interfaces, check direct equality
-							if (SymbolEqualityComparer.Default.Equals(iface, interfaceType))
-								return true;
-						}
-						else if (iface.IsUnboundGenericType && iface.TypeArguments.Length == runtimeTypeArgs.Length)
-						{
-							// For unbound generic interfaces, construct with runtime type arguments
-							var constructed = iface.Construct(runtimeTypeArgs.ToArray());
-							if (SymbolEqualityComparer.Default.Equals(constructed, interfaceType))
-								return true;
-						}
-					}
+					return true;
 				}
+
+				if (constraint is ITypeParameterSymbol chainedTypeParameter)
+					pending.Push(chainedTypeParameter);
 			}
 		}
 
-		// Fallback: check AllInterfaces with strict equality
-		return runtimeType switch
-		{
-			INamedTypeSymbol n => n.AllInterfaces.Any(i =>
-				SymbolEqualityComparer.Default.Equals(i, interfaceType)),
-			_ => false
-		};
+		return false;
 	}
 
 	private IOperation ResolveSingleAssignmentValueSource(IOperation sourceOperation, IOperation useSiteOperation)

@@ -4333,6 +4333,146 @@ line2"";
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_TypePattern_Interface_TypeParameterConstraint_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T value)
+                    where T : IComparable
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let result = value != null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_StructTypeParameterConstraint_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T value)
+                    where T : struct, IComparable
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let result = true;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DerivedInterfaceConstraint_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            interface IComparableContract : IComparable
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod<T>(T value)
+                    where T : IComparableContract
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let result = value != null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_ChainedTypeParameterConstraint_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T, U>(T value)
+                    where T : U
+                    where U : IComparable
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let result = value != null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_UnrelatedTypeParameterConstraint_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T value)
+                    where T : IDisposable
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(() =>
+      new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(exception.Message, "source static type 'T'");
+    StringAssert.Contains(exception.Message, "System.IComparable");
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DirectInterfaceParameter_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(IComparable? value)
+                {
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let result = value != null;
+}", script);
+  }
+
   /// <summary>
   /// 测试 Visit - Interface TypePattern 在不可证明场景仍保持显式不支持
   /// </summary>
