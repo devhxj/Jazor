@@ -200,6 +200,22 @@ internal static class ClrRuntimeTestHost
               Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
               return fn;
             }
+            case "disposable": {
+              const disposable = {
+                disposeCount: Number(value.scalar),
+                dispose() { this.disposeCount += 1; }
+              };
+              Object.defineProperty(disposable, "__clrRuntimeCarrier", { value: "disposable" });
+              return disposable;
+            }
+            case "asyncDisposable": {
+              const disposable = {
+                disposeCount: Number(value.scalar),
+                async disposeAsync() { this.disposeCount += 1; }
+              };
+              Object.defineProperty(disposable, "__clrRuntimeCarrier", { value: "asyncDisposable" });
+              return disposable;
+            }
             case "runtimeInvocation": {
               const invocation = value.invocation;
               const runtimeModule = await import(`./${invocation.modulePath}`);
@@ -228,6 +244,12 @@ internal static class ClrRuntimeTestHost
           }
           if (value?.constructor?.name === "JStack") {
             return { kind: "record", properties: { items: encode(value.items) } };
+          }
+          if (value?.__clrRuntimeCarrier === "disposable") {
+            return { kind: "disposable", scalar: String(value.disposeCount) };
+          }
+          if (value?.__clrRuntimeCarrier === "asyncDisposable") {
+            return { kind: "asyncDisposable", scalar: String(value.disposeCount) };
           }
           if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
             const primitive = value[Symbol.toPrimitive]("string");

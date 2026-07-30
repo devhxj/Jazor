@@ -14,6 +14,8 @@ internal enum ClrRuntimeValueKind
     Reference,
     Record,
     Callable,
+    Disposable,
+    AsyncDisposable,
     RuntimeInvocation,
     Undefined
 }
@@ -83,6 +85,12 @@ internal sealed record ClrRuntimeValue(
     public static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind)
         => new(ClrRuntimeValueKind.Callable, kind.ToString());
 
+    public static ClrRuntimeValue Disposable(int count = 0)
+        => new(ClrRuntimeValueKind.Disposable, count.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    public static ClrRuntimeValue AsyncDisposable(int count = 0)
+        => new(ClrRuntimeValueKind.AsyncDisposable, count.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
     public static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
     {
         var mapping = ClrRuntimeMappingCatalog.GetImport(member);
@@ -119,6 +127,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeReadOnlyCollectionScenarios.All,
         .. ClrRuntimeQueueStackScenarios.All,
         .. ClrRuntimeComparerScenarios.All,
+        .. ClrRuntimeTailScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,
