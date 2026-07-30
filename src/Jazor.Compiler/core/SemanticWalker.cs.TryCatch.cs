@@ -201,46 +201,18 @@ public partial class SemanticWalker
     /// <returns></returns>
     private Identifier? ExtractCatchClauseParam(ICatchClauseOperation operation, SenseArgument argument)
     {
-        // 从ExceptionDeclarationOrExpression中提取异常变量名
-        Identifier? param = null;
+        if (operation.ExceptionDeclarationOrExpression is null)
+            return null;
 
-        if (operation.ExceptionDeclarationOrExpression is not null)
+        if (operation.ExceptionDeclarationOrExpression is not IVariableDeclaratorOperation { Symbol: { } local })
         {
-            // 尝试从异常声明中提取变量名
-            switch (operation.ExceptionDeclarationOrExpression)
-            {
-                case ILocalReferenceOperation localRef when localRef.Local is not null:
-                    param = Host?.RewriteCatchClauseParameterIdentifier(operation, localRef.Local, argument) ??
-                        new Identifier(localRef.Local.Name);
-                    break;
-                case IParameterReferenceOperation paramRef when paramRef.Parameter is not null:
-                    param = new Identifier(paramRef.Parameter.Name);
-                    break;
-                case IVariableDeclaratorOperation varDeclarator when varDeclarator.Symbol is not null:
-                    param = Host?.RewriteCatchClauseParameterIdentifier(operation, varDeclarator.Symbol, argument) ??
-                        new Identifier(varDeclarator.Symbol.Name);
-                    break;
-                default:
-                    HandleTransformationFailure<Node>(operation.ExceptionDeclarationOrExpression, "Try statement catch clause could not be translated to JavaScript.");
-                    break;
-            }
+            return HandleTransformationFailure<Identifier>(
+                operation.ExceptionDeclarationOrExpression,
+                "Try statement catch clause could not be translated to JavaScript.");
         }
 
-        if (param is null &&
-            operation.Syntax is CatchClauseSyntax catchClause &&
-            catchClause.Declaration is not null &&
-            catchClause.Declaration.Identifier.ValueText.Length > 0)
-        {
-            // Roslyn 在部分 catch lowering 场景里不会稳定暴露 ExceptionDeclarationOrExpression，
-            // 回退到语法声明可以保证多 catch 合并时仍能识别共享异常变量。
-            var declaredLocal = operation.SemanticModel?.GetDeclaredSymbol(catchClause.Declaration);
-            param = declaredLocal is ILocalSymbol local
-                ? Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
-                    new Identifier(catchClause.Declaration.Identifier.ValueText)
-                : new Identifier(catchClause.Declaration.Identifier.ValueText);
-        }
-
-        return param;
+        return Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
+            new Identifier(local.Name);
     }
 
     private Identifier? TryExtractSharedCatchParam(ImmutableArray<ICatchClauseOperation> catches, SenseArgument argument)

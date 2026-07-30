@@ -1936,25 +1936,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
     }
 
-	private static bool IsNumeric(SpecialType type)
-    {
-        return type switch
-        {
-            SpecialType.System_SByte or
-            SpecialType.System_Byte or
-            SpecialType.System_Int16 or
-            SpecialType.System_UInt16 or
-            SpecialType.System_Int32 or
-            SpecialType.System_UInt32 or
-            SpecialType.System_Int64 or
-            SpecialType.System_UInt64 or
-            SpecialType.System_Single or
-            SpecialType.System_Double or
-            SpecialType.System_Decimal => true,
-            _ => false,
-        };
-    }
-
     private string GetSymbolName(ISymbol symbol)
     {
         if (symbol is IMethodSymbol method &&

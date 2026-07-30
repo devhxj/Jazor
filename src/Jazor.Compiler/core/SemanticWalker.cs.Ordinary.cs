@@ -414,23 +414,6 @@ public partial class SemanticWalker
 		//  数值字面量：42 / 3.14
 		else if (mapper == TypeMapper.Number)
 		{
-			if (IsSystemHalfType(type))
-			{
-				var halfValue = Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture);
-
-				if (double.IsNaN(halfValue))
-					return new Identifier("NaN");
-				if (double.IsPositiveInfinity(halfValue))
-					return new Identifier("Infinity");
-				if (double.IsNegativeInfinity(halfValue))
-					return new NonUpdateUnaryExpression(Operator.UnaryNegation, new Identifier("Infinity"));
-
-				return new NumericLiteral(
-					halfValue,
-					valueStr ?? halfValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
-				);
-			}
-
 			// 对于 decimal 类型，需要处理精度损失问题
 			// decimal 范围约为 ±7.9×10²⁸，double 范围约为 ±1.7×10³⁰⁸
 			// double 范围更大，不会溢出，但 decimal 有 28-29 位精度，double 只有 15-16 位
@@ -506,19 +489,6 @@ public partial class SemanticWalker
 				return new BigIntLiteral(bigInt, $"{longValue}n");
 			}
 
-			// 处理 Int128 和 UInt128 类型（128 位整数）
-			// 这些类型的值会被装箱为 object，需要特殊处理
-			else if (value is IFormattable formattable)
-			{
-				// 使用 InvariantCulture 确保格式一致性
-				var invariantStr = formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture);
-				if (System.Numerics.BigInteger.TryParse(invariantStr, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var bigIntValue))
-					return new BigIntLiteral(bigIntValue, $"{invariantStr}n");
-			}
-
-			// 尝试直接解析为 BigInteger（使用 InvariantCulture 确保健壮性）
-			else if (System.Numerics.BigInteger.TryParse(valueStr, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var bigIntValue))
-				return new BigIntLiteral(bigIntValue, $"{valueStr}n");
 		}
 
 		// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
@@ -541,7 +511,6 @@ public partial class SemanticWalker
 	///    - decimal: 转为 double，注意精度损失（28-29 位 → 15-16 位）
 	/// 5. BigInt: 64 位及以上整数，添加 n 后缀
 	///    - long/ulong: 直接加 n
-	///    - Int128/UInt128/BigInteger: 解析后加 n
 	///
 	/// C# 示例 → JavaScript 转换结果：
 	///   null              → null

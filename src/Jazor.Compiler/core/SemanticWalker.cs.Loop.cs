@@ -318,20 +318,9 @@ public partial class SemanticWalker
 			var node = Visit(before, argument);
 			switch (node)
 			{
-				case null:
-					continue;
-
 				case VariableDeclaration declaration:
 					if (declaration.Declarations.Count > 0)
 						declarations.AddRange(declaration.Declarations);
-					break;
-
-				case VariableDeclarator declarator:
-					declarations.Add(declarator);
-					break;
-
-				case Expression expression:
-					expressions.Add(expression);
 					break;
 
 				case NonSpecialExpressionStatement statement:
@@ -343,13 +332,6 @@ public partial class SemanticWalker
 						before,
 						"For loop initializer could not be translated to JavaScript.");
 			}
-		}
-
-		if (declarations.Count > 0 && expressions.Count > 0)
-		{
-			return HandleTransformationFailure<StatementOrExpression>(
-				beforeOperations.First(),
-				"For loop initializer cannot mix declarations and expressions.");
 		}
 
 		if (declarations.Count > 0)
