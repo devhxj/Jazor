@@ -1431,12 +1431,25 @@ private bool TryExpandEcmascriptParamsArgument(
 	private Expression BuildArrayElementMutationTarget(
 		IArrayElementReferenceOperation operation,
 		SenseArgument argument,
-		List<Expression> initializations)
+		List<Expression> initializations,
+		bool cacheForRepeatedReadWrite = false)
 	{
 		if (operation.Indices.Length == 0)
 			return HandleTransformationFailure<Expression>(operation, "Array assignment requires at least one index.");
 
 		Expression expr = Translate<Expression>(operation.ArrayReference, argument);
+		// 自定义 operator 会把复合更新展开成 target = helper(target, rhs)。
+		// receiver、索引和中间维度必须先物化，确保 read/write 两端复用同一引用组成部分。
+		if (cacheForRepeatedReadWrite)
+		{
+			expr = MaterializePropertyMutationOperand(
+				expr,
+				operation,
+				argument,
+				initializations,
+				"array");
+		}
+
 		for (var i = 0; i < operation.Indices.Length; i++)
 		{
 			var indexOperation = operation.Indices[i];
@@ -1447,7 +1460,23 @@ private bool TryExpandEcmascriptParamsArgument(
 					"Array range access is not assignable in JavaScript lowering.");
 			}
 
-			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations, allowRange: false);
+			expr = BuildArrayIndexAccess(
+				operation,
+				expr,
+				indexOperation,
+				argument,
+				initializations,
+				allowRange: false,
+				cacheIndexForRepeatedReadWrite: cacheForRepeatedReadWrite);
+			if (cacheForRepeatedReadWrite && i < operation.Indices.Length - 1)
+			{
+				expr = MaterializePropertyMutationOperand(
+					expr,
+					operation,
+					argument,
+					initializations,
+					$"array{i + 1}");
+			}
 		}
 
 		return expr;
@@ -1459,7 +1488,8 @@ private bool TryExpandEcmascriptParamsArgument(
 		IOperation indexOperation,
 		SenseArgument argument,
 		List<Expression> initializations,
-		bool allowRange)
+		bool allowRange,
+		bool cacheIndexForRepeatedReadWrite = false)
 	{
 		if (RequiresArrayReceiverCaching(indexOperation))
 			target = MaterializePropertyMutationOperand(target, ownerOperation, argument, initializations, $"array{initializations.Count}");
@@ -1468,7 +1498,16 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			var lengthAccess = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
 			var innerIndex = Translate<Expression>(unary.Operand, argument);
-			var fromEndIndex = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+			Expression fromEndIndex = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+			if (cacheIndexForRepeatedReadWrite)
+			{
+				fromEndIndex = MaterializePropertyMutationOperand(
+					fromEndIndex,
+					ownerOperation,
+					argument,
+					initializations,
+					$"index{initializations.Count}");
+			}
 			return new MemberExpression(target, fromEndIndex, computed: true, optional: false);
 		}
 
@@ -1502,6 +1541,15 @@ private bool TryExpandEcmascriptParamsArgument(
 		}
 
 		var indexCalculation = Translate<Expression>(indexOperation, argument);
+		if (cacheIndexForRepeatedReadWrite)
+		{
+			indexCalculation = MaterializePropertyMutationOperand(
+				indexCalculation,
+				ownerOperation,
+				argument,
+				initializations,
+				$"index{initializations.Count}");
+		}
 		return new MemberExpression(target, indexCalculation, computed: true, optional: false);
 	}
 

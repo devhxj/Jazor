@@ -1274,7 +1274,11 @@ public partial class SemanticWalker
 		if (operation.Target is IArrayElementReferenceOperation arrayReference)
 		{
 			targetInitializations = [];
-			left = BuildArrayElementMutationTarget(arrayReference, argument, targetInitializations);
+			left = BuildArrayElementMutationTarget(
+				arrayReference,
+				argument,
+				targetInitializations,
+				cacheForRepeatedReadWrite: operation.OperatorMethod is not null);
 		}
 		else
 		{
@@ -1831,7 +1835,11 @@ public partial class SemanticWalker
 		if (operation.Target is IArrayElementReferenceOperation arrayReference)
 		{
 			targetInitializations = [];
-			preparedTarget = BuildArrayElementMutationTarget(arrayReference, argument, targetInitializations);
+			preparedTarget = BuildArrayElementMutationTarget(
+				arrayReference,
+				argument,
+				targetInitializations,
+				cacheForRepeatedReadWrite: operation.OperatorMethod is not null);
 		}
 		else
 		{
@@ -2044,7 +2052,7 @@ public partial class SemanticWalker
 			MemberExpression member when !member.Optional &&
 				CanDuplicateReadWriteTarget((Expression)member.Object) &&
 				((!member.Computed && member.Property is Identifier) ||
-				 (member.Computed && member.Property is Literal)) => true,
+				 (member.Computed && member.Property is Identifier or Literal)) => true,
 			_ => false
 		};
 

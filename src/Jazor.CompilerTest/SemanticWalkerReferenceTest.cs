@@ -5158,6 +5158,194 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_CompoundAssignment_ListIndexer_TimeSpanUsesMappedOperator()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod(List<TimeSpan> values, TimeSpan increment)
+				{
+					values[0] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0;
+			  v$0 = _24670e70abc0feb8(_d389c31d59037b42(values, 0), increment), _c16a7960302ea054(values, 0, v$0), v$0;
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ListIndexer_EcmaScriptOperatorUsesIntrinsicBinaryExpression()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			sealed class HostNumber
+			{
+				public static HostNumber operator +(HostNumber left, HostNumber right) => left;
+			}
+
+			class TestClass
+			{
+				void TestMethod(List<HostNumber> values, HostNumber increment)
+				{
+					values[0] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0;
+			  v$0 = _d389c31d59037b42(values, 0) + increment, _c16a7960302ea054(values, 0, v$0), v$0;
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ListIndexer_UnsupportedUserOperatorThrows()
+	{
+		var block = GetBlockOperation("""
+			sealed class DomainNumber
+			{
+				public static DomainNumber operator +(DomainNumber left, DomainNumber right) => left;
+			}
+
+			class TestClass
+			{
+				void TestMethod(List<DomainNumber> values, DomainNumber increment)
+				{
+					values[0] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+		StringAssert.Contains(exception.Message, "requires an explicit whitelist/ECMAScript mapping");
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ArrayElement_MappedOperatorAllowsStableVariableIndex()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod(TimeSpan[] values, int index, TimeSpan increment)
+				{
+					values[index] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  values[index] = _24670e70abc0feb8(values[index], increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ArrayElement_MappedOperatorCachesReceiverAndIndex()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				TimeSpan[] GetValues() => [];
+				int NextIndex() => 0;
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetValues()[NextIndex()] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1;
+			  v$0 = this.getValues(), v$1 = this.nextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ArrayElement_MappedOperatorCachesFromEndIndex()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				TimeSpan[] GetValues() => [];
+				int NextOffset() => 1;
+
+				void TestMethod(TimeSpan increment)
+				{
+					GetValues()[^NextOffset()] += increment;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1;
+			  v$0 = this.getValues(), v$1 = v$0.length - this.nextOffset(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_ArrayElement_MappedPostfixCachesReceiverAndIndex()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				Int128[] GetValues() => [];
+				int NextIndex() => 0;
+
+				void TestMethod()
+				{
+					Int128 before = GetValues()[NextIndex()]++;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0, v$1, v$2;
+			  let before = (v$0 = this.getValues(), v$1 = this.nextIndex(), (v$2 = v$0[v$1], v$0[v$1] = BigInt.asIntN(128, v$2 + 1n), v$2));
+			}
+			""", script);
+	}
+
+	[TestMethod]
 	public void Visit_SimpleAssignment_ListImplicitIndexer_FromEnd_UsesSingleReceiverEvaluation()
 	{
 		var block = GetBlockOperation(@"
@@ -5241,6 +5429,61 @@ public sealed class SemanticWalkerReferenceTest
   let list = [1, 2, 3];
   let before = (v$0 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$0 + 1), v$0);
 }", script);
+	}
+
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_ListIndexer_EcmaScriptOperatorUsesIntrinsicBinaryExpression()
+	{
+		var block = GetBlockOperation("""
+			[ECMAScript]
+			sealed class HostCounter
+			{
+				public static HostCounter operator ++(HostCounter value) => value;
+			}
+
+			class TestClass
+			{
+				void TestMethod(List<HostCounter> values)
+				{
+					HostCounter after = ++values[0];
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let v$0;
+			  let after = (v$0 = _d389c31d59037b42(values, 0) + 1, _c16a7960302ea054(values, 0, v$0), v$0);
+			}
+			""", script);
+	}
+
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_ListIndexer_UnsupportedUserOperatorThrows()
+	{
+		var block = GetBlockOperation("""
+			sealed class DomainCounter
+			{
+				public static DomainCounter operator ++(DomainCounter value) => value;
+			}
+
+			class TestClass
+			{
+				void TestMethod(List<DomainCounter> values)
+				{
+					DomainCounter before = values[0]++;
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+		StringAssert.Contains(exception.Message, "requires an explicit whitelist/ECMAScript mapping");
 	}
 
 	[TestMethod]
