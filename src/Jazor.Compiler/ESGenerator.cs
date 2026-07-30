@@ -569,30 +569,7 @@ public sealed class ESGenerator : IIncrementalGenerator
     }
 
     private static string EscapeCSharpString(string value)
-    {
-        var builder = new StringBuilder((value ?? string.Empty).Length + 2);
-        builder.Append('"');
-        foreach (var ch in value ?? string.Empty)
-        {
-            builder.Append(ch switch
-            {
-                '\\' => "\\\\",
-                '"' => "\\\"",
-                '\0' => "\\0",
-                '\a' => "\\a",
-                '\b' => "\\b",
-                '\f' => "\\f",
-                '\n' => "\\n",
-                '\r' => "\\r",
-                '\t' => "\\t",
-                '\v' => "\\v",
-                _ => ch.ToString()
-            });
-        }
-
-        builder.Append('"');
-        return builder.ToString();
-    }
+        => Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(value ?? string.Empty, quote: true);
 
     private sealed record ModuleCandidate(
         INamedTypeSymbol ClassSymbol,
