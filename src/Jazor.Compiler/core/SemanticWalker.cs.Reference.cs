@@ -10,6 +10,13 @@ using System.Collections.Generic;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责名称引用、成员引用、方法组和运行时全局对象的 lowering。
+/// </summary>
+/// <remarks>
+/// 引用解析必须区分 C# 源码符号、白名单宿主成员和 JavaScript 全局值；不能仅凭名字字符串
+/// 猜测目标。实例方法组还可能需要绑定 receiver，避免取出方法后丢失 <c>this</c> 语义。
+/// </remarks>
 public partial class SemanticWalker
 {
 	private static readonly HashSet<string> GlobalRuntimeTypeNames = new(StringComparer.Ordinal)

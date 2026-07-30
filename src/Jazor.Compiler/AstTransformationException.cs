@@ -3,6 +3,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 
+/// <summary>
+/// 表示某个 Roslyn 符号无法转换为目标 JavaScript 语义。
+/// </summary>
+/// <remarks>
+/// 异常保留 SymbolKind，便于诊断区分类型、方法、属性等失败位置；它不是用来吞掉错误的
+/// fallback 容器，调用方应保留原始诊断上下文。
+/// </remarks>
 public sealed class SymbolTransformationException : Exception
 {
     public SymbolKind Kind { get; }
@@ -18,6 +25,13 @@ public sealed class SymbolTransformationException : Exception
     }
 }
 
+/// <summary>
+/// 表示某个 Roslyn operation 无法转换为目标 JavaScript AST。
+/// </summary>
+/// <remarks>
+/// OperationKind 用于定位具体语义节点。转换失败应在使用点明确暴露，而不是返回一个可能
+/// 改变行为的近似节点。
+/// </remarks>
 public sealed class OperationTransformationException : Exception
 {
     public OperationKind Kind { get; }
@@ -61,6 +75,13 @@ public sealed class OperationTransformationException : Exception
     }
 }
 
+/// <summary>
+/// 表示某个 C# 语法节点无法转换为目标 JavaScript AST。
+/// </summary>
+/// <remarks>
+/// 该异常用于语法辅助路径；若语义信息只能从 Roslyn operation 得到，应优先使用
+/// OperationTransformationException，以便保留更准确的 operation 上下文。
+/// </remarks>
 public sealed class SyntaxNodeTransformationException : Exception
 {
     public SyntaxKind Kind { get; }

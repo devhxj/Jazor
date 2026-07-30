@@ -1,5 +1,12 @@
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 描述临时变量被引入的 lowering 场景及其局部槽位。
+/// </summary>
+/// <remarks>
+/// 该值不代表 C# 语法节点，而是编译器为保持求值顺序、副作用次数或回写协议而引入的
+/// 合成位置。Tag 只用于生成可读且稳定的 JavaScript 临时名前缀。
+/// </remarks>
 internal enum LoweringSiteKind
 {
     CreationTemp,
@@ -23,6 +30,13 @@ internal enum LoweringSiteKind
     TupleBinaryOperandCache
 }
 
+/// <summary>
+/// 一个具体的临时变量分配位置。
+/// </summary>
+/// <remarks>
+/// Slot 用于区分同一 lowering 场景中的多个缓存槽位；它必须是稳定的逻辑名称，不能使用
+/// 当前遍历次数或集合索引等偶然信息。
+/// </remarks>
 internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot = "")
 {
     public string Tag

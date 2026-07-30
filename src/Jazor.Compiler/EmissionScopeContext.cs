@@ -4,6 +4,13 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 表示 JavaScript 发射过程中的一个词法/语义作用域。
+/// </summary>
+/// <remarks>
+/// 每个子作用域继承父作用域的名称保留集合，但拥有独立的分配缓存。
+/// 这样既能避免合成名称遮蔽父级变量，又能让同一 lowering 位置重复请求时复用同一个名称。
+/// </remarks>
 internal sealed class EmissionScopeContext
 {
     private readonly Dictionary<string, string> _allocatedNames =

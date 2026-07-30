@@ -1,5 +1,9 @@
 ﻿namespace ECMAScript;
 
+/// <remarks>
+/// Math 保持 JavaScript 的静态 host shape；成员名通过 Description/ECMAScript 映射到 Math。
+/// 这里不模拟 System.Math 的全部溢出、整数或 decimal 语义，调用方应按 Number 精度边界使用。
+/// </remarks>
 public static partial class Global
 {
 	/// <summary>

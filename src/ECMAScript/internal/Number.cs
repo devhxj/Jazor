@@ -2,6 +2,13 @@
 
 [ECMAScript]
 [Description("@#Number")]
+/// <summary>
+/// JavaScript Number 的强类型 C# authoring binding。
+/// </summary>
+/// <remarks>
+/// Number 表示 IEEE-754 double，不应误认为能够精确承载所有 CLR 整数或 decimal 值。
+/// 具体 CLR 类型映射由 Jazor.CLR 和 compiler 决定；此类型本身只描述 JS Number 运算表面。
+/// </remarks>
 public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Number>, IMinMaxValue<Number>, IFormattable
 {
 	public extern Number(byte value);

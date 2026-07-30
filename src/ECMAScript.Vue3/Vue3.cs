@@ -537,6 +537,10 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 /// </summary>
 [ECMAScript("npm:dayjs")]
 [Description("@#")]
+/// <remarks>
+/// Dayjs 在这里仅作为生态库回调签名的最小 host contract；具体日期操作必须由实际导入的
+/// Day.js 模块提供，不能因为存在此类型就假设 compiler 拥有完整 Day.js runtime。
+/// </remarks>
 public sealed class Dayjs
 {
 	private Dayjs()
@@ -551,6 +555,10 @@ public sealed class Dayjs
 /// </summary>
 [ECMAScript]
 [Description("@#")]
+/// <remarks>
+/// VueRenderHost 是对 Vue h() 的强类型 authoring 入口。Invoke 方法通过 inline 直接调用
+/// 当前 host 的 h 函数，不生成额外 wrapper runtime，也不承担组件 props/slot lowering。
+/// </remarks>
 public sealed class VueRenderHost
 {
 	private VueRenderHost()
@@ -614,6 +622,10 @@ public sealed class VueRenderHost
 
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
+/// <remarks>
+/// Vue3 静态 partial surface 按 API、类型和结构分片维护，最终都映射到 Vue 3 runtime module。
+/// 这里的类型与方法是 authoring contract，不是 C# 对 Vue runtime 的重新实现。
+/// </remarks>
 public static partial class Vue3
 {
 }

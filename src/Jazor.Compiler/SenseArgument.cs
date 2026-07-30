@@ -12,6 +12,11 @@ namespace Jazor.Compiler;
 /// 语义上下文参数，传递给 Visit 方法。
 /// 包含语义场景标识和依赖项收集（变量声明、导入管理）。
 /// </summary>
+/// <remarks>
+/// SenseArgument 是值类型，但其中的收集字典会在同一发射作用域内共享。
+/// WithNewScope 只隔离变量声明集合，保留导入集合和导入绑定，以保证嵌套 lowering 不会
+/// 重复生成或重新命名同一模块导入。
+/// </remarks>
 public record struct SenseArgument
 {
     /// <summary>语义场景标识</summary>

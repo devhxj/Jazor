@@ -8,6 +8,14 @@ using System.Text;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 为一次发射过程提供稳定的作用域键和合成名称分配。
+/// </summary>
+/// <remarks>
+/// lowering 经常需要为 conditional access、模式匹配、tuple 解构等语义引入临时变量。
+/// 名称不能依赖访问顺序，否则同一输入的小改动会导致整份输出抖动；因此名称由源文件、
+/// 操作身份、作用域、lowering 位置和固定版本共同哈希得到。版本变化意味着有意改变命名协议。
+/// </remarks>
 internal sealed class UniqueNameSession
 {
     private const string Version = "jz2";

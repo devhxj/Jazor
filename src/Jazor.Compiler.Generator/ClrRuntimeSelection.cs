@@ -4,6 +4,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 
+/// <summary>
+/// 判断 CLR runtime module 中哪些声明应进入运行时模块编译。
+/// </summary>
+/// <remarks>
+/// CLR 模块源码同时包含白名单 extern 声明和供 <see cref="ECMAScript.Contract.Op.Import"/>
+/// 使用的真实 helper。选择器只负责筛选编译输入，不改变成员映射，也不决定 JavaScript 语义。
+/// </remarks>
 internal static class ClrRuntimeSelection
 {
     public static bool HasRuntimeContent(TypeDeclarationSyntax rootDeclaration)

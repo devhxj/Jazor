@@ -5,6 +5,13 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 对已经生成的 JavaScript AST 做局部、语义保持的简化。
+/// </summary>
+/// <remarks>
+/// 优化器不是通用 JavaScript 优化器，只处理编译器明确知道安全的 AST 形状。
+/// 任何可能改变求值顺序、短路行为或副作用次数的表达式都必须保留原结构。
+/// </remarks>
 public static class Optimizer
 {
     /// <summary>

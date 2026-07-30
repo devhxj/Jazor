@@ -5,6 +5,13 @@ using System.Collections.Generic;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 集中处理当前编译器明确不支持的 Roslyn operation。
+/// </summary>
+/// <remarks>
+/// 这些 visitor 有意快速失败并给出语义边界，而不是返回近似 AST。
+/// JavaScript 看起来能表达某个语法，不代表它能表达对应的 C# 求值、类型或运行时协议。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

@@ -6,6 +6,7 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
+/// <summary>JavaScript Error 构造器可接受的 options 对象 binding。</summary>
 public sealed class ErrorOptions
 {
 	/// <summary>
@@ -17,6 +18,13 @@ public sealed class ErrorOptions
 
 [ECMAScript]
 [Description("@#Error")]
+/// <summary>
+/// JavaScript Error 对象及其静态构造/判断 API 的 host binding。
+/// </summary>
+/// <remarks>
+/// Error 的 runtime branding 来自 JavaScript，而不是 CLR Exception 继承关系；异常 lowering
+/// 需要遵守 compiler 的错误协议，不能把所有 Error 都当作普通 C# Exception 类型匹配。
+/// </remarks>
 public class Error : Exception
 {
 	/// <summary>

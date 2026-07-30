@@ -1,5 +1,12 @@
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 标识一个合成发射作用域的来源位置。
+/// </summary>
+/// <remarks>
+/// 作用域类别参与稳定名称哈希。新增类别或改变进入作用域的边界时，可能改变生成名称，
+/// 因此应只在确实改变语义作用域时扩展此枚举。
+/// </remarks>
 internal enum ScopeSiteKind
 {
     RootFragment,
@@ -17,6 +24,13 @@ internal enum ScopeSiteKind
     ObjectInitializerIife
 }
 
+/// <summary>
+/// 携带作用域类别的不可变作用域描述值。
+/// </summary>
+/// <remarks>
+/// 工厂方法集中在这里，调用方不应直接复用不匹配的作用域类别；作用域类别会影响稳定临时
+/// 名称，因此必须与实际 lexical/emission 边界一致。
+/// </remarks>
 internal readonly record struct ScopeSite(ScopeSiteKind Kind)
 {
     public static ScopeSite RootFragment()

@@ -5,6 +5,14 @@ using System.Collections.Generic;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责处理变量、参数、字段、属性和其他声明相关 operation 的发射。
+/// </summary>
+/// <remarks>
+/// 声明 lowering 需要同时维护 JavaScript 绑定、C# 符号名称和发射作用域。
+/// 这里的变量声明集合由 <see cref="SenseArgument"/> 收集后统一落地，避免嵌套表达式在错误位置
+/// 生成 <c>var</c>/<c>let</c>，也避免 synthetic temp 泄漏到外层作用域。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

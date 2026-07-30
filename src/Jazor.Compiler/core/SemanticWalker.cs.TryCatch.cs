@@ -8,6 +8,13 @@ using System.Collections.Immutable;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责异常处理相关 operation 的 JavaScript lowering。
+/// </summary>
+/// <remarks>
+/// try/catch/finally 的核心是执行顺序和异常传播，而不是复制 CLR 异常类型体系。
+/// catch 类型筛选只有在当前宿主映射可表达时才生成；不能用宽泛的 JS 检查伪装成完整 CLR 类型匹配。
+/// </remarks>
 public partial class SemanticWalker
 {
     /// <summary>

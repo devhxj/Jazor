@@ -7,6 +7,14 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 提供由语法节点直接触发的辅助 lowering 路径。
+/// </summary>
+/// <remarks>
+/// 主编译输入是 Roslyn <see cref="IOperation"/>；这里的语法路径只用于 operation 无法携带
+/// 某些源形状信息的窄场景。它仍必须复用统一的命名、白名单和 AST 构造规则，不能成为绕过
+/// SemanticWalker 语义裁决的第二套编译器。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

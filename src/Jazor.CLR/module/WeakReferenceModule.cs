@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将 System.WeakReference 的有限支持面映射到 JavaScript WeakRef。
+/// </summary>
+/// <remarks>
+/// JavaScript WeakRef 的可观察 API 与 CLR resurrection tracking 不完全相同；因此只有能稳定
+/// 对应的构造、Target 和 IsAlive 路径才开放，其余成员保持 Discard。
+/// </remarks>
 [ECMAScriptModule("System/WeakReferenceModule.js")]
 [Jazor(Op.Alias, "System.WeakReference", "WeakRef")]
 public static class WeakReferenceModule

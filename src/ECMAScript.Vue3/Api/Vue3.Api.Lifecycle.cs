@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue 组件生命周期注册 API。</summary>
+/// <remarks>回调执行时机完全由当前组件实例和 Vue scheduler 决定，不能按普通 C# 事件理解。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

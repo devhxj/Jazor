@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 实现 GregorianCalendar 的日期分解、加减和范围校验语义。
+/// </summary>
+/// <remarks>
+/// Calendar API 使用 era、两位年份和特定文化规则，不能直接等同于 JavaScript Date 的本地
+/// 方法。该模块与 RuntimeModule.JDateTime 协作，并通过显式校验维持 .NET 日期范围。
+/// </remarks>
 [ECMAScriptModule("System/Globalization/GregorianCalendarModule.js")]
 [Jazor(Op.Alias, "System.Globalization.GregorianCalendar","Object")]
 public static class GregorianCalendarModule

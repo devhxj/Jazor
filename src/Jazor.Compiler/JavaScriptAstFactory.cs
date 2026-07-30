@@ -5,6 +5,13 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 创建编译器使用的 JavaScript AST 基础节点。
+/// </summary>
+/// <remarks>
+/// 这里直接构造 Acornima 节点，不通过字符串拼接或再次解析 JavaScript。
+/// 字符串转义必须集中处理，否则模块路径、属性名和用户文本可能生成非法或含义改变的脚本。
+/// </remarks>
 public static class JavaScriptAstFactory
 {
     public static StringLiteral CreateStringLiteral(string value)

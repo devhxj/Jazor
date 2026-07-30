@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将常用 System.Linq.Enumerable 查询操作投影为 JavaScript Array 方法。
+/// </summary>
+/// <remarks>
+/// 当前实现优先覆盖高频、可直接物化为 Array 的查询路径，不承诺完整 LINQ 延迟执行模型。
+/// source/predicate 等参数的空值行为和遍历顺序仍需保持 C# 可观察语义。
+/// </remarks>
 [ECMAScriptModule("System/Linq/EnumerableModule.js")]
 [Jazor(Op.Alias, "System.Linq.Enumerable", "Array")]
 public static class EnumerableModule<TSource>

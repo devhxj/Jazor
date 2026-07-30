@@ -5,6 +5,13 @@ using System.Text;
 
 namespace Jazor.Common;
 
+/// <summary>
+/// 集中定义 Roslyn symbol 显示格式和稳定名称 hash 规则。
+/// </summary>
+/// <remarks>
+/// NameFormat 生成的文本直接参与白名单 key；HashName 生成的文本参与 Compile 名称和稳定
+/// 导出名。修改这些规则会改变生成产物和 lookup 契约，必须同步更新生成器、编译器和测试。
+/// </remarks>
 public static class Format
 {
 	private static SymbolDisplayFormat CreateNameFormat(SymbolDisplayExtensionMethodStyle extensionMethodStyle)
@@ -54,11 +61,8 @@ public static class Format
 	/// </summary>
 	public readonly static SymbolDisplayFormat StaticExtensionNameFormat = CreateNameFormat(SymbolDisplayExtensionMethodStyle.StaticMethod);
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="text"></param>
-	/// <returns></returns>
+	/// <summary>根据完整签名生成确定性的短 hash 名称。</summary>
+	/// <remarks>输入应是规范化签名，而不是源码遍历序号，否则输出会随文件顺序抖动。</remarks>
 	public static string HashName(string text)
 	{
 		using var sha256 = SHA256.Create();

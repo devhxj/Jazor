@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue reactive/ref/computed/watch 等响应式 API。</summary>
+/// <remarks>响应式依赖追踪由 Vue runtime 完成；binding 不复制 proxy 或 scheduler 实现。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

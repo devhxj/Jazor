@@ -9,6 +9,10 @@ namespace Jazor.Compiler;
 /// 为当前 operation 树提供 session 内部 identity。
 /// 这里的 identity 只用于同一轮发射中的分配缓存区分，不参与最终可见名称的稳定主键。
 /// </summary>
+/// <remarks>
+/// 已挂在根 operation 树上的节点使用结构路径；临时构造、脱离根树的节点使用 session 内递增
+/// 的 detached 编号。后者只保证本轮可区分，不能被当成跨编译的稳定标识。
+/// </remarks>
 internal sealed class OperationIdentityIndex
 {
     private readonly Dictionary<IOperation, string> _paths =

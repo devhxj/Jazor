@@ -9,6 +9,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 将 Razor children 调用投影为 Vue slot intrinsic 表达式。
+/// </summary>
+/// <remarks>
+/// 这是 compiler 识别的窄语义入口，用于把官方 Razor 生成代码中的 children 传递转换为
+/// 最终 render-function slot 形状。它不建立通用的中间 marker protocol，也不处理普通调用。
+/// </remarks>
 internal static class ChildrenToSlotIntrinsic
 {
 	private const string DefaultSlotKey = "default";

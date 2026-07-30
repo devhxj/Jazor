@@ -18,6 +18,10 @@ namespace Jazor.Compiler;
 /// <c>props</c>, and current-component method references lower to stable module
 /// function identifiers.
 /// </summary>
+/// <remarks>
+/// 当前组件不是普通 JavaScript class 实例：状态、参数和方法分别属于不同的运行时载体。
+/// 这里集中处理这种投影，避免在各个普通成员 visitor 中散落 RazorVue 特殊判断。
+/// </remarks>
 public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 {
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";

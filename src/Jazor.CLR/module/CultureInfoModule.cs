@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将当前支持范围内的 CultureInfo 名称、显示名和不变文化语义映射到 JavaScript。
+/// </summary>
+/// <remarks>
+/// 这不是完整 ICU/.NET globalization 实现；当前模块优先提供确定的不变文化和名称规范化。
+/// 不应假设浏览器运行时的 locale 数据与 .NET 完全一致。
+/// </remarks>
 [ECMAScriptModule("System/Globalization/CultureInfoModule.js")]
 [Jazor(Op.Alias, "System.Globalization.CultureInfo","String")]
 public static class CultureInfoModule

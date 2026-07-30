@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 声明 WebRenderTreeBuilder 的事件 preventDefault/stopPropagation 扩展白名单。
+/// </summary>
+/// <remarks>
+/// 扩展方法本身不在 CLR runtime 中实现；它们由 RazorVue 宿主转换为事件修饰语义，
+/// 因此这里只能加入 compiler host 已经能消费的成员。
+/// </remarks>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions")]
 public static class WebRenderTreeBuilderExtensionsModule
 {

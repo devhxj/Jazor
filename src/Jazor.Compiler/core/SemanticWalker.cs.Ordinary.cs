@@ -11,6 +11,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 处理常规语句、表达式和调用的 operation visitor 实现。
+/// </summary>
+/// <remarks>
+/// 这是大多数 C# 语义的基础路径；需要协议模拟或结构擦除的特性应转交对应分片，
+/// 不要在这里增加只针对某个宿主 API 的特殊分支，以免破坏宿主语义边界。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

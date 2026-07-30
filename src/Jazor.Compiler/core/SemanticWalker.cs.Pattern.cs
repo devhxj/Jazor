@@ -124,6 +124,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责把 Roslyn pattern operation 转换为 JavaScript 条件表达式和分支条件。
+/// </summary>
+/// <remarks>
+/// 模式匹配优先使用编译期可证明的信息折叠结果；无法证明时才生成显式 AST 检查。
+/// 复杂模式可能需要缓存输入值，以保证源表达式只求值一次并保持原有副作用顺序。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

@@ -335,6 +335,10 @@ public interface IPromise<T> : IPromise
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
+/// <summary>
+/// 非泛型 Promise 结果的异步等待适配载体。
+/// </summary>
+/// <remarks>它用于把 JavaScript Promise 接入 C# await/awaiter authoring，不代表同步执行 Promise。</remarks>
 public sealed class PromiseResult : IAsyncResult
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -363,6 +367,7 @@ public sealed class PromiseResult : IAsyncResult
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
+/// <summary>带结果值的 Promise await 适配载体。</summary>
 public sealed class PromiseResult<TResult> : IAsyncResult
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -390,6 +395,7 @@ public sealed class PromiseResult<TResult> : IAsyncResult
 /// </summary>
 [ECMAScript]
 [Description("@#")]
+/// <summary>Promise.allSettled 返回的 fulfilled/rejected 结果联合形状。</summary>
 public sealed class PromiseSettledResult<T>
 {
 	/// <summary>
@@ -419,6 +425,7 @@ public sealed class PromiseSettledResult<T>
 /// </summary>
 [ECMAScript]
 [Description("@#")]
+/// <summary>Promise.withResolvers 返回的 Promise 与 resolve/reject 函数集合。</summary>
 public sealed class PromiseWithResolvers
 {
 	/// <summary>
@@ -448,6 +455,7 @@ public sealed class PromiseWithResolvers
 /// </summary>
 [ECMAScript]
 [Description("@#")]
+/// <summary>泛型 Promise.withResolvers 返回的结果集合。</summary>
 public sealed class PromiseWithResolvers<T>
 {
 	/// <summary>
@@ -472,6 +480,13 @@ public sealed class PromiseWithResolvers<T>
 
 [ECMAScript]
 [Description("@#Promise")]
+/// <summary>
+/// JavaScript Promise 构造器、静态组合方法和实例方法的 host binding。
+/// </summary>
+/// <remarks>
+/// Promise 的执行、微任务调度和异常传播由 JavaScript runtime 负责；本类型只提供强类型
+/// authoring surface。Task 映射中的延迟启动等 CLR 特殊语义由 Jazor.CLR 另行处理。
+/// </remarks>
 public class Promise : IPromise
 {
     /// <summary>
@@ -998,6 +1013,7 @@ public class Promise : IPromise
 
 [ECMAScript]
 [Description("@#Promise")]  
+/// <summary>带编译期结果类型标注的 Promise host binding。</summary>
 public sealed class Promise<T> : Promise, IPromise<T>
 {
     /// <summary>
@@ -1276,4 +1292,3 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#finally")]
     public extern new IPromise<T> Finally(Action onFinal);
 }
-

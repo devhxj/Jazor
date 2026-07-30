@@ -28,6 +28,13 @@ public interface ISetLike<T>
 
 [ECMAScript]
 [Description("@#Set")]
+/// <summary>
+/// JavaScript Set 的泛型 C# authoring binding。
+/// </summary>
+/// <remarks>
+/// Set 的唯一性和 NaN/零值比较遵循 JavaScript SameValueZero 规则；T 只是编译期标注，
+/// 不代表运行时会进行 CLR 类型检查。
+/// </remarks>
 public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 {
 	public extern Set();
@@ -316,5 +323,4 @@ public sealed class WeakSet
 	[Description("@#delete")]
 	public extern bool Delete(object value);
 }
-
 

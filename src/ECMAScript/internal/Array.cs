@@ -1,6 +1,13 @@
 namespace ECMAScript;
 
 [ECMAScript]
+/// <summary>
+/// JavaScript Array 的非泛型 authoring binding。
+/// </summary>
+/// <remarks>
+/// Array 是可变、可迭代且按 Number length 管理的 JS 容器；接口声明只提供编译器可投影的成员，
+/// 不承诺 CLR Array 的多维、固定长度或运行时元素类型语义。
+/// </remarks>
 public interface IArray : IEnumerable
 {
 	[Description("@#length")]
@@ -11,6 +18,7 @@ public interface IArray : IEnumerable
 }
 
 [ECMAScript]
+/// <summary>带编译期元素类型标注的 JavaScript Array binding。</summary>
 public interface IArray<T> : IArray
 {
 	/// <summary>

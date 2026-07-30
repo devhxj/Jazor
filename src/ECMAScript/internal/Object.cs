@@ -4,6 +4,10 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
+/// <summary>
+/// 表示经过 compiler 擦除后仍保留一个值投影的泛型 host wrapper。
+/// </summary>
+/// <remarks>该接口用于 authoring 类型约束，不会自动发射 CLR 风格包装对象。</remarks>
 public interface IReadOnly<T>
 {
 	T Value { get; }
@@ -11,6 +15,8 @@ public interface IReadOnly<T>
 
 [ECMAScript]
 [Description("@#Object")]
+/// <summary>JavaScript Object 的 host binding 契约。</summary>
+/// <remarks>成员映射依赖 ECMAScript 描述属性和白名单规则，不等同于 System.Object API。</remarks>
 public interface IObject
 {
 	/// <summary>

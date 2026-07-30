@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+// 生成器是仓库源码到编译器消费产物的单向刷新入口：先生成白名单，再生成 CLR runtime catalog。
+// 生成文件属于产物，新增或修改映射必须回到 ECMAScript/Jazor.CLR 源码中的属性声明。
 const string Split = $@"
 		";
 
@@ -19,6 +21,8 @@ Console.WriteLine("生成完成");
 
 static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataReference> references)
 {
+    // 白名单扫描使用源码和 Roslyn symbol，而不是反射；这样生成结果与源声明、OriginalDefinition
+    // 格式保持一致，也能在生成阶段发现无法解析的声明。
     var sourceFiles = SharedGeneration.GetWhiteListSourceRoots(repoRoot)
         .SelectMany(SharedGeneration.GetSourceFiles)
         .OrderBy(path => path, StringComparer.Ordinal)

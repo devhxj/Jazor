@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将 System.String 的常用比较、查找、切片、格式化和转换 API 映射到 JavaScript String。
+/// </summary>
+/// <remarks>
+/// JavaScript String 与 .NET UTF-16 字符串在大多数索引操作上相近，但比较、格式化、culture
+/// 和 null 行为并不自动等价；复杂路径使用 Import，短小稳定的路径才使用 Inline。
+/// </remarks>
 [ECMAScriptModule("System/StringModule.js")]
 [Jazor(Op.Alias, "string","String")]
 public static class StringModule

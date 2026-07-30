@@ -7,6 +7,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue render-function props、attrs、events 和 slots 的结构化类型分片。</summary>
+/// <remarks>这些类型用于静态键和值域约束，最终直接落入 h()/组件调用的对象形状。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

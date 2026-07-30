@@ -6,6 +6,10 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#DisposableStack")]
+/// <remarks>
+/// DisposableStack 是 JavaScript 显式资源管理协议的 host binding；它不等同于 CLR using 的
+/// 编译器展开。异步释放和异常传播必须遵循该 host 的协议，不要自行替换成普通数组操作。
+/// </remarks>
 public sealed class DisposableStack
 {
 	/// <summary>
@@ -63,6 +67,9 @@ public sealed class DisposableStack
 /// </summary>
 [ECMAScript]
 [Description("@#AsyncDisposableStack")]
+/// <remarks>
+/// AsyncDisposableStack 保留 JavaScript 的异步 dispose 顺序和 Promise 传播规则。
+/// </remarks>
 public sealed class AsyncDisposableStack
 {
 	/// <summary>

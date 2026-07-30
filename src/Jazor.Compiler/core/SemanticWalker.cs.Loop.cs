@@ -6,6 +6,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 处理 for、foreach、while、do 等循环 operation 的 lowering。
+/// </summary>
+/// <remarks>
+/// 循环转换必须保留初始化、条件、迭代和 body 的执行顺序，并正确处理 continue/break 的
+/// 控制流目标。集合遍历只使用当前宿主已声明的可调用协议，不假设所有对象都天然可迭代。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

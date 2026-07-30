@@ -4,6 +4,13 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
+/// <summary>
+/// 表示 JavaScript RegExp.exec/match 返回的数组型结果及命名属性。
+/// </summary>
+/// <remarks>
+/// 该类型同时具有数组索引和 input/index/groups 等附加属性，因此不能只用普通 string[] 表达；
+/// 它是 host binding，不是 C# 正则引擎实现。
+/// </remarks>
 public sealed class RegExpResult : IArray<string?>
 {
     ///<summary>

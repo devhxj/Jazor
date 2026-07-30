@@ -8,6 +8,14 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责把 C# 的对象、数组、集合、匿名函数及相关初始化语义降为 JavaScript AST。
+/// </summary>
+/// <remarks>
+/// 创建语义与普通成员访问不同：它可能同时涉及构造函数选择、属性初始化、spread 展开和
+/// structural record 擦除。这里必须保留初始化顺序；不能因为目标是对象字面量就跳过必要的
+/// 构造函数或把不支持的外部类型静默当成普通对象。
+/// </remarks>
 public partial class SemanticWalker
 {
 	private const string SpreadAttributeFullName = "ECMAScript.SpreadAttribute";

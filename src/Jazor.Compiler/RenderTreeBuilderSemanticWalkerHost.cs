@@ -14,6 +14,10 @@ namespace Jazor.Compiler;
 /// Jazor Vue render-context protocol while leaving ordinary C# expressions to
 /// <see cref="SemanticWalker"/>.
 /// </summary>
+/// <remarks>
+/// RenderTreeBuilder 是 Razor 生成代码与 Vue render-function 之间的宿主边界。
+/// 该类只投影已支持的 builder 操作和组件元数据，不承担普通 C# 成员、表达式或控制流的转换。
+/// </remarks>
 public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 {
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";

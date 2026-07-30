@@ -10,6 +10,10 @@ namespace Jazor.Compiler;
 /// into a different runtime surface while still reusing SemanticWalker for the rest
 /// of the expression tree.
 /// </summary>
+/// <remarks>
+/// 这是宿主语义的窄扩展点，不是第二个 compiler。Host 只能重写明确属于宿主的 operation，
+/// 普通 C# 表达式仍由 SemanticWalker 负责；若返回 null，应继续走标准 compiler 路径。
+/// </remarks>
 public abstract class SemanticWalkerHost
 {
     public virtual Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)

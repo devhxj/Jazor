@@ -3,6 +3,14 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Common;
 
+/// <summary>
+/// 识别 structural record 和 source-data carrier，并统一判断其成员是否参与结构化 lowering。
+/// </summary>
+/// <remarks>
+/// 该工具只做编译期形状判断，不发射 runtime 类型，也不负责构造对象 AST。
+/// compiler、analyzer 和宿主投影必须使用一致的判断规则，避免同一个 record 在不同阶段被当成
+/// nominal class 或 structural value。
+/// </remarks>
 public static class StructuralRecordSupport
 {
 	public delegate bool SourceDataCarrierTypePredicate(INamedTypeSymbol typeSymbol);

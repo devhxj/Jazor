@@ -2,6 +2,13 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#Map")]
+/// <summary>
+/// JavaScript Map 的泛型 C# authoring binding。
+/// </summary>
+/// <remarks>
+/// Map 的键相等、缺失值和迭代顺序遵循 JavaScript 运行时；泛型参数只提供编译期约束，
+/// 不会生成 CLR Map 类型。缺失键读取与 Has 必须区分，不能用 null 代替存在性判断。
+/// </remarks>
 public sealed class Map<TKey, TValue> : IEnumerable
 {
 	public extern Map();
@@ -100,6 +107,7 @@ public sealed class Map<TKey, TValue> : IEnumerable
 
 [ECMAScript]
 [Description("@#Map")]
+/// <summary>JavaScript Map 的非泛型 host binding。</summary>
 public sealed class Map : IEnumerable
 {
 	/// <summary>
@@ -216,6 +224,7 @@ public sealed class Map : IEnumerable
 
 [ECMAScript]
 [Description("@#WeakMap")]
+/// <summary>JavaScript WeakMap 的泛型 host binding。</summary>
 public sealed class WeakMap<TKey, TValue> where TKey : class
 {
 	public extern WeakMap();
@@ -274,6 +283,7 @@ public sealed class WeakMap<TKey, TValue> where TKey : class
 
 [ECMAScript]
 [Description("@#WeakMap")]
+/// <summary>JavaScript WeakMap 的非泛型 host binding。</summary>
 public sealed class WeakMap
 {
 	/// <summary>
@@ -335,4 +345,3 @@ public sealed class WeakMap
 	[Description("@#delete")]
 	public extern bool Delete(object key);
 }
-

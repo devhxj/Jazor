@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue defineComponent 和组件选项对象的类型化 authoring surface。</summary>
+/// <remarks>record 主要表达结构化对象形状，不意味着生成 CLR 风格组件类。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

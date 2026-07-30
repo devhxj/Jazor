@@ -6,6 +6,10 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#WeakRef")]
+/// <remarks>
+/// WeakRef 的回收时机不可由 C# binding 控制；Deref 返回 null 只表示 JavaScript 的 undefined
+/// 在投影中的缺失值，不代表目标一定已经回收或可以安全做生命周期推断。
+/// </remarks>
 public sealed class WeakRef
 {
 	/// <summary>

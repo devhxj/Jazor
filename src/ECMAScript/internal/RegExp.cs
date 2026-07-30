@@ -4,6 +4,13 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#RegExp")]
+/// <summary>
+/// JavaScript RegExp 构造器及正则实例 API 的 host binding。
+/// </summary>
+/// <remarks>
+/// 正则语法、flags 和匹配结果遵循 JavaScript RegExp，而不是 System.Text.RegularExpressions；
+/// C# 接口只描述可映射的 host surface。
+/// </remarks>
 public sealed class RegExp : IPattern, IMatchPattern, IMatchAllPattern, ISearchPattern, ISplitPattern
 {
 	/// <summary>

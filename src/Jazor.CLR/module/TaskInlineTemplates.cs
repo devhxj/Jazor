@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 集中保存 Task 模块中需要复用的短 inline 模板。
+/// </summary>
+/// <remarks>
+/// 模板中的参数占位符由 SemanticWalker 实例化；这里不能写入依赖局部 C# 名称的代码。
+/// 复杂控制流或需要独立 helper 的 Task 行为应放到 Import runtime method 中。
+/// </remarks>
 internal static class TaskInlineTemplates
 {
 	public const string WaitAsyncTimeSpan =

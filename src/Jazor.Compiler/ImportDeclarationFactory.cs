@@ -6,6 +6,13 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责把语义遍历阶段收集的导入项整理成稳定的 ES module 导入声明。
+/// </summary>
+/// <remarks>
+/// 导入项可能在不同的 lowering 分支中重复收集，因此这里统一去重、排序并拆分
+/// namespace/default/named 三种声明。排序是输出确定性的一部分，不能依赖遍历顺序。
+/// </remarks>
 public static class ImportDeclarationFactory
 {
     public static ImmutableArray<ImportDeclaration> Create(
@@ -17,6 +24,8 @@ public static class ImportDeclarationFactory
         if (specifiers is null)
             throw new ArgumentNullException(nameof(specifiers));
 
+        // 先统一去重和排序，再按 ECMAScript 语法允许的组合拆分声明。
+        // 不能直接保留收集顺序，否则不同 lowering 路径会产生不稳定的模块头。
         var uniqueSpecifiers = NormalizeSpecifiers(specifiers);
         var defaultSpecifier = uniqueSpecifiers
             .OfType<ImportDefaultSpecifier>()

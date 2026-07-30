@@ -5,6 +5,13 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 比较 JavaScript AST 中表示引用和值的节点是否语义等价。
+/// </summary>
+/// <remarks>
+/// 该分析用于局部优化和结构判断，不是完整的 AST 深比较器，也不判断两个表达式执行结果
+/// 是否相同。带有调用、赋值或其他副作用的节点不能仅凭结构相似就当作可合并引用。
+/// </remarks>
 public static class AstReferenceAnalysis
 {
     public static bool AreEquivalentReference(Expression left, Expression right)

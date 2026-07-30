@@ -4,6 +4,10 @@ namespace Jazor.Compiler;
 /// Tracks the primary C# source location that produced a JavaScript AST node.
 /// Coordinates are zero-based and map to the Roslyn source span.
 /// </summary>
+/// <remarks>
+/// SourceOrigin 记录的是“主要来源”，不是完整的语法树映射。一个 synthetic 节点可能由多个
+/// C# operation 共同产生，因此应锚定到触发该 lowering 的 operation，而不是虚构一段源代码。
+/// </remarks>
 internal sealed record SourceOrigin(
     string? SourcePath,
     int StartLine,

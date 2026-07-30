@@ -6,6 +6,13 @@ using System.Collections.Generic;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 处理 lock operation 的宿主协议转换。
+/// </summary>
+/// <remarks>
+/// JavaScript 没有 CLR monitor 的直接对应物，因此这里实现的是项目定义的 lock/runtime seam。
+/// 不能把 lock 直接擦除为普通代码块，否则会静默丢失并发或互斥协议的可观察约束。
+/// </remarks>
 public partial class SemanticWalker
 {
     public override Node? VisitLock(ILockOperation operation, SenseArgument argument)

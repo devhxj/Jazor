@@ -17,6 +17,10 @@ namespace Jazor.Compiler;
 /// ComponentBase remain host seams instead of being copied into the generated
 /// artifact.
 /// </summary>
+/// <remarks>
+/// closure 的结果必须确定且最小：只把当前渲染路径实际依赖的源声明成员带入输出。
+/// 外部框架基类不属于当前模块的源码闭包，应通过 host seam 使用其约定能力。
+/// </remarks>
 public sealed class CurrentComponentMemberClosure
 {
     private readonly INamedTypeSymbol _componentType;

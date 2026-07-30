@@ -6,6 +6,13 @@ namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
+/// <summary>
+/// ECMAScript PropertyKey 的强类型联合表示。
+/// </summary>
+/// <remarks>
+/// PropertyKey 允许 string、Number 和 Symbol 三种 authoring 分支，并在编译后擦除为对应 JavaScript 值。
+/// AsX 属性用于保持分支投影的明确类型，不应把它当作可反射的 CLR union 对象。
+/// </remarks>
 public readonly union PropertyKey(string, Number, Symbol)
 {
 	public string? AsString => Value as string;

@@ -3,6 +3,13 @@ using System.Linq;
 
 namespace Jazor.Common.SourceMaps;
 
+/// <summary>
+/// 将 bundle SourceMap 逐段追溯到模块 SourceMap，构造最终源文件映射。
+/// </summary>
+/// <remarks>
+/// 链式合并只沿 bundle 中已有的源路径和模块映射查找，不创造不存在的源位置；路径查找会
+/// 规范化斜杠和相对前缀。循环或无法解析的映射必须保持可诊断，而不是无限递归。
+/// </remarks>
 public sealed class SourceMapChainBuilder
 {
     private static readonly SourceMapReader Reader = new();

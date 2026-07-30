@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue app、plugin、provide/inject 相关的结构化类型 contract。</summary>
+/// <remarks>该分片只描述 app.use 等 host surface，不负责插件安装或全局注册的运行时实现。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

@@ -5,6 +5,13 @@ using System.Text.Json;
 
 namespace Jazor.Common.SourceMaps;
 
+/// <summary>
+/// 将通用 SourceMap 数据模型写为 Source Map v3 JSON，并追加 sourceMappingURL。
+/// </summary>
+/// <remarks>
+/// mappings 使用 VLQ 编码，段必须按生成行列排序；这里的 writer 不负责推导映射，只负责
+/// 序列化既有坐标。不要在写出阶段重新计算源位置。
+/// </remarks>
 public sealed class SourceMapWriter
 {
     private const string Base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

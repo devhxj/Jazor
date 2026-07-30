@@ -8,6 +8,14 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 解析并实例化白名单中的 JavaScript inline 模板。
+/// </summary>
+/// <remarks>
+/// inline 只适合短小、稳定的表达式模板；模板中的 <c>__argN</c> 不是用户变量，而是
+/// 编译器约定的参数占位符。实例化前会统一改写为保留前缀，避免与真实 C# 参数同名。
+/// 需要分支、临时变量或共享 helper 的行为应升级为 Import/Compile，而不是继续拉长模板。
+/// </remarks>
 public sealed partial class SemanticWalker
 {
     // 外部模板使用 __arg1 / __arg2 ...，

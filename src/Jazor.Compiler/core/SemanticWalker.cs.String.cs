@@ -7,6 +7,13 @@ using System.Text;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 处理字符串字面量、插值字符串及字符串拼接相关 operation。
+/// </summary>
+/// <remarks>
+/// 字符串 lowering 需要区分编译期可折叠值和运行时表达式；只有前者可以安全合并，
+/// 运行时片段必须保持原始求值顺序和转换行为。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

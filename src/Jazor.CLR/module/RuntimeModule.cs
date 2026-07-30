@@ -1,5 +1,13 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// Jazor.CLR 共用的 JavaScript runtime helper 模块。
+/// </summary>
+/// <remarks>
+/// 这里承载多个 CLR 类型模块共同依赖的日期、时间、队列和基础校验逻辑，并以真实 C# helper
+/// 的形式编译为 JavaScript。它不是完整 CLR runtime；只实现当前白名单 API 所需的最小语义闭环。
+/// 修改内部类型或字段时要注意它们可能被多个模块通过 Import 间接引用。
+/// </remarks>
 [ECMAScriptModule("System/RuntimeModule.js")]
 public static class RuntimeModule
 {
@@ -144,6 +152,10 @@ public static class RuntimeModule
 		return instance;
 	}
 
+	/// <summary>
+	/// DateTime 的 runtime carrier，以 tick 和 kind 保存可跨模块传递的日期值。
+	/// </summary>
+	/// <remarks>它不是原生 JavaScript Date；需要 Date 互操作时必须经过明确的转换 helper。</remarks>
 	public sealed class JDateTime
 	{
 		[Description("@#date")]
@@ -227,6 +239,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// DateTimeOffset 的 runtime carrier，同时保存 UTC tick 和分钟级 offset。
+	/// </summary>
+	/// <remarks>保留 offset 是该类型区别于 DateTime/JavaScript Date 的关键，不能只保存时间戳。</remarks>
 	public sealed class JDateTimeOffset
 	{
 		[Description("@#utcDateTime")]
@@ -300,6 +316,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// DateOnly 的 runtime carrier，只保存日期 day number。
+	/// </summary>
+	/// <remarks>该 carrier 没有时间和时区字段，避免被 JavaScript Date 的时区解释污染。</remarks>
 	public sealed class JDateOnly
 	{
 		[Description("@#year")]
@@ -345,6 +365,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// Queue&lt;T&gt; 的最小 runtime carrier，使用数组和游标模拟先进先出队列。
+	/// </summary>
+	/// <remarks>游标与数组增长策略属于内部实现，外部只能通过白名单成员访问。</remarks>
 	public sealed class JQueue<T>
 	{
 		[Description("@#kind")]
@@ -380,6 +404,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// Stack&lt;T&gt; 的最小 runtime carrier，使用数组保存后进先出状态。
+	/// </summary>
+	/// <remarks>它只承诺当前白名单所需的栈操作，不等同于完整 CLR Stack runtime identity。</remarks>
 	public sealed class JStack<T>
 	{
 		[Description("@#kind")]
@@ -410,6 +438,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// TimeOnly 的 runtime carrier，以 tick 保存一天内的时间部分。
+	/// </summary>
+	/// <remarks>carrier 不携带日期和时区；与 DateTime 的组合必须通过显式 helper 完成。</remarks>
 	public sealed class JTimeOnly
 	{
 		[Description("@#ticks")]
@@ -456,6 +488,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// TimeSpan 的 runtime carrier，以 BigInt tick 保存完整范围的时间间隔。
+	/// </summary>
+	/// <remarks>使用 BigInt 是为了避免 Number 对 Int64 tick 的精度截断。</remarks>
 	public sealed class JTimeSpan
 	{
 		[Description("@#ticks")]
@@ -512,6 +548,10 @@ public static class RuntimeModule
 		}
 	}
 
+	/// <summary>
+	/// GregorianCalendar 的 runtime carrier，保存 calendar type 和两位年份规则。
+	/// </summary>
+	/// <remarks>它只承载当前 GregorianCalendar helper 所需的状态，不模拟 CLR Calendar 类型层次。</remarks>
 	public sealed class JGregorianCalendar
 	{
 		[Description("@#calendarType")]

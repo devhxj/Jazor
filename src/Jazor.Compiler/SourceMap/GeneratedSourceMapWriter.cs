@@ -5,6 +5,13 @@ using System.Text;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 以确定性顺序写出 Source Map v3 JSON 文本。
+/// </summary>
+/// <remarks>
+/// 这里使用专用 writer 是为了控制字段顺序、字符串转义和 VLQ 编码，避免通用 JSON 序列化器
+/// 引入不可预测格式差异。输出格式稳定性对缓存和增量构建同样重要。
+/// </remarks>
 internal sealed class GeneratedSourceMapWriter
 {
     private const string Base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

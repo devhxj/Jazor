@@ -8,6 +8,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 实现 tuple 和 structural value 的使用点擦除型 lowering。
+/// </summary>
+/// <remarks>
+/// 这里保留投影、解构、比较和属性形状，不模拟 <c>System.ValueTuple</c> 的运行时身份。
+/// 对可能有副作用的 tuple 源表达式必须先缓存，再重复使用其字段；直接重复翻译会改变行为。
+/// </remarks>
 public partial class SemanticWalker
 {
 	private static string GetTupleRuntimeFieldName(IFieldSymbol field)

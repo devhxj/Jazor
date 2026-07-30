@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将 Blazor EventCallback 及其工厂调用保留为 Jazor 的事件宿主契约。
+/// </summary>
+/// <remarks>
+/// EventCallback 不是普通 delegate：它携带 receiver，并通过 InvokeAsync 进入组件更新协议。
+/// 本模块主要提供白名单允许面，不把它误降级为任意 JavaScript 函数或绕过组件宿主。
+/// </remarks>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.EventCallback")]
 public static class EventCallbackModule
 {
@@ -10,6 +17,7 @@ public static class EventCallbackModule
     public extern static System.Threading.Tasks.Task _invokeAsync(object instance);
 }
 
+/// <summary>泛型 EventCallback 的类型和调用白名单映射。</summary>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.EventCallback<TValue>")]
 public static class EventCallbackTModule<TValue>
 {
@@ -17,6 +25,7 @@ public static class EventCallbackTModule<TValue>
     public extern static System.Threading.Tasks.Task _invokeAsync(object instance, TValue value);
 }
 
+/// <summary>EventCallbackFactory 的受支持创建入口白名单映射。</summary>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.EventCallbackFactory")]
 public static class EventCallbackFactoryModule
 {

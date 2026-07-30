@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将非泛型 System.Threading.Tasks.Task 的常用创建、等待和组合 API 投影为 Promise。
+/// </summary>
+/// <remarks>
+/// Promise 本身通常立即拥有异步结果，但 C# Task 的部分创建 API 还具有延迟启动语义；
+/// 本模块通过 runtime WeakMap 保存 starter 状态，不能简单把所有 Task.Factory 调用替换为 Promise.resolve。
+/// </remarks>
 [ECMAScriptModule("System/Threading/Tasks/TaskModule.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.Task", "Promise")]
 public static class TaskModule

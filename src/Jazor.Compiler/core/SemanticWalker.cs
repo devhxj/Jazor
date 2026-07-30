@@ -27,6 +27,9 @@ namespace Jazor.Compiler;
 /// - 对于强类型到弱类型转换，依赖编译时类型安全
 /// - 生成最简洁的JavaScript代码，避免复杂的IIFE包装（除非必要）
 /// - 递归深度控制，防止栈溢出
+/// <para><b>边界说明</b></para>
+/// SemanticWalker 是最终的使用点裁决层。Analyzer 可以提前报告问题，但这里仍必须确认
+/// 当前外部类型、成员和运行时语义确实有可落地的转换；不支持的成员不能静默退化为原始 JS。
 /// </summary>
 public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Node?>, IWhiteList
 {
@@ -1372,6 +1375,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// <param name="operation">BlockSyntax对应的IOperation</param>
     /// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
     /// <returns>Acornima的ESTree的Node</returns>
+    /// <remarks>
+    /// Visit 是所有 operation 的统一入口。它在进入 visitor 前建立发射作用域，在返回时给根节点
+    /// 写入 source origin，并在最外层访问结束后清理本轮 session；子 visitor 不应绕过这个入口
+    /// 自行创建稳定命名会话，否则临时变量和 sourcemap 锚点会失去一致性。
+    /// </remarks>
     public override Node? Visit(IOperation? operation, SenseArgument argument)
     {
         _cancellationToken.ThrowIfCancellationRequested();
@@ -1411,6 +1419,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (argument.ScopeContext is not null)
             return argument;
 
+        // 只有最外层 Visit 可以创建根作用域。递归访问时缺少上下文说明某个 lowering
+        // 绕过了统一入口，继续创建新 session 会破坏临时名称和导入收集的一致性。
         if (_recursionDepth > 1)
             throw new InvalidOperationException($"Jazor 在访问 {operation.Kind} 时丢失了发射作用域上下文。");
 

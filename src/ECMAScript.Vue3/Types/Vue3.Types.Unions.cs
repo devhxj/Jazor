@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript;
 
+/// <summary>Vue API 中多分支值域的强类型 union 定义。</summary>
+/// <remarks>union 是 authoring/编译期表示，分支投影必须保持精确，不能退化为 object catch-all。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 为 Razor Source Generator 产生的 RenderTreeBuilder 调用声明可进入编译域的成员。
+/// </summary>
+/// <remarks>
+/// 这里是 producer 侧允许列表，不实现 RenderTreeBuilder 本身；实际 Vue render-context 投影
+/// 由 Jazor.Compiler 的 RenderTreeBuilderSemanticWalkerHost 负责。新增成员必须同步宿主实现和测试。
+/// </remarks>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder")]
 public static class RenderTreeBuilderModule
 {

@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue Composition API 与组件 setup 上下文入口。</summary>
+/// <remarks>返回值和回调保持 Vue runtime 形状，C# 泛型主要用于 authoring-time 类型投影。</remarks>
 public static partial class Vue3
 {
 	private const string IdentityInlineTemplate = "__arg1";

@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue watch/effect/reactivity API 使用的选项对象类型。</summary>
+/// <remarks>record 属性直接对应 Vue options object，默认值和缺失属性由 Vue runtime 解释。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

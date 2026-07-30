@@ -3,6 +3,13 @@
 [ECMAScript]
 [Description("@#BigInt")]
 [Jazor]
+/// <summary>
+/// JavaScript BigInt 的整数精度 host binding。
+/// </summary>
+/// <remarks>
+/// BigInt 不能与 Number 混合参与普通算术；调用方和 CLR module 必须在边界显式转换。
+/// 该类型用于表达 JavaScript 整数运行时，不是任意精度 decimal 或 CLR BigInteger 的完整替代品。
+/// </remarks>
 public abstract class BigInt
 {
 	/// <summary>

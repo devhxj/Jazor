@@ -8,6 +8,10 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#Reflect")]
+/// <remarks>
+/// Reflect 保持 JavaScript 的 property key、receiver 和返回值规则，因此部分参数必须保留
+/// object 或 PropertyKey 形状。不要为了 C# 表面简洁而改成 string-only 或弱化为 catch-all API。
+/// </remarks>
 public static class Reflect
 {
 	/// <summary>

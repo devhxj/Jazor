@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue 组件、VNode、props/slots 等核心类型 contract。</summary>
+/// <remarks>本分片描述运行时形状，组件实际发射由 RazorVue/compiler framing 负责。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

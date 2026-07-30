@@ -9,6 +9,13 @@ using Acornima.Ast;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 将 Acornima AST 发射为 JavaScript 文本，并同步建立源码映射和内容 hash。
+/// </summary>
+/// <remarks>
+/// SourceMapEmitter 只负责文本、映射和 artifact carrier，不负责模块语义或文件落盘。
+/// 节点上的 SourceOrigin 是映射锚点；合成节点也必须有明确的来源策略，不能在这里猜测源位置。
+/// </remarks>
 internal static class SourceMapEmitter
 {
     public static GeneratedJavaScriptArtifact Emit(
@@ -589,12 +596,25 @@ internal static class SourceMapEmitter
     }
 }
 
+/// <summary>
+/// 带节点位置索引的 JavaScript 发射结果，供测试和诊断使用。
+/// </summary>
+/// <remarks>
+/// NodePositions 是本轮 AST 节点到生成文本坐标的索引，不属于最终 SourceMap 公共格式，
+/// 也不能替代 SourceOrigin 到源文件坐标的映射。
+/// </remarks>
 internal sealed record GeneratedJavaScriptLayout(
     GeneratedJavaScriptArtifact Artifact,
     IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
 
+/// <summary>
+/// 内部文本 writer 输出及其 AST 节点位置索引。
+/// </summary>
 internal sealed record GeneratedJavaScriptNodeLayout(
     string Content,
     IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
 
+/// <summary>
+/// 生成 JavaScript 文本中的零基行列坐标。
+/// </summary>
 internal readonly record struct GeneratedNodePosition(int Line, int Column);

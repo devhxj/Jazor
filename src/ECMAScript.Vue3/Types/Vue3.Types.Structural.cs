@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue 结构化值、枚举值域和通用对象形状定义。</summary>
+/// <remarks>这些类型优先按 structural lowering 处理，不自动引入 nominal runtime declaration。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

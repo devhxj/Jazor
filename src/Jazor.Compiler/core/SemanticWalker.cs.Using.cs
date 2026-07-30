@@ -7,6 +7,14 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 处理 using、await using 资源绑定和释放协议。
+/// </summary>
+/// <remarks>
+/// using 的关键语义是无论 body 如何退出都执行释放，并保持同步/异步释放的区别。
+/// 资源表达式通常需要缓存一次，避免在 finally 路径中重新求值；释放方法必须由当前白名单和
+/// 接口投影确认，不能凭约定调用一个可能不存在的 <c>dispose</c> 属性。
+/// </remarks>
 public partial class SemanticWalker
 {
 	private enum UsingDisposalKind

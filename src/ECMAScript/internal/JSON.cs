@@ -7,6 +7,10 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#JSON")]
+/// <remarks>
+/// JSON.parse/stringify 的回调和缺失值行为由 JavaScript runtime 决定；binding 只提供强类型
+/// authoring 入口，不把 JSON 值域收窄成 CLR 对象图，也不额外引入序列化协议。
+/// </remarks>
 public static class JSON
 {
 	/// <summary>

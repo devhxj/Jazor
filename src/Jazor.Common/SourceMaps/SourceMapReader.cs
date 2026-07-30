@@ -3,6 +3,13 @@ using System.Text.Json;
 
 namespace Jazor.Common.SourceMaps;
 
+/// <summary>
+/// 读取 Source Map v3 JSON 并解码为通用 SourceMap 数据模型。
+/// </summary>
+/// <remarks>
+/// reader 负责解析 sources、sourcesContent 和 VLQ mappings；它不验证上游 compiler 是否生成了
+/// 正确的语义锚点。非法 JSON 或无法解码的映射应直接传播错误，不能静默生成空映射。
+/// </remarks>
 public sealed class SourceMapReader
 {
     private const string Base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

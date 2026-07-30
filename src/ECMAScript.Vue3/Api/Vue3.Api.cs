@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+/// <summary>Vue 应用创建、组件注册和基础 runtime API。</summary>
+/// <remarks>调用直接映射 Vue 3 host module；compiler 不在此分片实现应用生命周期。</remarks>
 public static partial class Vue3
 {
 	/// <summary>

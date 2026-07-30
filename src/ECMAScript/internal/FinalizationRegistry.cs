@@ -6,6 +6,10 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#FinalizationRegistry")]
+/// <remarks>
+/// FinalizationRegistry 的回调执行时机由 JavaScript garbage collector 决定，不能用于确定性的
+/// 资源释放。需要 using/Dispose 语义时，应走 compiler 的显式释放协议。
+/// </remarks>
 public sealed class FinalizationRegistry
 {
 	/// <summary>

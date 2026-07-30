@@ -4,6 +4,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+/// <summary>
+/// 扫描并编译 Jazor.CLR runtime module，生成 ECMAScript runtime catalog 源码。
+/// </summary>
+/// <remarks>
+/// 该发射器使用 Roslyn 源码编译而不是反射加载 CLR 项目，因此能直接处理受限 helper 源码。
+/// 生成的 catalog 只携带模块文本、路径和 hash；模块语义仍由 AstConverter/SemanticWalker 负责。
+/// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
     public static void Generate(string repoRoot, IEnumerable<MetadataReference> references)
@@ -202,11 +209,13 @@ internal static class ClrRuntimeCatalogEmitter
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
+    /// <summary>待转换的 CLR runtime 模块及其语义模型。</summary>
     private sealed record ClrRuntimeModuleCandidate(
         INamedTypeSymbol RootType,
         SemanticModel SemanticModel,
         string RelativePath);
 
+    /// <summary>已转换的 runtime 模块文本及其稳定内容摘要。</summary>
     private sealed record GeneratedClrRuntimeModule(
         string TypeName,
         string RelativePath,

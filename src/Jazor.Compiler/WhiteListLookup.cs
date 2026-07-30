@@ -6,6 +6,13 @@ using System.Text;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 执行宿主白名单的消费侧查找。
+/// </summary>
+/// <remarks>
+/// 生成器写入的 key 是唯一规范；本类只提供 lookup 时的兼容探测，例如泛型参数、扩展方法、
+/// override/virtual 和 const 字段等表示差异。探测结果不能反过来改写已持久化的白名单 key。
+/// </remarks>
 internal static class WhiteListLookup
 {
 	public static bool TryGetValue<T>(Dictionary<string, T> mappings, string lookupKey, out string displayString, out T value)

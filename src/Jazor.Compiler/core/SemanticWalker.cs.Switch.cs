@@ -6,6 +6,13 @@ using System.Linq;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// 负责把 switch 语句和 switch expression 降为 JavaScript 分支结构。
+/// </summary>
+/// <remarks>
+/// switch expression 需要保留“选中一个结果”的表达式形态，必要时使用稳定临时变量或 IIFE；
+/// switch 语句则保留控制流和 break 语义。两者都不能通过重复翻译输入表达式来换取简单输出。
+/// </remarks>
 public partial class SemanticWalker
 {
 	/// <summary>

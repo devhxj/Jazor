@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 投影 System.DateTimeOffset 的 tick、偏移量、Unix 时间和格式化语义。
+/// </summary>
+/// <remarks>
+/// DateTimeOffset 不是单纯的 JavaScript Date：同一个瞬间还携带 offset 信息。
+/// 本模块使用 RuntimeModule 的结构化载体保留这两部分数据，并在边界转换时显式处理精度和范围。
+/// </remarks>
 [ECMAScriptModule("System/DateTimeOffsetModule.js")]
 [Jazor(Op.Alias, "System.DateTimeOffset","Object")]
 public static class DateTimeOffsetModule

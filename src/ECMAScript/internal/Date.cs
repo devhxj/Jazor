@@ -6,6 +6,10 @@
 /// </summary>
 [ECMAScript]
 [Description("@#Date")]
+/// <remarks>
+/// Date 使用 JavaScript 的时间戳、时区和非法日期规则；它不是 System.DateTime 的透明替代品。
+/// 需要 tick、DateOnly 或 DateTimeOffset 语义时，应使用相应 CLR runtime module 的 carrier。
+/// </remarks>
 public sealed class Date
 {
 	/// <summary>

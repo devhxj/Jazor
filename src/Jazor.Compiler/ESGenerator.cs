@@ -14,6 +14,13 @@ using System.Threading;
 namespace Jazor.Compiler;
 
 [Generator]
+/// <summary>
+/// Roslyn 增量源生成器：将符合白名单约定的 C# 模块转换为 JavaScript 模块和源码映射载体。
+/// </summary>
+/// <remarks>
+/// 生成器只负责接入编译输入、组织诊断和写出生成结果；具体 C# 语义由 AstConverter 与
+/// SemanticWalker 处理，JavaScript 文本和 SourceMap 则由对应发射层处理。
+/// </remarks>
 public sealed class ESGenerator : IIncrementalGenerator
 {
     private static readonly DiagnosticDescriptor ModuleGenerationFailed = new(

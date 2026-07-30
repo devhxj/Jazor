@@ -1,5 +1,12 @@
 namespace Jazor.CLR;
 
+/// <summary>
+/// 将 ReadOnlySet&lt;T&gt; 投影为带只读 carrier 标记的 JavaScript Set。
+/// </summary>
+/// <remarks>
+/// ReadOnlySet 与 HashSet 共享 Set backing type，但写入路径必须由 runtime carrier 语义阻止。
+/// 集合遍历和 subset/superset helper 尽量复用 HashSet 实现，避免两个映射的比较规则漂移。
+/// </remarks>
 [ECMAScriptModule("System/Collections/ObjectModel/ReadOnlySetT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlySet<T>","Set")]
 public static class ReadOnlySetT1Module<T>
