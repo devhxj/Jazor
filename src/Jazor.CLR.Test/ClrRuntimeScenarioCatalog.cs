@@ -9,6 +9,9 @@ internal enum ClrRuntimeValueKind
     BigInt,
     Array,
     Set,
+    Map,
+    WeakMap,
+    Reference,
     Record,
     Callable,
     RuntimeInvocation,
@@ -58,6 +61,15 @@ internal sealed record ClrRuntimeValue(
     public static ClrRuntimeValue Set(params ClrRuntimeValue[] values)
         => new(ClrRuntimeValueKind.Set, Items: values);
 
+    public static ClrRuntimeValue Map(params (ClrRuntimeValue Key, ClrRuntimeValue Value)[] entries)
+        => new(ClrRuntimeValueKind.Map, Items: FlattenEntries(entries));
+
+    public static ClrRuntimeValue WeakMap(params (ClrRuntimeValue Key, ClrRuntimeValue Value)[] entries)
+        => new(ClrRuntimeValueKind.WeakMap, Items: FlattenEntries(entries));
+
+    public static ClrRuntimeValue Reference(string id, ClrRuntimeValue value)
+        => new(ClrRuntimeValueKind.Reference, id, [value]);
+
     public static ClrRuntimeValue Record(params (string Name, ClrRuntimeValue Value)[] properties)
         => new(
             ClrRuntimeValueKind.Record,
@@ -78,6 +90,10 @@ internal sealed record ClrRuntimeValue(
     }
 
     public static ClrRuntimeValue Undefined() => new(ClrRuntimeValueKind.Undefined);
+
+    private static IReadOnlyList<ClrRuntimeValue> FlattenEntries(
+        IEnumerable<(ClrRuntimeValue Key, ClrRuntimeValue Value)> entries)
+        => entries.SelectMany(static entry => new[] { entry.Key, entry.Value }).ToArray();
 }
 
 internal sealed record ClrRuntimeScenario(
@@ -96,6 +112,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeGuidScenarios.All,
         .. ClrRuntimeSetScenarios.HashSet,
         .. ClrRuntimeSetScenarios.InterfaceSet,
+        .. ClrRuntimeDictionaryScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,

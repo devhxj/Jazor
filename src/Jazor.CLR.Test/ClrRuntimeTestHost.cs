@@ -130,26 +130,60 @@ internal static class ClrRuntimeTestHost
         const [scenarioPath, resultPath] = Deno.args;
         const scenarios = JSON.parse(await Deno.readTextFile(scenarioPath));
 
-        async function decodeAll(values) {
+        async function decodeAll(values, references) {
           const decoded = [];
           for (const value of values)
-            decoded.push(await decode(value));
+            decoded.push(await decode(value, references));
           return decoded;
         }
 
-        async function decode(value) {
+        async function decodeEntries(items, references) {
+          if (items.length % 2 !== 0)
+            throw new Error("CLR runtime map values require key/value pairs");
+          const entries = [];
+          for (let index = 0; index < items.length; index += 2)
+            entries.push([await decode(items[index], references), await decode(items[index + 1], references)]);
+          return entries;
+        }
+
+        function createTrackedWeakMap(entries) {
+          const snapshot = new Map(entries);
+          const weakMap = new WeakMap(entries);
+          const set = weakMap.set.bind(weakMap);
+          const remove = weakMap.delete.bind(weakMap);
+          weakMap.set = (key, value) => {
+            snapshot.set(key, value);
+            return set(key, value);
+          };
+          weakMap.delete = key => {
+            snapshot.delete(key);
+            return remove(key);
+          };
+          Object.defineProperty(weakMap, "__clrRuntimeEntries", { value: snapshot });
+          return weakMap;
+        }
+
+        async function decode(value, references) {
           switch (value.kind) {
             case "null": return null;
             case "string": return value.scalar;
             case "number": return Number(value.scalar);
             case "boolean": return value.scalar === "true";
             case "bigInt": return BigInt(value.scalar);
-            case "array": return await decodeAll(value.items);
-            case "set": return new Set(await decodeAll(value.items));
+            case "array": return await decodeAll(value.items, references);
+            case "set": return new Set(await decodeAll(value.items, references));
+            case "map": return new Map(await decodeEntries(value.items, references));
+            case "weakMap": return createTrackedWeakMap(await decodeEntries(value.items, references));
+            case "reference": {
+              if (references.has(value.scalar)) return references.get(value.scalar);
+              const resolved = await decode(value.items[0], references);
+              references.set(value.scalar, resolved);
+              return resolved;
+            }
             case "record": {
               const entries = [];
               for (const [name, item] of Object.entries(value.properties))
-                entries.push([name, await decode(item)]);
+                entries.push([name, await decode(item, references)]);
               return Object.fromEntries(entries);
             }
             case "callable": {
@@ -171,7 +205,7 @@ internal static class ClrRuntimeTestHost
               if (typeof runtimeFunction !== "function")
                 throw new Error(
                   `Missing nested runtime export ${invocation.exportName} in ${invocation.modulePath}`);
-              const args = await decodeAll(invocation.arguments);
+              const args = await decodeAll(invocation.arguments, references);
               return await runtimeFunction(...args);
             }
             case "undefined": return undefined;
@@ -184,6 +218,8 @@ internal static class ClrRuntimeTestHost
           if (value === undefined) return { kind: "undefined" };
           if (Array.isArray(value)) return { kind: "array", items: value.map(encode) };
           if (value instanceof Set) return { kind: "set", items: Array.from(value, encode) };
+          if (value instanceof Map) return { kind: "map", items: Array.from(value).flatMap(([key, item]) => [encode(key), encode(item)]) };
+          if (value instanceof WeakMap) return { kind: "weakMap", items: Array.from(value.__clrRuntimeEntries ?? []).flatMap(([key, item]) => [encode(key), encode(item)]) };
           if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
             const primitive = value[Symbol.toPrimitive]("string");
             if (primitive === value)
@@ -221,7 +257,7 @@ internal static class ClrRuntimeTestHost
             const runtimeFunction = runtimeModule[scenario.exportName];
             if (typeof runtimeFunction !== "function")
               throw new Error(`Missing runtime export ${scenario.exportName} in ${scenario.modulePath}`);
-            const args = await decodeAll(scenario.arguments);
+            const args = await decodeAll(scenario.arguments, new Map());
             const value = await runtimeFunction(...args);
             results.push({
               id: scenario.id,
