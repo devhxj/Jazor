@@ -36,6 +36,29 @@ public sealed class ClrRuntimeBehaviorTests
         }
     }
 
+    [TestMethod]
+    public void ScenarioCatalog_CoversEveryRuntimeImportContract()
+    {
+        var coveredMembers = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var scenario in ClrRuntimeScenarioCatalog.All)
+        {
+            coveredMembers.Add(scenario.Member);
+            foreach (var invocation in EnumerateInvocations(scenario.Arguments))
+                coveredMembers.Add(invocation.Member);
+        }
+
+        var uncoveredMembers = ClrRuntimeMappingCatalog.Imports
+            .Select(static mapping => mapping.Member)
+            .Where(member => !coveredMembers.Contains(member))
+            .OrderBy(static member => member, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsEmpty(
+            uncoveredMembers,
+            "Every Op.Import mapping must be exercised by a Deno runtime scenario. Missing: " +
+            string.Join(", ", uncoveredMembers));
+    }
+
     private static IEnumerable<ClrRuntimeInvocationValue> EnumerateInvocations(
         IEnumerable<ClrRuntimeValue> values)
     {
