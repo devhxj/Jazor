@@ -26,6 +26,9 @@ var outTypes = new Type[]{
 	typeof(UInt32),
 	typeof(Int64),
 	typeof(UInt64),
+	typeof(Int128),
+	typeof(UInt128),
+	typeof(Half),
 	typeof(Single),
 	typeof(Double),
 	typeof(Decimal),
@@ -97,6 +100,7 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(UInt32),"Number"},
 	{typeof(Single),"Number"},
 	{typeof(Double),"Number"},
+	{typeof(Half),"Number"},
 	{typeof(TimeOnly),"Number"},
 	{typeof(DateOnly),"Date"},
 	{typeof(DateTime),"Date"},
@@ -148,6 +152,7 @@ var nameMaps = new Dictionary<string, string>()
 	{"System.Char","Number"},
 	{"System.Single","Number"},
 	{"System.Double","Number"},
+	{"System.Half","Number"},
 	{"byte","Number"},
 	{"sbyte","Number"},
 	{"short","Number"},
@@ -375,7 +380,7 @@ $@"**成员**：{display}</br>
 
 	coder.AppendLine("}");
 	File.WriteAllText(Path.Combine(module, $"{typeName}Module.cs"), coder.ToString());
-	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString());
+	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString().TrimEnd() + Environment.NewLine);
 	Console.WriteLine(typeName);
 }
 Console.ReadLine();

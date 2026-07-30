@@ -1352,6 +1352,125 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_HalfMembers_UseNumberMappingsAndRuntimeImports()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text, Half left, Half right)
+				{
+					var max = Half.MaxValue;
+					var parsed = Half.Parse(text);
+					var sum = left + right;
+					var power = Half.IsPow2(parsed);
+                    var abs = Half.Abs(left);
+                    var compare = left.CompareTo(right);
+                    Half result;
+                    var success = Half.TryParse(text, out result);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let max = 65504;
+  let parsed = _14d80007aa3543a1(text);
+  let sum = left + right;
+  let power = _8b5f0cb98ef4522c(parsed);
+  let abs = Math.abs(left);
+  let compare = isNaN(left) ? isNaN(right) ? 0 : -1 : isNaN(right) ? 1 : left < right ? -1 : left > right ? 1 : 0;
+  let result;
+  let success = (v$0 = _83de0b9fe4433805(text, result), result = v$0[1], v$0[0]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_Int128Members_UseBigIntMappingsAndRuntimeImports()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text, Int128 left, Int128 right)
+                {
+                    var max = Int128.MaxValue;
+					var parsed = Int128.Parse(text);
+					var sum = left + right;
+					var quotient = left / right;
+					var shifted = left << 131;
+					var logical = left >>> 1;
+					var compare = left.CompareTo(right);
+                    var rotated = Int128.RotateLeft(left, 3);
+                    var magnitude = Int128.MaxMagnitude(left, right);
+                    Int128 result;
+                    var success = Int128.TryParse(text, out result);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let max = 170141183460469231731687303715884105727n;
+  let parsed = _e6ba6fd0fe70ed44(text);
+  let sum = BigInt.asIntN(128, left + right);
+  let quotient = _6357de67d5760485(left, right);
+  let shifted = BigInt.asIntN(128, left << BigInt(131 & 127));
+  let logical = BigInt.asIntN(128, BigInt.asUintN(128, left) >> BigInt(1 & 127));
+  let compare = left < right ? -1 : left > right ? 1 : 0;
+  let rotated = _d432cd8596dae24f(left, 3);
+  let magnitude = _829ea04f38a9820e(left, right);
+  let result;
+  let success = (v$0 = _14ac4f353ddae82c(text, result), result = v$0[1], v$0[0]);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_UInt128Members_UseBigIntMappingsAndRuntimeImports()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text, UInt128 left, UInt128 right)
+                {
+					var max = UInt128.MaxValue;
+					var parsed = UInt128.Parse(text);
+					var difference = left - right;
+					var quotient = left / right;
+					var shifted = left << 129;
+					var value = UInt128.Clamp(parsed, left, right);
+                    var rotated = UInt128.RotateRight(value, 7);
+                    UInt128 result;
+                    var success = UInt128.TryParse(text, out result);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let max = 340282366920938463463374607431768211455n;
+  let parsed = _30fed79ec71cc7e4(text);
+  let difference = BigInt.asUintN(128, left - right);
+  let quotient = _30e28339559d8888(left, right);
+  let shifted = BigInt.asUintN(128, left << BigInt(129 & 127));
+  let value = parsed < left ? left : parsed > right ? right : parsed;
+  let rotated = _a2bab5c9eaffb253(value, 7);
+  let result;
+  let success = (v$0 = _8845ce18c94ffbb4(text, result), result = v$0[1], v$0[0]);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_StringBuilderAppend_UsesInlineSequence()
 	{
 		var block = GetBlockOperation(@"

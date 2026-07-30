@@ -27,7 +27,7 @@ public static class DoubleModule
 	internal static bool IsNaNCore(Number value)
 		=> IsNaN(value);
 
-	private static bool TryParseCore(string? text, out Number value)
+	internal static bool TryParseCore(string? text, out Number value)
 	{
 		value = 0;
 		if (text == null)
@@ -62,7 +62,7 @@ public static class DoubleModule
 		return true;
 	}
 
-	private static bool AreEqualCore(Number left, Number right)
+	internal static bool AreEqualCore(Number left, Number right)
 	{
 		if (IsNaN(left) || IsNaN(right))
 			return IsNaN(left) && IsNaN(right);
@@ -70,7 +70,7 @@ public static class DoubleModule
 		return !(left < right) && !(left > right);
 	}
 
-	private static Number CompareCore(Number left, Number right)
+	internal static Number CompareCore(Number left, Number right)
 	{
 		if (IsNaN(left))
 			return IsNaN(right) ? 0 : -1;
@@ -84,7 +84,7 @@ public static class DoubleModule
 		return 0;
 	}
 
-	private static bool IsPow2Core(Number value)
+	internal static bool IsPow2Core(Number value)
 	{
 		if (!IsFiniteCore(value) || value <= 0)
 			return false;
@@ -107,7 +107,7 @@ public static class DoubleModule
 		return 0;
 	}
 
-	private static Number MaxMagnitudeCore(Number x, Number y)
+	internal static Number MaxMagnitudeCore(Number x, Number y)
 	{
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
@@ -123,7 +123,7 @@ public static class DoubleModule
 		return Math.MaxFn(x, y);
 	}
 
-	private static Number MinMagnitudeCore(Number x, Number y)
+	internal static Number MinMagnitudeCore(Number x, Number y)
 	{
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
@@ -139,7 +139,7 @@ public static class DoubleModule
 		return Math.MinFn(x, y);
 	}
 
-	private static Number MaxMagnitudeNumberCore(Number x, Number y)
+	internal static Number MaxMagnitudeNumberCore(Number x, Number y)
 	{
 		if (IsNaN(x))
 			return y;
@@ -149,7 +149,7 @@ public static class DoubleModule
 		return MaxMagnitudeCore(x, y);
 	}
 
-	private static Number MinMagnitudeNumberCore(Number x, Number y)
+	internal static Number MinMagnitudeNumberCore(Number x, Number y)
 	{
 		if (IsNaN(x))
 			return y;

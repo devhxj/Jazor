@@ -138,6 +138,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeListScenarios.All,
         .. ClrRuntimeDoubleScenarios.All,
         .. ClrRuntimeSingleScenarios.All,
+		.. ClrRuntimeNumericWidthScenarios.All,
         .. ClrRuntimeMathScenarios.All,
         .. ClrRuntimeBigIntegerScenarios.All,
         .. ClrRuntimeBigIntegerBinaryScenarios.All,

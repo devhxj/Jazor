@@ -371,7 +371,7 @@ internal static class MutationLoweringCaseCatalog
             {
               let v$0;
               let list = [0n];
-              let before = (v$0 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$0 - 1n), v$0);
+              let before = (v$0 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, BigInt.asIntN(128, v$0 - 1n)), v$0);
             }
             """),
         Case(
@@ -382,7 +382,7 @@ internal static class MutationLoweringCaseCatalog
             {
               let v$0;
               let list = [0n];
-              let after = (v$0 = _d389c31d59037b42(list, 0) + 1n, _c16a7960302ea054(list, 0, v$0), v$0);
+              let after = (v$0 = BigInt.asUintN(128, _d389c31d59037b42(list, 0) + 1n), _c16a7960302ea054(list, 0, v$0), v$0);
             }
             """),
         Case(
@@ -402,8 +402,9 @@ internal static class MutationLoweringCaseCatalog
             "Int128LocalPostfixIncrement",
             """
             {
+              let v$0;
               let value = 0n;
-              let before = value++;
+              let before = (v$0 = value, value = BigInt.asIntN(128, v$0 + 1n), v$0);
             }
             """),
         Case(
@@ -412,8 +413,9 @@ internal static class MutationLoweringCaseCatalog
             "UInt128LocalPrefixDecrement",
             """
             {
+              let v$0;
               let value = 0n;
-              let after = --value;
+              let after = (v$0 = BigInt.asUintN(128, value - 1n), value = v$0, v$0);
             }
             """)
     ];
