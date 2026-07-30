@@ -91,7 +91,18 @@ internal static class BigIntIntegerRuntime
 		return left / right;
 	}
 
-	internal static BigInt Remainder(BigInt left, BigInt right)
+	internal static BigInt RemainderSigned(BigInt left, BigInt right, BigInt minValue)
+	{
+		if (right == BigInt.Zero)
+			throw new Error("DivideByZeroException");
+		// C# integral remainder shares division's MinValue / -1 overflow rule.
+		if (left == minValue && right == -BigInt.One)
+			throw new Error("OverflowException");
+
+		return left % right;
+	}
+
+	internal static BigInt RemainderUnsigned(BigInt left, BigInt right)
 	{
 		if (right == BigInt.Zero)
 			throw new Error("DivideByZeroException");

@@ -166,7 +166,7 @@ public static class HalfModule
 
 	///<summary>Converts the string representation of a number in a specified style to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static Number _eb141686844d686e(string s, object style);
+	public extern static Number _eb141686844d686e(string s, global::System.Globalization.NumberStyles style);
 
 	///<summary>Converts the string representation of a number in a specified culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Import, "static System.Half.Parse(string, System.IFormatProvider)")]
@@ -175,11 +175,11 @@ public static class HalfModule
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _d2ce9dd0a5bd92a1(string s, object style, Intl.NumberFormat? provider);
+	public extern static Number _d2ce9dd0a5bd92a1(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _1ff73be01fb3f0ef(string s, object style, Intl.NumberFormat? provider);
+	public extern static Number _1ff73be01fb3f0ef(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Converts the string representation of a number to its half-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import, "static System.Half.TryParse(string, out System.Half)")]
@@ -201,11 +201,11 @@ public static class HalfModule
 
 	///<summary>Converts the string representation of a number to its half-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static System.Half.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out System.Half)")]
-	public extern static Array<object?> _3399b4ed1bac682f(string? s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _3399b4ed1bac682f(string? s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Converts the span representation of a number to its half-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static System.Half.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Half)")]
-	public extern static Array<object?> _d2f9d884842d79ba(string s, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _d2f9d884842d79ba(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Compares this instance to a specified object and returns an integer that indicates whether the value of this instance is less than, equal to, or greater than the value of the specified object.</summary>
 	[Jazor(Op.Import, "System.Half.CompareTo(object)")]
@@ -267,162 +267,162 @@ public static class HalfModule
 
 	///<summary>Explicitly converts a <see cref="T:System.Char" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(char)")]
-	public extern static Number _688015ce7a06d3a3();
+	public extern static Number _688015ce7a06d3a3(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Decimal" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(decimal)")]
-	public extern static Number _e01ce2a92bbacdf2();
+	public extern static Number _e01ce2a92bbacdf2(string value);
 
 	///<summary>An explicit operator to convert a <see cref="T:System.Double" /> value to a <see cref="T:System.Half" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(double)")]
-	public extern static Number _c15dbcdc3a5121a4();
+	public extern static Number _c15dbcdc3a5121a4(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int16" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(short)")]
-	public extern static Number _5235d3bf6d040ead();
+	public extern static Number _5235d3bf6d040ead(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int32" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(int)")]
-	public extern static Number _83d328837e0849f2();
+	public extern static Number _83d328837e0849f2(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int64" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(long)")]
-	public extern static Number _54cc35a643b3964a();
+	public extern static Number _54cc35a643b3964a(BigInt value);
 
 	///<summary>Explicitly converts a <see cref="T:System.IntPtr" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(nint)")]
-	public extern static Number _5ce9b896defd51a4();
+	public extern static Number _5ce9b896defd51a4(nint value);
 
 	///<summary>An explicit operator to convert a <see cref="T:System.Single" /> value to a <see cref="T:System.Half" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(float)")]
-	public extern static Number _c698784c1b652292();
+	public extern static Number _c698784c1b652292(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.UInt16" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(ushort)")]
-	public extern static Number _66978b13cd9c4d2c();
+	public extern static Number _66978b13cd9c4d2c(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.UInt32" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(uint)")]
-	public extern static Number _5fe8cbd0191a1261();
+	public extern static Number _5fe8cbd0191a1261(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.UInt64" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(ulong)")]
-	public extern static Number _7cde86a6784147b9();
+	public extern static Number _7cde86a6784147b9(BigInt value);
 
 	///<summary>Explicitly converts a <see cref="T:System.UIntPtr" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Half(nuint)")]
-	public extern static Number _dc71056543f828a2();
+	public extern static Number _dc71056543f828a2(nuint value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Byte" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator byte(System.Half)")]
-	public extern static Number _4eda3983a0238fe6();
+	public extern static Number _4eda3983a0238fe6(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked byte(System.Half)")]
-	public extern static Number _17127d121cc23462();
+	public extern static Number _17127d121cc23462(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Char" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator char(System.Half)")]
-	public extern static Number _a51addf0541517b0();
+	public extern static Number _a51addf0541517b0(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked char(System.Half)")]
-	public extern static Number _0ce814bef1ddcd6b();
+	public extern static Number _0ce814bef1ddcd6b(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Decimal" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator decimal(System.Half)")]
-	public extern static string _e7a6ea38b3750a1b();
+	public extern static string _e7a6ea38b3750a1b(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Int16" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator short(System.Half)")]
-	public extern static Number _f3478913297420e6();
+	public extern static Number _f3478913297420e6(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked short(System.Half)")]
-	public extern static Number _a97f96a06c928768();
+	public extern static Number _a97f96a06c928768(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Int32" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator int(System.Half)")]
-	public extern static Number _b72c1f59dbe70e00();
+	public extern static Number _b72c1f59dbe70e00(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked int(System.Half)")]
-	public extern static Number _70697b238a197bc2();
+	public extern static Number _70697b238a197bc2(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Int64" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator long(System.Half)")]
-	public extern static BigInt _1d590a5b31b1ced4();
+	public extern static BigInt _1d590a5b31b1ced4(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked long(System.Half)")]
-	public extern static BigInt _b245ca9db3ecb868();
+	public extern static BigInt _b245ca9db3ecb868(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Int128" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.Int128(System.Half)")]
-	public extern static BigInt _24b890794cafdd5b();
+	public extern static BigInt _24b890794cafdd5b(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked System.Int128(System.Half)")]
-	public extern static BigInt _ad10a10a383b6b8c();
+	public extern static BigInt _ad10a10a383b6b8c(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.IntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator nint(System.Half)")]
-	public extern static nint _5701bcbe09e64082();
+	public extern static nint _5701bcbe09e64082(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked nint(System.Half)")]
-	public extern static nint _408c2eab0d0d5948();
+	public extern static nint _408c2eab0d0d5948(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.SByte" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator sbyte(System.Half)")]
-	public extern static Number _0c7451f23f55d772();
+	public extern static Number _0c7451f23f55d772(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked sbyte(System.Half)")]
-	public extern static Number _d68498a3229ff278();
+	public extern static Number _d68498a3229ff278(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt16" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator ushort(System.Half)")]
-	public extern static Number _5506dadf5b952671();
+	public extern static Number _5506dadf5b952671(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked ushort(System.Half)")]
-	public extern static Number _d7ccb4b5709ce4ea();
+	public extern static Number _d7ccb4b5709ce4ea(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt32" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator uint(System.Half)")]
-	public extern static Number _6d14496c702de03c();
+	public extern static Number _6d14496c702de03c(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked uint(System.Half)")]
-	public extern static Number _8e635ebf316e6be7();
+	public extern static Number _8e635ebf316e6be7(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt64" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator ulong(System.Half)")]
-	public extern static BigInt _368654d3a116fc21();
+	public extern static BigInt _368654d3a116fc21(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked ulong(System.Half)")]
-	public extern static BigInt _8d52fe89e6ca9452();
+	public extern static BigInt _8d52fe89e6ca9452(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt128" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator System.UInt128(System.Half)")]
-	public extern static BigInt _de1cee73a929bf8e();
+	public extern static BigInt _de1cee73a929bf8e(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked System.UInt128(System.Half)")]
-	public extern static BigInt _bd3cc1c48165dbab();
+	public extern static BigInt _bd3cc1c48165dbab(Number value);
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator nuint(System.Half)")]
-	public extern static nuint _a3f18a071db79160();
+	public extern static nuint _a3f18a071db79160(Number value);
 
 	[Jazor(Op.Discard ,"static System.Half.explicit operator checked nuint(System.Half)")]
-	public extern static nuint _bb3b3896ffce705a();
+	public extern static nuint _bb3b3896ffce705a(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.Byte" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.implicit operator System.Half(byte)")]
-	public extern static Number _b5ec2ce7adbc5cd7();
+	public extern static Number _b5ec2ce7adbc5cd7(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.SByte" /> value to its nearest representable half-precision floating-point value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.implicit operator System.Half(sbyte)")]
-	public extern static Number _e9ab5db75451afaa();
+	public extern static Number _e9ab5db75451afaa(Number value);
 
 	///<summary>An explicit operator to convert a <see cref="T:System.Half" /> value to a <see cref="T:System.Double" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator double(System.Half)")]
-	public extern static Number _0cce99536d7741bb();
+	public extern static Number _0cce99536d7741bb(Number value);
 
 	///<summary>An explicit operator to convert a <see cref="T:System.Half" /> value to a <see cref="T:System.Single" />.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator float(System.Half)")]
-	public extern static Number _e5c3410a6fc7ae9a();
+	public extern static Number _e5c3410a6fc7ae9a(Number value);
 
 	///<summary>Adds two values together to compute their sum.</summary>
 	[Jazor(Op.Inline, "static System.Half.operator +(System.Half, System.Half)", "Math.f16round(__arg1 + __arg2)")]
@@ -475,11 +475,11 @@ public static class HalfModule
 
 	///<summary>Converts a value to a specified integer type using saturation on overflow</summary>
 	[Jazor(Op.Discard ,"static System.Half.ConvertToInteger<TInteger>(System.Half)")]
-	public extern static TInteger _b788b9aa0fe2ff4c<TInteger>(Number value);
+	public extern static TInteger _b788b9aa0fe2ff4c<TInteger>(Number value)		where TInteger : global::System.Numerics.IBinaryInteger<TInteger>;
 
 	///<summary>Converts a value to a specified integer type using platform specific behavior on overflow.</summary>
 	[Jazor(Op.Discard ,"static System.Half.ConvertToIntegerNative<TInteger>(System.Half)")]
-	public extern static TInteger _e9ab341ff9fe6331<TInteger>(Number value);
+	public extern static TInteger _e9ab341ff9fe6331<TInteger>(Number value)		where TInteger : global::System.Numerics.IBinaryInteger<TInteger>;
 
 	///<summary>Computes the floor of a value.</summary>
 	[Jazor(Op.Inline, "static System.Half.Floor(System.Half)", "Math.floor(__arg1)")]
@@ -496,11 +496,11 @@ public static class HalfModule
 
 	///<summary>Rounds a value to the nearest integer using the specified rounding mode.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Round(System.Half, System.MidpointRounding)")]
-	public extern static Number _a3bd625b8647d19e(Number x, object mode);
+	public extern static Number _a3bd625b8647d19e(Number x, global::System.MidpointRounding mode);
 
 	///<summary>Rounds a value to a specified number of fractional-digits using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
 	[Jazor(Op.Discard ,"static System.Half.Round(System.Half, int, System.MidpointRounding)")]
-	public extern static Number _df8d144bad4e8a0b(Number x, Number digits, object mode);
+	public extern static Number _df8d144bad4e8a0b(Number x, Number digits, global::System.MidpointRounding mode);
 
 	///<summary>Truncates a value.</summary>
 	[Jazor(Op.Inline, "static System.Half.Truncate(System.Half)", "Math.trunc(__arg1)")]
@@ -678,15 +678,18 @@ public static class HalfModule
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.Half.CreateChecked<TOther>(TOther)")]
-	public extern static Number _d43cfd4432bc935c<TOther>(object value);
+	public extern static Number _d43cfd4432bc935c<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Creates an instance of the current type from a value, saturating any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.Half.CreateSaturating<TOther>(TOther)")]
-	public extern static Number _9503b27b5a950674<TOther>(object value);
+	public extern static Number _9503b27b5a950674<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Creates an instance of the current type from a value, truncating any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.Half.CreateTruncating<TOther>(TOther)")]
-	public extern static Number _9b43d0ce280d7090<TOther>(object value);
+	public extern static Number _9b43d0ce280d7090<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Determines if a value represents an even integral number.</summary>
 	[Jazor(Op.Inline, "static System.Half.IsEvenInteger(System.Half)", "(__arg1 % 2 === 0)")]
@@ -852,11 +855,11 @@ public static class HalfModule
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static Number _2f8671997d0c4a70(Uint8Array utf8Text, object style, Intl.NumberFormat? provider);
+	public extern static Number _2f8671997d0c4a70(Uint8Array utf8Text, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Half)")]
-	public extern static Array<object?> _5cc398e88720c483(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, Number result);
+	public extern static Array<object?> _5cc398e88720c483(Uint8Array utf8Text, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, Number result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]

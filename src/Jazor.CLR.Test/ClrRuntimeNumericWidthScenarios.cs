@@ -59,7 +59,7 @@ internal static class ClrRuntimeNumericWidthScenarios
 		Failure("int128.div-rem.minimum-overflow", "static System.Int128.DivRem(System.Int128, System.Int128)", Int128ModulePath, [Big(Int128Min), Big(-1)], "OverflowException"),
 		Success("int128.operator.divide.truncates-toward-zero", "static System.Int128.operator /(System.Int128, System.Int128)", Int128ModulePath, [Big(-17), Big(5)], Big(-3)),
 		Failure("int128.operator.divide.minimum-overflow", "static System.Int128.operator /(System.Int128, System.Int128)", Int128ModulePath, [Big(Int128Min), Big(-1)], "OverflowException"),
-		Success("int128.operator.remainder.minimum-by-minus-one", "static System.Int128.operator %(System.Int128, System.Int128)", Int128ModulePath, [Big(Int128Min), Big(-1)], Big(0)),
+		Failure("int128.operator.remainder.minimum-overflow", "static System.Int128.operator %(System.Int128, System.Int128)", Int128ModulePath, [Big(Int128Min), Big(-1)], "OverflowException"),
 		Failure("int128.operator.remainder.zero-divisor", "static System.Int128.operator %(System.Int128, System.Int128)", Int128ModulePath, [Big(17), Big(0)], "DivideByZeroException"),
 		Success("int128.leading-zero-count.one", "static System.Int128.LeadingZeroCount(System.Int128)", Int128ModulePath, [Big(1)], Big(127)),
 		Success("int128.pop-count.minus-one", "static System.Int128.PopCount(System.Int128)", Int128ModulePath, [Big(-1)], Big(128)),

@@ -47,6 +47,62 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Clamp(System.UInt128, System.UInt128, System.UInt128)", Op.Import, "System/UInt128Module.js");
 	}
 
+	[TestMethod]
+	public void GeneratedNumericScaffolds_PreserveStrongConversionAndGenericOperands()
+	{
+		foreach (var moduleType in new[]
+		{
+			typeof(Jazor.CLR.HalfModule),
+			typeof(Jazor.CLR.Int128Module),
+			typeof(Jazor.CLR.UInt128Module)
+		})
+		{
+			var methods = moduleType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+			var conversions = methods.Where(method =>
+			{
+				var member = method.GetCustomAttribute<JazorAttribute>()?.Member;
+				return member?.Contains(".implicit operator ", StringComparison.Ordinal) == true ||
+					member?.Contains(".explicit operator ", StringComparison.Ordinal) == true;
+			});
+
+			Assert.IsNotEmpty(conversions, moduleType.Name);
+			foreach (var conversion in conversions)
+				Assert.HasCount(1, conversion.GetParameters(), conversion.Name);
+
+			foreach (var methodName in new[] { "CreateChecked", "CreateSaturating", "CreateTruncating" })
+			{
+				var method = methods.Single(candidate =>
+					candidate.GetCustomAttribute<JazorAttribute>()?.Member.Contains($".{methodName}<", StringComparison.Ordinal) == true);
+				Assert.IsTrue(method.GetParameters()[0].ParameterType.IsGenericParameter, methodName);
+				var genericParameter = method.GetGenericArguments().Single();
+				Assert.IsTrue(
+					genericParameter.GetGenericParameterConstraints().Any(constraint =>
+						constraint.IsGenericType &&
+						constraint.GetGenericTypeDefinition() == typeof(System.Numerics.INumberBase<>)),
+					methodName);
+			}
+		}
+	}
+
+	[TestMethod]
+	public void GeneratedNumericScaffolds_PreserveNumberStylesType()
+	{
+		foreach (var moduleType in new[]
+		{
+			typeof(Jazor.CLR.HalfModule),
+			typeof(Jazor.CLR.Int128Module),
+			typeof(Jazor.CLR.UInt128Module)
+		})
+		{
+			var parse = moduleType
+				.GetMethods(BindingFlags.Public | BindingFlags.Static)
+				.Single(method => method.GetCustomAttribute<JazorAttribute>()?.Member ==
+					$"static {GetClrTypeName(moduleType)}.Parse(string, System.Globalization.NumberStyles)");
+
+			Assert.AreEqual(typeof(System.Globalization.NumberStyles), parse.GetParameters()[1].ParameterType);
+		}
+	}
+
 	private static void AssertTypeAlias(Type type, string member, string alias)
 	{
 		var attribute = type.GetCustomAttribute<JazorAttribute>();
@@ -68,4 +124,11 @@ public sealed class NumericWidthModuleWhitelistTests
 		if (modulePath is not null)
 			Assert.AreEqual(modulePath, ClrRuntimeMappingCatalog.GetImport(member).ModulePath, member);
 	}
+
+	private static string GetClrTypeName(Type moduleType)
+		=> moduleType == typeof(Jazor.CLR.HalfModule)
+			? "System.Half"
+			: moduleType == typeof(Jazor.CLR.Int128Module)
+				? "System.Int128"
+				: "System.UInt128";
 }

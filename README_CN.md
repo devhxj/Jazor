@@ -38,8 +38,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ## 最新更新
 
-### 2026-07-29
+### 2026-07-30
 
+- CLR 映射现支持 `Half`、`Int128` 和 `UInt128`，覆盖 Number/BigInt 载体、固定宽度 128 位运算、解析、比较、位操作，以及经过运行时检查的除法和余数溢出行为。
 - `ECMAScript.Style` 是 ECMAScript 生态中独立的强类型 CSS-in-JS 包。它提供统一的小写 `css` 门面、基于原生 union 的值域、类型化组合函数、显式 `raw(...)` 逃生口，以及唯一的 debug 入口 `style.mjs`。
 - RazorVue 直接渲染现会保留动态事件 modifier 条件，并支持包含根级局部声明的 helper 组合输出。
 - CLR runtime 模块会在 hash 后的 JavaScript helper 声明前标注原始 CLR 成员名，便于检查包内产物。

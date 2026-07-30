@@ -70,7 +70,7 @@ public static class UInt128Module
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.Parse(string, System.Globalization.NumberStyles)")]
-	public extern static BigInt _0f1308db09adb315(string s, object style);
+	public extern static BigInt _0f1308db09adb315(string s, global::System.Globalization.NumberStyles style);
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.Parse(string, System.IFormatProvider)")]
@@ -79,11 +79,11 @@ public static class UInt128Module
 
 	///<summary>Parses a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.Parse(string, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static BigInt _a58539dfaa0aa547(string s, object style, Intl.NumberFormat? provider);
+	public extern static BigInt _a58539dfaa0aa547(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Parses a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.Parse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static BigInt _0080af67cc571b72(string s, object style, Intl.NumberFormat? provider);
+	public extern static BigInt _0080af67cc571b72(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.TryParse(string, out System.UInt128)")]
@@ -100,188 +100,188 @@ public static class UInt128Module
 
 	///<summary>Tries to parse a string into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out System.UInt128)")]
-	public extern static Array<object?> _48fc1f3242ea3e1e(string? s, object style, Intl.NumberFormat? provider, BigInt result);
+	public extern static Array<object?> _48fc1f3242ea3e1e(string? s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Tries to parse a span of characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.UInt128)")]
-	public extern static Array<object?> _07f5c4340bb74419(string s, object style, Intl.NumberFormat? provider, BigInt result);
+	public extern static Array<object?> _07f5c4340bb74419(string s, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Byte" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator byte(System.UInt128)")]
-	public extern static Number _ec72a9ccd5bd9a8d();
+	public extern static Number _ec72a9ccd5bd9a8d(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked byte(System.UInt128)")]
-	public extern static Number _64e60de5b1e03760();
+	public extern static Number _64e60de5b1e03760(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Char" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator char(System.UInt128)")]
-	public extern static Number _e15ea70aeec221be();
+	public extern static Number _e15ea70aeec221be(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked char(System.UInt128)")]
-	public extern static Number _b68867a4bbf792ed();
+	public extern static Number _b68867a4bbf792ed(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Decimal" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator decimal(System.UInt128)")]
-	public extern static string _cfc7a729e04a71ab();
+	public extern static string _cfc7a729e04a71ab(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Double" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator double(System.UInt128)")]
-	public extern static Number _cd6d53ea42e52f42();
+	public extern static Number _cd6d53ea42e52f42(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Half" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.Half(System.UInt128)")]
-	public extern static Number _ebc69a5a022fe3e9();
+	public extern static Number _ebc69a5a022fe3e9(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int16" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator short(System.UInt128)")]
-	public extern static Number _00a7733415bd9a50();
+	public extern static Number _00a7733415bd9a50(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked short(System.UInt128)")]
-	public extern static Number _5efef087d1235b8b();
+	public extern static Number _5efef087d1235b8b(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int32" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator int(System.UInt128)")]
-	public extern static Number _0ab9aeb11107ae84();
+	public extern static Number _0ab9aeb11107ae84(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked int(System.UInt128)")]
-	public extern static Number _ab4813fe5941ad49();
+	public extern static Number _ab4813fe5941ad49(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int64" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator long(System.UInt128)")]
-	public extern static BigInt _b230f48381ed749f();
+	public extern static BigInt _b230f48381ed749f(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked long(System.UInt128)")]
-	public extern static BigInt _191ebf43930db2a5();
+	public extern static BigInt _191ebf43930db2a5(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int128" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.Int128(System.UInt128)")]
-	public extern static BigInt _a8ded488b275f658();
+	public extern static BigInt _a8ded488b275f658(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.Int128(System.UInt128)")]
-	public extern static BigInt _c572f7b29eaf324c();
+	public extern static BigInt _c572f7b29eaf324c(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.IntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator nint(System.UInt128)")]
-	public extern static nint _b74d6c6f2fe3373f();
+	public extern static nint _b74d6c6f2fe3373f(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked nint(System.UInt128)")]
-	public extern static nint _b810b3011b0b57b0();
+	public extern static nint _b810b3011b0b57b0(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.SByte" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator sbyte(System.UInt128)")]
-	public extern static Number _a5c6bf0c046035c1();
+	public extern static Number _a5c6bf0c046035c1(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked sbyte(System.UInt128)")]
-	public extern static Number _95c576d9e4841566();
+	public extern static Number _95c576d9e4841566(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Single" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator float(System.UInt128)")]
-	public extern static Number _2d1b34588d4f3a11();
+	public extern static Number _2d1b34588d4f3a11(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UInt16" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator ushort(System.UInt128)")]
-	public extern static Number _7cb9a373a2b731ae();
+	public extern static Number _7cb9a373a2b731ae(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked ushort(System.UInt128)")]
-	public extern static Number _b68ba902309cfb9a();
+	public extern static Number _b68ba902309cfb9a(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UInt32" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator uint(System.UInt128)")]
-	public extern static Number _6a569faa11d6516c();
+	public extern static Number _6a569faa11d6516c(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked uint(System.UInt128)")]
-	public extern static Number _4b86a17a8f47b33f();
+	public extern static Number _4b86a17a8f47b33f(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UInt64" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator ulong(System.UInt128)")]
-	public extern static BigInt _f9acee955d63d389();
+	public extern static BigInt _f9acee955d63d389(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked ulong(System.UInt128)")]
-	public extern static BigInt _b7d11ef0703deabf();
+	public extern static BigInt _b7d11ef0703deabf(BigInt value);
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator nuint(System.UInt128)")]
-	public extern static nuint _4ed9a24ef89a2ec1();
+	public extern static nuint _4ed9a24ef89a2ec1(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked nuint(System.UInt128)")]
-	public extern static nuint _4f5d29c8feefce8e();
+	public extern static nuint _4f5d29c8feefce8e(BigInt value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Decimal" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(decimal)")]
-	public extern static BigInt _7a73b169cb4a8694();
+	public extern static BigInt _7a73b169cb4a8694(string value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Double" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(double)")]
-	public extern static BigInt _8a2ad347ec233b35();
+	public extern static BigInt _8a2ad347ec233b35(Number value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(double)")]
-	public extern static BigInt _5d464c2acf139edb();
+	public extern static BigInt _5d464c2acf139edb(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int16" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(short)")]
-	public extern static BigInt _1260da042a15cd4d();
+	public extern static BigInt _1260da042a15cd4d(Number value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(short)")]
-	public extern static BigInt _958e84ffc74ece86();
+	public extern static BigInt _958e84ffc74ece86(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int32" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(int)")]
-	public extern static BigInt _3fc4a35a82073e71();
+	public extern static BigInt _3fc4a35a82073e71(Number value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(int)")]
-	public extern static BigInt _06d213d11ddf681c();
+	public extern static BigInt _06d213d11ddf681c(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int64" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(long)")]
-	public extern static BigInt _326147fc1f07f877();
+	public extern static BigInt _326147fc1f07f877(BigInt value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(long)")]
-	public extern static BigInt _1ef649fc443738a2();
+	public extern static BigInt _1ef649fc443738a2(BigInt value);
 
 	///<summary>Explicitly converts a <see cref="T:System.IntPtr" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(nint)")]
-	public extern static BigInt _09f191a4670066de();
+	public extern static BigInt _09f191a4670066de(nint value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(nint)")]
-	public extern static BigInt _af6df204728f788a();
+	public extern static BigInt _af6df204728f788a(nint value);
 
 	///<summary>Explicitly converts a <see cref="T:System.SByte" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(sbyte)")]
-	public extern static BigInt _53303fb5506255e9();
+	public extern static BigInt _53303fb5506255e9(Number value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(sbyte)")]
-	public extern static BigInt _8366585a071ba8b1();
+	public extern static BigInt _8366585a071ba8b1(Number value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Single" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator System.UInt128(float)")]
-	public extern static BigInt _5ac67fecfe01fee0();
+	public extern static BigInt _5ac67fecfe01fee0(Number value);
 
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator checked System.UInt128(float)")]
-	public extern static BigInt _dec2fe2225e51e70();
+	public extern static BigInt _dec2fe2225e51e70(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.Byte" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(byte)")]
-	public extern static BigInt _98daec1f69c50f9c();
+	public extern static BigInt _98daec1f69c50f9c(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.Char" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(char)")]
-	public extern static BigInt _5e848b2f01adace3();
+	public extern static BigInt _5e848b2f01adace3(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UInt16" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(ushort)")]
-	public extern static BigInt _6fab8bffd4b7f89c();
+	public extern static BigInt _6fab8bffd4b7f89c(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UInt32" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(uint)")]
-	public extern static BigInt _fb1429c669cf366b();
+	public extern static BigInt _fb1429c669cf366b(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UInt64" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(ulong)")]
-	public extern static BigInt _bff36faddf999794();
+	public extern static BigInt _bff36faddf999794(BigInt value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UIntPtr" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.implicit operator System.UInt128(nuint)")]
-	public extern static BigInt _c7000f2dfee0777c();
+	public extern static BigInt _c7000f2dfee0777c(nuint value);
 
 	///<summary>Adds two values together to compute their sum.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.operator +(System.UInt128, System.UInt128)", "BigInt.asUintN(128, __arg1 + __arg2)")]
@@ -406,7 +406,7 @@ public static class UInt128Module
 	///<summary>Divides two values together to compute their modulus or remainder.</summary>
 	[Jazor(Op.Import, "static System.UInt128.operator %(System.UInt128, System.UInt128)")]
 	public static BigInt _4541585272909795(BigInt left, BigInt right)
-		=> BigIntIntegerRuntime.Remainder(left, right);
+		=> BigIntIntegerRuntime.RemainderUnsigned(left, right);
 
 	///<summary>Multiplies two values together to compute their product.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.operator *(System.UInt128, System.UInt128)", "BigInt.asUintN(128, __arg1 * __arg2)")]
@@ -444,15 +444,18 @@ public static class UInt128Module
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.CreateChecked<TOther>(TOther)")]
-	public extern static BigInt _6b99cde9ef76edf1<TOther>(object value);
+	public extern static BigInt _6b99cde9ef76edf1<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Creates an instance of the current type from a value, saturating any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.CreateSaturating<TOther>(TOther)")]
-	public extern static BigInt _bc9cc7899a1e35e1<TOther>(object value);
+	public extern static BigInt _bc9cc7899a1e35e1<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Creates an instance of the current type from a value, truncating any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.CreateTruncating<TOther>(TOther)")]
-	public extern static BigInt _97c9e3166e089937<TOther>(object value);
+	public extern static BigInt _97c9e3166e089937<TOther>(TOther value)
+		where TOther : global::System.Numerics.INumberBase<TOther>;
 
 	///<summary>Determines if a value represents an even integral number.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.IsEvenInteger(System.UInt128)", "(__arg1 % 2n === 0n)")]
@@ -509,11 +512,11 @@ public static class UInt128Module
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static BigInt _3a273da9611bdfc5(Uint8Array utf8Text, object style, Intl.NumberFormat? provider);
+	public extern static BigInt _3a273da9611bdfc5(Uint8Array utf8Text, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out System.UInt128)")]
-	public extern static Array<object?> _40d6510086406c74(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, BigInt result);
+	public extern static Array<object?> _40d6510086406c74(Uint8Array utf8Text, global::System.Globalization.NumberStyles style, Intl.NumberFormat? provider, BigInt result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
