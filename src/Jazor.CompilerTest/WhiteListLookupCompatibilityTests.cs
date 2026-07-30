@@ -7,6 +7,102 @@ namespace Jazor.ComplierTest;
 public sealed class WhiteListLookupCompatibilityTests
 {
     [TestMethod]
+    public void WhiteListLookup_GenericParameterNormalization_MatchesEquivalentDeclaredParameterNames()
+    {
+        const string candidateKey = "LookupTests.Host<T>.Use(T)";
+        const string lookupKey = "LookupTests.Host<TValue>.Use(TValue)";
+        var mappings = new Dictionary<string, string>
+        {
+            [candidateKey] = "allowed"
+        };
+
+        var result = InvokeStringLookup(
+            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
+            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
+            "TryGetValue",
+            mappings,
+            lookupKey,
+            out var matchedKey,
+            out var matchedValue);
+
+        Assert.IsTrue(result);
+        Assert.AreEqual(candidateKey, matchedKey);
+        Assert.AreEqual("allowed", matchedValue);
+
+        mappings[candidateKey] = "updated";
+        Assert.IsTrue(InvokeStringLookup(
+            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
+            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
+            "TryGetValue",
+            mappings,
+            lookupKey,
+            out matchedKey,
+            out matchedValue));
+        Assert.AreEqual(candidateKey, matchedKey);
+        Assert.AreEqual("updated", matchedValue);
+    }
+
+    [TestMethod]
+    public void WhiteListLookup_GenericParameterIndex_IsScopedToMapping()
+    {
+        const string lookupKey = "LookupTests.Host<TValue>.Use(TValue)";
+        var firstMappings = new Dictionary<string, string>
+        {
+            ["LookupTests.Host<T>.Use(T)"] = "first"
+        };
+        var secondMappings = new Dictionary<string, string>
+        {
+            ["LookupTests.Host<TItem>.Use(TItem)"] = "second"
+        };
+        var lookupType = typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
+            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup.");
+
+        Assert.IsTrue(InvokeStringLookup(
+            lookupType,
+            "TryGetValue",
+            firstMappings,
+            lookupKey,
+            out var firstMatchedKey,
+            out var firstMatchedValue));
+        Assert.IsTrue(InvokeStringLookup(
+            lookupType,
+            "TryGetValue",
+            secondMappings,
+            lookupKey,
+            out var secondMatchedKey,
+            out var secondMatchedValue));
+
+        Assert.AreEqual("LookupTests.Host<T>.Use(T)", firstMatchedKey);
+        Assert.AreEqual("first", firstMatchedValue);
+        Assert.AreEqual("LookupTests.Host<TItem>.Use(TItem)", secondMatchedKey);
+        Assert.AreEqual("second", secondMatchedValue);
+    }
+
+    [TestMethod]
+    public void WhiteListLookup_GenericParameterIndex_PreservesFirstEquivalentMapping()
+    {
+        const string firstKey = "LookupTests.Host<T>.Use(T)";
+        var mappings = new Dictionary<string, string>
+        {
+            [firstKey] = "first",
+            ["LookupTests.Host<TItem>.Use(TItem)"] = "second"
+        };
+
+        var result = InvokeStringLookup(
+            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
+            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
+            "TryGetValue",
+            mappings,
+            "LookupTests.Host<TValue>.Use(TValue)",
+            out var matchedKey,
+            out var matchedValue);
+
+        Assert.IsTrue(result);
+        Assert.AreEqual(firstKey, matchedKey);
+        Assert.AreEqual("first", matchedValue);
+    }
+
+    [TestMethod]
     public void WhiteListLookup_GenericParameterNormalization_DoesNotRewriteQualifiedConcreteTypeNames()
     {
         const string candidateKey = "LookupTests.Host<T>.Use(LookupTests.Types.T)";

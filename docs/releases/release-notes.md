@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2026-07-30
+
+- Generic whitelist compatibility lookup now reuses indexed key shapes, preventing ordinary generic method calls from repeatedly scanning the full CLR member catalog during compilation.
+
 ## 2026-07-29
 
 - `Jazor.Css` now supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
