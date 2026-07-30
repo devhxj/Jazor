@@ -617,27 +617,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     }
 
     private static ITypeSymbol? TryResolveWhiteListAliasType(Compilation compilation, string displayName)
-    {
-        return displayName switch
-        {
-            "bool" => compilation.GetSpecialType(SpecialType.System_Boolean),
-            "byte" => compilation.GetSpecialType(SpecialType.System_Byte),
-            "char" => compilation.GetSpecialType(SpecialType.System_Char),
-            "decimal" => compilation.GetSpecialType(SpecialType.System_Decimal),
-            "double" => compilation.GetSpecialType(SpecialType.System_Double),
-            "float" => compilation.GetSpecialType(SpecialType.System_Single),
-            "int" => compilation.GetSpecialType(SpecialType.System_Int32),
-            "long" => compilation.GetSpecialType(SpecialType.System_Int64),
-            "object" => compilation.GetSpecialType(SpecialType.System_Object),
-            "sbyte" => compilation.GetSpecialType(SpecialType.System_SByte),
-            "short" => compilation.GetSpecialType(SpecialType.System_Int16),
-            "string" => compilation.GetSpecialType(SpecialType.System_String),
-            "uint" => compilation.GetSpecialType(SpecialType.System_UInt32),
-            "ulong" => compilation.GetSpecialType(SpecialType.System_UInt64),
-            "ushort" => compilation.GetSpecialType(SpecialType.System_UInt16),
-            _ => compilation.GetTypeByMetadataName(displayName)
-        };
-    }
+        => compilation.GetTypeByMetadataName(displayName);
 
     private static bool IsRuntimeAliasAssignableToTarget(ITypeSymbol candidateType, ITypeSymbol targetType)
     {
