@@ -129,6 +129,7 @@ public sealed class SemanticWalkerPatternProtocolTests
                 }
 
                 private static LengthBuffer GetLengthBuffer() => new();
+                private static int GetNumber() => 1;
                 private static void Consume<T>(T value) { }
 
             {{methods}}
@@ -214,6 +215,20 @@ internal static class PatternProtocolCatalog
             "buffer.count === 3",
             "buffer[0] === 1",
             "buffer[2] === 3"),
+        Success(
+            "count.trailing-element",
+            "carrier=custom;length=Count;indexer=int;slice=discard;position=middle;length=cached",
+            """
+                        var buffer = new CountBuffer();
+                        bool matches = buffer is [1, .., 3];
+                """,
+            "v$0 = buffer.count",
+            "v$0 >= 2",
+            "buffer[0] === 1",
+            "buffer[v$0 - 1] === 3") with
+            {
+                SingleOccurrenceJavaScriptFragments = ["buffer.count"]
+            },
         Success(
             "length.declaration-bindings",
             "carrier=custom;length=Length;indexer=int;patterns=declaration",
@@ -365,7 +380,37 @@ internal static class PatternProtocolCatalog
             "v$0 < 10") with
             {
                 SingleOccurrenceJavaScriptFragments = ["holder.value"]
-            }
+            },
+        Success(
+            "recursive.value-type-empty",
+            "carrier=int;input=invocation;pattern=empty-recursive;result=constant-true;evaluation=preserved",
+            """
+                        bool matches = GetNumber() is { };
+                        Consume(matches);
+            """,
+            "PatternProtocolScenarios.getNumber()",
+            "true") with
+            {
+                SingleOccurrenceJavaScriptFragments = ["PatternProtocolScenarios.getNumber()"]
+            },
+        Success(
+            "recursive.nullable-value-empty",
+            "carrier=int?;input=nullable-local;pattern=empty-recursive;result=runtime-non-null",
+            """
+                        int? value = GetNumber();
+                        bool matches = value is { };
+                        Consume(matches);
+            """,
+            "typeof value === \"number\""),
+        Success(
+            "recursive.boxed-value-empty",
+            "carrier=object;input=boxed-local;pattern=int-empty-recursive;result=runtime-narrowing",
+            """
+                        object value = GetNumber();
+                        bool matches = value is int { };
+                        Consume(matches);
+            """,
+            "typeof value === \"number\"")
     ];
 
     public static IReadOnlyList<PatternProtocolFailureCase> FailureCases { get; } =

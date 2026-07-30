@@ -354,7 +354,8 @@ public partial class SemanticWalker
 		if (!operation.MatchedType.IsAnonymousType &&
 			!operation.MatchedType.IsTupleType &&
 			!(operation.MatchedType is INamedTypeSymbol matchedNamedType && IsStructuralType(matchedNamedType)) &&
-			operation.MatchedType.SpecialType != SpecialType.System_Object)
+			operation.MatchedType.SpecialType != SpecialType.System_Object &&
+			!IsRecursivePatternTypeMatchStaticallyTrue(operation))
 		{
 			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr, context: patternArgument);
 			conditions.Add(typeCheck);
@@ -823,6 +824,17 @@ public partial class SemanticWalker
 		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
 	}
 
+	private static bool IsRecursivePatternTypeMatchStaticallyTrue(IRecursivePatternOperation operation)
+	{
+		var inputType = operation.InputType;
+		// Exact non-nullable value inputs cannot fail the C# type test. Carrier-backed values still
+		// need their inferred runtime discriminator because the carrier is part of the CLR mapping contract.
+		return inputType?.IsValueType == true &&
+			!IsNullableType(inputType) &&
+			!TryGetWhiteListRuntimeValueCarrier(inputType, out _) &&
+			SymbolEqualityComparer.Default.Equals(inputType, operation.MatchedType);
+	}
+
 	private Expression BuildListPatternCarrierCheck(IListPatternOperation operation, Expression targetExpr, SenseArgument argument)
 	{
 		var carrierType = operation.InputType ?? operation.NarrowedType;
@@ -1067,18 +1079,11 @@ public partial class SemanticWalker
 				hostType ?? associatedProperty.ContainingType);
 		}
 
-		return symbol switch
+		// 有效 list pattern 的 Length/Count 与 indexer 都是属性；上面已把它们归一化为 getter。
+		// 这里剩余的 method 形态由 Roslyn 的绑定结果直接提供，不接受 field/raw-property 猜测。
+		if (symbol is IMethodSymbol method)
 		{
-			IPropertySymbol property => BuildListPatternPropertyAccess(
-				ownerOperation,
-				lookupSymbol,
-				property,
-				targetExpr,
-				arguments,
-				alias,
-				usage,
-				hostType ?? property.ContainingType),
-			IMethodSymbol method => BuildMethodCallExpression(
+			return BuildMethodCallExpression(
 				ownerOperation,
 				method,
 				ownerOperation.Syntax,
@@ -1086,18 +1091,12 @@ public partial class SemanticWalker
 				targetExpr,
 				arguments,
 				argument,
-				hostType ?? method.ContainingType),
-			IFieldSymbol field => BuildListPatternFieldAccess(
-				ownerOperation,
-				field,
-				targetExpr,
-				alias,
-				usage,
-				hostType ?? field.ContainingType),
-			_ => HandleTransformationFailure<Expression>(
-				ownerOperation,
-				$"Unsupported symbol kind '{symbol.Kind}' for {usage}.")
-		};
+				hostType ?? method.ContainingType);
+		}
+
+		return HandleTransformationFailure<Expression>(
+			ownerOperation,
+			$"Unsupported symbol kind '{symbol.Kind}' for {usage}.");
 	}
 
 	private Expression BuildListPatternPropertyAccess(
@@ -1132,23 +1131,6 @@ public partial class SemanticWalker
 			? Util.GetConfigOrSymbolName(property)
 			: alias;
 		return new MemberExpression(targetExpr, new Identifier(propertyName!), computed: false, optional: false);
-	}
-
-	private Expression BuildListPatternFieldAccess(
-		IOperation ownerOperation,
-		IFieldSymbol field,
-		Expression targetExpr,
-		string? alias,
-		string usage,
-		ITypeSymbol? hostType)
-	{
-		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(ownerOperation, field, usage, hostType ?? field.ContainingType);
-
-		var fieldName = string.IsNullOrEmpty(alias)
-			? Util.GetConfigOrSymbolName(field)
-			: alias;
-		return new MemberExpression(targetExpr, new Identifier(fieldName!), computed: false, optional: false);
 	}
 
 	private List<Expression> HandleUnsupportedSliceArguments(IOperation operation, string message)
