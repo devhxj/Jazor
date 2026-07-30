@@ -2385,66 +2385,66 @@ public partial class SemanticWalker
 	/// </remarks>
 	public override Node? VisitAttribute(IAttributeOperation operation, SenseArgument argument)
 	{
-		// 只处理实现了 IECMAScript 接口的特性,IECMAScript是一个约定，所以写死名称
 		if (operation.Operation is not IObjectCreationOperation creationOp)
 			return null;
 
-		if(creationOp.Type?.AllInterfaces.Any(i => i.Name == "IECMAScript") != true)
+		if (creationOp.Type?.AllInterfaces.Any(static interfaceType =>
+			string.Equals(interfaceType.ToDisplayString(Format.NameFormat), "ECMAScript.IECMAScript", StringComparison.Ordinal)) != true)
 			return null;
 
-		if (operation.Syntax is not AttributeSyntax attributeSyntax)
-			return HandleTransformationFailure<Node>(operation, "Attribute syntax node is not available");
-
-		// 获取特性名称（移除 Attribute 后缀）
-		var attributeName = attributeSyntax.Name?.ToString();
-		if (string.IsNullOrEmpty(attributeName))
-			return HandleTransformationFailure<Node>(operation, "Cannot determine attribute name");
-
-		if (attributeName!.EndsWith("Attribute"))
+		var attributeName = Util.GetConfigOrSymbolName(creationOp.Type);
+		if (attributeName.EndsWith("Attribute", StringComparison.Ordinal))
 			attributeName = attributeName.Substring(0, attributeName.Length - 9);
 
 		var positionalArgs = new List<Expression>();
 		var namedProps = new List<ObjectProperty>();
-
-		// 通过 IObjectCreationOperation 的 Arguments 获取参数
-		var syntaxArgs = attributeSyntax.ArgumentList?.Arguments;
-		if (syntaxArgs is not null)
+		foreach (var constructorArgument in creationOp.Arguments)
 		{
-			for (int i = 0; i < creationOp.Arguments.Length && i < syntaxArgs.Value.Count; i++)
+			if (Translate<Expression>(constructorArgument.Value, argument) is not { } value)
+				return HandleTransformationFailure<Node>(operation, "Attribute constructor argument could not be translated to JavaScript.");
+
+			positionalArgs.Add(value);
+		}
+
+		if (creationOp.Initializer is not null)
+		{
+			foreach (var initializer in creationOp.Initializer.Initializers)
 			{
-				var arg = creationOp.Arguments[i];
-				var syntaxArg = syntaxArgs.Value[i];
-
-                if (Visit(arg.Value, argument) is not Expression valueExpr)
-                    return HandleTransformationFailure<Node>(operation, "Failed to convert attribute argument");
-
-                // 通过语法判断是否命名参数（NameEquals 表示 PropertyName = value）
-				if (syntaxArg.NameEquals is not null)
+				if (initializer is not ISimpleAssignmentOperation assignment ||
+					GetObjectInitializerMemberSymbol(assignment) is not { } member)
 				{
-					var key = CreateObjectPropertyKey(syntaxArg.NameEquals.Name.Identifier.Text);
-					namedProps.Add(new ObjectProperty(
-						kind: PropertyKind.Init,
-						key: key,
-						value: valueExpr,
-						computed: false,
-						shorthand: false,
-						method: false
-					));
+					return HandleTransformationFailure<Node>(
+						operation,
+						"Attribute named argument must bind to a property or field assignment.");
 				}
-				else
+
+				var memberType = member switch
 				{
-					positionalArgs.Add(valueExpr);
-				}
+					IPropertySymbol property => property.Type,
+					IFieldSymbol field => field.Type,
+					_ => null
+				};
+				if (memberType is null)
+					return HandleTransformationFailure<Node>(operation, "Attribute named argument target type could not be resolved.");
+
+				var memberName = GetCurrentModuleDeclaredOrConfigName(member);
+				var memberValue = TranslateTupleForTarget(assignment.Value, memberType, argument);
+				namedProps.Add(new ObjectProperty(
+					kind: PropertyKind.Init,
+					key: CreateObjectPropertyKey(memberName),
+					value: memberValue,
+					computed: false,
+					shorthand: false,
+					method: false));
 			}
 		}
 
-		// 构建装饰器表达式
 		Expression decorator = (positionalArgs.Count, namedProps.Count) switch
 		{
-			(0, 0) => new Identifier(attributeName),                                    // @Decorator
-			(_, 0) => new CallExpression(new Identifier(attributeName), NodeList.From(positionalArgs), optional: false),  // @Decorator(args...)
-			(0, _) => CreateDecoratorWithProps(attributeName, namedProps),              // @Decorator({ props })
-			_ => CreateDecoratorWithArgsAndProps(attributeName, positionalArgs, namedProps)  // @Decorator(args..., { props })
+			(0, 0) => new Identifier(attributeName),
+			(_, 0) => new CallExpression(new Identifier(attributeName), NodeList.From(positionalArgs), optional: false),
+			(0, _) => CreateDecoratorWithProps(attributeName, namedProps),
+			_ => CreateDecoratorWithArgsAndProps(attributeName, positionalArgs, namedProps)
 		};
 
 		return new Decorator(decorator);

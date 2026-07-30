@@ -1,9 +1,11 @@
 using Acornima.Ast;
+using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using Node = Acornima.Ast.Node;
 
 namespace Jazor.ComplierTest;
 
@@ -1007,7 +1009,6 @@ public sealed class SemanticWalkerSourceOriginTest
     {
         var operation = GetFirstAttributeOperation(
             """
-            [AttributeUsage(AttributeTargets.Method)]
             sealed class JsDecoratorAttribute : Attribute, IECMAScript
             {
                 public string? Name { get; set; }
@@ -1027,9 +1028,8 @@ public sealed class SemanticWalkerSourceOriginTest
             """);
 
         var node = new SemanticWalker(true).Visit(operation, new());
-        if (node is null)
-            return;
-
+        Assert.IsNotNull(node);
+        Assert.AreEqual("@JsDecorator(1, { name: \"entry\" })", node.ToKnRECMAScript());
         AssertHasSourceOrigin(node, operation);
     }
 
