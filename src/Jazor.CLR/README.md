@@ -26,12 +26,13 @@ Jazor.CLR (module/*.cs 上的 [Jazor] 声明)
 src/Jazor.CLR/
 ├── GlobalUsings.cs
 ├── Jazor.CLR.csproj
-├── module/                  # CLR 模块实现（主工作目录）
-└── doc/                     # 模块签名/哈希参考文档
+├── module/                  # 由生成骨架扩展出的 CLR 模块实现
+└── doc/                     # 生成器产出的模块签名/哈希参考文档
 ```
 
 说明：
 - 模块与文档数量不在 README 中维护，请以 `module/*.cs` 与 `doc/*.md` 当前内容为准。
+- 新模块的基础代码与 `doc/*.md` 统一由 `Jazor.CLR.Generator` 从当前 BCL Roslyn 符号生成；不要手写成员签名、哈希或文档。
 - 不维护“完成率/通过率”静态快照，这类信息以当前测试与 CI 为准。
 
 ## 声明模型
@@ -67,7 +68,7 @@ public static class BooleanModule
 
 - 生成规则来自 `Format.HashName(...)`：对成员签名做 SHA256，取前 8 字节。
 - 实际签名文本应使用 `Jazor.Common.Format` 的统一格式（与白名单 lookup 一致）。
-- 现有签名可参考 `src/Jazor.CLR/doc/*.md`，避免手写漂移。
+- `src/Jazor.CLR/doc/*.md` 是生成结果，不是人工维护的签名副本。
 
 ## 关键实现约束
 
@@ -102,9 +103,9 @@ public static Array<object?> _hash(...);
 
 ## 开发流程（新增/修改映射）
 
-1. 在 `src/Jazor.CLR/module/*Module.cs` 修改类型或成员 `[Jazor]` 声明。
-2. 按语义复杂度选择 `Allowed/Alias/Inline/Import/Compile`，`Import` 提供完整方法体。
-3. 需要时更新 `src/Jazor.CLR/doc/*.md` 对应签名说明。
+1. 新增 CLR 类型时，先在 `src/Jazor.CLR.Generator/Program.cs` 配置类型及 carrier 映射。
+2. 运行 `Jazor.CLR.Generator` 到隔离目录，取得 Roslyn/BCL 驱动的 module 骨架和文档；将新模块骨架与对应文档纳入 `src/Jazor.CLR/`。已有模块重新生成时只按成员签名/哈希核对，不能覆盖已实现的方法体。
+3. 仅在生成骨架上按语义复杂度修改 `Discard/Allowed/Alias/Inline/Import/Compile`；`Import` 提供完整方法体，不手工改写 BCL 成员字符串、哈希名和 carrier 参数形状。
 4. 运行白名单生成器，刷新 `src/Jazor.Compiler/WhiteList.cs.Generate.cs`。
 5. 补齐 CLR 与 Compiler 两侧回归测试。
 
@@ -121,6 +122,9 @@ dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj
 
 # 运行编译器侧回归（可按需加 --filter）
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+
+# 生成 CLR module 基础代码和文档到隔离目录
+dotnet run --project src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj -- .tmp/clr-scaffold
 
 # 刷新白名单生成文件（修改 CLR 映射后必做）
 dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
