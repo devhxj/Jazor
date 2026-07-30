@@ -126,6 +126,68 @@ public sealed class AstConverterExportPolicyScenarioTests
         Assert.HasCount(0, export.Specifiers, scenarioId);
     }
 
+    [TestMethod]
+    public async Task Convert_MixedNestedTypePolicies_ExportsRuntimeSurfaceWithoutLeakingPrivateOrStructuralTypes()
+    {
+        const string scenarioId = "ast-converter-export-policy.mixed-nested-type-policies";
+        const string source = """
+            using ECMAScript;
+
+            [ECMAScriptModule("./module")]
+            public static class TestModule
+            {
+                private sealed class HiddenWorker
+                {
+                }
+
+                internal sealed class SharedWorker
+                {
+                    private interface IMarker
+                    {
+                    }
+
+                    private sealed record HiddenShape(int Value);
+
+                    private enum HiddenKind
+                    {
+                        None
+                    }
+                }
+
+                public static int Run() => 1;
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module, scenarioId);
+        var convertedModule = module!;
+
+        var directClasses = convertedModule.Body.OfType<ClassDeclaration>()
+            .Select(declaration => GetRuntimeClassName(declaration, scenarioId))
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "HiddenWorker" }, directClasses, scenarioId);
+
+        var exportedClasses = convertedModule.Body
+            .OfType<ExportNamedDeclaration>()
+            .Select(static declaration => declaration.Declaration)
+            .OfType<ClassDeclaration>()
+            .Select(declaration => GetRuntimeClassName(declaration, scenarioId))
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "SharedWorker" }, exportedClasses, scenarioId);
+
+        var declaredRuntimeTypeNames = directClasses.Concat(exportedClasses).ToArray();
+        CollectionAssert.DoesNotContain(declaredRuntimeTypeNames, "IMarker", scenarioId);
+        CollectionAssert.DoesNotContain(declaredRuntimeTypeNames, "HiddenShape", scenarioId);
+        CollectionAssert.DoesNotContain(declaredRuntimeTypeNames, "HiddenKind", scenarioId);
+
+        _ = new Acornima.Parser().ParseModule(convertedModule.ToKnRECMAScript());
+    }
+
+    private static string GetRuntimeClassName(ClassDeclaration declaration, string scenarioId)
+        => declaration.Id?.Name ?? throw new AssertFailedException(
+            $"{scenarioId}: runtime class declaration is missing an identifier.");
+
     private static AstConverterModuleFixture CompileModule(string source, string scenarioId)
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
