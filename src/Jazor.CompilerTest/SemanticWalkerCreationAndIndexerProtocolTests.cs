@@ -109,6 +109,37 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_DictionaryIndexerMemberInitializer_UsesMappedGetterAfterInsertion()
+    {
+        var block = GetBlockOperation("""
+            var map = new System.Collections.Generic.Dictionary<string, Nested>
+            {
+                ["primary"] = new Nested(),
+                ["primary"] = { Value = 8 }
+            };
+            """);
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let map = (() => {
+                let v$1;
+                let v$0 = new Map;
+                v$0.set("primary", new Nested);
+                v$1 = _e73dbdff85c46ddc(v$0, "primary");
+                v$1.value = 8;
+                return v$0;
+              })();
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        Assert.AreEqual(1, CountOccurrences(script, "_e73dbdff85c46ddc(v$0, \"primary\")"));
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_StructuralRecordPrimaryConstructorSpreadLiteral_FlattensMembersInOrder()
     {
         var block = GetBlockOperation(
