@@ -29,15 +29,17 @@ public partial class SemanticWalker
 	/// <returns></returns>
 	private Expression BuildObjectCreation(IObjectCreationOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is null)
-			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
+		// A legal IObjectCreationOperation is fully bound. Type, constructor, and each argument's
+		// parameter are Roslyn contracts; null only belongs to invalid-operation recovery trees.
+		var type = operation.Type!;
+		var constructor = operation.Constructor!;
 
-		if (operation.Type is INamedTypeSymbol namedType &&
+		if (type is INamedTypeSymbol namedType &&
 			ShouldLowerStructurally(namedType))
 			return BuildStructuralLiteral(operation, argument);
 
-		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
-		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, operation.Type, "object creation");
+		RejectUnsupportedTypeFallback(operation, type, "object creation");
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, type, "object creation");
 
 		var arguments = new List<Expression>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
@@ -46,21 +48,18 @@ public partial class SemanticWalker
 			if (arg.ArgumentKind == ArgumentKind.DefaultValue &&
 				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue))
 				continue;
-			var targetType = operation.Constructor?.Parameters.Length > index
-				? operation.Constructor.Parameters[index].Type
-				: arg.Parameter?.Type;
 			// 构造器参数同样属于 tuple 边界。
-			// 如果实参 tuple 的当前视图和形参 tuple 的目标视图不同，这里直接 remap。
-			arguments.Add(TranslateTupleForTarget(arg.Value, targetType, argument));
+			// 具名参数可以改变实参顺序，因此必须使用 Roslyn 已绑定的 Parameter，不能按索引猜测。
+			arguments.Add(TranslateTupleForTarget(arg.Value, arg.Parameter!.Type, argument));
 		}
 
-		if (IsObjectLiteralHostType(operation.Type))
+		if (IsObjectLiteralHostType(type))
 		{
 			if (arguments.Count != 0)
 			{
 				return HandleTransformationFailure<Expression>(
 					operation,
-					$"Object-literal host type '{operation.Type.ToDisplayString(Format.NameFormat)}' does not support constructor arguments.");
+					$"Object-literal host type '{type.ToDisplayString(Format.NameFormat)}' does not support constructor arguments.");
 			}
 
 			return operation.Initializer?.Initializers.Length > 0
@@ -68,25 +67,20 @@ public partial class SemanticWalker
 				: new ObjectExpression(NodeList.Empty<Node>());
 		}
 
-		Expression? mappedConstructor = null;
-		if (operation.Constructor is not null)
-		{
-			mappedConstructor = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _, operation);
-			if (mappedConstructor is null &&
-				!IsIntrinsicObjectCreationFallbackAllowed(operation.Constructor, operation.Type))
-				RejectUnsupportedRuntimeFallback(operation, operation.Constructor, "object creation", operation.Type);
-		}
+		var mappedConstructor = GetWhiteListExpression(constructor, argument, arguments, null, out _, operation);
+		if (mappedConstructor is null &&
+			!IsIntrinsicObjectCreationFallbackAllowed(constructor, type))
+			RejectUnsupportedRuntimeFallback(operation, constructor, "object creation", type);
 
 		// 普通对象创建
-		var (mapper, typeName) = GetMapperType(operation.Type);
+		var (mapper, typeName) = GetMapperType(type);
 		// 类型引用统一走 BuildFullTypeName：
 		// 用户代码中的成员类型会按声明侧规则折叠成运行时扁平名，
 		// ECMAScript 宿主绑定则保留必要的层级/导入语义。
-		var callee = BuildFullTypeName(operation.Type, argument) ?? new Identifier(typeName);
-		if (operation.Constructor is not null &&
-			ShouldEmitMemberConstructorSelector(operation.Constructor))
+		var callee = BuildFullTypeName(type, argument) ?? new Identifier(typeName);
+		if (ShouldEmitMemberConstructorSelector(constructor))
 		{
-			var helperName = Util.GetMemberConstructorHelperName(operation.Constructor);
+			var helperName = Util.GetMemberConstructorHelperName(constructor);
 			arguments.Insert(0, CreateStringLiteral(helperName));
 		}
 
@@ -183,8 +177,7 @@ public partial class SemanticWalker
 
 	private Expression BuildStructuralLiteral(IObjectCreationOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is not INamedTypeSymbol namedType)
-			return HandleTransformationFailure<Expression>(operation, "Structural type could not be translated to JavaScript.");
+		var namedType = (INamedTypeSymbol)operation.Type!;
 
 		var memberOrder = BuildStructuralMemberOrderMap(namedType);
 		var members = new List<(Node Node, string Name, int Order)>();
@@ -194,10 +187,7 @@ public partial class SemanticWalker
 			if (arg.ArgumentKind == ArgumentKind.DefaultValue)
 				continue;
 
-			var parameter = arg.Parameter ??
-				(operation.Constructor is not null && operation.Constructor.Parameters.Length > index
-					? operation.Constructor.Parameters[index]
-					: null);
+			var parameter = arg.Parameter!;
 			if (IsStaticallyKnownNull(arg.Value))
 				continue;
 
@@ -270,20 +260,16 @@ public partial class SemanticWalker
 
 	private void ResolveStructuralConstructorMember(
 		INamedTypeSymbol type,
-		IParameterSymbol? parameter,
+		IParameterSymbol parameter,
 		int index,
 		out ISymbol member,
 		out string memberName,
-		out ITypeSymbol? memberType)
+		out ITypeSymbol memberType)
 	{
 		memberName = ResolveEcmascriptRecordPropertyName(type, parameter, index);
 		var property = ResolveEcmascriptRecordProperty(type, parameter);
-		member = property is not null
-			? property
-			: parameter is not null
-				? parameter
-				: type;
-		memberType = property?.Type ?? parameter?.Type;
+		member = property is not null ? property : parameter;
+		memberType = property?.Type ?? parameter.Type;
 	}
 
 	private static int GetRecordStructuralMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)

@@ -247,6 +247,81 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void LegalObjectCreationOperations_ExposeBoundTypeConstructorAndArgumentParameters()
+    {
+        var block = GetBlockOperation("""
+            class TestClass
+            {
+                sealed class Optional
+                {
+                    public Optional(int value = 1) { }
+                }
+
+                sealed class Variadic
+                {
+                    public Variadic(params string[] values) { }
+                }
+
+                readonly record struct Coordinate(int X, int Y);
+                struct Empty;
+
+                void TestMethod()
+                {
+                    _ = new Optional();
+                    _ = new Variadic("a", "b");
+                    _ = new Coordinate(1, 2);
+                    _ = new Empty();
+                }
+            }
+            """);
+
+        var creations = block.Descendants().OfType<IObjectCreationOperation>().ToArray();
+
+        Assert.HasCount(4, creations);
+        foreach (var creation in creations)
+        {
+            Assert.IsNotNull(creation.Type);
+            Assert.IsNotNull(creation.Constructor);
+            Assert.IsTrue(creation.Arguments.All(static argument => argument.Parameter is not null));
+        }
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ReorderedNamedTupleArguments_UseBoundParameterShapes()
+    {
+        var block = GetBlockOperation("""
+            [ECMAScript]
+            sealed class NamedTupleTarget
+            {
+                public NamedTupleTarget(
+                    (int Number, string Text) primary,
+                    (string Label, int Count) secondary) { }
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new NamedTupleTarget(
+                        secondary: (Label: "secondary", Count: 2),
+                        primary: (Number: 1, Text: "primary"));
+                }
+            }
+            """);
+
+        var operation = GetObjectCreationOperationAt(block);
+        Assert.AreEqual("secondary", operation.Arguments[0].Parameter?.Name);
+        Assert.AreEqual("primary", operation.Arguments[1].Parameter?.Name);
+
+        var node = new SemanticWalker(true).VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        AssertScriptEqual(
+            @"new NamedTupleTarget({Label:""secondary"",Count:2},{Number:1,Text:""primary""})",
+            script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_ObjectLiteralHostWithConstructorArgument_Throws()
     {
         var block = GetBlockOperation(@"
