@@ -6674,7 +6674,7 @@ public sealed class SemanticWalkerReferenceTest
 
                 Unconfigured,
 
-                [Obsolete]
+                [Obsolete("legacy")]
                 [Description("@#retired")]
                 Retired
             }

@@ -836,10 +836,7 @@ public partial class SemanticWalker
 			!Util.IsStringEnumType(symbol.ContainingType))
 			return false;
 
-		if (!TryGetStringEnumLiteralText(symbol, out var alias))
-			return false;
-
-		expression = CreateStringLiteral(alias!);
+		expression = CreateStringLiteral(GetStringEnumLiteralText(symbol));
 		return true;
 	}
 
@@ -852,28 +849,20 @@ public partial class SemanticWalker
 		foreach (var member in enumType.GetMembers().OfType<IFieldSymbol>())
 		{
 			if (!member.HasConstantValue ||
-				!Equals(member.ConstantValue, value) ||
-				!TryGetStringEnumLiteralText(member, out var literalText))
+				!Equals(member.ConstantValue, value))
 			{
 				continue;
 			}
 
-			expression = CreateStringLiteral(literalText!);
+			expression = CreateStringLiteral(GetStringEnumLiteralText(member));
 			return true;
 		}
 
 		return false;
 	}
 
-	private static bool TryGetStringEnumLiteralText(IFieldSymbol symbol, out string? literalText)
+	private static string GetStringEnumLiteralText(IFieldSymbol symbol)
 	{
-		literalText = null;
-		if (symbol.ContainingType?.TypeKind != TypeKind.Enum ||
-			!Util.IsStringEnumType(symbol.ContainingType))
-		{
-			return false;
-		}
-
 		foreach (var attribute in symbol.GetAttributes())
 		{
 			if (attribute.ConstructorArguments.Length == 0)
@@ -881,8 +870,7 @@ public partial class SemanticWalker
 
 			if (attribute.AttributeClass?.Name == "ECMAScriptNameAttribute")
 			{
-				literalText = attribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
-				return true;
+				return attribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
 			}
 
 			if (attribute.AttributeClass?.Name != "DescriptionAttribute")
@@ -892,12 +880,10 @@ public partial class SemanticWalker
 			if (description?.StartsWith("@#", System.StringComparison.Ordinal) != true)
 				continue;
 
-			literalText = description.Substring(2);
-			return true;
+			return description.Substring(2);
 		}
 
-		literalText = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
-		return literalText is not null;
+		return Util.GetSymbolConfigName(symbol) ?? symbol.Name;
 	}
 
 	private static bool IsErasedUnionProjectionProperty(IPropertySymbol property)
