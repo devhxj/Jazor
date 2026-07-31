@@ -5788,6 +5788,33 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_CoalesceAssignment_ArrayFromEnd_ComplexReceiver_EvaluatesReceiverOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                string?[] GetValues() => new string?[] { null };
+                int NextIndex() => 1;
+                string NextValue() => ""fallback"";
+
+                void TestMethod()
+                {
+                    string value = GetValues()[^NextIndex()] ??= NextValue();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let value = (v$0 = this.getValues(), v$0[v$0.length - this.nextIndex()] ??= this.nextValue());
+}", script);
+	}
+
 	/// <summary>
 	/// 测试列表索引器 read-modify-write 只计算一次索引表达式
 	/// </summary>
