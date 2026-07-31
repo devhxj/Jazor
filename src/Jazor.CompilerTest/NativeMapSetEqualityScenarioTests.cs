@@ -120,7 +120,9 @@ public sealed class NativeMapSetEqualityScenarioTests
 public enum NativeMapSetEqualitySuccessKind
 {
     EnumScalar,
-    ArrayIdentity
+    ArrayIdentity,
+    ReferenceIdentity,
+    NonSelfEquatableReferenceIdentity
 }
 
 public sealed record NativeMapSetEqualitySuccessScenario(
@@ -136,6 +138,11 @@ public enum NativeMapSetEqualityFailureKind
     InterfaceContract,
     StructValueEquality,
     DelegateSemanticEquality,
+    RecordValueEquality,
+    SelfEquatableValueEquality,
+    ObjectEqualsOverride,
+    GetHashCodeOverride,
+    InheritedValueEquality,
     DynamicUnknown
 }
 
@@ -181,6 +188,45 @@ internal static class NativeMapSetEqualityScenarioCatalog
                 void Run()
                 {
                     var values = new HashSet<byte[]>();
+                }
+            }
+            """,
+            "new Set"),
+        new(
+            "native-map-set-equality.reference-identity-dictionary-key",
+            "ordinary-reference-key-preserves-identity-equality",
+            NativeMapSetEqualitySuccessKind.ReferenceIdentity,
+            """
+            sealed class IdentityKey
+            {
+                public IdentityKey(int value) => Value = value;
+                public int Value { get; }
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new Dictionary<IdentityKey, string>();
+                }
+            }
+            """,
+            "new Map"),
+        new(
+            "native-map-set-equality.non-self-equatable-set-element",
+            "non-self-equatable-interface-does-not-change-default-reference-equality",
+            NativeMapSetEqualitySuccessKind.NonSelfEquatableReferenceIdentity,
+            """
+            sealed class IdentityKey : IEquatable<string>
+            {
+                public bool Equals(string? other) => false;
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new HashSet<IdentityKey>();
                 }
             }
             """,
@@ -266,6 +312,113 @@ internal static class NativeMapSetEqualityScenarioCatalog
             """,
             "Handler",
             "Delegate equality is not modeled"),
+        new(
+            "native-map-set-equality.record-dictionary-key",
+            "record-key-uses-synthesized-value-equality",
+            NativeMapSetEqualityFailureKind.RecordValueEquality,
+            """
+            sealed record Key(int Value);
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new Dictionary<Key, string>();
+                }
+            }
+            """,
+            "Key",
+            "record/custom equality semantics"),
+        new(
+            "native-map-set-equality.self-equatable-set-element",
+            "self-equatable-element-overrides-default-reference-equality",
+            NativeMapSetEqualityFailureKind.SelfEquatableValueEquality,
+            """
+            sealed class Key : IEquatable<Key>
+            {
+                public Key(int value) => Value = value;
+                public int Value { get; }
+                public bool Equals(Key? other) => other is not null && Value == other.Value;
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new HashSet<Key>();
+                }
+            }
+            """,
+            "Key",
+            "record/custom equality semantics"),
+        new(
+            "native-map-set-equality.equals-override-dictionary-key",
+            "object-equals-override-changes-default-reference-equality",
+            NativeMapSetEqualityFailureKind.ObjectEqualsOverride,
+            """
+            sealed class Key
+            {
+                public Key(int value) => Value = value;
+                public int Value { get; }
+                public override bool Equals(object? other) => other is Key key && Value == key.Value;
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new Dictionary<Key, string>();
+                }
+            }
+            """,
+            "Key",
+            "record/custom equality semantics"),
+        new(
+            "native-map-set-equality.hash-code-override-set-element",
+            "hash-code-override-signals-custom-default-equality-contract",
+            NativeMapSetEqualityFailureKind.GetHashCodeOverride,
+            """
+            sealed class Key
+            {
+                public Key(int value) => Value = value;
+                public int Value { get; }
+                public override int GetHashCode() => Value;
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new HashSet<Key>();
+                }
+            }
+            """,
+            "Key",
+            "record/custom equality semantics"),
+        new(
+            "native-map-set-equality.inherited-equals-override-dictionary-key",
+            "derived-key-inherits-custom-default-equality-contract",
+            NativeMapSetEqualityFailureKind.InheritedValueEquality,
+            """
+            abstract class KeyBase
+            {
+                public override bool Equals(object? other) => other is KeyBase;
+            }
+
+            sealed class Key : KeyBase
+            {
+            }
+
+            sealed class Scenario
+            {
+                void Run()
+                {
+                    var values = new Dictionary<Key, string>();
+                }
+            }
+            """,
+            "Key",
+            "record/custom equality semantics"),
         new(
             "native-map-set-equality.dynamic-dictionary-key",
             "dynamic-key-has-no-static-equality-contract",
