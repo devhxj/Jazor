@@ -15679,27 +15679,50 @@ export function create() {{
     }
 
     [TestMethod]
-    public async Task Convert_ClrRuntimeImportMethod_EmitsAuthoredMemberCommentBeforeDeclaration()
+    public async Task Convert_ClrRuntimeImportCatalog_EmitsCommentsOnlyForAuthoredImportMembers()
     {
         var code = """
             using System;
 
             namespace Demo
             {
-                [AttributeUsage(AttributeTargets.Method)]
+                [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
                 public sealed class JazorAttribute : Attribute
                 {
+                    public JazorAttribute() { }
                     public JazorAttribute(int op, string member) { }
+                }
+
+                [AttributeUsage(AttributeTargets.Method)]
+                public sealed class Jazor : Attribute
+                {
+                    public Jazor(int op, string member) { }
                 }
 
                 public static class RuntimeModule
                 {
-                    [Jazor(3, "static string.Compare(string, string)")]
+                    [JazorAttribute(3, "static string.Compare(string, string)")]
                     public static int _e16eea9fe3891a62(string left, string right)
                     {
                         return left == right ? 0 : 1;
                     }
 
+                    [JazorAttribute(3, "string.Length.get")]
+                    public static int _26ea755ae0122f59 => 0;
+
+                    [JazorAttribute]
+                    public static int CompileOwned() => 0;
+
+                    [JazorAttribute(2, "aliasOnly")]
+                    public static int AliasOwned() => 0;
+
+                    [JazorAttribute(3, "")]
+                    public static int EmptyMember() => 0;
+
+                    [Jazor(2, "legacyAliasOnly")]
+                    public static int LegacyAliasOwned() => 0;
+
+                    [Obsolete("documentation only")]
                     public static int Helper() => 0;
                 }
             }
@@ -15715,12 +15738,20 @@ export function create() {{
         var clrScript = clrModule?.ToKnRECMAScript();
 
         Assert.IsNotNull(clrScript);
-        var comment = "jazor:clr-member static string.Compare(string, string)";
-        var commentIndex = clrScript.IndexOf(comment, StringComparison.Ordinal);
-        var declarationIndex = clrScript.IndexOf("export function _e16eea9fe3891a62", StringComparison.Ordinal);
-        Assert.IsGreaterThanOrEqualTo(0, commentIndex, clrScript);
-        Assert.IsGreaterThan(commentIndex, declarationIndex, clrScript);
-        Assert.AreEqual(1, clrScript.Split(comment, StringSplitOptions.None).Length - 1, clrScript);
+        var methodComment = "jazor:clr-member static string.Compare(string, string)";
+        var methodCommentIndex = clrScript.IndexOf(methodComment, StringComparison.Ordinal);
+        var methodDeclarationIndex = clrScript.IndexOf("export function _e16eea9fe3891a62", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, methodCommentIndex, clrScript);
+        Assert.IsGreaterThan(methodCommentIndex, methodDeclarationIndex, clrScript);
+
+        var propertyComment = "jazor:clr-member string.Length.get";
+        var propertyCommentIndex = clrScript.IndexOf(propertyComment, StringComparison.Ordinal);
+        var propertyDeclarationIndex = clrScript.IndexOf("export function get__26ea755ae0122f59", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, propertyCommentIndex, clrScript);
+        Assert.IsGreaterThan(propertyCommentIndex, propertyDeclarationIndex, clrScript);
+
+        Assert.AreEqual(2, clrScript.Split("jazor:clr-member", StringSplitOptions.None).Length - 1, clrScript);
+        Assert.IsFalse(clrScript.Contains("jazor:clr-member aliasOnly", StringComparison.Ordinal), clrScript);
 
         var standardConverter = new AstConverter(classSymbol, semanticModel);
         var standardModule = await standardConverter.Convert();
