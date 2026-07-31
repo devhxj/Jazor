@@ -1251,6 +1251,62 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitDeconstructionAssignment_SelfReferentialTupleValues_AreStagedBeforeWrites()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int left = 1;
+                    int right = 2;
+                    (left, right) = (right, left);
+                    (left, right) = ((int, int))(right, left);
+                }
+            }");
+
+        var walker = new SemanticWalker(true);
+        var script = walker.Visit(block, new())?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let v$0, v$1, v$2, v$3;
+  let left = 1;
+  let right = 2;
+  v$0 = right, v$1 = left, left = v$0, right = v$1;
+  v$2 = right, v$3 = left, left = v$2, right = v$3;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_NestedSelfReferentialTupleValue_IsStagedBeforeNestedWrites()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int left = 1;
+                    int right = 2;
+                    int id = 3;
+                    ((left, right), id) = ((right, left), id);
+                }
+            }");
+
+        var walker = new SemanticWalker(true);
+        var script = walker.Visit(block, new())?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let v$0, v$1;
+  let left = 1;
+  let right = 2;
+  let id = 3;
+  v$0 = { item1: right, Item2: left }, v$1 = id, left = v$0.Item1, right = v$0.Item2, id = v$1;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment()
     {
         var block = GetBlockOperation(@"
@@ -2412,7 +2468,6 @@ public sealed class SemanticWalkerTupleTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
-    #endregion
+#endregion
 }
 #endregion
-

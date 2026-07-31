@@ -446,10 +446,15 @@ public partial class SemanticWalker
 				return new MemberExpression(obj, new Identifier(fieldName), false, false);
 			}
 			if (valueOperation is ITupleOperation tupleOp)
-				return Translate<Expression>(tupleOp.Elements[index], argument);
+			{
+				// Nested tuple literals must use the enclosing slot's static view.
+				// Roslyn can infer different element names for the literal itself;
+				// direct translation would then construct one shape and read another.
+				return TranslateTupleForTarget(tupleOp.Elements[index], field.Type, argument);
+			}
 			if (valueOperation is IConversionOperation conversion && conversion.Operand is ITupleOperation conversionTuple)
 			{
-				return Translate<Expression>(conversionTuple.Elements[index], argument);
+				return TranslateTupleForTarget(conversionTuple.Elements[index], field.Type, argument);
 			}
 			if (valueOperation is { } operationValue)
 			{
