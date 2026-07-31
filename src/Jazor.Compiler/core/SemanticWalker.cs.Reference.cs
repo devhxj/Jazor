@@ -292,97 +292,6 @@ public partial class SemanticWalker
 		}
 	}
 
-	/// <summary>
-	/// 从静态成员访问语法中提取“宿主”部分。
-	/// 例如：
-	/// - <c>Array.Of(...)</c> -> <c>Array</c>
-	/// - <c>Uint8Array.BYTES_PER_ELEMENT</c> -> <c>Uint8Array</c>
-	/// 这里故意保留调用点写下来的宿主，因为某些运行时 API 的成员声明在泛型基类上，
-	/// 但真实 JavaScript 宿主应当是调用点上的具体类型。
-	/// </summary>
-	private Expression? TryBuildStaticMemberTargetFromSyntax(SyntaxNode syntax)
-	{
-		// Roslyn 在不同静态访问形态下给到的 syntax 颗粒度不一致。
-		// 这里先把 "名字节点" 提升回完整成员访问节点，后面才能稳定提取宿主。
-		var effectiveSyntax = syntax switch
-		{
-			IdentifierNameSyntax or GenericNameSyntax when IsMemberAccessNameSyntax(syntax)
-				=> syntax.Parent,
-			_ => syntax
-		};
-
-		ExpressionSyntax? targetSyntax = effectiveSyntax switch
-		{
-			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
-			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
-			QualifiedNameSyntax qualifiedName => qualifiedName.Left,
-			_ => null
-		};
-
-		if (targetSyntax is null)
-			return null;
-
-		return TryBuildStaticHostExpressionFromSyntax(targetSyntax);
-	}
-
-	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
-		=> syntax.Parent switch
-		{
-			MemberAccessExpressionSyntax memberAccess => ReferenceEquals(memberAccess.Name, syntax),
-			QualifiedNameSyntax qualifiedName => ReferenceEquals(qualifiedName.Right, syntax),
-			_ => false
-		};
-
-	private Expression? TryBuildStaticQualifiedMemberFromSyntax(SyntaxNode syntax, string memberName)
-	{
-		var target = TryBuildStaticMemberTargetFromSyntax(syntax);
-		if (target is null)
-			return null;
-
-		return new MemberExpression(target, new Identifier(memberName), computed: false, optional: false);
-	}
-
-	private static Expression? TryBuildStaticHostExpressionFromSyntax(SyntaxNode syntax) =>
-		syntax switch
-		{
-			IdentifierNameSyntax identifier => new Identifier(identifier.Identifier.ValueText),
-			GenericNameSyntax generic => new Identifier(generic.Identifier.ValueText),
-			MemberAccessExpressionSyntax memberAccess => TryBuildMemberAccessHostExpression(memberAccess),
-			QualifiedNameSyntax qualifiedName => TryBuildQualifiedNameHostExpression(qualifiedName),
-			AliasQualifiedNameSyntax aliasQualifiedName => new MemberExpression(
-				new Identifier(aliasQualifiedName.Alias.Identifier.ValueText),
-				new Identifier(aliasQualifiedName.Name.Identifier.ValueText),
-				computed: false,
-				optional: false),
-			_ => null
-		};
-
-	private static Expression? TryBuildMemberAccessHostExpression(MemberAccessExpressionSyntax memberAccess)
-	{
-		var receiver = TryBuildStaticHostExpressionFromSyntax(memberAccess.Expression);
-		if (receiver is null)
-			return null;
-
-		return new MemberExpression(
-			receiver,
-			new Identifier(memberAccess.Name.Identifier.ValueText),
-			computed: false,
-			optional: false);
-	}
-
-	private static Expression? TryBuildQualifiedNameHostExpression(QualifiedNameSyntax qualifiedName)
-	{
-		var left = TryBuildStaticHostExpressionFromSyntax(qualifiedName.Left);
-		if (left is null)
-			return null;
-
-		return new MemberExpression(
-			left,
-			new Identifier(qualifiedName.Right.Identifier.ValueText),
-			computed: false,
-			optional: false);
-	}
-
 	private bool TryBuildImportedModuleMember(ITypeSymbol? containingType, string memberName, SenseArgument? context, out Expression? expression)
 	{
 		expression = null;
@@ -435,9 +344,9 @@ public partial class SemanticWalker
 	///
 	/// 选择顺序：
 	/// 1. 先从声明宿主推导一个稳定的运行时宿主。
-	/// 2. 再从调用点语法 + 语义里恢复“用户真正写下的宿主类型”。
+	/// 2. 再从调用点语法定位 symbol，并恢复“用户真正写下的宿主类型”。
 	/// 3. 只有当调用点宿主与声明宿主在继承/接口/泛型原型定义上兼容时，才允许覆盖。
-	/// 4. 两边都恢复不完整时，才退回语法宿主，避免把具体类型降成抽象基类。
+	/// 4. 语义宿主无法恢复时不猜测源码标识符，交给后续 symbol-based 路径处理。
 	/// </summary>
 	private bool TryBuildPreferredRuntimeStaticMemberAccess(ISymbol symbol, SyntaxNode syntax, SemanticModel? semanticModel, string memberName, out Expression? expression)
 	{
@@ -472,41 +381,14 @@ public partial class SemanticWalker
 			}
 		}
 
-		var syntaxHost = TryBuildStaticMemberTargetFromSyntax(syntax);
 		var specializedRuntimeHostType = TryGetSpecializedRuntimeHostType(hostType);
-		if (syntaxHost is null)
+		if (specializedRuntimeHostType is not null)
 		{
-			// 没有可复用的语法宿主时，只在“声明宿主能恢复出更具体的运行时宿主”场景下强制改写。
-			// 否则交给普通路径处理，避免为所有静态成员都重复输出一层宿主。
-			if (specializedRuntimeHostType is null)
-				return false;
-
 			expression = new MemberExpression(runtimeHost, new Identifier(memberName), computed: false, optional: false);
 			return true;
 		}
 
-		// 两边已经一致时，通常交给普通路径继续输出即可。
-		// 但“具体宿主是从泛型约束恢复出来”的场景例外：普通路径会退回声明宿主，
-		// 例如又变回 TypedArray.BYTES_PER_ELEMENT，因此这里仍要显式输出运行时宿主。
-		if (AstReferenceAnalysis.AreEquivalentReference(syntaxHost, runtimeHost))
-		{
-			if (specializedRuntimeHostType is null)
-				return false;
-
-			expression = new MemberExpression(runtimeHost, new Identifier(memberName), computed: false, optional: false);
-			return true;
-		}
-
-		// 泛型基类上的静态成员经常被具体运行时子类型复用。
-		// 但如果语义信息已经能恢复出真实宿主，就不再保留调用点文本，
-		// 否则像 using Bytes = Uint8Array 这种 C# 别名会被错误发成 Bytes.of。
-		// 只有在拿不到语义化具体宿主时，才退回调用点宿主，避免 Uint8Array.of 被降成 TypedArray.of。
-		// 其他普通静态宿主则优先采用运行时映射后的真实 host，例如 System.Console -> console。
-		var preferredHost = hostType is INamedTypeSymbol { IsGenericType: true } && specializedRuntimeHostType is null
-			? syntaxHost
-			: runtimeHost;
-		expression = new MemberExpression(preferredHost, new Identifier(memberName), computed: false, optional: false);
-		return true;
+		return false;
 	}
 
 	/// <summary>
@@ -517,6 +399,14 @@ public partial class SemanticWalker
 	/// - <c>Namespace.Type.Member</c> / <c>Outer.Inner.Member</c> 需要拿到最终绑定后的类型；
 	/// - Roslyn 在属性、方法组、调用三种静态访问上给出的 syntax 颗粒度并不一致。
 	/// </summary>
+	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
+		=> syntax.Parent switch
+		{
+			MemberAccessExpressionSyntax memberAccess => ReferenceEquals(memberAccess.Name, syntax),
+			QualifiedNameSyntax qualifiedName => ReferenceEquals(qualifiedName.Right, syntax),
+			_ => false
+		};
+
 	private static ITypeSymbol? TryGetStaticSourceHostTypeFromSyntax(SyntaxNode syntax, SemanticModel? semanticModel)
 	{
 		if (semanticModel is null)
@@ -2081,9 +1971,6 @@ private bool TryExpandEcmascriptParamsArgument(
 			if (containing is not null)
 				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
 
-			var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, fieldName!);
-			if (qualified is not null)
-				return WithOriginIfMissing(qualified, operation);
 		}
 
 		var fallback = operation.Instance is null
@@ -2322,12 +2209,6 @@ private bool TryExpandEcmascriptParamsArgument(
 					var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
 					if (containing is not null)
 						callee = new MemberExpression(containing, property, computed: false, optional: false);
-					else if (!Util.IsECMAScriptRuntimeSymbol(operation.Method))
-					{
-						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
-						if (qualified is not null)
-							callee = qualified;
-					}
 				}
 			}
 		}
@@ -2575,12 +2456,6 @@ private bool TryExpandEcmascriptParamsArgument(
 					var containing = BuildFullTypeName(targetMethod.ContainingType, argument);
 					if (containing is not null)
 						callee = new MemberExpression(containing, property, computed: false, optional: false);
-					else if (!Util.IsECMAScriptRuntimeSymbol(targetMethod))
-					{
-						var qualified = TryBuildStaticQualifiedMemberFromSyntax(syntax, methodName!);
-						if (qualified is not null)
-							callee = qualified;
-					}
 				}
 			}
 		}
