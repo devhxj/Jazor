@@ -178,6 +178,174 @@ public sealed class AstConverterRuntimeClassScenarioTests
             scenarioId);
     }
 
+    [TestMethod]
+    public void ConvertRuntimeClass_ExpressionBodiedConstructor_PreservesBoundAssignment()
+    {
+        const string scenarioId = "ast-converter-runtime-class.expression-bodied-constructor";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Value;
+
+                    public Widget(int value) => Value = value;
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var declaration = converter.ConvertRuntimeClass(fixture.GetType("Widget"));
+        var script = declaration.ToKnRECMAScript();
+
+        StringAssert.Contains(script, "constructor(value) {\n    this.value = value;\n  }", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_AbstractProperty_RejectsMissingRuntimeAccessor()
+    {
+        const string scenarioId = "ast-converter-runtime-class.abstract-property-rejected";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public abstract class Widget
+                {
+                    public abstract int Value { get; }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "does not support abstract property Value", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_Event_RejectsUnimplementedSubscriptionProtocol()
+    {
+        const string scenarioId = "ast-converter-runtime-class.event-rejected";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public event Action? Changed;
+
+                    public void Raise() => Changed?.Invoke();
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "does not support Event:Changed", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_NestedDelegate_RejectsUnimplementedRuntimeDeclaration()
+    {
+        const string scenarioId = "ast-converter-runtime-class.nested-delegate-rejected";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public delegate void Changed();
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "does not support NamedType:Changed", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_MemberFilter_ExcludesFilteredMethod()
+    {
+        const string scenarioId = "ast-converter-runtime-class.member-filter";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Keep() => 1;
+
+                    public int Skip() => 2;
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(
+            fixture.Module,
+            fixture.SemanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                MemberFilter: static symbol => symbol.Name != "Skip"));
+
+        var declaration = converter.ConvertRuntimeClass(fixture.GetType("Widget"));
+        var script = declaration.ToKnRECMAScript();
+
+        StringAssert.Contains(script, "keep()", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains("skip()", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    [DataRow("ref int value", "ref")]
+    [DataRow("params int[] values", "params")]
+    public void ConvertRuntimeClass_OverloadedConstructorWithUnsupportedDispatchParameter_Rejects(
+        string parameter,
+        string expectedParameterKind)
+    {
+        var scenarioId = $"ast-converter-runtime-class.overload-{expectedParameterKind}-rejected";
+        var fixture = CompileModule(
+            $$"""
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public Widget()
+                    {
+                    }
+
+                    public Widget({{parameter}})
+                    {
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "constructor overload dispatch with ref/out/in/params parameters", StringComparison.Ordinal, scenarioId);
+    }
+
     private static RuntimeClassFixture CompileModule(string source, string scenarioId)
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
