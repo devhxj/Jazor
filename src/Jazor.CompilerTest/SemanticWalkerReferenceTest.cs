@@ -6762,7 +6762,14 @@ public sealed class SemanticWalkerReferenceTest
 
                 [Obsolete("legacy")]
                 [Description("@#retired")]
-                Retired
+                Retired,
+
+                [Obsolete]
+                [Description("@#deprecated")]
+                Deprecated,
+
+                [Description(null)]
+                Unspecified
             }
 
             class TestClass
@@ -6774,6 +6781,8 @@ public sealed class SemanticWalkerReferenceTest
                     var documented = WireStatus.Documented;
                     var unconfigured = WireStatus.Unconfigured;
                     var retired = WireStatus.Retired;
+                    var deprecated = WireStatus.Deprecated;
+                    var unspecified = WireStatus.Unspecified;
                 }
             }
             """);
@@ -6789,6 +6798,8 @@ public sealed class SemanticWalkerReferenceTest
               let documented = "Documented";
               let unconfigured = "Unconfigured";
               let retired = "retired";
+              let deprecated = "deprecated";
+              let unspecified = "Unspecified";
             }
             """, script);
 	}
