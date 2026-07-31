@@ -4758,6 +4758,31 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_Reference_ErasedTypeParameterAndDelegateHosts_AllowBoundMembers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T value, Action callback)
+                    where T : ICloneable
+                {
+                    var copy = value.Clone();
+                    var method = callback.Method;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertJsNamingScriptEqual(@"{
+  let copy = value.Clone();
+  let method = callback.Method;
+}", script);
+	}
+
 	/// <summary>
 	/// 测试未标记且不在白名单的外部静态方法不会静默回退成普通 JS 调用
 	/// </summary>

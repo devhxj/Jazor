@@ -741,9 +741,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool RequiresExplicitExternalMemberSupport(IOperation operation, ISymbol symbol, ITypeSymbol? hostType)
     {
-        var effectiveHost = hostType ?? symbol.ContainingType;
-        if (effectiveHost is null)
-            return false;
+        // All callers validate constructors, methods, properties, or fields, so a runtime member
+        // always has either an explicit receiver type or a containing type.
+        var effectiveHost = hostType ?? symbol.ContainingType!;
 
         if (_moduleDeclaredNames is not null &&
             _moduleDeclaredNames.ContainsKey(effectiveHost.OriginalDefinition))
