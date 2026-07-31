@@ -1728,6 +1728,41 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordCollectionInitializer_StaticNullLiteral_IsPreserved()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new Bag
+                    {
+                        { ""title"", ""ready"" },
+                        { ""detail"", null }
+                    };
+                }
+
+                public sealed record Bag : System.Collections.IEnumerable
+                {
+                    public void Add(string key, string? value)
+                    {
+                    }
+
+                    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+                        => throw new System.NotImplementedException();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ title: ""ready"", detail: null }", script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_ObjectLiteralAddOnVuePropsCarrier_StaticNullLiteral_IsPreserved()
     {
         var block = GetBlockOperation(@"
