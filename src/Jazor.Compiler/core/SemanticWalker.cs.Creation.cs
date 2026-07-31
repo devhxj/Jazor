@@ -330,12 +330,22 @@ public partial class SemanticWalker
 		if (parameter is null)
 			return null;
 
-		return type
-			.GetMembers()
-			.OfType<IPropertySymbol>()
-			.FirstOrDefault(member =>
-				!member.IsStatic &&
-				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+		// A derived record may forward base positional properties through its primary constructor.
+		// Resolve the direct property first, then inherited instance properties, so construction and
+		// positional-pattern lowering agree on the same runtime key.
+		for (var current = type; current is not null; current = current.BaseType)
+		{
+			var property = current
+				.GetMembers()
+				.OfType<IPropertySymbol>()
+				.FirstOrDefault(member =>
+					!member.IsStatic &&
+					string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+			if (property is not null)
+				return property;
+		}
+
+		return null;
 	}
 
 	private static bool TryGetSpreadAttribute(IPropertySymbol property, out AttributeData attribute)

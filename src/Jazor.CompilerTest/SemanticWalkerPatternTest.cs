@@ -5533,6 +5533,56 @@ line2"";
   }
 
   [TestMethod]
+  public void Visit_RecursivePattern_PositionalDerivedRecord_UsesInheritedAndConfiguredPropertyNames()
+  {
+    var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new LabeledPoint(0, 0, ""origin"");
+                    bool result = point is LabeledPoint(0, 0, ""origin"");
+                }
+
+                public record Point(int X, int Y);
+
+                public record LabeledPoint : Point
+                {
+                    public LabeledPoint(int x, int y, string label) : base(x, y)
+                    {
+                        Label = label;
+                    }
+
+                    [Description(""@#label"")]
+                    public string Label { get; }
+
+                    public void Deconstruct(out int x, out int y, out string label)
+                    {
+                        x = X;
+                        y = Y;
+                        label = Label;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let point = {
+    x: 0,
+    y: 0,
+    label: ""origin""
+  };
+  let result = point.x === 0 && point.y === 0 && point.label === ""origin"";
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  }
+
+  [TestMethod]
   public void Visit_RecursivePattern_PositionalCustomDeconstructClass_UsesDeconstructOutputs()
   {
     var block = GetBlockOperation(@"
