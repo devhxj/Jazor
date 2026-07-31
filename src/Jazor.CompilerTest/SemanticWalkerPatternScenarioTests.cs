@@ -160,8 +160,80 @@ internal static class PatternLoweringScenarioCatalog
                 new("or", "value is \"ready\" or \"queued\"", ["value === \"ready\" || value === \"queued\""]),
                 new("property", "value is { Length: > 3 }", ["value != null", "value.length > 3"])
             ]);
+        AddInterfaceMutationScenarios(scenarios);
+        AddPatternSwitchScenarios(scenarios);
 
         return scenarios;
+    }
+
+    private static void AddInterfaceMutationScenarios(List<PatternLoweringScenario> scenarios)
+    {
+        scenarios.AddRange(
+        [
+            new PatternLoweringScenario(
+                "pattern-lowering.interface-write.compound-assignment",
+                "family=interface-fold;write=compound-assignment;result=static-true",
+                """
+                    int value = 1;
+                    value += 2;
+                    bool result = value is IComparable;
+                    """,
+                ["value += 2", "let result = true"]),
+            new PatternLoweringScenario(
+                "pattern-lowering.interface-write.increment",
+                "family=interface-fold;write=increment;result=static-true",
+                """
+                    int value = 1;
+                    value++;
+                    bool result = value is IComparable;
+                    """,
+                ["value++", "let result = true"]),
+            new PatternLoweringScenario(
+                "pattern-lowering.interface-write.deconstruction",
+                "family=interface-fold;write=deconstruction;result=static-true",
+                """
+                    int value = 1;
+                    (value, _) = (2, 3);
+                    bool result = value is IComparable;
+                    """,
+                ["value = 2", "let result = true"])
+        ]);
+    }
+
+    private static void AddPatternSwitchScenarios(List<PatternLoweringScenario> scenarios)
+    {
+        scenarios.AddRange(
+        [
+            new PatternLoweringScenario(
+                "pattern-lowering.switch.multiple-clauses",
+                "family=pattern-switch;clauses=constant-and-relational;combiner=or",
+                """
+                    int value = 2;
+                    switch (value)
+                    {
+                        case 1:
+                        case > 1:
+                            Consume(value);
+                            break;
+                    }
+                    """,
+                ["=== 1 ||", "> 1", "PatternScenarios.consume(value)"]),
+            new PatternLoweringScenario(
+                "pattern-lowering.switch.type-only-case",
+                "family=pattern-switch;pattern=type-only;capture=none",
+                """
+                    object value = "ready";
+                    switch (value)
+                    {
+                        case string:
+                            Consume(value);
+                            break;
+                        default:
+                            break;
+                    }
+                    """,
+                ["typeof v$0 === \"string\"", "PatternScenarios.consume(value)"])
+        ]);
     }
 
     private static void AddNumericScenarios(List<PatternLoweringScenario> scenarios)
