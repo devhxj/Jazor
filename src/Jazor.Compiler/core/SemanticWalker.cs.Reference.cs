@@ -1557,7 +1557,9 @@ private bool TryExpandEcmascriptParamsArgument(
 			out arguments,
 			out hostType);
 
-		property = ResolveImplicitIndexerProperty(operation);
+		// Assignable implicit indexer operations are bound by Roslyn to a property symbol.
+		// Array element assignments use IArrayElementReferenceOperation instead.
+		property = (IPropertySymbol)operation.IndexerSymbol;
 		if (property.SetMethod is null)
 		{
 			property = HandleTransformationFailure<IPropertySymbol>(
@@ -1619,16 +1621,6 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		return operation is IConversionOperation conversion &&
 			IsFromEndIndexArgument(conversion.Operand);
-	}
-
-	private IPropertySymbol ResolveImplicitIndexerProperty(IImplicitIndexerReferenceOperation operation)
-	{
-		if (operation.IndexerSymbol is IPropertySymbol property)
-			return property;
-
-		return HandleTransformationFailure<IPropertySymbol>(
-			operation,
-			$"Implicit indexer target on '{operation.Instance.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' does not expose the property symbol required for assignment.");
 	}
 
 	private Expression BuildImplicitIndexerSetterAssignment(

@@ -679,17 +679,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static ISymbol? GetSupportContainingSymbol(ISymbol symbol)
         => symbol is ITypeSymbol typeSymbol ? typeSymbol.ContainingType : symbol.ContainingType;
 
-    private static bool IsSymbolDeclaredInSource(ISymbol symbol)
-    {
-        foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
-        {
-            if (candidate.Locations.Any(static location => location.IsInSource))
-                return true;
-        }
-
-        return false;
-    }
-
     private bool IsSymbolDeclaredInCurrentSourceBoundary(IOperation operation, ISymbol symbol)
     {
         if (_moduleDeclaredNames is not null)
