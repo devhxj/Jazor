@@ -432,8 +432,8 @@ public partial class SemanticWalker
 		/// <param name="index">字段索引（用于 conversion 和 invocation 场景）</param>
 		/// <param name="tempVar">临时变量（用于 invocation 场景）</param>
 		/// <param name="argument">上下文参数</param>
-		/// <returns>字段值表达式，失败返回 null</returns>
-		Expression? GetTupleFieldValue(TupleValueSource value, IFieldSymbol field, int index, Identifier? tempVar, SenseArgument argument)
+		/// <returns>字段值表达式</returns>
+		Expression GetTupleFieldValue(TupleValueSource value, IFieldSymbol field, int index, Identifier? tempVar, SenseArgument argument)
 		{
 			var fieldName = GetTupleRuntimeFieldName(field);
 			if (tempVar is not null)
@@ -456,10 +456,8 @@ public partial class SemanticWalker
 				var tupleExpr = Translate<Expression>(operationValue, argument);
 				return new MemberExpression(tupleExpr, new Identifier(fieldName), false, false);
 			}
-			if (value.AstExpression is { } expr)
-				return new MemberExpression(expr, new Identifier(fieldName), false, false);
-
-			return null;
+			// TupleValueSource 只能由 operation 或 AST expression 构造；前者已在上方穷尽。
+			return new MemberExpression(value.AstExpression!, new Identifier(fieldName), false, false);
 		}
 
 		static void CollectTargetLocals(IOperation target, HashSet<ILocalSymbol> locals)
@@ -655,11 +653,6 @@ public partial class SemanticWalker
 						continue;
 
 					var fieldValue = GetTupleFieldValue(value, field, index, tempVar, argument);
-					if (fieldValue is null)
-					{
-						HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-						return;
-					}
 
 					if (ShouldCacheTupleField(value, index, targetLocals))
 					{
@@ -685,12 +678,8 @@ public partial class SemanticWalker
 					if (element is IDiscardOperation)
 						continue;
 
-					var right = cachedValues[index];
-					if (right is null)
-					{
-						HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-						return;
-					}
+					// 第一轮已为每个非 discard 槽位建立字段表达式或缓存。
+					var right = cachedValues[index]!;
 
 					var nestedBinding = GetNestedDeconstructionInfo(bindingInfo, index);
 					if (field.Type.IsTupleType || HasDeconstructionBinding(nestedBinding))

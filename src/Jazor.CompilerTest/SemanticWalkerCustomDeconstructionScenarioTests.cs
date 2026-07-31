@@ -79,6 +79,29 @@ public sealed class SemanticWalkerCustomDeconstructionScenarioTests
             .ToArray();
         CollectionAssert.AreEqual(testCase.ExpectedArgumentCounts!.ToArray(), argumentCounts, testCase.Id);
 
+        var nonDeconstructCallNames = DescendantsAndSelf(node!)
+            .OfType<CallExpression>()
+            .Select(static call => GetCallName(call))
+            .Where(static name => name is not null && !string.Equals(name, "Deconstruct", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        CollectionAssert.AreEqual(testCase.ExpectedNonDeconstructCallNames.ToArray(), nonDeconstructCallNames, testCase.Id);
+        if (testCase.ExpectedNonDeconstructCallNames.Count > 0)
+        {
+            var sequence = (SequenceExpression)node;
+            var firstExpressionCallNames = DescendantsAndSelf(sequence.Expressions[0])
+                .OfType<CallExpression>()
+                .Select(static call => GetCallName(call))
+                .Where(static name => name is not null && !string.Equals(name, "Deconstruct", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            CollectionAssert.AreEqual(testCase.ExpectedNonDeconstructCallNames.ToArray(), firstExpressionCallNames, testCase.Id);
+            Assert.IsFalse(sequence.Expressions
+                .Skip(1)
+                .SelectMany(static expression => DescendantsAndSelf(expression))
+                .OfType<CallExpression>()
+                .Select(static call => GetCallName(call))
+                .Any(name => testCase.ExpectedNonDeconstructCallNames.Contains(name!, StringComparer.Ordinal)), testCase.Id);
+        }
+
         var assignments = DescendantsAndSelf(node!)
             .OfType<AssignmentExpression>()
             .ToArray();
@@ -200,6 +223,7 @@ public sealed record CustomDeconstructionScenario(
     IReadOnlyList<string> ExpectedBoundMethods,
     IReadOnlyList<CustomDeconstructReceiverKind>? ExpectedReceiverKinds,
     IReadOnlyList<int>? ExpectedArgumentCounts,
+    IReadOnlyList<string> ExpectedNonDeconstructCallNames,
     IReadOnlyList<string> ExpectedLocalWrites,
     int ExpectedMemberWriteCount,
     string? ExpectedErrorFragment,
@@ -255,7 +279,7 @@ internal static class CustomDeconstructionScenarioCatalog
                 void Run() { int left, right; (left, right) = Create(); }
             }
             """,
-            ["Point.Deconstruct"], [Invocation], [2], ["left", "right"]),
+            ["Point.Deconstruct"], [Invocation], [2], ["left", "right"], expectedNonDeconstructCallNames: ["create"]),
         Success(
             "property-source",
             "property-source-is-evaluated-as-custom-receiver",
@@ -464,6 +488,21 @@ internal static class CustomDeconstructionScenarioCatalog
             """,
             ["Envelope.Deconstruct", "Point.Deconstruct"], [Member], [2], ["x", "y", "id"]),
         Success(
+            "record-invocation-source-with-discard",
+            "structural-record-source-is-evaluated-once-and-discard-is-not-written",
+            """
+            sealed record Envelope(int Code, int Id);
+            class Demo
+            {
+                Envelope Create() => new Envelope(1, 2);
+                void Run()
+                {
+                    var (_, id) = Create();
+                }
+            }
+            """,
+            ["Envelope.Deconstruct"], [], [], ["id"], expectedNonDeconstructCallNames: ["create"]),
+        Success(
             "custom-with-nested-custom",
             "nested-protocol-calls-precede-source-order-writes",
             """
@@ -644,7 +683,8 @@ internal static class CustomDeconstructionScenarioCatalog
         IReadOnlyList<CustomDeconstructReceiverKind> expectedReceiverKinds,
         IReadOnlyList<int> expectedArgumentCounts,
         IReadOnlyList<string> expectedLocalWrites,
-        int expectedMemberWriteCount = 0)
+        int expectedMemberWriteCount = 0,
+        IReadOnlyList<string>? expectedNonDeconstructCallNames = null)
         => new(
             $"semantic.custom-deconstruction.{id}",
             dimension,
@@ -652,6 +692,7 @@ internal static class CustomDeconstructionScenarioCatalog
             expectedBoundMethods,
             expectedReceiverKinds,
             expectedArgumentCounts,
+            expectedNonDeconstructCallNames ?? [],
             expectedLocalWrites,
             expectedMemberWriteCount,
             null,
@@ -671,6 +712,7 @@ internal static class CustomDeconstructionScenarioCatalog
             expectedBoundMethods,
             null,
             null,
+            [],
             [],
             0,
             expectedErrorFragment,
