@@ -764,10 +764,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (effectiveHost.IsAnonymousType)
             return false;
 
-        var original = effectiveHost.OriginalDefinition;
-        if (original.TypeKind is TypeKind.TypeParameter or TypeKind.Delegate)
-            return false;
-
         return true;
     }
 
