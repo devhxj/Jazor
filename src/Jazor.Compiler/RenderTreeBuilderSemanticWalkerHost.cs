@@ -313,62 +313,71 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static RenderContextMethodKind ClassifyRenderContextMethod(IMethodSymbol method)
     {
-        method = method.OriginalDefinition;
-        return method.Name switch
+        // Canonical Roslyn member keys keep the framework-owned overload contract exact without
+        // inventing unbindable wrong-signature branches for each individual parameter check.
+        var key = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        return key switch
         {
-            "OpenElement" when IsSequenceStringMethod(method, expectedParameterCount: 2)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenElement(int, string)"
                 => RenderContextMethodKind.OpenElement,
-            "CloseElement" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseElement()"
                 => RenderContextMethodKind.CloseElement,
-            "OpenRegion" when IsSequenceOnlyMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenRegion(int)"
                 => RenderContextMethodKind.OpenRegion,
-            "CloseRegion" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseRegion()"
                 => RenderContextMethodKind.CloseRegion,
-            "OpenComponent" when IsGenericOpenComponentMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)"
                 => RenderContextMethodKind.OpenGenericComponent,
-            "OpenComponent" when IsOpenComponentTypeMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent(int, System.Type)"
                 => RenderContextMethodKind.OpenTypeComponent,
-            "CloseComponent" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseComponent()"
                 => RenderContextMethodKind.CloseComponent,
-            "AddContent" when IsSupportedAddContentMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, string)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, object)"
                 => RenderContextMethodKind.AddContent,
-            "AddContent" when IsRenderFragmentAddContentMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.RenderFragment)"
                 => RenderContextMethodKind.AddRenderFragment,
-            "AddContent" when IsGenericRenderFragmentAddContentMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent<TValue>(int, Microsoft.AspNetCore.Components.RenderFragment<TValue>, TValue)"
                 => RenderContextMethodKind.AddGenericRenderFragment,
-            "AddContent" when IsMarkupStringAddContentMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString?)"
                 => RenderContextMethodKind.AddMarkupContent,
-            "AddMarkupContent" when IsAddMarkupContentSignature(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMarkupContent(int, string)"
                 => RenderContextMethodKind.AddMarkupContent,
-            "AddAttribute" when IsAddAttributeWithoutValueMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string)"
                 => RenderContextMethodKind.AddAttributeWithoutValue,
-            "AddAttribute" when IsAddAttributeWithValueMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, bool)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, string)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, System.MulticastDelegate)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, Microsoft.AspNetCore.Components.EventCallback)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int, string, Microsoft.AspNetCore.Components.EventCallback<TArgument>)" or
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, object)"
                 => RenderContextMethodKind.AddAttributeWithValue,
-            "AddAttribute" when IsAddAttributeFrameMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame)"
                 => RenderContextMethodKind.AddAttributeFrame,
-            "AddMultipleAttributes" when IsAddMultipleAttributesMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMultipleAttributes(int, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>)"
                 => RenderContextMethodKind.AddMultipleAttributes,
-            "AddComponentParameter" when IsAddComponentParameterMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int, string, object)"
                 => RenderContextMethodKind.AddComponentParameter,
-            "SetKey" when IsSetKeyMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object)"
                 => RenderContextMethodKind.SetKey,
-            "SetUpdatesAttributeName" when IsSetUpdatesAttributeNameMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)"
                 => RenderContextMethodKind.SetUpdatesAttributeName,
-            "SetAttributeValue" when IsSetAttributeValueMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)"
                 => RenderContextMethodKind.SetAttributeValue,
-            "AddNamedEvent" when IsAddNamedEventMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedEvent(string, string)"
                 => RenderContextMethodKind.AddNamedEvent,
-            "AddElementReferenceCapture" when IsAddElementReferenceCaptureMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddElementReferenceCapture(int, System.Action<Microsoft.AspNetCore.Components.ElementReference>)"
                 => RenderContextMethodKind.AddElementReferenceCapture,
-            "AddComponentReferenceCapture" when IsAddComponentReferenceCaptureMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int, System.Action<object>)"
                 => RenderContextMethodKind.AddComponentReferenceCapture,
-            "AddComponentRenderMode" when IsAddComponentRenderModeMethod(method)
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode)"
                 => RenderContextMethodKind.AddComponentRenderMode,
-            "Clear" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Clear()"
                 => RenderContextMethodKind.Clear,
-            "GetFrames" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.GetFrames()"
                 => RenderContextMethodKind.GetFrames,
-            "Dispose" when method.Parameters.Length == 0
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose()"
                 => RenderContextMethodKind.Dispose,
             _ => RenderContextMethodKind.Unsupported
         };
@@ -399,56 +408,10 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             RenderTreeBuilderMetadataName,
             StringComparison.Ordinal);
 
-    private static bool IsSequenceStringMethod(IMethodSymbol method, int expectedParameterCount)
-        => method.Parameters.Length == expectedParameterCount &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type);
-
-    private static bool IsSequenceOnlyMethod(IMethodSymbol method)
-        => method.Parameters.Length == 1 &&
-           IsInt32(method.Parameters[0].Type);
-
-    private static bool IsGenericOpenComponentMethod(IMethodSymbol method)
-        => method.IsGenericMethod &&
-           method.TypeParameters.Length == 1 &&
-           method.Parameters.Length == 1 &&
-           IsInt32(method.Parameters[0].Type);
-
     private static bool IsOpenComponentTypeMethod(IMethodSymbol method)
         => method.Parameters.Length == 2 &&
            IsInt32(method.Parameters[0].Type) &&
            IsSystemType(method.Parameters[1].Type);
-
-    private static bool IsSupportedAddContentMethod(IMethodSymbol method)
-    {
-        if (method.Parameters.Length != 2 ||
-            !IsInt32(method.Parameters[0].Type))
-        {
-            return false;
-        }
-
-        var contentType = method.Parameters[1].Type;
-        if (IsRenderFragment(contentType))
-            return false;
-
-        return IsString(contentType) ||
-               IsObject(contentType);
-    }
-
-    private static bool IsRenderFragmentAddContentMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsRenderFragment(method.Parameters[1].Type);
-
-    private static bool IsGenericRenderFragmentAddContentMethod(IMethodSymbol method)
-        => method.Parameters.Length == 3 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsGenericRenderFragment(method.Parameters[1].Type);
-
-    private static bool IsMarkupStringAddContentMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsMarkupStringLike(method.Parameters[1].Type);
 
     private static bool IsRenderFragmentComponentParameterValue(IInvocationOperation operation)
         => operation.Arguments.Length == 3 &&
@@ -472,80 +435,11 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             _ => operation.Type is not null && IsGenericRenderFragment(operation.Type)
         };
 
-    private static bool IsAddMarkupContentSignature(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type);
-
-    private static bool IsAddAttributeWithoutValueMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type);
-
-    private static bool IsAddAttributeWithValueMethod(IMethodSymbol method)
-        => method.Parameters.Length == 3 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type);
-
-    private static bool IsAddAttributeFrameMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsRenderTreeFrame(method.Parameters[1].Type);
-
-    private static bool IsAddMultipleAttributesMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsEnumerableOfStringObjectKeyValuePair(method.Parameters[1].Type);
-
-    private static bool IsAddComponentParameterMethod(IMethodSymbol method)
-        => method.Parameters.Length == 3 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type) &&
-           IsObject(method.Parameters[2].Type);
-
-    private static bool IsSetKeyMethod(IMethodSymbol method)
-        => method.Parameters.Length == 1 &&
-           IsObject(method.Parameters[0].Type);
-
-    private static bool IsSetUpdatesAttributeNameMethod(IMethodSymbol method)
-        => method.Parameters.Length == 1 &&
-           IsString(method.Parameters[0].Type);
-
-    private static bool IsSetAttributeValueMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsObject(method.Parameters[1].Type);
-
-    private static bool IsAddNamedEventMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsString(method.Parameters[0].Type) &&
-           IsString(method.Parameters[1].Type);
-
-    private static bool IsAddElementReferenceCaptureMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsActionOfElementReference(method.Parameters[1].Type);
-
-    private static bool IsAddComponentReferenceCaptureMethod(IMethodSymbol method)
-        => method.Parameters.Length == 2 &&
-           IsInt32(method.Parameters[0].Type) &&
-           IsActionOfObject(method.Parameters[1].Type);
-
-    private static bool IsAddComponentRenderModeMethod(IMethodSymbol method)
-        => method.Parameters.Length == 1 &&
-           string.Equals(
-               method.Parameters[0].Type.OriginalDefinition.ToDisplayString(Format.NameFormat),
-               "Microsoft.AspNetCore.Components.IComponentRenderMode",
-               StringComparison.Ordinal);
-
     private static bool IsInt32(ITypeSymbol type)
         => type.SpecialType == SpecialType.System_Int32;
 
     private static bool IsString(ITypeSymbol type)
         => type.SpecialType == SpecialType.System_String;
-
-    private static bool IsObject(ITypeSymbol type)
-        => type.SpecialType == SpecialType.System_Object;
 
     private static bool IsSystemType(ITypeSymbol type)
         => string.Equals(
@@ -563,22 +457,6 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         => string.Equals(
             type.OriginalDefinition.ToDisplayString(Format.NameFormat),
             "Microsoft.AspNetCore.Components.MarkupString",
-            StringComparison.Ordinal);
-
-    private static bool IsMarkupStringLike(ITypeSymbol type)
-        => IsMarkupString(type) ||
-           type is INamedTypeSymbol namedType &&
-           string.Equals(
-               namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
-               "System.Nullable<T>",
-               StringComparison.Ordinal) &&
-           namedType.TypeArguments.Length == 1 &&
-           IsMarkupString(namedType.TypeArguments[0]);
-
-    private static bool IsRenderTreeFrame(ITypeSymbol type)
-        => string.Equals(
-            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
-            "Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame",
             StringComparison.Ordinal);
 
     private static bool TryGetStaticMarkupString(IOperation operation, out string? markup)
@@ -603,49 +481,6 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                 return false;
         }
     }
-
-    private static bool IsActionOfElementReference(ITypeSymbol type)
-        => type is INamedTypeSymbol namedType &&
-           IsSystemAction(namedType) &&
-           namedType.TypeArguments.Length == 1 &&
-           string.Equals(
-               namedType.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
-               "Microsoft.AspNetCore.Components.ElementReference",
-               StringComparison.Ordinal);
-
-    private static bool IsActionOfObject(ITypeSymbol type)
-        => type is INamedTypeSymbol namedType &&
-           IsSystemAction(namedType) &&
-           namedType.TypeArguments.Length == 1 &&
-           IsObject(namedType.TypeArguments[0]);
-
-    private static bool IsSystemAction(INamedTypeSymbol type)
-        => string.Equals(type.OriginalDefinition.Name, "Action", StringComparison.Ordinal) &&
-           string.Equals(type.OriginalDefinition.ContainingNamespace?.ToDisplayString(), "System", StringComparison.Ordinal) &&
-           type.OriginalDefinition.TypeArguments.Length == 1;
-
-    private static bool IsEnumerableOfStringObjectKeyValuePair(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-
-        return IsEnumerableOfStringObjectKeyValuePair(namedType) ||
-               namedType.AllInterfaces.Any(IsEnumerableOfStringObjectKeyValuePair);
-    }
-
-    private static bool IsEnumerableOfStringObjectKeyValuePair(INamedTypeSymbol type)
-        => string.Equals(type.Name, "IEnumerable", StringComparison.Ordinal) &&
-           string.Equals(type.ContainingNamespace?.ToDisplayString(), "System.Collections.Generic", StringComparison.Ordinal) &&
-           type.TypeArguments.Length == 1 &&
-           IsStringObjectKeyValuePair(type.TypeArguments[0]);
-
-    private static bool IsStringObjectKeyValuePair(ITypeSymbol type)
-        => type is INamedTypeSymbol namedType &&
-           string.Equals(namedType.Name, "KeyValuePair", StringComparison.Ordinal) &&
-           string.Equals(namedType.ContainingNamespace?.ToDisplayString(), "System.Collections.Generic", StringComparison.Ordinal) &&
-           namedType.TypeArguments.Length == 2 &&
-           IsString(namedType.TypeArguments[0]) &&
-           IsObject(namedType.TypeArguments[1]);
 
     private static bool IsRenderFragment(ITypeSymbol type)
     {
