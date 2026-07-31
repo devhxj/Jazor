@@ -1842,6 +1842,72 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_FieldReference_ImplicitInstanceAndSourceStaticFields_PreserveRuntimeReceivers()
+	{
+		var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            [ECMAScriptModule]
+            class SharedState
+            {
+                public static int Limit = 10;
+            }
+
+            class TestClass
+            {
+                int Count;
+
+                void TestMethod()
+                {
+                    int current = Count;
+                    int total = current + SharedState.Limit;
+                }
+            }
+            ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let current = this.count;
+  let total = current + SharedState.limit;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_FieldReference_StructuralRecordField_UsesConfiguredRuntimeKey()
+	{
+		var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var metrics = new Metrics { Count = 3 };
+                    int current = metrics.Count;
+                }
+
+                public record Metrics
+                {
+                    [Description(""@#samples"")]
+                    public int Count;
+                }
+            }
+            ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let metrics = { samples: 3 };
+  let current = metrics.samples;
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_FieldReference_UnsupportedExternalConstField_Throws()
 	{
 		var block = GetBlockOperation(@"
