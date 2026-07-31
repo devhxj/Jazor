@@ -464,22 +464,10 @@ public partial class SemanticWalker
 	private static ISymbol? GetObjectInitializerMemberSymbol(IOperation initializer)
 		=> initializer switch
 		{
-			ISimpleAssignmentOperation
-			{
-				Target: IPropertyReferenceOperation { Property: var property }
-			} => property,
-			ISimpleAssignmentOperation
-			{
-				Target: IFieldReferenceOperation { Field: var field }
-			} => field,
-			IMemberInitializerOperation
-			{
-				InitializedMember: IPropertyReferenceOperation { Property: var property }
-			} => property,
-			IMemberInitializerOperation
-			{
-				InitializedMember: IFieldReferenceOperation { Field: var field }
-			} => field,
+			ISimpleAssignmentOperation { Target: IMemberReferenceOperation memberReference }
+				=> memberReference.Member,
+			IMemberInitializerOperation { InitializedMember: IMemberReferenceOperation memberReference }
+				=> memberReference.Member,
 			_ => null
 		};
 
@@ -1474,19 +1462,17 @@ public partial class SemanticWalker
 		bool expandRecordMembers = false)
 	{
 		var nodes = new List<ObjectLiteralNode>();
+		// 合法 object initializer 只包含成员赋值/成员初始化，collection initializer 则绑定为 Add invocation。
+		// 前两种形态的目标由 Roslyn 保证为 IMemberReferenceOperation。
 		foreach (var initializer in operation.Initializers)
 		{
-			Expression? target = null, value = null;
-			ISymbol? orderSymbol = null;
+			Expression target, value;
+			ISymbol? orderSymbol;
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
-				orderSymbol = GetObjectInitializerMemberSymbol(simpleAssignmentOp);
-				var hostType = simpleAssignmentOp.Target switch
-				{
-					IPropertyReferenceOperation propertyReferenceOperation => propertyReferenceOperation.Instance?.Type ?? propertyReferenceOperation.Property.ContainingType,
-					IFieldReferenceOperation fieldReferenceOperation => fieldReferenceOperation.Instance?.Type ?? fieldReferenceOperation.Field.ContainingType,
-					_ => null
-				};
+				var memberReference = (IMemberReferenceOperation)simpleAssignmentOp.Target;
+				orderSymbol = memberReference.Member;
+				var hostType = memberReference.Instance?.Type ?? memberReference.Member.ContainingType;
 				if (expandRecordMembers &&
 					ShouldOmitStaticNullObjectLiteralMember(simpleAssignmentOp.Value, orderSymbol, hostType))
 				{
@@ -1499,20 +1485,11 @@ public partial class SemanticWalker
 					continue;
 				}
 
-				target = simpleAssignmentOp.Target switch
-				{
-					IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
-						simpleAssignmentOp,
-						propertyReferenceOp.Property,
-						"object literal member initialization",
-						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-					IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
-						simpleAssignmentOp,
-						fieldReferenceOp.Field,
-						"object literal member initialization",
-						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
-					_ => Translate<Expression>(simpleAssignmentOp.Target, argument)
-				};
+				target = CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
+					simpleAssignmentOp,
+					memberReference.Member,
+					"object literal member initialization",
+					hostType));
 				if (expandRecordMembers &&
 					orderSymbol is IPropertySymbol propertySymbol &&
 					TryGetSpreadAttribute(propertySymbol, out _))
@@ -1525,27 +1502,18 @@ public partial class SemanticWalker
 			}
 			else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
-				orderSymbol = GetObjectInitializerMemberSymbol(memberInitializerOp);
-				target = memberInitializerOp.InitializedMember switch
-				{
-					IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
-						memberInitializerOp,
-						propertyReferenceOp.Property,
-						"object literal member initialization",
-						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-					IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
-						memberInitializerOp,
-						fieldReferenceOp.Field,
-						"object literal member initialization",
-						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
-					_ => null
-				};
-
-				if (target is not null)
-					value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
+				var memberReference = (IMemberReferenceOperation)memberInitializerOp.InitializedMember;
+				orderSymbol = memberReference.Member;
+				target = CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
+					memberInitializerOp,
+					memberReference.Member,
+					"object literal member initialization",
+					memberReference.Instance?.Type ?? memberReference.Member.ContainingType));
+				value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
 			}
-			else if (initializer is IInvocationOperation invocationOp)
+			else
 			{
+				var invocationOp = (IInvocationOperation)initializer;
 				if (TryBuildObjectLiteralAddProperty(invocationOp, argument, out var addProperty))
 				{
 					if (expandRecordMembers &&
@@ -1565,9 +1533,6 @@ public partial class SemanticWalker
 					invocationOp,
 					$"Object-literal collection initializer '{invocationOp.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)}' requires an instance Add(key, value) member whose key is string, numeric, or ECMAScript.Symbol.");
 			}
-
-			if (target is null || value is null)
-				return HandleTransformationFailure<List<ObjectLiteralNode>>(operation, "Member initializer could not be translated to JavaScript.");
 
 			var prop = new ObjectProperty(
 				PropertyKind.Init,
