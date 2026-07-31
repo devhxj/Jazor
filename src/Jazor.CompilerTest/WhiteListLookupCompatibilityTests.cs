@@ -1,4 +1,3 @@
-using System.Reflection;
 using Jazor.Common;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -88,10 +87,7 @@ public sealed class WhiteListLookupCompatibilityTests
             [candidateKey] = "allowed"
         };
 
-        var result = InvokeStringLookup(
-            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
-            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
-            "TryGetValue",
+        var result = WhiteListLookup.TryGetValue(
             mappings,
             lookupKey,
             out var matchedKey,
@@ -102,10 +98,7 @@ public sealed class WhiteListLookupCompatibilityTests
         Assert.AreEqual("allowed", matchedValue);
 
         mappings[candidateKey] = "updated";
-        Assert.IsTrue(InvokeStringLookup(
-            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
-            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
-            "TryGetValue",
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
             mappings,
             lookupKey,
             out matchedKey,
@@ -126,19 +119,12 @@ public sealed class WhiteListLookupCompatibilityTests
         {
             ["LookupTests.Host<TItem>.Use(TItem)"] = "second"
         };
-        var lookupType = typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
-            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup.");
-
-        Assert.IsTrue(InvokeStringLookup(
-            lookupType,
-            "TryGetValue",
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
             firstMappings,
             lookupKey,
             out var firstMatchedKey,
             out var firstMatchedValue));
-        Assert.IsTrue(InvokeStringLookup(
-            lookupType,
-            "TryGetValue",
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
             secondMappings,
             lookupKey,
             out var secondMatchedKey,
@@ -160,10 +146,7 @@ public sealed class WhiteListLookupCompatibilityTests
             ["LookupTests.Host<TItem>.Use(TItem)"] = "second"
         };
 
-        var result = InvokeStringLookup(
-            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
-            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
-            "TryGetValue",
+        var result = WhiteListLookup.TryGetValue(
             mappings,
             "LookupTests.Host<TValue>.Use(TValue)",
             out var matchedKey,
@@ -184,10 +167,7 @@ public sealed class WhiteListLookupCompatibilityTests
             [candidateKey] = "allowed"
         };
 
-        var result = InvokeStringLookup(
-            typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteListLookup")
-            ?? throw new InvalidOperationException("Cannot locate Jazor.Compiler.WhiteListLookup."),
-            "TryGetValue",
+        var result = WhiteListLookup.TryGetValue(
             mappings,
             lookupKey,
             out var matchedKey,
@@ -197,54 +177,174 @@ public sealed class WhiteListLookupCompatibilityTests
     }
 
     [TestMethod]
-    public void SemanticWalkerLookup_GenericParameterNormalization_DoesNotRewriteQualifiedConcreteTypeNames()
+    public void WhiteListLookup_SourceModifierSymbols_ResolveCanonicalConsumerKeys()
     {
-        const string candidateKey = "LookupTests.Host<T>.Use(LookupTests.Types.T)";
-        const string lookupKey = "LookupTests.Host<U>.Use(LookupTests.Types.U)";
-        var mappings = new Dictionary<string, string>
+        const string source = """
+            namespace LookupTests;
+
+            public readonly struct ReadonlyHost
+            {
+                public readonly int Value;
+            }
+
+            public static class ConstHost
+            {
+                public const int Value = 1;
+            }
+
+            public class VirtualHost
+            {
+                public virtual void Read() { }
+            }
+
+            public abstract class AbstractHost
+            {
+                public abstract void Read();
+            }
+
+            public interface IStaticHost
+            {
+                static abstract void Create();
+                static virtual void Reset() { }
+            }
+
+            public static class ExternHost
+            {
+                public static extern void Read();
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.SourceModifiers");
+        var cases = new (ISymbol Symbol, string CanonicalKey)[]
         {
-            [candidateKey] = "allowed"
+            (GetMember(compilation, "LookupTests.ReadonlyHost", "Value"), "LookupTests.ReadonlyHost.Value"),
+            (GetMember(compilation, "LookupTests.ConstHost", "Value"), "static LookupTests.ConstHost.Value"),
+            (GetMember(compilation, "LookupTests.VirtualHost", "Read"), "LookupTests.VirtualHost.Read()"),
+            (GetMember(compilation, "LookupTests.AbstractHost", "Read"), "LookupTests.AbstractHost.Read()"),
+            (GetMember(compilation, "LookupTests.IStaticHost", "Create"), "static LookupTests.IStaticHost.Create()"),
+            (GetMember(compilation, "LookupTests.IStaticHost", "Reset"), "static LookupTests.IStaticHost.Reset()"),
+            (GetMember(compilation, "LookupTests.ExternHost", "Read"), "static LookupTests.ExternHost.Read()")
         };
 
-        var result = InvokeStringLookup(
-            typeof(SemanticWalker),
-            "TryGetWhiteListValue",
-            mappings,
-            lookupKey,
-            out var matchedKey,
-            out var matchedValue);
+        foreach (var testCase in cases)
+        {
+            var mappings = new Dictionary<string, string> { [testCase.CanonicalKey] = "allowed" };
 
-        Assert.IsFalse(result, $"Unexpected whitelist match: key={matchedKey}, value={matchedValue}");
+            Assert.IsTrue(WhiteListLookup.TryGetValue(
+                mappings,
+                testCase.Symbol,
+                out var matchedKey,
+                out var matchedValue),
+                testCase.Symbol.ToDisplayString(Format.NameFormat));
+            Assert.AreEqual(testCase.CanonicalKey, matchedKey);
+            Assert.AreEqual("allowed", matchedValue);
+        }
     }
 
-    private static bool InvokeStringLookup(
-        Type lookupType,
-        string methodName,
-        Dictionary<string, string> mappings,
-        string lookupKey,
-        out string? matchedKey,
-        out string? matchedValue)
+    [TestMethod]
+    public void WhiteListLookup_OverriddenMembers_ResolveBaseDefinitionKeys()
     {
-        var method = lookupType
-            .GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-            .Single(candidate =>
+        const string source = """
+            using System;
+
+            namespace LookupTests;
+
+            public class BaseHost
             {
-                if (candidate.Name != methodName || !candidate.IsGenericMethodDefinition)
-                    return false;
+                public virtual int Value { get; }
+                public virtual void Apply() { }
+                public virtual event Action? Changed { add { } remove { } }
+            }
 
-                var parameters = candidate.GetParameters();
-                return parameters.Length == 4 &&
-                    parameters[0].ParameterType.IsGenericType &&
-                    parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
-                    parameters[1].ParameterType == typeof(string);
-            })
-            .MakeGenericMethod(typeof(string));
+            public sealed class DerivedHost : BaseHost
+            {
+                public override int Value => 1;
+                public override void Apply() { }
+                public override event Action? Changed { add { } remove { } }
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.OverrideFallback");
+        var baseType = compilation.GetTypeByMetadataName("LookupTests.BaseHost")!;
+        var derivedType = compilation.GetTypeByMetadataName("LookupTests.DerivedHost")!;
 
-        var args = new object?[] { mappings, lookupKey, null, null };
-        var result = (bool)(method.Invoke(null, args)
-            ?? throw new InvalidOperationException($"Lookup method {lookupType.FullName}.{methodName} returned null."));
-        matchedKey = args[2] as string;
-        matchedValue = args[3] as string;
-        return result;
+        foreach (var memberName in new[] { "Value", "Apply", "Changed" })
+        {
+            var baseMember = baseType.GetMembers(memberName).Single();
+            var derivedMember = derivedType.GetMembers(memberName).Single();
+            var baseKey = baseMember.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            var mappings = new Dictionary<string, string> { [baseKey] = memberName };
+
+            Assert.IsTrue(WhiteListLookup.TryGetValue(
+                mappings,
+                derivedMember,
+                out var matchedKey,
+                out var matchedValue),
+                memberName);
+            Assert.AreEqual(baseKey, matchedKey, memberName);
+            Assert.AreEqual(memberName, matchedValue, memberName);
+        }
     }
+
+    [TestMethod]
+    public void WhiteListLookup_ReducedExtensionInvocation_ResolvesStaticExtensionKey()
+    {
+        const string source = """
+            namespace LookupTests;
+
+            public static class TextExtensions
+            {
+                public static int Measure(this string value, in int offset)
+                    => value.Length + offset;
+            }
+
+            public sealed class Consumer
+            {
+                public int Read(string value)
+                {
+                    var offset = 2;
+                    return value.Measure(in offset);
+                }
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.ReducedExtension");
+        var syntaxTree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(syntaxTree);
+        var invocation = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single();
+        var reducedMethod = Assert.IsInstanceOfType<IMethodSymbol>(model.GetSymbolInfo(invocation).Symbol);
+        var extensionDefinition = reducedMethod.ReducedFrom!.OriginalDefinition;
+        var staticKey = extensionDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
+        var mappings = new Dictionary<string, string> { [staticKey] = "measure" };
+
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
+            mappings,
+            reducedMethod,
+            out var matchedKey,
+            out var matchedValue));
+        Assert.AreEqual(staticKey, matchedKey);
+        Assert.AreEqual("measure", matchedValue);
+    }
+
+    private static CSharpCompilation CreateCompilation(string source, string assemblyName)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            source,
+            TestMetadataReferences.PreviewParseOptions,
+            path: $"{assemblyName}.cs");
+        var compilation = CSharpCompilation.Create(
+            assemblyName,
+            [syntaxTree],
+            TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(0, errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+
+        return compilation;
+    }
+
+    private static ISymbol GetMember(CSharpCompilation compilation, string typeName, string memberName)
+        => compilation.GetTypeByMetadataName(typeName)!.GetMembers(memberName).Single();
 }
