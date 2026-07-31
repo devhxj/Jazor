@@ -218,27 +218,10 @@ internal static class SourceMapEmitter
                 return column;
 
             // Same generated position prefers innermost capture.
-            var order = right.CaptureOrder.CompareTo(left.CaptureOrder);
-            if (order != 0)
-                return order;
-
-            var sourceLine = left.SourceLine.CompareTo(right.SourceLine);
-            if (sourceLine != 0)
-                return sourceLine;
-
-            var sourceColumn = left.SourceColumn.CompareTo(right.SourceColumn);
-            if (sourceColumn != 0)
-                return sourceColumn;
-
-            var sourceEndLine = left.SourceEndLine.CompareTo(right.SourceEndLine);
-            if (sourceEndLine != 0)
-                return sourceEndLine;
-
-            var sourceEndColumn = left.SourceEndColumn.CompareTo(right.SourceEndColumn);
-            if (sourceEndColumn != 0)
-                return sourceEndColumn;
-
-            return StringComparer.OrdinalIgnoreCase.Compare(left.NormalizedPath, right.NormalizedPath);
+            // CaptureOrder is the unique index assigned while captures are collected.
+            // Equal order therefore means the comparer received the same candidate;
+            // no secondary source-coordinate fallback can ever affect ordering.
+            return right.CaptureOrder.CompareTo(left.CaptureOrder);
         });
 
         var seenGeneratedPositions = new HashSet<(int GeneratedLine, int GeneratedColumn)>();
