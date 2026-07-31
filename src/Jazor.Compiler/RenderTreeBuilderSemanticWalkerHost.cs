@@ -60,6 +60,48 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         Dispose
     }
 
+    // Canonical Roslyn member keys keep the framework-owned overload contract exact. A lookup
+    // table models that protocol directly and avoids exposing the compiler's string-switch tree
+    // as artificial control flow that no bound RenderTreeBuilder call can exercise.
+    private static readonly IReadOnlyDictionary<string, RenderContextMethodKind> RenderContextMethods =
+        new Dictionary<string, RenderContextMethodKind>(StringComparer.Ordinal)
+        {
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenElement(int, string)"] = RenderContextMethodKind.OpenElement,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseElement()"] = RenderContextMethodKind.CloseElement,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenRegion(int)"] = RenderContextMethodKind.OpenRegion,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseRegion()"] = RenderContextMethodKind.CloseRegion,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)"] = RenderContextMethodKind.OpenGenericComponent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent(int, System.Type)"] = RenderContextMethodKind.OpenTypeComponent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseComponent()"] = RenderContextMethodKind.CloseComponent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, string)"] = RenderContextMethodKind.AddContent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, object)"] = RenderContextMethodKind.AddContent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.RenderFragment)"] = RenderContextMethodKind.AddRenderFragment,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent<TValue>(int, Microsoft.AspNetCore.Components.RenderFragment<TValue>, TValue)"] = RenderContextMethodKind.AddGenericRenderFragment,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString)"] = RenderContextMethodKind.AddMarkupContent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString?)"] = RenderContextMethodKind.AddMarkupContent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMarkupContent(int, string)"] = RenderContextMethodKind.AddMarkupContent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string)"] = RenderContextMethodKind.AddAttributeWithoutValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, bool)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, string)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, System.MulticastDelegate)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, Microsoft.AspNetCore.Components.EventCallback)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int, string, Microsoft.AspNetCore.Components.EventCallback<TArgument>)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, object)"] = RenderContextMethodKind.AddAttributeWithValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame)"] = RenderContextMethodKind.AddAttributeFrame,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMultipleAttributes(int, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>)"] = RenderContextMethodKind.AddMultipleAttributes,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int, string, object)"] = RenderContextMethodKind.AddComponentParameter,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object)"] = RenderContextMethodKind.SetKey,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)"] = RenderContextMethodKind.SetUpdatesAttributeName,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)"] = RenderContextMethodKind.SetAttributeValue,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedEvent(string, string)"] = RenderContextMethodKind.AddNamedEvent,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddElementReferenceCapture(int, System.Action<Microsoft.AspNetCore.Components.ElementReference>)"] = RenderContextMethodKind.AddElementReferenceCapture,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int, System.Action<object>)"] = RenderContextMethodKind.AddComponentReferenceCapture,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode)"] = RenderContextMethodKind.AddComponentRenderMode,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Clear()"] = RenderContextMethodKind.Clear,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.GetFrames()"] = RenderContextMethodKind.GetFrames,
+            ["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose()"] = RenderContextMethodKind.Dispose
+        };
+
     public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
         => TryGetStaticMarkupString(operation, out var markup)
             ? CreateStringLiteral(markup ?? string.Empty)
@@ -313,74 +355,10 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static RenderContextMethodKind ClassifyRenderContextMethod(IMethodSymbol method)
     {
-        // Canonical Roslyn member keys keep the framework-owned overload contract exact without
-        // inventing unbindable wrong-signature branches for each individual parameter check.
         var key = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-        return key switch
-        {
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenElement(int, string)"
-                => RenderContextMethodKind.OpenElement,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseElement()"
-                => RenderContextMethodKind.CloseElement,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenRegion(int)"
-                => RenderContextMethodKind.OpenRegion,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseRegion()"
-                => RenderContextMethodKind.CloseRegion,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)"
-                => RenderContextMethodKind.OpenGenericComponent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent(int, System.Type)"
-                => RenderContextMethodKind.OpenTypeComponent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.CloseComponent()"
-                => RenderContextMethodKind.CloseComponent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, string)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, object)"
-                => RenderContextMethodKind.AddContent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.RenderFragment)"
-                => RenderContextMethodKind.AddRenderFragment,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent<TValue>(int, Microsoft.AspNetCore.Components.RenderFragment<TValue>, TValue)"
-                => RenderContextMethodKind.AddGenericRenderFragment,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString?)"
-                => RenderContextMethodKind.AddMarkupContent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMarkupContent(int, string)"
-                => RenderContextMethodKind.AddMarkupContent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string)"
-                => RenderContextMethodKind.AddAttributeWithoutValue,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, bool)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, string)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, System.MulticastDelegate)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, Microsoft.AspNetCore.Components.EventCallback)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int, string, Microsoft.AspNetCore.Components.EventCallback<TArgument>)" or
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, string, object)"
-                => RenderContextMethodKind.AddAttributeWithValue,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame)"
-                => RenderContextMethodKind.AddAttributeFrame,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMultipleAttributes(int, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>)"
-                => RenderContextMethodKind.AddMultipleAttributes,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int, string, object)"
-                => RenderContextMethodKind.AddComponentParameter,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetKey(object)"
-                => RenderContextMethodKind.SetKey,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)"
-                => RenderContextMethodKind.SetUpdatesAttributeName,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)"
-                => RenderContextMethodKind.SetAttributeValue,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedEvent(string, string)"
-                => RenderContextMethodKind.AddNamedEvent,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddElementReferenceCapture(int, System.Action<Microsoft.AspNetCore.Components.ElementReference>)"
-                => RenderContextMethodKind.AddElementReferenceCapture,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int, System.Action<object>)"
-                => RenderContextMethodKind.AddComponentReferenceCapture,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode)"
-                => RenderContextMethodKind.AddComponentRenderMode,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Clear()"
-                => RenderContextMethodKind.Clear,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.GetFrames()"
-                => RenderContextMethodKind.GetFrames,
-            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose()"
-                => RenderContextMethodKind.Dispose,
-            _ => RenderContextMethodKind.Unsupported
-        };
+        return RenderContextMethods.TryGetValue(key, out var kind)
+            ? kind
+            : RenderContextMethodKind.Unsupported;
     }
 
     private static bool IsRenderTreeBuilderEventModifierMethod(IMethodSymbol method)
