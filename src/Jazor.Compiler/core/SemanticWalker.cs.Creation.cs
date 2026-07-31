@@ -900,52 +900,9 @@ public partial class SemanticWalker
 	{
 		// Object literal keys accept JavaScript IdentifierName, which is wider than
 		// binding identifiers and still allows keywords like "class" without quoting.
-		return IsJavaScriptIdentifierName(name)
+		return JavaScriptAstFactory.IsJavaScriptIdentifierName(name)
 			? new Identifier(name)
 			: CreateStringLiteral(name);
-	}
-
-	private static bool IsJavaScriptIdentifierName(string? name)
-	{
-		if (name is not { Length: > 0 })
-			return false;
-
-		if (!IsJavaScriptIdentifierStart(name[0]))
-			return false;
-
-		for (var index = 1; index < name.Length; index++)
-		{
-			if (!IsJavaScriptIdentifierPart(name[index]))
-				return false;
-		}
-
-		return true;
-	}
-
-	private static bool IsJavaScriptIdentifierStart(char ch)
-	{
-		if (ch is '$' or '_')
-			return true;
-
-		return char.GetUnicodeCategory(ch) is
-			System.Globalization.UnicodeCategory.UppercaseLetter or
-			System.Globalization.UnicodeCategory.LowercaseLetter or
-			System.Globalization.UnicodeCategory.TitlecaseLetter or
-			System.Globalization.UnicodeCategory.ModifierLetter or
-			System.Globalization.UnicodeCategory.OtherLetter or
-			System.Globalization.UnicodeCategory.LetterNumber;
-	}
-
-	private static bool IsJavaScriptIdentifierPart(char ch)
-	{
-		if (IsJavaScriptIdentifierStart(ch) || ch is '\u200C' or '\u200D')
-			return true;
-
-		return char.GetUnicodeCategory(ch) is
-			System.Globalization.UnicodeCategory.NonSpacingMark or
-			System.Globalization.UnicodeCategory.SpacingCombiningMark or
-			System.Globalization.UnicodeCategory.DecimalDigitNumber or
-			System.Globalization.UnicodeCategory.ConnectorPunctuation;
 	}
 
 	private bool TryBuildCollectionLiteral(IObjectOrCollectionInitializerOperation initializer, TypeMapper mapper, SenseArgument argument, out Expression expression)

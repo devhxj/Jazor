@@ -1331,6 +1331,40 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordAliases_UseJavaScriptIdentifierNameGrammarForPropertyKeys()
+    {
+        var block = GetBlockOperation(@"
+            public sealed record IdentifierProps(
+                [property: ECMAScriptName(""$release"")] int Dollar,
+                [property: ECMAScriptName(""_etag"")] int Underscore,
+                [property: ECMAScriptName(""value1"")] int DecimalPart,
+                [property: ECMAScriptName(""a\u0301"")] int CombiningPart,
+                [property: ECMAScriptName(""a\u200Cb"")] int JoinControlPart,
+                [property: ECMAScriptName(""\u2118value"")] int OtherStart,
+                [property: ECMAScriptName(""a\u00B7b"")] int OtherContinue,
+                [property: ECMAScriptName(""\U00010400value"")] int AstralStart,
+                [property: ECMAScriptName(""release-name"")] int Quoted);
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new IdentifierProps(1, 2, 3, 4, 5, 6, 7, 8, 9);
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        AssertScriptEqual(
+            "{$release:1,_etag:2,value1:3,a\u0301:4,a\u200Cb:5,\u2118value:6,a\u00B7b:7,\U00010400value:8,\"release-name\":9}",
+            script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_SourceDataCarrierWithoutOptIn_Throws()
     {
         var block = GetBlockOperation(@"
