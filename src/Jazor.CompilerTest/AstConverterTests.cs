@@ -14872,6 +14872,63 @@ export function boot() {{
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldReference_GeneratesLiveBindingImport()
+    {
+        // A module field is exported as a live ESM binding. Consumers must import the binding directly,
+        // rather than manufacture an accessor that would change the source module's public contract.
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value = 42;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Read() => RuntimeModule.Value;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+            """
+            import { value } from "System/RuntimeModule.js";
+            export function read() {
+              return value;
+            }
+            """ + "\n",
+            script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithCrossModuleStaticPropertyReference_GeneratesGetterImport()
     {
         // Arrange
