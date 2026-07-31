@@ -268,6 +268,92 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     }
 
     [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_PathlessOrigin_IsIgnoredWithoutSuppressingSiblingSource()
+    {
+        var pathless = new Identifier("memory")
+        {
+            UserData = CreateSourceOrigin(string.Empty, 1, 0, 1, 6)
+        };
+        var persisted = new Identifier("persisted")
+        {
+            UserData = CreateSourceOrigin("Demo/Persisted.cs", 8, 2, 8, 11)
+        };
+        var sequence = new SequenceExpression(NodeList.From<Expression>(pathless, persisted));
+
+        var artifact = sequence.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "pathless-origin.mjs",
+            includeSourcesContent: false);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        var sourceMap = parsed.RootElement;
+        var sources = sourceMap.GetProperty("sources");
+        Assert.AreEqual(1, sources.GetArrayLength());
+        Assert.AreEqual("Demo/Persisted.cs", sources[0].GetString());
+        Assert.IsNotEmpty(DecodeSegments(sourceMap));
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_DegenerateRelativeSourcePath_IsOmitted()
+    {
+        var expression = new Identifier("value")
+        {
+            UserData = CreateSourceOrigin("./", 3, 1, 3, 6)
+        };
+
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "degenerate-relative.mjs",
+            includeSourcesContent: false);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        var sourceMap = parsed.RootElement;
+        Assert.AreEqual(0, sourceMap.GetProperty("sources").GetArrayLength());
+        Assert.AreEqual(string.Empty, sourceMap.GetProperty("mappings").GetString());
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_InvalidSourceRoot_FallsBackToAbsoluteSourcePath()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.InvalidRoot", "Module.cs");
+        var expression = new Identifier("value")
+        {
+            UserData = CreateSourceOrigin(sourcePath, 4, 1, 4, 6)
+        };
+
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "invalid-root.mjs",
+            includeSourcesContent: false,
+            sourceRootPath: "\0");
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        Assert.AreEqual(
+            Path.GetFullPath(sourcePath).Replace('\\', '/'),
+            parsed.RootElement.GetProperty("sources")[0].GetString());
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_FileSystemRoot_NormalizesToRootRelativeSource()
+    {
+        var sourcePath = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.FileSystemRoot", "Module.cs");
+        var root = Path.GetPathRoot(sourcePath);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(root));
+
+        var expression = new Identifier("value")
+        {
+            UserData = CreateSourceOrigin(sourcePath, 5, 1, 5, 6)
+        };
+
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "file-system-root.mjs",
+            includeSourcesContent: false,
+            sourceRootPath: root);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        Assert.AreEqual(
+            Path.GetRelativePath(root!, sourcePath).Replace('\\', '/'),
+            parsed.RootElement.GetProperty("sources")[0].GetString());
+    }
+
+    [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_TupleSwapLowering_MapsLoweredSegmentsBackToSwapLine()
     {
         const string sourcePath = "Demo/TupleSwap.cs";
