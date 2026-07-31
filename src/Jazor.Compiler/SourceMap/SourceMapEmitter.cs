@@ -283,9 +283,9 @@ internal static class SourceMapEmitter
         }
 
         if (!string.IsNullOrWhiteSpace(sourceRootPath) &&
-            IsPathWithinRoot(fullPath, sourceRootPath!) &&
-            TryMakeRelativePath(sourceRootPath!, fullPath, out var relativePath))
+            IsPathWithinRoot(fullPath, sourceRootPath!))
         {
+            var relativePath = MakeRelativePath(sourceRootPath!, fullPath);
             if (!string.IsNullOrWhiteSpace(relativePath))
                 return NormalizeRelativePath(relativePath);
         }
@@ -326,34 +326,14 @@ internal static class SourceMapEmitter
         return normalizedPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryMakeRelativePath(string rootPath, string fullPath, out string relativePath)
+    private static string MakeRelativePath(string rootPath, string fullPath)
     {
-        relativePath = string.Empty;
-        try
-        {
-            var rootUri = new Uri(AppendDirectorySeparator(rootPath));
-            var fullUri = new Uri(fullPath);
-            if (!string.Equals(rootUri.Scheme, fullUri.Scheme, StringComparison.OrdinalIgnoreCase))
-                return false;
-
-            var relativeUri = rootUri.MakeRelativeUri(fullUri);
-            if (relativeUri.IsAbsoluteUri)
-                return false;
-
-            var decoded = Uri.UnescapeDataString(relativeUri.ToString()).Replace('/', Path.DirectorySeparatorChar);
-            if (decoded.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
-                string.Equals(decoded, "..", StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            relativePath = decoded;
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        // NormalizeSourcePath calls this only after both paths are normalized and
+        // IsPathWithinRoot has established the same-root containment contract.
+        var rootUri = new Uri(AppendDirectorySeparator(rootPath));
+        var fullUri = new Uri(fullPath);
+        return Uri.UnescapeDataString(rootUri.MakeRelativeUri(fullUri).ToString())
+            .Replace('/', Path.DirectorySeparatorChar);
     }
 
     private static string AppendDirectorySeparator(string path)
