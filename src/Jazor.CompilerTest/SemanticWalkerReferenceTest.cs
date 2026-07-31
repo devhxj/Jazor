@@ -8707,6 +8707,60 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_EnumerableIntrinsics_NullSourcesPreserveContractGuards()
+	{
+		var block = GetBlockOperation("""
+			class TestClass
+			{
+				void TestMethod()
+				{
+					var filtered = System.Linq.Enumerable.Where<int>(null!, value => value > 0);
+					var projected = System.Linq.Enumerable.Select<int, int>(null!, value => value * 2);
+					var list = System.Linq.Enumerable.ToList<int>(null!);
+					var array = System.Linq.Enumerable.ToArray<int>(null!);
+				}
+			}
+			""");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+			{
+			  let filtered = ((__src, __callback) => {
+			    if (__src == null)
+			      throw new TypeError("source");
+			    if (__callback == null)
+			      throw new TypeError("predicate");
+			    return Array.from(__src).filter(__callback);
+			  })(null, value => {
+			    return value > 0;
+			  });
+			  let projected = ((__src, __callback) => {
+			    if (__src == null)
+			      throw new TypeError("source");
+			    if (__callback == null)
+			      throw new TypeError("selector");
+			    return Array.from(__src).map(__callback);
+			  })(null, value => {
+			    return value * 2;
+			  });
+			  let list = (__src => {
+			    if (__src == null)
+			      throw new TypeError("source");
+			    return Array.from(__src);
+			  })(null);
+			  let array = (__src => {
+			    if (__src == null)
+			      throw new TypeError("source");
+			    return Array.from(__src);
+			  })(null);
+			}
+			""", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_EnumerableMaterialization_ArrayCopyProducersReuseFreshResults()
 	{
 		var block = GetBlockOperation("""

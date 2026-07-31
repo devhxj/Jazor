@@ -58,6 +58,14 @@ public partial class SemanticWalker
 		"with",
 	};
 
+	private static readonly Dictionary<string, (int ParameterCount, string? ArrayMethodName, string? CallbackNullParameterName)> EnumerableArrayLikeIntrinsics = new(StringComparer.Ordinal)
+	{
+		["Where"] = (2, "filter", "predicate"),
+		["Select"] = (2, "map", "selector"),
+		["ToList"] = (1, null, null),
+		["ToArray"] = (1, null, null)
+	};
+
 	/// <summary>
 	/// 获取初始化器成员的名称，优先检查白名单别名
 	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
@@ -968,68 +976,43 @@ public partial class SemanticWalker
 	private bool TryBuildEnumerableArrayLikeIntrinsic(IInvocationOperation operation, IMethodSymbol method, List<Expression> arguments, out Expression? expression)
 	{
 		expression = null;
-		if (arguments.Count == 0 ||
-			method.Parameters.Length == 0 ||
+		if (!EnumerableArrayLikeIntrinsics.TryGetValue(method.Name, out var intrinsic) ||
+			method.Parameters.Length != intrinsic.ParameterCount ||
+			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T ||
+			method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat) != "System.Linq.Enumerable" ||
 			!TryGetWhiteListValue(WhiteList.Members, method, out _, out var memberEntry) ||
 			memberEntry.Op != Op.Import)
-			return false;
-
-		var isSupportedIntrinsicShape =
-			(method.Name is "Where" or "Select" && arguments.Count == 2) ||
-			(method.Name is "ToList" or "ToArray" && arguments.Count == 1);
-		if (!isSupportedIntrinsicShape)
-			return false;
-
-		if (!IsEnumerableContractType(method.Parameters[0].Type))
 			return false;
 
 		var sourceOperation = UnwrapImplicitConversions(operation.Arguments[0].Value);
 		var sourceExpression = arguments[0];
 		var sourceIsArrayProducingExpression = IsArrayProducingExpression(sourceExpression);
-		var hasArrayLikeSource =
-			IsConcreteArrayLikeType(sourceOperation.Type) ||
+		var sourceIsEnumerableContract = IsEnumerableContractType(sourceOperation.Type);
+		var sourceSupportsArrayMethods =
 			IsListLikeContractType(sourceOperation.Type) ||
-			IsEnumerableContractType(sourceOperation.Type) ||
+			(IsConcreteArrayLikeType(sourceOperation.Type) && !sourceIsEnumerableContract) ||
 			sourceIsArrayProducingExpression;
-		if (!hasArrayLikeSource)
-			return false;
 
 		var sourceParameter = new Identifier("__src");
 		var sourceArgument = sourceParameter as Expression;
 
-		// IEnumerable 接口入口可能在运行时是“可迭代对象”而非 Array 实例。
-		// 这里先物化为 Array，再继续使用数组快路（filter/map），
-		// 避免直接调用 source.filter/source.map 触发方法缺失。
-		var normalizedSource = IsEnumerableContractType(sourceOperation.Type) &&
-			!IsListLikeContractType(sourceOperation.Type) &&
-			!sourceIsArrayProducingExpression
-			? BuildArrayFrom(sourceArgument)
-			: sourceArgument;
+		// Enumerable 的 source 已由 Roslyn 绑定为 IEnumerable<T>。IEnumerable/ICollection 的
+		// Array alias 不代表运行时必有 Array 方法；仅 IList、宿主 Array 或新数组结果可直通。
+		var normalizedSource = sourceSupportsArrayMethods
+			? sourceArgument
+			: BuildArrayFrom(sourceArgument);
 
 		Identifier? callbackParameter = null;
 		Expression? callbackArgument = null;
-		string? callbackNullParameterName = null;
-		if ((method.Name == "Where" || method.Name == "Select") && arguments.Count == 2)
+		if (intrinsic.CallbackNullParameterName is not null)
 		{
 			callbackParameter = new Identifier("__callback");
 			callbackArgument = callbackParameter;
-			callbackNullParameterName = method.Name == "Where" ? "predicate" : "selector";
 		}
 
-		var intrinsicExpression = method.Name switch
-		{
-			"Where" when arguments.Count == 2 =>
-				BuildInstanceMethodCall(normalizedSource, "filter", callbackArgument!),
-			"Select" when arguments.Count == 2 =>
-				BuildInstanceMethodCall(normalizedSource, "map", callbackArgument!),
-			"ToList" when arguments.Count == 1 =>
-				sourceIsArrayProducingExpression ? sourceArgument : BuildArrayFrom(sourceArgument),
-			"ToArray" when arguments.Count == 1 =>
-				sourceIsArrayProducingExpression ? sourceArgument : BuildArrayFrom(sourceArgument),
-			_ => null
-		};
-		if (intrinsicExpression is null)
-			return false;
+		var intrinsicExpression = intrinsic.ArrayMethodName is not null
+			? BuildInstanceMethodCall(normalizedSource, intrinsic.ArrayMethodName, callbackArgument!)
+			: sourceIsArrayProducingExpression ? sourceArgument : BuildArrayFrom(sourceArgument);
 
 		var statements = new List<Statement>
 		{
@@ -1041,13 +1024,13 @@ public partial class SemanticWalker
 		var parameters = new List<Node> { sourceParameter };
 		var callArguments = new List<Expression> { sourceExpression };
 
-		if (callbackParameter is not null && callbackNullParameterName is not null)
+		if (callbackParameter is not null)
 		{
 			parameters.Add(callbackParameter);
 			callArguments.Add(arguments[1]);
 			statements.Add(new IfStatement(
 				new NonLogicalBinaryExpression(Operator.Equality, callbackParameter, Null),
-				BuildArgumentNullThrowStatement(callbackNullParameterName),
+				BuildArgumentNullThrowStatement(intrinsic.CallbackNullParameterName!),
 				null));
 		}
 
@@ -1060,7 +1043,7 @@ public partial class SemanticWalker
 			async: false);
 		expression = new CallExpression(iife, NodeList.From(callArguments), optional: false);
 
-		return expression is not null;
+		return true;
 	}
 
 	private static Expression BuildInstanceMethodCall(Expression instance, string methodName, params Expression[] arguments) =>
