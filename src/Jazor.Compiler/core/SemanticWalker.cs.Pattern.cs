@@ -898,21 +898,14 @@ public partial class SemanticWalker
 		if (isIntrinsicArrayCarrier)
 			return new MemberExpression(targetExpr, new Identifier("length"), computed: false, optional: false);
 
-		if (operation.LengthSymbol is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				$"List pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported length/count symbol.");
-		}
-
 		return BuildListPatternBoundAccess(
 			operation,
-			operation.LengthSymbol,
+			operation.LengthSymbol!,
 			targetExpr,
 			[],
 			argument,
 			"list pattern length access",
-			hostType ?? operation.LengthSymbol.ContainingType);
+			hostType ?? operation.LengthSymbol!.ContainingType);
 	}
 
 	private Expression BuildListPatternIndexerAccess(
@@ -926,21 +919,14 @@ public partial class SemanticWalker
 		if (isIntrinsicArrayCarrier)
 			return new MemberExpression(targetExpr, indexExpr, computed: true, optional: false);
 
-		if (operation.IndexerSymbol is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				$"List pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer symbol.");
-		}
-
 		return BuildListPatternBoundAccess(
 			operation,
-			operation.IndexerSymbol,
+			operation.IndexerSymbol!,
 			targetExpr,
 			[indexExpr],
 			argument,
 			"list pattern index access",
-			hostType ?? operation.IndexerSymbol.ContainingType);
+			hostType ?? operation.IndexerSymbol!.ContainingType);
 	}
 
 	private Expression BuildListPatternSliceAccess(
