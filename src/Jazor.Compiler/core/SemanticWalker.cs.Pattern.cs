@@ -241,10 +241,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitSwitchExpression(ISwitchExpressionOperation operation, SenseArgument argument)
 	{
-		// 至少有一个分支
-		if (operation.Arms.Length < 1)
-			return HandleTransformationFailure<Node>(operation, "Switch expression must have at least one arm.");
-
 		var input = Translate<Expression>(operation.Value, argument);
 
 		// 复杂模式匹配switch，生成健全的IIFE保证副作用顺序
@@ -492,13 +488,8 @@ public partial class SemanticWalker
 	public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, SenseArgument argument)
 	{
 		var obj = GetPatternRefrence(operation, argument);
-		if (operation.Member is not IMemberReferenceOperation memberReference)
-		{
-			return HandleTransformationFailure<Node>(
-				operation,
-				$"属性子模式的成员不是有效的成员引用：{operation.Member?.Kind}");
-		}
-
+		// A bound C# property subpattern always identifies a field/property member.
+		var memberReference = (IMemberReferenceOperation)operation.Member!;
 		var propertyAccess = BuildPatternMemberAccess(memberReference, obj, argument, out _);
 		var patternArg = argument.WithPatternInput(propertyAccess);
 		return Translate<Expression>(operation.Pattern, patternArg);
@@ -592,15 +583,10 @@ public partial class SemanticWalker
 		var right = Translate<Expression>(operation.RightPattern, patternArgument);
 
 		// 检查模式的类型来确定操作符
-		var @operator = operation.OperatorKind switch
-		{
-			BinaryOperatorKind.And => Operator.LogicalAnd,
-			BinaryOperatorKind.Or => Operator.LogicalOr,
-			_ => Operator.Unknown
-		};
-
-		if (@operator == Operator.Unknown)
-			return HandleTransformationFailure<Node>(operation, "Unsupported binary operator in pattern.");
+		// C# binary patterns are restricted by grammar to `and` and `or`.
+		var @operator = operation.OperatorKind == BinaryOperatorKind.And
+			? Operator.LogicalAnd
+			: Operator.LogicalOr;
 
 		return PrependEvaluation(patternInitialization, new LogicalExpression(@operator, left, right));
 	}
@@ -657,8 +643,8 @@ public partial class SemanticWalker
 	{
 		var obj = GetPatternRefrence(operation, argument);
 		obj = StabilizePatternExpression(operation, obj, argument, "list", out var listInitialization);
-		var hostType = operation.InputType ?? operation.NarrowedType;
-		var isIntrinsicArrayCarrier = hostType?.TypeKind == TypeKind.Array;
+		var hostType = operation.InputType!;
+		var isIntrinsicArrayCarrier = hostType.TypeKind == TypeKind.Array;
 		Expression result = BuildListPatternCarrierCheck(operation, obj, argument);
 		var lengthExpr = BuildListPatternLengthAccess(operation, obj, argument, isIntrinsicArrayCarrier, hostType);
 		var usesLengthMultipleTimes = ListPatternUsesLengthMultipleTimes(operation);
@@ -824,10 +810,7 @@ public partial class SemanticWalker
 
 	private Expression BuildListPatternCarrierCheck(IListPatternOperation operation, Expression targetExpr, SenseArgument argument)
 	{
-		var carrierType = operation.InputType ?? operation.NarrowedType;
-		if (carrierType is null)
-			return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
-
+		var carrierType = operation.InputType!;
 		var mapper = GetMapperType(carrierType).Mapper;
 		if (mapper is TypeMapper.Array or TypeMapper.String)
 			return CreateTypeMatchExpr(operation, carrierType, targetExpr, context: argument);
@@ -863,12 +846,10 @@ public partial class SemanticWalker
 		if (isIntrinsicArrayCarrier)
 			return true;
 
-		if (operation.LengthSymbol is null)
-			return false;
-
-		var lookupSymbol = operation.LengthSymbol is IPropertySymbol { GetMethod: not null } property
+		var lengthSymbol = operation.LengthSymbol!;
+		var lookupSymbol = lengthSymbol is IPropertySymbol { GetMethod: not null } property
 			? (ISymbol)property.GetMethod!
-			: operation.LengthSymbol;
+			: lengthSymbol;
 
 		return TryGetWhiteListValue(WhiteList.Members, lookupSymbol, out _, out var entry) &&
 			entry.Op == ECMAScript.Contract.Op.Alias &&
@@ -1337,9 +1318,6 @@ public partial class SemanticWalker
 	private bool TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(IOperation operation, ITypeSymbol interfaceType, out InterfaceTypeCheckFold result)
 	{
 		result = InterfaceTypeCheckFold.AlwaysFalse;
-		if (interfaceType.TypeKind != TypeKind.Interface)
-			return false;
-
 		var sourceOperation = ResolveIsTypeSourceOperation(operation);
 		var resolvedSource = sourceOperation is null
 			? null
@@ -1382,9 +1360,6 @@ public partial class SemanticWalker
 
 	private static bool IsRuntimeTypeAssignableToInterface(ITypeSymbol runtimeType, ITypeSymbol interfaceType)
 	{
-		if (interfaceType.TypeKind != TypeKind.Interface)
-			return false;
-
 		if (SymbolEqualityComparer.Default.Equals(runtimeType, interfaceType))
 			return true;
 
@@ -1433,7 +1408,7 @@ public partial class SemanticWalker
 		while (current is ILocalReferenceOperation localReference)
 		{
 			var local = localReference.Local;
-			if (local is null || !localCycleGuard.Add(local))
+			if (!localCycleGuard.Add(local))
 				break;
 
 			if (!TryResolveSingleAssignmentLocalInitializer(localReference, useSiteOperation, out var initializerValue))
@@ -1524,35 +1499,33 @@ public partial class SemanticWalker
 		switch (operation)
 		{
 			case IObjectCreationOperation objectCreation:
-				runtimeType = objectCreation.Type ?? objectCreation.Constructor?.ContainingType;
-				definitelyNonNull = runtimeType is not null;
-				return runtimeType is not null;
+				runtimeType = objectCreation.Type!;
+				definitelyNonNull = true;
+				return true;
 
 			case IAnonymousObjectCreationOperation anonymousObjectCreation:
-				runtimeType = anonymousObjectCreation.Type;
-				definitelyNonNull = runtimeType is not null;
-				return runtimeType is not null;
+				runtimeType = anonymousObjectCreation.Type!;
+				definitelyNonNull = true;
+				return true;
 
 			case IArrayCreationOperation arrayCreation:
-				runtimeType = arrayCreation.Type;
-				definitelyNonNull = runtimeType is not null;
-				return runtimeType is not null;
+				runtimeType = arrayCreation.Type!;
+				definitelyNonNull = true;
+				return true;
 
 			case ILiteralOperation literal when literal.ConstantValue.HasValue:
-				runtimeType = literal.Type;
-				definitelyNonNull = literal.ConstantValue.Value is not null && runtimeType is not null;
-				return runtimeType is not null;
+				runtimeType = literal.Type!;
+				definitelyNonNull = true;
+				return true;
 
 			case IDefaultValueOperation defaultValue:
-				if (defaultValue.Type is null)
-					return false;
-
+				var defaultType = defaultValue.Type!;
 				// default(reference-like) -> null
-				if (defaultValue.Type.IsReferenceType || IsNullableType(defaultValue.Type))
+				if (defaultType.IsReferenceType || IsNullableType(defaultType))
 					return true;
 
 				// default(non-nullable value-type) keeps concrete runtime type.
-				runtimeType = defaultValue.Type;
+				runtimeType = defaultType;
 				definitelyNonNull = true;
 				return true;
 
@@ -1766,9 +1739,7 @@ public partial class SemanticWalker
 	/// </summary>
 	private CallExpression VisitSwitchPatternMatching(ISwitchOperation operation, SenseArgument argument)
 	{
-		if (Visit(operation.Value, argument) is not Expression discriminant)
-			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
-
+		var discriminant = Translate<Expression>(operation.Value, argument);
 		var iifeArg = EnsureScopeContext(operation, argument).EnterEmissionScope(operation, ScopeSite.PatternIife());
 
 		// 创建唯一名称存储 switch 值
@@ -1889,9 +1860,6 @@ public partial class SemanticWalker
 		有效 - 类型检查，MatchedType 非空，DeclaredSymbol null：if (obj is string)，仅检查类型，不声明变量
 		无效，MatchedType null，DeclaredSymbol null：if (obj is )，语法错误：未指定类型，未声明变量
 		*/
-
-		if (operation.DeclaredSymbol is null && operation.MatchedType is null)
-			return HandleTransformationFailure<Expression>(operation, "Declaration pattern must have either a declared symbol or a matched type.");
 
 		// 必须有 PatternInput
 		var obj = GetPatternRefrence(operation, argument);
