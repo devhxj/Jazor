@@ -731,7 +731,7 @@ public partial class SemanticWalker
 		{
 			case IMethodReferenceOperation methodReference:
 				emitContextParameter = FindEmitContextParameter(methodReference.Method.Parameters);
-				return TryGetMethodOperationRoot(methodReference.Method, operation.SemanticModel, out rootOperation);
+				return TryGetMethodOperationRoot(methodReference.Method, operation.SemanticModel!, out rootOperation);
 			case IAnonymousFunctionOperation anonymousFunction:
 				rootOperation = anonymousFunction.Body;
 				emitContextParameter = FindEmitContextParameter(anonymousFunction.Symbol.Parameters);
@@ -767,46 +767,30 @@ public partial class SemanticWalker
 
 	private bool TryGetMethodOperationRoot(
 		IMethodSymbol method,
-		SemanticModel? fallbackModel,
+		SemanticModel semanticModel,
 		out IOperation rootOperation)
 	{
 		foreach (var reference in method.DeclaringSyntaxReferences)
 		{
 			var syntax = reference.GetSyntax(_cancellationToken);
-			var semanticModel = fallbackModel?.Compilation.GetSemanticModel(syntax.SyntaxTree) ?? fallbackModel;
-			if (semanticModel is null)
-				continue;
+			var declarationModel = semanticModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
 
+			// A legal source declaration body owned by this compilation always has one
+			// Roslyn operation root. Metadata/abstract methods still fall through below.
 			switch (syntax)
 			{
 				case MethodDeclarationSyntax methodDeclaration when methodDeclaration.Body is not null:
-					if (semanticModel.GetOperation(methodDeclaration.Body, _cancellationToken) is IOperation methodBodyOperation)
-					{
-						rootOperation = methodBodyOperation;
-						return true;
-					}
-					break;
+					rootOperation = declarationModel.GetOperation(methodDeclaration.Body, _cancellationToken)!;
+					return true;
 				case MethodDeclarationSyntax methodDeclaration when methodDeclaration.ExpressionBody is not null:
-					if (semanticModel.GetOperation(methodDeclaration.ExpressionBody.Expression, _cancellationToken) is IOperation methodExpressionOperation)
-					{
-						rootOperation = methodExpressionOperation;
-						return true;
-					}
-					break;
+					rootOperation = declarationModel.GetOperation(methodDeclaration.ExpressionBody.Expression, _cancellationToken)!;
+					return true;
 				case LocalFunctionStatementSyntax localFunction when localFunction.Body is not null:
-					if (semanticModel.GetOperation(localFunction.Body, _cancellationToken) is IOperation localFunctionBodyOperation)
-					{
-						rootOperation = localFunctionBodyOperation;
-						return true;
-					}
-					break;
+					rootOperation = declarationModel.GetOperation(localFunction.Body, _cancellationToken)!;
+					return true;
 				case LocalFunctionStatementSyntax localFunction when localFunction.ExpressionBody is not null:
-					if (semanticModel.GetOperation(localFunction.ExpressionBody.Expression, _cancellationToken) is IOperation localFunctionExpressionOperation)
-					{
-						rootOperation = localFunctionExpressionOperation;
-						return true;
-					}
-					break;
+					rootOperation = declarationModel.GetOperation(localFunction.ExpressionBody.Expression, _cancellationToken)!;
+					return true;
 			}
 		}
 

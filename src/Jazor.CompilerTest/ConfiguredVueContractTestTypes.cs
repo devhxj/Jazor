@@ -95,3 +95,11 @@ public sealed record TestWhitespaceEmitsSourceComponentOptions<TProps> : VueComp
 	[Emits(SourceMemberName = " ")]
 	public string[]? Emits { get; init; }
 }
+
+[ECMAScript]
+public static class TestExternalSetupCallbacks
+{
+	public static VueRenderCallback Setup<TProps>(TProps props, VueSetupContext context)
+		where TProps : VueProps
+		=> static () => null!;
+}

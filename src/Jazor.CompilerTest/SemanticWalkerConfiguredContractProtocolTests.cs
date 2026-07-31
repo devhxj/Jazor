@@ -414,6 +414,17 @@ internal static class ConfiguredContractProtocolCatalog
                         };
                 """,
             "could not analyze the setup callback",
+            "Use an inline lambda or a source-declared method group"),
+        Failure(
+            "emits.metadata-method-group",
+            "attribute=Emits;setup=metadata-method-group;analysis-root=unavailable;result=rejected",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = TestExternalSetupCallbacks.Setup
+                        };
+                """,
+            "could not analyze the setup callback",
             "Use an inline lambda or a source-declared method group")
     ];
 
