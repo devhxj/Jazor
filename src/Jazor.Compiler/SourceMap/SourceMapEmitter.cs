@@ -163,13 +163,12 @@ internal static class SourceMapEmitter
         var sourceEntries = new List<(string NormalizedPath, string OriginalPath)>();
         var candidateSegments = new List<CandidateSegment>();
 
+        // Captures are admitted only by SourceMapCaptureCollector, which excludes
+        // synthetic origins and origins without a source path before this stage.
         for (var captureOrder = 0; captureOrder < captures.Count; captureOrder++)
         {
             var capture = captures[captureOrder];
             var origin = capture.Origin;
-            if (origin.IsSynthetic || string.IsNullOrWhiteSpace(origin.SourcePath))
-                continue;
-
             var normalizedPath = NormalizeSourcePath(origin.SourcePath!, normalizedRootPath);
             if (string.IsNullOrWhiteSpace(normalizedPath))
                 continue;
@@ -229,8 +228,7 @@ internal static class SourceMapEmitter
 
         foreach (var candidate in candidateSegments)
         {
-            if (!sourceIndexByPath.TryGetValue(candidate.NormalizedPath, out var sourceIndex))
-                continue;
+            var sourceIndex = sourceIndexByPath[candidate.NormalizedPath];
 
             if (!seenGeneratedPositions.Add((candidate.GeneratedLine, candidate.GeneratedColumn)))
                 continue;
@@ -263,9 +261,6 @@ internal static class SourceMapEmitter
 
     private static string? NormalizeSourcePath(string sourcePath, string? sourceRootPath)
     {
-        if (string.IsNullOrWhiteSpace(sourcePath))
-            return null;
-
         if (Uri.TryCreate(sourcePath, UriKind.Absolute, out var sourceUri) && sourceUri.IsFile)
             sourcePath = sourceUri.LocalPath;
 
@@ -306,11 +301,8 @@ internal static class SourceMapEmitter
         return normalized.Length == 0 ? null : normalized;
     }
 
-    private static string? NormalizeAbsolutePath(string path)
-    {
-        var normalized = path.Replace('\\', '/').Trim();
-        return normalized.Length == 0 ? null : normalized;
-    }
+    private static string NormalizeAbsolutePath(string path)
+        => path.Replace('\\', '/').Trim();
 
     private static bool IsPathWithinRoot(string path, string rootPath)
     {
@@ -360,7 +352,7 @@ internal static class SourceMapEmitter
     private static string ComputeSha256Hex(string value)
     {
         using var sha = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(value ?? string.Empty);
+        var bytes = Encoding.UTF8.GetBytes(value);
         var hashBytes = sha.ComputeHash(bytes);
         var builder = new StringBuilder(hashBytes.Length * 2);
         foreach (var hashByte in hashBytes)
@@ -400,7 +392,7 @@ internal static class SourceMapEmitter
             bool captureSourceOrigins,
             bool captureNodePositions)
         {
-            _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+            _writer = writer;
             if (captureSourceOrigins)
                 _captures = [];
             if (captureNodePositions)
@@ -413,11 +405,10 @@ internal static class SourceMapEmitter
         public IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions
             => _nodePositions ?? throw new InvalidOperationException("Node-position capture was not enabled for this writer.");
 
-        public SourceOrigin? Enter(Node? node)
+        public SourceOrigin? Enter(Node node)
         {
             var previousOrigin = _currentOrigin;
-            if (node is not null &&
-                _nodePositions is not null &&
+            if (_nodePositions is not null &&
                 !_nodePositions.ContainsKey(node))
             {
                 _nodePositions.Add(node, new GeneratedNodePosition(_writer.Line, _writer.Column));
@@ -426,7 +417,7 @@ internal static class SourceMapEmitter
             if (_captures is null)
                 return previousOrigin;
 
-            if (node?.UserData is SourceOrigin nodeOrigin)
+            if (node.UserData is SourceOrigin nodeOrigin)
             {
                 // Synthetic origins intentionally suppress mapping at this node,
                 // but should not erase the inherited non-synthetic context.
@@ -448,15 +439,13 @@ internal static class SourceMapEmitter
 
         private void CaptureCurrent(SourceOrigin? origin)
         {
-            if (_captures is null ||
-                origin is null ||
-                origin.IsSynthetic ||
+            if (origin is null ||
                 string.IsNullOrWhiteSpace(origin.SourcePath))
             {
                 return;
             }
 
-            _captures.Add(new CapturedSourceSegment(
+            _captures!.Add(new CapturedSourceSegment(
                 GeneratedLine: _writer.Line,
                 GeneratedColumn: _writer.Column,
                 Origin: origin));
@@ -468,8 +457,8 @@ internal static class SourceMapEmitter
         private readonly SourceMapCaptureCollector _collector;
 
         public SourceMapAstToJavaScriptOptions(AstToJavaScriptOptions original, SourceMapCaptureCollector collector)
-            : base(original ?? throw new ArgumentNullException(nameof(original)))
-            => _collector = collector ?? throw new ArgumentNullException(nameof(collector));
+            : base(original)
+            => _collector = collector;
 
         protected override AstToJavaScriptConverter CreateConverter(JavaScriptTextWriter writer)
             => new SourceMapAstToJavaScriptConverter(writer, this, _collector);
@@ -484,7 +473,7 @@ internal static class SourceMapEmitter
             AstToJavaScriptOptions options,
             SourceMapCaptureCollector collector)
             : base(writer, options)
-            => _collector = collector ?? throw new ArgumentNullException(nameof(collector));
+            => _collector = collector;
 
         public override object? Visit(Node node)
         {
