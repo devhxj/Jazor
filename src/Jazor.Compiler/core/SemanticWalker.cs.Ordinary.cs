@@ -90,22 +90,17 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodBodyOperation(IMethodBodyOperation operation, SenseArgument argument)
 	{
-		// 如果有块体，直接访问块
 		if (operation.BlockBody is not null)
 		{
 			var bodyArg = EnsureScopeContext(operation, argument).EnterScope(operation.BlockBody, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
 			return Visit(operation.BlockBody, bodyArg);
 		}
 
-		// 如果有表达式体，转换为返回语句
-		if (operation.ExpressionBody is not null)
-		{
-			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
-			// Roslyn represents an expression-bodied method as a synthetic IBlockOperation.
-			return Visit(operation.ExpressionBody, bodyArg);
-		}
-
-		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
+		// Roslyn only creates IMethodBodyOperation for declarations with a body;
+		// expression bodies are represented as a synthetic non-null block.
+		var expressionBody = operation.ExpressionBody!;
+		var expressionBodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+		return Visit(expressionBody, expressionBodyArg);
 	}
 
 	/// <summary>
@@ -121,21 +116,16 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitConstructorBodyOperation(IConstructorBodyOperation operation, SenseArgument argument)
 	{
-		// 如果有块体，直接访问块
 		if (operation.BlockBody is not null)
 		{
 			var bodyArg = EnsureScopeContext(operation, argument).EnterScope(operation.BlockBody, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
 			return Visit(operation.BlockBody, bodyArg);
 		}
 
-		if (operation.ExpressionBody is not null)
-		{
-			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
-			// Constructor expression bodies use the same synthetic block contract as methods.
-			return Visit(operation.ExpressionBody, bodyArg);
-		}
-
-		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");
+		// Constructor expression bodies use the same synthetic non-null block contract as methods.
+		var expressionBody = operation.ExpressionBody!;
+		var expressionBodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+		return Visit(expressionBody, expressionBodyArg);
 	}
 
 	/// <summary>
@@ -153,19 +143,15 @@ public partial class SemanticWalker
 	{
 		var label = new Identifier(operation.Label.Name);
 
-		Statement statement;
-		if (operation.Operation is null)
-			statement = new EmptyStatement();
-		else
+		// Valid C# labels always own a statement operation; `label: ;` is IEmptyOperation.
+		var labeledOperation = operation.Operation!;
+		var node = Visit(labeledOperation, argument);
+		var statement = node switch
 		{
-			var node = Visit(operation.Operation, argument);
-			statement = node switch
-			{
-				Statement stmt => stmt,
-				Expression expr => new NonSpecialExpressionStatement(expr),
-				_ => HandleTransformationFailure<Statement>(operation.Operation, "Labeled statement target could not be translated to JavaScript.")
-			};
-		}
+			Statement stmt => stmt,
+			Expression expr => new NonSpecialExpressionStatement(expr),
+			_ => HandleTransformationFailure<Statement>(labeledOperation, "Labeled statement target could not be translated to JavaScript.")
+		};
 
 		return new LabeledStatement(label, statement);
 	}
@@ -286,9 +272,8 @@ public partial class SemanticWalker
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
 		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LocalFunctionBody());
-		var pendingStatements = operation.Body is not null
-			? TranslateOperationsToStatements(operation.Body.Operations, bodyCtx)
-			: [];
+		var operationBody = operation.Body!;
+		var pendingStatements = TranslateOperationsToStatements(operationBody.Operations, bodyCtx);
 
 		// 将函数体内的变量声明提升到函数体顶部
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
@@ -299,7 +284,7 @@ public partial class SemanticWalker
 
 		// 检查函数是否为async或generator
 		var isAsync = operation.Symbol.IsAsync;
-		var isGenerator = ContainsYieldOperation(operation.Body);
+		var isGenerator = ContainsYieldOperation(operationBody);
 
 		return new FunctionDeclaration(id,
 			NodeList.From(parameters),
@@ -308,22 +293,18 @@ public partial class SemanticWalker
 			@async: isAsync);
 	}
 
-	private static bool ContainsAwaitOperation(IOperation? operation)
-		=> operation is not null &&
-		   (ContainsOperation(operation, static op =>
+	private static bool ContainsAwaitOperation(IOperation operation)
+		=> ContainsOperation(operation, static op =>
 				op.Kind == OperationKind.Await ||
 				op is IUsingOperation { IsAsynchronous: true } ||
 				op is IUsingDeclarationOperation { IsAsynchronous: true }) ||
-			ContainsAwaitSyntax(operation.Syntax));
+		   ContainsAwaitSyntax(operation.Syntax);
 
-	private static bool ContainsYieldOperation(IOperation? operation)
+	private static bool ContainsYieldOperation(IOperation operation)
 		=> ContainsOperation(operation, static op => op.Kind is OperationKind.YieldReturn or OperationKind.YieldBreak);
 
-	private static bool ContainsOperation(IOperation? operation, Func<IOperation, bool> predicate)
+	private static bool ContainsOperation(IOperation operation, Func<IOperation, bool> predicate)
 	{
-		if (operation is null)
-			return false;
-
 		if (predicate(operation))
 			return true;
 
@@ -343,10 +324,7 @@ public partial class SemanticWalker
 	private static IEnumerable<IOperation> EnumerateContainedOperations(IOperation operation)
 	{
 		foreach (var child in operation.ChildOperations)
-		{
-			if (child is not null)
-				yield return child;
-		}
+			yield return child;
 
 		switch (operation)
 		{
@@ -879,8 +857,7 @@ public partial class SemanticWalker
 			};
 			return new NonUpdateUnaryExpression(@operator, operand);
 		}
-		else if (operation.OperatorKind == UnaryOperatorKind.True ||
-				 operation.OperatorKind == UnaryOperatorKind.False)
+		else if (operation.OperatorKind == UnaryOperatorKind.True)
 		{
 			// 将操作数强制转换为布尔值，应该转换为!!(operand) 或 Boolean(operand)
 			var innerOperand = new NonUpdateUnaryExpression(Operator.LogicalNot, operand);
@@ -1479,11 +1456,7 @@ public partial class SemanticWalker
 	/// <returns>JavaScript 运行时类型令牌表达式</returns>
 	public override Node? VisitTypeOf(ITypeOfOperation operation, SenseArgument argument)
 	{
-		var typeOperand = operation.TypeOperand;
-		if (typeOperand is null)
-			return HandleTransformationFailure<Node>(operation, "typeof operation must have a target type.");
-
-		var typeToken = BuildRuntimeTypeTokenExpression(operation, typeOperand, argument);
+		var typeToken = BuildRuntimeTypeTokenExpression(operation, operation.TypeOperand, argument);
 		return WithOriginIfMissing(typeToken, operation);
 	}
 
@@ -1501,11 +1474,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitDefaultValue(IDefaultValueOperation operation, SenseArgument argument)
 	{
-		var type = operation.Type;
-		if (type is null)
-			return WithOrigin(Null, operation);
-
-		var expression = BuildDefaultValueExpression(operation, type, argument);
+		// A bound C# default expression always carries its target type.
+		var expression = BuildDefaultValueExpression(operation, operation.Type!, argument);
 		return WithOrigin(expression, operation);
 	}
 
@@ -1525,29 +1495,20 @@ public partial class SemanticWalker
 
 		if (type.TypeKind == TypeKind.Enum)
 		{
-			if (type is INamedTypeSymbol enumType)
+			var enumType = (INamedTypeSymbol)type;
+			var underlyingType = enumType.EnumUnderlyingType!;
+			if (Util.IsStringEnumType(enumType))
 			{
-				if (Util.IsStringEnumType(enumType))
-				{
-					var zeroValue = enumType.EnumUnderlyingType is not null
-						? CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType)
-						: 0;
-					if (TryBuildStringEnumValueLiteral(enumType, zeroValue, out var stringEnumDefault))
-						return stringEnumDefault;
+				var zeroValue = CreateEnumUnderlyingZeroValue(underlyingType);
+				if (TryBuildStringEnumValueLiteral(enumType, zeroValue, out var stringEnumDefault))
+					return stringEnumDefault;
 
-					return HandleTransformationFailure<Expression>(
-						operation,
-						$"default({enumType.ToDisplayString(Format.NameFormat)}) is not supported because string enums require a declared zero-valued member mapping.");
-				}
-
-				if (enumType.EnumUnderlyingType is not null)
-				{
-					var zeroValue = CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType);
-					return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue);
-				}
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"default({enumType.ToDisplayString(Format.NameFormat)}) is not supported because string enums require a declared zero-valued member mapping.");
 			}
 
-			return new NumericLiteral(0, "0");
+			return BuildValueLiteral(underlyingType, CreateEnumUnderlyingZeroValue(underlyingType));
 		}
 
 		if (!type.IsValueType)
@@ -1566,7 +1527,6 @@ public partial class SemanticWalker
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
 			SpecialType.System_Char => CreateStringLiteral("\0"),
-			SpecialType.System_String => Null,
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
 			SpecialType.System_Int16 or
@@ -1654,14 +1614,11 @@ public partial class SemanticWalker
 	private bool TryBuildKnownDefaultConstructorExpression(ITypeSymbol type, SenseArgument argument, out Expression? expression)
 	{
 		expression = null;
-		if (!IsKnownDefaultConstructorType(type) ||
-			type is not INamedTypeSymbol namedType)
+		if (!IsKnownDefaultConstructorType(type))
 			return false;
 
-		var ctor = namedType.InstanceConstructors.FirstOrDefault(static x => x.Parameters.Length == 0);
-		if (ctor is null)
-			return false;
-
+		var namedType = (INamedTypeSymbol)type;
+		var ctor = namedType.InstanceConstructors.First(static x => x.Parameters.Length == 0);
 		expression = GetWhiteListExpression(ctor, argument, [], out _);
 		return expression is not null;
 	}
