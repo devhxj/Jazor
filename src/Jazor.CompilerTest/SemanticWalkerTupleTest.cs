@@ -790,6 +790,32 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitTupleBinaryOperator_NestedFirstElement_StartsRecursiveComparisonChain()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tuple1 = ((1, 2), 3);
+                    var tuple2 = ((1, 2), 4);
+                    var result = tuple1 == tuple2;
+                }
+            }
+            ");
+
+        var statement = GetOperationAt<IVariableDeclarationGroupOperation>(block, 2);
+        var initializer = statement!.Declarations.First().Declarators.First().Initializer;
+        var operation = (ITupleBinaryOperation)initializer!.Value;
+        var node = new SemanticWalker(true).VisitTupleBinaryOperator(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+            @"(tuple1.item1.item1 === tuple2.item1.item1 && tuple1.item1.item2 === tuple2.item1.item2 && tuple1.item2 === tuple2.item2)",
+            script);
+    }
+
+    [TestMethod]
     public void VisitTupleBinaryOperator_WithInvocationOperand()
     {
         var block = GetBlockOperation(@"
