@@ -84,6 +84,37 @@ public sealed class SemanticWalkerDefaultValueProtocolTests
         _ = new Parser().ParseExpression(script!);
     }
 
+    [TestMethod]
+    public void Visit_DefaultEcmascriptBigIntReference_ProducesNull()
+    {
+        var block = GetBlockOperation("BigInt value = default(BigInt);");
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let value = null;
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_DefaultEcmascriptValueCarrier_ReportsSafeLoweringFailure()
+    {
+        var block = GetBlockOperation("var value = default(HostValueCarrier);");
+        Assert.IsFalse(block.DescendantsAndSelf().Any(static operation => operation.Kind == OperationKind.Invalid));
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Value type 'TestClass.HostValueCarrier'");
+        StringAssert.Contains(exception.Message, "does not have a safe JavaScript lowering for default(...)");
+        StringAssert.Contains(exception.Message, "known CLR runtime shims");
+    }
+
     private static string VisitBlock(IBlockOperation block)
     {
         var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
@@ -123,6 +154,12 @@ public sealed class SemanticWalkerDefaultValueProtocolTests
                 public enum StringStateWithoutZero
                 {
                     Ready = 1
+                }
+
+                [ECMAScript]
+                public readonly struct HostValueCarrier
+                {
+                    public int Value { get; init; }
                 }
 
                 public void TestMethod()
