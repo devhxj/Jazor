@@ -959,26 +959,17 @@ public partial class SemanticWalker
 		if (isIntrinsicArrayCarrier)
 			return BuildIntrinsicArraySliceAccess(targetExpr, startExpr, elementsAfterSlice);
 
-		if (slicePattern.SliceSymbol is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				slicePattern,
-				$"Slice pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported slice symbol.");
-		}
-
-		if (slicePattern.SliceSymbol is IPropertySymbol sliceProperty)
+		var sliceSymbol = slicePattern.SliceSymbol!;
+		if (sliceSymbol is IPropertySymbol sliceProperty)
 		{
 			return HandleTransformationFailure<Expression>(
 				slicePattern,
 				$"Range-based slice property '{sliceProperty.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
 		}
 
-		if (slicePattern.SliceSymbol is not IMethodSymbol sliceMethod)
-		{
-			return HandleTransformationFailure<Expression>(
-				slicePattern,
-				$"Unsupported slice symbol kind '{slicePattern.SliceSymbol.Kind}' in list pattern.");
-		}
+		// 合法非数组 list pattern 只会绑定为 range indexer 或 Slice method；
+		// null 是数组专用形态，已由上面的 intrinsic 分支处理。
+		var sliceMethod = (IMethodSymbol)sliceSymbol;
 
 		var sliceArguments = BuildListPatternSliceMethodArguments(
 			slicePattern,
