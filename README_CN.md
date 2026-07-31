@@ -1,23 +1,55 @@
-[English](README.md) | **中文**
-
 <div align="center">
 
 ![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+
+<h1>Jazor</h1>
+
+<p><strong>将强类型 C# 与 Razor 编译为确定性 ECMAScript 模块和 Vue 渲染函数的 .NET 工具链。</strong></p>
+
+<p>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 Preview 6" src="https://img.shields.io/badge/.NET-11%20Preview%206-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="RazorVue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
+  <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
+</p>
+
+<p>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8299 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8299%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.30%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.30%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.07%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.07%25-2ea44f" /></a>
+</p>
+
+<p><a href="README.md">English</a> · <strong>简体中文</strong></p>
+
 </div>
 
-# Jazor
-
-[![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
-[![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
-
-> 实验性项目。公共 API、生成产物形态和工具链仍在演进中；编译器核心、`Jazor.Emit` 管线和源生成结果绑定边界相对稳定。
+> [!IMPORTANT]
+> Jazor 仍处于实验阶段。公共 API、生成产物形态和工具链可能继续演进；编译器核心、`Jazor.Emit` 管线和 Razor SG 绑定边界是当前最稳定的基础。
 
 Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工具链。
 
 核心包提供编译器、运行时契约、分析器、emit 工具和 MSBuild 集成。Razor-to-Vue 转换通过 `Jazor.Vue` 显式启用：官方 Razor 源生成器的输出会绑定为 Roslyn `IOperation`，并降低为 Vue render-function `.mjs` 产物。
 
 实现由 `Jazor.Compiler`、`Jazor.CLR`、`Jazor.Analyzer`、`Jazor.Emit`、`Jazor.Common` 以及 ECMAScript / Vue 绑定程序集组成。
+
+## 已验证的编译器基线
+
+`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-07-31：
+
+| 指标 | 验证结果 | 强制阈值 |
+|------|----------|----------|
+| 编译器回归测试 | 8299 / 8299 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 15735 / 16339（96.30%） | 95% |
+| 分支覆盖率 | 6931 / 7695（90.07%） | 90% |
+
+在仓库根目录运行正式覆盖率门禁：
+
+```bash
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
+```
+
+该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
 
 ## 架构
 
@@ -38,22 +70,18 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ## 最新更新
 
-### 2026-07-30
+### 2026-07-31
 
-- CLR 映射现支持 `Half`、`Int128` 和 `UInt128`，覆盖 Number/BigInt 载体、固定宽度 128 位运算、解析、比较、位操作，以及经过运行时检查的除法和余数溢出行为。
-- `ECMAScript.Style` 是 ECMAScript 生态中独立的强类型 CSS-in-JS 包。它提供统一的小写 `css` 门面、基于原生 union 的值域、类型化组合函数、显式 `raw(...)` 逃生口，以及唯一的 debug 入口 `style.mjs`。
-- RazorVue 直接渲染现会保留动态事件 modifier 条件，并支持包含根级局部声明的 helper 组合输出。
-- CLR runtime 模块会在 hash 后的 JavaScript helper 声明前标注原始 CLR 成员名，便于检查包内产物。
-- SourceMap 现按标准化语法树完整路径解析 `sourcesContent`，不同目录下的同名文件不会再发生内容混淆。
-- 映射后的复合赋值与递增/递减会对带副作用的字段、属性和 ECMAScript 索引器目标保持单次求值。
-- 嵌套对象初始化器会先完成右值构造再调用映射 setter，并对计算目标保持单次求值，setter 不会观察到半初始化对象。
+- 嵌套结构化 `record` 解构会直接读取已配置和继承的属性键，保留嵌套 `var` 声明，不再生成运行时不存在的 `Deconstruct` 调用。
+- 运行时成员类会保留手写 `init` accessor 行为，包括 C# `field` 支持的属性；私有字段声明与引用使用一致的 JavaScript 私有名称。
+- 以编译期负数 ECMAScript 数字为键的对象字面量会生成合法的计算属性语法。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor
+dotnet add package Jazor --version 0.1.35
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -62,8 +90,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.33" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.33" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.35" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.35" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -71,11 +99,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
+  <PackageReference Include="Jazor" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.35" />
 </ItemGroup>
 ```
 
@@ -214,6 +242,8 @@ Jazor/
 │   ├── Jazor.Analyzer/              # 静态分析诊断
 │   ├── Jazor.RazorVue/              # Generator 集成、SG 结果绑定与 Vue render framing
 │   ├── Jazor.Emit/                  # 物化、manifest、source map 与打包
+│   ├── Jazor.Admin/                 # UI 无关的管理后台外壳契约与 Razor 组件
+│   ├── JazorAdmin/                  # TDesign 集成示例与包消费冒烟验证
 │   ├── ECMAScript.Style/            # 强类型、确定的 CSS-in-JS runtime
 │   ├── Jazor.Common/                # 共享格式化 / source-map 工具和契约
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime 与开发期集成
@@ -248,6 +278,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 # 聚焦测试套件
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project style
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project style-browser
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj

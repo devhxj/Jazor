@@ -1,23 +1,55 @@
-**English** | [中文](README_CN.md)
-
 <div align="center">
 
 ![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+
+<h1>Jazor</h1>
+
+<p><strong>A typed .NET toolchain for compiling C# and Razor into deterministic ECMAScript modules and Vue render functions.</strong></p>
+
+<p>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 Preview 6" src="https://img.shields.io/badge/.NET-11%20Preview%206-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="RazorVue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
+  <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
+</p>
+
+<p>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8299 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8299%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.30 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.30%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.07 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.07%25-2ea44f" /></a>
+</p>
+
+<p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
+
 </div>
 
-# Jazor
-
-[![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
-[![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
-
-> Experimental. Public APIs, generated artifact shape, and tooling are still evolving. The compiler core, emit pipeline, and SG-result binding boundary are the most stable foundations.
+> [!IMPORTANT]
+> Jazor remains experimental. Public APIs, generated artifact shape, and tooling may evolve; the compiler core, emit pipeline, and Razor SG binding boundary are the most stable foundations.
 
 Jazor is a .NET toolchain for building JavaScript and Vue applications with C# and Razor.
 
 The core package provides the compiler, runtime contracts, analyzer, emit tool, and MSBuild integration. Razor-to-Vue transformation is an explicit `Jazor.Vue` opt-in: official Razor source-generator output is bound as Roslyn `IOperation` and lowered to Vue render-function `.mjs` artifacts.
 
 The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.Emit`, `Jazor.Common`, and the ECMAScript/Vue binding assemblies.
+
+## Verified Compiler Baseline
+
+`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-07-31, is:
+
+| Metric | Verified result | Enforced minimum |
+|--------|-----------------|------------------|
+| Compiler regression tests | 8299 / 8299 passed | 8000 passed |
+| Line coverage | 15735 / 16339 (96.30%) | 95% |
+| Branch coverage | 6931 / 7695 (90.07%) | 90% |
+
+Run the authoritative coverage gate from the repository root:
+
+```bash
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
+```
+
+The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
 
 ## Architecture
 
@@ -49,7 +81,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 ## Install
 
 ```bash
-dotnet add package Jazor
+dotnet add package Jazor --version 0.1.35
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -58,8 +90,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.33" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.33" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.35" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.35" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -67,11 +99,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
+  <PackageReference Include="Jazor" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.35" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.35" />
 </ItemGroup>
 ```
 
@@ -210,6 +242,8 @@ Jazor/
 │   ├── Jazor.Analyzer/              # Static analyzer diagnostics
 │   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
+│   ├── Jazor.Admin/                 # UI-neutral admin shell contracts and Razor components
+│   ├── JazorAdmin/                  # TDesign integration sample and package-consumer smoke
 │   ├── ECMAScript.Style/            # Strongly typed, deterministic CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
@@ -244,6 +278,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 # Focused suites
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project style
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project style-browser
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
