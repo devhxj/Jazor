@@ -284,7 +284,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (IsSupportedExternalMember(operation, symbol, hostType))
             return;
 
-        var unsupportedType = FindFirstUnsupportedExternalType(operation, hostType) ?? FindFirstUnsupportedConstructedMemberType(operation, symbol);
+        var unsupportedType = FindFirstUnsupportedExternalType(operation, hostType) ??
+            FindFirstUnsupportedExternalType(operation, symbol.ContainingType);
         if (unsupportedType is not null)
         {
             HandleTransformationFailure<Node>(
@@ -299,19 +300,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsSupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
         => FindFirstUnsupportedExternalType(operation, typeSymbol) is null;
-
-    private ITypeSymbol? FindFirstUnsupportedConstructedMemberType(IOperation operation, ISymbol? symbol)
-    {
-        return symbol switch
-        {
-            null => null,
-            IMethodSymbol method => FindFirstUnsupportedExternalType(operation, method.ContainingType),
-            IPropertySymbol property => FindFirstUnsupportedExternalType(operation, property.ContainingType),
-            IFieldSymbol field => FindFirstUnsupportedExternalType(operation, field.ContainingType),
-            INamedTypeSymbol namedType => FindFirstUnsupportedExternalType(operation, (ITypeSymbol)namedType),
-            _ => null
-        };
-    }
 
     private ITypeSymbol? FindFirstUnsupportedExternalType(IOperation operation, ITypeSymbol? typeSymbol)
     {
