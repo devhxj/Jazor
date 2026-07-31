@@ -50,7 +50,9 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
     public void Visit_ImplicitIndexerProtocol_PreservesBoundAccessAndEvaluation(ImplicitIndexerProtocolCase testCase)
     {
         var block = Operations.Value[testCase.Id];
-        Assert.HasCount(1, EnumerateOperations(block).OfType<IImplicitIndexerReferenceOperation>());
+        var operation = EnumerateOperations(block).OfType<IImplicitIndexerReferenceOperation>().Single();
+        Assert.IsNotNull(operation.LengthSymbol, testCase.Id);
+        Assert.IsNotNull(operation.IndexerSymbol, testCase.Id);
 
         var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
         var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
@@ -79,7 +81,9 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
     public void Visit_ImplicitIndexerProtocol_RejectsStandaloneIndexAndRangeValues(ImplicitIndexerProtocolFailureCase testCase)
     {
         var block = Operations.Value[testCase.Id];
-        Assert.HasCount(1, EnumerateOperations(block).OfType<IImplicitIndexerReferenceOperation>());
+        var operation = EnumerateOperations(block).OfType<IImplicitIndexerReferenceOperation>().Single();
+        Assert.IsNotNull(operation.LengthSymbol, testCase.Id);
+        Assert.IsNotNull(operation.IndexerSymbol, testCase.Id);
 
         var exception = Assert.Throws<OperationTransformationException>(() =>
             new SemanticWalker(true).Visit(block, new SenseArgument()));

@@ -1613,7 +1613,7 @@ private bool TryExpandEcmascriptParamsArgument(
 		out ITypeSymbol? hostType)
 	{
 		initializations = [];
-		var resolvedHostType = operation.Instance.Type ?? operation.IndexerSymbol?.ContainingType ?? operation.LengthSymbol?.ContainingType;
+		var resolvedHostType = operation.Instance.Type ?? operation.IndexerSymbol.ContainingType ?? operation.LengthSymbol.ContainingType;
 		var translatedInstance = Translate<Expression>(operation.Instance, argument);
 
 		if (cacheForRepeatedReadWrite || RequiresImplicitIndexerLengthAccess(operation.Argument))
@@ -1625,32 +1625,12 @@ private bool TryExpandEcmascriptParamsArgument(
 			if (lengthExpr is not null)
 				return lengthExpr;
 
-			if (operation.LengthSymbol is null)
-			{
-				return HandleTransformationFailure<Expression>(
-					operation,
-					$"Implicit index access on '{resolvedHostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported Length/Count symbol.");
-			}
-
 			lengthExpr = BuildImplicitIndexerLengthAccess(operation, operation.LengthSymbol, translatedInstance, argument, resolvedHostType);
 			return lengthExpr;
 		}
 
 		if (TryGetRangeArgument(operation.Argument, out var rangeArgument))
 		{
-			if (operation.IndexerSymbol is null)
-			{
-				arguments =
-				[
-					HandleTransformationFailure<Expression>(
-						operation,
-						$"Implicit range access on '{resolvedHostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer or slice symbol.")
-				];
-				hostType = resolvedHostType;
-				instance = translatedInstance;
-				return;
-			}
-
 			var startExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.LeftOperand, GetLengthExpr, argument)
 				?? new NumericLiteral(0, "0");
 			var endExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.RightOperand, GetLengthExpr, argument)
@@ -1689,13 +1669,6 @@ private bool TryExpandEcmascriptParamsArgument(
 		SenseArgument argument,
 		ITypeSymbol? hostType)
 	{
-		if (operation.IndexerSymbol is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				$"Implicit index access on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer symbol.");
-		}
-
 		var usage = TryGetRangeArgument(operation.Argument, out _)
 			? "implicit range access"
 			: "implicit indexer access";
