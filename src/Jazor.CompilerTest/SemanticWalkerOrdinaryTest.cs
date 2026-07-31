@@ -3395,6 +3395,30 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   [TestMethod]
+  public void Visit_Conversion_BigIntegerToInt_UsesNumberCarrierConversion()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(System.Numerics.BigInteger value)
+                {
+                    int number = (int)value;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual("""
+{
+  let number = Number(value);
+}
+""", script);
+  }
+
+  [TestMethod]
   public void Visit_Conversion_CharArithmetic_PreservesUtf16CodeUnitSemantics()
   {
     var block = GetBlockOperation("""

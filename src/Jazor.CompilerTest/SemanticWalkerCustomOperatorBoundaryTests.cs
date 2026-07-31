@@ -57,6 +57,8 @@ public sealed class SemanticWalkerCustomOperatorBoundaryTests
                 public int Value { get; }
 
                 public static explicit operator TargetValue(SourceValue value) => new(value.Value);
+                public static explicit operator SourceValue(int value) => new(value);
+                public static explicit operator int(SourceValue value) => value.Value;
             }
 
             public readonly struct TargetValue
@@ -80,6 +82,16 @@ public sealed class SemanticWalkerCustomOperatorBoundaryTests
                     TargetValue converted = (TargetValue)value;
                 }
 
+                public void ConvertFromNumber(int value)
+                {
+                    SourceValue converted = (SourceValue)value;
+                }
+
+                public void ConvertToNumber(SourceValue value)
+                {
+                    int converted = (int)value;
+                }
+
                 public void Increment(SequenceNumber value)
                 {
                     SequenceNumber incremented = ++value;
@@ -100,7 +112,8 @@ public sealed class SemanticWalkerCustomOperatorBoundaryTests
         var model = compilation.GetSemanticModel(syntaxTree);
         return syntaxTree.GetRoot().DescendantNodes()
             .OfType<MethodDeclarationSyntax>()
-            .Where(static method => method.Identifier.ValueText is "Convert" or "Increment")
+            .Where(static method => method.Identifier.ValueText is
+                "Convert" or "ConvertFromNumber" or "ConvertToNumber" or "Increment")
             .ToDictionary(
                 static method => method.Identifier.ValueText,
                 method => Assert.IsInstanceOfType<IBlockOperation>(model.GetOperation(method.Body!)),
@@ -124,6 +137,24 @@ internal static class CustomOperatorBoundaryCatalog
             "Convert",
             [
                 "Conversion operator 'static SourceValue.explicit operator TargetValue(SourceValue)'",
+                "requires an explicit whitelist/ECMAScript mapping",
+                "cannot fall back to raw JavaScript conversion"
+            ]),
+        new(
+            "custom-operator-boundary.conversion.number-to-unmapped-source",
+            "operation=conversion;source=number;target=class;fallback=forbidden",
+            "ConvertFromNumber",
+            [
+                "Conversion operator 'static SourceValue.explicit operator SourceValue(int)'",
+                "requires an explicit whitelist/ECMAScript mapping",
+                "cannot fall back to raw JavaScript conversion"
+            ]),
+        new(
+            "custom-operator-boundary.conversion.unmapped-source-to-number",
+            "operation=conversion;source=class;target=number;fallback=forbidden",
+            "ConvertToNumber",
+            [
+                "Conversion operator 'static SourceValue.explicit operator int(SourceValue)'",
                 "requires an explicit whitelist/ECMAScript mapping",
                 "cannot fall back to raw JavaScript conversion"
             ]),

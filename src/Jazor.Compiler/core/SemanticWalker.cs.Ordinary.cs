@@ -697,17 +697,18 @@ public partial class SemanticWalker
 
 	private bool CanPassThroughIntrinsicConversion(IConversionOperation operation)
 	{
-		if (operation.Type is null || operation.Operand.Type is null)
-			return false;
-
-		if (IsSystemIndexType(operation.Type) ||
-			IsSystemIndexType(operation.Operand.Type) ||
-			IsSystemRangeType(operation.Type) ||
-			IsSystemRangeType(operation.Operand.Type))
+		// This helper is reached only for a bound conversion operator; Roslyn therefore supplies
+		// both the conversion target and the typed operand.
+		var targetSymbol = operation.Type!;
+		var operandSymbol = operation.Operand.Type!;
+		if (IsSystemIndexType(targetSymbol) ||
+			IsSystemIndexType(operandSymbol) ||
+			IsSystemRangeType(targetSymbol) ||
+			IsSystemRangeType(operandSymbol))
 			return true;
 
-		var targetType = GetMapperType(operation.Type);
-		var operandType = GetMapperType(operation.Operand.Type);
+		var targetType = GetMapperType(targetSymbol);
+		var operandType = GetMapperType(operandSymbol);
 		if (targetType.Mapper == operandType.Mapper)
 			return targetType.Mapper is not TypeMapper.Class and not TypeMapper.Unknown;
 
