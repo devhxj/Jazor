@@ -77,13 +77,8 @@ public partial class SemanticWalker
 		if (operation.ExpressionBody is not null)
 		{
 			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
-			if (operation.ExpressionBody is IBlockOperation blockExpression)
-				return Visit(blockExpression, bodyArg);
-
-			var expr = Translate<Expression>(operation.ExpressionBody, bodyArg);
-			var returnStmt = new ReturnStatement(expr);
-			var statements = MaterializeScopedStatements(bodyArg, [returnStmt]);
-			return new FunctionBody(NodeList.From(statements), strict: true);
+			// Roslyn represents an expression-bodied method as a synthetic IBlockOperation.
+			return Visit(operation.ExpressionBody, bodyArg);
 		}
 
 		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
@@ -112,13 +107,8 @@ public partial class SemanticWalker
 		if (operation.ExpressionBody is not null)
 		{
 			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
-			if (operation.ExpressionBody is IBlockOperation blockExpression)
-				return Visit(blockExpression, bodyArg);
-
-			var expr = Translate<Expression>(operation.ExpressionBody, bodyArg);
-			var statement = new NonSpecialExpressionStatement(expr);
-			var statements = MaterializeScopedStatements(bodyArg, [statement]);
-			return new FunctionBody(NodeList.From(statements), strict: true);
+			// Constructor expression bodies use the same synthetic block contract as methods.
+			return Visit(operation.ExpressionBody, bodyArg);
 		}
 
 		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");

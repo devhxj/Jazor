@@ -238,17 +238,13 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         => typeSymbol?.OriginalDefinition is { Name: "Half" } original &&
            original.ContainingNamespace?.ToDisplayString() == "System";
 
-    private static ISymbol GetWhiteListSymbol(IMemberReferenceOperation operation, bool isRead = true)
+    private static ISymbol GetWhiteListSymbol(IMemberReferenceOperation operation)
     {
-        if (operation is IPropertyReferenceOperation propertyReferenceOp)
-        {
-            if (isRead && propertyReferenceOp.Property.GetMethod is not null)
-                return propertyReferenceOp.Property.GetMethod;
-            else if (!isRead && propertyReferenceOp.Property.SetMethod is not null)
-                return propertyReferenceOp.Property.SetMethod;
-        }
-
-        return operation.Member;
+        // This helper is owned by property-pattern reads. A legally bound property subpattern
+        // necessarily exposes a getter; write dispatch uses the dedicated setter paths.
+        return operation is IPropertyReferenceOperation propertyReference
+            ? propertyReference.Property.GetMethod!
+            : operation.Member;
     }
 
     private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias, IOperation? originOperation = null, ITypeSymbol? hostType = null)
