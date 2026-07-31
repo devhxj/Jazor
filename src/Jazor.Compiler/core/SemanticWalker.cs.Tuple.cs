@@ -1027,10 +1027,7 @@ public partial class SemanticWalker
 
 			return new TupleOperandResult(Translate<Expression>(operationValue, argument), null, null);
 		}
-		if (target.AstExpression is { } expr)
-			return new TupleOperandResult(expr, null, null);
-
-		return default;
+		return new TupleOperandResult(target.AstExpression!, null, null);
 	}
 
 	/// <summary>
@@ -1038,7 +1035,7 @@ public partial class SemanticWalker
 	/// 如果原操作数本身就是 tuple 字面量，则直接使用对应元素表达式；
 	/// 否则从缓存后的对象表达式按字段取值。
 	/// </summary>
-	private Expression? GetTupleElementExpression(
+	private Expression GetTupleElementExpression(
 		in TupleOperandResult operand,
 		IFieldSymbol field,
 		int index,
@@ -1046,21 +1043,23 @@ public partial class SemanticWalker
 	{
 		if (operand.TupleOperation is not null)
 			return Translate<Expression>(operand.TupleOperation.Elements[index], argument);
-		if (operand.Expression is not null)
-			return new MemberExpression(operand.Expression, new Identifier(GetTupleRuntimeFieldName(field)), false, false);
-		return null;
+
+		// ProcessTupleOperand always supplies either TupleOperation or Expression for a
+		// bound tuple operand. An empty result cannot originate from valid Roslyn tuple syntax.
+		return new MemberExpression(operand.Expression!, new Identifier(GetTupleRuntimeFieldName(field)), false, false);
 	}
 
-	private Expression? BuildTupleBinaryExpression(
+	private Expression BuildTupleBinaryExpression(
 		(TupleValueSource Target, ITypeSymbol Type) left,
 		(TupleValueSource Target, ITypeSymbol Type) right,
 		bool isEq,
 		SenseArgument argument)
 	{
-		// 类型防御性检查：正常情况下 Roslyn 已保证左右都是同形 tuple，
-		// 这里保留兜底只是为了让失败路径更明确。
-		if (left.Type is not INamedTypeSymbol leftType || right.Type is not INamedTypeSymbol rightType)
-			return null;
+		// ITupleBinaryOperation guarantees two non-empty, same-shape named tuple types.
+		// Keep that Roslyn contract explicit so unreachable malformed-operation branches
+		// cannot drift into the normal lowering path.
+		var leftType = (INamedTypeSymbol)left.Type;
+		var rightType = (INamedTypeSymbol)right.Type;
 
 		// 先把左右操作数归一化成“tuple 字面量”或“可按字段读取的表达式入口”。
 		var leftResult = ProcessTupleOperand(left.Target, argument);
@@ -1079,19 +1078,16 @@ public partial class SemanticWalker
 			{
 				var subLeft = leftResult.TupleOperation is not null
 					? new TupleValueSource(leftResult.TupleOperation.Elements[index])
-					: new TupleValueSource(GetTupleElementExpression(leftResult, leftField, index, argument)!);
+					: new TupleValueSource(GetTupleElementExpression(leftResult, leftField, index, argument));
 				var subRight = rightResult.TupleOperation is not null
 					? new TupleValueSource(rightResult.TupleOperation.Elements[index])
-					: new TupleValueSource(GetTupleElementExpression(rightResult, rightField, index, argument)!);
+					: new TupleValueSource(GetTupleElementExpression(rightResult, rightField, index, argument));
 
 				var subResult = BuildTupleBinaryExpression(
 					(subLeft, leftField.Type),
 					(subRight, rightField.Type),
 					isEq,
 					argument);
-
-				if (subResult is null)
-					return null;
 
 				result = result is null
 					? subResult
@@ -1101,9 +1097,6 @@ public partial class SemanticWalker
 			{
 				var exprLeft = GetTupleElementExpression(leftResult, leftField, index, argument);
 				var exprRight = GetTupleElementExpression(rightResult, rightField, index, argument);
-
-				if (exprLeft is null || exprRight is null)
-					return null;
 
 				var expr = new NonLogicalBinaryExpression(
 					isEq ? Operator.StrictEquality : Operator.StrictInequality,
@@ -1116,18 +1109,15 @@ public partial class SemanticWalker
 			}
 		}
 
-		if (result is null)
-			return null;
-
 		if (leftResult.Initialization is null && rightResult.Initialization is null)
-			return result;
+			return result!;
 
 		var expressions = new List<Expression>();
 		if (leftResult.Initialization is not null)
 			expressions.Add(leftResult.Initialization);
 		if (rightResult.Initialization is not null)
 			expressions.Add(rightResult.Initialization);
-		expressions.Add(result);
+		expressions.Add(result!);
 		result = new SequenceExpression(NodeList.From(expressions));
 
 		return result;
