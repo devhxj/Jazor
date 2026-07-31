@@ -1560,6 +1560,10 @@ public partial class SemanticWalker
 					nodes.Add(addProperty);
 					continue;
 				}
+
+				return HandleTransformationFailure<List<ObjectLiteralNode>>(
+					invocationOp,
+					$"Object-literal collection initializer '{invocationOp.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)}' requires an instance Add(key, value) member whose key is string, numeric, or ECMAScript.Symbol.");
 			}
 
 			if (target is null || value is null)
@@ -1674,13 +1678,6 @@ public partial class SemanticWalker
 		{
 			return false;
 		}
-
-		var valueType = targetMethod.Parameters[1].Type;
-		if (valueType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableValueType)
-			valueType = nullableValueType.TypeArguments[0];
-
-		if (valueType.SpecialType == SpecialType.System_Void)
-			return false;
 
 		return IsObjectLiteralHostType(invocation.Instance?.Type ?? targetMethod.ContainingType);
 	}

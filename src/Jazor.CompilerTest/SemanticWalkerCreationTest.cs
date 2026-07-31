@@ -279,6 +279,64 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralCollectionAddWithOneArgument_ThrowsActionableDiagnostic()
+    {
+        var block = GetBlockOperation(@"
+            [ECMAScript]
+            [System.ComponentModel.Description(""@#"")]
+            sealed class ObjectLiteralBag : System.Collections.IEnumerable
+            {
+                public void Add(int value) { }
+                public System.Collections.IEnumerator GetEnumerator() => throw new System.NotImplementedException();
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new ObjectLiteralBag { 42 };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitObjectCreation(operation, new()));
+
+        StringAssert.Contains(exception.Message, "ObjectLiteralBag.Add(int)");
+        StringAssert.Contains(exception.Message, "requires an instance Add(key, value)");
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralCollectionAddWithUnsupportedKeyType_ThrowsActionableDiagnostic()
+    {
+        var block = GetBlockOperation(@"
+            [ECMAScript]
+            [System.ComponentModel.Description(""@#"")]
+            sealed class ObjectLiteralBag : System.Collections.IEnumerable
+            {
+                public void Add(System.DateTime key, int value) { }
+                public System.Collections.IEnumerator GetEnumerator() => throw new System.NotImplementedException();
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new ObjectLiteralBag { { System.DateTime.UnixEpoch, 42 } };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitObjectCreation(operation, new()));
+
+        StringAssert.Contains(exception.Message, "ObjectLiteralBag.Add(System.DateTime, int)");
+        StringAssert.Contains(exception.Message, "key is string, numeric, or ECMAScript.Symbol");
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_UnsupportedExternalType_Throws()
     {
         var block = GetBlockOperation(@"
