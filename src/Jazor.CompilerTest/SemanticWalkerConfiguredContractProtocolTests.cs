@@ -136,6 +136,8 @@ public sealed class SemanticWalkerConfiguredContractProtocolTests
                 private static VueTypedSetupCallback<CounterProps> GetSetup()
                     => Setup;
 
+                private static extern VueRenderCallback ExternSetup(CounterProps props, VueSetupContext context);
+
             {{methods}}
             }
             """;
@@ -342,7 +344,25 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "name: \"Static\"",
             "props: [\"baseValue\", \"message\"]",
-            "emits: []")
+            "emits: []"),
+        Success(
+            "probe-context.field-and-nested-initializer",
+            "emits=context-field-and-instance-method;initializer=nested-member;contract=indexer-and-static-members-skipped",
+            """
+                        var options = new TestProbeContractOptions
+                        {
+                            Nested = { Enabled = true },
+                            Setup = context =>
+                            {
+                                var state = context.State;
+                                context.Emit("ready");
+                                return static () => null!;
+                            }
+                        };
+                """,
+            "emits: [\"ready\"]",
+            "nested: { enabled: true }",
+            "let state = context.state")
     ];
 
     public static IReadOnlyList<ConfiguredContractFailureCase> FailureCases { get; } =
@@ -444,7 +464,26 @@ internal static class ConfiguredContractProtocolCatalog
                         };
                 """,
             "could not analyze the setup callback",
-            "Use an inline lambda or a source-declared method group")
+            "Use an inline lambda or a source-declared method group"),
+        Failure(
+            "emits.source-extern-method-group",
+            "attribute=Emits;setup=source-extern-method-group;analysis-root=bodyless;result=rejected",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = ExternSetup
+                        };
+                """,
+            "could not analyze the setup callback",
+            "Use an inline lambda or a source-declared method group"),
+        Failure(
+            "emits.static-source-property",
+            "attribute=Emits;source=static-property;instance-source=missing;result=rejected",
+            """
+                        var options = new TestStaticEmitSourceOptions();
+                """,
+            "source member 'Setup'",
+            "was not found")
     ];
 
     private static ConfiguredContractSuccessCase Success(

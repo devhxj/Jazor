@@ -31,11 +31,10 @@ public partial class SemanticWalker
 	{
 		// A legal IObjectCreationOperation is fully bound. Type, constructor, and each argument's
 		// parameter are Roslyn contracts; null only belongs to invalid-operation recovery trees.
-		var type = operation.Type!;
+		var type = (INamedTypeSymbol)operation.Type!;
 		var constructor = operation.Constructor!;
 
-		if (type is INamedTypeSymbol namedType &&
-			ShouldLowerStructurally(namedType))
+		if (ShouldLowerStructurally(type))
 			return BuildStructuralLiteral(operation, argument);
 
 		RejectUnsupportedTypeFallback(operation, type, "object creation");
@@ -112,9 +111,7 @@ public partial class SemanticWalker
 
 	private bool ShouldEmitMemberConstructorSelector(IMethodSymbol constructor)
 	{
-		if (constructor.MethodKind != MethodKind.Constructor ||
-			constructor.ContainingType is not INamedTypeSymbol containingType)
-			return false;
+		var containingType = constructor.ContainingType!;
 
 		if (containingType.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) <= 1)
 			return false;
@@ -125,7 +122,7 @@ public partial class SemanticWalker
 		for (var current = containingType.ContainingType; current is not null; current = current.ContainingType)
 		{
 			if (current.GetAttributes().Any(static attribute =>
-				attribute.AttributeClass?.ToDisplayString() == Util.ECMAScriptModuleAttributeMetadataName))
+				attribute.AttributeClass!.ToDisplayString() == Util.ECMAScriptModuleAttributeMetadataName))
 				return true;
 		}
 
@@ -134,9 +131,6 @@ public partial class SemanticWalker
 
 	private bool IsIntrinsicObjectCreationFallbackAllowed(IMethodSymbol constructor, ITypeSymbol constructedType)
 	{
-		if (constructor.MethodKind != MethodKind.Constructor)
-			return false;
-
 		var (mapper, typeName) = GetMapperType(constructedType);
 		return mapper switch
 		{
@@ -349,7 +343,7 @@ public partial class SemanticWalker
 	{
 		foreach (var candidate in property.GetAttributes())
 		{
-			if (candidate.AttributeClass?.ToDisplayString() == SpreadAttributeFullName)
+			if (candidate.AttributeClass!.ToDisplayString() == SpreadAttributeFullName)
 			{
 				attribute = candidate;
 				return true;
@@ -383,31 +377,16 @@ public partial class SemanticWalker
 			return;
 		}
 
-		if (expandedExpression is null)
-		{
-			HandleTransformationFailure<Node>(
-				originOperation,
-				$"Expanded member '{property.ToDisplayString(Format.NameFormat)}' could not be translated to an object expression.");
-			return;
-		}
-
 		members.Add((
-			new SpreadElement(expandedExpression!),
+			new SpreadElement(expandedExpression),
 			string.Empty,
 			GetRecordStructuralMemberOrder(memberOrder, property)));
 	}
 
 	private static int GetObjectLiteralNodeOrder(IReadOnlyDictionary<string, int> memberOrder, ObjectLiteralNode node)
-	{
-		var orderSymbol = node.OrderSymbol;
-		if (orderSymbol is not null)
-			return GetRecordStructuralMemberOrder(memberOrder, orderSymbol);
-
-		var name = node.Name;
-		return string.IsNullOrEmpty(name)
+		=> string.IsNullOrEmpty(node.Name)
 			? int.MaxValue
-			: GetRecordStructuralMemberOrder(memberOrder, name);
-	}
+			: GetRecordStructuralMemberOrder(memberOrder, node.Name);
 
 	private void AppendInferredRecordMembers(
 		INamedTypeSymbol type,
@@ -487,14 +466,13 @@ public partial class SemanticWalker
 	private static bool TryReadPropsAttribute(AttributeData attribute, out int typeArgumentIndex)
 	{
 		typeArgumentIndex = PropsAttribute.DefaultTypeArgumentIndex;
-		if (attribute.AttributeClass?.ToDisplayString() != typeof(PropsAttribute).FullName)
+		if (attribute.AttributeClass!.ToDisplayString() != typeof(PropsAttribute).FullName)
 			return false;
 
 		foreach (var namedArgument in attribute.NamedArguments)
 		{
-			if (string.Equals(namedArgument.Key, nameof(PropsAttribute.TypeArgumentIndex), StringComparison.Ordinal) &&
-				namedArgument.Value.Value is int configuredIndex)
-				typeArgumentIndex = configuredIndex;
+			if (string.Equals(namedArgument.Key, nameof(PropsAttribute.TypeArgumentIndex), StringComparison.Ordinal))
+				typeArgumentIndex = (int)namedArgument.Value.Value!;
 		}
 
 		return true;
@@ -515,14 +493,13 @@ public partial class SemanticWalker
 	private static bool TryReadEmitsAttribute(AttributeData attribute, out string sourceMemberName)
 	{
 		sourceMemberName = EmitsAttribute.DefaultSourceMemberName;
-		if (attribute.AttributeClass?.ToDisplayString() != typeof(EmitsAttribute).FullName)
+		if (attribute.AttributeClass!.ToDisplayString() != typeof(EmitsAttribute).FullName)
 			return false;
 
 		foreach (var namedArgument in attribute.NamedArguments)
 		{
-			if (string.Equals(namedArgument.Key, nameof(EmitsAttribute.SourceMemberName), StringComparison.Ordinal) &&
-				namedArgument.Value.Value is string configuredSourceMemberName)
-				sourceMemberName = configuredSourceMemberName;
+			if (string.Equals(namedArgument.Key, nameof(EmitsAttribute.SourceMemberName), StringComparison.Ordinal))
+				sourceMemberName = (string)namedArgument.Value.Value!;
 		}
 
 		return true;
@@ -778,8 +755,9 @@ public partial class SemanticWalker
 				case LocalFunctionStatementSyntax localFunction when localFunction.Body is not null:
 					rootOperation = declarationModel.GetOperation(localFunction.Body, _cancellationToken)!;
 					return true;
-				case LocalFunctionStatementSyntax localFunction when localFunction.ExpressionBody is not null:
-					rootOperation = declarationModel.GetOperation(localFunction.ExpressionBody.Expression, _cancellationToken)!;
+				case LocalFunctionStatementSyntax localFunction:
+					// A valid local function always has either the block handled above or an expression body.
+					rootOperation = declarationModel.GetOperation(localFunction.ExpressionBody!.Expression, _cancellationToken)!;
 					return true;
 			}
 		}
@@ -935,8 +913,7 @@ public partial class SemanticWalker
 
 			if (mapper is TypeMapper.Array or TypeMapper.Set)
 			{
-				if (invocation.Arguments.Length != 1)
-					return false;
+				// Bound List/Set collection initializers select their one-argument Add contract.
 				items.Add(TranslateTupleForTarget(
 					invocation.Arguments[0].Value,
 					invocation.Arguments[0].Parameter!.Type,
@@ -944,9 +921,7 @@ public partial class SemanticWalker
 			}
 			else
 			{
-				if (invocation.Arguments.Length != 2)
-					return false;
-
+				// Bound Map collection initializers select Dictionary.Add(key, value).
 				var key = TranslateTupleForTarget(
 					invocation.Arguments[0].Value,
 					invocation.Arguments[0].Parameter!.Type,
@@ -985,21 +960,16 @@ public partial class SemanticWalker
 			return true;
 		}
 
-		if (TryCreateNumericObjectPropertyKey(operation, keyType, out key))
+		if (TryCreateNumericObjectPropertyKey(operation, keyType, out key, out computed))
 		{
-			computed = false;
 			return true;
 		}
 
 		if (IsObjectLiteralComputedKeyType(keyType))
 		{
-			var translatedKey = TranslateTupleForTarget(operation, keyType, argument);
-			if (translatedKey is not null)
-			{
-				key = translatedKey;
-				computed = true;
-				return true;
-			}
+			key = TranslateTupleForTarget(operation, keyType, argument);
+			computed = true;
+			return true;
 		}
 
 		key = null!;
@@ -1010,9 +980,11 @@ public partial class SemanticWalker
 	private static bool TryCreateNumericObjectPropertyKey(
 		IOperation operation,
 		ITypeSymbol? keyType,
-		out Expression key)
+		out Expression key,
+		out bool computed)
 	{
 		key = null!;
+		computed = false;
 		if (keyType is not INamedTypeSymbol namedType ||
 			namedType.OriginalDefinition.ToDisplayString(Format.NameFormat) != "ECMAScript.Number")
 		{
@@ -1023,12 +995,13 @@ public partial class SemanticWalker
 			return false;
 
 		key = literal;
+		computed = literal is not NumericLiteral;
 		return true;
 	}
 
 	private static bool TryExtractNumericObjectKeyLiteral(
 		IOperation operation,
-		out NumericLiteral literal)
+		out Expression literal)
 	{
 		if (operation.ConstantValue is { HasValue: true, Value: not null } constantValue &&
 			TryCreateNumericLiteral(constantValue.Value, out literal))
@@ -1048,19 +1021,19 @@ public partial class SemanticWalker
 
 	private static bool TryCreateNumericLiteral(
 		object value,
-		out NumericLiteral literal)
+		out Expression literal)
 	{
 		var createdLiteral = value switch
 		{
-			byte numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			sbyte numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			short numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			ushort numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			int numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			uint numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-			float numberValue => new NumericLiteral(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-			double numberValue => new NumericLiteral(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-			decimal numberValue => new NumericLiteral(System.Convert.ToDouble(numberValue), numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			byte numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			sbyte numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			short numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			ushort numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			int numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			uint numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			float numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+			double numberValue => JavaScriptAstFactory.CreateNumericExpression(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+			decimal numberValue => JavaScriptAstFactory.CreateNumericExpression(System.Convert.ToDouble(numberValue), numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
 			_ => null
 		};
 
@@ -1281,12 +1254,7 @@ public partial class SemanticWalker
 					var setMethod = propertyReference.Property.SetMethod!;
 					var setterArguments = new List<Expression>(propertyReference.Arguments.Length + 1);
 					foreach (var propertyArgument in propertyReference.Arguments)
-					{
-						var argContext = propertyArgument.Parameter!.RefKind is RefKind.Out
-							? argument.With(Sense.OutParameter)
-							: argument;
-						setterArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
-					}
+						setterArguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 					setterArguments.Add(right);
 
 					var mapperExpr = GetWhiteListExpression(setMethod, argument, setterArguments, propertyInstance!, out var setterAlias, propertyReference);
@@ -1558,15 +1526,7 @@ public partial class SemanticWalker
 			return;
 		}
 
-		if (expandedExpression is null)
-		{
-			HandleTransformationFailure<Node>(
-				valueOperation,
-				$"Expanded initializer member '{property.ToDisplayString(Format.NameFormat)}' could not be translated to an object expression.");
-			return;
-		}
-
-		nodes.Add(new ObjectLiteralNode(new SpreadElement(expandedExpression!), string.Empty, property));
+		nodes.Add(new ObjectLiteralNode(new SpreadElement(expandedExpression), string.Empty, property));
 	}
 
 	private ObjectExpression RecursiveObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
@@ -1674,21 +1634,19 @@ public partial class SemanticWalker
 
 		foreach (var initializer in operation.Initializers)
 		{
-			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
-			{
-				var value = Translate<Expression>(simpleAssignmentOp.Value, argument);
-				var key = Translate<Expression>(simpleAssignmentOp.Target, argument);
-				var prop = new ObjectProperty(
-					PropertyKind.Init,
-					key: key,
-					value: value,
-					computed: false,
-					shorthand: false,
-					method: false
-				);
-				properties.Add(prop);
-			}
-			else HandleTransformationFailure<Node>(initializer, "Anonymous object initializer could not be translated to JavaScript.");
+			// Roslyn binds every legal anonymous-object member as a simple assignment.
+			var simpleAssignment = (ISimpleAssignmentOperation)initializer;
+			var value = Translate<Expression>(simpleAssignment.Value, argument);
+			var key = Translate<Expression>(simpleAssignment.Target, argument);
+			var prop = new ObjectProperty(
+				PropertyKind.Init,
+				key: key,
+				value: value,
+				computed: false,
+				shorthand: false,
+				method: false
+			);
+			properties.Add(prop);
 		}
 
 		return new ObjectExpression(NodeList.From(properties));
@@ -1743,10 +1701,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArrayCreation(IArrayCreationOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is not null)
-			RejectUnsupportedTypeFallback(operation, operation.Type, "array creation");
+		var arrayType = (IArrayTypeSymbol)operation.Type!;
+		RejectUnsupportedTypeFallback(operation, arrayType, "array creation");
 
-		if (operation.Type is IArrayTypeSymbol arrayType && arrayType.Rank > 1)
+		if (arrayType.Rank > 1)
 		{
 			if (operation.Initializer is not null)
 				return BuildNestedArrayInitializer(operation.Initializer, argument, arrayType.ElementType);
@@ -1768,24 +1726,22 @@ public partial class SemanticWalker
 		}
 		else
 		{
-			// 处理空数组或基于大小的数组
-			foreach (var dimension in operation.DimensionSizes)
+			// A valid rank-one array creation without an initializer has exactly one bound dimension.
+			var dimension = operation.DimensionSizes[0];
+			if (dimension.ConstantValue.HasValue)
 			{
-				if (dimension.ConstantValue.HasValue)
+				switch (dimension.ConstantValue.Value)
 				{
-					switch (dimension.ConstantValue.Value)
-					{
-						case 0:
-						case 0u:
-						case 0L:
-						case 0UL:
-							return new ArrayExpression(NodeList.From<Expression?>());
-					}
+					case 0:
+					case 0u:
+					case 0L:
+					case 0UL:
+						return new ArrayExpression(NodeList.From<Expression?>());
 				}
-
-				var sizeNode = Translate<Expression>(dimension, argument);
-				return new NewExpression(new Identifier("Array"), NodeList.From(sizeNode));
 			}
+
+			var sizeNode = Translate<Expression>(dimension, argument);
+			return new NewExpression(new Identifier("Array"), NodeList.From(sizeNode));
 		}
 
 		return new ArrayExpression(NodeList.From(elements));

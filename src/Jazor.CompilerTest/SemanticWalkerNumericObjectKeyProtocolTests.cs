@@ -126,6 +126,7 @@ internal static class NumericObjectKeyProtocolCatalog
         Case("sbyte", "source=sbyte;format=integer;range=signed-8", "(Number)(sbyte)101", typeof(sbyte), "101"),
         Case("short", "source=short;format=integer;range=signed-16", "(Number)(short)1234", typeof(short), "1234"),
         Case("ushort", "source=ushort;format=integer;range=unsigned-16", "(Number)(ushort)60000", typeof(ushort), "60000"),
+        Case("int", "source=int;format=integer;range=signed-32;property-key=computed-negative", "(Number)(-123456789)", typeof(int), "[-123456789]"),
         Case("uint", "source=uint;format=integer;range=unsigned-32", "(Number)4000000000u", typeof(uint), "4000000000"),
         Case("float", "source=float;format=round-trip;fraction=quarter", "(Number)1.25f", typeof(float), "1.25"),
         Case("double", "source=double;format=round-trip;fraction=half", "(Number)2.5d", typeof(double), "2.5"),

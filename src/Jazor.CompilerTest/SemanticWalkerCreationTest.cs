@@ -1592,6 +1592,43 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_NestedRecordSpread_PreservesInnerSpreadWithoutWrapper()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var child = new ChildProps { Name = ""John"" };
+                    var envelope = new SpreadEnvelope(new SpreadLayer(child));
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+                }
+
+                public sealed record SpreadLayer(
+                    [property: Spread] ChildProps Child);
+
+                public sealed record SpreadEnvelope(
+                    [property: Spread] SpreadLayer Layer);
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var script = new SemanticWalker(true)
+            .VisitObjectCreation(operation, new SenseArgument())?
+            .ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ ...child }", script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_RecordObjectInitializerSpreadProperty_NonLiteralValue_UsesSpreadElement()
     {
         var block = GetBlockOperation(@"
@@ -1875,6 +1912,32 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{ 7: 9 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralNumericKeyFromRuntimeValue_ThrowsActionableDiagnostic()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod(int numericKey)
+                {
+                    var state = new HistoryState
+                    {
+                        { (Number)numericKey, (Number)9 }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitObjectCreation(operation, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "unsupported dynamic object key");
+        StringAssert.Contains(exception.Message, "compile-time string literal keys");
     }
 
     [TestMethod]

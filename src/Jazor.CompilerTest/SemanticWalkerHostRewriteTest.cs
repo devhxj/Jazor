@@ -173,6 +173,31 @@ public sealed class SemanticWalkerHostRewriteTest
         Assert.IsFalse(script.Contains("\"42\", props", StringComparison.Ordinal), script);
     }
 
+    [TestMethod]
+    public void RewriteObjectCreation_WhenSelectedHostDeclines_UsesStandardCreationLowering()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                sealed class NestedValue;
+
+                void TestMethod()
+                {
+                    var value = new NestedValue();
+                }
+            }
+            """);
+        var host = new DecliningObjectCreationHost();
+        var walker = new SemanticWalker(true) { Host = host };
+
+        var script = walker.Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.AreEqual(1, host.RewriteCount);
+        StringAssert.Contains(script, "let value = new NestedValue;", StringComparison.Ordinal);
+    }
+
     private static IBlockOperation GetBlockOperation(string code)
     {
         var usings =
@@ -248,5 +273,22 @@ public sealed class SemanticWalkerHostRewriteTest
             => string.Equals(local.Name, _sourceName, StringComparison.Ordinal)
                 ? new Identifier(_alias)
                 : null;
+    }
+
+    private sealed class DecliningObjectCreationHost : SemanticWalkerHost
+    {
+        public int RewriteCount { get; private set; }
+
+        public override bool ShouldRewriteObjectCreation(IObjectCreationOperation operation)
+            => true;
+
+        public override Expression? RewriteObjectCreation(
+            IObjectCreationOperation operation,
+            SenseArgument argument,
+            IReadOnlyList<Expression> arguments)
+        {
+            RewriteCount++;
+            return null;
+        }
     }
 }

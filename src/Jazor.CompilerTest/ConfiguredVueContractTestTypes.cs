@@ -45,6 +45,49 @@ public sealed record TestInheritedContractComponentOptions<TProps> : TestInherit
 	public VueTypedSetupCallback<TProps>? Setup { get; init; }
 }
 
+public delegate VueRenderCallback TestProbeSetupCallback(TestProbeEmitContext context);
+
+[ECMAScript]
+public sealed class TestProbeEmitContext
+{
+	public static void Emit(int code) { }
+	public void Emit() { }
+	public void Emit(string name) { }
+
+	public string State = string.Empty;
+}
+
+public sealed record TestProbeNestedOptions
+{
+	[ComponentDescription("@#enabled")]
+	public bool Enabled { get; set; }
+}
+
+public sealed record TestProbeContractOptions
+{
+	[ComponentDescription("@#emits")]
+	[Emits]
+	public string[]? Emits { get; init; }
+
+	[ComponentDescription("@#setup")]
+	public TestProbeSetupCallback? Setup { get; init; }
+
+	[ComponentDescription("@#nested")]
+	public TestProbeNestedOptions Nested { get; init; } = new();
+
+	public static string StaticMetadata => "ignored";
+	public string this[int index] => index.ToString();
+}
+
+public sealed record TestStaticEmitSourceOptions
+{
+	[ComponentDescription("@#emits")]
+	[Emits]
+	public string[]? Emits { get; init; }
+
+	public static TestProbeSetupCallback? Setup { get; }
+}
+
 public sealed record TestInvalidPropsTypeComponentOptions<TProps> : VueComponentDefinition
 	where TProps : VueProps
 {
