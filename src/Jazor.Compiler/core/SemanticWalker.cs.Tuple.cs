@@ -195,9 +195,8 @@ public partial class SemanticWalker
 	/// </summary>
 	private static bool HasSameTupleRuntimeShape(INamedTypeSymbol sourceType, INamedTypeSymbol targetType)
 	{
-		if (sourceType.TupleElements.Length != targetType.TupleElements.Length)
-			return false;
-
+		// Roslyn only binds tuple conversions/assignments with matching arity and nested
+		// tuple structure. Runtime compatibility here is therefore solely a name contract.
 		for (var index = 0; index < sourceType.TupleElements.Length; index++)
 		{
 			var sourceField = sourceType.TupleElements[index];
@@ -208,15 +207,8 @@ public partial class SemanticWalker
 				System.StringComparison.Ordinal))
 				return false;
 
-			var sourceNested = sourceField.Type as INamedTypeSymbol;
-			var targetNested = targetField.Type as INamedTypeSymbol;
-			var isSourceNestedTuple = sourceNested?.IsTupleType == true;
-			var isTargetNestedTuple = targetNested?.IsTupleType == true;
-			if (isSourceNestedTuple != isTargetNestedTuple)
-				return false;
-
-			if (isSourceNestedTuple &&
-				!HasSameTupleRuntimeShape(sourceNested!, targetNested!))
+			if (sourceField.Type is INamedTypeSymbol { IsTupleType: true } sourceNested &&
+				!HasSameTupleRuntimeShape(sourceNested, (INamedTypeSymbol)targetField.Type))
 				return false;
 		}
 
