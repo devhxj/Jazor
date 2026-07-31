@@ -393,7 +393,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
-                body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
+                body = MaterializeFunctionBody(walker.Visit(operation, argument)!, argument, symbol.ReturnsVoid);
                 MergeImports(argument);
             }
             else
@@ -408,7 +408,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.Any);
-                var visited = walker.Visit(operation, argument);
+                var visited = walker.Visit(operation, argument)!;
                 MergeImports(argument);
                 body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
             }
@@ -611,7 +611,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return null;
     }
 
-    private FunctionBody? ConvertMemberOperationToFunctionBody(
+    private FunctionBody ConvertMemberOperationToFunctionBody(
         IOperation operation,
         bool returnsVoid,
         CancellationToken cancellationToken)
@@ -620,7 +620,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var walker = CreateSemanticWalker(cancellationToken);
         var argument = CreateImportAwareArgument(Sense.Any);
-        var visited = walker.Visit(operation, argument);
+        var visited = walker.Visit(operation, argument)!;
         MergeImports(argument);
 
         return MaterializeFunctionBody(visited, argument, returnsVoid);
@@ -682,8 +682,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid, cancellationToken)
-                ?? throw new NotSupportedException($"Jazor member class failed to convert body for {symbol.Name}.");
+            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid, cancellationToken);
         }
         // Body-less property accessors only map to auto-properties.
         else if (isProperty)
@@ -724,11 +723,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (symbol.Parameters.Length > 0)
         {
             foreach (var p in symbol.Parameters)
-            {
-                var parameter = ConvertParameter(p)
-                    ?? throw new NotSupportedException($"Jazor member class does not support parameter {p.Name} on {symbol.Name}.");
-                parameters.Add(parameter);
-            }
+                parameters.Add(ConvertParameter(p));
         }
 
         var name = GetSymbolName(symbol);
@@ -805,11 +800,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (lowering.Symbol.Parameters.Length > 0)
         {
             foreach (var parameterSymbol in lowering.Symbol.Parameters)
-            {
-                var parameter = ConvertParameter(parameterSymbol)
-                    ?? throw new NotSupportedException($"Jazor member class does not support parameter {parameterSymbol.Name} on {lowering.Symbol.Name}.");
-                parameters.Add(parameter);
-            }
+                parameters.Add(ConvertParameter(parameterSymbol));
         }
 
         var body = baseType is null
@@ -1047,7 +1038,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var lowerings = symbol.InstanceConstructors
             .Where(static ctor => !ctor.IsImplicitlyDeclared)
-            .OrderBy(static ctor => ctor.DeclaringSyntaxReferences.FirstOrDefault()?.Span.Start ?? int.MaxValue)
+            .OrderBy(static ctor => ctor.DeclaringSyntaxReferences[0].Span.Start)
             .Select(constructor => PrepareMemberConstructorLowering(constructor, baseType, cancellationToken))
             .ToList();
 
@@ -1068,9 +1059,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        if (symbol.MethodKind != MethodKind.Constructor)
-            throw new NotSupportedException($"Jazor member class does not support constructor kind {symbol.MethodKind}:{symbol.Name}.");
 
         IOperation? operation = null;
         ConstructorInitializerSyntax? initializerSyntax = null;
@@ -1104,8 +1092,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is null)
             throw new NotSupportedException($"Jazor member class constructor {symbol.Name} requires a body.");
 
-        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true, cancellationToken)
-            ?? throw new NotSupportedException($"Jazor member class failed to convert constructor body for {symbol.Name}.");
+        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true, cancellationToken);
 
         return new MemberConstructorLowering(
             Symbol: symbol,
@@ -1405,11 +1392,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         throw new NotSupportedException($"Only literal expressions are supported, got: {value.Kind()}");
     }
 
-    private static FunctionBody? MaterializeFunctionBody(Node? visited, SenseArgument argument, bool returnsVoid)
+    private static FunctionBody MaterializeFunctionBody(Node visited, SenseArgument argument, bool returnsVoid)
     {
-        if (visited is null)
-            return null;
-
         if (visited is FunctionBody body)
         {
             var statements = MaterializeTemporaryDeclarationPrefix(argument);
@@ -1438,7 +1422,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 break;
 
             default:
-                return null;
+                throw new InvalidOperationException($"Unsupported member body node: {visited.Type}.");
         }
 
         return new FunctionBody(NodeList.From(bodyStatements), true);
