@@ -103,7 +103,17 @@ internal static class RazorSgVueComponentModuleBuilder
             ? operationDirectRender
             : null;
         if (directRender is not null)
-            parts = parts with { SetupStatements = directRender.SetupStatements };
+        {
+            // A Vue ref callback receives its value only during mount. Its direct C# assignment
+            // identifies an otherwise opaque component storage slot whose pre-mount state is empty.
+            parts = parts with
+            {
+                SetupStatements = directRender.SetupStatements,
+                StateSlots = ApplyReferenceCaptureStateInitializers(
+                    parts.StateSlots,
+                    directRender.ReferenceCaptureStateMembers)
+            };
+        }
 
         var usesInvokeAsync = ReferencesIdentifier(parts.SetupStatements, "invokeAsync");
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
@@ -928,7 +938,7 @@ internal static class RazorSgVueComponentModuleBuilder
         => CreateCallMember(new Identifier("scope"), memberName, arguments);
 
     private static MemberExpression CreateMemberAccess(Expression receiver, string memberName)
-        => IsJavaScriptIdentifierName(memberName)
+        => JavaScriptAstFactory.IsJavaScriptIdentifierName(memberName)
             ? new MemberExpression(
                 receiver,
                 new Identifier(memberName),
@@ -943,7 +953,7 @@ internal static class RazorSgVueComponentModuleBuilder
     private static ObjectProperty CreateObjectProperty(string name, Node value)
         => new(
             PropertyKind.Init,
-            IsJavaScriptIdentifierName(name)
+            JavaScriptAstFactory.IsJavaScriptIdentifierName(name)
                 ? new Identifier(name)
                 : StringLiteral(name),
             value,
@@ -965,11 +975,6 @@ internal static class RazorSgVueComponentModuleBuilder
 
     private static StringLiteral StringLiteral(string value)
         => JavaScriptAstFactory.CreateStringLiteral(value);
-
-    private static bool IsJavaScriptIdentifierName(string value)
-        => !string.IsNullOrEmpty(value) &&
-           IsJavaScriptIdentifierStart(value[0]) &&
-           value.Skip(1).All(IsJavaScriptIdentifierPart);
 
     private static bool TryBuildOperationDirectRender(
         RazorSgGeneratedCSharpBinding binding,
@@ -1006,7 +1011,8 @@ internal static class RazorSgVueComponentModuleBuilder
             operationResult.UsesProps,
             operationResult.UsesSlots,
             RemoveBuildRenderTreeFunction(setupStatements),
-            operationResult.ImportDeclarations);
+            operationResult.ImportDeclarations,
+            operationResult.ReferenceCaptureStateMembers);
         return true;
     }
 
@@ -1546,12 +1552,13 @@ internal static class RazorSgVueComponentModuleBuilder
         foreach (var field in closure.StateFields)
         {
             var name = Util.GetConfigOrSymbolName(field);
-            slots.Add(new StateSlot(name, name, field.Type, null));
+            slots.Add(new StateSlot(field, name, name, field.Type, null));
         }
 
         foreach (var property in closure.StateProperties)
         {
             slots.Add(new StateSlot(
+                property,
                 Util.GetConfigOrSymbolName(property),
                 GetPropertyBackingFieldName(closure.ComponentSymbol, property),
                 property.Type,
@@ -1559,6 +1566,22 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         return slots;
+    }
+
+    private static ImmutableArray<StateSlot> ApplyReferenceCaptureStateInitializers(
+        ImmutableArray<StateSlot> stateSlots,
+        ImmutableArray<ISymbol> referenceCaptureStateMembers)
+    {
+        if (referenceCaptureStateMembers.IsDefaultOrEmpty)
+            return stateSlots;
+
+        var capturedMembers = new HashSet<ISymbol>(referenceCaptureStateMembers, SymbolComparer);
+        return stateSlots
+            .Select(slot =>
+                slot.Initializer is null && capturedMembers.Contains(slot.Member)
+                    ? slot with { Initializer = new NullLiteral("null") }
+                    : slot)
+            .ToImmutableArray();
     }
 
     private static IEnumerable<string> GetDiscardedPropertyBackingFieldNames(RazorSgComponentMemberClosure closure)
@@ -2482,7 +2505,8 @@ internal static class RazorSgVueComponentModuleBuilder
         bool UsesProps,
         bool UsesSlots,
         ImmutableArray<CompilerStatement> SetupStatements,
-        ImmutableArray<ImportDeclaration> ImportDeclarations);
+        ImmutableArray<ImportDeclaration> ImportDeclarations,
+        ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
     private sealed class ImportDeclarationComparer : IEqualityComparer<ImportDeclaration>
     {
@@ -2584,6 +2608,7 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private sealed record StateSlot(
+        ISymbol Member,
         string RuntimeName,
         string? DeclarationName,
         ITypeSymbol Type,

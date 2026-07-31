@@ -527,18 +527,17 @@ public partial class SemanticWalker
 				fieldReference.Field,
 				"deconstruction assignment",
 				fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType);
-			var property = new Identifier(fieldName);
 			if (instance is not null)
-				return new MemberExpression(instance, property, computed: false, optional: false);
+				return BuildFieldAccess(instance, fieldReference.Field, fieldName, optional: false);
 
 			if (fieldReference.Field.IsStatic && fieldReference.Field.ContainingType is not null)
 			{
 				var containing = BuildFullTypeName(fieldReference.Field.ContainingType, argument);
 				if (containing is not null)
-					return new MemberExpression(containing, property, computed: false, optional: false);
+					return BuildFieldAccess(containing, fieldReference.Field, fieldName, optional: false);
 			}
 
-			return property;
+			return new Identifier(fieldName);
 		}
 
 		void AppendDeconstructionWrite(IOperation target, Expression right, List<Expression> exprs, bool declareTarget = false)

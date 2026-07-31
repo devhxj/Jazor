@@ -4,11 +4,12 @@ using System.Linq;
 using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.Compiler;
+namespace Jazor.RazorVue.RazorSdk;
 
 /// <summary>
 /// Host seam for the first RazorVue current-component lowering slice.
@@ -22,18 +23,16 @@ namespace Jazor.Compiler;
 /// 当前组件不是普通 JavaScript class 实例：状态、参数和方法分别属于不同的运行时载体。
 /// 这里集中处理这种投影，避免在各个普通成员 visitor 中散落 RazorVue 特殊判断。
 /// </remarks>
-public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
+internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 {
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string EventCallbackFactoryMetadataName = "Microsoft.AspNetCore.Components.EventCallbackFactory";
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
-    private const string RazorRuntimeHelpersMetadataName = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers";
     private const string StateHasChangedRuntimeName = "stateHasChanged";
     private const string InvokeAsyncRuntimeName = "invokeAsync";
     private readonly INamedTypeSymbol _componentType;
-    private readonly RenderTreeBuilderSemanticWalkerHost _renderTreeBuilderHost = new();
     private readonly string _stateIdentifier;
     private readonly string _propsIdentifier;
     private readonly IReadOnlyDictionary<string, string>? _parameterRuntimeNames;
@@ -77,7 +76,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
     {
         if (IsEventCallbackFactoryCreateBinder(operation.TargetMethod))
-            return RewriteEventCallbackFactoryCreateBinder(operation);
+            return RewriteEventCallbackFactoryCreateBinder(operation, argument);
 
         if (IsEventCallbackFactoryCreate(operation.TargetMethod))
             return RewriteEventCallbackFactoryCreate(operation, argument);
@@ -88,32 +87,8 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (IsUnsupportedIndirectCurrentComponentDispatch(operation.TargetMethod, operation.Instance))
             throw CreateUnsupportedIndirectCurrentComponentDispatchException(operation, operation.TargetMethod, operation.Instance);
 
-        return _renderTreeBuilderHost.RewriteInvocationPreorder(operation, argument);
+        return null;
     }
-
-    public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
-        => _renderTreeBuilderHost.RewriteObjectCreationPreorder(operation, argument);
-
-    public override bool ShouldRewriteObjectCreation(IObjectCreationOperation operation)
-        => _renderTreeBuilderHost.ShouldRewriteObjectCreation(operation);
-
-    public override Expression? RewriteObjectCreation(
-        IObjectCreationOperation operation,
-        SenseArgument argument,
-        IReadOnlyList<Expression> arguments)
-        => _renderTreeBuilderHost.RewriteObjectCreation(operation, argument, arguments);
-
-    public override bool ShouldSkipVariableDeclarator(
-        IVariableDeclaratorOperation operation,
-        SenseArgument argument)
-        => _renderTreeBuilderHost.ShouldSkipVariableDeclarator(operation, argument);
-
-    public override Expression? RewriteInvocationArgumentPreorder(
-        IInvocationOperation operation,
-        IArgumentOperation argumentOperation,
-        int argumentIndex,
-        SenseArgument argument)
-        => _renderTreeBuilderHost.RewriteInvocationArgumentPreorder(operation, argumentOperation, argumentIndex, argument);
 
     public override Expression? RewriteInvocation(
         IInvocationOperation operation,
@@ -121,9 +96,6 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         Expression? instance,
         IReadOnlyList<Expression> arguments)
     {
-        if (_renderTreeBuilderHost.RewriteInvocation(operation, argument, instance, arguments) is Expression renderTreeBuilderExpression)
-            return renderTreeBuilderExpression;
-
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
 
@@ -132,6 +104,9 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         if (IsRazorRuntimeHelpersTypeCheck(operation.TargetMethod))
             return RewriteRazorRuntimeHelpersTypeCheck(operation, arguments);
+
+        if (IsRazorRuntimeHelpersInvokeAsynchronousDelegate(operation.TargetMethod))
+            return RewriteRazorRuntimeHelpersInvokeAsynchronousDelegate(operation, arguments);
 
         if (IsSingleValueBindConverterFormatValue(operation) && arguments.Count > 0)
             return arguments[0];
@@ -221,6 +196,28 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return null;
     }
 
+    public override Expression? RewriteSimpleAssignmentPostorder(
+        ISimpleAssignmentOperation operation,
+        SenseArgument argument,
+        Expression value)
+    {
+        if (operation.Target is not IPropertyReferenceOperation propertyReference ||
+            propertyReference.Property.IsStatic ||
+            propertyReference.Property.SetMethod is null ||
+            propertyReference.Property.IsIndexer ||
+            propertyReference.Arguments.Length != 0 ||
+            !IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) ||
+            IsParameterProperty(propertyReference.Property) ||
+            !IsAutoProperty(propertyReference.Property))
+        {
+            return null;
+        }
+
+        // Auto-properties are state storage in RazorVue. The RHS was lowered by SemanticWalker
+        // before this hook, so this projection preserves its original evaluation semantics.
+        return new AssignmentExpression(Operator.Assignment, BuildStateAccess(propertyReference.Property), value);
+    }
+
     private Expression RewriteEventCallbackFactoryCreate(IInvocationOperation operation, SenseArgument argument)
     {
         if (operation.Arguments.Length < 2)
@@ -233,7 +230,9 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             ?? throw CreateUnsupportedEventCallbackFactoryException(operation);
     }
 
-    private Expression RewriteEventCallbackFactoryCreateBinder(IInvocationOperation operation)
+    private Expression RewriteEventCallbackFactoryCreateBinder(
+        IInvocationOperation operation,
+        SenseArgument argument)
     {
         if (!TryGetCreateBinderReceiverAndHandler(operation, out var receiver, out var handler))
             throw CreateUnsupportedEventCallbackFactoryCreateBinderException(operation);
@@ -241,7 +240,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (!IsCurrentComponentEventCallbackReceiver(receiver))
             throw CreateUnsupportedEventCallbackFactoryCreateBinderException(operation);
 
-        return RewriteBinderHandler(handler)
+        return RewriteBinderHandler(handler, argument)
             ?? throw CreateUnsupportedEventCallbackFactoryCreateBinderException(operation);
     }
 
@@ -269,14 +268,79 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return true;
     }
 
-    private Expression? RewriteBinderHandler(IOperation operation)
+    private Expression? RewriteBinderHandler(IOperation operation, SenseArgument argument)
         => operation switch
         {
-            IConversionOperation conversion => RewriteBinderHandler(conversion.Operand),
-            IDelegateCreationOperation delegateCreation => RewriteBinderHandler(delegateCreation.Target),
+            IConversionOperation conversion => RewriteBinderHandler(conversion.Operand, argument),
+            IDelegateCreationOperation delegateCreation => RewriteBinderHandler(delegateCreation.Target, argument),
+            // Razor SDK uses this generic-inference wrapper for @bind:after and
+            // @bind:set delegates. The outer helper has no runtime role in the
+            // Vue event-handler protocol.
+            IInvocationOperation invocation when TryGetInferredBindSetterHandler(invocation, out var inferredHandler)
+                => RewriteInferredBindSetterHandler(inferredHandler, argument),
             IAnonymousFunctionOperation anonymousFunction => RewriteBinderHandler(anonymousFunction),
             _ => null
         };
+
+    private Expression? RewriteInferredBindSetterHandler(IOperation operation, SenseArgument argument)
+        => operation switch
+        {
+            IConversionOperation conversion => RewriteInferredBindSetterHandler(conversion.Operand, argument),
+            IDelegateCreationOperation delegateCreation => RewriteInferredBindSetterHandler(delegateCreation.Target, argument),
+            IAnonymousFunctionOperation anonymousFunction => RewriteEventCallbackLambdaHandler(anonymousFunction, argument),
+            IMethodReferenceOperation methodReference => RewriteInferredBindSetterMethodReference(methodReference, argument),
+            _ => null
+        };
+
+    private Expression? RewriteInferredBindSetterMethodReference(
+        IMethodReferenceOperation operation,
+        SenseArgument argument)
+    {
+        if (!IsCurrentComponentMethod(operation.Method, operation.Instance) ||
+            operation.Method.Parameters.Length != 1 ||
+            operation.Method.Parameters[0].RefKind != RefKind.None)
+        {
+            return null;
+        }
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = this
+        };
+        var callback = walker.Visit(operation, argument) as Expression;
+        if (callback is null)
+            return null;
+
+        // CreateInferredBindSetter invokes a Func<T, Task> with the converted
+        // DOM value. The wrapper is protocol framing only; the method-group
+        // expression itself still comes from SemanticWalker lowering.
+        var value = new Identifier("__value");
+        return new ArrowFunctionExpression(
+            NodeList.From<Node>(value),
+            new CallExpression(
+                callback,
+                NodeList.From<Expression>(value),
+                optional: false),
+            expression: true,
+            async: false);
+    }
+
+    private static bool TryGetInferredBindSetterHandler(
+        IInvocationOperation operation,
+        out IOperation handler)
+    {
+        handler = operation;
+        var method = operation.TargetMethod.OriginalDefinition;
+        if (!IsRazorRuntimeHelpersMethod(method, "CreateInferredBindSetter") ||
+            method.Parameters.Length != 2 ||
+            operation.Arguments.Length != 2)
+        {
+            return false;
+        }
+
+        handler = operation.Arguments[0].Value;
+        return true;
+    }
 
     private Expression? RewriteBinderHandler(IAnonymousFunctionOperation anonymousFunction)
     {
@@ -382,6 +446,23 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         {
             IConversionOperation conversion => RewriteEventCallbackHandler(conversion.Operand, argument),
             IDelegateCreationOperation delegateCreation => RewriteEventCallbackHandler(delegateCreation.Target, argument),
+            // Official Razor SG wraps component-bind callbacks in RuntimeHelpers.TypeCheck<T>.
+            // Handler classification must erase that compile-time wrapper before inspecting the lambda.
+            IInvocationOperation invocation when
+                IsRazorRuntimeHelpersTypeCheck(invocation.TargetMethod) &&
+                invocation.Arguments.Length == 1
+                    => RewriteEventCallbackHandler(invocation.Arguments[0].Value, argument),
+            // Component @bind:after can wrap the callback with
+            // CreateInferredBindSetter before the EventCallback inference wrapper.
+            // Its lambda owns the required assignment-then-after-callback ordering.
+            IInvocationOperation invocation when
+                TryGetInferredBindSetterHandler(invocation, out var inferredBindSetterHandler)
+                    => RewriteInferredBindSetterHandler(inferredBindSetterHandler, argument),
+            // Component @bind uses CreateInferredEventCallback(receiver, callback, value)
+            // solely to carry generic inference through generated C#.
+            IInvocationOperation invocation when
+                TryGetInferredEventCallbackHandler(invocation, out var inferredHandler)
+                    => RewriteEventCallbackHandler(inferredHandler, argument),
             IConditionalOperation conditional => RewriteConditionalEventCallbackHandler(conditional, argument),
             IAnonymousFunctionOperation anonymousFunction
                 => RewriteBinderHandler(anonymousFunction) ??
@@ -395,6 +476,24 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                     => BuildPropsAccess(propertyReference.Property),
             _ => null
         };
+
+    private bool TryGetInferredEventCallbackHandler(
+        IInvocationOperation operation,
+        out IOperation handler)
+    {
+        handler = operation;
+        var method = operation.TargetMethod.OriginalDefinition;
+        if (!IsRazorRuntimeHelpersMethod(method, "CreateInferredEventCallback") ||
+            method.Parameters.Length != 3 ||
+            operation.Arguments.Length != 3 ||
+            !IsCurrentComponentEventCallbackReceiver(operation.Arguments[0].Value))
+        {
+            return false;
+        }
+
+        handler = operation.Arguments[1].Value;
+        return true;
+    }
 
     private Expression? RewriteConditionalEventCallbackHandler(
         IConditionalOperation operation,
@@ -491,10 +590,14 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                         string.Join(", ", anonymousFunction.Body.Operations.Select(static item => item.Kind.ToString())) +
                         "]."
                       : ".")
+            : handlerValue is IInvocationOperation invocation
+                ? " Invocation target: " +
+                  invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat) +
+                  "."
             : string.Empty;
         return new(
             operation,
-            "EventCallbackFactory.CreateBinder is supported by RazorVue DOM @bind v1 only for current-component receivers and simple current-component state assignment lambdas, for example value => count = value. Handler operation kind: " +
+            "EventCallbackFactory.CreateBinder is supported by RazorVue DOM @bind v1 only for current-component receivers and either simple current-component state assignment lambdas, for example value => count = value, or the official Razor SDK CreateInferredBindSetter<T>(Func<T, Task>, T) protocol used by explicit binding features. Handler operation kind: " +
             handlerKind +
             "." +
             handlerDetail);
@@ -658,6 +761,29 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return arguments[0];
     }
 
+    private static bool IsRazorRuntimeHelpersInvokeAsynchronousDelegate(IMethodSymbol method)
+        => IsRazorRuntimeHelpersMethod(method, "InvokeAsynchronousDelegate");
+
+    private static Expression RewriteRazorRuntimeHelpersInvokeAsynchronousDelegate(
+        IInvocationOperation operation,
+        IReadOnlyList<Expression> arguments)
+    {
+        if (arguments.Count != 1)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "RuntimeHelpers.InvokeAsynchronousDelegate is supported by RazorVue only for the official single-callback @bind:after helper shape.");
+        }
+
+        // The SDK helper invokes the supplied Action/Func<Task> exactly once.
+        // Its argument has already passed through SemanticWalker, preserving the
+        // source lambda's assignment-before-callback ordering.
+        return new CallExpression(
+            arguments[0],
+            NodeList.From<Expression>(),
+            optional: false);
+    }
+
     private bool IsUnsupportedIndirectCurrentComponentDispatch(IMethodSymbol method, IOperation? instance)
         => !IsStateHasChangedInvocation(method, instance) &&
            !IsComponentBaseInvokeAsyncInvocation(method, instance) &&
@@ -666,11 +792,15 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            IsCurrentComponentReceiver(instance);
 
     private static bool IsRazorRuntimeHelpersTypeCheck(IMethodSymbol method)
+        => IsRazorRuntimeHelpersMethod(method, "TypeCheck");
+
+    private static bool IsRazorRuntimeHelpersMethod(IMethodSymbol method, string methodName)
         => method.IsStatic &&
-           string.Equals(method.Name, "TypeCheck", StringComparison.Ordinal) &&
+           string.Equals(method.Name, methodName, StringComparison.Ordinal) &&
+           method.ContainingType is { Name: "RuntimeHelpers" } containingType &&
            string.Equals(
-               method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
-               RazorRuntimeHelpersMetadataName,
+               containingType.ContainingNamespace?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.CompilerServices",
                StringComparison.Ordinal);
 
     private static bool IsCurrentComponentReceiver(IOperation? operation)

@@ -47,13 +47,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
     private readonly AstConverterOptions _options = options ?? AstConverterOptions.Default;
+    private readonly AstConverterModulePolicy _modulePolicy = options?.ModulePolicy ?? AstConverterModulePolicy.Default;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
         options?.MemberFilter,
-        options?.Profile ?? AstConverterProfile.Standard);
+        options?.ModulePolicy ?? AstConverterModulePolicy.Default);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
     private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
@@ -993,11 +994,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     // interface 在成员类内同样只作为契约参与分析，不发射运行时对象。
                     break;
                 case INamedTypeSymbol nestedClass when
-                    _options.Profile == AstConverterProfile.RazorVueRuntime &&
-                    ModuleDeclaredNames.ContainsKey(nestedClass.OriginalDefinition):
-                    // RazorVue runtime helper classes are flattened to artifact-module scope
-                    // by RazorVueCompilerModuleContext so type references keep one stable
-                    // compiler-owned declared-name context.
+                    ModuleDeclaredNames.ContainsKey(nestedClass.OriginalDefinition) &&
+                    _modulePolicy.ShouldFlattenNestedRuntimeClass(_classSymbol, symbol, nestedClass):
+                    // A host may emit a nested runtime class separately at module scope. The
+                    // shared declared-name plan keeps references stable across both declarations.
                     break;
                 case IEventSymbol eventSymbol:
                     throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
@@ -1486,41 +1486,30 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         HashSet<string> ReservedImportNames);
 
     private IEnumerable<ISymbol> EnumerateModuleMembersForConversion()
-        => EnumerateModuleMembers(_classSymbol, _options.Profile);
+        => EnumerateModuleMembers(_classSymbol, _modulePolicy);
 
     private static IEnumerable<ISymbol> EnumerateModuleMembers(
         INamedTypeSymbol classSymbol,
-        AstConverterProfile profile)
-    {
-        if (profile != AstConverterProfile.RazorVueRuntime)
-            return classSymbol.GetMembers();
-
-        var types = new Stack<INamedTypeSymbol>();
-        for (var current = classSymbol; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
-            types.Push(current);
-
-        var members = new List<ISymbol>();
-        while (types.Count > 0)
-            members.AddRange(types.Pop().GetMembers());
-
-        return members;
-    }
+        AstConverterModulePolicy modulePolicy)
+        => modulePolicy
+            .EnumerateModuleTypes(classSymbol)
+            .SelectMany(static type => type.GetMembers());
 
     private static ModuleNamePlan BuildModuleNamePlan(
         INamedTypeSymbol classSymbol,
         Func<ISymbol, bool>? includeMember,
-        AstConverterProfile profile)
+        AstConverterModulePolicy modulePolicy)
     {
-        var localNames = BuildModuleLocalNames(classSymbol, profile);
-        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, profile);
-        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, profile);
+        var localNames = BuildModuleLocalNames(classSymbol, modulePolicy);
+        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, modulePolicy);
+        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, modulePolicy);
         return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
     }
 
     private string GetModuleDeclaredName(ISymbol symbol)
         => ModuleDeclaredNames.TryGetValue(symbol.OriginalDefinition, out var name)
             ? name
-            : GetPreferredModuleDeclaredName(symbol);
+            : GetPreferredModuleDeclaredName(symbol, _modulePolicy);
 
     private static string GetModuleNamedExportName(ISymbol symbol)
         => symbol switch
@@ -1578,10 +1567,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         exportedNames.Add(exportName, symbol);
     }
 
-    private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol, AstConverterProfile profile)
+    private static HashSet<string> BuildModuleLocalNames(
+        INamedTypeSymbol classSymbol,
+        AstConverterModulePolicy modulePolicy)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
-        foreach (var type in EnumerateModuleTypes(classSymbol, profile))
+        foreach (var type in modulePolicy.EnumerateModuleTypes(classSymbol))
         foreach (var syntaxRef in type.DeclaringSyntaxReferences)
         {
             if (syntaxRef.GetSyntax() is not ClassDeclarationSyntax classSyntax)
@@ -1595,34 +1586,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return names;
     }
 
-    private static IEnumerable<INamedTypeSymbol> EnumerateModuleTypes(
-        INamedTypeSymbol classSymbol,
-        AstConverterProfile profile)
-    {
-        if (profile != AstConverterProfile.RazorVueRuntime)
-        {
-            yield return classSymbol;
-            yield break;
-        }
-
-        var types = new Stack<INamedTypeSymbol>();
-        for (var current = classSymbol; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
-            types.Push(current);
-
-        while (types.Count > 0)
-            yield return types.Pop();
-    }
-
     private static Dictionary<ISymbol, string> BuildModuleDeclaredNames(
         INamedTypeSymbol classSymbol,
         HashSet<string> localNames,
         Func<ISymbol, bool>? includeMember,
-        AstConverterProfile profile)
+        AstConverterModulePolicy modulePolicy)
     {
         var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
         var usedDeclaredNames = new HashSet<string>(System.StringComparer.Ordinal);
 
-        foreach (var member in EnumerateModuleMembers(classSymbol, profile))
+        foreach (var member in EnumerateModuleMembers(classSymbol, modulePolicy))
         {
             if (includeMember is not null && !includeMember(member))
                 continue;
@@ -1630,13 +1603,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames, profile);
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames, modulePolicy);
                     break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames, profile);
+                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames, modulePolicy);
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames, profile);
+                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames, modulePolicy);
                     break;
             }
         }
@@ -1648,9 +1621,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ISymbol symbol,
         HashSet<string> usedDeclaredNames,
         HashSet<string> localNames,
-        AstConverterProfile profile)
+        AstConverterModulePolicy modulePolicy)
     {
-        var preferredName = GetPreferredModuleDeclaredName(symbol, profile);
+        var preferredName = GetPreferredModuleDeclaredName(symbol, modulePolicy);
         if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(preferredName) &&
             !localNames.Contains(preferredName) &&
             usedDeclaredNames.Add(preferredName))
@@ -1678,18 +1651,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return alias;
     }
 
-    private static string GetPreferredModuleDeclaredName(ISymbol symbol)
-        => GetPreferredModuleDeclaredName(symbol, AstConverterProfile.Standard);
-
-    private static string GetPreferredModuleDeclaredName(ISymbol symbol, AstConverterProfile profile)
-        => symbol switch
+    private static string GetPreferredModuleDeclaredName(
+        ISymbol symbol,
+        AstConverterModulePolicy modulePolicy)
+        => modulePolicy.GetPreferredModuleDeclaredName(symbol) ?? symbol switch
         {
             IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
-            IMethodSymbol
-            {
-                MethodKind: MethodKind.PropertyGet,
-                AssociatedSymbol: IPropertySymbol property
-            } when profile == AstConverterProfile.RazorVueRuntime => Util.GetConfigOrSymbolName(property),
             IMethodSymbol method => Util.GetConfigOrSymbolName(method),
             INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
             _ => Util.GetConfigOrSymbolName(symbol)
@@ -1718,11 +1685,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         HashSet<string> localNames,
         Func<ISymbol, bool>? includeMember,
-        AstConverterProfile profile)
+        AstConverterModulePolicy modulePolicy)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
 
-        foreach (var member in EnumerateModuleMembers(classSymbol, profile))
+        foreach (var member in EnumerateModuleMembers(classSymbol, modulePolicy))
         {
             if (includeMember is not null && !includeMember(member))
                 continue;
@@ -1767,15 +1734,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => type.TypeKind == TypeKind.Class && !type.IsRecord;
 
     private bool IsAllowedTopLevelAccessibility(Accessibility accessibility)
-        => _options.Profile switch
-        {
-            AstConverterProfile.ClrRuntime => accessibility is Accessibility.Public or Accessibility.Internal,
-            AstConverterProfile.RazorVueRuntime => accessibility is Accessibility.Public or Accessibility.Internal,
-            _ => accessibility == Accessibility.Public
-        };
+        => accessibility == Accessibility.Public ||
+           _options.Profile == AstConverterProfile.ClrRuntime && accessibility == Accessibility.Internal ||
+           _modulePolicy.IsAdditionalTopLevelAccessibilityAllowed(accessibility);
 
     private bool ShouldIncludeModuleMember(ISymbol member)
-        => _options.MemberFilter?.Invoke(member) ?? true;
+    {
+        // A policy can project ordinary source classes to collect their static API. Their
+        // instance constructors belong to runtime-class lowering, never to a module artifact.
+        if (member is IMethodSymbol { MethodKind: MethodKind.Constructor })
+            return false;
+
+        return _options.MemberFilter?.Invoke(member) ?? true;
+    }
 
     private bool ShouldIncludeMemberClassMember(ISymbol member)
         => _options.MemberFilter?.Invoke(member) ?? true;

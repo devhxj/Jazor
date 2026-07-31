@@ -626,6 +626,104 @@ public sealed class SemanticWalkerLoopTest
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_ForEachLoop_DictionaryEntryDeconstruction_UsesMapIterationProtocol()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(Dictionary<string, int> releases)
+                {
+                    foreach (var (name, version) in releases)
+                    {
+                        Console.WriteLine(name);
+                        Console.WriteLine(version);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  for (let [name, version] of releases) {
+    console.log(name);
+    console.log(version);
+  }
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_ForEachLoop_NamedTupleDeconstruction_UsesObjectPatternProtocol()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(IEnumerable<(int id, string name)> entries)
+                {
+                    foreach (var (id, name) in entries)
+                    {
+                        Console.WriteLine(id);
+                        Console.WriteLine(name);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "for (let { id: id, name: name } of entries)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(id);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(name);", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_ForEachLoop_CustomDeconstructSource_ReportsStructuralRuntimeBoundary()
+  {
+    var block = GetBlockOperation(@"
+            sealed class Point
+            {
+                public int X { get; }
+                public int Y { get; }
+
+                public void Deconstruct(out int x, out int y)
+                {
+                    x = X;
+                    y = Y;
+                }
+            }
+
+            class TestClass
+            {
+                void TestMethod(Point[] points)
+                {
+                    foreach (var (x, y) in points)
+                    {
+                        Console.WriteLine(x + y);
+                    }
+                }
+            }
+            ");
+    var walker = new SemanticWalker(true);
+
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    Assert.AreEqual(OperationKind.Loop, exception.Kind);
+    StringAssert.Contains(
+      exception.Message ?? string.Empty,
+      "For-each deconstruction source type 'Point' does not have a compiler-known structural runtime shape.",
+      StringComparison.Ordinal);
+    StringAssert.Contains(
+      exception.Message ?? string.Empty,
+      "Use an ordinary loop variable and deconstruct it inside the loop body.",
+      StringComparison.Ordinal);
+  }
+
   /// <summary>
   /// 测试 VisitForEachLoop - 字符串数组
   /// C# 示例：foreach (var name in names)
@@ -1580,6 +1678,37 @@ AssertScriptEqual(@"{
   let v$0;
   for (let i = 0; i < 3; v$0 = TestClass.next(i), i = v$0[0]) { }
 }", script);
+  }
+
+  [TestMethod]
+  public void Visit_ForLoop_AwaitUpdate_PreservesAsyncEvaluationSite()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    for (int i = 0; i < 2; await TickAsync())
+                    {
+                        i++;
+                    }
+                }
+
+                static System.Threading.Tasks.Task TickAsync()
+                    => System.Threading.Tasks.Task.CompletedTask;
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  for (let i = 0; i < 2; await TestClass.tickAsync()) {
+    i++;
+  }
+}", script);
+    _ = new Acornima.Parser().ParseModule($"async function test() {script}");
   }
 
   /// <summary>

@@ -90,7 +90,11 @@ public static class Util
             sourceRootPath,
             readSourceContent);
 
-    internal static GeneratedJavaScriptLayout ToKnRECMAScriptWithSourceMapAndNodePositions(
+    /// <summary>
+    /// Emits a source map together with deterministic AST node positions for integrations that
+    /// project compiler-generated nodes into a larger artifact.
+    /// </summary>
+    public static GeneratedJavaScriptLayout ToKnRECMAScriptWithSourceMapAndNodePositions(
         this Node node,
         string generatedFileName = "module.mjs",
         bool includeSourcesContent = true,
@@ -105,7 +109,10 @@ public static class Util
             sourceRootPath,
             readSourceContent);
 
-    internal static GeneratedJavaScriptNodeLayout ToKnRECMAScriptWithNodePositions(this Node node)
+    /// <summary>
+    /// Emits JavaScript text together with deterministic AST node positions.
+    /// </summary>
+    public static GeneratedJavaScriptNodeLayout ToKnRECMAScriptWithNodePositions(this Node node)
         => SourceMapEmitter.EmitNodeLayout(
             node,
             KnRJavaScriptTextFormatterOptions.Default,

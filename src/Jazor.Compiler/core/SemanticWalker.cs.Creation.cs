@@ -1167,7 +1167,7 @@ public partial class SemanticWalker
 				fieldReference.Instance!.Type!)
 			: fieldAlias!;
 
-		return new MemberExpression(fieldInstance, new Identifier(fieldName), computed: false, optional: false);
+		return BuildFieldAccess(fieldInstance, fieldReference.Field, fieldName, optional: false);
 	}
 
 	private Expression MaterializeMemberInitializerReceiver(
@@ -1225,8 +1225,7 @@ public partial class SemanticWalker
 							propertyReferenceOp.Property,
 							"object initializer property assignment",
 							propertyReferenceOp.Instance!.Type!);
-						var property = new Identifier(propertyName);
-						left = new MemberExpression(propertyInstance, property, computed: false, optional: false);
+						left = BuildAliasedPropertyAccess(propertyInstance, propertyName, optional: false);
 					}
 				}
 				else
@@ -1238,8 +1237,7 @@ public partial class SemanticWalker
 						fieldReferenceOp.Field,
 						"object initializer field assignment",
 						fieldReferenceOp.Instance!.Type!);
-					var field = new Identifier(fieldName);
-					left = new MemberExpression(fieldInstance, field, computed: false, optional: false);
+					left = BuildFieldAccess(fieldInstance, fieldReferenceOp.Field, fieldName, optional: false);
 				}
 
 				// Nested creation produces one RHS expression (usually an IIFE). It must still flow

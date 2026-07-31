@@ -7,3 +7,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Jazor.Compiler")]
 [assembly: InternalsVisibleTo("Jazor.Compiler.Generator")]
 [assembly: InternalsVisibleTo("Jazor.CompilerTest")]
+[assembly: InternalsVisibleTo("Jazor.RazorVue")]
+[assembly: InternalsVisibleTo("Jazor.RazorVue.Sg.Test")]

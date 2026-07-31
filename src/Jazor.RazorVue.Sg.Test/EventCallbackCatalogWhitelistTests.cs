@@ -1,15 +1,16 @@
 using System.Reflection;
 using ECMAScript.Contract;
+using Jazor.RazorVue.RazorSdk.Catalog;
 
-namespace Jazor.CLR.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class EventCallbackModuleWhitelistTests
+public sealed class EventCallbackCatalogWhitelistTests
 {
 	[TestMethod]
 	public void EventCallbackFactoryField_IsAllowedMapped()
 	{
-		var attribute = typeof(Jazor.CLR.EventCallbackModule)
+		var attribute = typeof(EventCallbackCatalog)
 			.GetMethods(BindingFlags.Public | BindingFlags.Static)
 			.Select(method => method.GetCustomAttribute<JazorAttribute>())
 			.OfType<JazorAttribute>()
@@ -21,7 +22,7 @@ public sealed class EventCallbackModuleWhitelistTests
 	[TestMethod]
 	public void EventCallbackFactoryCreate_MapsSyncAndAsyncHandlerFamilies()
 	{
-		var members = typeof(Jazor.CLR.EventCallbackFactoryModule)
+		var members = typeof(EventCallbackFactoryCatalog)
 			.GetMethods(BindingFlags.Public | BindingFlags.Static)
 			.Select(method => method.GetCustomAttribute<JazorAttribute>())
 			.OfType<JazorAttribute>()
@@ -36,13 +37,13 @@ public sealed class EventCallbackModuleWhitelistTests
 	[TestMethod]
 	public void EventCallbackInvokeAsync_MapsNonGenericAndGenericCallbackContracts()
 	{
-		var nonGeneric = typeof(Jazor.CLR.EventCallbackModule)
+		var nonGeneric = typeof(EventCallbackCatalog)
 			.GetCustomAttribute<JazorAttribute>();
-		var generic = typeof(Jazor.CLR.EventCallbackTModule<>)
+		var generic = typeof(EventCallbackTCatalog<>)
 			.GetCustomAttribute<JazorAttribute>();
-		var members = typeof(Jazor.CLR.EventCallbackModule)
+		var members = typeof(EventCallbackCatalog)
 			.GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Concat(typeof(Jazor.CLR.EventCallbackTModule<>).GetMethods(BindingFlags.Public | BindingFlags.Static))
+			.Concat(typeof(EventCallbackTCatalog<>).GetMethods(BindingFlags.Public | BindingFlags.Static))
 			.Select(method => method.GetCustomAttribute<JazorAttribute>())
 			.OfType<JazorAttribute>()
 			.ToDictionary(attribute => attribute.Member!, attribute => attribute.Op);

@@ -1,5 +1,6 @@
-﻿using ECMAScript;
+using ECMAScript;
 using Jazor.Compiler;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -8,10 +9,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.ComplierTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class CurrentComponentSemanticWalkerHostTest
+public sealed class RazorVueSemanticWalkerHostTest
 {
     [TestMethod]
     public void CollectReachableMembers_IncludesRenderStateParameterAndEventHandlerWithoutUnusedMembers()
@@ -133,7 +134,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -173,7 +174,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -211,7 +212,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var argument = new SenseArgument(UseImportAliases: true);
         var body = walker.Visit(fixture.BuildRenderTreeBody, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
@@ -264,7 +265,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -297,7 +298,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -325,7 +326,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -358,7 +359,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -386,7 +387,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -416,7 +417,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
 
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
@@ -445,7 +446,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
 
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
@@ -473,7 +474,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -511,7 +512,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
 
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
@@ -542,7 +543,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -578,7 +579,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -588,6 +589,45 @@ public sealed class CurrentComponentSemanticWalkerHostTest
         StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersExplicitComponentBaseReceiversToSetupHelpers()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private int count;
+
+                private void Refresh()
+                {
+                    count++;
+                    this.StateHasChanged();
+                    _ = this.InvokeAsync(Increment);
+                }
+
+                private void Increment()
+                {
+                    count++;
+                }
+            }
+            """,
+            methodName: "Refresh");
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "invokeAsync(increment);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("StateHasChanged", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
     }
 
@@ -615,7 +655,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -651,7 +691,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -685,7 +725,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -717,7 +757,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -750,7 +790,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -781,7 +821,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
@@ -814,7 +854,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
 
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
 
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));

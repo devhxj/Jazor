@@ -687,6 +687,43 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_ObjectInitializer_ConfiguredMemberKeys_UseComputedAssignments()
+    {
+        var block = GetBlockOperation("""
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                sealed class QueueState
+                {
+                    [Description("@#model-value")]
+                    public int ModelValue { get; set; }
+
+                    [Description("@#status-code")]
+                    public int StatusCode;
+                }
+
+                void TestMethod()
+                {
+                    var state = new QueueState { ModelValue = 1, StatusCode = 202 };
+                }
+            }
+            """);
+
+        var operation = GetObjectCreationOperationAt(block);
+        var script = new SemanticWalker(true).VisitObjectCreation(operation, new())?.ToKnRECMAScript();
+
+        AssertScriptEqual("""
+            (() => {
+              let v$0 = new QueueState;
+              v$0["model-value"] = 1;
+              v$0["status-code"] = 202;
+              return v$0;
+            })()
+            """, script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_ObjectInitializer_TupleRemap()
     {
         var block = GetBlockOperation(@"

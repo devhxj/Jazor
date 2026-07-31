@@ -841,9 +841,39 @@ public partial class SemanticWalker
 			: new MemberExpression(instance, new Identifier(propertyName), computed: false, optional: optional);
 	}
 
+	private Expression BuildFieldAccess(Expression instance, IFieldSymbol field, string fieldName, bool optional)
+	{
+		return IsPrivateRuntimeClassField(field)
+			? new MemberExpression(instance, new PrivateIdentifier(fieldName), computed: false, optional: optional)
+			: BuildAliasedPropertyAccess(instance, fieldName, optional);
+	}
+
 	private static bool TryBuildComputedAliasProperty(string propertyName, out Expression property)
 	{
+		if (TryParseExplicitComputedAliasProperty(propertyName, out property, out _))
+			return true;
+
+		if (IsJavaScriptIdentifierName(propertyName))
+		{
+			property = null!;
+			return false;
+		}
+
+		property = CreateStringLiteral(propertyName);
+		return true;
+	}
+
+	private static string GetAliasedPropertyKey(string propertyName)
+	{
+		return TryParseExplicitComputedAliasProperty(propertyName, out _, out var propertyKey)
+			? propertyKey
+			: propertyName;
+	}
+
+	private static bool TryParseExplicitComputedAliasProperty(string propertyName, out Expression property, out string propertyKey)
+	{
 		property = null!;
+		propertyKey = propertyName;
 		if (propertyName.Length < 3 ||
 			propertyName[0] != '[' ||
 			propertyName[propertyName.Length - 1] != ']')
@@ -852,39 +882,58 @@ public partial class SemanticWalker
 		}
 
 		var inner = propertyName.Substring(1, propertyName.Length - 2).Trim();
-		if (inner.Length == 0)
-			return false;
-
 		if (int.TryParse(inner, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var numericIndex))
 		{
-			property = new NumericLiteral(numericIndex, numericIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			propertyKey = numericIndex.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			property = new NumericLiteral(numericIndex, propertyKey);
 			return true;
 		}
 
-		if ((inner[0] == '"' && inner[inner.Length - 1] == '"') ||
-			(inner[0] == '\'' && inner[inner.Length - 1] == '\''))
+		if (inner.Length >= 2 &&
+			((inner[0] == '"' && inner[inner.Length - 1] == '"') ||
+			 (inner[0] == '\'' && inner[inner.Length - 1] == '\'')))
 		{
-			var literal = inner.Substring(1, inner.Length - 2);
-			property = CreateStringLiteral(literal);
+			propertyKey = inner.Substring(1, inner.Length - 2);
+			property = CreateStringLiteral(propertyKey);
 			return true;
 		}
 
 		return false;
 	}
 
+	private static bool IsJavaScriptIdentifierName(string name)
+	{
+		if (string.IsNullOrEmpty(name) ||
+			!IsJavaScriptIdentifierStart(name[0]))
+		{
+			return false;
+		}
+
+		for (var index = 1; index < name.Length; index++)
+		{
+			var character = name[index];
+			if (!IsJavaScriptIdentifierPart(character))
+				return false;
+		}
+
+		return true;
+	}
+
+	private static bool IsJavaScriptIdentifierStart(char character)
+		=> character == '_' ||
+			character == '$' ||
+			(character >= 'A' && character <= 'Z') ||
+			(character >= 'a' && character <= 'z');
+
+	private static bool IsJavaScriptIdentifierPart(char character)
+		=> IsJavaScriptIdentifierStart(character) ||
+			(character >= '0' && character <= '9');
+
 	private static Expression BuildArrayFrom(Expression value) =>
 		new CallExpression(
 			new MemberExpression(new Identifier("Array"), new Identifier("from"), computed: false, optional: false),
 			NodeList.From(value),
 			optional: false);
-
-	private static ThrowStatement BuildThrowErrorStatement(string message)
-	{
-		var errorExpression = new NewExpression(
-			new Identifier("Error"),
-			NodeList.From<Expression>(CreateStringLiteral(message)));
-		return new ThrowStatement(errorExpression);
-	}
 
 	private static ThrowStatement BuildThrowTypeErrorStatement(string message)
 	{
@@ -1163,15 +1212,18 @@ private bool TryExpandEcmascriptParamsArgument(
 		}
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		var childrenToSlotServices = new ChildrenToSlotIntrinsic.Services(
+		var hostContext = new SemanticInvocationLoweringContext(
 			argument,
 			TryBuildImportedModuleMember,
 			GetModuleImportPath,
 			GetMapperType,
 			EnumerateNamedTypeHierarchyBaseFirst,
 			CreateOperationTransformationException);
-		if (ChildrenToSlotIntrinsic.TryBuild(operation, method, arguments, childrenToSlotServices, out expression))
+		if (Host?.RewriteInvocationIntrinsic(operation, instance, arguments, hostContext) is Expression hostIntrinsic)
+		{
+			expression = hostIntrinsic;
 			return true;
+		}
 
 		if (TryBuildEnumerableArrayLikeIntrinsic(operation, method, arguments, out expression))
 			return true;
@@ -1936,7 +1988,8 @@ private bool TryExpandEcmascriptParamsArgument(
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
-			return WithOriginIfMissing(new MemberExpression(instance, property, false, optional), operation);
+			var access = BuildFieldAccess(instance, operation.Field, fieldName!, optional);
+			return WithOriginIfMissing(access, operation);
 		}
 
 		// 静态成员：生成完整的限定名
@@ -1955,11 +2008,11 @@ private bool TryExpandEcmascriptParamsArgument(
 
 			var runtimeHost = TryBuildRuntimeHostExpression(operation.Field.ContainingType, argument);
 			if (runtimeHost is not null)
-				return WithOriginIfMissing(new MemberExpression(runtimeHost, property, computed: false, optional: false), operation);
+				return WithOriginIfMissing(BuildFieldAccess(runtimeHost, operation.Field, fieldName!, optional: false), operation);
 
 			var containing = BuildFullTypeName(operation.Field.ContainingType, argument);
 			if (containing is not null)
-				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
+				return WithOriginIfMissing(BuildFieldAccess(containing, operation.Field, fieldName!, optional: false), operation);
 
 		}
 

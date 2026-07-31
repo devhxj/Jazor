@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8299 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8299%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.30%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.30%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.07%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.07%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8113 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8113%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.42%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.42%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.78%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.78%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -35,13 +35,13 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ## 已验证的编译器基线
 
-`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-07-31：
+`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-08-01：
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8299 / 8299 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 15735 / 16339（96.30%） | 95% |
-| 分支覆盖率 | 6931 / 7695（90.07%） | 90% |
+| 编译器回归测试 | 8113 / 8113 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 13827 / 14341（96.42%） | 95% |
+| 分支覆盖率 | 5940 / 6543（90.78%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -70,18 +70,18 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 
 ## 最新更新
 
-### 2026-07-31
+### 2026-08-01
 
-- 嵌套结构化 `record` 解构会直接读取已配置和继承的属性键，保留嵌套 `var` 声明，不再生成运行时不存在的 `Deconstruct` 调用。
-- 运行时成员类会保留手写 `init` accessor 行为，包括 C# `field` 支持的属性；私有字段声明与引用使用一致的 JavaScript 私有名称。
-- 以编译期负数 ECMAScript 数字为键的对象字面量会生成合法的计算属性语法。
+- Razor-to-Vue 已将 ASP.NET Components catalog 与 Razor 专属 lowering 收敛在 `Jazor.Vue` 产品边界，同时保持核心转译器的受支持扩展契约。
+- 官方 Razor 源生成器输出持续直接生成 Vue render-function `.mjs` 产物，不回退为 SFC、render-context 或生成 builder 协议。
+- JazorAdmin 参考应用已通过打包 Deno host 验证本地包消费、native 与 `VueInject` 构建、生成产物和浏览器挂载。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.35
+dotnet add package Jazor --version 0.1.36
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -90,8 +90,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.35" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.35" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.36" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.36" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -99,11 +99,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.35" />
+  <PackageReference Include="Jazor" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.36" />
 </ItemGroup>
 ```
 

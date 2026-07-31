@@ -1,11 +1,12 @@
 using Jazor.Compiler;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Jazor.ComplierTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class CurrentComponentMemberClosureTests
@@ -135,9 +136,10 @@ public sealed class CurrentComponentMemberClosureTests
             fixture.ComponentType,
             fixture.SemanticModel,
             new AstConverterOptions(
-                AstConverterProfile.RazorVueRuntime,
+                AstConverterProfile.Standard,
                 MemberFilter: closure.ShouldInclude,
-                Host: new RenderTreeBuilderSemanticWalkerHost()));
+                Host: new RazorVueSemanticWalkerHost(fixture.ComponentType),
+                ModulePolicy: RazorVueModulePolicy.Instance));
 
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");

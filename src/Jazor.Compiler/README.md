@@ -17,13 +17,14 @@
 2. `SemanticWalker`：负责语义级 lowering，把 `IOperation` 转成 ESTree。
 3. WhiteList / `Op.Compile` / SourceOrigin：负责宿主映射事实、复杂宿主钩子和调试来源锚点。
 
-Razor-to-Vue 转型线通过 opt-in `SemanticWalkerHost` seam 接入，不改变普通 compiler mainline：
+产品集成通过通用、强类型的扩展契约接入，普通 compiler mainline 不携带产品 profile 或 ASP.NET Components lowering：
 
-- `RenderTreeBuilderSemanticWalkerHost`：把受支持的 `RenderTreeBuilder` 调用降到 render-context v1。
-- `CurrentComponentMemberClosure`：从 `BuildRenderTree`/handler/lifecycle roots 计算 current-component 可达成员闭包，可直接作为 `AstConverterOptions.MemberFilter`。
-- `CurrentComponentSemanticWalkerHost`：把 current-component 字段/auto property/`[Parameter]`/方法引用分别改写到 `state`、`props` 和稳定 setup-scope 函数标识符；official SG 生成的 `EventCallback.Factory.Create(this, Handler)` method-group 也在此 seam 内解包为稳定 handler identifier。
+- `AstConverterModulePolicy`：定义模块层级、runtime class 位置、声明名与额外可见性的确定性投影策略。
+- `SemanticWalkerHost`：定义窄 Roslyn operation rewrite seam；`RewriteInvocationIntrinsic` 在 compiler intrinsic/whitelist dispatch 前接收已 lower 的 operands 与 `SemanticInvocationLoweringContext`。
+- `CompositeSemanticWalkerHost`：按“第一个 rewrite 声明者获胜、观察扇出、skip/claim OR”组合多个 product host，不暴露 `SemanticWalker` 继承面。
+- `SourceOrigin`、`GeneratedNodePosition` 和 node-layout emitter：为需要组合更大 artifact 的产品提供 source-map 锚点与稳定节点坐标。
 
-这些 seam 只负责 compiler-owned C# 语义；最终 `defineComponent`、`setup`、runtime import、`.mjs`/manifest 物化仍由 RazorVue/Emit 后续阶段承接。
+RazorVue 的 current-component、RenderTreeBuilder、children-to-slot 和 Components catalog 均由 `Jazor.RazorVue` 自己实现并测试；其最终 `defineComponent`/setup/render-function artifact 也不属于本项目。
 
 真正的文件物化不在本项目内完成：
 

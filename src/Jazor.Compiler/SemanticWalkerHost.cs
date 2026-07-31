@@ -50,6 +50,20 @@ public abstract class SemanticWalkerHost
     public virtual Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
         => null;
 
+    /// <summary>
+    /// Rewrites a host-owned simple assignment after the right-hand value has been lowered once,
+    /// but before the compiler selects the ordinary assignment target protocol.
+    /// </summary>
+    /// <remarks>
+    /// This is intentionally post-value-lowering so a host can project storage without bypassing
+    /// normal expression semantics or evaluating the value more than once.
+    /// </remarks>
+    public virtual Expression? RewriteSimpleAssignmentPostorder(
+        ISimpleAssignmentOperation operation,
+        SenseArgument argument,
+        Expression value)
+        => null;
+
     public virtual Expression? RewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument)
         => null;
 
@@ -96,6 +110,17 @@ public abstract class SemanticWalkerHost
         SenseArgument argument,
         Expression? instance,
         IReadOnlyList<Expression> arguments)
+        => null;
+
+    /// <summary>
+    /// Rewrites a host-owned invocation intrinsic after ordinary invocation operands have been
+    /// lowered and before compiler-owned intrinsics and whitelist dispatch are attempted.
+    /// </summary>
+    public virtual Expression? RewriteInvocationIntrinsic(
+        IInvocationOperation operation,
+        Expression? instance,
+        IReadOnlyList<Expression> arguments,
+        SemanticInvocationLoweringContext context)
         => null;
 
     public virtual Expression? RewriteInstanceReference(IInstanceReferenceOperation operation, SenseArgument argument)

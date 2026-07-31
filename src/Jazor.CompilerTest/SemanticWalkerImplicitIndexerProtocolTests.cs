@@ -155,6 +155,16 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
                     }
                 }
 
+                public sealed class NullableLengthBuffer
+                {
+                    public int Length => 4;
+                    public string? this[int index]
+                    {
+                        get => null;
+                        set { }
+                    }
+                }
+
                 public sealed class SliceBuffer
                 {
                     public int Length => 6;
@@ -168,9 +178,11 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
                 }
 
                 private static LengthBuffer GetLengthBuffer() => new();
+                private static NullableLengthBuffer GetNullableLengthBuffer() => new();
                 private static SliceBuffer GetSliceBuffer() => new();
                 private static int NextOffset() => 1;
                 private static int NextValue() => 7;
+                private static string NextText() => "fallback";
 
             {{methods}}
             }
@@ -286,6 +298,15 @@ internal static class ImplicitIndexerProtocolCatalog
             [" + 1"],
             ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"],
             ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"]),
+        Success(
+            "index.coalesce-assignment",
+            "form=index;bound=from-end;receiver=invocation;access=coalesce-assignment;evaluation=single;fallback=computed-write",
+            """
+                        var value = GetNullableLengthBuffer()[^NextOffset()] ??= NextText();
+                """,
+            [" == null ?", "v$0[v$1] = v$2"],
+            ["ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextText()"],
+            ["ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextText()"]),
         Success(
             "range.bounded",
             "form=range;bounds=from-start/from-end;slice=Slice(int,int);receiver=local",

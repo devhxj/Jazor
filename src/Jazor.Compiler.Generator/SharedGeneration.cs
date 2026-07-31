@@ -65,6 +65,7 @@ internal static class SharedGeneration
             Path.Combine(src, "Jazor.CLR"),
             Path.Combine(src, "ECMAScript.Vue3"),
             Path.Combine(src, "ECMAScript.Vuetify"),
+            Path.Combine(src, "Jazor.RazorVue", "RazorSdk", "Catalog"),
         };
 
         foreach (var root in roots)

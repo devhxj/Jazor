@@ -80,6 +80,27 @@
 - writer 输出的 map 内容是否稳定
 - `ESGenerator` 收集的 catalog / source map carriers 是否一致
 
+## 典型场景矩阵
+
+下面的矩阵用于把高风险 lowering 区域对应到开发者实际可写的 C# 场景和可复验入口。它不是语法支持率清单，也不能用例数替代行为覆盖。
+
+| 风险区域 | 典型作者场景 | 主回归入口 | 主要证据 |
+| --- | --- | --- | --- |
+| `SemanticWalker.Reference` | ECMAScript 宿主静态 API、派生 runtime constructor、属性读写、方法组和 alias | `SemanticWalkerReferenceTest.cs` | ESTree/JS 文本保留调用点的 concrete runtime host |
+| `SemanticWalker.Pattern` | `is`、属性/位置/list pattern、guard、switch expression、单次求值 | `SemanticWalkerPatternTest.cs`、`SemanticWalkerPatternProtocolTests.cs` | 条件顺序、绑定变量、null guard 与明确失败诊断 |
+| `SemanticWalker` 主分派与宿主 seam | typed host rewrite、`Inline`/`Import`/`Compile`、pre/post-order 重写 | `SemanticWalkerHostRewriteTest.cs`、`SemanticWalkerConfiguredContractProtocolTests.cs` | Roslyn operation 形状、import 收集和最终 AST |
+| `Using` 与 `Loop` | 多资源 `using`、`await using`、提前 `return`/`throw`、foreach 解构和索引循环 | `SemanticWalkerUsingLifetimeScenarioTests.cs`、`SemanticWalkerLoopTest.cs`、`SemanticWalkerForEachDeconstructionScenarioTests.cs` | 资源 lifetime、reverse dispose、控制流和副作用次数 |
+| `AstConverter` | module export/import、runtime member class、继承、构造函数 dispatcher、命名冲突 | `AstConverterBoundaryScenarioTests.cs`、`AstConverterRuntimeClassScenarioTests.cs`、`AstConverterExportPolicyScenarioTests.cs` | 模块 AST、导出边界、稳定 helper/alias 名 |
+| compiler -> catalog -> emit | import/source-map catalog、路径冲突、manifest 和最终 `.mjs` | `ESGeneratorSourceMapCatalogTest.cs`、`ESGeneratorModulePathCollisionTests.cs`、`Jazor.EmitTest` | catalog carrier、source map、materialized artifact |
+| RazorVue official authoring | `.razor` 的事件、bind、callback、组件组合、当前组件调度 | `Jazor.RazorVue.Sg.Test/RazorSgOfficial*AuthoringTests.cs` | 官方 Razor SG C# 输入到 `defineComponent` render module |
+| Runtime-only semantics | `InvokeAsync`、async event、unmount、浏览器 mount 和真实 artifact 交互 | `RazorSgComponentMemberClosureTests.cs`、`src/JazorAdmin/verify-smoke.cs` | bundled DenoHost 执行和浏览器 smoke；不启动 Node 进程 |
+
+测试模型固定如下：
+
+1. 默认断言 `IOperation -> ESTree -> JavaScript` 的结构和文本契约。
+2. 只有求值顺序、异步调度、事件回调、unmount 或浏览器交互无法由文本充分证明时，才添加 DenoHost runtime 验证。
+3. 每个新增场景必须指向矩阵中的真实作者行为或明确产品边界；不能以难以正常触达的内部保护分支作为加测试数量的理由。
+
 ## 辅助文件
 
 - `SourceMapTestHelpers.cs`：SourceMap 断言与读取辅助

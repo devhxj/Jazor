@@ -1,0 +1,50 @@
+using Microsoft.CodeAnalysis;
+
+namespace Jazor.Compiler;
+
+/// <summary>
+/// Defines product-neutral module projection decisions used by <see cref="AstConverter"/>.
+/// </summary>
+/// <remarks>
+/// Compiler profiles describe compiler-owned output modes. Product integrations should extend
+/// module membership, declaration naming, and runtime-class placement through this policy instead
+/// of adding product-specific profile values or branches to <see cref="AstConverter"/>.
+/// </remarks>
+public abstract class AstConverterModulePolicy
+{
+    public static AstConverterModulePolicy Default { get; } = new DefaultModulePolicy();
+
+    /// <summary>
+    /// Returns the source types whose members and lexical declarations participate in one module.
+    /// The sequence order is the deterministic declaration order used by the converter.
+    /// </summary>
+    public virtual IEnumerable<INamedTypeSymbol> EnumerateModuleTypes(INamedTypeSymbol moduleType)
+    {
+        yield return moduleType;
+    }
+
+    /// <summary>
+    /// Returns whether a nested runtime class is emitted separately at module scope by the host.
+    /// </summary>
+    public virtual bool ShouldFlattenNestedRuntimeClass(
+        INamedTypeSymbol moduleType,
+        INamedTypeSymbol containingRuntimeClass,
+        INamedTypeSymbol nestedRuntimeClass)
+        => false;
+
+    /// <summary>
+    /// Optionally overrides the preferred local declaration name before collision resolution.
+    /// </summary>
+    public virtual string? GetPreferredModuleDeclaredName(ISymbol symbol)
+        => null;
+
+    /// <summary>
+    /// Allows a host to include an additional top-level accessibility in its projected module.
+    /// </summary>
+    public virtual bool IsAdditionalTopLevelAccessibilityAllowed(Accessibility accessibility)
+        => false;
+
+    private sealed class DefaultModulePolicy : AstConverterModulePolicy
+    {
+    }
+}

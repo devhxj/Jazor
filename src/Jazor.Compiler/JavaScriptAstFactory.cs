@@ -71,7 +71,10 @@ public static class JavaScriptAstFactory
         "yield"
     };
 
-    internal static bool IsJavaScriptIdentifierName(string? value)
+    /// <summary>
+    /// Determines whether a value is valid as an ECMAScript identifier name.
+    /// </summary>
+    public static bool IsJavaScriptIdentifierName(string? value)
     {
         if (string.IsNullOrEmpty(value) ||
             !IsJavaScriptIdentifierStart(value!, 0, out var width))
@@ -193,7 +196,7 @@ public static class JavaScriptAstFactory
     /// Builds an expression-bodied arrow invocation whose call arguments are evaluated once,
     /// from left to right, before the projected expression consumes them.
     /// </summary>
-    internal static Expression CreateSingleEvaluationArrowInvocation(
+    public static Expression CreateSingleEvaluationArrowInvocation(
         IReadOnlyList<(string ParameterName, Expression Value)> inputs,
         Func<Identifier[], Expression> bodyFactory)
     {

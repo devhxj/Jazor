@@ -610,6 +610,25 @@ internal static class UsingLifetimeScenarioCatalog
             """,
             [Import("resource", DisposeAsyncImport, awaited: true)]),
         Success(
+            "derived-interface-expression-mixed",
+            "direct-derived-interface-resources-use-inherited-disposal-contracts",
+            """
+            class TestClass
+            {
+                interface IResource : System.IDisposable { }
+                interface IAsyncResource : System.IAsyncDisposable { }
+
+                async System.Threading.Tasks.Task TestMethod(
+                    IResource resource,
+                    IAsyncResource asyncResource)
+                {
+                    using (resource)
+                    await using (asyncResource) { }
+                }
+            }
+            """,
+            [Import("resource", DisposeImport), Import("asyncResource", DisposeAsyncImport, awaited: true)]),
+        Success(
             "generic-interface-statement-sync",
             "generic-idisposable-constraint-statement",
             """

@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-07-31）
+# Jazor Compiler 主线状态（2026-08-01）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8299 / 8299 通过
-- `Jazor.Compiler` 行覆盖：15735 / 16339（96.30%）
-- `Jazor.Compiler` 分支覆盖：6931 / 7695（90.07%）
+- `Jazor.CompilerTest`：8113 / 8113 通过
+- `Jazor.Compiler` 行覆盖：13827 / 14341（96.42%）
+- `Jazor.Compiler` 分支覆盖：5940 / 6543（90.78%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -56,6 +56,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - 模块导出：固定只支持 named export；任何成员若解析到导出名 `default` 都应显式失败
 - 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
 - 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher
+- 产品扩展：核心以 `AstConverterModulePolicy`、`SemanticWalkerHost`、`CompositeSemanticWalkerHost` 和 `SemanticInvocationLoweringContext` 提供强类型组合契约；RazorVue product lowering 与 Components catalog 已迁出核心
 
 这意味着 compiler 主线现在已经有一套更清晰的“什么必须保、什么可以擦除、什么必须显式失败”的规则，而不是继续在“尽量长得像手写 JS”上摇摆。
 

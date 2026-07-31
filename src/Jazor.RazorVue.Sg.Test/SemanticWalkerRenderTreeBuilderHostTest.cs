@@ -3,13 +3,14 @@ using System.Reflection;
 using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.ComplierTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class SemanticWalkerRenderTreeBuilderHostTest

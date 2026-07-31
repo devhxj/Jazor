@@ -47,7 +47,7 @@ public sealed class AstConverterExportPolicyScenarioTests
         var converter = new AstConverter(
             fixture.Module,
             fixture.SemanticModel,
-            new AstConverterOptions(scenario.Profile));
+            new AstConverterOptions(scenario.Profile, ModulePolicy: scenario.ModulePolicy));
 
         var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() => converter.Convert());
 
@@ -124,6 +124,46 @@ public sealed class AstConverterExportPolicyScenarioTests
         Assert.IsInstanceOfType<Identifier>(identifier, scenarioId);
         Assert.AreEqual("shared", ((Identifier)identifier).Name, scenarioId);
         Assert.HasCount(0, export.Specifiers, scenarioId);
+    }
+
+    [TestMethod]
+    public async Task Convert_InheritedModulePolicy_EmitsBaseDeclarationsBeforeDerivedReferences()
+    {
+        const string scenarioId = "ast-converter-export-policy.inherited-module-success";
+        const string source = """
+            using ECMAScript;
+
+            public class BaseModule
+            {
+                [ECMAScriptName("baseValue")]
+                public static int BaseValue = 1;
+            }
+
+            [ECMAScriptModule("./module")]
+            internal sealed class TestModule : BaseModule
+            {
+                [ECMAScriptName("derivedValue")]
+                public static int DerivedValue = BaseValue + 1;
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var converter = new AstConverter(
+            fixture.Module,
+            fixture.SemanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                ModulePolicy: InheritedModuleProjectionPolicy.Instance));
+
+        var module = await converter.Convert();
+
+        Assert.IsNotNull(module, scenarioId);
+        var script = module!.ToKnRECMAScript();
+        var baseValueOffset = script.IndexOf("baseValue", StringComparison.Ordinal);
+        var derivedValueOffset = script.IndexOf("derivedValue", StringComparison.Ordinal);
+        Assert.IsTrue(baseValueOffset >= 0, scenarioId);
+        Assert.IsTrue(derivedValueOffset > baseValueOffset, scenarioId);
+        StringAssert.Contains(script, "baseValue + 1", StringComparison.Ordinal, scenarioId);
+        _ = new Acornima.Parser().ParseModule(script);
     }
 
     [TestMethod]
@@ -232,7 +272,7 @@ public enum AstConverterExportCollisionKind
     MethodWithRuntimeClass,
     ExplicitlyNamedOverloads,
     InternalWithPublic,
-    InheritedRazorVueMembers
+    InheritedProjectedMembers
 }
 
 public sealed record AstConverterExportCollisionScenario(
@@ -240,11 +280,12 @@ public sealed record AstConverterExportCollisionScenario(
     string Dimension,
     AstConverterExportCollisionKind Kind,
     AstConverterProfile Profile,
+    AstConverterModulePolicy? ModulePolicy,
     string Source,
     string ExportName,
     IReadOnlyList<string> ExpectedSymbolFragments)
 {
-    public string InputIdentity => $"{Kind}|{Profile}|{Source}";
+    public string InputIdentity => $"{Kind}|{Profile}|{ModulePolicy?.GetType().Name}|{Source}";
 }
 
 internal static class AstConverterExportPolicyScenarioCatalog
@@ -355,10 +396,10 @@ internal static class AstConverterExportPolicyScenarioCatalog
             """,
             ["InternalValue", "PublicValue"]),
         Collision(
-            "inherited-razorvue-members",
-            "razorvue-profile-validates-base-and-derived-export-surface",
-            AstConverterExportCollisionKind.InheritedRazorVueMembers,
-            AstConverterProfile.RazorVueRuntime,
+            "inherited-projected-members",
+            "module-policy-validates-base-and-derived-export-surface",
+            AstConverterExportCollisionKind.InheritedProjectedMembers,
+            AstConverterProfile.Standard,
             """
             using ECMAScript;
 
@@ -375,7 +416,8 @@ internal static class AstConverterExportPolicyScenarioCatalog
                 public static int DerivedValue = 2;
             }
             """,
-            ["BaseValue", "DerivedValue"])
+            ["BaseValue", "DerivedValue"],
+            InheritedModuleProjectionPolicy.Instance)
     ];
 
     private static AstConverterExportCollisionScenario Collision(
@@ -384,12 +426,14 @@ internal static class AstConverterExportPolicyScenarioCatalog
         AstConverterExportCollisionKind kind,
         AstConverterProfile profile,
         string source,
-        IReadOnlyList<string> expectedSymbolFragments)
+        IReadOnlyList<string> expectedSymbolFragments,
+        AstConverterModulePolicy? modulePolicy = null)
         => new(
             $"ast-converter-export-policy.{id}",
             dimension,
             kind,
             profile,
+            modulePolicy,
             source,
             "shared",
             expectedSymbolFragments);

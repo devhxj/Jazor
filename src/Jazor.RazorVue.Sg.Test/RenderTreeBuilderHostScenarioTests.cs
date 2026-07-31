@@ -1,7 +1,7 @@
 using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
-using Jazor.ComplierTest;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.CompilerTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RenderTreeBuilderHostScenarioTests

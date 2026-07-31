@@ -1,15 +1,16 @@
 using System.Reflection;
 using ECMAScript.Contract;
+using Jazor.RazorVue.RazorSdk.Catalog;
 
-namespace Jazor.CLR.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RenderTreeBuilderModuleWhitelistTests
+public sealed class RenderTreeBuilderCatalogWhitelistTests
 {
     [TestMethod]
     public void RenderTreeBuilderType_IsAllowed()
     {
-        var attribute = typeof(Jazor.CLR.RenderTreeBuilderModule).GetCustomAttribute<JazorAttribute>();
+        var attribute = typeof(RenderTreeBuilderCatalog).GetCustomAttribute<JazorAttribute>();
 
         Assert.IsNotNull(attribute);
         Assert.AreEqual(Op.Allowed, attribute.Op);
@@ -19,7 +20,7 @@ public sealed class RenderTreeBuilderModuleWhitelistTests
     [TestMethod]
     public void PublicRenderTreeBuilderMethods_AreAllowed()
     {
-        var mappings = typeof(Jazor.CLR.RenderTreeBuilderModule)
+        var mappings = typeof(RenderTreeBuilderCatalog)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Select(static method => method.GetCustomAttribute<JazorAttribute>())
             .OfType<JazorAttribute>()

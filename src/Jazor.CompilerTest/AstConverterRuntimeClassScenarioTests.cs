@@ -112,7 +112,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task Convert_RazorVueRuntime_PredeclaredNestedHelperIsFlattenedToArtifactScope()
+    public async Task Convert_ModulePolicy_PredeclaredNestedHelperIsFlattenedToArtifactScope()
     {
         const string scenarioId = "ast-converter-runtime-class.razorvue-predeclared-nested-helper";
         var fixture = CompileModule(
@@ -137,8 +137,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
             fixture.Module,
             fixture.SemanticModel,
             new AstConverterOptions(
-                AstConverterProfile.RazorVueRuntime,
-                DeclaredNames: declaredNames));
+                AstConverterProfile.Standard,
+                DeclaredNames: declaredNames,
+                ModulePolicy: FlattenNestedRuntimeClassModulePolicy.Instance));
 
         var module = await converter.Convert();
         var helperDeclaration = converter.ConvertRuntimeClass(helper);
@@ -153,6 +154,51 @@ public sealed class AstConverterRuntimeClassScenarioTests
         Assert.AreEqual("renderHelper", helperDeclaration.Id?.Name, scenarioId);
         _ = new Parser().ParseModule(module.ToKnRECMAScript());
         _ = new Parser().ParseScript(helperDeclaration.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public async Task Convert_ModulePolicy_FlattenedNestedHelperKeepsCreationReferenceAndDeclarationAligned()
+    {
+        const string scenarioId = "ast-converter-runtime-class.flattened-nested-helper-creation-reference";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Host
+                {
+                    public RenderHelper Create() => new RenderHelper();
+
+                    public sealed class RenderHelper
+                    {
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var helper = fixture.GetType("Host").GetTypeMembers("RenderHelper").Single();
+        var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)
+        {
+            [helper.OriginalDefinition] = "renderHelper"
+        };
+        var converter = new AstConverter(
+            fixture.Module,
+            fixture.SemanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                DeclaredNames: declaredNames,
+                ModulePolicy: FlattenNestedRuntimeClassModulePolicy.Instance));
+
+        var module = await converter.Convert();
+        var helperDeclaration = converter.ConvertRuntimeClass(helper);
+
+        Assert.IsNotNull(module, scenarioId);
+        var moduleScript = module!.ToKnRECMAScript();
+        var helperScript = helperDeclaration.ToKnRECMAScript();
+        StringAssert.Contains(moduleScript, "new renderHelper", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(helperScript, "class renderHelper", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(moduleScript.Contains("new RenderHelper", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseModule(moduleScript);
+        _ = new Parser().ParseScript(helperScript);
     }
 
     [TestMethod]

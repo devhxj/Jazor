@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var options = SmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -197,12 +198,7 @@ static async Task VerifyBrowserSmokeAsync(
         return;
     }
 
-    var nodePath = TryResolveExecutable("node");
-    if (nodePath is null)
-    {
-        Console.WriteLine("JazorAdmin browser smoke skipped: node executable was not found.");
-        return;
-    }
+    var denoPath = ResolveDenoExecutable(repoRoot);
 
     var vueRuntime = Path.Combine(repoRoot, "node_modules", "vue", "dist", "vue.runtime.esm-browser.prod.js");
     if (!File.Exists(vueRuntime))
@@ -231,6 +227,7 @@ static async Task VerifyBrowserSmokeAsync(
         File.Copy(vueRouterRuntime, Path.Combine(vendorRoot, "vue-router.esm-browser.prod.js"), overwrite: true);
         File.Copy(tDesignRuntime, Path.Combine(vendorRoot, "tdesign-vue-next.bundle.mjs"), overwrite: true);
         File.Copy(tDesignStyle, Path.Combine(vendorRoot, "tdesign-vue-next.css"), overwrite: true);
+        // TDesign's browser ESM bundle imports this environment shim; Deno remains the smoke host.
         var nodeRuntimeRoot = Path.Combine(harnessRoot, "node");
         Directory.CreateDirectory(nodeRuntimeRoot);
         await File.WriteAllTextAsync(
@@ -742,15 +739,15 @@ static async Task VerifyBrowserSmokeAsync(
             """,
             Encoding.UTF8);
 
-        var testPath = Path.Combine(harnessRoot, "jazoradmin-browser-smoke.test.mjs");
+        var testPath = Path.Combine(harnessRoot, "jazoradmin-browser-smoke.mjs");
         await File.WriteAllTextAsync(
             testPath,
-            BuildBrowserSmokeTestScript(harnessRoot, browserPath),
+            BuildBrowserSmokeTestScript(browserPath),
             Encoding.UTF8);
         var browser = await RunProcessAsync(
-            nodePath,
+            denoPath,
             harnessRoot,
-            ["--test", testPath],
+            ["run", "--quiet", "-A", testPath],
             TimeSpan.FromSeconds(60));
         if (browser.ExitCode != 0)
             throw new InvalidOperationException("JazorAdmin browser smoke failed." + Environment.NewLine + browser);
@@ -1017,21 +1014,14 @@ static async Task<string> ResolveCachedBrowserAssetAsync(
     return cachePath;
 }
 
-static string BuildBrowserSmokeTestScript(string harnessRoot, string browserPath)
+static string BuildBrowserSmokeTestScript(string browserPath)
 {
-    var rootJson = ToJavaScriptStringLiteral(harnessRoot);
-    var browserPathJson = ToJavaScriptStringLiteral(browserPath);
+    var browserPathJson = JsonSerializer.Serialize(browserPath, SmokeJsonContext.Default.String);
     return $$"""
-        import { createServer } from "node:http";
-        import { readFile } from "node:fs/promises";
-        import { extname, join, normalize, resolve, sep } from "node:path";
-        import { spawn } from "node:child_process";
-        import test from "node:test";
-
-        const root = {{rootJson}};
+        const root = new URL("./", import.meta.url);
         const browserPath = {{browserPathJson}};
 
-        test("JazorAdmin generated modules mount in a real browser", async () => {
+        async function run() {
           const server = await startServer(root);
           const browser = await startBrowser(browserPath);
           try {
@@ -1080,53 +1070,54 @@ static string BuildBrowserSmokeTestScript(string harnessRoot, string browserPath
             await browser.dispose();
             await server.dispose();
           }
-        });
+        }
 
         async function startServer(root) {
           const diagnostics = [];
-          const server = createServer(async (request, response) => {
-            const url = new URL(request.url ?? "/", "http://127.0.0.1");
+          let resolvePort;
+          const listening = new Promise((resolvePromise) => resolvePort = resolvePromise);
+          const server = Deno.serve({
+            hostname: "127.0.0.1",
+            port: 0,
+            onListen: ({ port }) => resolvePort(port)
+          }, async (request) => {
+            const url = new URL(request.url);
             const relativePath = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
-            const filePath = normalize(resolve(root, relativePath));
-            const normalizedRoot = normalize(resolve(root));
-            const rootPrefix = normalizedRoot.endsWith(sep) ? normalizedRoot : `${normalizedRoot}${sep}`;
-            if (filePath !== normalizedRoot && !filePath.startsWith(rootPrefix)) {
+            const fileUrl = new URL(relativePath, root);
+            if (!fileUrl.href.startsWith(root.href)) {
               diagnostics.push(`403 ${url.pathname}`);
-              response.writeHead(403);
-              response.end("Forbidden");
-              return;
+              return new Response("Forbidden", { status: 403 });
             }
 
             try {
-              const contents = await readFile(filePath);
+              const contents = await Deno.readFile(fileUrl);
               diagnostics.push(`200 ${url.pathname}`);
-              response.writeHead(200, { "content-type": contentType(filePath), "cache-control": "no-store" });
-              response.end(contents);
+              return new Response(contents, { headers: responseHeaders(contentType(fileUrl.pathname)) });
             } catch {
-              if (extname(filePath) === "") {
-                const fallbackPath = join(normalizedRoot, "index.html");
-                const contents = await readFile(fallbackPath);
+              if (extension(fileUrl.pathname) === "") {
+                const contents = await Deno.readFile(new URL("index.html", root));
                 diagnostics.push(`200 fallback ${url.pathname}`);
-                response.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-                response.end(contents);
-                return;
+                return new Response(contents, { headers: responseHeaders("text/html; charset=utf-8") });
               }
-              diagnostics.push(`404 ${url.pathname} -> ${filePath}`);
-              response.writeHead(404);
-              response.end("Not Found");
+              diagnostics.push(`404 ${url.pathname} -> ${fileUrl.pathname}`);
+              return new Response("Not Found", { status: 404 });
             }
           });
 
-          await new Promise((resolvePromise) => server.listen(0, "127.0.0.1", resolvePromise));
+          const port = await listening;
           return {
-            port: server.address().port,
+            port,
             diagnostics,
-            dispose: () => new Promise((resolvePromise) => server.close(resolvePromise))
+            dispose: () => server.shutdown()
           };
         }
 
+        function responseHeaders(contentType) {
+          return { "content-type": contentType, "cache-control": "no-store" };
+        }
+
         function contentType(path) {
-          switch (extname(path)) {
+          switch (extension(path)) {
             case ".html": return "text/html; charset=utf-8";
             case ".mjs":
             case ".js": return "text/javascript; charset=utf-8";
@@ -1136,24 +1127,37 @@ static string BuildBrowserSmokeTestScript(string harnessRoot, string browserPath
           }
         }
 
+        function extension(path) {
+          const fileName = path.slice(path.lastIndexOf("/") + 1);
+          const dot = fileName.lastIndexOf(".");
+          return dot <= 0 ? "" : fileName.slice(dot);
+        }
+
         async function startBrowser(browserPath) {
           const port = await reservePort();
-          const userDataDir = join(root, ".browser-profile");
-          const process = spawn(browserPath, [
-            "--headless=new",
-            "--disable-gpu",
-            "--disable-dev-shm-usage",
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--no-sandbox",
-            `--remote-debugging-port=${port}`,
-            `--user-data-dir=${userDataDir}`,
-            "about:blank"
-          ], { stdio: "ignore" });
+          const userDataDir = `${Deno.cwd()}/.browser-profile`;
+          const process = new Deno.Command(browserPath, {
+            args: [
+              "--headless=new",
+              "--disable-gpu",
+              "--disable-dev-shm-usage",
+              "--no-first-run",
+              "--no-default-browser-check",
+              "--no-sandbox",
+              `--remote-debugging-port=${port}`,
+              `--user-data-dir=${userDataDir}`,
+              "about:blank"
+            ],
+            stdin: "null",
+            stdout: "null",
+            stderr: "null"
+          }).spawn();
 
           let exited = false;
-          const exitPromise = new Promise((resolvePromise) => process.once("exit", resolvePromise));
-          process.once("exit", () => exited = true);
+          const exitPromise = process.status.then((status) => {
+            exited = true;
+            return status;
+          });
           const deadline = Date.now() + 15000;
           while (Date.now() < deadline) {
             if (exited) {
@@ -1185,10 +1189,9 @@ static string BuildBrowserSmokeTestScript(string harnessRoot, string browserPath
         }
 
         async function reservePort() {
-          const server = createServer();
-          await new Promise((resolvePromise) => server.listen(0, "127.0.0.1", resolvePromise));
-          const port = server.address().port;
-          await new Promise((resolvePromise) => server.close(resolvePromise));
+          const listener = Deno.listen({ hostname: "127.0.0.1", port: 0 });
+          const port = listener.addr.port;
+          listener.close();
           return port;
         }
 
@@ -1359,6 +1362,8 @@ static string BuildBrowserSmokeTestScript(string harnessRoot, string browserPath
         function delay(ms) {
           return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
         }
+
+        await run();
         """;
 }
 
@@ -1504,39 +1509,6 @@ static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
     throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
 }
 
-static string ToJavaScriptStringLiteral(string value)
-{
-    var builder = new StringBuilder(value.Length + 2);
-    builder.Append('"');
-    foreach (var ch in value)
-    {
-        switch (ch)
-        {
-            case '\\':
-                builder.Append("\\\\");
-                break;
-            case '"':
-                builder.Append("\\\"");
-                break;
-            case '\r':
-                builder.Append("\\r");
-                break;
-            case '\n':
-                builder.Append("\\n");
-                break;
-            case '\t':
-                builder.Append("\\t");
-                break;
-            default:
-                builder.Append(ch);
-                break;
-        }
-    }
-
-    builder.Append('"');
-    return builder.ToString();
-}
-
 static Process StartProcess(string fileName, IReadOnlyList<string> arguments, string workdir)
 {
     var startInfo = new ProcessStartInfo
@@ -1612,6 +1584,47 @@ static void CopyInjectBrowserArtifacts(string sourceRoot, string targetRoot)
     foreach (var source in Directory.EnumerateFiles(sourceComponents, "jazor-admin-inject-*.mjs*"))
     {
         File.Copy(source, Path.Combine(targetComponents, Path.GetFileName(source)), overwrite: true);
+    }
+}
+
+static string ResolveDenoExecutable(string repoRoot)
+{
+    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE")?.Trim();
+    if (!string.IsNullOrWhiteSpace(explicitPath))
+    {
+        var fullPath = Path.GetFullPath(explicitPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException("Explicit JAZOR_DENO_EXE path does not exist: " + fullPath);
+
+        return fullPath;
+    }
+
+    var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+    var candidates = new List<string>();
+    AddDenoRuntimeCandidates(candidates, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin"), executableName);
+
+    var packageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages");
+    if (Directory.Exists(packageRoot))
+    {
+        foreach (var runtimePackage in Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*"))
+            AddDenoRuntimeCandidates(candidates, runtimePackage, executableName);
+    }
+
+    var denoPath = candidates.FirstOrDefault(File.Exists) ?? TryResolveExecutable("deno");
+    return denoPath ?? throw new FileNotFoundException(
+        "Bundled Deno runtime was not found. Build Jazor.Emit so DenoHost runtime assets are restored, or set JAZOR_DENO_EXE.");
+}
+
+static void AddDenoRuntimeCandidates(ICollection<string> candidates, string root, string executableName)
+{
+    if (!Directory.Exists(root))
+        return;
+
+    foreach (var candidate in Directory
+        .EnumerateFiles(root, executableName, SearchOption.AllDirectories)
+        .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
+    {
+        candidates.Add(candidate);
     }
 }
 
@@ -1777,6 +1790,11 @@ internal sealed record SmokeOptions(
         Console.WriteLine("  --frontend-only");
         Console.WriteLine("  --skip-browser");
     }
+}
+
+[JsonSerializable(typeof(string))]
+internal sealed partial class SmokeJsonContext : JsonSerializerContext
+{
 }
 
 internal sealed record BrowserSmokeProcessResult(int ExitCode, string StandardOutput, string StandardError)

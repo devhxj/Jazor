@@ -1,7 +1,7 @@
 using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
-using Jazor.ComplierTest;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.CompilerTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class CurrentComponentHostScenarioTests
@@ -97,7 +97,7 @@ public sealed class CurrentComponentHostScenarioTests
         var fixture = Compile(testCase.Source, testCase.Id);
         var walker = new SemanticWalker(true)
         {
-            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
         };
 
         var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
@@ -122,11 +122,11 @@ public sealed class CurrentComponentHostScenarioTests
         var exception = testCase.Kind switch
         {
             CurrentComponentHostValidationKind.NullComponent => Assert.ThrowsExactly<ArgumentNullException>(() =>
-                new CurrentComponentSemanticWalkerHost(null!)),
+                new RazorVueSemanticWalkerHost(null!)),
             CurrentComponentHostValidationKind.BlankStateIdentifier => Assert.ThrowsExactly<ArgumentException>(() =>
-                new CurrentComponentSemanticWalkerHost(fixture.Component, stateIdentifier: " ")),
+                new RazorVueSemanticWalkerHost(fixture.Component, stateIdentifier: " ")),
             CurrentComponentHostValidationKind.BlankPropsIdentifier => Assert.ThrowsExactly<ArgumentException>(() =>
-                new CurrentComponentSemanticWalkerHost(fixture.Component, propsIdentifier: "\t")),
+                new RazorVueSemanticWalkerHost(fixture.Component, propsIdentifier: "\t")),
             _ => throw new InvalidOperationException(
                 $"{testCase.Id}: unsupported validation kind '{testCase.Kind}'.")
         };
@@ -135,7 +135,7 @@ public sealed class CurrentComponentHostScenarioTests
         StringAssert.Contains(exception.Message, testCase.ExpectedMessageFragment, StringComparison.Ordinal, testCase.Id);
     }
 
-    private static CurrentComponentSemanticWalkerHost CreateHost(
+    private static RazorVueSemanticWalkerHost CreateHost(
         ComponentFixture fixture,
         CurrentComponentHostConfigurationKind configuration)
     {
@@ -173,7 +173,7 @@ public sealed class CurrentComponentHostScenarioTests
                 throw new ArgumentOutOfRangeException(nameof(configuration), configuration, null);
         }
 
-        return new CurrentComponentSemanticWalkerHost(
+        return new RazorVueSemanticWalkerHost(
             fixture.Component,
             stateIdentifier,
             propsIdentifier,

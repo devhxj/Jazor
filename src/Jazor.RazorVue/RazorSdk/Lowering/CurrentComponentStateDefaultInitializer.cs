@@ -1,16 +1,17 @@
 using System;
 using System.Numerics;
 using Acornima.Ast;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 
-namespace Jazor.Compiler;
+namespace Jazor.RazorVue.RazorSdk;
 
 /// <summary>
 /// Creates C# default values for RazorVue current-component state slots.
 /// This keeps CLR default-value semantics in the compiler layer while the
 /// RazorVue artifact builder owns only Vue render-function framing.
 /// </summary>
-public static class CurrentComponentStateDefaultInitializer
+internal static class CurrentComponentStateDefaultInitializer
 {
     public static Expression CreateExpression(ITypeSymbol type)
     {

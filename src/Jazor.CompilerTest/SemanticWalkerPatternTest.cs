@@ -478,10 +478,43 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertScriptEqual(@"{
+  AssertScriptEqual(@"{
   let numberResult = number != null;
   let textResult = text != null;
 }", script);
+  }
+
+  [TestMethod]
+  public void Visit_IsType_ErasedInterface_ResolvesAliasesAndPreservesNullabilitySemantics()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object value = 1;
+                    object alias = value;
+                    bool known = alias is IComparable<int>;
+
+                    object empty = null;
+                    bool absent = empty is IComparable<int>;
+
+                    IComparable<int> maybe = GetComparable();
+                    bool possible = maybe is IComparable<int>;
+                }
+
+                IComparable<int> GetComparable() => null;
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script!, "let known = true;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let absent = false;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let possible = maybe != null;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3763,6 +3796,50 @@ public sealed class SemanticWalkerPatternTest
   }
 
   /// <summary>
+  /// 运行时宿主的属性模式必须复用配置成员键：非标识符字段键不能退化为 JavaScript 减法表达式。
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertySubpattern_ConfiguredRuntimeMemberKeys_UseComputedAccess()
+  {
+    var block = GetBlockOperation("""
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScript]
+            [Description("@#")]
+            abstract class RuntimeRecord
+            {
+                [Description("@#[\"display-name\"]")]
+                public extern string DisplayName { get; }
+
+                [Description("@#modelValue")]
+                public extern int ModelValue { get; }
+
+                [Description("@#status-code")]
+                public int StatusCode;
+            }
+
+            class TestClass
+            {
+                void TestMethod(RuntimeRecord record)
+                {
+                    bool matches = record is { DisplayName: "ready", ModelValue: > 0, StatusCode: >= 200 };
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertStringContainsJsNaming(script, "\"display-name\" in record && record[\"display-name\"] === \"ready\"", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"modelValue\" in record && record.modelValue > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"status-code\" in record && record[\"status-code\"] >= 200", StringComparison.Ordinal);
+    Assert.IsNotNull(script);
+    Assert.DoesNotContain("record.status - code", script, StringComparison.Ordinal);
+  }
+
+  /// <summary>
   /// 测试 Visit - Switch 表达式复杂模式组合
   /// </summary>
   [TestMethod]
@@ -5184,6 +5261,77 @@ line2"";
                         IComparable => ""yes"",
                         _ => ""no""
                     };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+       "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// The discriminant's initializer cannot be used after a preceding reassignment.
+  /// A switch expression must retain the erased-interface unsupported boundary rather
+  /// than folding from stale local-initializer information.
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpression_InterfaceTypePattern_WithReassignedDiscriminant_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool replace)
+                {
+                    object value = ""text"";
+                    if (replace)
+                    {
+                        value = new object();
+                    }
+
+                    string result = value switch
+                    {
+                        IComparable => ""comparable"",
+                        _ => ""other""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// Pattern switch case clauses use a distinct Roslyn parent chain from switch
+  /// expressions and must apply the same reassignment guard before interface folding.
+  /// </summary>
+  [TestMethod]
+  public void Visit_Switch_InterfaceTypePattern_WithReassignedDiscriminant_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool replace)
+                {
+                    object value = ""text"";
+                    if (replace)
+                    {
+                        value = new object();
+                    }
+
+                    switch (value)
+                    {
+                        case IComparable:
+                            Console.WriteLine(""comparable"");
+                            break;
+                        default:
+                            Console.WriteLine(""other"");
+                            break;
+                    }
                 }
             }
             ");

@@ -17,6 +17,8 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class RazorSgComponentMemberClosureTests
 {
+    private static readonly Lazy<string> DenoExecutable = new(ResolveDenoExecutable);
+
     [TestMethod]
     public async Task Build_OfficialRazorCounter_CompilesStateThroughCompilerClosureAndHost()
     {
@@ -222,9 +224,10 @@ public sealed class RazorSgComponentMemberClosureTests
         var semanticModel = fixture.Binding.Compilation.GetSemanticModel(syntaxTree);
         var options = closure.CreateAstConverterOptions();
 
-        Assert.AreEqual(AstConverterProfile.RazorVueRuntime, options.Profile);
+        Assert.AreEqual(AstConverterProfile.Standard, options.Profile);
         Assert.IsNotNull(options.MemberFilter);
-        Assert.IsInstanceOfType(options.Host, typeof(CurrentComponentSemanticWalkerHost));
+        Assert.IsInstanceOfType(options.Host, typeof(RazorVueSemanticWalkerHost));
+        Assert.AreSame(RazorVueModulePolicy.Instance, options.ModulePolicy);
 
         var converter = new AstConverter(fixture.Component.ComponentSymbol, semanticModel, options);
         var module = await converter.Convert();
@@ -439,7 +442,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -536,7 +539,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -655,7 +658,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -790,7 +793,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -931,7 +934,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1054,7 +1057,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1188,7 +1191,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1300,7 +1303,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1599,7 +1602,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1701,7 +1704,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1808,7 +1811,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1927,7 +1930,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2039,7 +2042,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2151,7 +2154,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2412,7 +2415,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2514,7 +2517,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2624,7 +2627,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2758,7 +2761,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2878,7 +2881,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -3466,7 +3469,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 }
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -3939,7 +3942,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4121,7 +4124,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4267,7 +4270,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4449,7 +4452,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4605,7 +4608,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4815,7 +4818,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5027,7 +5030,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5276,7 +5279,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5450,7 +5453,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5891,7 +5894,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6034,7 +6037,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6178,7 +6181,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6321,7 +6324,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6480,7 +6483,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6704,7 +6707,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 });
                 """);
 
-            await RunNodeTestAsync(testFile, tempRoot);
+            await RunDenoTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6916,28 +6919,30 @@ public sealed class RazorSgComponentMemberClosureTests
         int SourceLine,
         int SourceColumn);
 
-    private static async Task RunNodeTestAsync(string testFile, string workingDirectory)
+    private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
     {
         var startInfo = new ProcessStartInfo
         {
-            FileName = "node",
+            FileName = DenoExecutable.Value,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
             UseShellExecute = false,
             WorkingDirectory = workingDirectory
         };
-        startInfo.ArgumentList.Add("--test");
+        startInfo.ArgumentList.Add("test");
+        startInfo.ArgumentList.Add("--quiet");
+        startInfo.ArgumentList.Add("--allow-all");
         startInfo.ArgumentList.Add(testFile);
 
         Process process;
         try
         {
             process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("Failed to start node test process.");
+                ?? throw new InvalidOperationException("Failed to start Deno runtime test process.");
         }
         catch (Win32Exception ex)
         {
-            Assert.Inconclusive("Node.js was not available to run the RazorVue generated module runtime test: " + ex.Message);
+            Assert.Fail("Bundled DenoHost runtime was not available to run the RazorVue generated module runtime test: " + ex.Message);
             return;
         }
 
@@ -6960,7 +6965,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 {
                 }
 
-                Assert.Fail("Node.js runtime test timed out after 30 seconds.");
+                Assert.Fail("Deno runtime test timed out after 30 seconds.");
             }
 
             var output = await standardOutput;
@@ -6968,13 +6973,47 @@ public sealed class RazorSgComponentMemberClosureTests
             if (process.ExitCode != 0)
             {
                 Assert.Fail(
-                    "Node.js runtime test failed with exit code " +
+                    "Deno runtime test failed with exit code " +
                     process.ExitCode +
                     Environment.NewLine +
                     output +
                     Environment.NewLine +
                     error);
             }
+        }
+    }
+
+    private static string ResolveDenoExecutable()
+    {
+        var repositoryRoot = Path.GetDirectoryName(FindRepositoryFile("Jazor.slnx"))
+            ?? throw new InvalidOperationException("Could not resolve the repository root for DenoHost.");
+        var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+        var candidates = new List<string>();
+
+        AddDenoRuntimeCandidates(candidates, Path.Combine(repositoryRoot, "src", "Jazor.Emit", "bin"), executableName);
+        var packageRoot = Path.Combine(repositoryRoot, ".dotnet", ".nuget", "packages");
+        if (Directory.Exists(packageRoot))
+        {
+            foreach (var runtimePackage in Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*"))
+                AddDenoRuntimeCandidates(candidates, runtimePackage, executableName);
+        }
+
+        // Runtime semantics must execute on the DenoHost asset shipped by Jazor, never Node/PATH.
+        return candidates.FirstOrDefault(System.IO.File.Exists)
+            ?? throw new FileNotFoundException(
+                "Bundled DenoHost runtime was not found. Restore or build Jazor.Emit before running RazorVue runtime tests.");
+    }
+
+    private static void AddDenoRuntimeCandidates(ICollection<string> candidates, string root, string executableName)
+    {
+        if (!Directory.Exists(root))
+            return;
+
+        foreach (var candidate in Directory
+            .EnumerateFiles(root, executableName, SearchOption.AllDirectories)
+            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            candidates.Add(candidate);
         }
     }
 

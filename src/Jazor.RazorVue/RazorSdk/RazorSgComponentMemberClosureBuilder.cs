@@ -230,22 +230,38 @@ internal sealed record RazorSgComponentMemberClosure(
             .ToImmutableArray();
 
     public Func<ISymbol, bool> CreateMemberFilter()
-        => CompilerClosure.ShouldInclude;
+        => ShouldIncludeCompilerMember;
 
     public AstConverterOptions CreateAstConverterOptions(
         string stateIdentifier = "state",
         string propsIdentifier = "props",
         IReadOnlyDictionary<ISymbol, string>? declaredNames = null)
         => new(
-            AstConverterProfile.RazorVueRuntime,
-            MemberFilter: CompilerClosure.ShouldInclude,
+            AstConverterProfile.Standard,
+            MemberFilter: ShouldIncludeCompilerMember,
             DeclaredNames: declaredNames,
-            Host: new CurrentComponentSemanticWalkerHost(
+            Host: new RazorVueSemanticWalkerHost(
                 ComponentSymbol,
                 stateIdentifier,
                 propsIdentifier,
                 BuildParameterRuntimeNameMap(ComponentSymbol),
-                declaredNames));
+                declaredNames),
+            ModulePolicy: RazorVueModulePolicy.Instance);
+
+    private bool ShouldIncludeCompilerMember(ISymbol symbol)
+    {
+        // Storage properties are projected to props/state. Their compiler-generated
+        // accessors would otherwise survive as dead functions that reference a backing
+        // field removed later by module materialization. Computed accessors remain real
+        // module members and continue through the compiler.
+        if (symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol property } &&
+            (IsParameterProperty(property) || IsAutoProperty(property)))
+        {
+            return false;
+        }
+
+        return CompilerClosure.ShouldInclude(symbol);
+    }
 
     private static bool IsParameterProperty(IPropertySymbol property)
         => property.GetAttributes().Any(static attribute =>

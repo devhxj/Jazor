@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.Compiler;
+namespace Jazor.RazorVue.RazorSdk;
 
 /// <summary>
 /// Computes the deterministic current-component member closure rooted at
@@ -21,7 +21,7 @@ namespace Jazor.Compiler;
 /// closure 的结果必须确定且最小：只把当前渲染路径实际依赖的源声明成员带入输出。
 /// 外部框架基类不属于当前模块的源码闭包，应通过 host seam 使用其约定能力。
 /// </remarks>
-public sealed class CurrentComponentMemberClosure
+internal sealed class CurrentComponentMemberClosure
 {
     private readonly INamedTypeSymbol _componentType;
     private readonly HashSet<ISymbol> _includedSymbols;

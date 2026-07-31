@@ -2178,6 +2178,31 @@ public sealed class SemanticWalkerReferenceTest
 
 	}
 
+	/// <summary>
+	/// 静态 extension member 作为 callback 时，声明桥接类型必须还原为实际 JavaScript runtime host。
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_StaticExtensionHost_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Func<Number, string> fromCodePoint = String.FromCodePoint;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let fromCodePoint = String.fromCodePoint;
+}", script);
+	}
+
 	[TestMethod]
 	public void Visit_MethodReference_TypedArrayStaticMethod_UsesConcreteRuntimeHost()
 	{
@@ -2228,6 +2253,121 @@ public sealed class SemanticWalkerReferenceTest
   let size = Uint8Array.BYTES_PER_ELEMENT;
   let factory = Uint8Array.of;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
+	/// A consumer can name the public generic base through a type alias. Its static members are
+	/// bound on TypedArray&lt;T, TArray&gt;, so lowering must recover the concrete JS constructor.
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_TypedArrayGenericAliasHost_UsesConcreteRuntimeHost()
+	{
+		var block = GetBlockOperation(@"
+            using Bytes = ECMAScript.TypedArray<byte, ECMAScript.Uint8Array>;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = Bytes.Of(1, 2, 3);
+                    Number size = Bytes.BYTES_PER_ELEMENT;
+                    Func<byte[], Uint8Array> factory = Bytes.Of;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let bytes = Uint8Array.of(1, 2, 3);
+  let size = Uint8Array.BYTES_PER_ELEMENT;
+  let factory = Uint8Array.of;
+}", script);
+	}
+
+	/// <summary>
+	/// 静态成员虽然声明在 <c>TypedArray&lt;T, TArray&gt;</c>，但 C# 允许从同模块派生类型访问。
+	/// 该调用点的 runtime constructor 必须保留为派生类型，不能退回到声明基类或 <c>Uint8Array</c>。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DerivedRuntimeStaticHost_PreservesConcreteHost()
+	{
+		var block = GetBlockOperation(@"
+            class BrowserByteView : Uint8Array
+            {
+                public BrowserByteView(Number length) : base(length) { }
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var bytes = BrowserByteView.Of(1, 2, 3);
+                    Number size = BrowserByteView.BYTES_PER_ELEMENT;
+                    Func<byte[], Uint8Array> factory = BrowserByteView.Of;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let bytes = BrowserByteView.of(1, 2, 3);
+  let size = BrowserByteView.BYTES_PER_ELEMENT;
+  let factory = BrowserByteView.of;
+}", script);
+	}
+
+	/// <summary>
+	/// 静态 API 可以声明在 ECMAScript 宿主基类上，再由应用自己的派生类型作为
+	/// 实际 JavaScript 构造器使用。调用、属性读取和方法组都必须保留调用点宿主，
+	/// 不能退回声明 API 的基类。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_CustomDerivedRuntimeStaticHost_PreservesConcreteHostAcrossAccessForms()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScript]
+            [System.ComponentModel.Description(""@#RuntimeBase"")]
+            class RuntimeBase
+            {
+                [System.ComponentModel.Description(""@#create"")]
+                public static RuntimeBase Create() => null!;
+
+                [System.ComponentModel.Description(""@#version"")]
+                public static Number Version { get; set; }
+            }
+
+            class RuntimeDerived : RuntimeBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var created = RuntimeDerived.Create();
+                    RuntimeDerived.Version = 1;
+                    Number version = RuntimeDerived.Version;
+                    Func<RuntimeBase> factory = RuntimeDerived.Create;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let created = RuntimeDerived.create();
+  RuntimeDerived.version = 1;
+  let version = RuntimeDerived.version;
+  let factory = RuntimeDerived.create;
+}", script);
 	}
 
 	[TestMethod]
@@ -3554,6 +3694,37 @@ public sealed class SemanticWalkerReferenceTest
 		AssertJsNamingScriptEqual(@"{
   let add = this.Add.bind(this);
 }", script);
+	}
+
+	/// <summary>
+	/// 局部函数作为回调传递时仍是 lexical declaration；引用处需要绑定 Roslyn 提供的捕获接收者。
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_CapturedLocalFunction_BindsCapturedReceiver()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int offset = 1;
+                    int AddOffset(int value) => value + offset;
+                    Func<int, int> transform = AddOffset;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let offset = 1;
+  function AddOffset(value) {
+    return value + offset;
+  }
+  let transform = AddOffset.bind(this);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
 	#endregion
@@ -6938,6 +7109,9 @@ public sealed class SemanticWalkerReferenceTest
 
                 [Description("@#['status-code']")]
                 public extern string StatusCode { get; }
+
+                [Description("@#queue-depth")]
+                public int QueueDepth;
             }
 
             class TestClass
@@ -6946,6 +7120,7 @@ public sealed class SemanticWalkerReferenceTest
                 {
                     var displayName = record.DisplayName;
                     var statusCode = record.StatusCode;
+                    var queueDepth = record.QueueDepth;
                 }
             }
             """);
@@ -6958,6 +7133,7 @@ public sealed class SemanticWalkerReferenceTest
             {
               let displayName = record["display-name"];
               let statusCode = record["status-code"];
+              let queueDepth = record["queue-depth"];
             }
             """, script);
 	}
@@ -8171,7 +8347,7 @@ public sealed class SemanticWalkerReferenceTest
 				[new Identifier("value")],
 				null));
 	}
-	
+
 	[TestMethod]
 	public void Visit_Reference_ConsoleTimeEnd_UsesJsMemberName()
 	{
@@ -9781,6 +9957,38 @@ public sealed class SemanticWalkerReferenceTest
   let value = _01be2a34fe2cda4e(""123.45"", null);
   let text = _b1e6a06111674f0c(value, ""G"", null);
 }", script);
+	}
+
+	/// <summary>
+	/// C# params must map to JavaScript rest arguments for runtime APIs that do not
+	/// opt into PreserveParamsArray. Literal params expand; an authored array stays
+	/// one evaluated value and becomes a JavaScript spread argument.
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_RuntimeParams_ExpandsLiteralAndArrayArguments()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var values = new Number[] { 3, 4 };
+                    var literal = Math.HypotFn(1, 2);
+                    var spread = Math.HypotFn(values);
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let values = [3, 4];
+              let literal = Math.hypot(1, 2);
+              let spread = Math.hypot(...values);
+            }
+            """, script);
+		_ = new Acornima.Parser().ParseScript(script!);
 	}
 
 	#endregion

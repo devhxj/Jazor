@@ -216,6 +216,17 @@ internal static class PatternProtocolCatalog
             "buffer[0] === 1",
             "buffer[2] === 3"),
         Success(
+            "readonly-list.fixed",
+            "carrier=IReadOnlyList<int>;runtime=Array;length=Count;indexer=import;slice=none",
+            """
+                        IReadOnlyList<int> values = [1, 2, 3];
+                        bool matches = values is [1, 2, 3];
+                """,
+            "Array.isArray(values)",
+            "values.length === 3",
+            "_b6ea5fe846ef1d65(values, 0) === 1",
+            "_b6ea5fe846ef1d65(values, 2) === 3"),
+        Success(
             "count.trailing-element",
             "carrier=custom;length=Count;indexer=int;slice=discard;position=middle;length=cached",
             """

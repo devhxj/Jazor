@@ -509,19 +509,14 @@ public partial class SemanticWalker
 
 		if (!string.IsNullOrEmpty(alias))
 		{
-			if (memberReference is IPropertyReferenceOperation)
-			{
-				existencePropertyName = alias!;
-				return BuildAliasedPropertyAccess(targetExpr, alias!, optional: false);
-			}
-
-			existencePropertyName = alias!;
-			return new MemberExpression(targetExpr, new Identifier(alias!), computed: false, optional: false);
+			existencePropertyName = GetAliasedPropertyKey(alias!);
+			return BuildAliasedPropertyAccess(targetExpr, alias!, optional: false);
 		}
 
 		RejectUnsupportedRuntimeFallback(memberReference, symbol, "pattern property access", memberReference.Instance?.Type ?? memberReference.Member.ContainingType);
-		existencePropertyName = Util.GetConfigOrSymbolName(memberReference.Member);
-		return new MemberExpression(targetExpr, new Identifier(existencePropertyName), computed: false, optional: false);
+		var configuredName = Util.GetConfigOrSymbolName(memberReference.Member);
+		existencePropertyName = GetAliasedPropertyKey(configuredName);
+		return BuildAliasedPropertyAccess(targetExpr, configuredName, optional: false);
 	}
 
 	/// <summary>

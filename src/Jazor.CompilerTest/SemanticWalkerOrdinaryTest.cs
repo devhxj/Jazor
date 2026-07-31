@@ -737,6 +737,51 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   [TestMethod]
+  public void Visit_Conversion_AsErasedInterface_FromUnknownObject_ReportsUnsupportedBoundary()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    IComparable<int>? comparable = value as IComparable<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    StringAssert.Contains(exception.Message, "source static type 'object'", StringComparison.Ordinal);
+    StringAssert.Contains(exception.Message, "System.IComparable<int>", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_AsErasedInterface_FromKnownBoxedValue_PreservesValue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object boxed = 1;
+                    IComparable<int>? comparable = boxed as IComparable<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let boxed = 1;
+  let comparable = true ? boxed : null;
+}", script);
+  }
+
+  [TestMethod]
   public void Visit_Conversion_AsClass_SideEffectingOperandEvaluatesOnce()
   {
     var block = GetBlockOperation(@"

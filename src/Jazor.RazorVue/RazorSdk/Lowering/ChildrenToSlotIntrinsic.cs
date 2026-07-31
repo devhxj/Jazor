@@ -1,13 +1,14 @@
 #nullable enable
 using Acornima.Ast;
 using Jazor.Common;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Jazor.Compiler;
+namespace Jazor.RazorVue.RazorSdk;
 
 /// <summary>
 /// 将 Razor children 调用投影为 Vue slot intrinsic 表达式。
@@ -30,26 +31,42 @@ internal static class ChildrenToSlotIntrinsic
 		IInvocationOperation operation,
 		IMethodSymbol method,
 		IReadOnlyList<Expression> arguments,
+		SemanticInvocationLoweringContext context,
+		out Expression? expression)
+		=> TryBuildCore(operation, method, arguments, new SemanticServices(context), out expression);
+
+	internal static bool TryBuild(
+		IInvocationOperation operation,
+		IMethodSymbol method,
+		IReadOnlyList<Expression> arguments,
 		Services services,
+		out Expression? expression)
+		=> TryBuildCore(operation, method, arguments, services, out expression);
+
+	private static bool TryBuildCore(
+		IInvocationOperation operation,
+		IMethodSymbol method,
+		IReadOnlyList<Expression> arguments,
+		IContext context,
 		out Expression? expression)
 	{
 		expression = null;
-		if (!IsRenderFactoryMethod(method, services))
+		if (!IsRenderFactoryMethod(method, context))
 			return false;
 
-		if (!TryClassifyDefaultSlotInvocation(method, services, out var defaultSlotKind, out var hostContracts))
+		if (!TryClassifyDefaultSlotInvocation(method, context, out var defaultSlotKind, out var hostContracts))
 			return false;
 
 		if (arguments.Count != method.Parameters.Length)
 			return false;
 
 		if (defaultSlotKind is DefaultSlotInvocationKind.TypedNoProps or DefaultSlotInvocationKind.TypedWithProps)
-			ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, services);
+			ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, context);
 
-		if (!services.TryBuildImportedModuleMember(method.ContainingType, Util.GetConfigOrSymbolName(method), services.Argument, out var importedRenderFactory) ||
+		if (!context.TryBuildImportedModuleMember(method.ContainingType, Util.GetConfigOrSymbolName(method), out var importedRenderFactory) ||
 			importedRenderFactory is not Expression renderFactory)
 		{
-			throw services.CreateException(
+			throw context.CreateException(
 				operation,
 				$"无法为 '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' 解析运行时导入。");
 		}
@@ -65,7 +82,7 @@ internal static class ChildrenToSlotIntrinsic
 		return expression is not null;
 	}
 
-	private static bool IsRenderFactoryMethod(IMethodSymbol method, Services services)
+	private static bool IsRenderFactoryMethod(IMethodSymbol method, IContext context)
 		=> method is
 		{
 			MethodKind: MethodKind.Ordinary,
@@ -73,11 +90,11 @@ internal static class ChildrenToSlotIntrinsic
 			ContainingType: { }
 		} &&
 		string.Equals(Util.GetConfigOrSymbolName(method), "h", StringComparison.Ordinal) &&
-		!string.IsNullOrWhiteSpace(services.GetModuleImportPath(method.ContainingType));
+		!string.IsNullOrWhiteSpace(context.GetModuleImportPath(method.ContainingType));
 
 	private static bool TryClassifyDefaultSlotInvocation(
 		IMethodSymbol method,
-		Services services,
+		IContext context,
 		out DefaultSlotInvocationKind kind,
 		out HostContracts hostContracts)
 	{
@@ -95,7 +112,7 @@ internal static class ChildrenToSlotIntrinsic
 
 		if (parameters.Length == 2)
 		{
-			if (!IsDefaultSlotChildType(parameters[1].Type, hostContracts, services))
+			if (!IsDefaultSlotChildType(parameters[1].Type, hostContracts, context))
 				return false;
 
 			kind = hasTypedSlots ? DefaultSlotInvocationKind.TypedNoProps : DefaultSlotInvocationKind.UntypedNoProps;
@@ -103,7 +120,7 @@ internal static class ChildrenToSlotIntrinsic
 		}
 
 		if (!IsPropsLikeParameter(parameters[1], hostContracts) ||
-			!IsDefaultSlotChildType(parameters[2].Type, hostContracts, services))
+			!IsDefaultSlotChildType(parameters[2].Type, hostContracts, context))
 			return false;
 
 		kind = hasTypedSlots ? DefaultSlotInvocationKind.TypedWithProps : DefaultSlotInvocationKind.UntypedWithProps;
@@ -183,7 +200,10 @@ internal static class ChildrenToSlotIntrinsic
 		return false;
 	}
 
-	private static bool IsDefaultSlotChildType(ITypeSymbol type, HostContracts hostContracts, Services services)
+	private static bool IsDefaultSlotChildType(
+		ITypeSymbol type,
+		HostContracts hostContracts,
+		IContext context)
 	{
 		if (hostContracts.Child is not null &&
 			type is INamedTypeSymbol childType &&
@@ -211,7 +231,7 @@ internal static class ChildrenToSlotIntrinsic
 		if (type is INamedTypeSymbol { Name: "Number", Arity: 0 })
 			return true;
 
-		return services.GetMapperType(type).Mapper is TypeMapper.String or TypeMapper.Number or TypeMapper.Boolean;
+		return context.GetTypeMapping(type).Mapper is TypeMapper.String or TypeMapper.Number or TypeMapper.Boolean;
 	}
 
 	private static bool IsPropsLikeParameter(IParameterSymbol parameter, HostContracts hostContracts)
@@ -291,22 +311,22 @@ internal static class ChildrenToSlotIntrinsic
 		IMethodSymbol method,
 		HostContracts hostContracts,
 		IOperation originOperation,
-		Services services)
+		IContext context)
 	{
 		if (!TryGetTypedSlotContractType(method, hostContracts, out var slotType))
 			return;
 
-		var defaultSlots = CollectTypedDefaultSlotMembers(slotType, services);
+		var defaultSlots = CollectTypedDefaultSlotMembers(slotType, context);
 		if (defaultSlots.Count == 0)
 		{
-			throw services.CreateException(
+			throw context.CreateException(
 				originOperation,
 				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' does not declare a default slot. Use H(component, slots) / H(component, props, slots) with an explicit slot object, or declare one slot property as 'Default' / Description(\"@#default\").");
 		}
 
 		if (defaultSlots.Count > 1)
 		{
-			throw services.CreateException(
+			throw context.CreateException(
 				originOperation,
 				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' declares more than one default slot. Only one property may map to 'default' via the Default naming convention or Description(\"@#default\").");
 		}
@@ -314,14 +334,14 @@ internal static class ChildrenToSlotIntrinsic
 		var defaultSlot = defaultSlots[0];
 		if (!TryClassifySlotDelegate(defaultSlot.Type, hostContracts, out var isScoped))
 		{
-			throw services.CreateException(
+			throw context.CreateException(
 				originOperation,
 				$"Default slot member '{defaultSlot.ToDisplayString(Format.NameFormat)}' must be a delegate returning the host IVNode type.");
 		}
 
 		if (isScoped)
 		{
-			throw services.CreateException(
+			throw context.CreateException(
 				originOperation,
 				$"Default slot member '{defaultSlot.ToDisplayString(Format.NameFormat)}' expects slot scope. Implicit child content cannot satisfy a typed default slot context. Use H(component, slots) / H(component, props, slots) and provide an explicit slot callback.");
 		}
@@ -357,10 +377,12 @@ internal static class ChildrenToSlotIntrinsic
 		return false;
 	}
 
-	private static List<IPropertySymbol> CollectTypedDefaultSlotMembers(INamedTypeSymbol slotType, Services services)
+	private static List<IPropertySymbol> CollectTypedDefaultSlotMembers(
+		INamedTypeSymbol slotType,
+		IContext context)
 	{
 		var defaults = new List<IPropertySymbol>();
-		foreach (var current in services.EnumerateNamedTypeHierarchyBaseFirst(slotType))
+		foreach (var current in context.EnumerateNamedTypeHierarchyBaseFirst(slotType))
 		{
 			foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
 			{
@@ -455,7 +477,51 @@ internal static class ChildrenToSlotIntrinsic
 		public INamedTypeSymbol? TypedComponent { get; }
 	}
 
-	public readonly struct Services
+	private interface IContext
+	{
+		bool TryBuildImportedModuleMember(
+			ITypeSymbol? containingType,
+			string memberName,
+			out Expression? expression);
+
+		string? GetModuleImportPath(ITypeSymbol symbol);
+
+		SemanticTypeMapping GetTypeMapping(ITypeSymbol symbol);
+
+		IEnumerable<INamedTypeSymbol> EnumerateNamedTypeHierarchyBaseFirst(INamedTypeSymbol type);
+
+		Exception CreateException(IOperation operation, string message);
+	}
+
+	private readonly struct SemanticServices : IContext
+	{
+		private readonly SemanticInvocationLoweringContext _context;
+
+		public SemanticServices(SemanticInvocationLoweringContext context)
+		{
+			_context = context;
+		}
+
+		public bool TryBuildImportedModuleMember(
+			ITypeSymbol? containingType,
+			string memberName,
+			out Expression? expression)
+			=> _context.TryBuildImportedModuleMember(containingType, memberName, out expression);
+
+		public string? GetModuleImportPath(ITypeSymbol symbol)
+			=> _context.GetModuleImportPath(symbol);
+
+		public SemanticTypeMapping GetTypeMapping(ITypeSymbol symbol)
+			=> _context.GetTypeMapping(symbol);
+
+		public IEnumerable<INamedTypeSymbol> EnumerateNamedTypeHierarchyBaseFirst(INamedTypeSymbol type)
+			=> _context.EnumerateNamedTypeHierarchyBaseFirst(type);
+
+		public Exception CreateException(IOperation operation, string message)
+			=> _context.CreateException(operation, message);
+	}
+
+	internal readonly struct Services : IContext
 	{
 		public Services(
 			SenseArgument argument,
@@ -484,19 +550,41 @@ internal static class ChildrenToSlotIntrinsic
 		public NamedTypeHierarchyEnumerator EnumerateNamedTypeHierarchyBaseFirst { get; }
 
 		public ExceptionFactory CreateException { get; }
+
+		bool IContext.TryBuildImportedModuleMember(
+			ITypeSymbol? containingType,
+			string memberName,
+			out Expression? expression)
+			=> TryBuildImportedModuleMember(containingType, memberName, Argument, out expression);
+
+		string? IContext.GetModuleImportPath(ITypeSymbol symbol)
+			=> GetModuleImportPath(symbol);
+
+		SemanticTypeMapping IContext.GetTypeMapping(ITypeSymbol symbol)
+		{
+			var (mapper, typeName) = GetMapperType(symbol);
+			return new SemanticTypeMapping(mapper, typeName);
+		}
+
+		IEnumerable<INamedTypeSymbol> IContext.EnumerateNamedTypeHierarchyBaseFirst(INamedTypeSymbol type)
+			=> EnumerateNamedTypeHierarchyBaseFirst(type);
+
+		Exception IContext.CreateException(IOperation operation, string message)
+			=> CreateException(operation, message);
 	}
 
-	public delegate bool ImportedModuleMemberBuilder(
+	internal delegate bool ImportedModuleMemberBuilder(
 		ITypeSymbol? containingType,
 		string memberName,
 		SenseArgument? context,
 		out Expression? expression);
 
-	public delegate string? ModuleImportPathResolver(ITypeSymbol symbol);
+	internal delegate string? ModuleImportPathResolver(ITypeSymbol symbol);
 
-	public delegate (TypeMapper Mapper, string TypeName) TypeMapperResolver(ITypeSymbol symbol);
+	internal delegate (TypeMapper Mapper, string TypeName) TypeMapperResolver(ITypeSymbol symbol);
 
-	public delegate IEnumerable<INamedTypeSymbol> NamedTypeHierarchyEnumerator(INamedTypeSymbol type);
+	internal delegate IEnumerable<INamedTypeSymbol> NamedTypeHierarchyEnumerator(INamedTypeSymbol type);
 
-	public delegate Exception ExceptionFactory(IOperation operation, string message);
+	internal delegate Exception ExceptionFactory(IOperation operation, string message);
+
 }

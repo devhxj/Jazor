@@ -1,10 +1,11 @@
 using System.Reflection;
 using ECMAScript.Contract;
+using Jazor.RazorVue.RazorSdk.Catalog;
 
-namespace Jazor.CLR.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class WebRenderTreeBuilderExtensionsModuleWhitelistTests
+public sealed class WebRenderTreeBuilderExtensionsCatalogWhitelistTests
 {
     [TestMethod]
     public void WebRenderTreeBuilderExtensionsPublicSurface_MatchesModuleSurface()
@@ -29,7 +30,7 @@ public sealed class WebRenderTreeBuilderExtensionsModuleWhitelistTests
     [TestMethod]
     public void WebRenderTreeBuilderExtensionsType_IsAllowed()
     {
-        var attribute = typeof(Jazor.CLR.WebRenderTreeBuilderExtensionsModule).GetCustomAttribute<JazorAttribute>();
+        var attribute = typeof(WebRenderTreeBuilderExtensionsCatalog).GetCustomAttribute<JazorAttribute>();
 
         Assert.IsNotNull(attribute);
         Assert.AreEqual(Op.Allowed, attribute.Op);
@@ -39,7 +40,7 @@ public sealed class WebRenderTreeBuilderExtensionsModuleWhitelistTests
     [TestMethod]
     public void EventModifierMethods_AreAllowed()
     {
-        var mappings = typeof(Jazor.CLR.WebRenderTreeBuilderExtensionsModule)
+        var mappings = typeof(WebRenderTreeBuilderExtensionsCatalog)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Select(static method => method.GetCustomAttribute<JazorAttribute>())
             .OfType<JazorAttribute>()

@@ -555,18 +555,18 @@ internal static class SourceMapEmitter
 /// NodePositions 是本轮 AST 节点到生成文本坐标的索引，不属于最终 SourceMap 公共格式，
 /// 也不能替代 SourceOrigin 到源文件坐标的映射。
 /// </remarks>
-internal sealed record GeneratedJavaScriptLayout(
+public sealed record GeneratedJavaScriptLayout(
     GeneratedJavaScriptArtifact Artifact,
     IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
 
 /// <summary>
 /// 内部文本 writer 输出及其 AST 节点位置索引。
 /// </summary>
-internal sealed record GeneratedJavaScriptNodeLayout(
+public sealed record GeneratedJavaScriptNodeLayout(
     string Content,
     IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
 
 /// <summary>
 /// 生成 JavaScript 文本中的零基行列坐标。
 /// </summary>
-internal readonly record struct GeneratedNodePosition(int Line, int Column);
+public readonly record struct GeneratedNodePosition(int Line, int Column);

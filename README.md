@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8299 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8299%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.30 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.30%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.07 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.07%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8113 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8113%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.42 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.42%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.78 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.78%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -35,13 +35,13 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Verified Compiler Baseline
 
-`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-07-31, is:
+`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-01, is:
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8299 / 8299 passed | 8000 passed |
-| Line coverage | 15735 / 16339 (96.30%) | 95% |
-| Branch coverage | 6931 / 7695 (90.07%) | 90% |
+| Compiler regression tests | 8113 / 8113 passed | 8000 passed |
+| Line coverage | 13827 / 14341 (96.42%) | 95% |
+| Branch coverage | 5940 / 6543 (90.78%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -70,18 +70,18 @@ The gate runs the complete compiler suite, reads the resulting TRX and Cobertura
 
 ## Latest Updates
 
-### 2026-07-31
+### 2026-08-01
 
-- Nested structural record deconstruction reads configured and inherited property keys directly, preserves nested `var` declarations, and no longer emits calls to unavailable runtime `Deconstruct` methods.
-- Runtime member classes preserve hand-written `init` accessor behavior, including C# `field`-backed properties, and emit consistent JavaScript private names for declared fields and their references.
-- Compile-time negative ECMAScript number keys now produce valid computed properties in generated object literals.
+- Razor-to-Vue now keeps its ASP.NET Components catalog and Razor-specific lowering in the `Jazor.Vue` product boundary while preserving the supported core compiler extension contracts.
+- Official Razor source-generator output continues to produce direct Vue render-function `.mjs` artifacts without SFC, render-context, or generated-builder fallbacks.
+- The JazorAdmin reference application now verifies local package consumption, native and `VueInject` builds, generated artifacts, and browser mounting through the packaged Deno host.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.35
+dotnet add package Jazor --version 0.1.36
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -90,8 +90,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.35" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.35" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.36" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.36" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -99,11 +99,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.35" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.35" />
+  <PackageReference Include="Jazor" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.36" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.36" />
 </ItemGroup>
 ```
 

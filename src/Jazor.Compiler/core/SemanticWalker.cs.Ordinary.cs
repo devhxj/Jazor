@@ -1062,6 +1062,11 @@ public partial class SemanticWalker
 		// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
 		var value = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
 
+		// Host storage projections must receive the already-lowered value. This keeps the
+		// ordinary RHS evaluation contract intact while allowing products to own their state target.
+		if (Host?.RewriteSimpleAssignmentPostorder(operation, argument, value) is Expression postorderHostExpression)
+			return WithOriginIfMissing(postorderHostExpression, operation);
+
 		if (operation.Target is IPropertyReferenceOperation autoPropertyReference &&
 			TryBuildCurrentModuleAutoPropertyBackingFieldAssignment(autoPropertyReference, value, out var backingFieldAssignment))
 		{

@@ -441,6 +441,35 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitDeconstructionAssignment_ConfiguredFieldTarget_UsesComputedAssignment()
+    {
+        var block = GetBlockOperation("""
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                [Description("@#status-code")]
+                private int StatusCode;
+
+                void TestMethod()
+                {
+                    var tuple = (status: 202, ignored: 0);
+                    (this.StatusCode, _) = tuple;
+                }
+            }
+            """);
+
+        var script = new SemanticWalker(true).Visit(block, SenseArgument.Default)?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual("""
+            {
+              let tuple = { status: 202, ignored: 0 };
+              this["status-code"] = tuple.status;
+            }
+            """, script);
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment_MixedDeclaration()
     {
         var block = GetBlockOperation(@"

@@ -1,9 +1,10 @@
 using ECMAScript;
 using Jazor.Compiler;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Jazor.ComplierTest;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class CurrentComponentStateDefaultInitializerTests

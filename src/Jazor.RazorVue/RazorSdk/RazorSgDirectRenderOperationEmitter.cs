@@ -63,7 +63,8 @@ internal static class RazorSgDirectRenderOperationEmitter
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
                 UsesSlots: lowered.UsesSlots,
-                lowered.ImportDeclarations);
+                lowered.ImportDeclarations,
+                lowered.ReferenceCaptureStateMembers);
             return true;
         }
         catch (OperationTransformationException exception)
@@ -95,6 +96,7 @@ internal static class RazorSgDirectRenderOperationEmitter
         private readonly HashSet<IMethodSymbol> _activeRenderObjectHelpers = new(SymbolComparer);
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
+        private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
         private bool _usesMergeProps;
         private bool _usesFragment;
         private bool _usesStaticVNode;
@@ -110,7 +112,7 @@ internal static class RazorSgDirectRenderOperationEmitter
             _componentSymbol = componentSymbol;
             _walker = new SemanticWalker(test: false)
             {
-                Host = new CurrentComponentSemanticWalkerHost(
+                Host = new RazorVueSemanticWalkerHost(
                     componentSymbol,
                     parameterRuntimeNames: BuildComponentParameterNameMap(componentSymbol),
                     memberRuntimeNames: declaredNames,
@@ -145,7 +147,16 @@ internal static class RazorSgDirectRenderOperationEmitter
             PruneUnreferencedRenderFragmentDeclarations(_preludeStatements, renderExpression);
             var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1;
             var usesStaticVNode = _usesStaticVNode || state.UsesStaticVNode;
-            return new LoweredRender(renderExpression, _preludeStatements.ToImmutableArray(), usesFragment, usesStaticVNode, _usesSlots, BuildImportDeclarations());
+            return new LoweredRender(
+                renderExpression,
+                _preludeStatements.ToImmutableArray(),
+                usesFragment,
+                usesStaticVNode,
+                _usesSlots,
+                BuildImportDeclarations(),
+                _referenceCaptureStateMembers
+                    .OrderBy(static member => member.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), StringComparer.Ordinal)
+                    .ToImmutableArray());
         }
 
         private EmitContext EmitOperations(
@@ -205,8 +216,21 @@ internal static class RazorSgDirectRenderOperationEmitter
                     expression = discardedConversion.Operand;
             }
 
+            // Razor SDK emits this only to retain binding metadata in generated C#:
+            // var (_, _) = (nameof(Component.Value), 0). It has no render-time role.
+            // Erase it only after proving that every target is a discard and the RHS
+            // is compile-time-only, so user-authored or observable assignments stay visible.
+            if (expression is IDeconstructionAssignmentOperation deconstructionAssignment &&
+                IsPureDiscardDeconstructionAssignment(deconstructionAssignment))
+            {
+                return;
+            }
+
             if (expression is not IInvocationOperation invocation)
-                throw Unsupported(expression, "RazorVue direct render operation lowering only supports invocation statements.");
+                throw Unsupported(
+                    expression,
+                    "RazorVue direct render operation lowering only supports invocation statements. Operation: '" +
+                    expression.Kind + "'.");
 
             if (IsSecondaryBuilderInvocation(invocation, context))
                 return;
@@ -230,6 +254,36 @@ internal static class RazorSgDirectRenderOperationEmitter
                                           invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat) +
                                           "' in BuildRenderTree.");
         }
+
+        private static bool IsPureDiscardDeconstructionAssignment(
+            IDeconstructionAssignmentOperation operation)
+            => IsDiscardDeconstructionTarget(operation.Target) &&
+               IsCompileTimeOnlyDeconstructionValue(operation.Value);
+
+        private static bool IsDiscardDeconstructionTarget(IOperation operation)
+            => operation switch
+            {
+                IDiscardOperation => true,
+                IDeclarationExpressionOperation declaration
+                    => IsDiscardDeconstructionTarget(declaration.Expression),
+                ITupleOperation tuple
+                    => tuple.Elements.All(IsDiscardDeconstructionTarget),
+                IConversionOperation conversion
+                    => IsDiscardDeconstructionTarget(conversion.Operand),
+                _ => false
+            };
+
+        private static bool IsCompileTimeOnlyDeconstructionValue(IOperation operation)
+            => operation switch
+            {
+                INameOfOperation => true,
+                ILiteralOperation => true,
+                ITupleOperation tuple
+                    => tuple.Elements.All(IsCompileTimeOnlyDeconstructionValue),
+                IConversionOperation conversion
+                    => IsCompileTimeOnlyDeconstructionValue(conversion.Operand),
+                _ => false
+            };
 
         private EmitContext EmitVariableDeclarationGroup(
             IVariableDeclarationGroupOperation declarationGroup,
@@ -1021,7 +1075,73 @@ internal static class RazorSgDirectRenderOperationEmitter
                         : "Element reference captures require the current open element before children.");
             }
 
-            frame.AddReferenceCapture(LowerExpression(invocation.Arguments[1].Value, context));
+            var capture = invocation.Arguments[1].Value;
+            CollectReferenceCaptureStateMembers(capture);
+            frame.AddReferenceCapture(LowerExpression(capture, context));
+        }
+
+        private void CollectReferenceCaptureStateMembers(IOperation capture)
+        {
+            capture = UnwrapReferenceCaptureOperation(capture);
+            if (capture is not IAnonymousFunctionOperation lambda || lambda.Symbol.Parameters.Length != 1)
+                return;
+
+            CollectCaptureAssignments(lambda.Body, lambda.Symbol.Parameters[0]);
+        }
+
+        private void CollectCaptureAssignments(IOperation operation, IParameterSymbol captureParameter)
+        {
+            if (operation is ISimpleAssignmentOperation assignment &&
+                IsCaptureParameterValue(assignment.Value, captureParameter) &&
+                TryGetCurrentComponentStorageMember(assignment.Target, out var member))
+            {
+                _referenceCaptureStateMembers.Add(member);
+            }
+
+            foreach (var child in operation.ChildOperations)
+                CollectCaptureAssignments(child, captureParameter);
+        }
+
+        private static IOperation UnwrapReferenceCaptureOperation(IOperation operation)
+        {
+            while (true)
+            {
+                switch (operation)
+                {
+                    case IConversionOperation conversion:
+                        operation = conversion.Operand;
+                        continue;
+
+                    case IDelegateCreationOperation delegateCreation:
+                        operation = delegateCreation.Target;
+                        continue;
+
+                    default:
+                        return operation;
+                }
+            }
+        }
+
+        private static bool IsCaptureParameterValue(IOperation operation, IParameterSymbol captureParameter)
+        {
+            operation = UnwrapReferenceCaptureOperation(operation);
+            return operation is IParameterReferenceOperation parameterReference &&
+                   SymbolComparer.Equals(parameterReference.Parameter, captureParameter);
+        }
+
+        private bool TryGetCurrentComponentStorageMember(IOperation operation, out ISymbol member)
+        {
+            operation = UnwrapReferenceCaptureOperation(operation);
+            member = operation switch
+            {
+                IFieldReferenceOperation fieldReference => fieldReference.Field,
+                IPropertyReferenceOperation propertyReference => propertyReference.Property,
+                _ => null!
+            };
+
+            return member is not null &&
+                   !member.IsStatic &&
+                   SymbolComparer.Equals(member.ContainingType?.OriginalDefinition, _componentSymbol.OriginalDefinition);
         }
 
         private void EmitComponentRenderMode(
@@ -2739,7 +2859,7 @@ internal static class RazorSgDirectRenderOperationEmitter
     }
 
     private static Expression FormatSlotAccessExpression(string slotName)
-        => IsIdentifierName(slotName)
+        => JavaScriptAstFactory.IsJavaScriptIdentifierName(slotName)
             ? new MemberExpression(new Identifier("slots"), new Identifier(slotName), computed: false, optional: false)
             : new MemberExpression(new Identifier("slots"), StringLiteral(slotName), computed: true, optional: false);
 
@@ -3408,13 +3528,14 @@ internal static class RazorSgDirectRenderOperationEmitter
         }
     }
 
-    private sealed record LoweredRender(
-        Expression RenderExpression,
-        ImmutableArray<Statement> PreludeStatements,
-        bool UsesFragment,
-        bool UsesStaticVNode,
-        bool UsesSlots,
-        ImmutableArray<ImportDeclaration> ImportDeclarations);
+        private sealed record LoweredRender(
+            Expression RenderExpression,
+            ImmutableArray<Statement> PreludeStatements,
+            bool UsesFragment,
+            bool UsesStaticVNode,
+            bool UsesSlots,
+            ImmutableArray<ImportDeclaration> ImportDeclarations,
+            ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
     private readonly record struct ComponentImportDescriptor(
         string ImportSpecifier,
@@ -3516,7 +3637,7 @@ internal static class RazorSgDirectRenderOperationEmitter
             method: false);
 
     private static Expression CreateObjectPropertyKey(string name)
-        => IsIdentifierName(name)
+        => JavaScriptAstFactory.IsJavaScriptIdentifierName(name)
             ? new Identifier(name)
             : StringLiteral(name);
 
@@ -3545,24 +3666,6 @@ internal static class RazorSgDirectRenderOperationEmitter
             ? name
             : char.ToLowerInvariant(name[0]) + name.Substring(1);
 
-    private static bool IsIdentifierName(string value)
-    {
-        if (string.IsNullOrEmpty(value) ||
-            !(char.IsLetter(value[0]) || value[0] == '_' || value[0] == '$'))
-        {
-            return false;
-        }
-
-        for (var index = 1; index < value.Length; index++)
-        {
-            var ch = value[index];
-            if (!(char.IsLetterOrDigit(ch) || ch == '_' || ch == '$'))
-                return false;
-        }
-
-        return true;
-    }
-
 }
 
 internal sealed record RazorSgDirectRenderOperationBuildResult(
@@ -3572,4 +3675,5 @@ internal sealed record RazorSgDirectRenderOperationBuildResult(
     bool UsesStaticVNode,
     bool UsesProps,
     bool UsesSlots,
-    ImmutableArray<ImportDeclaration> ImportDeclarations);
+    ImmutableArray<ImportDeclaration> ImportDeclarations,
+    ImmutableArray<ISymbol> ReferenceCaptureStateMembers);

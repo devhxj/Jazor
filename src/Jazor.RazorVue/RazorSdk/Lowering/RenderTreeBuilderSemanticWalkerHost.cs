@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Acornima.Ast;
 using Jazor.Common;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Jazor.Compiler;
+namespace Jazor.RazorVue.RazorSdk;
 
 /// <summary>
 /// Opt-in host seam that lowers the supported
@@ -18,7 +19,7 @@ namespace Jazor.Compiler;
 /// RenderTreeBuilder 是 Razor 生成代码与 Vue render-function 之间的宿主边界。
 /// 该类只投影已支持的 builder 操作和组件元数据，不承担普通 C# 成员、表达式或控制流的转换。
 /// </remarks>
-public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
+internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 {
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
     private const string RenderTreeBuilderExtensionsMetadataName = "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions";
