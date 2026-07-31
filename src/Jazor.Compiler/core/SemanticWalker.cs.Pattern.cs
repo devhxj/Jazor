@@ -619,22 +619,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 		public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, SenseArgument argument)
 	{
-		// 根据编译时优化原则，直接生成最简洁的JavaScript关系比较表达式
-		// 将C#的关系操作符映射到JavaScript的操作符
-		// 如果在取反模式中，需要反转操作符（如 Equals 变为 StrictInequality）
-		var @operator = operation.OperatorKind switch
-		{
-			BinaryOperatorKind.GreaterThan => Operator.GreaterThan,
-			BinaryOperatorKind.GreaterThanOrEqual => Operator.GreaterThanOrEqual,
-			BinaryOperatorKind.LessThan => Operator.LessThan,
-			BinaryOperatorKind.LessThanOrEqual => Operator.LessThanOrEqual,
-			BinaryOperatorKind.Equals => Operator.StrictEquality,
-			BinaryOperatorKind.NotEquals => Operator.StrictInequality,
-			_ => Operator.Unknown
-		};
-
-		if (@operator == Operator.Unknown)
-			return HandleTransformationFailure<Node>(operation, "Unsupported relational operator in pattern.");
+		// C# grammar restricts relational patterns to <, <=, >, and >=. Reuse the canonical
+		// binary mapping so ordinary comparisons and pattern comparisons cannot drift.
+		var @operator = CSharpBinaryOperators[operation.OperatorKind];
 
 		// 稳定化 PatternInput 以避免副作用表达式重复求值
 		var targetExpr = GetPatternRefrence(operation, argument);

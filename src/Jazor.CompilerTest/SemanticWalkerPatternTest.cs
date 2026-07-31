@@ -19,7 +19,7 @@ namespace Jazor.ComplierTest;
 /// - DiscardPattern: 丢弃模式 (_ 作为默认分支)
 /// - NegatedPattern: 取反模式 (obj is not null)
 /// - BinaryPattern: 逻辑模式 (and, or)
-/// - RelationalPattern: 关系模式 (>, <, >=, <=, ==, !=)
+/// - RelationalPattern: 关系模式 (>, <, >=, <=)
 /// - TypePattern: 类型模式
 /// - PropertySubpattern: 属性子模式 ({ Name: "John" })
 /// - RecursivePattern: 递归模式 (类型+属性、元组模式)
