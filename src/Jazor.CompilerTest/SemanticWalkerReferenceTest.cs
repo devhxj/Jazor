@@ -6699,6 +6699,46 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_StringEnumConstAlias_MapsUnderlyingValueToDeclaredMember()
+	{
+		var block = GetBlockOperation("""
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [String]
+            enum WireStatus
+            {
+                [ECMAScriptName("in-progress")]
+                InProgress = 1,
+
+                [Description("@#done")]
+                Done = 2
+            }
+
+            class TestClass
+            {
+                private const WireStatus Current = WireStatus.InProgress;
+                private const WireStatus Completed = WireStatus.Done;
+
+                void TestMethod()
+                {
+                    var current = Current;
+                    var completed = Completed;
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let current = "in-progress";
+              let completed = "done";
+            }
+            """, script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_StringEnumMemberNaming_UsesExplicitDescriptionAndSymbolFallbacks()
 	{
 		var block = GetBlockOperation("""

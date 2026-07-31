@@ -392,27 +392,24 @@ public partial class SemanticWalker
 			.Any(static node => node is AwaitExpressionSyntax);
 	}
 
-	private Expression? BuildValueLiteral(ITypeSymbol? type, object? value)
+	private Expression BuildValueLiteral(ITypeSymbol? type, object? value)
 	{
 		// 处理 null 值（必须在类型检查之前，因为 null 没有特定的类型信息）
 		if (value is null)
 			return Null;
 
-		// 类型信息缺失时报告错误
-		if (type is null)
-			return null;
-
-		if (type.TypeKind == TypeKind.Enum &&
-			type is INamedTypeSymbol enumType)
+		// Every non-null C# constant has a bound type; enum constants always expose
+		// a named enum symbol and its integral underlying type.
+		if (type!.TypeKind == TypeKind.Enum)
 		{
+			var enumType = (INamedTypeSymbol)type;
 			if (TryBuildStringEnumValueLiteral(enumType, value, out var stringEnumLiteral))
 				return stringEnumLiteral;
 
-			if (enumType.EnumUnderlyingType is not null)
-				return BuildValueLiteral(enumType.EnumUnderlyingType, value);
+			return BuildValueLiteral(enumType.EnumUnderlyingType!, value);
 		}
 
-		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)!;
 		var (mapper, _) = GetMapperType(type);
 
 		// 布尔值字面量：true / false
@@ -422,7 +419,7 @@ public partial class SemanticWalker
 		// 字符串和字符字面量
 		else if (mapper == TypeMapper.String)
 		{
-			return CreateStringLiteral(valueStr ?? string.Empty);
+			return CreateStringLiteral(valueStr);
 		}
 
 		//  数值字面量：42 / 3.14
@@ -480,12 +477,11 @@ public partial class SemanticWalker
 
 			// 对于整数类型，使用原始字符串格式
 			var numberValue = Convert.ToDouble(value);
-			if (!string.IsNullOrEmpty(valueStr))
-				return new NumericLiteral(numberValue, valueStr);
+			return new NumericLiteral(numberValue, valueStr);
 		}
 
 		// BigInt 字面量：42L / 100UL / -42L -> 42n / 100n / -42n
-		else if (mapper == TypeMapper.BigInt)
+		else
 		{
 			// 处理 ulong 类型（无符号 64 位整数）
 			if (type.SpecialType == SpecialType.System_UInt64)
@@ -495,18 +491,11 @@ public partial class SemanticWalker
 				return new BigIntLiteral(bigInt, $"{ulongValue}n");
 			}
 
-			// 处理 long 类型（有符号 64 位整数）
-			else if (type.SpecialType == SpecialType.System_Int64)
-			{
-				var longValue = Convert.ToInt64(value);
-				var bigInt = new System.Numerics.BigInteger(longValue);
-				return new BigIntLiteral(bigInt, $"{longValue}n");
-			}
-
+			// The only remaining BigInt constant type in C# is signed Int64.
+			var longValue = Convert.ToInt64(value);
+			var signedBigInt = new System.Numerics.BigInteger(longValue);
+			return new BigIntLiteral(signedBigInt, $"{longValue}n");
 		}
-
-		// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
-		return null;
 	}
 
 	/// <summary>
@@ -553,10 +542,6 @@ public partial class SemanticWalker
 	public override Node? VisitLiteral(ILiteralOperation operation, SenseArgument argument)
 	{
 		var expr = BuildValueLiteral(operation.Type, operation.ConstantValue.Value);
-		if (expr is null)
-			// 不支持的类型报告错误 或 其他类型返回 null（如 Object、Array、Date 等不应出现在字面量中）
-			return HandleTransformationFailure<Node>(operation, $"Literal type '{operation.Type?.Name}' ({operation.Kind}) cannot be directly translated to JavaScript literal.");
-
 		return WithOrigin(expr, operation);
 	}
 
@@ -1557,7 +1542,7 @@ public partial class SemanticWalker
 				if (enumType.EnumUnderlyingType is not null)
 				{
 					var zeroValue = CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType);
-					return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue) ?? new NumericLiteral(0, "0");
+					return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue);
 				}
 			}
 
