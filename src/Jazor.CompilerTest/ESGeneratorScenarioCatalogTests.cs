@@ -184,7 +184,7 @@ public enum ESGeneratorCatalogOutcome
 public sealed record ESGeneratorScenario(
     string Id,
     string Dimension,
-    string AssemblyName,
+    string? AssemblyName,
     IReadOnlyList<ESGeneratorSource> Sources,
     ESGeneratorCatalogOutcome Outcome,
     IReadOnlyList<string> ExpectedOrderedPaths,
@@ -240,6 +240,26 @@ internal static class ESGeneratorScenarioCatalog
                 "namespace Demo.Tools { [ECMAScript.ECMAScriptModule] public static class NamespacedModule { public static int Read() => 2; } }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
             ["Generator.Namespace.Default/Demo/Tools/NamespacedModule.mjs"],
+            ["function read()"]),
+        Case(
+            "es-generator.missing-assembly-name",
+            "assembly-name-fallback",
+            null,
+            [Source(
+                "FallbackAssemblyModule.cs",
+                "[ECMAScript.ECMAScriptModule] public static class FallbackAssemblyModule { public static int Read() => 7; }")],
+            ESGeneratorCatalogOutcome.ModuleAndSourceMap,
+            ["Jazor.Assembly/FallbackAssemblyModule.mjs"],
+            ["assemblyName: \"Jazor.Assembly\""]),
+        Case(
+            "es-generator.null-configured-path",
+            "null-configured-path-defaulting",
+            "Generator.Configured.Null",
+            [Source(
+                "NullPathModule.cs",
+                "[ECMAScript.ECMAScriptModule(null)] public static class NullPathModule { public static int Read() => 8; }")],
+            ESGeneratorCatalogOutcome.ModuleAndSourceMap,
+            ["Generator.Configured.Null/NullPathModule.mjs"],
             ["function read()"]),
         Case(
             "es-generator.configured-dot-path",
@@ -385,7 +405,7 @@ internal static class ESGeneratorScenarioCatalog
     private static ESGeneratorScenario Case(
         string id,
         string dimension,
-        string assemblyName,
+        string? assemblyName,
         IReadOnlyList<ESGeneratorSource> sources,
         ESGeneratorCatalogOutcome outcome,
         IReadOnlyList<string>? expectedOrderedPaths = null,

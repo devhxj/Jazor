@@ -66,8 +66,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         var moduleCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
             fullyQualifiedMetadataName: "ECMAScript.ECMAScriptModuleAttribute",
             predicate: static (node, _) => node is ClassDeclarationSyntax,
-            transform: static (syntaxContext, _) => CreateCandidate(syntaxContext))
-            .Where(static candidate => candidate is not null);
+            transform: static (syntaxContext, _) => CreateCandidate(syntaxContext));
 
         var combined = context.CompilationProvider.Combine(moduleCandidates.Collect());
         context.RegisterSourceOutput(combined, static (outputContext, source) =>
@@ -77,25 +76,17 @@ public sealed class ESGenerator : IIncrementalGenerator
         });
     }
 
-    private static ModuleCandidate? CreateCandidate(GeneratorAttributeSyntaxContext context)
-    {
-        if (context.TargetNode is not ClassDeclarationSyntax)
-            return null;
-
-        if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
-            return null;
-
-        return new ModuleCandidate(
-            classSymbol,
+    private static ModuleCandidate CreateCandidate(GeneratorAttributeSyntaxContext context)
+        => new(
+            (INamedTypeSymbol)context.TargetSymbol,
             context.SemanticModel,
             context.TargetNode.GetLocation(),
             ResolveConfiguredImportPath(context));
-    }
 
     private static void EmitCatalogs(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ModuleCandidate?> candidates)
+        ImmutableArray<ModuleCandidate> candidates)
     {
         if (candidates.IsDefaultOrEmpty)
             return;
@@ -104,9 +95,6 @@ public sealed class ESGenerator : IIncrementalGenerator
         var legacyCandidates = new List<ModuleCandidate>();
         foreach (var candidate in candidates)
         {
-            if (candidate is null)
-                continue;
-
             if (!candidate.ClassSymbol.IsStatic)
                 continue;
 
@@ -138,7 +126,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                 generationPlans.Add(new ModuleGenerationPlan(
                     candidate,
                     typeName,
-                    GetRelativePath(candidate)));
+                    GetRelativePath(candidate, assemblyName)));
             }
             catch (Exception ex)
             {
@@ -231,10 +219,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             return;
 
         generatedModules.Sort(static (left, right) =>
-        {
-            var byPath = StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath);
-            return byPath != 0 ? byPath : StringComparer.Ordinal.Compare(left.TypeName, right.TypeName);
-        });
+            StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath));
 
         context.AddSource("Jazor.Generated.ModuleCatalog.g.cs", BuildModuleCatalogSource(assemblyName, generatedModules));
 
@@ -422,29 +407,15 @@ public sealed class ESGenerator : IIncrementalGenerator
             : null;
     }
 
-    private static string GetRelativePath(ModuleCandidate candidate)
+    private static string GetRelativePath(ModuleCandidate candidate, string assemblyName)
     {
         if (!string.IsNullOrWhiteSpace(candidate.ConfiguredImportPath))
             return NormalizeRelativePath(candidate.ConfiguredImportPath!);
 
-        foreach (var attribute in candidate.ClassSymbol.GetAttributes())
-        {
-            if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
-                continue;
-
-            if (attribute.ConstructorArguments.Length == 1 &&
-                attribute.ConstructorArguments[0].Value is string importPath &&
-                !string.IsNullOrWhiteSpace(importPath))
-            {
-                return NormalizeRelativePath(importPath);
-            }
-        }
-
         var classSymbol = candidate.ClassSymbol;
-        var assemblyName = classSymbol.ContainingAssembly?.Name ?? "Jazor.Assembly";
-        var namespaceName = classSymbol.ContainingNamespace?.IsGlobalNamespace == true
+        var namespaceName = classSymbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
-            : classSymbol.ContainingNamespace!.ToDisplayString().Replace('.', '/');
+            : classSymbol.ContainingNamespace.ToDisplayString().Replace('.', '/');
         var fileName = $"{classSymbol.Name}.mjs";
 
         return string.IsNullOrEmpty(namespaceName)
@@ -527,9 +498,6 @@ public sealed class ESGenerator : IIncrementalGenerator
         IReadOnlyDictionary<string, string> sourceContentByPath,
         string sourcePath)
     {
-        if (string.IsNullOrWhiteSpace(sourcePath))
-            return null;
-
         var normalizedPath = NormalizePathKey(sourcePath);
         return sourceContentByPath.TryGetValue(normalizedPath, out var content)
             ? content
@@ -539,9 +507,6 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static void TryAddPath(IDictionary<string, string> sourceContentByPath, string path, string content)
     {
         var normalizedPath = NormalizePathKey(path);
-        if (string.IsNullOrWhiteSpace(normalizedPath))
-            return;
-
         sourceContentByPath[normalizedPath] = content;
     }
 
@@ -549,19 +514,14 @@ public sealed class ESGenerator : IIncrementalGenerator
         => path.Replace('\\', '/').Trim();
 
     private static string EnsureDirectorySeparator(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return string.Empty;
-
-        return path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
+        => path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
             ? path
             : path + Path.DirectorySeparatorChar;
-    }
 
     private static string ComputeSha256Hex(string content)
     {
         using var sha = SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content ?? string.Empty));
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content));
         var builder = new StringBuilder(bytes.Length * 2);
         foreach (var item in bytes)
             builder.Append(item.ToString("X2"));
@@ -569,7 +529,7 @@ public sealed class ESGenerator : IIncrementalGenerator
     }
 
     private static string EscapeCSharpString(string value)
-        => Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(value ?? string.Empty, quote: true);
+        => Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(value, quote: true);
 
     private sealed record ModuleCandidate(
         INamedTypeSymbol ClassSymbol,
