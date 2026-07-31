@@ -964,6 +964,62 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("value > 0", script);
   }
 
+  [TestMethod]
+  public void Visit_RelationalPattern_PropertyAndLiteralIndexerInputs_AvoidRedundantCaches()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                int Value => 1;
+                int[] Values => new[] { 1 };
+
+                void TestMethod()
+                {
+                    bool property = this.Value is > 0;
+                    bool indexer = this.Values[0] is > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(
+@"{
+  let property = this.value > 0;
+  let indexer = this.values[0] > 0;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_RelationalPattern_InvocationInput_CachesOnce()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int GetValue() => 1;
+                    bool result = GetValue() is > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(
+@"{
+  let v$0;
+  function GetValue() {
+    return 1;
+  }
+  let result = (v$0 = GetValue(), v$0 > 0);
+}", script);
+  }
+
   /// <summary>
   /// 测试 Visit - RelationalPattern 小于模式
   /// </summary>
