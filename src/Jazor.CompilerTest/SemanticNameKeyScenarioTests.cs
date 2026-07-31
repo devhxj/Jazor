@@ -109,7 +109,10 @@ public enum SemanticNameKeyScenarioKind
     BinaryOperator,
     TupleBinaryOperator,
     StaticPropertyReference,
-    StaticMethodReference
+    StaticMethodReference,
+    CharConstant,
+    BooleanConstant,
+    NullConstant
 }
 
 public sealed record SemanticNameKeyScenario(
@@ -428,6 +431,121 @@ internal static class SemanticNameKeyScenarioCatalog
 
                 public static int Read()
                     => ((Func<int>)Secondary) switch
+                    {
+                        null => 0,
+                        _ => 1
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.char-constant-switch-input",
+            "char-constant-value-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.CharConstant,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => 'A' switch
+                    {
+                        'A' => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read() =>
+                    'A' // trivia only
+                    switch
+                    {
+                        'A' => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => 'B' switch
+                    {
+                        'A' => 1,
+                        _ => 0
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.boolean-constant-switch-input",
+            "boolean-constant-value-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.BooleanConstant,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => true switch
+                    {
+                        true => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read() =>
+                    (true) // trivia only
+                    switch
+                    {
+                        true => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => false switch
+                    {
+                        true => 1,
+                        _ => 0
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.null-constant-switch-input",
+            "null-constant-value-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.NullConstant,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => ((string?)null) switch
+                    {
+                        null => 0,
+                        _ => 1
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read() =>
+                    ((string?)
+                        null) // trivia only
+                    switch
+                    {
+                        null => 0,
+                        _ => 1
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Read()
+                    => ((string?)"ready") switch
                     {
                         null => 0,
                         _ => 1

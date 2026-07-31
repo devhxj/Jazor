@@ -1359,8 +1359,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
             case IArgumentOperation argument:
                 builder.Append("|argkind=").Append(argument.ArgumentKind);
-                builder.Append("|ref=").Append(argument.Parameter?.RefKind);
-                builder.Append("|param=").Append(argument.Parameter?.Ordinal.ToString(CultureInfo.InvariantCulture) ?? "<none>");
+                builder.Append("|ref=").Append(argument.Parameter!.RefKind);
+                builder.Append("|param=").Append(argument.Parameter.Ordinal.ToString(CultureInfo.InvariantCulture));
                 builder.Append("|value=").Append(BuildSemanticNameKey(argument.Value));
                 break;
 
@@ -1437,7 +1437,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
             case IIsTypeOperation isType:
                 builder.Append("|value=").Append(BuildSemanticNameKey(isType.ValueOperand));
-                builder.Append("|checked=").Append(isType.TypeOperand?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|checked=").Append(isType.TypeOperand.OriginalDefinition.ToDisplayString(Format.NameFormat));
                 builder.Append("|negated=").Append(isType.IsNegated);
                 break;
 
@@ -1464,11 +1464,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 break;
 
             case ITypePatternOperation typePattern:
-                builder.Append("|matched=").Append(typePattern.MatchedType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|matched=").Append(typePattern.MatchedType.OriginalDefinition.ToDisplayString(Format.NameFormat));
                 break;
 
             case IRecursivePatternOperation recursivePattern:
-                builder.Append("|matched=").Append(recursivePattern.MatchedType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|matched=").Append(recursivePattern.MatchedType.OriginalDefinition.ToDisplayString(Format.NameFormat));
                 builder.Append("|deconstruct=").Append(DescribeStableSymbol(recursivePattern.DeconstructSymbol));
                 builder.Append("|declared=").Append(DescribeStableSymbol(recursivePattern.DeclaredSymbol));
                 foreach (var subpattern in recursivePattern.DeconstructionSubpatterns)
@@ -1493,7 +1493,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 break;
 
             case IInterpolatedStringTextOperation interpolatedText:
-                builder.Append("|text=").Append(interpolatedText.Text.ConstantValue.Value as string ?? string.Empty);
+                builder.Append("|text=").Append((string)interpolatedText.Text.ConstantValue.Value!);
                 break;
 
             case IAnonymousFunctionOperation anonymousFunction:
@@ -1536,14 +1536,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (value is null)
             return "<null>";
 
-        return value switch
-        {
-            string text => "\"" + text + "\"",
-            char c => "'" + c.ToString() + "'",
-            bool flag => flag ? "true" : "false",
-            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-            _ => value.ToString() ?? value.GetType().FullName ?? "<unknown>"
-        };
+        // Roslyn constants are limited to string/char/bool, numeric or enum values. Keeping this
+        // domain explicit prevents arbitrary object formatting from destabilizing generated names.
+        if (value is string text)
+            return "\"" + text + "\"";
+        if (value is char c)
+            return "'" + c.ToString() + "'";
+        if (value is bool flag)
+            return flag ? "true" : "false";
+
+        return ((IFormattable)value).ToString(null, CultureInfo.InvariantCulture)!;
     }
 
     private static string DescribeStableSymbol(ISymbol? symbol)
