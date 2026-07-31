@@ -1186,76 +1186,68 @@ public partial class SemanticWalker
 		Expression? fallbackInstance,
 		SenseArgument argument)
 	{
-		switch (operation.InitializedMember)
+		// A bound nested member initializer targets either a property/indexer or a field.
+		if (operation.InitializedMember is IPropertyReferenceOperation propertyReference)
 		{
-			case IPropertyReferenceOperation propertyReference:
+			var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance!;
+			var arguments = new List<Expression>(propertyReference.Arguments.Length);
+			foreach (var propertyArgument in propertyReference.Arguments)
+				arguments.Add(Translate<Expression>(propertyArgument.Value, argument));
+
+			var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod!, argument, arguments, instance, out var alias, propertyReference);
+			if (mapperExpr is not null)
+				return mapperExpr;
+
+			if (arguments.Count > 0)
 			{
-				var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance!;
-				var arguments = new List<Expression>(propertyReference.Arguments.Length);
-				foreach (var propertyArgument in propertyReference.Arguments)
-					arguments.Add(Translate<Expression>(propertyArgument.Value, argument));
-
-				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod!, argument, arguments, instance, out var alias, propertyReference);
-				if (mapperExpr is not null)
-					return mapperExpr;
-
-				if (arguments.Count > 0 &&
-					(propertyReference.Property.IsIndexer || propertyReference.Property.Parameters.Length > 0))
+				if (arguments.Count != 1)
 				{
-					if (arguments.Count != 1)
-					{
-						return HandleTransformationFailure<Expression>(
-							operation,
-							"JavaScript fallback for indexer member initializers only supports a single translated index argument.");
-					}
-
-					if (string.IsNullOrEmpty(alias))
-					{
-						ResolveInitializerAccessMemberName(
-							operation,
-							propertyReference.Property,
-							"member initializer access",
-							propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
-					}
-
-					return new MemberExpression(instance, arguments[0], computed: true, optional: false);
+					return HandleTransformationFailure<Expression>(
+						operation,
+						"JavaScript fallback for indexer member initializers only supports a single translated index argument.");
 				}
 
-				var propertyName = string.IsNullOrEmpty(alias)
-					? ResolveInitializerAccessMemberName(
+				if (string.IsNullOrEmpty(alias))
+				{
+					ResolveInitializerAccessMemberName(
 						operation,
 						propertyReference.Property,
 						"member initializer access",
-						propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType)
-					: alias!;
-
-				return BuildAliasedPropertyAccess(
-					instance,
-					propertyName,
-					optional: false);
+						propertyReference.Instance!.Type!);
 			}
 
-			case IFieldReferenceOperation fieldReference:
-			{
-				var instance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance!;
-				var mapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], instance, out var alias, fieldReference);
-				if (mapperExpr is not null)
-					return mapperExpr;
-
-				var fieldName = string.IsNullOrEmpty(alias)
-					? ResolveInitializerAccessMemberName(
-						operation,
-						fieldReference.Field,
-						"member initializer access",
-						fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType)
-					: alias!;
-
-				return new MemberExpression(instance, new Identifier(fieldName), computed: false, optional: false);
+				return new MemberExpression(instance, arguments[0], computed: true, optional: false);
 			}
 
-			default:
-				return HandleTransformationFailure<Expression>(operation, "Member initializer target could not be translated to a JavaScript receiver.");
+			var propertyName = string.IsNullOrEmpty(alias)
+				? ResolveInitializerAccessMemberName(
+					operation,
+					propertyReference.Property,
+					"member initializer access",
+					propertyReference.Instance!.Type!)
+				: alias!;
+
+			return BuildAliasedPropertyAccess(
+				instance,
+				propertyName,
+				optional: false);
 		}
+
+		var fieldReference = (IFieldReferenceOperation)operation.InitializedMember;
+		var fieldInstance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance!;
+		var fieldMapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], fieldInstance, out var fieldAlias, fieldReference);
+		if (fieldMapperExpr is not null)
+			return fieldMapperExpr;
+
+		var fieldName = string.IsNullOrEmpty(fieldAlias)
+			? ResolveInitializerAccessMemberName(
+				operation,
+				fieldReference.Field,
+				"member initializer access",
+				fieldReference.Instance!.Type!)
+			: fieldAlias!;
+
+		return new MemberExpression(fieldInstance, new Identifier(fieldName), computed: false, optional: false);
 	}
 
 	private Expression MaterializeMemberInitializerReceiver(
@@ -1285,7 +1277,8 @@ public partial class SemanticWalker
 	private List<Expression> BuildObjectCreationInitializer(Expression obj, IObjectOrCollectionInitializerOperation initializers, SenseArgument argument)
 	{
 		var exprs = new List<Expression>();
-		// 处理对象初始化器，只处理第一层，内部嵌套转换为对象字面量
+		// Roslyn binds valid entries as property/field assignments, nested member initializers,
+		// or Add invocations; bound arguments always carry their selected parameter.
 		foreach (var initializer in initializers.Initializers)
 		{
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
@@ -1311,27 +1304,22 @@ public partial class SemanticWalker
 							simpleAssignmentOp,
 							propertyReferenceOp.Property,
 							"object initializer property assignment",
-							propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType);
+							propertyReferenceOp.Instance!.Type!);
 						var property = new Identifier(propertyName);
 						left = new MemberExpression(propertyInstance, property, computed: false, optional: false);
 					}
 				}
-				else if (simpleAssignmentOp.Target is IFieldReferenceOperation fieldReferenceOp)
+				else
 				{
+					var fieldReferenceOp = (IFieldReferenceOperation)simpleAssignmentOp.Target;
 					var fieldInstance = Translate<Expression>(fieldReferenceOp.Instance, argument, null) ?? obj;
 					var fieldName = ResolveInitializerAssignmentMemberName(
 						simpleAssignmentOp,
 						fieldReferenceOp.Field,
 						"object initializer field assignment",
-						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType);
+						fieldReferenceOp.Instance!.Type!);
 					var field = new Identifier(fieldName);
 					left = new MemberExpression(fieldInstance, field, computed: false, optional: false);
-				}
-				else
-				{
-					return HandleTransformationFailure<List<Expression>>(
-						initializer,
-						$"Initializer assignment target '{simpleAssignmentOp.Target.Kind}' is not supported.");
 				}
 
 				// Nested creation produces one RHS expression (usually an IIFE). It must still flow
@@ -1341,19 +1329,20 @@ public partial class SemanticWalker
 					? BuildObjectCreation(subObjectCreationOp, argument)
 					: TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
 
-				if (propertyReference?.Property.SetMethod is not null && propertyInstance is not null)
+				if (propertyReference is not null)
 				{
+					var setMethod = propertyReference.Property.SetMethod!;
 					var setterArguments = new List<Expression>(propertyReference.Arguments.Length + 1);
 					foreach (var propertyArgument in propertyReference.Arguments)
 					{
-						var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+						var argContext = propertyArgument.Parameter!.RefKind is RefKind.Out
 							? argument.With(Sense.OutParameter)
 							: argument;
 						setterArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 					}
 					setterArguments.Add(right);
 
-					var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out var setterAlias, propertyReference);
+					var mapperExpr = GetWhiteListExpression(setMethod, argument, setterArguments, propertyInstance!, out var setterAlias, propertyReference);
 					if (mapperExpr is not null)
 					{
 						exprs.Add(mapperExpr);
@@ -1361,7 +1350,7 @@ public partial class SemanticWalker
 					}
 
 					if (string.IsNullOrEmpty(setterAlias))
-						RejectUnsupportedRuntimeFallback(simpleAssignmentOp, propertyReference.Property.SetMethod, "object initializer property assignment", propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
+						RejectUnsupportedRuntimeFallback(simpleAssignmentOp, setMethod, "object initializer property assignment", propertyReference.Instance!.Type!);
 				}
 
 				exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
@@ -1373,12 +1362,13 @@ public partial class SemanticWalker
 				var nestedExprs = BuildObjectCreationInitializer(receiver, memberInitializerOp.Initializer, argument);
 				exprs.AddRange(nestedExprs);
 			}
-			else if (initializer is IInvocationOperation invocationOp)
+			else
 			{
+				var invocationOp = (IInvocationOperation)initializer;
 				var arguments = new List<Expression>();
 				foreach (var arg in invocationOp.Arguments)
 				{
-					var argExpr = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argument);
+					var argExpr = TranslateTupleForTarget(arg.Value, arg.Parameter!.Type, argument);
 					arguments.Add(argExpr);
 				}
 
@@ -1405,8 +1395,6 @@ public partial class SemanticWalker
 				var expr = new CallExpression(callee, NodeList.From(arguments), optional: false);
 				exprs.Add(expr);
 			}
-			else
-				HandleTransformationFailure<Expression>(initializer, "Member initializer could not be translated to JavaScript.");
 		}
 
 		return exprs;
@@ -1904,29 +1892,28 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMemberInitializer(IMemberInitializerOperation operation, SenseArgument argument)
 	{
-		var target = operation.InitializedMember switch
+		Expression target;
+		ITypeSymbol targetType;
+		if (operation.InitializedMember is IPropertyReferenceOperation propertyReference)
 		{
-			IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
+			target = CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 				operation,
-				propertyReferenceOp.Property,
+				propertyReference.Property,
 				"member initializer assignment",
-				propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-			IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
+				propertyReference.Instance!.Type!));
+			targetType = propertyReference.Property.Type;
+		}
+		else
+		{
+			var fieldReference = (IFieldReferenceOperation)operation.InitializedMember;
+			target = CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 				operation,
-				fieldReferenceOp.Field,
+				fieldReference.Field,
 				"member initializer assignment",
-				fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
-			_ => null
-		};
-		if (target is null)
-			return HandleTransformationFailure<Node>(operation.InitializedMember, "Member initializer target could not be translated to JavaScript.");
+				fieldReference.Instance!.Type!));
+			targetType = fieldReference.Field.Type;
+		}
 
-		var targetType = operation.InitializedMember switch
-		{
-			IPropertyReferenceOperation propertyReferenceOp => propertyReferenceOp.Property.Type,
-			IFieldReferenceOperation fieldReferenceOp => fieldReferenceOp.Field.Type,
-			_ => null
-		};
 		var value = TranslateTupleForTarget(operation.Initializer, targetType, argument);
 		return new ObjectProperty(
 			PropertyKind.Init,
