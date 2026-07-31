@@ -1702,19 +1702,13 @@ public partial class SemanticWalker
 			if (subpattern.Kind == OperationKind.DiscardPattern)
 				continue;
 
-			Expression? propertyExpr = deconstructResultId is not null
+			var propertyExpr = deconstructResultId is not null
 				? new MemberExpression(
 					deconstructResultId,
 					new NumericLiteral(i, i.ToString(System.Globalization.CultureInfo.InvariantCulture)),
 					computed: true,
 					optional: false)
 				: GetPositionalPropertyExpression(operation, namedType, targetExpr, i);
-			if (propertyExpr is null)
-				{
-					HandleTransformationFailure<Node>(operation,
-						$"Cannot resolve positional property at index {i} for type '{namedType.ToDisplayString()}'.");
-					return;
-				}
 
 			// 处理子模式，传递 propertyExpr 作为 PatternInput
 			var subpatternArg = argument.WithPatternInput(propertyExpr);
@@ -1738,84 +1732,32 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 获取位置式解构中指定索引对应的属性访问表达式
 	/// </summary>
-	private MemberExpression? GetPositionalPropertyExpression(
+	private MemberExpression GetPositionalPropertyExpression(
 		IRecursivePatternOperation operation,
 		INamedTypeSymbol namedType,
 		Expression targetExpr,
 		int index)
 	{
-		string? propertyName = null;
-
+		string propertyName;
 		if (namedType.IsTupleType)
 		{
 			// 元组类型同样遵循统一的 runtime naming 规则，而不是直接透传 CLR 成员名。
 			propertyName = Util.GetConfigOrSymbolName(namedType.TupleElements[index]);
 		}
-		else if (IsStructuralType(namedType))
+		else
 		{
-			// Structural-lowered types bind positional patterns directly to their structural property keys.
-			propertyName = GetStructuralPositionPropertyName(operation, namedType, index);
+			// Roslyn has already bound the positional shape to a Deconstruct method. Structural
+			// lowering uses that method's parameter only as the compile-time property contract.
+			var deconstructMethod = (IMethodSymbol)operation.DeconstructSymbol!;
+			ResolveStructuralRuntimeMember(
+				namedType,
+				deconstructMethod.Parameters[index],
+				out _,
+				out propertyName,
+				out _);
 		}
-
-		if (propertyName is null)
-			return null;
 
 		return new MemberExpression(targetExpr, new Identifier(propertyName), computed: false, optional: false);
-	}
-
-	/// <summary>
-	/// 获取 record 类型位置式解构中指定索引对应的属性名
-	/// </summary>
-	/// <param name="operation"></param>
-	/// <param name="namedType"></param>
-	/// <param name="index"></param>
-	/// <returns></returns>
-	/// <exception cref="OperationTransformationException"></exception>
-	private string? GetStructuralPositionPropertyName(
-		IRecursivePatternOperation operation,
-		INamedTypeSymbol namedType,
-		int index)
-	{
-		if (StructuralRecordSupport.IsStructuralRecordType(namedType))
-		{
-			// Record 统一走 structural lowering，位置模式必须绑定到运行时结构属性键。
-			// 主构造函数参数名只用于定位对应属性，最终仍取属性的运行时名。
-			var constructor = FindMatchingConstructor(namedType, operation.DeconstructionSubpatterns.Length);
-			if (constructor is not null && constructor.Parameters.Length > index)
-			{
-				var parameter = constructor.Parameters[index];
-				var property = EnumerateNamedTypeHierarchyBaseFirst(namedType)
-					.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-					.FirstOrDefault(member =>
-						!member.IsStatic &&
-						string.Equals(member.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
-				return property is null
-					? parameter.Name
-					: Util.GetConfigOrSymbolName(property);
-			}
-		}
-
-		var message = $"Cannot determine property name for structural type '{namedType.Name}' at position {index}. " +
-			$"Ensure the type has a matching structural member shape.";
-		var location = operation.Syntax.GetLocation();
-		_report?.Invoke(location, message);
-		throw new OperationTransformationException(operation.Kind, message);
-	}
-
-	/// <summary>
-	/// 查找匹配指定参数数量的构造函数
-	/// </summary>
-	private IMethodSymbol? FindMatchingConstructor(INamedTypeSymbol namedType, int parameterCount)
-	{
-		// 优先选择参数数量精确匹配的构造函数
-		foreach (var ctor in namedType.Constructors)
-		{
-			if (!ctor.IsStatic && ctor.Parameters.Length == parameterCount)
-				return ctor;
-		}
-
-		// 回退到第一个实例构造函数
-		return namedType.Constructors.FirstOrDefault(c => !c.IsStatic);
 	}
 
 	/// <summary>

@@ -191,10 +191,9 @@ public partial class SemanticWalker
 			if (IsStaticallyKnownNull(arg.Value))
 				continue;
 
-			ResolveStructuralConstructorMember(
+			ResolveStructuralRuntimeMember(
 				namedType,
 				parameter,
-				index,
 				out var structuralMember,
 				out var keyName,
 				out var targetType);
@@ -258,17 +257,16 @@ public partial class SemanticWalker
 		return order;
 	}
 
-	private void ResolveStructuralConstructorMember(
+	private static void ResolveStructuralRuntimeMember(
 		INamedTypeSymbol type,
 		IParameterSymbol parameter,
-		int index,
 		out ISymbol member,
 		out string memberName,
 		out ITypeSymbol memberType)
 	{
-		memberName = ResolveEcmascriptRecordPropertyName(type, parameter, index);
-		var property = ResolveEcmascriptRecordProperty(type, parameter);
+		var property = ResolveStructuralRuntimeProperty(type, parameter);
 		member = property is not null ? property : parameter;
+		memberName = Util.GetConfigOrSymbolName(member);
 		memberType = property?.Type ?? parameter.Type;
 	}
 
@@ -325,11 +323,10 @@ public partial class SemanticWalker
 		return false;
 	}
 
-	private static IPropertySymbol? ResolveEcmascriptRecordProperty(INamedTypeSymbol type, IParameterSymbol? parameter)
+	private static IPropertySymbol? ResolveStructuralRuntimeProperty(
+		INamedTypeSymbol type,
+		IParameterSymbol parameter)
 	{
-		if (parameter is null)
-			return null;
-
 		// A derived record may forward base positional properties through its primary constructor.
 		// Resolve the direct property first, then inherited instance properties, so construction and
 		// positional-pattern lowering agree on the same runtime key.
@@ -949,23 +946,6 @@ public partial class SemanticWalker
 			System.Globalization.UnicodeCategory.SpacingCombiningMark or
 			System.Globalization.UnicodeCategory.DecimalDigitNumber or
 			System.Globalization.UnicodeCategory.ConnectorPunctuation;
-	}
-
-	private static string ResolveEcmascriptRecordPropertyName(INamedTypeSymbol type, IParameterSymbol? parameter, int index)
-	{
-		if (parameter is null)
-			return $"item{index}";
-
-		var property = type
-			.GetMembers()
-			.OfType<IPropertySymbol>()
-			.FirstOrDefault(member =>
-				!member.IsStatic &&
-				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
-
-		return property is null
-			? parameter.Name
-			: Util.GetConfigOrSymbolName(property);
 	}
 
 	private bool TryBuildCollectionLiteral(IObjectOrCollectionInitializerOperation initializer, TypeMapper mapper, SenseArgument argument, out Expression expression)

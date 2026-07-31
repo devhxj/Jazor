@@ -44,34 +44,27 @@ public partial class SemanticWalker
 	private bool ShouldLowerStructurally(INamedTypeSymbol? namedType)
 		=> IsStructuralType(namedType);
 
-	private bool TryGetStructuralRuntimePropertyName(INamedTypeSymbol structuralType, int index, out string propertyName)
-		=> TryGetStructuralRuntimeProperty(structuralType, index, out propertyName, out _);
-
 	private bool TryGetStructuralRuntimeProperty(
 		INamedTypeSymbol structuralType,
 		int index,
 		out string propertyName,
 		out ITypeSymbol propertyType)
 	{
-		propertyName = null!;
-		propertyType = null!;
-
 		var constructor = structuralType.Constructors
 			.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
 		if (constructor is null)
+		{
+			propertyName = null!;
+			propertyType = null!;
 			return false;
+		}
 
-		var parameter = constructor.Parameters[index];
-		var property = EnumerateNamedTypeHierarchyBaseFirst(structuralType)
-			.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-			.FirstOrDefault(member =>
-				!member.IsStatic &&
-				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
-
-		propertyName = property is null
-			? parameter.Name
-			: Util.GetConfigOrSymbolName(property);
-		propertyType = property?.Type ?? parameter.Type;
+		ResolveStructuralRuntimeMember(
+			structuralType,
+			constructor.Parameters[index],
+			out _,
+			out propertyName,
+			out propertyType);
 		return true;
 	}
 
@@ -697,7 +690,7 @@ public partial class SemanticWalker
 			}
 			else if (valueType is INamedTypeSymbol recordType &&
 					 ShouldLowerStructurally(recordType) &&
-					 value.Operation is { } recordExpr)
+					 bindingInfo?.Method is IMethodSymbol structuralDeconstructMethod)
 			{
 				ITupleOperation tupleResult;
 				bool isDeclarationExpressionTarget = false;
@@ -713,20 +706,29 @@ public partial class SemanticWalker
 					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
 					return;
 				}
+				var declareStructuralTargets = declareTargets || isDeclarationExpressionTarget;
 
-				Identifier? tempVar = null;
-				if (ShouldCacheTupleSource(recordExpr))
+				Expression recordExprValue;
+				if (value.Operation is { } recordExpr)
 				{
-					tempVar = new Identifier(AllocateUniqueName(recordExpr, argument, LoweringSite.TupleDeconstructionSource()));
-					var init = Translate<Expression>(recordExpr, argument);
-					var declarator = new VariableDeclarator(tempVar, null);
-					argument.AddVarDeclarator(declarator, _recursionDepth);
-					preparations.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+					if (ShouldCacheTupleSource(recordExpr))
+					{
+						var tempVar = new Identifier(AllocateUniqueName(recordExpr, argument, LoweringSite.TupleDeconstructionSource()));
+						var init = Translate<Expression>(recordExpr, argument);
+						var declarator = new VariableDeclarator(tempVar, null);
+						argument.AddVarDeclarator(declarator, _recursionDepth);
+						preparations.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+						recordExprValue = tempVar;
+					}
+					else
+					{
+						recordExprValue = Translate<Expression>(recordExpr, argument);
+					}
 				}
-
-				var recordExprValue = tempVar is null
-					? Translate<Expression>(recordExpr, argument)
-					: (Expression)tempVar;
+				else
+				{
+					recordExprValue = value.AstExpression!;
+				}
 
 				for (var index = 0; index < tupleResult.Elements.Length; index++)
 				{
@@ -734,15 +736,12 @@ public partial class SemanticWalker
 					if (element is IDiscardOperation)
 						continue;
 
-					if (!TryGetStructuralRuntimeProperty(
+					ResolveStructuralRuntimeMember(
 						recordType,
-						index,
+						structuralDeconstructMethod.Parameters[index],
+						out _,
 						out var propertyName,
-						out var sourceMemberType))
-					{
-						HandleTransformationFailure<Node>(target, $"Structural type '{recordType.ToDisplayString(Jazor.Common.Format.NameFormat)}' could not resolve positional member {index} for deconstruction.");
-						return;
-					}
+						out var sourceMemberType);
 
 					var right = new MemberExpression(recordExprValue, new Identifier(propertyName), false, false);
 					var nestedBinding = GetNestedDeconstructionInfo(bindingInfo, index);
@@ -755,10 +754,10 @@ public partial class SemanticWalker
 							nestedBinding,
 							preparations,
 							writes,
-							isDeclarationExpressionTarget || element is IDeclarationExpressionOperation,
+							declareStructuralTargets || element is IDeclarationExpressionOperation,
 							ComposeTupleSlot(tupleSlot, index));
 					else
-						AppendDeconstructionWrite(element, right, writes, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation);
+						AppendDeconstructionWrite(element, right, writes, declareStructuralTargets || element is IDeclarationExpressionOperation);
 				}
 			}
 			else if (bindingInfo?.Method is IMethodSymbol method &&

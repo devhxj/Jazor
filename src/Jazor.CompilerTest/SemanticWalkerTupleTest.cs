@@ -1183,6 +1183,41 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitDeconstructionAssignment_NestedRecords_UsesConfiguredStructuralMembers()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var envelope = new Envelope(new Point(1, 2), ""origin"");
+                    var ((x, y), label) = envelope;
+                }
+
+                record Point(
+                    [property: Description(""@#left"")] int X,
+                    [property: Description(""@#top"")] int Y);
+
+                record Envelope(
+                    [property: Description(""@#point"")] Point Position,
+                    [property: Description(""@#caption"")] string Label);
+            }");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, SenseArgument.Default);
+        var script = node?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let x, y, label;
+  let envelope = { point: { left: 1, top: 2 }, caption: ""origin"" };
+  x = envelope.point.left, y = envelope.point.top, label = envelope.caption;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment_DeconstructMethodDictTuple()
     {
         var block = GetBlockOperation(@"

@@ -5546,7 +5546,9 @@ line2"";
                     bool result = point is LabeledPoint(0, 0, ""origin"");
                 }
 
-                public record Point(int X, int Y);
+                public record Point(
+                    [property: Description(""@#horizontal"")] int X,
+                    [property: Description(""@#vertical"")] int Y);
 
                 public record LabeledPoint : Point
                 {
@@ -5574,11 +5576,11 @@ line2"";
 
     AssertScriptEqual(@"{
   let point = {
-    x: 0,
-    y: 0,
+    horizontal: 0,
+    vertical: 0,
     label: ""origin""
   };
-  let result = point.x === 0 && point.y === 0 && point.label === ""origin"";
+  let result = point.horizontal === 0 && point.vertical === 0 && point.label === ""origin"";
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 

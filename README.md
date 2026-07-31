@@ -38,19 +38,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Latest Updates
 
-### 2026-07-30
+### 2026-07-31
 
-- CLR mappings support `Half`, `Int128`, and `UInt128`, with Number/BigInt carriers, fixed-width 128-bit arithmetic, parsing, comparison, bit operations, and runtime-checked division and remainder overflow behavior.
-- `ECMAScript.Style` is the independent ECMAScript ecosystem package for typed CSS-in-JS. It provides a lowercase `css` facade, native-union value domains, typed composition helpers, an explicit `raw(...)` escape hatch, and the single debug entry `style.mjs`.
-- RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
-- CLR runtime modules annotate hashed JavaScript helper declarations with their authored CLR member names for easier package inspection.
-- Generic whitelist compatibility lookup now reuses indexed key shapes, avoiding repeated full-catalog scans when compiling ordinary generic method calls.
-- Inline-backed CLR and host calls preserve C# receiver and argument evaluation order, timing, and single-evaluation semantics when templates repeat, omit, reorder, or defer placeholders.
-- Composite property, tuple, and nested list patterns evaluate each member input once, so getters cannot run repeatedly during one pattern match.
-- Nested object initializers complete their values before assigning a property or indexer, preserve mapped setter dispatch, evaluate computed targets once, and prevent setters from observing partially initialized objects.
-- Unsupported standalone `System.Index` and `System.Range` values now report explicit diagnostics that point to contextual `^` and `..` indexer usage.
-- Source maps resolve `sourcesContent` by exact normalized syntax-tree path, keeping same-named files in different directories correctly isolated.
-- Mapped compound assignment and increment/decrement preserve single evaluation for side-effecting field, property, and ECMAScript indexer targets.
+- Nested structural record deconstruction reads configured and inherited property keys directly, preserves nested `var` declarations, and no longer emits calls to unavailable runtime `Deconstruct` methods.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

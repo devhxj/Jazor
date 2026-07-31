@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2026-07-31
+
+- Nested structural record deconstruction now reads configured and inherited property keys directly, preserves nested `var` declarations, and no longer depends on record `Deconstruct` methods that are not emitted at runtime.
+
 ## 2026-07-30
 
 - CLR mappings now support `Half` through the Number carrier and `Int128` / `UInt128` through fixed-width BigInt semantics, including parsing, comparison, numeric helpers, bit counting, rotation, 128-bit arithmetic wraparound, and runtime-checked division and remainder overflow behavior.
