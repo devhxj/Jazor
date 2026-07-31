@@ -1,11 +1,83 @@
 using System.Reflection;
+using Jazor.Common;
 using Jazor.Compiler;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.ComplierTest;
 
 [TestClass]
 public sealed class WhiteListLookupCompatibilityTests
 {
+    [TestMethod]
+    public void WhiteListLookup_PartialMemberImplementations_UseDefinitionKeys()
+    {
+        const string source = """
+            partial class Host
+            {
+                public partial int Value { get; }
+                public partial int this[int index] { get; }
+                partial void Apply(int value);
+            }
+
+            partial class Host
+            {
+                public partial int Value => 1;
+                public partial int this[int index] => index;
+                partial void Apply(int value) { }
+            }
+            """;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            source,
+            TestMetadataReferences.PreviewParseOptions,
+            path: "partial-members.cs");
+        var compilation = CSharpCompilation.Create(
+            "WhiteListLookup.PartialMembers",
+            [syntaxTree],
+            TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(0, errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+
+        var model = compilation.GetSemanticModel(syntaxTree);
+        var implementationMembers = syntaxTree.GetRoot().DescendantNodes()
+            .Select(node => node switch
+            {
+                PropertyDeclarationSyntax property => (ISymbol?)model.GetDeclaredSymbol(property),
+                IndexerDeclarationSyntax indexer => (ISymbol?)model.GetDeclaredSymbol(indexer),
+                MethodDeclarationSyntax method => (ISymbol?)model.GetDeclaredSymbol(method),
+                _ => null
+            })
+            .Where(static symbol => symbol is IMethodSymbol { PartialDefinitionPart: not null } or
+                IPropertySymbol { PartialDefinitionPart: not null })
+            .Cast<ISymbol>()
+            .ToArray();
+        Assert.HasCount(3, implementationMembers);
+
+        foreach (var implementation in implementationMembers)
+        {
+            ISymbol definition = implementation switch
+            {
+                IMethodSymbol method => method.PartialDefinitionPart!,
+                IPropertySymbol property => property.PartialDefinitionPart!,
+                _ => throw new AssertFailedException($"Unexpected partial member kind '{implementation.Kind}'.")
+            };
+            var definitionKey = definition.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            var mappings = new Dictionary<string, string> { [definitionKey] = "mapped" };
+
+            Assert.IsTrue(WhiteListLookup.TryGetValue(
+                mappings,
+                implementation,
+                out var matchedKey,
+                out var matchedValue));
+            Assert.AreEqual(definitionKey, matchedKey);
+            Assert.AreEqual("mapped", matchedValue);
+        }
+    }
+
     [TestMethod]
     public void WhiteListLookup_GenericParameterNormalization_MatchesEquivalentDeclaredParameterNames()
     {

@@ -299,22 +299,8 @@ internal static class WhiteListLookup
 
 	private static IEnumerable<ISymbol> EnumerateWhiteListLookupSymbols(ISymbol symbol)
 	{
-		var seen = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
-
 		foreach (var candidate in EnumerateWithOverrideFallback(symbol.OriginalDefinition))
-		{
-			if (seen.Add(candidate))
-				yield return candidate;
-		}
-
-		foreach (var candidate in EnumerateContainingTypeImplementationCandidates(symbol))
-		{
-			foreach (var fallback in EnumerateWithOverrideFallback(candidate))
-			{
-				if (seen.Add(fallback))
-					yield return fallback;
-			}
-		}
+			yield return candidate;
 	}
 
 	private static IEnumerable<ISymbol> EnumerateWithOverrideFallback(ISymbol symbol)
@@ -323,88 +309,13 @@ internal static class WhiteListLookup
 			yield return current;
 	}
 
-	private static IEnumerable<ISymbol> EnumerateContainingTypeImplementationCandidates(ISymbol symbol)
-	{
-		if (symbol.ContainingType is null)
-			yield break;
-
-		if (symbol is IMethodSymbol method)
-		{
-			foreach (var candidate in symbol.ContainingType.GetMembers(method.Name).OfType<IMethodSymbol>())
-			{
-				if (!IsCompatibleMethodCandidate(method, candidate))
-					continue;
-
-				yield return candidate.OriginalDefinition;
-			}
-
-			yield break;
-		}
-
-		if (symbol is IPropertySymbol property)
-		{
-			foreach (var candidate in symbol.ContainingType.GetMembers(property.Name).OfType<IPropertySymbol>())
-			{
-				if (!IsCompatiblePropertyCandidate(property, candidate))
-					continue;
-
-				yield return candidate.OriginalDefinition;
-			}
-		}
-	}
-
-	private static bool IsCompatibleMethodCandidate(IMethodSymbol source, IMethodSymbol candidate)
-	{
-		if (source.MethodKind != candidate.MethodKind ||
-			source.Name != candidate.Name ||
-			source.IsStatic != candidate.IsStatic ||
-			source.Arity != candidate.Arity ||
-			source.Parameters.Length != candidate.Parameters.Length)
-			return false;
-
-		for (var i = 0; i < source.Parameters.Length; i++)
-		{
-			if (source.Parameters[i].RefKind != candidate.Parameters[i].RefKind ||
-				source.Parameters[i].IsParams != candidate.Parameters[i].IsParams)
-				return false;
-
-			if (!SymbolEqualityComparer.Default.Equals(
-					source.Parameters[i].Type.OriginalDefinition,
-					candidate.Parameters[i].Type.OriginalDefinition))
-				return false;
-		}
-
-		return true;
-	}
-
-	private static bool IsCompatiblePropertyCandidate(IPropertySymbol source, IPropertySymbol candidate)
-	{
-		if (source.Name != candidate.Name ||
-			source.IsStatic != candidate.IsStatic ||
-			source.Parameters.Length != candidate.Parameters.Length)
-			return false;
-
-		for (var i = 0; i < source.Parameters.Length; i++)
-		{
-			if (source.Parameters[i].RefKind != candidate.Parameters[i].RefKind)
-				return false;
-
-			if (!SymbolEqualityComparer.Default.Equals(
-					source.Parameters[i].Type.OriginalDefinition,
-					candidate.Parameters[i].Type.OriginalDefinition))
-				return false;
-		}
-
-		return SymbolEqualityComparer.Default.Equals(
-			source.Type.OriginalDefinition,
-			candidate.Type.OriginalDefinition);
-	}
-
 	public static ISymbol? GetFallbackSymbol(ISymbol symbol)
 		=> symbol switch
 		{
 			IMethodSymbol { ReducedFrom: not null } method => method.ReducedFrom.OriginalDefinition,
+			IMethodSymbol { PartialDefinitionPart: not null } method => method.PartialDefinitionPart.OriginalDefinition,
 			IMethodSymbol { OverriddenMethod: not null } method => method.OverriddenMethod.OriginalDefinition,
+			IPropertySymbol { PartialDefinitionPart: not null } property => property.PartialDefinitionPart.OriginalDefinition,
 			IPropertySymbol { OverriddenProperty: not null } property => property.OverriddenProperty.OriginalDefinition,
 			IEventSymbol { OverriddenEvent: not null } @event => @event.OverriddenEvent.OriginalDefinition,
 			_ => null
