@@ -20,6 +20,30 @@ namespace Jazor.Compiler;
 /// </remarks>
 public partial class SemanticWalker
 {
+	private static readonly IReadOnlyDictionary<BinaryOperatorKind, Operator> CSharpBinaryOperators =
+		new Dictionary<BinaryOperatorKind, Operator>
+		{
+			[BinaryOperatorKind.Add] = Operator.Addition,
+			[BinaryOperatorKind.Subtract] = Operator.Subtraction,
+			[BinaryOperatorKind.Multiply] = Operator.Multiplication,
+			[BinaryOperatorKind.Divide] = Operator.Division,
+			[BinaryOperatorKind.Remainder] = Operator.Remainder,
+			[BinaryOperatorKind.Equals] = Operator.StrictEquality,
+			[BinaryOperatorKind.NotEquals] = Operator.StrictInequality,
+			[BinaryOperatorKind.LessThan] = Operator.LessThan,
+			[BinaryOperatorKind.GreaterThan] = Operator.GreaterThan,
+			[BinaryOperatorKind.LessThanOrEqual] = Operator.LessThanOrEqual,
+			[BinaryOperatorKind.GreaterThanOrEqual] = Operator.GreaterThanOrEqual,
+			[BinaryOperatorKind.ConditionalAnd] = Operator.LogicalAnd,
+			[BinaryOperatorKind.ConditionalOr] = Operator.LogicalOr,
+			[BinaryOperatorKind.And] = Operator.BitwiseAnd,
+			[BinaryOperatorKind.Or] = Operator.BitwiseOr,
+			[BinaryOperatorKind.ExclusiveOr] = Operator.BitwiseXor,
+			[BinaryOperatorKind.LeftShift] = Operator.LeftShift,
+			[BinaryOperatorKind.RightShift] = Operator.RightShift,
+			[BinaryOperatorKind.UnsignedRightShift] = Operator.UnsignedRightShift
+		};
+
 	/// <summary>
 	/// 处理代码块操作
 	/// C# 示例：
@@ -923,36 +947,11 @@ public partial class SemanticWalker
 					$"Binary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript binary semantics.");
 		}
 
-		var @operator = operation.OperatorKind switch
-		{
-			BinaryOperatorKind.Add => Operator.Addition,
-			BinaryOperatorKind.Subtract => Operator.Subtraction,
-			BinaryOperatorKind.Multiply => Operator.Multiplication,
-			BinaryOperatorKind.Divide => Operator.Division,
-			BinaryOperatorKind.Remainder => Operator.Remainder,
-			BinaryOperatorKind.Equals => Operator.StrictEquality,
-			BinaryOperatorKind.NotEquals => Operator.StrictInequality,
-			BinaryOperatorKind.LessThan => Operator.LessThan,
-			BinaryOperatorKind.GreaterThan => Operator.GreaterThan,
-			BinaryOperatorKind.LessThanOrEqual => Operator.LessThanOrEqual,
-			BinaryOperatorKind.GreaterThanOrEqual => Operator.GreaterThanOrEqual,
-			BinaryOperatorKind.ConditionalAnd => Operator.LogicalAnd,
-			BinaryOperatorKind.ConditionalOr => Operator.LogicalOr,
-			BinaryOperatorKind.And => Operator.BitwiseAnd,
-			BinaryOperatorKind.Or => Operator.BitwiseOr,
-			BinaryOperatorKind.ExclusiveOr => Operator.BitwiseXor,
-			BinaryOperatorKind.LeftShift => Operator.LeftShift,
-			BinaryOperatorKind.RightShift => Operator.RightShift,
-			BinaryOperatorKind.UnsignedRightShift => Operator.UnsignedRightShift,
-			_ => Operator.Unknown
-		};
+		var @operator = CSharpBinaryOperators[operation.OperatorKind];
 
 		// 逻辑运算符 → LogicalExpression
 		if (@operator is Operator.LogicalAnd or Operator.LogicalOr)
 			return new LogicalExpression(@operator, left, right);
-
-		else if (@operator == Operator.Unknown)
-			return HandleTransformationFailure<Node>(operation, "Binary operator could not be translated to JavaScript.");
 
 		// 其余 → BinaryExpression
 		return new NonLogicalBinaryExpression(@operator, left, right);
