@@ -1500,9 +1500,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static Expression CreateLiteralExpression(object? value)
     {
-        if (value is not null && TryCreateSpecialLiteralExpression(value, out var special))
-            return special;
-
         return value switch
         {
             null => new NullLiteral("null"),
@@ -1522,22 +1519,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             decimal dec => JavaScriptAstFactory.CreateNumericExpression(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
             _ => throw new NotSupportedException($"Unsupported literal type: {value.GetType()}")
         };
-    }
-
-    private static bool TryCreateSpecialLiteralExpression(object value, out Expression expression)
-    {
-        if (value.GetType().FullName == "System.Half")
-        {
-            var number = System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
-            var raw = value is IFormattable formattable
-                ? formattable.ToString("R", CultureInfo.InvariantCulture)
-                : number.ToString("R", CultureInfo.InvariantCulture);
-            expression = JavaScriptAstFactory.CreateNumericExpression(number, raw);
-            return true;
-        }
-
-        expression = null!;
-        return false;
     }
 
     private sealed record ModuleNamePlan(

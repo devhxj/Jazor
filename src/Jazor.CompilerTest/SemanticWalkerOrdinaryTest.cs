@@ -194,6 +194,32 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   [TestMethod]
+  public void LegalCSharpParentheses_AreErasedFromOperationTreeAndPreserveInnerSemantics()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                int TestMethod(int value)
+                {
+                    int result = (((value + 1)));
+                    return result;
+                }
+            }
+            """);
+
+    Assert.IsFalse(block.Descendants().Any(static operation => operation is IParenthesizedOperation));
+
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    Assert.AreEqual("""
+      {
+        let result = value + 1;
+        return result;
+      }
+      """.ReplaceLineEndings(), script?.ReplaceLineEndings());
+  }
+
+  [TestMethod]
   public void Visit_MethodBody_ExpressionBodyThatNeedsGeneratedTemporaries_MaterializesDeclarationsInsideFunctionBody()
   {
     var methodBody = GetMethodBodyOperation(@"

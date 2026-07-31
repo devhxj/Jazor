@@ -876,12 +876,6 @@ public partial class SemanticWalker
 			var innerOperand = new NonUpdateUnaryExpression(Operator.LogicalNot, operand);
 			return new NonUpdateUnaryExpression(Operator.LogicalNot, innerOperand);
 		}
-		else if (operation.OperatorKind == UnaryOperatorKind.None)
-		{
-			// 对应语义()
-			return new ParenthesizedExpression(operand);
-		}
-
 		return HandleTransformationFailure<Node>(operation.Operand, "Unary operator operand could not be translated to JavaScript.");
 	}
 
@@ -1473,21 +1467,6 @@ public partial class SemanticWalker
 		wrappedExpressions.AddRange(targetInitializations);
 		wrappedExpressions.Add(new AssignmentExpression(Operator.NullishCoalescingAssignment, left, right));
 		return WithOrigin(new SequenceExpression(NodeList.From(wrappedExpressions)), operation);
-	}
-
-	/// <summary>
-	/// 处理括号表达式操作
-	/// C# 示例：
-	/// (x + y)         // 括号表达式
-	/// 转换结果：直接返回内部表达式（JavaScript 中括号由解析器处理）
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitParenthesized(IParenthesizedOperation operation, SenseArgument argument)
-	{
-		var exp = Translate<Expression>(operation.Operand, argument);
-		return new ParenthesizedExpression(exp);
 	}
 
 	/// <summary>
@@ -2290,29 +2269,16 @@ public partial class SemanticWalker
 
 		foreach (var initializer in operation.Initializer.Initializers)
 		{
-			if (initializer is not ISimpleAssignmentOperation assignment)
-			{
-				return HandleTransformationFailure<Node>(
-					operation.Initializer,
-					"With initializer must bind to a property or field assignment.");
-			}
-
-			var member = GetObjectInitializerMemberSymbol(assignment);
-			var targetType = member switch
-			{
-				IPropertySymbol property => property.Type,
-				IFieldSymbol field => field.Type,
-				_ => null
-			};
-			if (member is null || targetType is null)
-				return HandleTransformationFailure<Node>(operation.Initializer, "With initializer target could not be resolved.");
+			var assignment = (ISimpleAssignmentOperation)initializer;
+			var memberReference = (IMemberReferenceOperation)assignment.Target;
+			var member = memberReference.Member;
 
 			var memberName = ResolveInitializerAssignmentMemberName(
 				assignment,
 				member,
 				"with-expression member assignment",
 				member.ContainingType);
-			var value = TranslateTupleForTarget(assignment.Value, targetType, argument);
+			var value = TranslateTupleForTarget(assignment.Value, assignment.Target.Type, argument);
 			properties.Add(new ObjectProperty(
 				kind: PropertyKind.Init,
 				key: CreateObjectPropertyKey(memberName),
@@ -2344,10 +2310,9 @@ public partial class SemanticWalker
 	/// </remarks>
 	public override Node? VisitAttribute(IAttributeOperation operation, SenseArgument argument)
 	{
-		if (operation.Operation is not IObjectCreationOperation creationOp)
-			return null;
+		var creationOp = (IObjectCreationOperation)operation.Operation;
 
-		if (creationOp.Type?.AllInterfaces.Any(static interfaceType =>
+		if (creationOp.Type!.AllInterfaces.Any(static interfaceType =>
 			string.Equals(interfaceType.ToDisplayString(Format.NameFormat), "ECMAScript.IECMAScript", StringComparison.Ordinal)) != true)
 			return null;
 
@@ -2358,36 +2323,18 @@ public partial class SemanticWalker
 		var positionalArgs = new List<Expression>();
 		var namedProps = new List<ObjectProperty>();
 		foreach (var constructorArgument in creationOp.Arguments)
-		{
-			if (Translate<Expression>(constructorArgument.Value, argument) is not { } value)
-				return HandleTransformationFailure<Node>(operation, "Attribute constructor argument could not be translated to JavaScript.");
-
-			positionalArgs.Add(value);
-		}
+			positionalArgs.Add(Translate<Expression>(constructorArgument.Value, argument));
 
 		if (creationOp.Initializer is not null)
 		{
 			foreach (var initializer in creationOp.Initializer.Initializers)
 			{
-				if (initializer is not ISimpleAssignmentOperation assignment ||
-					GetObjectInitializerMemberSymbol(assignment) is not { } member)
-				{
-					return HandleTransformationFailure<Node>(
-						operation,
-						"Attribute named argument must bind to a property or field assignment.");
-				}
-
-				var memberType = member switch
-				{
-					IPropertySymbol property => property.Type,
-					IFieldSymbol field => field.Type,
-					_ => null
-				};
-				if (memberType is null)
-					return HandleTransformationFailure<Node>(operation, "Attribute named argument target type could not be resolved.");
+				var assignment = (ISimpleAssignmentOperation)initializer;
+				var memberReference = (IMemberReferenceOperation)assignment.Target;
+				var member = memberReference.Member;
 
 				var memberName = GetCurrentModuleDeclaredOrConfigName(member);
-				var memberValue = TranslateTupleForTarget(assignment.Value, memberType, argument);
+				var memberValue = TranslateTupleForTarget(assignment.Value, assignment.Target.Type, argument);
 				namedProps.Add(new ObjectProperty(
 					kind: PropertyKind.Init,
 					key: CreateObjectPropertyKey(memberName),

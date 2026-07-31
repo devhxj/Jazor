@@ -742,9 +742,6 @@ public partial class SemanticWalker
 				case IDelegateCreationOperation delegateCreation:
 					current = delegateCreation.Target;
 					continue;
-				case IParenthesizedOperation parenthesized:
-					current = parenthesized.Operand;
-					continue;
 				default:
 					return current;
 			}
@@ -808,9 +805,6 @@ public partial class SemanticWalker
 				case IConversionOperation conversion:
 					current = conversion.Operand;
 					continue;
-				case IParenthesizedOperation parenthesized:
-					current = parenthesized.Operand;
-					continue;
 				default:
 					return current;
 			}
@@ -826,9 +820,6 @@ public partial class SemanticWalker
 			{
 				case IConversionOperation conversion when ReferenceEquals(conversion.Operand, current):
 					current = conversion;
-					continue;
-				case IParenthesizedOperation parenthesized when ReferenceEquals(parenthesized.Operand, current):
-					current = parenthesized;
 					continue;
 				case IInvocationOperation invocation when ReferenceEquals(invocation.Instance, current):
 					return true;

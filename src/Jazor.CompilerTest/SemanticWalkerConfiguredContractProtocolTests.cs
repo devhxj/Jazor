@@ -126,7 +126,7 @@ public sealed class SemanticWalkerConfiguredContractProtocolTests
                 private static VueRenderCallback SetupWithoutEmitContext(CounterProps props, object context)
                     => () => H("div", props.Message);
 
-                private static VueRenderCallback WrappedContextSetup(CounterProps props, VueSetupContext context)
+                private static VueRenderCallback ConvertedContextSetup(CounterProps props, VueSetupContext context)
                 {
                     ((VueSetupContext)(context)).Emit("wrapped");
                     var attrs = ((VueSetupContext)(context)).Attrs;
@@ -226,17 +226,17 @@ internal static class ConfiguredContractProtocolCatalog
             "emits: []",
             "setup: ConfiguredContractScenarios.setupWithoutEmitContext"),
         Success(
-            "method-group.wrapped-emit-context",
-            "props=generic-index-1;setup=method-group;emit-context=parenthesized-explicit-conversion;emits=literal",
+            "method-group.converted-emit-context",
+            "props=generic-index-1;setup=method-group;emit-context=explicit-conversion;emits=literal",
             """
                         var options = new TestShiftedContractComponentOptions<int, CounterProps>
                         {
-                            Bootstrap = WrappedContextSetup
+                            Bootstrap = ConvertedContextSetup
                         };
                 """,
             "props: [\"baseValue\", \"message\"]",
             "emits: [\"wrapped\"]",
-            "setup: ConfiguredContractScenarios.wrappedContextSetup"),
+            "setup: ConfiguredContractScenarios.convertedContextSetup"),
         Success(
             "method-group.explicit-delegate-conversion",
             "props=generic-index-1;setup=method-group-explicit-cast;operation=delegate-creation;emits=deduplicated",
