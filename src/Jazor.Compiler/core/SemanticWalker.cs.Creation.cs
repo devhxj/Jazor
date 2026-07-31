@@ -966,7 +966,7 @@ public partial class SemanticWalker
 				// 这里沿用索引器/参数的目标类型做 remap，避免集合元素里的 tuple 名字透传错误。
 				var key = TranslateTupleForTarget(
 					propertyReference.Arguments[0].Value,
-					propertyReference.Arguments[0].Parameter?.Type,
+					propertyReference.Arguments[0].Parameter!.Type,
 					argument);
 				var value = TranslateTupleForTarget(simpleAssignment.Value, propertyReference.Property.Type, argument);
 				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
@@ -982,7 +982,7 @@ public partial class SemanticWalker
 					return false;
 				items.Add(TranslateTupleForTarget(
 					invocation.Arguments[0].Value,
-					invocation.Arguments[0].Parameter?.Type,
+					invocation.Arguments[0].Parameter!.Type,
 					argument));
 			}
 			else
@@ -992,11 +992,11 @@ public partial class SemanticWalker
 
 				var key = TranslateTupleForTarget(
 					invocation.Arguments[0].Value,
-					invocation.Arguments[0].Parameter?.Type,
+					invocation.Arguments[0].Parameter!.Type,
 					argument);
 				var value = TranslateTupleForTarget(
 					invocation.Arguments[1].Value,
-					invocation.Arguments[1].Parameter?.Type,
+					invocation.Arguments[1].Parameter!.Type,
 					argument);
 				items.Add(new ArrayExpression(NodeList.From<Expression?>(key, value)));
 			}

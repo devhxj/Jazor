@@ -350,6 +350,58 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Operation_MappedCollectionInitializers_ExposeBoundTupleTargets()
+    {
+        var block = GetBlockOperation(
+            """
+            var rows = new List<(int Id, string Name)> { (1, "one") };
+            var ids = new HashSet<int> { 2, 3 };
+            var indexLookup = new Dictionary<string, (int Count, string Label)>
+            {
+                ["first"] = (4, "four")
+            };
+            var addLookup = new Dictionary<string, (int Count, string Label)>
+            {
+                { "second", (5, "five") }
+            };
+            """);
+
+        var collectionInitializers = block.DescendantsAndSelf()
+            .OfType<IObjectOrCollectionInitializerOperation>()
+            .Where(static initializer => initializer.Parent is IObjectCreationOperation)
+            .ToArray();
+        Assert.HasCount(4, collectionInitializers);
+
+        var addInvocations = collectionInitializers
+            .SelectMany(static initializer => initializer.Initializers)
+            .OfType<IInvocationOperation>()
+            .ToArray();
+        Assert.HasCount(4, addInvocations);
+        Assert.IsTrue(addInvocations
+            .SelectMany(static invocation => invocation.Arguments)
+            .All(static argument => argument.Parameter is not null));
+
+        var mapIndexer = collectionInitializers[2].Initializers
+            .OfType<ISimpleAssignmentOperation>()
+            .Single();
+        var indexer = Assert.IsInstanceOfType<IPropertyReferenceOperation>(mapIndexer.Target);
+        Assert.IsNotNull(indexer.Arguments[0].Parameter);
+
+        var script = VisitBlock(block);
+        Assert.AreEqual(
+            """
+            {
+              let rows = [{ id: 1, name: "one" }];
+              let ids = new Set([2, 3]);
+              let indexLookup = new Map([["first", { count: 4, label: "four" }]]);
+              let addLookup = new Map([["second", { count: 5, label: "five" }]]);
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_MultiDimensionalArrayAllocation_AllocatesIndependentNestedArrays()
     {
         var block = GetBlockOperation("var grid = new int[2, 3];");
