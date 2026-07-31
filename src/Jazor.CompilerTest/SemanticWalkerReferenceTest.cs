@@ -2844,6 +2844,52 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_ImplicitIndexerReference_StandaloneIndexValue_RejectsUnmaterializedIndexCarrier()
+	{
+		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>("""
+			class TestClass
+			{
+				int TestMethod(List<int> values)
+				{
+					System.Index index = ^1;
+					return values[index];
+				}
+			}
+			""");
+
+		Assert.AreEqual(OperationKind.ImplicitIndexerReference, operation.Kind);
+		Assert.AreNotEqual(OperationKind.Invalid, operation.Argument.Kind);
+
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(operation, new SenseArgument()));
+
+		StringAssert.Contains(exception.Message, "Standalone System.Index/System.Range values are not supported");
+	}
+
+	[TestMethod]
+	public void Visit_ImplicitIndexerReference_StandaloneRangeValue_RejectsUnmaterializedRangeCarrier()
+	{
+		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>("""
+			class TestClass
+			{
+				List<int> TestMethod(List<int> values)
+				{
+					System.Range range = 1..^1;
+					return values[range];
+				}
+			}
+			""");
+
+		Assert.AreEqual(OperationKind.ImplicitIndexerReference, operation.Kind);
+		Assert.AreNotEqual(OperationKind.Invalid, operation.Argument.Kind);
+
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(operation, new SenseArgument()));
+
+		StringAssert.Contains(exception.Message, "Standalone System.Index/System.Range values are not supported");
+	}
+
+	[TestMethod]
 	public void Visit_ImplicitIndexerReference_StringFromEnd_UsesWhitelistLengthAndIndexer()
 	{
 		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>(@"

@@ -1831,7 +1831,7 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		return HandleTransformationFailure<Expression>(
 			ownerOperation,
-			"Implicit System.Index access requires a direct numeric index expression or '^' expression. Standalone System.Index values are not supported in JavaScript lowering.");
+			"Implicit indexing requires a direct numeric index, '^', or range expression. Standalone System.Index/System.Range values are not supported in JavaScript lowering.");
 	}
 
 	private static bool TryGetRangeArgument(IOperation operation, out IRangeOperation rangeOperation)
@@ -1889,6 +1889,14 @@ private bool TryExpandEcmascriptParamsArgument(
 
 	private static bool TryUnwrapFromStartIndexArgument(IOperation operation, out IOperation operand)
 	{
+		// A standalone Range carrier is not a numeric from-start index. Direct range syntax is
+		// handled earlier from IRangeOperation; letting this fall through misroutes it as Slice(range).
+		if (IsSystemRangeType(operation.Type))
+		{
+			operand = null!;
+			return false;
+		}
+
 		if (operation is IConversionOperation conversion &&
 			IsSystemIndexType(conversion.Type) &&
 			!IsSystemIndexType(conversion.Operand.Type))
