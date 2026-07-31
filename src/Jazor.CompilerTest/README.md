@@ -106,11 +106,19 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter SemanticWa
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQualifiedName~SemanticWalkerTupleTest.Visit_TupleLiteral_NamedTuple_UsesCurrentViewNames
 ```
 
-使用覆盖率设置：
+采集原始覆盖率报告：
 
 ```powershell
-dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings src/Jazor.CompilerTest/coverlet.runsettings
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings src/Jazor.CompilerTest/coverlet.runsettings --collect:"XPlat Code Coverage"
 ```
+
+执行正式 coverage gate（至少 8,000 个通过测试、95% 行覆盖、90% 分支覆盖）：
+
+```powershell
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
+```
+
+`coverlet.runsettings` 只定义采集范围；验收必须走 coverage gate，不能把“生成了报告”当成“达到阈值”。
 
 仓库级快捷入口：
 

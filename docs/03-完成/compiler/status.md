@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-04-06）
+# Jazor Compiler 主线状态（2026-07-31）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -6,6 +6,15 @@
 ## 总结
 
 `Jazor.Compiler` 仍然是当前仓库里最成熟的主干资产。
+
+当前可复验基线：
+
+- `Jazor.CompilerTest`：8299 / 8299 通过
+- `Jazor.Compiler` 行覆盖：15735 / 16339（96.30%）
+- `Jazor.Compiler` 分支覆盖：6931 / 7695（90.07%）
+- 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
+
+coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
 
 更具体而言：
 
