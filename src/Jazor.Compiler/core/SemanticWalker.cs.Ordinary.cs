@@ -1481,17 +1481,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitNameOf(INameOfOperation operation, SenseArgument argument)
 	{
-		string? name = null;
-		if (operation.Argument.ConstantValue.HasValue)
-			name = operation.Argument.ConstantValue.Value?.ToString();
-
-		else if (operation.ConstantValue.HasValue)
-			name = operation.ConstantValue.Value?.ToString();
-
-		if (string.IsNullOrEmpty(name) || name is null)
-			return HandleTransformationFailure<Node>(operation.Argument, "NameOf expression could not be translated to JavaScript.");
-
-		return CreateStringLiteral(name);
+		// A valid nameof expression is always bound as a non-null string constant.
+		return CreateStringLiteral((string)operation.ConstantValue.Value!);
 	}
 
 	/// <summary>
