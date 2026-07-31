@@ -214,21 +214,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         {
                             // 白名单中的类型
                             if (entry.Op == ECMAScript.Contract.Op.Alias && !string.IsNullOrEmpty(entry.Value))
-                            {
-                                var mapper = entry.Value! switch
-                                {
-                                    "String" => TypeMapper.String,
-                                    "Object" => TypeMapper.Object,
-                                    "Array" => TypeMapper.Array,
-                                    "Number" => TypeMapper.Number,
-                                    "Date" => TypeMapper.Date,
-                                    "BigInt" => TypeMapper.BigInt,
-                                    "Map" => TypeMapper.Map,
-                                    "Set" => TypeMapper.Set,
-                                    _ => TypeMapper.Class
-                                };
-                                return (mapper, entry.Value!);
-                            }
+                                return (TypeMapper.Class, entry.Value!);
                             // Op.Allowed 等其他情况，使用原始名称
                             // 例如：System.Nullable<T>, void 等
                         }
