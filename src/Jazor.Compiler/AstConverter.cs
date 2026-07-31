@@ -1919,16 +1919,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private string GetSymbolName(ISymbol symbol)
     {
-        if (symbol is IMethodSymbol method &&
-            (method.MethodKind == MethodKind.PropertyGet || method.MethodKind == MethodKind.PropertySet))
-        {
-            if (method.AssociatedSymbol is IPropertySymbol property)
-                return Util.GetConfigOrSymbolName(property);
-
-            if (method.Name.StartsWith("get_", StringComparison.Ordinal) || method.Name.StartsWith("set_", StringComparison.Ordinal))
-                return Util.ConvertPascalCaseIdentifierToJsNaming(method.Name.Substring(4));
-        }
-
         if (symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol propertySymbol })
             return Util.GetConfigOrSymbolName(propertySymbol);
 
