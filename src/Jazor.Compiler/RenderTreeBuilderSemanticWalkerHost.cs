@@ -29,6 +29,37 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
     private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
 
+    private enum RenderContextMethodKind
+    {
+        Unsupported,
+        OpenElement,
+        CloseElement,
+        OpenRegion,
+        CloseRegion,
+        OpenGenericComponent,
+        OpenTypeComponent,
+        CloseComponent,
+        AddContent,
+        AddRenderFragment,
+        AddGenericRenderFragment,
+        AddMarkupContent,
+        AddAttributeWithoutValue,
+        AddAttributeWithValue,
+        AddAttributeFrame,
+        AddMultipleAttributes,
+        AddComponentParameter,
+        SetKey,
+        SetUpdatesAttributeName,
+        SetAttributeValue,
+        AddNamedEvent,
+        AddElementReferenceCapture,
+        AddComponentReferenceCapture,
+        AddComponentRenderMode,
+        Clear,
+        GetFrames,
+        Dispose
+    }
+
     public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
         => TryGetStaticMarkupString(operation, out var markup)
             ? CreateStringLiteral(markup ?? string.Empty)
@@ -128,46 +159,43 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         if (instance is null)
             throw CreateUnsupportedException(operation);
 
-        var method = operation.TargetMethod.OriginalDefinition;
-        return method.Name switch
+        var methodKind = ClassifyRenderContextMethod(operation.TargetMethod);
+        return methodKind switch
         {
-            "OpenElement" when IsSequenceStringMethod(method, expectedParameterCount: 2)
+            RenderContextMethodKind.OpenElement
                 => BuildRenderContextCall(operation, instance, arguments, "openElement", ContextCallArgument.FromSource(1)),
 
-            "CloseElement" when method.Parameters.Length == 0
+            RenderContextMethodKind.CloseElement
                 => BuildRenderContextCall(operation, instance, arguments, "closeElement"),
 
-            "OpenRegion" when IsSequenceOnlyMethod(method)
+            RenderContextMethodKind.OpenRegion
                 => BuildRenderContextCall(operation, instance, arguments, "openRegion"),
 
-            "CloseRegion" when method.Parameters.Length == 0
+            RenderContextMethodKind.CloseRegion
                 => BuildRenderContextCall(operation, instance, arguments, "closeRegion"),
 
-            "OpenComponent" when IsGenericOpenComponentMethod(method)
+            RenderContextMethodKind.OpenGenericComponent
                 => BuildOpenComponentCall(operation, argument, instance, arguments),
 
-            "OpenComponent" when IsOpenComponentTypeMethod(method)
+            RenderContextMethodKind.OpenTypeComponent
                 => BuildOpenComponentTypeCall(operation, argument, instance, arguments),
 
-            "CloseComponent" when method.Parameters.Length == 0
+            RenderContextMethodKind.CloseComponent
                 => BuildRenderContextCall(operation, instance, arguments, "closeComponent"),
 
-            "AddContent" when IsSupportedAddContentMethod(method)
+            RenderContextMethodKind.AddContent
                 => BuildRenderContextCall(operation, instance, arguments, "addContent", ContextCallArgument.FromSource(1)),
 
-            "AddContent" when IsRenderFragmentAddContentMethod(method)
+            RenderContextMethodKind.AddRenderFragment
                 => BuildRenderFragmentInvoke(operation, instance, arguments),
 
-            "AddContent" when IsGenericRenderFragmentAddContentMethod(method)
+            RenderContextMethodKind.AddGenericRenderFragment
                 => BuildGenericRenderFragmentInvoke(operation, instance, arguments),
 
-            "AddContent" when IsMarkupStringAddContentMethod(method)
+            RenderContextMethodKind.AddMarkupContent
                 => BuildRenderContextCall(operation, instance, arguments, "addMarkupContent", ContextCallArgument.FromSource(1)),
 
-            "AddMarkupContent" when IsAddMarkupContentSignature(method)
-                => BuildRenderContextCall(operation, instance, arguments, "addMarkupContent", ContextCallArgument.FromSource(1)),
-
-            "AddAttribute" when IsAddAttributeWithoutValueMethod(method)
+            RenderContextMethodKind.AddAttributeWithoutValue
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -176,7 +204,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromExpression(new BooleanLiteral(true, "true"))),
 
-            "AddAttribute" when IsAddAttributeWithValueMethod(method)
+            RenderContextMethodKind.AddAttributeWithValue
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -185,7 +213,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromSource(2)),
 
-            "AddAttribute" when IsAddAttributeFrameMethod(method)
+            RenderContextMethodKind.AddAttributeFrame
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -193,7 +221,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     "addAttributeFrame",
                     ContextCallArgument.FromSource(1)),
 
-            "AddMultipleAttributes" when IsAddMultipleAttributesMethod(method)
+            RenderContextMethodKind.AddMultipleAttributes
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -201,8 +229,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     "addMultipleAttributes",
                     ContextCallArgument.FromSource(1)),
 
-            "AddComponentParameter" when IsAddComponentParameterMethod(method) &&
-                                        IsGenericRenderFragmentComponentParameterValue(operation)
+            RenderContextMethodKind.AddComponentParameter when IsGenericRenderFragmentComponentParameterValue(operation)
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -211,8 +238,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromSource(2)),
 
-            "AddComponentParameter" when IsAddComponentParameterMethod(method) &&
-                                        IsRenderFragmentComponentParameterValue(operation)
+            RenderContextMethodKind.AddComponentParameter when IsRenderFragmentComponentParameterValue(operation)
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -221,7 +247,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromSource(2)),
 
-            "AddComponentParameter" when IsAddComponentParameterMethod(method)
+            RenderContextMethodKind.AddComponentParameter
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -230,16 +256,16 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromSource(2)),
 
-            "SetKey" when IsSetKeyMethod(method)
+            RenderContextMethodKind.SetKey
                 => BuildRenderContextCall(operation, instance, arguments, "setKey", ContextCallArgument.FromSource(0)),
 
-            "SetUpdatesAttributeName" when IsSetUpdatesAttributeNameMethod(method)
+            RenderContextMethodKind.SetUpdatesAttributeName
                 => BuildRenderContextCall(operation, instance, arguments, "setUpdatesAttributeName", ContextCallArgument.FromSource(0)),
 
-            "SetAttributeValue" when IsSetAttributeValueMethod(method)
+            RenderContextMethodKind.SetAttributeValue
                 => BuildRenderContextCall(operation, instance, arguments, "setAttributeValue", ContextCallArgument.FromSource(1)),
 
-            "AddNamedEvent" when IsAddNamedEventMethod(method)
+            RenderContextMethodKind.AddNamedEvent
                 => BuildRenderContextCall(
                     operation,
                     instance,
@@ -248,22 +274,22 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(0),
                     ContextCallArgument.FromSource(1)),
 
-            "AddElementReferenceCapture" when IsAddElementReferenceCaptureMethod(method)
+            RenderContextMethodKind.AddElementReferenceCapture
                 => BuildRenderContextCall(operation, instance, arguments, "addElementReferenceCapture", ContextCallArgument.FromSource(1)),
 
-            "AddComponentReferenceCapture" when IsAddComponentReferenceCaptureMethod(method)
+            RenderContextMethodKind.AddComponentReferenceCapture
                 => BuildRenderContextCall(operation, instance, arguments, "addComponentReferenceCapture", ContextCallArgument.FromSource(1)),
 
-            "AddComponentRenderMode" when IsAddComponentRenderModeMethod(method)
+            RenderContextMethodKind.AddComponentRenderMode
                 => BuildRenderContextCall(operation, instance, arguments, "addComponentRenderMode", ContextCallArgument.FromSource(0)),
 
-            "Clear" when method.Parameters.Length == 0
+            RenderContextMethodKind.Clear
                 => BuildRenderContextCall(operation, instance, arguments, "clear"),
 
-            "GetFrames" when method.Parameters.Length == 0
+            RenderContextMethodKind.GetFrames
                 => BuildRenderContextCall(operation, instance, arguments, "getFrames"),
 
-            "Dispose" when method.Parameters.Length == 0
+            RenderContextMethodKind.Dispose
                 => BuildRenderContextCall(operation, instance, arguments, "dispose"),
 
             _ => throw CreateUnsupportedException(operation)
@@ -272,40 +298,79 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static bool IsSupportedRenderContextMethod(IInvocationOperation operation)
     {
-        var method = operation.TargetMethod.OriginalDefinition;
+        var methodKind = ClassifyRenderContextMethod(operation.TargetMethod);
+        return methodKind switch
+        {
+            RenderContextMethodKind.OpenGenericComponent
+                => TryResolveComponentImport(operation.TargetMethod, out _, out _),
+            RenderContextMethodKind.OpenTypeComponent
+                => TryResolveComponentTypeArgument(operation, out var componentType) &&
+                   TryResolveComponentImport(componentType, out _),
+            RenderContextMethodKind.Unsupported => false,
+            _ => true
+        };
+    }
+
+    private static RenderContextMethodKind ClassifyRenderContextMethod(IMethodSymbol method)
+    {
+        method = method.OriginalDefinition;
         return method.Name switch
         {
-            "OpenElement" => IsSequenceStringMethod(method, expectedParameterCount: 2),
-            "CloseElement" => method.Parameters.Length == 0,
-            "OpenRegion" => IsSequenceOnlyMethod(method),
-            "CloseRegion" => method.Parameters.Length == 0,
-            "OpenComponent" => (IsGenericOpenComponentMethod(method) &&
-                                TryResolveComponentImport(operation.TargetMethod, out _, out _)) ||
-                               (IsOpenComponentTypeMethod(method) &&
-                                TryResolveComponentTypeArgument(operation, out var componentType) &&
-                                TryResolveComponentImport(componentType, out _)),
-            "CloseComponent" => method.Parameters.Length == 0,
-            "AddContent" => IsSupportedAddContentMethod(method) ||
-                            IsRenderFragmentAddContentMethod(method) ||
-                            IsGenericRenderFragmentAddContentMethod(method) ||
-                            IsMarkupStringAddContentMethod(method),
-            "AddMarkupContent" => IsAddMarkupContentSignature(method),
-            "AddAttribute" => IsAddAttributeWithoutValueMethod(method) ||
-                              IsAddAttributeWithValueMethod(method) ||
-                              IsAddAttributeFrameMethod(method),
-            "AddMultipleAttributes" => IsAddMultipleAttributesMethod(method),
-            "AddComponentParameter" => IsAddComponentParameterMethod(method),
-            "SetKey" => IsSetKeyMethod(method),
-            "SetUpdatesAttributeName" => IsSetUpdatesAttributeNameMethod(method),
-            "SetAttributeValue" => IsSetAttributeValueMethod(method),
-            "AddNamedEvent" => IsAddNamedEventMethod(method),
-            "AddElementReferenceCapture" => IsAddElementReferenceCaptureMethod(method),
-            "AddComponentReferenceCapture" => IsAddComponentReferenceCaptureMethod(method),
-            "AddComponentRenderMode" => IsAddComponentRenderModeMethod(method),
-            "Clear" => method.Parameters.Length == 0,
-            "GetFrames" => method.Parameters.Length == 0,
-            "Dispose" => method.Parameters.Length == 0,
-            _ => false
+            "OpenElement" when IsSequenceStringMethod(method, expectedParameterCount: 2)
+                => RenderContextMethodKind.OpenElement,
+            "CloseElement" when method.Parameters.Length == 0
+                => RenderContextMethodKind.CloseElement,
+            "OpenRegion" when IsSequenceOnlyMethod(method)
+                => RenderContextMethodKind.OpenRegion,
+            "CloseRegion" when method.Parameters.Length == 0
+                => RenderContextMethodKind.CloseRegion,
+            "OpenComponent" when IsGenericOpenComponentMethod(method)
+                => RenderContextMethodKind.OpenGenericComponent,
+            "OpenComponent" when IsOpenComponentTypeMethod(method)
+                => RenderContextMethodKind.OpenTypeComponent,
+            "CloseComponent" when method.Parameters.Length == 0
+                => RenderContextMethodKind.CloseComponent,
+            "AddContent" when IsSupportedAddContentMethod(method)
+                => RenderContextMethodKind.AddContent,
+            "AddContent" when IsRenderFragmentAddContentMethod(method)
+                => RenderContextMethodKind.AddRenderFragment,
+            "AddContent" when IsGenericRenderFragmentAddContentMethod(method)
+                => RenderContextMethodKind.AddGenericRenderFragment,
+            "AddContent" when IsMarkupStringAddContentMethod(method)
+                => RenderContextMethodKind.AddMarkupContent,
+            "AddMarkupContent" when IsAddMarkupContentSignature(method)
+                => RenderContextMethodKind.AddMarkupContent,
+            "AddAttribute" when IsAddAttributeWithoutValueMethod(method)
+                => RenderContextMethodKind.AddAttributeWithoutValue,
+            "AddAttribute" when IsAddAttributeWithValueMethod(method)
+                => RenderContextMethodKind.AddAttributeWithValue,
+            "AddAttribute" when IsAddAttributeFrameMethod(method)
+                => RenderContextMethodKind.AddAttributeFrame,
+            "AddMultipleAttributes" when IsAddMultipleAttributesMethod(method)
+                => RenderContextMethodKind.AddMultipleAttributes,
+            "AddComponentParameter" when IsAddComponentParameterMethod(method)
+                => RenderContextMethodKind.AddComponentParameter,
+            "SetKey" when IsSetKeyMethod(method)
+                => RenderContextMethodKind.SetKey,
+            "SetUpdatesAttributeName" when IsSetUpdatesAttributeNameMethod(method)
+                => RenderContextMethodKind.SetUpdatesAttributeName,
+            "SetAttributeValue" when IsSetAttributeValueMethod(method)
+                => RenderContextMethodKind.SetAttributeValue,
+            "AddNamedEvent" when IsAddNamedEventMethod(method)
+                => RenderContextMethodKind.AddNamedEvent,
+            "AddElementReferenceCapture" when IsAddElementReferenceCaptureMethod(method)
+                => RenderContextMethodKind.AddElementReferenceCapture,
+            "AddComponentReferenceCapture" when IsAddComponentReferenceCaptureMethod(method)
+                => RenderContextMethodKind.AddComponentReferenceCapture,
+            "AddComponentRenderMode" when IsAddComponentRenderModeMethod(method)
+                => RenderContextMethodKind.AddComponentRenderMode,
+            "Clear" when method.Parameters.Length == 0
+                => RenderContextMethodKind.Clear,
+            "GetFrames" when method.Parameters.Length == 0
+                => RenderContextMethodKind.GetFrames,
+            "Dispose" when method.Parameters.Length == 0
+                => RenderContextMethodKind.Dispose,
+            _ => RenderContextMethodKind.Unsupported
         };
     }
 
