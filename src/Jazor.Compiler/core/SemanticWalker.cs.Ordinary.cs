@@ -2155,7 +2155,8 @@ public partial class SemanticWalker
 			propertyReference.Property.Parameters.Length > 0)
 			return false;
 
-		if (propertyReference.Property.SetMethod is { IsInitOnly: false })
+		if (propertyReference.Property.SetMethod is { } setMethod &&
+			!Util.IsBodylessInitAccessor(setMethod))
 			return false;
 
 		if (!TryGetCurrentModuleDeclaredName(propertyReference.Property.ContainingType, out _))
@@ -2164,9 +2165,7 @@ public partial class SemanticWalker
 		var backingField = propertyReference.Property.ContainingType
 			.GetMembers($"<{propertyReference.Property.Name}>k__BackingField")
 			.OfType<IFieldSymbol>()
-			.FirstOrDefault(field =>
-				field.IsImplicitlyDeclared &&
-				SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol?.OriginalDefinition, propertyReference.Property.OriginalDefinition));
+			.SingleOrDefault();
 
 		if (backingField is null)
 			return false;

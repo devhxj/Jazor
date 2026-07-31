@@ -6,6 +6,7 @@ using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.Compiler;
 
@@ -22,6 +23,25 @@ public static class Util
     public const string SystemUnionAttributeMetadataName = "System.Runtime.CompilerServices.UnionAttribute";
     public const string SystemIUnionMetadataName = "System.Runtime.CompilerServices.IUnion";
     public const string StringAttributeMetadataName = "ECMAScript.StringAttribute";
+
+    internal static bool IsBodylessInitAccessor(IMethodSymbol method)
+    {
+        var isInitOnly = method.IsInitOnly;
+        foreach (var reference in method.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not AccessorDeclarationSyntax accessor ||
+                !accessor.IsKind(SyntaxKind.InitAccessorDeclaration))
+            {
+                continue;
+            }
+
+            isInitOnly = true;
+            if (accessor.Body is not null || accessor.ExpressionBody is not null)
+                return false;
+        }
+
+        return isInitOnly;
+    }
 
     private enum JsNameConfigKind
     {

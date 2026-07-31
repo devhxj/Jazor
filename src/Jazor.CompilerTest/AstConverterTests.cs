@@ -1864,6 +1864,178 @@ $@"export class Item {{
     }
 
     [TestMethod]
+    public async Task Convert_InternalModuleNestedManualInitPropertyConstructorAssignment_UsesSetter()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("components/helper")]
+            internal static class Helper
+            {
+                public sealed class Item
+                {
+                    public Item(string value)
+                    {
+                        Value = value;
+                    }
+
+                    public string Value
+                    {
+                        get => "ready";
+                        init => Observe(value);
+                    }
+
+                    private void Observe(string value) { }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "Helper",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel, new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "constructor(value) {\n    this.value = value;\n  }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "set value(value) {\n    this.observe(value);\n  }", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("this.#", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public async Task Convert_InternalModuleNestedBlockInitPropertyConstructorAssignment_UsesSetterBody()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("components/helper")]
+            internal static class Helper
+            {
+                public sealed class Item
+                {
+                    public Item(string value)
+                    {
+                        Value = value;
+                    }
+
+                    public string Value
+                    {
+                        get => "ready";
+                        init
+                        {
+                            Observe(value.Trim());
+                        }
+                    }
+
+                    private void Observe(string value) { }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "Helper",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel, new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "constructor(value) {\n    this.value = value;\n  }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "set value(value) {\n    this.observe(value.trim());\n  }", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("this.#", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public async Task Convert_InternalModuleNestedFieldBackedInitPropertyConstructorAssignment_InvokesSetter()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("components/helper")]
+            internal static class Helper
+            {
+                public sealed class Item
+                {
+                    public Item(string value)
+                    {
+                        Value = value;
+                    }
+
+                    public string Value
+                    {
+                        get => field;
+                        init => field = value.Trim();
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "Helper",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var itemSymbol = classSymbol.GetTypeMembers("Item").Single();
+        var backingFieldName = PropertyBackingFieldName(itemSymbol, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel, new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "constructor(value) {\n    this.value = value;\n  }", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"get value() {{\n    return this.#{backingFieldName};\n  }}", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"set value(value) {{\n    this.#{backingFieldName} = value.trim();\n  }}", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_InternalModuleNestedPrivateFields_UsePrivateNamesForDeclarationsAndReferences()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("components/counter")]
+            internal static class CounterModule
+            {
+                public sealed class Counter
+                {
+                    private int _value;
+                    private static int _total;
+
+                    public Counter(int value)
+                    {
+                        _value = value;
+                        _total += value;
+                    }
+
+                    public int Read() => _value + _total;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel, new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "#_value;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "static #_total;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.#_value = value;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Counter.#_total += value;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return this.#_value + Counter.#_total;", StringComparison.Ordinal);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_RazorVueRuntimeComputedPropertyGetter_UsesPropertyRuntimeName()
     {
         var code = """

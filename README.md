@@ -41,6 +41,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 ### 2026-07-31
 
 - Nested structural record deconstruction reads configured and inherited property keys directly, preserves nested `var` declarations, and no longer emits calls to unavailable runtime `Deconstruct` methods.
+- Runtime member classes preserve hand-written `init` accessor behavior, including C# `field`-backed properties, and emit consistent JavaScript private names for declared fields and their references.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

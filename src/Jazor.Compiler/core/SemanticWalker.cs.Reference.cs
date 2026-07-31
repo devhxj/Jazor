@@ -726,6 +726,19 @@ public partial class SemanticWalker
 		return new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol));
 	}
 
+	private bool IsPrivateRuntimeClassField(IFieldSymbol field)
+	{
+		if (field.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal ||
+			field.ContainingType is null ||
+			_moduleRootType is null ||
+			SymbolEqualityComparer.Default.Equals(field.ContainingType.OriginalDefinition, _moduleRootType.OriginalDefinition))
+		{
+			return false;
+		}
+
+		return TryGetCurrentModuleDeclaredName(field.ContainingType, out _);
+	}
+
 	private static bool TryBuildStringEnumLiteral(IFieldSymbol symbol, out Expression expression)
 	{
 		expression = null!;
@@ -1917,7 +1930,9 @@ private bool TryExpandEcmascriptParamsArgument(
 			? GetCurrentModuleDeclaredOrConfigName(operation.Field)
 			: alias;
 
-		var property = new Identifier(fieldName!);
+		Expression property = IsPrivateRuntimeClassField(operation.Field)
+			? new PrivateIdentifier(fieldName!)
+			: new Identifier(fieldName!);
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;

@@ -313,17 +313,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor 模块类{symbol.Name}不支持静态构造函数。");
         }
 
-        if (symbol.MethodKind == MethodKind.PropertySet)
-        {
-            foreach (var reference in symbol.DeclaringSyntaxReferences)
-            {
-                if (await reference.GetSyntaxAsync(cancellationToken) is AccessorDeclarationSyntax accessor &&
-                    accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration))
-                    return;
-            }
-        }
-
-        if (symbol.IsInitOnly)
+        if (Util.IsBodylessInitAccessor(symbol))
             return;
 
         var parameters = new List<Node>();
@@ -794,8 +784,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // 处理 setter
         if (symbol.SetMethod is not null)
         {
-                if (!IsInitOnlyAccessor(symbol.SetMethod))
-                {
+            if (!Util.IsBodylessInitAccessor(symbol.SetMethod))
+            {
                 var setFuncDecl = ConvertMemberMethod(symbol.SetMethod, cancellationToken);
                 properties.Add(setFuncDecl);
             }
@@ -1190,21 +1180,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
 
         return Util.GetConfigOrSymbolName(symbol);
-    }
-
-    private static bool IsInitOnlyAccessor(IMethodSymbol method)
-    {
-        if (!method.IsInitOnly && method.MethodKind != MethodKind.PropertySet)
-            return false;
-
-        foreach (var reference in method.DeclaringSyntaxReferences)
-        {
-            if (reference.GetSyntax() is AccessorDeclarationSyntax accessor &&
-                accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration))
-                return true;
-        }
-
-        return method.IsInitOnly;
     }
 
     private IEnumerable<Statement> ConvertModuleClass(
@@ -1798,7 +1773,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (method.MethodKind == MethodKind.SharedConstructor && method.IsImplicitlyDeclared)
             return false;
 
-        if (method.IsInitOnly)
+        if (Util.IsBodylessInitAccessor(method))
             return false;
 
         return method.MethodKind is MethodKind.Ordinary or MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.SharedConstructor;

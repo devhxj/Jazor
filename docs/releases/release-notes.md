@@ -3,6 +3,8 @@
 ## 2026-07-31
 
 - Nested structural record deconstruction now reads configured and inherited property keys directly, preserves nested `var` declarations, and no longer depends on record `Deconstruct` methods that are not emitted at runtime.
+- Runtime member classes now preserve expression-bodied and block-bodied `init` accessors as JavaScript setters, including C# `field`-backed properties, while bodyless automatic `init` accessors retain their getter-only runtime shape.
+- Private runtime member-class fields now use the same JavaScript private name in declarations and instance or static references, including compiler-generated property backing fields.
 
 ## 2026-07-30
 
