@@ -1250,11 +1250,6 @@ private bool TryExpandEcmascriptParamsArgument(
 					destination.Add(TranslateTupleForTarget(element, arrayType.ElementType, argument));
 				return true;
 
-			case IArrayInitializerOperation arrayInitializer:
-				foreach (var element in arrayInitializer.ElementValues)
-					destination.Add(TranslateTupleForTarget(element, arrayType.ElementType, argument));
-				return true;
-
 			case ICollectionExpressionOperation collectionExpression:
 				foreach (var element in collectionExpression.Elements)
 					destination.Add(Translate<Expression>(element, argument));
