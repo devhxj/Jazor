@@ -105,8 +105,11 @@ public sealed class SemanticNameKeyScenarioTests
 public enum SemanticNameKeyScenarioKind
 {
     ObjectCreationArgument,
+    ObjectCreationInitializer,
     BinaryOperator,
-    TupleBinaryOperator
+    TupleBinaryOperator,
+    StaticPropertyReference,
+    StaticMethodReference
 }
 
 public sealed record SemanticNameKeyScenario(
@@ -271,6 +274,163 @@ internal static class SemanticNameKeyScenarioCatalog
                     {
                         true => 1,
                         _ => 0
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.object-creation-initializer",
+            "object-initializer-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.ObjectCreationInitializer,
+            """
+            public static class TestClass
+            {
+                public sealed class Box
+                {
+                    public int Value { get; set; }
+                }
+
+                public static int Read()
+                    => new Box { Value = 1 } switch
+                    {
+                        { Value: > 0 } => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public sealed class Box
+                {
+                    public int Value { get; set; }
+                }
+
+                public static int Read() =>
+                    new Box
+                    {
+                        // Trivia must not change the initializer identity.
+                        Value = 1
+                    } switch
+                    {
+                        { Value: > 0 } => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public sealed class Box
+                {
+                    public int Value { get; set; }
+                }
+
+                public static int Read()
+                    => new Box { Value = 2 } switch
+                    {
+                        { Value: > 0 } => 1,
+                        _ => 0
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.static-property-switch-input",
+            "static-property-symbol-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.StaticPropertyReference,
+            """
+            public static class TestClass
+            {
+                public static int Primary => 1;
+                public static int Secondary => 2;
+
+                public static int Read()
+                    => Primary switch
+                    {
+                        > 0 => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Primary => 1;
+                public static int Secondary => 2;
+
+                public static int Read() =>
+                    Primary // trivia only
+                    switch
+                    {
+                        > 0 => 1,
+                        _ => 0
+                    };
+            }
+            """,
+            """
+            public static class TestClass
+            {
+                public static int Primary => 1;
+                public static int Secondary => 2;
+
+                public static int Read()
+                    => Secondary switch
+                    {
+                        > 0 => 1,
+                        _ => 0
+                    };
+            }
+            """),
+        new(
+            "semantic-name-key.static-method-reference-switch-input",
+            "static-method-group-symbol-participates-in-switch-input-name",
+            SemanticNameKeyScenarioKind.StaticMethodReference,
+            """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Primary() => 1;
+                public static int Secondary() => 2;
+
+                public static int Read()
+                    => ((Func<int>)Primary) switch
+                    {
+                        null => 0,
+                        _ => 1
+                    };
+            }
+            """,
+            """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Primary() => 1;
+                public static int Secondary() => 2;
+
+                public static int Read() =>
+                    ((Func<int>)
+                        Primary) // trivia only
+                    switch
+                    {
+                        null => 0,
+                        _ => 1
+                    };
+            }
+            """,
+            """
+            using System;
+
+            public static class TestClass
+            {
+                public static int Primary() => 1;
+                public static int Secondary() => 2;
+
+                public static int Read()
+                    => ((Func<int>)Secondary) switch
+                    {
+                        null => 0,
+                        _ => 1
                     };
             }
             """)
