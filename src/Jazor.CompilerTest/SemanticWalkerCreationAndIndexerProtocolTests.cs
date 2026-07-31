@@ -298,6 +298,58 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Operation_ObjectLiteralInitializers_ExposeBoundReceiversAndParameters()
+    {
+        var block = GetBlockOperation(
+            """
+            var payload = new PropertyEnvelope { Child = { Name = "John", Age = 30 } };
+            var attrs = new VueDictionary { ["role"] = "banner" };
+            var entries = new VueDictionary { { "title", "hello" } };
+            """);
+
+        var memberInitializer = block.DescendantsAndSelf()
+            .OfType<IMemberInitializerOperation>()
+            .Single();
+        var initializedMember = Assert.IsInstanceOfType<IMemberReferenceOperation>(memberInitializer.InitializedMember);
+        Assert.IsNotNull(initializedMember.Instance);
+        Assert.IsNotNull(initializedMember.Instance.Type);
+
+        var dictionaryCreations = block.DescendantsAndSelf()
+            .OfType<IObjectCreationOperation>()
+            .Where(static creation => creation.Type?.Name == "VueDictionary")
+            .ToArray();
+        Assert.HasCount(2, dictionaryCreations);
+        var indexerInitializer = Assert.IsInstanceOfType<IObjectOrCollectionInitializerOperation>(dictionaryCreations[0].Initializer);
+        var indexerAssignment = indexerInitializer.Initializers
+            .OfType<ISimpleAssignmentOperation>()
+            .Single();
+        var indexer = Assert.IsInstanceOfType<IPropertyReferenceOperation>(indexerAssignment.Target);
+        Assert.IsNotNull(indexer.Instance);
+        Assert.IsNotNull(indexer.Instance.Type);
+        Assert.IsNotNull(indexer.Arguments[0].Parameter);
+
+        var addInitializer = Assert.IsInstanceOfType<IObjectOrCollectionInitializerOperation>(dictionaryCreations[1].Initializer);
+        var addInvocation = addInitializer.Initializers
+            .OfType<IInvocationOperation>()
+            .Single();
+        Assert.IsNotNull(addInvocation.Instance);
+        Assert.IsNotNull(addInvocation.Instance.Type);
+        Assert.IsTrue(addInvocation.Arguments.All(static argument => argument.Parameter is not null));
+
+        var script = VisitBlock(block);
+        Assert.AreEqual(
+            """
+            {
+              let payload = { child: { name: "John", age: 30 } };
+              let attrs = { role: "banner" };
+              let entries = { title: "hello" };
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_MultiDimensionalArrayAllocation_AllocatesIndependentNestedArrays()
     {
         var block = GetBlockOperation("var grid = new int[2, 3];");
@@ -391,6 +443,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             using System;
             using System.Collections.Generic;
             using System.ComponentModel;
+            using static ECMAScript.Vue3;
 
             public sealed class TestClass
             {
@@ -502,7 +555,8 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             references:
             [
                 .. TestMetadataReferences.Net11,
-                MetadataReference.CreateFromFile(typeof(ECMAScript.SpreadAttribute).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(ECMAScript.SpreadAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)
             ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

@@ -1402,7 +1402,8 @@ public partial class SemanticWalker
 	{
 		var nodes = new List<ObjectLiteralNode>();
 		// 合法 object initializer 只包含成员赋值/成员初始化，collection initializer 则绑定为 Add invocation。
-		// 前两种形态的目标由 Roslyn 保证为 IMemberReferenceOperation。
+		// Member targets、receiver type 和 invocation argument parameter 均由 Roslyn 完整绑定；
+		// 无效源码在 lowering 前已被拒绝，因此这里不保留未绑定 operation 的 fallback。
 		foreach (var initializer in operation.Initializers)
 		{
 			Expression target, value;
@@ -1411,7 +1412,7 @@ public partial class SemanticWalker
 			{
 				var memberReference = (IMemberReferenceOperation)simpleAssignmentOp.Target;
 				orderSymbol = memberReference.Member;
-				var hostType = memberReference.Instance?.Type ?? memberReference.Member.ContainingType;
+				var hostType = memberReference.Instance!.Type!;
 				if (expandRecordMembers &&
 					ShouldOmitStaticNullObjectLiteralMember(simpleAssignmentOp.Value, orderSymbol, hostType))
 				{
@@ -1447,7 +1448,7 @@ public partial class SemanticWalker
 					memberInitializerOp,
 					memberReference.Member,
 					"object literal member initialization",
-					memberReference.Instance?.Type ?? memberReference.Member.ContainingType));
+					memberReference.Instance!.Type!));
 				value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
 			}
 			else
@@ -1459,7 +1460,7 @@ public partial class SemanticWalker
 						ShouldOmitStaticNullObjectLiteralMember(
 							invocationOp.Arguments[1].Value,
 							null,
-							invocationOp.Instance?.Type ?? invocationOp.TargetMethod.ContainingType))
+							invocationOp.Instance!.Type!))
 					{
 						continue;
 					}
@@ -1493,7 +1494,7 @@ public partial class SemanticWalker
 		node = default;
 		var hostType = assignment.Target switch
 		{
-			IPropertyReferenceOperation propertyReferenceOperation => propertyReferenceOperation.Instance?.Type ?? propertyReferenceOperation.Property.ContainingType,
+			IPropertyReferenceOperation propertyReferenceOperation => propertyReferenceOperation.Instance!.Type!,
 			_ => null
 		};
 
@@ -1504,7 +1505,7 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		var keyType = propertyReference.Arguments[0].Parameter?.Type ?? propertyReference.Property.Parameters[0].Type;
+		var keyType = propertyReference.Arguments[0].Parameter!.Type;
 		if (!TryTranslateObjectLiteralPropertyKey(propertyReference.Arguments[0].Value, keyType, argument, out var key, out var computed))
 		{
 			RejectUnsupportedDynamicObjectLiteralKey(
@@ -1535,17 +1536,17 @@ public partial class SemanticWalker
 		if (!IsObjectLiteralAddInvocation(invocation))
 			return false;
 
-		var keyType = invocation.Arguments[0].Parameter?.Type ?? invocation.TargetMethod.Parameters[0].Type;
+		var keyType = invocation.Arguments[0].Parameter!.Type;
 		if (!TryTranslateObjectLiteralPropertyKey(invocation.Arguments[0].Value, keyType, argument, out var key, out var computed))
 		{
 			RejectUnsupportedDynamicObjectLiteralKey(
 				invocation.Arguments[0].Value,
-				invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType,
+				invocation.Instance!.Type!,
 				"object-literal Add(key, ...) initialization");
 			return false;
 		}
 
-		var value = TranslateTupleForTarget(invocation.Arguments[1].Value, invocation.Arguments[1].Parameter?.Type, argument);
+		var value = TranslateTupleForTarget(invocation.Arguments[1].Value, invocation.Arguments[1].Parameter!.Type, argument);
 		var property = new ObjectProperty(
 			PropertyKind.Init,
 			key: key,
@@ -1583,7 +1584,7 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		return IsObjectLiteralHostType(invocation.Instance?.Type ?? targetMethod.ContainingType);
+		return IsObjectLiteralHostType(invocation.Instance!.Type!);
 	}
 
 	private void AppendExpandedInitializerMembers(
