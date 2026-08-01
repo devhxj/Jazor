@@ -6,130 +6,175 @@ using System.Xml.Linq;
 
 var options = VerifyNuGetPackageOptions.Parse(args);
 var repoRoot = ScriptHelpers.RequireRepoRoot();
-var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
 var outputDirectory = ScriptHelpers.ResolvePath(repoRoot, options.OutputDirectory);
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
-
-if (!File.Exists(packageProject))
-{
-    throw new FileNotFoundException("Package project not found: " + packageProject, packageProject);
-}
-
-var project = XDocument.Load(packageProject);
-var packageId = project.Root?
-    .Elements("PropertyGroup")
-    .Elements("PackageId")
-    .Select(static element => element.Value)
-    .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
-packageId ??= Path.GetFileNameWithoutExtension(packageProject);
 
 ScriptHelpers.DeleteDirectoryIfExists(outputDirectory);
 Directory.CreateDirectory(outputDirectory);
 
-await ScriptHelpers.RunDotNetAsync(
-    [
-        "run",
-        "--file",
-        Path.Combine("scripts", "csharp", "publish-nuget.cs"),
+var publishArguments = new List<string>
+{
+    "run",
+    "--file",
+    Path.Combine("scripts", "csharp", "publish-nuget.cs"),
         "--",
         "--configuration",
         options.Configuration,
-        "--output-directory",
-        outputDirectory,
-        "--skip-push"
-    ],
+    "--output-directory",
+    outputDirectory,
+    "--skip-push"
+};
+
+foreach (var packageId in options.PackageIds)
+{
+    publishArguments.Add("--package");
+    publishArguments.Add(packageId);
+}
+
+if (!string.IsNullOrWhiteSpace(options.PackageVersion))
+{
+    publishArguments.Add("--package-version");
+    publishArguments.Add(options.PackageVersion);
+}
+
+await ScriptHelpers.RunDotNetAsync(
+    publishArguments,
     repoRoot,
     dotnetCliHome);
 
-var packageFile = new DirectoryInfo(outputDirectory)
-    .EnumerateFiles($"{packageId}.*.nupkg", SearchOption.TopDirectoryOnly)
-    .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
-    .OrderByDescending(static file => file.LastWriteTimeUtc)
-    .FirstOrDefault();
-
-if (packageFile is null)
+foreach (var packageId in options.PackageIds)
 {
-    throw new InvalidOperationException("Expected package not found under: " + outputDirectory);
+    var packageFile = FindPackageById(outputDirectory, packageId);
+    VerifyPackage(packageFile, packageId, outputDirectory);
 }
 
-var packageVersion = Path.GetFileNameWithoutExtension(packageFile.Name)
-    .Replace(packageId + ".", string.Empty, StringComparison.Ordinal);
-if (string.IsNullOrWhiteSpace(packageVersion) || packageVersion.Equals(Path.GetFileNameWithoutExtension(packageFile.Name), StringComparison.Ordinal))
+static FileInfo FindPackageById(string outputDirectory, string packageId)
 {
-    throw new InvalidOperationException("Unable to resolve package version from produced package: " + packageFile.FullName);
-}
+    var matches = new DirectoryInfo(outputDirectory)
+        .EnumerateFiles("*.nupkg", SearchOption.TopDirectoryOnly)
+        .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+        .Where(file => HasNuspecEntry(file, packageId))
+        .ToArray();
 
-var expandedDirectory = Path.Combine(outputDirectory, "expanded");
-ScriptHelpers.DeleteDirectoryIfExists(expandedDirectory);
-ZipFile.ExtractToDirectory(packageFile.FullName, expandedDirectory);
-
-var requiredPaths = new[]
-{
-    "README.md",
-    "LICENSE.txt",
-    "NOTICE.txt",
-    Path.Combine("buildTransitive", "Jazor.props"),
-    Path.Combine("buildTransitive", "Jazor.targets"),
-    Path.Combine("analyzers", "dotnet", "cs", "Jazor.Analyzer.dll"),
-    Path.Combine("analyzers", "dotnet", "cs", "Jazor.Compiler.dll"),
-    Path.Combine("lib", "net11.0", "ECMAScript.dll"),
-    Path.Combine("lib", "net11.0", "Jazor.Compiler.dll"),
-    Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
-    Path.Combine("tools", "net11.0", "runtimes", "win-x64", "native", "deno.exe")
-};
-
-foreach (var relativePath in requiredPaths)
-{
-    var fullPath = Path.Combine(expandedDirectory, relativePath);
-    if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
+    return matches.Length switch
     {
-        throw new InvalidOperationException("Required package entry is missing: " + relativePath.Replace(Path.DirectorySeparatorChar, '\\'));
+        1 => matches[0],
+        0 => throw new InvalidOperationException(
+            "Expected package '" + packageId + "' was not found under: " + outputDirectory),
+        _ => throw new InvalidOperationException(
+            "Multiple packages with id '" + packageId + "' were found under: " + outputDirectory)
+    };
+}
+
+static bool HasNuspecEntry(FileInfo packageFile, string packageId)
+{
+    using var archive = ZipFile.OpenRead(packageFile.FullName);
+    return archive.GetEntry(packageId + ".nuspec") is not null;
+}
+
+static void VerifyPackage(FileInfo packageFile, string packageId, string outputDirectory)
+{
+    var packageVersion = Path.GetFileNameWithoutExtension(packageFile.Name)
+        .Replace(packageId + ".", string.Empty, StringComparison.Ordinal);
+    if (string.IsNullOrWhiteSpace(packageVersion) || packageVersion.Equals(Path.GetFileNameWithoutExtension(packageFile.Name), StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException("Unable to resolve package version from produced package: " + packageFile.FullName);
     }
+
+    var expandedDirectory = Path.Combine(outputDirectory, "expanded", packageId);
+    ScriptHelpers.DeleteDirectoryIfExists(expandedDirectory);
+    ZipFile.ExtractToDirectory(packageFile.FullName, expandedDirectory);
+
+    foreach (var relativePath in GetRequiredPaths(packageId))
+    {
+        var fullPath = Path.Combine(expandedDirectory, relativePath);
+        if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
+        {
+            throw new InvalidOperationException("Required package entry is missing: " + relativePath.Replace(Path.DirectorySeparatorChar, '\\'));
+        }
+    }
+
+    var nuspecPath = Path.Combine(expandedDirectory, packageId + ".nuspec");
+    if (!File.Exists(nuspecPath))
+    {
+        throw new InvalidOperationException("Nuspec not found after package expansion: " + nuspecPath);
+    }
+
+    var nuspec = XDocument.Load(nuspecPath);
+    var packageNamespace = nuspec.Root?.Name.Namespace ?? XNamespace.None;
+    var metadata = nuspec.Root?.Element(packageNamespace + "metadata")
+        ?? throw new InvalidOperationException("Package nuspec metadata was not found: " + nuspecPath);
+
+    var metadataId = metadata.Element(packageNamespace + "id")?.Value ?? string.Empty;
+    if (!metadataId.Equals(packageId, StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException($"Unexpected package id in nuspec. Expected '{packageId}', got '{metadataId}'.");
+    }
+
+    var metadataVersion = metadata.Element(packageNamespace + "version")?.Value ?? string.Empty;
+    if (!metadataVersion.Equals(packageVersion, StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException($"Unexpected package version in nuspec. Expected '{packageVersion}', got '{metadataVersion}'.");
+    }
+
+    var license = metadata.Element(packageNamespace + "license");
+    if (!string.Equals(license?.Attribute("type")?.Value, "file", StringComparison.Ordinal) ||
+        !string.Equals(license?.Value, "LICENSE.txt", StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException("Package license metadata is not configured as LICENSE.txt.");
+    }
+
+    var readme = metadata.Element(packageNamespace + "readme")?.Value ?? string.Empty;
+    if (!readme.Equals("README.md", StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException("Package readme metadata is not configured as README.md.");
+    }
+
+    Console.WriteLine("Package verification passed: " + packageFile.FullName);
 }
 
-var nuspecPath = Path.Combine(expandedDirectory, packageId + ".nuspec");
-if (!File.Exists(nuspecPath))
+static IReadOnlyList<string> GetRequiredPaths(string packageId)
 {
-    throw new InvalidOperationException("Nuspec not found after package expansion: " + nuspecPath);
+    var commonPaths = new[]
+    {
+        "README.md",
+        "LICENSE.txt",
+        "NOTICE.txt"
+    };
+
+    return packageId switch
+    {
+        "Jazor" => commonPaths.Concat(
+        [
+            Path.Combine("buildTransitive", "Jazor.props"),
+            Path.Combine("buildTransitive", "Jazor.targets"),
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.Analyzer.dll"),
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.Compiler.dll"),
+            Path.Combine("lib", "net11.0", "ECMAScript.dll"),
+            Path.Combine("lib", "net11.0", "Jazor.Compiler.dll"),
+            Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
+            Path.Combine("tools", "net11.0", "runtimes", "win-x64", "native", "deno.exe")
+        ]).ToArray(),
+        "Jazor.Vue" => commonPaths.Concat(
+        [
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll")
+        ]).ToArray(),
+        _ => throw new InvalidOperationException("Package verification is not defined for: " + packageId)
+    };
 }
 
-var nuspec = XDocument.Load(nuspecPath);
-var metadata = nuspec.Root?.Element("metadata")
-    ?? throw new InvalidOperationException("Package nuspec metadata was not found: " + nuspecPath);
-
-var metadataId = metadata.Element("id")?.Value ?? string.Empty;
-if (!metadataId.Equals(packageId, StringComparison.Ordinal))
-{
-    throw new InvalidOperationException($"Unexpected package id in nuspec. Expected '{packageId}', got '{metadataId}'.");
-}
-
-var metadataVersion = metadata.Element("version")?.Value ?? string.Empty;
-if (!metadataVersion.Equals(packageVersion, StringComparison.Ordinal))
-{
-    throw new InvalidOperationException($"Unexpected package version in nuspec. Expected '{packageVersion}', got '{metadataVersion}'.");
-}
-
-var license = metadata.Element("license");
-if (!string.Equals(license?.Attribute("type")?.Value, "file", StringComparison.Ordinal) ||
-    !string.Equals(license?.Value, "LICENSE.txt", StringComparison.Ordinal))
-{
-    throw new InvalidOperationException("Package license metadata is not configured as LICENSE.txt.");
-}
-
-var readme = metadata.Element("readme")?.Value ?? string.Empty;
-if (!readme.Equals("README.md", StringComparison.Ordinal))
-{
-    throw new InvalidOperationException("Package readme metadata is not configured as README.md.");
-}
-
-Console.WriteLine("Package verification passed: " + packageFile.FullName);
-
-internal sealed record VerifyNuGetPackageOptions(string Configuration, string OutputDirectory)
+internal sealed record VerifyNuGetPackageOptions(
+    string Configuration,
+    string OutputDirectory,
+    string? PackageVersion,
+    IReadOnlyList<string> PackageIds)
 {
     public static VerifyNuGetPackageOptions Parse(IReadOnlyList<string> arguments)
     {
         var configuration = "Release";
         var outputDirectory = Path.Combine(".verify-out", "nuget-preflight");
+        string? packageVersion = null;
+        var packageIds = new List<string>();
 
         for (var index = 0; index < arguments.Count; index++)
         {
@@ -146,6 +191,12 @@ internal sealed record VerifyNuGetPackageOptions(string Configuration, string Ou
                 case "-o":
                     outputDirectory = RequireValue(arguments, ref index, argument);
                     break;
+                case "--package-version":
+                    packageVersion = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--package":
+                    packageIds.Add(RequireValue(arguments, ref index, argument));
+                    break;
                 case "--help":
                 case "-h":
                     WriteUsage();
@@ -156,7 +207,12 @@ internal sealed record VerifyNuGetPackageOptions(string Configuration, string Ou
             }
         }
 
-        return new VerifyNuGetPackageOptions(configuration, outputDirectory);
+        if (packageIds.Count == 0)
+        {
+            packageIds.Add("Jazor");
+        }
+
+        return new VerifyNuGetPackageOptions(configuration, outputDirectory, packageVersion, packageIds);
     }
 
     static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
@@ -177,6 +233,8 @@ internal sealed record VerifyNuGetPackageOptions(string Configuration, string Ou
         Console.WriteLine("Options:");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --output-directory <path>");
+        Console.WriteLine("  --package-version <semver>");
+        Console.WriteLine("  --package <Jazor|Jazor.Vue>");
     }
 }
 
