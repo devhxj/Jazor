@@ -30,14 +30,19 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitForEachLoop(IForEachLoopOperation operation, SenseArgument argument)
 	{
-		var left = CreateForEachLoopBinding(operation, argument);
+		var left = BuildForEachLoopBinding(operation, argument);
 		var right = Translate<Expression>(operation.Collection, argument);
 		var body = Translate<Statement>(operation.Body, argument);
 
 		return new ForOfStatement(left, right, body, @await: operation.IsAsynchronous);
 	}
 
-	private Node CreateForEachLoopBinding(IForEachLoopOperation operation, SenseArgument argument)
+	/// <summary>
+	/// Builds the ESTree binding for a Roslyn foreach loop without lowering its collection or body.
+	/// Product hosts can reuse this when they own the surrounding loop artifact but must retain
+	/// the compiler's structural tuple, KeyValuePair, and record deconstruction contract.
+	/// </summary>
+	public Node BuildForEachLoopBinding(IForEachLoopOperation operation, SenseArgument argument)
 	{
 		var targetTuple = GetForEachTargetTuple(operation.LoopControlVariable);
 		if (targetTuple is null)

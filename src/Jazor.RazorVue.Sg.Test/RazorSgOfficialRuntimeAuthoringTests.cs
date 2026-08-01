@@ -341,6 +341,122 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorNamedTupleLoop_PreservesStructuralBindingsOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\NamedTupleLoopRuntime.razor",
+            documentText:
+            """
+            @foreach (var (id, label) in Entries)
+            {
+                <li data-id="@id">@label</li>
+            }
+            """,
+            codeBehindSource:
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/named-tuple-loop-runtime")]
+            public partial class NamedTupleLoopRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyList<(int Id, string Label)> Entries { get; set; } = [];
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.NamedTupleLoopRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/named-tuple-loop-runtime.mjs",
+            observation.ModuleText,
+            "official-named-tuple-loop-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/named-tuple-loop-runtime.mjs";
+
+            test("official Razor named tuple loop preserves entry bindings", () => {
+                const render = component.setup({
+                    entries: [
+                        { id: 7, label: "Audit" },
+                        { id: 9, label: "Deploy" }
+                    ]
+                }, { slots: {} });
+                const nodes = render();
+
+                assert.equal(nodes.length, 2);
+                assert.deepEqual(nodes.map(node => node.name), ["li", "li"]);
+                assert.deepEqual(nodes.map(node => node.props["data-id"]), [7, 9]);
+                assert.deepEqual(nodes.map(node => node.children), [["Audit"], ["Deploy"]]);
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorDictionaryLoop_PreservesMapEntryBindingsOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\DictionaryLoopRuntime.razor",
+            documentText:
+            """
+            @foreach (var (stage, count) in Counts)
+            {
+                <li data-stage="@stage" data-count="@count"></li>
+            }
+            """,
+            codeBehindSource:
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/dictionary-loop-runtime")]
+            public partial class DictionaryLoopRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyDictionary<string, int> Counts { get; set; } = new Dictionary<string, int>();
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.DictionaryLoopRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/dictionary-loop-runtime.mjs",
+            observation.ModuleText,
+            "official-dictionary-loop-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/dictionary-loop-runtime.mjs";
+
+            test("official Razor dictionary loop preserves map entry bindings", () => {
+                const render = component.setup({
+                    counts: new Map([
+                        ["Queued", 2],
+                        ["Complete", 4]
+                    ])
+                }, { slots: {} });
+                const nodes = render();
+
+                assert.equal(nodes.length, 2);
+                assert.deepEqual(nodes.map(node => node.name), ["li", "li"]);
+                assert.deepEqual(nodes.map(node => node.props["data-stage"]), ["Queued", "Complete"]);
+                assert.deepEqual(nodes.map(node => node.props["data-count"]), [2, 4]);
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorComponentSlots_ExposeExecutableNamedAndDefaultSlotCallbacksOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(

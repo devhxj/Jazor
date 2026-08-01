@@ -473,18 +473,27 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private void EmitForEachLoop(IForEachLoopOperation forEachLoop, EmitContext context, RenderState state)
         {
-            if (!TryResolveLoopControlVariable(forEachLoop.LoopControlVariable, out var loopVariable))
-                throw Unsupported(forEachLoop, "Foreach direct render lowering requires a local loop variable.");
-
             var collection = LowerExpression(forEachLoop.Collection, context);
-            var itemName = SanitizeJavaScriptIdentifierPart(loopVariable.Name, "item");
-            var loopContext = context with
+            Node mapperParameter;
+            EmitContext loopContext;
+            if (TryResolveLoopControlVariable(forEachLoop.LoopControlVariable, out var loopVariable))
             {
-                LocalAliases = context.LocalAliases.SetItem(loopVariable, itemName)
-            };
+                var itemName = SanitizeJavaScriptIdentifierPart(loopVariable.Name, "item");
+                mapperParameter = new Identifier(itemName);
+                loopContext = context with
+                {
+                    LocalAliases = context.LocalAliases.SetItem(loopVariable, itemName)
+                };
+            }
+            else
+            {
+                loopContext = CreateForEachDeconstructionContext(forEachLoop, context);
+                mapperParameter = LowerForEachLoopBinding(forEachLoop, loopContext);
+            }
+
             var body = EmitChildContentExpression(forEachLoop.Body, loopContext);
             var mapper = new ArrowFunctionExpression(
-                NodeList.From<Node>(new Identifier(itemName)),
+                NodeList.From<Node>(mapperParameter),
                 body.RenderExpression,
                 expression: true,
                 async: false);
@@ -494,6 +503,64 @@ internal static class RazorSgDirectRenderOperationEmitter
                 mapper));
             state.UsesFragment = state.UsesFragment || body.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
+        }
+
+        private EmitContext CreateForEachDeconstructionContext(IForEachLoopOperation operation, EmitContext context)
+        {
+            var localAliases = context.LocalAliases.ToBuilder();
+            var locals = GetLoopControlLocals(operation.LoopControlVariable).ToArray();
+            if (locals.Length == 0)
+            {
+                throw Unsupported(
+                    operation,
+                    "Foreach direct render lowering requires a local loop variable or a local deconstruction target.");
+            }
+
+            foreach (var local in locals)
+                localAliases[local] = CreateUniqueLocalName(local.Name);
+
+            return context with { LocalAliases = localAliases.ToImmutable() };
+        }
+
+        private Node LowerForEachLoopBinding(IForEachLoopOperation operation, EmitContext context)
+        {
+            var previousContext = _activeExpressionContext;
+            _activeExpressionContext = context;
+            try
+            {
+                var binding = _walker.BuildForEachLoopBinding(operation, context.Argument);
+                if (binding is VariableDeclaration { Declarations.Count: 1 } declaration)
+                    return declaration.Declarations[0].Id;
+
+                throw Unsupported(operation, "Compiler foreach binding did not produce one mapper parameter.");
+            }
+            finally
+            {
+                _activeExpressionContext = previousContext;
+            }
+        }
+
+        private static ImmutableArray<ILocalSymbol> GetLoopControlLocals(IOperation operation)
+        {
+            var seen = new HashSet<ILocalSymbol>(SymbolComparer);
+            var locals = ImmutableArray.CreateBuilder<ILocalSymbol>();
+
+            void Add(ILocalSymbol local)
+            {
+                if (seen.Add(local))
+                    locals.Add(local);
+            }
+
+            if (operation is ILocalReferenceOperation localReference)
+                Add(localReference.Local);
+
+            foreach (var descendant in operation.Descendants())
+            {
+                if (descendant is ILocalReferenceOperation descendantReference)
+                    Add(descendantReference.Local);
+            }
+
+            return locals.ToImmutable();
         }
 
         private DirectRenderFragmentBody EmitChildContentExpression(IOperation operation, EmitContext context)
