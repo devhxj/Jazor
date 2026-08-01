@@ -9,7 +9,7 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8113 / 8113 通过
+- `Jazor.CompilerTest`：8116 / 8116 通过
 - `Jazor.Compiler` 行覆盖：13827 / 14341（96.42%）
 - `Jazor.Compiler` 分支覆盖：5940 / 6543（90.78%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`

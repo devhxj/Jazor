@@ -558,6 +558,99 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorGenericItemTemplate_ExecutesTypedSlotCallbackOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ReleaseTemplateRuntime.razor",
+            documentText:
+            """
+            @using Demo.Components
+
+            <ReleaseTemplateList Entries="@Entries">
+                <ItemTemplate Context="release">
+                    <li data-id="@release.Id">@release.Label</li>
+                </ItemTemplate>
+            </ReleaseTemplateList>
+            """,
+            codeBehindSource:
+            """
+            using System.Collections.Generic;
+            using Demo.Models;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+
+            namespace Demo.Models
+            {
+                public sealed record ReleaseEntry(int Id, string Label);
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScriptModule("./components/release-template-list-runtime")]
+                [VueProp(nameof(Entries), Name = "entries")]
+                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Models.ReleaseEntry", ContextParameterName = "release")]
+                public sealed class ReleaseTemplateList : ComponentBase, IVueComponent
+                {
+                    [Parameter] public IReadOnlyList<ReleaseEntry> Entries { get; set; } = [];
+                    [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                    }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/release-template-runtime")]
+                public partial class ReleaseTemplateRuntime : ComponentBase, IVueComponent
+                {
+                    [Parameter] public IReadOnlyList<ReleaseEntry> Entries { get; set; } = [];
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ReleaseTemplateRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "RenderFragment<global::Demo.Models.ReleaseEntry>", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/release-template-runtime.mjs",
+            observation.ModuleText,
+            "official-generic-item-template-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/release-template-runtime.mjs";
+            import templateList from "./components/release-template-list-runtime.mjs";
+
+            test("official Razor generic item template preserves props and typed slot content", () => {
+                const render = component.setup({
+                    entries: [{ id: 7, label: "Audit" }]
+                }, { slots: {} });
+                const list = render();
+
+                assert.equal(list.name, templateList);
+                assert.deepEqual(list.props.entries, [{ id: 7, label: "Audit" }]);
+                assert.equal(typeof list.children.item, "function");
+
+                const nodes = list.children.item({ id: 9, label: "Deploy" });
+                assert.equal(Array.isArray(nodes), true);
+                assert.equal(nodes.length, 1);
+                assert.equal(nodes[0].name, "li");
+                assert.equal(nodes[0].props["data-id"], 9);
+                assert.deepEqual(nodes[0].children, ["Deploy"]);
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["components/release-template-list-runtime.mjs"] = "export default { name: \"release-template-list-runtime\" };"
+            });
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorComponentReference_UpdatesStateUsedByNextRenderOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
