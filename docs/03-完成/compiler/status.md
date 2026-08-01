@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8116 / 8116 通过
-- `Jazor.Compiler` 行覆盖：13827 / 14341（96.42%）
-- `Jazor.Compiler` 分支覆盖：5940 / 6543（90.78%）
+- `Jazor.CompilerTest`：8117 / 8117 通过
+- `Jazor.Compiler` 行覆盖：13828 / 14341（96.42%）
+- `Jazor.Compiler` 分支覆盖：5941 / 6543（90.80%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。

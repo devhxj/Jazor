@@ -502,6 +502,30 @@ public sealed class SemanticWalkerHostRewriteTest
     }
 
     [TestMethod]
+    public void RewriteParameterReference_HostProjectsClaimedParameterAndPreservesOtherParameters()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                int TestMethod(int count, int offset)
+                {
+                    return count + offset;
+                }
+            }
+            """);
+        var host = new ParameterReferenceProjectionHost("count");
+        var walker = new SemanticWalker(true) { Host = host };
+
+        var script = walker.Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        _ = new Acornima.Parser().ParseModule($"function test(count, offset) {script}");
+        StringAssert.Contains(script, "return props.count + offset;", StringComparison.Ordinal);
+        Assert.AreEqual(1, host.RewriteCount);
+    }
+
+    [TestMethod]
     public void RewriteMethodReferencePreorder_HostPrecedesCompilerOwnedCallbackLowering()
     {
         var block = GetBlockOperation(
@@ -664,6 +688,24 @@ public sealed class SemanticWalkerHostRewriteTest
 
             RewriteCount++;
             return new Identifier(_alias);
+        }
+    }
+
+    private sealed class ParameterReferenceProjectionHost(string parameterName) : SemanticWalkerHost
+    {
+        public int RewriteCount { get; private set; }
+
+        public override Expression? RewriteParameterReference(IParameterReferenceOperation operation, SenseArgument argument)
+        {
+            if (!string.Equals(operation.Parameter.Name, parameterName, StringComparison.Ordinal))
+                return null;
+
+            RewriteCount++;
+            return new MemberExpression(
+                new Identifier("props"),
+                new Identifier(operation.Parameter.Name),
+                computed: false,
+                optional: false);
         }
     }
 
