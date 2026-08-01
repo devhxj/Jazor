@@ -232,7 +232,30 @@ internal static class PatternLoweringScenarioCatalog
                             break;
                     }
                     """,
-                ["typeof v$0 === \"string\"", "PatternScenarios.consume(value)"])
+                ["typeof v$0 === \"string\"", "PatternScenarios.consume(value)"]),
+            new PatternLoweringScenario(
+                "pattern-lowering.switch.case-local-guard",
+                "family=pattern-switch;pattern=type-capture;guard=property;body=local-declaration;default=statement",
+                """
+                    object value = "ready";
+                    switch (value)
+                    {
+                        case string text when text.Length > 3:
+                            var normalized = text.ToUpperInvariant();
+                            Consume(normalized);
+                            break;
+                        default:
+                            Consume("other");
+                            break;
+                    }
+                    """,
+                [
+                    "typeof v$0 === \"string\"",
+                    "text.length > 3",
+                    "let normalized = text.toUpperCase();",
+                    "PatternScenarios.consume(normalized);",
+                    "PatternScenarios.consume(\"other\");"
+                ])
         ]);
     }
 

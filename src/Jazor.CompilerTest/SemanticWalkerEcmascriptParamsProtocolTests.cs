@@ -122,6 +122,26 @@ internal static class EcmascriptParamsProtocolCatalog
             ["let values = Array.of(EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second());"],
             ["EcmascriptParamsProtocolScenarios.first()", "EcmascriptParamsProtocolScenarios.second()"]),
         Case(
+            "array-creation",
+            "call-form=normal;argument=array-creation;lowering=expanded-elements;evaluation=left-to-right",
+                """
+                        var values = ECMAScript.Array<int>.Of(new[] { First(), Second() });
+                """,
+            ["let values = Array.of(EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second());"],
+            ["EcmascriptParamsProtocolScenarios.first()", "EcmascriptParamsProtocolScenarios.second()"]),
+        Case(
+            "collection-expression-spread",
+            "call-form=normal;argument=collection-expression-spread;lowering=expanded-elements;evaluation=left-to-right",
+                """
+                        int[] source = [First(), Second()];
+                        var values = ECMAScript.Array<int>.Of([0, ..source, 3]);
+                """,
+            [
+                "let source = [EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second()];",
+                "let values = Array.of(0, ...source, 3);"
+            ],
+            ["let source = [", "Array.of(0, ...source, 3)"]),
+        Case(
             "array-variable-spread",
             "call-form=normal;argument=array-local;lowering=spread;source=evaluated-once",
             """
