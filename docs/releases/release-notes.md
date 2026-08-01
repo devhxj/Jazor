@@ -4,6 +4,7 @@
 
 - Razor-to-Vue now keeps ASP.NET Components catalog declarations and Razor-specific lowering inside the `Jazor.Vue` product boundary while retaining explicit, typed compiler extension contracts for product integrations.
 - Official Razor source-generator output continues to produce direct Vue render-function `.mjs` artifacts; SFC, render-context marker protocols, and generated-builder fallbacks are not part of the supported output path.
+- Dynamic `@attributes` on Razor components now maps descriptor-owned C# parameter names for plain objects, `Map` values, and KeyValuePair-shaped sequences before Vue VNode props are created, while explicit `@bind` values retain precedence.
 - The JazorAdmin reference application now verifies local package consumption, native and `VueInject` builds, generated artifacts, and browser mounting through the packaged Deno host.
 - The compiler quality gate now verifies 8,113 focused regression scenarios with 96.42% line coverage and 90.78% branch coverage, above its 8,000 / 95% / 90% release thresholds.
 

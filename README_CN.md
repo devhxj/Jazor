@@ -74,6 +74,7 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 
 - Razor-to-Vue 已将 ASP.NET Components catalog 与 Razor 专属 lowering 收敛在 `Jazor.Vue` 产品边界，同时保持核心转译器的受支持扩展契约。
 - 官方 Razor 源生成器输出持续直接生成 Vue render-function `.mjs` 产物，不回退为 SFC、render-context 或生成 builder 协议。
+- Razor 组件的动态 `@attributes` 现可接收对象、`Map` 和 KeyValuePair 形态序列；组件参数会先按 Vue descriptor 映射，且显式 `@bind` 保持优先级。
 - JazorAdmin 参考应用已通过打包 Deno host 验证本地包消费、native 与 `VueInject` 构建、生成产物和浏览器挂载。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
@@ -81,7 +82,7 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.36
+dotnet add package Jazor --version 0.1.37
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -90,8 +91,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.36" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.36" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.37" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.37" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -99,11 +100,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.36" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.36" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.36" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.36" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.36" />
+  <PackageReference Include="Jazor" Version="0.1.37" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.37" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.37" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.37" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.37" />
 </ItemGroup>
 ```
 

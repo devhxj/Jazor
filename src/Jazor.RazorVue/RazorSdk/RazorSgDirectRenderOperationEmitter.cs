@@ -97,6 +97,7 @@ internal static class RazorSgDirectRenderOperationEmitter
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
         private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
+        private string? _componentAttributeNormalizerName;
         private bool _usesMergeProps;
         private bool _usesFragment;
         private bool _usesStaticVNode;
@@ -910,8 +911,32 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (TryEmitKnownMultipleAttributes(invocation.Arguments[1].Value, context, frame))
                 return;
 
-            frame.AddMultipleAttributes(LowerExpression(invocation.Arguments[1].Value, context));
+            var attributes = LowerExpression(invocation.Arguments[1].Value, context);
+            if (frame is ComponentFrame component)
+                // Runtime splats have no C# operation per entry. Normalize them in the
+                // generated setup scope so descriptor-owned Vue names still win.
+                attributes = NormalizeDynamicComponentAttributes(component, attributes);
+
+            frame.AddMultipleAttributes(attributes);
             _usesMergeProps = true;
+        }
+
+        private Expression NormalizeDynamicComponentAttributes(
+            ComponentFrame component,
+            Expression attributes)
+        {
+            var helperName = _componentAttributeNormalizerName;
+            if (helperName is null)
+            {
+                helperName = CreateUniqueLocalName("__normalizeComponentAttributes");
+                _componentAttributeNormalizerName = helperName;
+                _preludeStatements.Add(BuildComponentAttributeNormalizer(helperName));
+            }
+
+            return Call(
+                new Identifier(helperName),
+                attributes,
+                component.CreateParameterNameMapExpression());
         }
 
         private void EmitSetAttributeValue(IInvocationOperation invocation, EmitContext context, RenderState state)
@@ -2822,6 +2847,132 @@ internal static class RazorSgDirectRenderOperationEmitter
             ? eventName
             : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
 
+    private static FunctionDeclaration BuildComponentAttributeNormalizer(string helperName)
+    {
+        var attributes = new Identifier("attributes");
+        var parameterNames = new Identifier("parameterNames");
+        var entries = new Identifier("entries");
+        var result = new Identifier("result");
+        var entry = new Identifier("entry");
+        var name = new Identifier("name");
+        var value = new Identifier("value");
+
+        var entryName = new MemberExpression(
+            entry,
+            new NumericLiteral(0, "0"),
+            computed: true,
+            optional: false);
+        var entryValue = new MemberExpression(
+            entry,
+            new NumericLiteral(1, "1"),
+            computed: true,
+            optional: false);
+        var isEntryArray = Call(
+            new MemberExpression(
+                new Identifier("Array"),
+                new Identifier("isArray"),
+                computed: false,
+                optional: false),
+            entry);
+        var pairName = new ConditionalExpression(
+            isEntryArray,
+            entryName,
+            new LogicalExpression(
+                Operator.NullishCoalescing,
+                new MemberExpression(entry, new Identifier("key"), computed: false, optional: false),
+                new MemberExpression(entry, new Identifier("Key"), computed: false, optional: false)));
+        var pairValue = new ConditionalExpression(
+            isEntryArray,
+            entryValue,
+            new LogicalExpression(
+                Operator.NullishCoalescing,
+                new MemberExpression(entry, new Identifier("value"), computed: false, optional: false),
+                new MemberExpression(entry, new Identifier("Value"), computed: false, optional: false)));
+
+        var camelCaseName = new NonLogicalBinaryExpression(
+            Operator.Addition,
+            Call(
+                new MemberExpression(
+                    Call(
+                        new MemberExpression(name, new Identifier("charAt"), computed: false, optional: false),
+                        new NumericLiteral(0, "0")),
+                    new Identifier("toLowerCase"),
+                    computed: false,
+                    optional: false)),
+            Call(
+                new MemberExpression(name, new Identifier("slice"), computed: false, optional: false),
+                new NumericLiteral(1, "1")));
+        var runtimeName = new LogicalExpression(
+            Operator.NullishCoalescing,
+            new MemberExpression(parameterNames, name, computed: true, optional: false),
+            camelCaseName);
+
+        var hasNoAttributes = new LogicalExpression(
+            Operator.LogicalOr,
+            new NonLogicalBinaryExpression(Operator.StrictEquality, attributes, Null()),
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                attributes,
+                new Identifier("undefined")));
+        var iterableEntries = new LogicalExpression(
+            Operator.LogicalOr,
+            new NonLogicalBinaryExpression(Operator.InstanceOf, attributes, new Identifier("Map")),
+            Call(
+                new MemberExpression(
+                    new Identifier("Array"),
+                    new Identifier("isArray"),
+                    computed: false,
+                    optional: false),
+                attributes));
+        var objectEntries = Call(
+            new MemberExpression(
+                new Identifier("Object"),
+                new Identifier("entries"),
+                computed: false,
+                optional: false),
+            attributes);
+        var entriesExpression = new ConditionalExpression(iterableEntries, attributes, objectEntries);
+        var loopBody = new NestedBlockStatement(NodeList.From<Statement>(
+            new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(name, pairName))),
+            new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(value, pairValue))),
+            new NonSpecialExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(result, runtimeName, computed: true, optional: false),
+                value))));
+
+        var body = new FunctionBody(
+            NodeList.From<Statement>(
+                new IfStatement(
+                    hasNoAttributes,
+                    new ReturnStatement(new ObjectExpression(NodeList.Empty<Node>())),
+                    null),
+                new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(entries, entriesExpression))),
+                new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(result, new ObjectExpression(NodeList.Empty<Node>())))),
+                new ForOfStatement(
+                    new VariableDeclaration(
+                        VariableDeclarationKind.Const,
+                        NodeList.From(new VariableDeclarator(entry, null))),
+                    entries,
+                    loopBody,
+                    @await: false),
+                new ReturnStatement(result)),
+            strict: true);
+        return new FunctionDeclaration(
+            new Identifier(helperName),
+            NodeList.From<Node>(attributes, parameterNames),
+            body,
+            generator: false,
+            async: false);
+    }
+
     private static Expression BuildSlotInvocationExpression(
         string slotName,
         params Expression[] arguments)
@@ -3363,6 +3514,11 @@ internal static class RazorSgDirectRenderOperationEmitter
             => _parameterNameMap.TryGetValue(name, out var mapped)
                 ? mapped
                 : NormalizeDirectComponentParameterName(name);
+
+        public Expression CreateParameterNameMapExpression()
+            => new ObjectExpression(NodeList.From<Node>(_parameterNameMap
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .Select(static pair => (Node)CreateObjectProperty(pair.Key, StringLiteral(pair.Value)))));
 
         public string NormalizeSlotName(string name)
         {
