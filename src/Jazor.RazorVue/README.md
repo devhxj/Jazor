@@ -25,7 +25,7 @@
 - 后续 render-function lowering 通过 `Jazor.Compiler` 的正式翻译入口消费这里提供的 Roslyn 语义；C# expression/member/function 语义不在适配层手拼 JavaScript 或 Acornima AST。
 - direct-render 的 `foreach` 解构绑定复用 `SemanticWalker.BuildForEachLoopBinding`：tuple、`KeyValuePair<TKey,TValue>` 与 structural record 按核心编译器的运行时 shape 生成 mapper 参数；未声明稳定结构的自定义 `Deconstruct` 保持显式不支持。
 - production artifact 是 Vue render-function `.mjs`，不回退为 SFC、render-context marker protocol、`scope.buildRenderTree(builder)` 或 `builder.finish()`。
-- DOM `@bind` 只接受当前组件 state 的直接赋值；官方 Razor SDK 为 `@bind:after` 和 `@bind:set` 生成的 `RuntimeHelpers.CreateInferredBindSetter<T>(Func<T, Task>, T)` 是唯一额外支持的 binder protocol，lambda 与当前组件单参方法组仍交由 compiler lowering 以保原始调用顺序。任意手写多语句 `CreateBinder` handler 不作为兼容 fallback。
+- DOM `@bind` 只接受当前组件 state 的直接赋值；官方 Razor SDK 为 `@bind:after` 和 `@bind:set` 生成的 `RuntimeHelpers.CreateInferredBindSetter<T>(Action<T>, T)` 或 `RuntimeHelpers.CreateInferredBindSetter<T>(Func<T, Task>, T)` 是唯一额外支持的 binder protocol，lambda 与当前组件单参方法组仍交由 compiler lowering 以保原始调用顺序。任意手写多语句 `CreateBinder` handler 不作为兼容 fallback。
 - `.mjs`、source map、manifest 和 bundle 的物化属于 `Jazor.Emit`。
 
 ## Current Layout

@@ -317,9 +317,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (callback is null)
             return null;
 
-        // CreateInferredBindSetter invokes a Func<T, Task> with the converted
-        // DOM value. The wrapper is protocol framing only; the method-group
-        // expression itself still comes from SemanticWalker lowering.
+        // Razor SDK CreateInferredBindSetter accepts Action<T> and Func<T, Task>.
+        // The wrapper is protocol framing only; SemanticWalker still lowers the
+        // method group so its ordinary C# call semantics are retained.
         var value = new Identifier("__value");
         return new ArrowFunctionExpression(
             NodeList.From<Node>(value),

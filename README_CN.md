@@ -57,7 +57,7 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| RazorVue SG 场景 | 4469 / 4469 通过 | 至少通过 4000 项 |
+| RazorVue SG 场景 | 4470 / 4470 通过 | 至少通过 4000 项 |
 | 行覆盖率 | 8074 / 8641（93.44%） | 90% |
 | 分支覆盖率 | 3527 / 4215（83.68%） | 80% |
 
@@ -89,9 +89,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 ### 2026-08-02
 
 - `Nullable<T>.Value` 现由编译器内置 lowering 处理，保证 receiver 只求值一次，并仅在空 carrier 上抛出稳定异常；嵌套列表模式会先完成 null 检查，再访问自定义长度成员。
-- RazorVue 直接渲染生成会保留静态 Razor 组件的源映射路径，支持官方异步 `@bind:after` 协议，并在并发或 tiered-JIT 的 generator driver 中持续保持完成阶段 hook。
+- RazorVue 直接渲染生成会保留静态 Razor 组件的源映射路径，支持官方异步 `@bind:after` 协议以及同步/异步 `@bind:set` 方法组，并在并发或 tiered-JIT 的 generator driver 中持续保持完成阶段 hook。
 - JazorAdmin 现在作为更完整的原生 RazorVue 参考应用，包含 dashboard、release queue、audit、workspace 与 settings 页面；发布表格支持受控搜索、排序、分页、选择与批量操作。
-- Compiler 门禁已验证 8,158 个场景，行覆盖率 96.43%、分支覆盖率 90.71%；RazorVue 门禁已验证 4,469 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- Compiler 门禁已验证 8,158 个场景，行覆盖率 96.43%、分支覆盖率 90.71%；RazorVue 门禁已验证 4,470 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 ### 2026-08-01
 

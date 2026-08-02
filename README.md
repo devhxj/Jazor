@@ -57,7 +57,7 @@ Official Razor SG output is tested through Roslyn binding, direct Vue render-fun
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| RazorVue SG scenarios | 4469 / 4469 passed | 4000 passed |
+| RazorVue SG scenarios | 4470 / 4470 passed | 4000 passed |
 | Line coverage | 8074 / 8641 (93.44%) | 90% |
 | Branch coverage | 3527 / 4215 (83.68%) | 80% |
 
@@ -89,9 +89,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 ### 2026-08-02
 
 - `Nullable<T>.Value` now uses compiler-owned lowering that preserves single receiver evaluation and throws a stable exception only for empty carriers; nested list patterns keep null checks ahead of custom length access.
-- RazorVue direct render generation preserves static Razor source-map paths, supports the official asynchronous `@bind:after` protocol, and keeps generator completion patched across concurrent or tiered-JIT driver invocations.
+- RazorVue direct render generation preserves static Razor source-map paths, supports official asynchronous `@bind:after` plus synchronous and asynchronous `@bind:set` method groups, and keeps generator completion patched across concurrent or tiered-JIT driver invocations.
 - JazorAdmin now serves as a broader native RazorVue reference application with dashboard, release queue, audit, workspace, and settings pages; its release table supports controlled search, sort, pagination, selection, and bulk actions.
-- The compiler gate verifies 8,158 scenarios at 96.43% line and 90.71% branch coverage; the RazorVue gate verifies 4,469 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- The compiler gate verifies 8,158 scenarios at 96.43% line and 90.71% branch coverage; the RazorVue gate verifies 4,470 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 ### 2026-08-01
 

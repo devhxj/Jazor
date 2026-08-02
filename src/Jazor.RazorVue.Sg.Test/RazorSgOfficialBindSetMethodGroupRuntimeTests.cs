@@ -71,4 +71,70 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
             });
             """);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughSynchronousSetterOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ReleaseNameSyncEditor.razor",
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components.Web
+
+            <input @bind:get="ReleaseName" @bind:set="SetReleaseName" @bind:event="oninput" data-saved="@SavedReleaseName" />
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/release-name-sync-editor-runtime")]
+            public partial class ReleaseNameSyncEditor : ComponentBase, IVueComponent
+            {
+                private string ReleaseName { get; set; } = "Draft release";
+
+                private string SavedReleaseName { get; set; } = "none";
+
+                private void SetReleaseName(string value)
+                {
+                    ReleaseName = value.Trim();
+                    SavedReleaseName = "saved:" + ReleaseName;
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ReleaseNameSyncEditor");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "SetReleaseName", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "setReleaseName(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.releaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.savedReleaseName", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/release-name-sync-editor-runtime.mjs",
+            observation.ModuleText,
+            "official-release-name-sync-editor-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/release-name-sync-editor-runtime.mjs";
+
+            test("official Razor bind:set synchronous method group updates state before the handler returns", () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                assert.equal(initial.name, "input");
+                assert.equal(initial.props.value, "Draft release");
+                assert.equal(initial.props["data-saved"], "none");
+                assert.equal(typeof initial.props.onInput, "function");
+
+                assert.equal(initial.props.onInput({ target: { value: "  Release approved  " } }), undefined);
+
+                const updated = render();
+                assert.equal(updated.props.value, "Release approved");
+                assert.equal(updated.props["data-saved"], "saved:Release approved");
+            });
+            """);
+    }
 }
