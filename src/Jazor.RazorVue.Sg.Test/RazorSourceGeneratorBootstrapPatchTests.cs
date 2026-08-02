@@ -9,10 +9,24 @@ using Microsoft.NET.Sdk.Razor.SourceGenerators;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
+[DoNotParallelize] // Verifies a process-wide native hook; the test itself exercises concurrent drivers.
 public sealed class RazorSourceGeneratorBootstrapPatchTests
 {
     [TestMethod]
     public void DriverCompletionHook_BindsOfficialGeneratedCSharpWithoutRazorHostOutputs()
+        => AssertDriverCompletionCatalog();
+
+    [TestMethod]
+    public async Task DriverCompletionHook_ConcurrentOfficialRazorDrivers_AllReceiveCatalogs()
+    {
+        var tasks = Enumerable
+            .Range(0, Math.Max(4, Environment.ProcessorCount))
+            .Select(_ => Task.Run(AssertDriverCompletionCatalog));
+
+        await Task.WhenAll(tasks);
+    }
+
+    private static void AssertDriverCompletionCatalog()
     {
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
@@ -68,6 +82,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             0,
             outputCompilation.GetDiagnostics().Count(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error),
             string.Join(Environment.NewLine, outputCompilation.GetDiagnostics()));
+
     }
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText

@@ -18,7 +18,8 @@ internal sealed class RazorVueSemanticWalkerHost : CompositeSemanticWalkerHost
         IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
-        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null)
+        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
         : base(
             new CurrentComponentSemanticWalkerHost(
                 componentType,
@@ -27,7 +28,8 @@ internal sealed class RazorVueSemanticWalkerHost : CompositeSemanticWalkerHost
                 parameterRuntimeNames,
                 memberRuntimeNames,
                 parameterReferenceRewriter,
-                localReferenceRewriter),
+                localReferenceRewriter,
+                propertyReferenceRewriter),
             new RenderTreeBuilderSemanticWalkerHost(),
             ChildrenToSlotSemanticWalkerHost.Instance)
     {

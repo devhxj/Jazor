@@ -625,7 +625,7 @@ export function set_Property(value) {
         // Assert
 Assert.AreEqual(
 @"export class NestedClass {
-  field;
+  field = 0;
   constructor(value) {
     this.field = value;
   }
@@ -661,7 +661,7 @@ Assert.AreEqual(
 
 Assert.AreEqual(
 @"export class NestedClass {
-  field;
+  field = 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -887,7 +887,7 @@ Assert.AreEqual(
 
 AssertScriptEqual(
 $@"export class NestedClass {{
-  value;
+  value = 0;
   constructor() {{
     let $args = arguments;
     let $ctor = $args[0];
@@ -954,7 +954,7 @@ $@"export class NestedClass {{
 
 AssertScriptEqual(
 $@"export class NestedClass {{
-  value;
+  value = null;
   constructor() {{
     let $args = arguments;
     let $ctor = $args[0];
@@ -1020,7 +1020,7 @@ export function createString() {{
 
 AssertScriptEqual(
 $@"export class NestedClass {{
-  value;
+  value = 0;
   constructor() {{
     let $args = arguments;
     let $ctor = $args[0];
@@ -1184,7 +1184,7 @@ export class Level3 extends Level2 {
 
 AssertScriptEqual(
 @"export class BaseClass {
-  field;
+  field = 0;
   constructor(value) {
     this.field = value;
   }
@@ -1238,7 +1238,7 @@ export class NestedClass extends BaseClass {
 
 AssertScriptEqual(
 $@"export class BaseClass {{
-  field;
+  field = 0;
   constructor(value) {{
     this.field = value;
   }}
@@ -1309,7 +1309,7 @@ export class NestedClass extends BaseClass {{
 
 AssertScriptEqual(
 $@"export class BaseClass {{
-  field;
+  field = null;
   constructor() {{
     let $args = arguments;
     let $ctor = $args[0];
@@ -1378,7 +1378,7 @@ export class NestedClass extends BaseClass {{
 
 AssertScriptEqual(
 $@"export class BaseClass {{
-  field;
+  field = 0;
   constructor() {{
     let $args = arguments;
     let $ctor = $args[0];
@@ -1521,7 +1521,7 @@ export class NestedClass extends BaseClass {
 
         AssertScriptEqual(
 $@"export class BaseClass {{
-  #{backingFieldName};
+  #{backingFieldName} = 0;
   get value() {{
     return this.#{backingFieldName};
   }}
@@ -1889,7 +1889,7 @@ $@"export class Item {{
   constructor(value) {{
     this.#{backingFieldName} = value;
   }}
-  #{backingFieldName};
+  #{backingFieldName} = null;
   get value() {{
     return this.#{backingFieldName};
   }}
@@ -2061,8 +2061,8 @@ $@"export class Item {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "#_value;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "static #_total;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "#_value = 0;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "static #_total = 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "this.#_value = value;", StringComparison.Ordinal);
         StringAssert.Contains(script, "Counter.#_total += value;", StringComparison.Ordinal);
         StringAssert.Contains(script, "return this.#_value + Counter.#_total;", StringComparison.Ordinal);
@@ -2348,7 +2348,7 @@ AssertScriptEqual(
 
 AssertScriptEqual(
 @"export class NestedClass {
-  value;
+  value = 0;
   constructor() {
     this.value = 1;
   }

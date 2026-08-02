@@ -59,4 +59,87 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
         Assert.IsFalse(script.Contains("AddComponentReferenceCapture", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorComponentReference_TracksMountAndUnmountOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ReferenceRuntime.razor",
+            documentText:
+            """
+            <div>
+                <span>@(child is null ? "waiting" : child.Status)</span>
+                <ReferenceChild @ref="child" />
+            </div>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/reference-runtime")]
+            public partial class ReferenceRuntime : ComponentBase, IVueComponent
+            {
+                private ReferenceChild? child;
+            }
+
+            [ECMAScriptModule("./components/reference-child")]
+            public partial class ReferenceChild : ComponentBase, IVueComponent
+            {
+                public string Status { get; set; } = string.Empty;
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ReferenceRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "AddComponentReferenceCapture", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/reference-runtime.mjs",
+            observation.ModuleText,
+            "official-reference-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/reference-runtime.mjs";
+
+            test("official Razor component references follow Vue mount and unmount callbacks", () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                const initialStatus = initial.children.find(node => node.name === "span");
+                const initialChild = initial.children.find(node => node.name?.name === "reference-child");
+                assert.equal(initial.name, "div");
+                assert.ok(initialStatus);
+                assert.ok(initialChild);
+                assert.equal(initialStatus.name, "span");
+                assert.deepEqual(initialStatus.children, ["waiting"]);
+                assert.equal(initialChild.name.name, "reference-child");
+
+                initialChild.props.ref({ status: "attached" });
+
+                const attached = render();
+                const attachedStatus = attached.children.find(node => node.name === "span");
+                const attachedChild = attached.children.find(node => node.name?.name === "reference-child");
+                assert.ok(attachedStatus);
+                assert.ok(attachedChild);
+                assert.deepEqual(attachedStatus.children, ["attached"]);
+
+                attachedChild.props.ref(null);
+
+                const detached = render();
+                const detachedStatus = detached.children.find(node => node.name === "span");
+                assert.ok(detachedStatus);
+                assert.deepEqual(detachedStatus.children, ["waiting"]);
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["components/reference-child.mjs"] = "export default { name: \"reference-child\" };"
+            });
+    }
 }

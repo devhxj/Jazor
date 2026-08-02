@@ -15,7 +15,10 @@ internal static class RazorSourceGeneratorTailOutput
         catalogSource = null;
         failure = null;
 
-        var components = RazorSgComponentCandidateSelector.DiscoverCurrentComponents(compilation);
+        // Only components with a bindable render body produce artifacts. Module-marked
+        // container contracts and library implementations participate through imports, while
+        // handwritten BuildRenderTree components remain valid tail output roots.
+        var components = RazorSgComponentCandidateSelector.DiscoverTailOutputComponents(compilation);
         if (components.IsDefaultOrEmpty)
             return true;
 

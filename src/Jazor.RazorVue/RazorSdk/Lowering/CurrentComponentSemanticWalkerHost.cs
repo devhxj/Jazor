@@ -39,6 +39,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private readonly IReadOnlyDictionary<ISymbol, string>? _memberRuntimeNames;
     private readonly Func<IParameterReferenceOperation, SenseArgument, Expression?>? _parameterReferenceRewriter;
     private readonly Func<ILocalReferenceOperation, SenseArgument, Expression?>? _localReferenceRewriter;
+    private readonly Func<IPropertyReferenceOperation, SenseArgument, Expression?>? _propertyReferenceRewriter;
 
     public CurrentComponentSemanticWalkerHost(
         INamedTypeSymbol componentType,
@@ -47,7 +48,8 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
-        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null)
+        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
     {
         _componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
         if (string.IsNullOrWhiteSpace(stateIdentifier))
@@ -61,6 +63,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         _memberRuntimeNames = memberRuntimeNames;
         _parameterReferenceRewriter = parameterReferenceRewriter;
         _localReferenceRewriter = localReferenceRewriter;
+        _propertyReferenceRewriter = propertyReferenceRewriter;
     }
 
     public override Expression? RewriteParameterReference(
@@ -162,6 +165,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     {
         if (!IsCurrentComponentProperty(operation.Property, operation.Instance))
             return null;
+
+        if (_propertyReferenceRewriter?.Invoke(operation, argument) is { } projected)
+            return projected;
 
         if (operation.Property.IsIndexer || arguments.Count > 0)
         {
@@ -846,25 +852,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            IsCurrentComponentInstance(property.IsStatic, instance);
 
     private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
-        => IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType);
-
-    private bool IsDeclaredOnCurrentComponentHierarchy(INamedTypeSymbol? containingType)
-    {
-        if (containingType is null)
-            return false;
-
-        for (var current = _componentType; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(
-                    containingType.OriginalDefinition,
-                    current.OriginalDefinition))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+        => RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType);
 
     private static bool IsCurrentComponentInstance(bool isStatic, IOperation? instance)
     {

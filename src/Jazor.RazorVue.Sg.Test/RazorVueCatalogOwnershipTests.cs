@@ -10,6 +10,7 @@ public sealed class RazorVueCatalogOwnershipTests
         var catalogDirectory = Path.Combine(repositoryRoot, "src", "Jazor.RazorVue", "RazorSdk", "Catalog");
         var clrDirectory = Path.Combine(repositoryRoot, "src", "Jazor.CLR");
 
+        Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "ComponentBaseCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "EventCallbackCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "RenderTreeBuilderCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "WebRenderTreeBuilderExtensionsCatalog.cs")));

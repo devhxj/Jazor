@@ -836,23 +836,34 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     private static ObjectExpression? BuildComponentParameterNameMapExpression(INamedTypeSymbol componentType)
     {
         var names = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        foreach (var attribute in componentType.GetAttributes())
+        // Keep compiler-host fallback aligned with the direct-render component contract.
+        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
         {
-            var attributeName = attribute.AttributeClass?.ToDisplayString();
-            if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+            var currentNames = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            foreach (var attribute in current.GetAttributes())
             {
-                AddDescriptorName(attribute, names, listener: false);
-                continue;
+                var attributeName = attribute.AttributeClass?.ToDisplayString();
+                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+                {
+                    AddDescriptorName(attribute, currentNames, listener: false);
+                    continue;
+                }
+
+                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+                {
+                    AddDescriptorName(attribute, currentNames, listener: true);
+                    continue;
+                }
+
+                if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
+                    AddSlotDescriptorName(attribute, currentNames);
             }
 
-            if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+            foreach (var entry in currentNames)
             {
-                AddDescriptorName(attribute, names, listener: true);
-                continue;
+                if (!names.ContainsKey(entry.Key))
+                    names.Add(entry.Key, entry.Value);
             }
-
-            if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
-                AddSlotDescriptorName(attribute, names);
         }
 
         if (names.Count == 0)
@@ -885,7 +896,7 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             return;
 
         names[publicName] = listener
-            ? ToVueListenerPropName(name!)
+            ? VueDescriptorNaming.ToListenerPropertyName(name!)
             : name!;
     }
 
@@ -938,18 +949,6 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         }
 
         return null;
-    }
-
-    private static string ToVueListenerPropName(string eventName)
-    {
-        if (eventName.Length == 0)
-            return eventName;
-
-        return eventName.StartsWith("on", StringComparison.Ordinal) &&
-               eventName.Length > 2 &&
-               char.IsUpper(eventName[2])
-            ? eventName
-            : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
     }
 
     private static StringLiteral CreateStringLiteral(string value)

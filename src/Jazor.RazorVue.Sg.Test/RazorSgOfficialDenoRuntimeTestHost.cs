@@ -44,8 +44,56 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return options;
                 }
 
+                export const Fragment = Symbol("Fragment");
+
                 export function reactive(value) {
                     return value;
+                }
+
+                const mounted = [];
+                const updated = [];
+                const unmounted = [];
+                const watchers = [];
+
+                export function watch(source, callback) {
+                    watchers.push(callback);
+                    return () => {};
+                }
+
+                export function onMounted(callback) {
+                    mounted.push(callback);
+                }
+
+                export function onUpdated(callback) {
+                    updated.push(callback);
+                }
+
+                export function onUnmounted(callback) {
+                    unmounted.push(callback);
+                }
+
+                export function __runMounted() {
+                    for (const callback of mounted) {
+                        callback();
+                    }
+                }
+
+                export function __runUpdated() {
+                    for (const callback of updated) {
+                        callback();
+                    }
+                }
+
+                export function __runUnmounted() {
+                    for (const callback of unmounted) {
+                        callback();
+                    }
+                }
+
+                export function __runWatchers() {
+                    for (const callback of watchers) {
+                        callback();
+                    }
                 }
 
                 export function createStaticVNode(html, count) {

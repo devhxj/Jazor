@@ -7,6 +7,19 @@ namespace Jazor.CLR.Test;
 public sealed class NullableModuleWhitelistTests
 {
     [TestMethod]
+    public void Value_UsesCompilerOwnedNullishThrowSemantics()
+    {
+        var attribute = typeof(Jazor.CLR.NullableT1Module<>)
+            .GetMethod("_value", BindingFlags.Public | BindingFlags.Static)!
+            .GetCustomAttribute<JazorAttribute>();
+
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual(Op.Compile, attribute.Op);
+        Assert.AreEqual("System.Nullable<T>.Value.get", attribute.Member);
+        Assert.AreEqual("NullableValue", attribute.Value);
+    }
+
+    [TestMethod]
     public void GetValueOrDefault_UsesCompilerOwnedUnderlyingTypeDefault()
     {
         var attribute = typeof(Jazor.CLR.NullableT1Module<>)

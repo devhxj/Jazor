@@ -1485,17 +1485,51 @@ public partial class SemanticWalker
 	}
 
 	private Expression BuildDefaultValueExpression(IOperation operation, ITypeSymbol type, SenseArgument argument)
+		=> BuildDefaultValueExpression(
+			type,
+			argument,
+			typeSymbol => IsDirectlySupportedExternalType(operation, typeSymbol),
+			message => HandleTransformationFailure<Expression>(operation, message));
+
+	internal Expression BuildImplicitMemberFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
 	{
-		RejectUnsupportedDefaultValueTypeIfNeeded(operation, type);
+		var origin = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() ??
+			field.AssociatedSymbol?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax()
+			?? throw new NotSupportedException($"Jazor member field '{field.Name}' requires source syntax to lower its implicit C# default value.");
+
+		return BuildDefaultValueExpression(
+			field.Type,
+			argument,
+			typeSymbol => IsDirectlySupportedImplicitFieldDefaultType(field, typeSymbol),
+			message => (Expression)HandleTransformationFailure(origin, message));
+	}
+
+	private Expression BuildDefaultValueExpression(
+		ITypeSymbol type,
+		SenseArgument argument,
+		Func<ITypeSymbol, bool> isSupportedExternalType,
+		Func<string, Expression> fail)
+	{
+		if (!IsDefaultValueTypeSupported(type, isSupportedExternalType))
+		{
+			return fail(
+				$"External type '{type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported and cannot be used for default value. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+		}
 
 		if (type is ITypeParameterSymbol typeParameter)
 		{
 			if (typeParameter.HasReferenceTypeConstraint)
 				return Null;
 
-			return HandleTransformationFailure<Expression>(
-				operation,
+			return fail(
 				$"default({typeParameter.Name}) is not supported because the runtime type parameter may be a value type and Jazor cannot synthesize CLR default semantics safely.");
+		}
+
+		if (type is INamedTypeSymbol namedType && Util.IsHostErasedUnionType(namedType))
+		{
+			// An erased union stores only its selected branch. default(T) has no branch, so null
+			// is the sole JS representation that preserves the uninitialized CLR value.
+			return Null;
 		}
 
 		if (type.TypeKind == TypeKind.Enum)
@@ -1508,8 +1542,7 @@ public partial class SemanticWalker
 				if (TryBuildStringEnumValueLiteral(enumType, zeroValue, out var stringEnumDefault))
 					return stringEnumDefault;
 
-				return HandleTransformationFailure<Expression>(
-					operation,
+				return fail(
 					$"default({enumType.ToDisplayString(Format.NameFormat)}) is not supported because string enums require a declared zero-valued member mapping.");
 			}
 
@@ -1520,7 +1553,7 @@ public partial class SemanticWalker
 			return Null;
 
 		if (type is INamedTypeSymbol tupleType && tupleType.IsTupleType)
-			return BuildTupleDefaultValueExpression(operation, tupleType, argument);
+			return BuildTupleDefaultValueExpression(tupleType, argument, isSupportedExternalType, fail);
 
 		if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
 			return Null;
@@ -1543,7 +1576,7 @@ public partial class SemanticWalker
 			SpecialType.System_Decimal => new NumericLiteral(0, "0"),
 			SpecialType.System_Int64 or
 			SpecialType.System_UInt64 => new BigIntLiteral(new System.Numerics.BigInteger(0), "0n"),
-			_ => GetDefaultValueTypeExpression(operation, type, argument)
+			_ => GetDefaultValueTypeExpression(type, argument, fail)
 		};
 	}
 
@@ -1566,27 +1599,27 @@ public partial class SemanticWalker
 	private static StringLiteral CreateStringLiteral(string value)
 		=> JavaScriptAstFactory.CreateStringLiteral(value);
 
-	private void RejectUnsupportedDefaultValueTypeIfNeeded(IOperation operation, ITypeSymbol type)
+	private bool IsDefaultValueTypeSupported(ITypeSymbol type, Func<ITypeSymbol, bool> isSupportedExternalType)
 	{
 		if (type is ITypeParameterSymbol or IArrayTypeSymbol)
-			return;
+			return true;
 
 		var (mapper, _) = GetMapperType(type);
 		if (mapper is TypeMapper.Number or TypeMapper.BigInt or TypeMapper.Boolean or TypeMapper.String)
-			return;
+			return true;
 
 		if (type.IsTupleType ||
 			type.IsAnonymousType ||
 			type.TypeKind is TypeKind.Interface or TypeKind.Delegate)
-			return;
+			return true;
 
 		if (!type.IsValueType && type.IsAbstract)
-			return;
+			return true;
 
-		RejectUnsupportedTypeFallback(operation, type, "default value");
+		return isSupportedExternalType(type);
 	}
 
-	private Expression GetDefaultValueTypeExpression(IOperation operation, ITypeSymbol type, SenseArgument argument)
+	private Expression GetDefaultValueTypeExpression(ITypeSymbol type, SenseArgument argument, Func<string, Expression> fail)
 	{
 		var (mapper, _) = GetMapperType(type);
 		if (mapper == TypeMapper.Number)
@@ -1599,8 +1632,7 @@ public partial class SemanticWalker
 			knownDefault is not null)
 			return knownDefault;
 
-		return HandleTransformationFailure<Expression>(
-			operation,
+		return fail(
 			$"Value type '{type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not have a safe JavaScript lowering for default(...). Only intrinsic value types, tuples, nullable values, and known CLR runtime shims can be emitted without changing CLR semantics.");
 	}
 
@@ -1628,7 +1660,11 @@ public partial class SemanticWalker
 		return expression is not null;
 	}
 
-	private Expression BuildTupleDefaultValueExpression(IOperation operation, INamedTypeSymbol tupleType, SenseArgument argument)
+	private Expression BuildTupleDefaultValueExpression(
+		INamedTypeSymbol tupleType,
+		SenseArgument argument,
+		Func<ITypeSymbol, bool> isSupportedExternalType,
+		Func<string, Expression> fail)
 	{
 		var nodes = new List<Node>(tupleType.TupleElements.Length);
 		for (var index = 0; index < tupleType.TupleElements.Length; index++)
@@ -1637,7 +1673,7 @@ public partial class SemanticWalker
 			nodes.Add(new ObjectProperty(
 				PropertyKind.Init,
 				key: CreateObjectPropertyKey(Util.GetConfigOrSymbolName(element)),
-				value: BuildDefaultValueExpression(operation, element.Type, argument),
+				value: BuildDefaultValueExpression(element.Type, argument, isSupportedExternalType, fail),
 				computed: false,
 				shorthand: false,
 				method: false));
@@ -1921,11 +1957,20 @@ public partial class SemanticWalker
 		}
 
 		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out _, propertyReference);
-		if (getterExpression is null)
-			return false;
+		if (getterExpression is not null)
+		{
+			readExpression = getterExpression;
+			return true;
+		}
 
-		readExpression = getterExpression;
-		return true;
+		if (TryBuildCurrentModuleIndexerGetterCall(propertyReference.Property, instance, arguments, out var indexerGetterCall) &&
+			indexerGetterCall is not null)
+		{
+			readExpression = indexerGetterCall;
+			return true;
+		}
+
+		return false;
 	}
 
 	private bool RequiresPropertyMutationBridge(IPropertyReferenceOperation propertyReference)
@@ -1935,6 +1980,9 @@ public partial class SemanticWalker
 			return false;
 
 		if (TryGetWhiteListValue(_whiteListCompiles, propertyReference.Property.GetMethod, out _, out _))
+			return true;
+
+		if (IsCurrentModuleRuntimeIndexer(propertyReference.Property))
 			return true;
 
 		if (!TryGetWhiteListValue(WhiteList.Members, propertyReference.Property.GetMethod, out _, out var entry))
@@ -2053,6 +2101,12 @@ public partial class SemanticWalker
 			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out var setterAlias, propertyReference);
 			if (mapperExpr is not null)
 				return mapperExpr;
+
+			if (TryBuildCurrentModuleIndexerSetterCall(propertyReference.Property, instance, arguments, value, out var indexerSetterCall) &&
+				indexerSetterCall is not null)
+			{
+				return indexerSetterCall;
+			}
 
 			if (TryBuildCurrentModulePropertySetterCall(propertyReference.Property, value, out var currentModuleSetterCall) &&
 				currentModuleSetterCall is not null)

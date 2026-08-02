@@ -97,6 +97,8 @@ internal static class RazorSgDirectRenderOperationEmitter
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
         private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
+        private readonly Dictionary<ILocalSymbol, IOperation> _compileTimeFrameLocalValues = new(SymbolComparer);
+        private readonly HashSet<ILocalSymbol> _erasedRenderObjectLocals = new(SymbolComparer);
         private string? _componentAttributeNormalizerName;
         private bool _usesMergeProps;
         private bool _usesFragment;
@@ -118,7 +120,8 @@ internal static class RazorSgDirectRenderOperationEmitter
                     parameterRuntimeNames: BuildComponentParameterNameMap(componentSymbol),
                     memberRuntimeNames: declaredNames,
                     parameterReferenceRewriter: RewriteDirectParameterReference,
-                    localReferenceRewriter: RewriteDirectLocalReference)
+                    localReferenceRewriter: RewriteDirectLocalReference,
+                    propertyReferenceRewriter: RewriteDirectRenderFragmentParameterReference)
             };
             _argument = new SenseArgument(Sense.Any, UseImportAliases: true);
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
@@ -183,6 +186,12 @@ internal static class RazorSgDirectRenderOperationEmitter
                     EmitExpressionStatement(statement.Operation, context, state);
                     return context;
 
+                // Expression-bodied RenderFragment helpers expose their builder call directly.
+                // Route it through the same lowering path as a block-body expression statement.
+                case IInvocationOperation invocation:
+                    EmitExpressionStatement(invocation, context, state);
+                    return context;
+
                 case IBlockOperation block:
                     return EmitOperations(block.Operations, context, state);
 
@@ -201,7 +210,10 @@ internal static class RazorSgDirectRenderOperationEmitter
                     return context with { IsTerminated = true };
 
                 default:
-                    throw Unsupported(operation, "RazorVue direct render operation lowering only supports straight-line RenderTreeBuilder statements in this slice.");
+                    throw Unsupported(
+                        operation,
+                        "RazorVue direct render operation lowering only supports straight-line RenderTreeBuilder statements in this slice. Operation: '" +
+                        operation.Kind + "'. Syntax: '" + operation.Syntax + "'.");
             }
         }
 
@@ -318,6 +330,9 @@ internal static class RazorSgDirectRenderOperationEmitter
                         continue;
                     }
 
+                    if (state.Stack.Count != 0 && TryTrackCompileTimeFrameLocal(declarator))
+                        continue;
+
                     if (!context.AllowPreludeDeclarations || state.Stack.Count != 0)
                     {
                         var location = declarator.Syntax.GetLocation().GetMappedLineSpan();
@@ -340,6 +355,19 @@ internal static class RazorSgDirectRenderOperationEmitter
                         LocalComponentTypes = localComponentTypes,
                         SecondaryBuilders = secondaryBuilders
                     };
+
+                    if (TryResolveRenderObjectExpression(declarator.Initializer.Value, declarationContext, out var renderObject) &&
+                        IsRenderFragmentDescriptorType(declarator.Symbol.Type))
+                    {
+                        // A render-only descriptor has no Vue runtime representation. Keeping
+                        // its C# helper would preserve an unbound RenderTreeBuilder callback in
+                        // the emitted module. Descriptors with any other instance state remain
+                        // runtime values because later expressions may observe that state.
+                        localRenderObjects = localRenderObjects.SetItem(declarator.Symbol, renderObject);
+                        _erasedRenderObjectLocals.Add(declarator.Symbol);
+                        continue;
+                    }
+
                     var valueExpression = LowerExpression(declarator.Initializer.Value, declarationContext);
                     var runtimeDeclaration = new VariableDeclaration(
                         VariableDeclarationKind.Const,
@@ -351,7 +379,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                         localRenderFragments = localRenderFragments.SetItem(declarator.Symbol, renderFragment);
                         _renderFragmentPreludeDeclarations.Add(runtimeDeclaration);
                     }
-                    if (TryResolveRenderObjectExpression(declarator.Initializer.Value, declarationContext, out var renderObject))
+                    if (TryResolveRenderObjectExpression(declarator.Initializer.Value, declarationContext, out renderObject))
                         localRenderObjects = localRenderObjects.SetItem(declarator.Symbol, renderObject);
                 }
             }
@@ -364,6 +392,30 @@ internal static class RazorSgDirectRenderOperationEmitter
                 LocalComponentTypes = localComponentTypes,
                 SecondaryBuilders = secondaryBuilders
             };
+        }
+
+        private bool TryTrackCompileTimeFrameLocal(IVariableDeclaratorOperation declarator)
+        {
+            var value = UnwrapTransparentRazorSgOperation(declarator.Initializer!.Value);
+            if (!value.ConstantValue.HasValue)
+                return false;
+
+            // A compile-time value has no evaluation side effect, so inlining it keeps
+            // source order intact even when Razor SG declares it inside an open frame.
+            _compileTimeFrameLocalValues[declarator.Symbol] = value;
+            return true;
+        }
+
+        private bool TryGetKnownConstantString(IOperation operation, out string value)
+        {
+            operation = UnwrapTransparentRazorSgOperation(operation);
+            if (operation is ILocalReferenceOperation localReference &&
+                _compileTimeFrameLocalValues.TryGetValue(localReference.Local, out var localValue))
+            {
+                operation = localValue;
+            }
+
+            return TryGetConstantString(operation, out value);
         }
 
         private void EmitConditional(IConditionalOperation conditional, EmitContext context, RenderState state)
@@ -984,8 +1036,8 @@ internal static class RazorSgDirectRenderOperationEmitter
                 // generated setup scope so descriptor-owned Vue names still win.
                 attributes = NormalizeDynamicComponentAttributes(component, attributes);
 
-            frame.AddMultipleAttributes(attributes);
-            _usesMergeProps = true;
+            if (frame.AddMultipleAttributes(attributes))
+                _usesMergeProps = true;
         }
 
         private Expression NormalizeDynamicComponentAttributes(
@@ -1064,15 +1116,15 @@ internal static class RazorSgDirectRenderOperationEmitter
                 frame.SetEventModifier(eventName, value, preventDefault, stopPropagation);
         }
 
-        private static void EmitAddNamedEvent(IInvocationOperation invocation, RenderState state)
+        private void EmitAddNamedEvent(IInvocationOperation invocation, RenderState state)
         {
             var offset = GetRenderTreeBuilderReceiverArgumentOffset(invocation);
             EnsureSignature(invocation, invocation.Arguments.Length - offset == 2);
             if (state.Stack.Count == 0 || state.Stack.Peek() is not ElementFrame frame || frame.ChildrenStarted)
                 throw Unsupported(invocation, "Named event metadata must target an open element before children.");
 
-            if (!TryGetConstantString(invocation.Arguments[offset].Value, out var eventName) ||
-                !TryGetConstantString(invocation.Arguments[offset + 1].Value, out var assignedEventName) ||
+            if (!TryGetKnownConstantString(invocation.Arguments[offset].Value, out var eventName) ||
+                !TryGetKnownConstantString(invocation.Arguments[offset + 1].Value, out var assignedEventName) ||
                 string.IsNullOrWhiteSpace(eventName) ||
                 string.IsNullOrWhiteSpace(assignedEventName))
             {
@@ -1137,9 +1189,16 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (IsMarkupStringOperationValue(invocation.Arguments[1].Value))
             {
                 state.UsesStaticVNode = true;
+                var markup = LowerExpression(invocation.Arguments[1].Value, context);
+                if (IsNullableMarkupStringOperationValue(invocation.Arguments[1].Value))
+                {
+                    state.AddOptionalChild(BuildNullableMarkupContent(markup));
+                    return;
+                }
+
                 state.AddChild(Call(
                     "createStaticVNode",
-                    LowerExpression(invocation.Arguments[1].Value, context),
+                    markup,
                     new NumericLiteral(1, "1")));
                 return;
             }
@@ -1256,8 +1315,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private bool TryEmitKnownMultipleAttributes(IOperation operation, EmitContext context, PropFrame frame)
         {
-            while (operation is IConversionOperation conversion)
-                operation = conversion.Operand;
+            operation = UnwrapTransparentRazorSgOperation(operation);
 
             if (operation is not IObjectCreationOperation { Initializer: not null } creation)
                 return false;
@@ -1277,6 +1335,39 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             return true;
         }
+
+        private static IOperation UnwrapTransparentRazorSgOperation(IOperation operation)
+        {
+            while (true)
+            {
+                switch (operation)
+                {
+                    case IConversionOperation conversion:
+                        operation = conversion.Operand;
+                        continue;
+
+                    // Razor SG uses TypeCheck<T> only for generated-C# binding. It has no
+                    // runtime behavior, so direct lowering must inspect its real operand.
+                    case IInvocationOperation invocation when
+                        IsRazorRuntimeHelpersTypeCheck(invocation.TargetMethod) &&
+                        invocation.Arguments.Length == 1:
+                        operation = invocation.Arguments[0].Value;
+                        continue;
+
+                    default:
+                        return operation;
+                }
+            }
+        }
+
+        private static bool IsRazorRuntimeHelpersTypeCheck(IMethodSymbol method)
+            => method.IsStatic &&
+               string.Equals(method.Name, "TypeCheck", StringComparison.Ordinal) &&
+               method.ContainingType is { Name: "RuntimeHelpers" } containingType &&
+               string.Equals(
+                   containingType.ContainingNamespace?.ToDisplayString(),
+                   "Microsoft.AspNetCore.Components.CompilerServices",
+                   StringComparison.Ordinal);
 
         private static bool TryGetAttributeInitializer(
             IOperation operation,
@@ -1348,7 +1439,13 @@ internal static class RazorSgDirectRenderOperationEmitter
             }
 
             if (operation is ILocalReferenceOperation localReference &&
-                context.LocalAliases.TryGetValue(localReference.Local, out var localAlias))
+                _compileTimeFrameLocalValues.TryGetValue(localReference.Local, out var compileTimeValue))
+            {
+                return LowerExpression(compileTimeValue, context);
+            }
+
+            if (operation is ILocalReferenceOperation aliasedLocalReference &&
+                context.LocalAliases.TryGetValue(aliasedLocalReference.Local, out var localAlias))
             {
                 return new Identifier(localAlias);
             }
@@ -1391,9 +1488,35 @@ internal static class RazorSgDirectRenderOperationEmitter
             SenseArgument argument)
         {
             var context = _activeExpressionContext;
-            return context is not null && context.LocalAliases.TryGetValue(operation.Local, out var alias)
-                ? new Identifier(alias)
-                : null;
+            if (context is null)
+                return null;
+
+            if (context.LocalAliases.TryGetValue(operation.Local, out var alias))
+                return new Identifier(alias);
+
+            if (_erasedRenderObjectLocals.Contains(operation.Local))
+            {
+                throw Unsupported(
+                    operation,
+                    "RenderFragment descriptor local '" + operation.Local.Name +
+                    "' can only be consumed through a resolved RenderFragment member in direct render lowering.");
+            }
+
+            return null;
+        }
+
+        private Expression? RewriteDirectRenderFragmentParameterReference(
+            IPropertyReferenceOperation operation,
+            SenseArgument argument)
+        {
+            if (!_componentSlotNames.TryGetValue(operation.Property.OriginalDefinition, out var slotName))
+                return null;
+
+            // Vue owns RenderFragment parameters as slots. Project their C# value surface as
+            // a function-or-null value so helper logic such as `content is not null` observes
+            // the same presence semantics without recreating a RenderTreeBuilder callback.
+            _usesSlots = true;
+            return BuildSlotValueExpression(slotName!);
         }
 
         private bool TryResolveRenderFragmentContentExpression(
@@ -1415,8 +1538,9 @@ internal static class RazorSgDirectRenderOperationEmitter
             out DirectRenderFragment renderFragment)
         {
             renderFragment = default;
-            while (operation is IConversionOperation conversion)
-                operation = conversion.Operand;
+            // Razor SG may add transparent conversions around template values. Resolve the
+            // underlying slot/property expression before looking up local provenance.
+            operation = UnwrapTransparentRazorSgOperation(operation);
 
             if (operation is IParameterReferenceOperation parameterReference &&
                 context.Substitutions.TryGetValue(parameterReference.Parameter, out var substituted))
@@ -1510,7 +1634,19 @@ internal static class RazorSgDirectRenderOperationEmitter
             }
 
             if (operation is IInvocationOperation invocation &&
-                TryResolveRenderFragmentHelperInvocation(invocation, context, out renderFragment))
+                TryResolveLocalGenericRenderFragmentInvocation(invocation, context, out renderFragment))
+            {
+                return true;
+            }
+
+            if (operation is IInvocationOperation helperInvocation &&
+                TryResolveRenderFragmentHelperInvocation(helperInvocation, context, out renderFragment))
+            {
+                return true;
+            }
+
+            if (operation is IInvocationOperation slotInvocation &&
+                TryResolveComponentScopedSlotInvocation(slotInvocation, context, out renderFragment))
             {
                 return true;
             }
@@ -1566,6 +1702,91 @@ internal static class RazorSgDirectRenderOperationEmitter
             return false;
         }
 
+        private bool TryResolveLocalGenericRenderFragmentInvocation(
+            IInvocationOperation invocation,
+            EmitContext context,
+            out DirectRenderFragment renderFragment)
+        {
+            renderFragment = default;
+            if (invocation.TargetMethod.MethodKind != MethodKind.DelegateInvoke ||
+                invocation.Arguments.Length != 1 ||
+                invocation.Instance is null)
+            {
+                return false;
+            }
+
+            var instance = invocation.Instance;
+            while (instance is IConversionOperation conversion)
+                instance = conversion.Operand;
+
+            if (instance is not ILocalReferenceOperation localReference ||
+                !IsGenericRenderFragmentType(localReference.Local.Type) ||
+                !context.LocalRenderFragments.TryGetValue(localReference.Local, out var localRenderFragment) ||
+                localRenderFragment.ParameterName is null ||
+                localRenderFragment.AvailabilityCondition is not null &&
+                !localRenderFragment.ReturnsVueSlotContent)
+            {
+                return false;
+            }
+
+            // A local RenderFragment<T> is already lowered as a value-parameterized Vue
+            // expression. An optional scoped slot has already been projected to a local
+            // function-or-null value, so invoke that alias instead of rereading slots.*.
+            // This preserves the C# local assignment's evaluation and presence semantics.
+            var value = LowerExpression(invocation.Arguments[0].Value, context);
+            Expression expression;
+            if (localRenderFragment.AvailabilityCondition is not null &&
+                localRenderFragment.ReturnsVueSlotContent)
+            {
+                var localName = context.LocalAliases[localReference.Local];
+                var localValue = new Identifier(localName);
+                expression = new ConditionalExpression(
+                    new NonLogicalBinaryExpression(Operator.StrictInequality, localValue, Null()),
+                    Call(localValue, value),
+                    Null());
+            }
+            else
+            {
+                expression = localRenderFragment.Selection is { } selection
+                    ? new ConditionalExpression(
+                        selection.Condition,
+                        InvokeRenderFragment(selection.WhenTrue, value),
+                        InvokeRenderFragment(selection.WhenFalse, value))
+                    : InvokeRenderFragment(localRenderFragment, value);
+            }
+            renderFragment = new DirectRenderFragment(
+                expression,
+                UsesFragment: localRenderFragment.UsesFragment,
+                UsesStaticVNode: localRenderFragment.UsesStaticVNode,
+                ReturnsVueSlotContent: localRenderFragment.ReturnsVueSlotContent);
+            return true;
+        }
+
+        private bool TryResolveComponentScopedSlotInvocation(
+            IInvocationOperation invocation,
+            EmitContext context,
+            out DirectRenderFragment renderFragment)
+        {
+            renderFragment = default;
+            if (invocation.TargetMethod.MethodKind != MethodKind.DelegateInvoke ||
+                invocation.Arguments.Length != 1 ||
+                invocation.Instance is null ||
+                !TryResolveComponentSlot(invocation.Instance, out var slotName, out var genericSlot) ||
+                !genericSlot)
+            {
+                return false;
+            }
+
+            // Razor SG represents @Template(value) as a delegate invocation followed by
+            // AddContent. A RenderFragment<T> parameter is a Vue scoped slot, so lower the
+            // completed invocation directly instead of trying to recreate its builder callback.
+            _usesSlots = true;
+            renderFragment = new DirectRenderFragment(
+                BuildSlotInvocationExpression(slotName, LowerExpression(invocation.Arguments[0].Value, context)),
+                ReturnsVueSlotContent: true);
+            return true;
+        }
+
         private bool TryResolveRenderFragmentMethodReference(
             IOperation operation,
             EmitContext context,
@@ -1584,7 +1805,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 method.Parameters.Length != 1 ||
                 !IsRenderTreeBuilder(method.Parameters[0].Type) ||
                 method.DeclaringSyntaxReferences.Length != 1 ||
-                !IsCurrentComponentMethod(method) ||
+                !RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentSymbol, method.ContainingType) ||
                 !method.IsStatic && methodReference.Instance is not IInstanceReferenceOperation)
             {
                 return false;
@@ -1769,7 +1990,7 @@ internal static class RazorSgDirectRenderOperationEmitter
             var method = invocation.TargetMethod;
             if (method.ReturnsVoid ||
                 method.DeclaringSyntaxReferences.Length != 1 ||
-                !IsCurrentComponentMethod(method))
+                !RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentSymbol, method.ContainingType))
             {
                 return false;
             }
@@ -1980,25 +2201,25 @@ internal static class RazorSgDirectRenderOperationEmitter
             var method = invocation.TargetMethod;
             if (!IsAnyRenderFragmentType(method.ReturnType) ||
                 method.DeclaringSyntaxReferences.Length != 1 ||
-                !IsCurrentComponentMethod(method))
+                !RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentSymbol, method.ContainingType))
             {
                 return false;
             }
 
-            if (!TryGetReturnedRenderFragmentBody(method, out var valueParameter, out var builder, out var body))
+            if (!TryGetReturnedRenderFragmentBody(method, out var helperBody))
                 return false;
 
             if (_activeRenderFragmentHelpers.Contains(method.OriginalDefinition) ||
-                ContainsMethodInvocation(body, method))
+                ContainsMethodInvocation(helperBody.Body, method))
             {
-                var helper = EnsureRenderFragmentHelperFunction(method, valueParameter, builder, body, context);
+                var helper = EnsureRenderFragmentHelperFunction(method, helperBody, context);
                 var arguments = invocation.Arguments
                     .Select(argument => LowerExpression(argument.Value, context))
                     .ToList();
                 string? parameterName = null;
-                if (valueParameter is not null)
+                if (helperBody.ValueParameter is not null)
                 {
-                    parameterName = SanitizeJavaScriptIdentifierPart(valueParameter.Name, "value");
+                    parameterName = SanitizeJavaScriptIdentifierPart(helperBody.ValueParameter.Name, "value");
                     arguments.Add(new Identifier(parameterName));
                 }
                 renderFragment = new DirectRenderFragment(
@@ -2020,28 +2241,32 @@ internal static class RazorSgDirectRenderOperationEmitter
             {
                 renderFragment = WithScopedLocalNames(() =>
                 {
-                    var parameterAliases = context.ParameterAliases;
+                    var factoryContext = context with { Substitutions = substitutions.ToImmutable() };
+                    foreach (var declarationGroup in helperBody.LocalRenderFragmentDeclarations)
+                        factoryContext = TrackRenderProvenanceDeclarationGroup(declarationGroup, factoryContext);
+
+                    var parameterAliases = factoryContext.ParameterAliases;
                     string? parameterName = null;
-                    if (valueParameter is not null)
+                    if (helperBody.ValueParameter is not null)
                     {
-                        parameterName = SanitizeJavaScriptIdentifierPart(valueParameter.Name, "value");
-                        parameterAliases = parameterAliases.SetItem(valueParameter, parameterName);
+                        parameterName = SanitizeJavaScriptIdentifierPart(helperBody.ValueParameter.Name, "value");
+                        parameterAliases = parameterAliases.SetItem(helperBody.ValueParameter, parameterName);
                     }
 
                     var fragmentState = new RenderState();
                     var preludeStatements = new List<Statement>();
                     var fragmentArgument = context.Argument.WithNewScope();
                     _ = EmitOperation(
-                        body,
+                        helperBody.Body,
                         new EmitContext(
-                            BuilderBinding.ForSymbol(builder),
-                            substitutions.ToImmutable(),
+                            BuilderBinding.ForSymbol(helperBody.Builder),
+                            factoryContext.Substitutions,
                             parameterAliases,
-                            context.LocalAliases,
-                            context.LocalRenderFragments,
-                            context.LocalRenderObjects,
-                            context.LocalComponentTypes,
-                            context.SecondaryBuilders,
+                            factoryContext.LocalAliases,
+                            factoryContext.LocalRenderFragments,
+                            factoryContext.LocalRenderObjects,
+                            factoryContext.LocalComponentTypes,
+                            factoryContext.SecondaryBuilders,
                             preludeStatements,
                             AllowPreludeDeclarations: true,
                             Argument: fragmentArgument),
@@ -2065,9 +2290,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private DirectRenderFunction EnsureRenderFragmentHelperFunction(
             IMethodSymbol method,
-            IParameterSymbol? valueParameter,
-            IParameterSymbol builder,
-            IOperation body,
+            RenderFragmentHelperBody helperBody,
             EmitContext context)
         {
             var originalMethod = method.OriginalDefinition;
@@ -2090,10 +2313,10 @@ internal static class RazorSgDirectRenderOperationEmitter
                     parameterAliases[parameter] = parameterName;
                     parameterNames.Add(parameterName);
                 }
-                if (valueParameter is not null)
+                if (helperBody.ValueParameter is not null)
                 {
-                    var valueParameterName = CreateUniqueLocalName(valueParameter.Name);
-                    parameterAliases[valueParameter] = valueParameterName;
+                    var valueParameterName = CreateUniqueLocalName(helperBody.ValueParameter.Name);
+                    parameterAliases[helperBody.ValueParameter] = valueParameterName;
                     parameterNames.Add(valueParameterName);
                 }
 
@@ -2102,23 +2325,34 @@ internal static class RazorSgDirectRenderOperationEmitter
                     var functionState = new RenderState();
                     var preludeStatements = new List<Statement>();
                     var functionArgument = context.Argument.WithNewScope();
+                    // A hoisted helper only sees its own formal parameters and component
+                    // members. Call-site substitutions are tied to a different lexical
+                    // scope and would make recursive calls capture their initial values.
+                    var factoryContext = context with
+                    {
+                        Substitutions = ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolComparer),
+                        ParameterAliases = parameterAliases.ToImmutable(),
+                        LocalAliases = ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolComparer)
+                    };
+                    foreach (var declarationGroup in helperBody.LocalRenderFragmentDeclarations)
+                        factoryContext = TrackRenderProvenanceDeclarationGroup(declarationGroup, factoryContext);
                     _ = EmitOperation(
-                        body,
+                        helperBody.Body,
                         new EmitContext(
-                            BuilderBinding.ForSymbol(builder),
-                            context.Substitutions,
-                            parameterAliases.ToImmutable(),
-                            ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolComparer),
-                            context.LocalRenderFragments,
-                            context.LocalRenderObjects,
-                            context.LocalComponentTypes,
-                            context.SecondaryBuilders,
+                            BuilderBinding.ForSymbol(helperBody.Builder),
+                            factoryContext.Substitutions,
+                            factoryContext.ParameterAliases,
+                            factoryContext.LocalAliases,
+                            factoryContext.LocalRenderFragments,
+                            factoryContext.LocalRenderObjects,
+                            factoryContext.LocalComponentTypes,
+                            factoryContext.SecondaryBuilders,
                             preludeStatements,
                             AllowPreludeDeclarations: true,
                             Argument: functionArgument),
                         functionState);
                     if (functionState.Stack.Count != 0)
-                        throw Unsupported(body, "RenderFragment helper '" + method.Name + "' left unclosed " + functionState.Stack.Peek().Describe() + " frames.");
+                        throw Unsupported(helperBody.Body, "RenderFragment helper '" + method.Name + "' left unclosed " + functionState.Stack.Peek().Describe() + " frames.");
 
                     return new DirectRenderFragmentBody(
                         WrapWithExpressionScope(functionArgument, preludeStatements, functionState.ToRenderExpression()),
@@ -2144,9 +2378,6 @@ internal static class RazorSgDirectRenderOperationEmitter
                 _emittingRenderFragmentHelperFunctions.Remove(originalMethod);
             }
         }
-
-        private bool IsCurrentComponentMethod(IMethodSymbol method)
-            => SymbolComparer.Equals(method.ContainingType?.OriginalDefinition, _componentSymbol.OriginalDefinition);
 
         private static void AddParameterSubstitution(
             ImmutableDictionary<IParameterSymbol, IOperation>.Builder substitutions,
@@ -2177,28 +2408,98 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private bool TryGetReturnedRenderFragmentBody(
             IMethodSymbol method,
-            out IParameterSymbol? valueParameter,
-            out IParameterSymbol builder,
-            out IOperation body)
+            out RenderFragmentHelperBody helperBody)
         {
-            valueParameter = null;
-            builder = null!;
-            body = null!;
+            helperBody = default;
             var syntax = method.DeclaringSyntaxReferences[0].GetSyntax();
             var model = _compilation.GetSemanticModel(syntax.SyntaxTree);
-            IOperation? returnedOperation = syntax switch
+            IOperation? returnedOperation;
+            var localRenderFragmentDeclarations = ImmutableArray<IVariableDeclarationGroupOperation>.Empty;
+            switch (syntax)
             {
-                MethodDeclarationSyntax { ExpressionBody.Expression: { } expression } => model.GetOperation(expression),
-                MethodDeclarationSyntax { Body: { } methodBody } => TryGetSingleReturnValue(model.GetOperation(methodBody)),
-                _ => null
-            };
+                case MethodDeclarationSyntax { ExpressionBody.Expression: { } expression }:
+                    returnedOperation = model.GetOperation(expression);
+                    break;
+                case MethodDeclarationSyntax { Body: { } methodBody }:
+                    if (!TryGetRenderFragmentFactoryReturn(
+                            model.GetOperation(methodBody),
+                            out returnedOperation,
+                            out localRenderFragmentDeclarations))
+                    {
+                        return false;
+                    }
+
+                    break;
+                default:
+                    return false;
+            }
 
             if (returnedOperation is null)
                 return false;
-            if (TryGetRenderFragmentBody(returnedOperation, out builder, out body))
+            if (TryGetRenderFragmentBody(returnedOperation, out var builder, out var body))
+            {
+                helperBody = new RenderFragmentHelperBody(
+                    ValueParameter: null,
+                    builder,
+                    body,
+                    localRenderFragmentDeclarations);
                 return true;
+            }
 
-            return TryGetGenericRenderFragmentBody(returnedOperation, out valueParameter, out builder, out body);
+            if (!TryGetGenericRenderFragmentBody(returnedOperation, out var valueParameter, out builder, out body))
+                return false;
+
+            helperBody = new RenderFragmentHelperBody(
+                valueParameter,
+                builder,
+                body,
+                localRenderFragmentDeclarations);
+            return true;
+        }
+
+        private static bool TryGetRenderFragmentFactoryReturn(
+            IOperation? operation,
+            out IOperation? returnedOperation,
+            out ImmutableArray<IVariableDeclarationGroupOperation> localRenderFragmentDeclarations)
+        {
+            returnedOperation = null;
+            localRenderFragmentDeclarations = ImmutableArray<IVariableDeclarationGroupOperation>.Empty;
+            if (operation is not IBlockOperation block)
+                return false;
+
+            var declarations = ImmutableArray.CreateBuilder<IVariableDeclarationGroupOperation>();
+            foreach (var child in block.Operations)
+            {
+                if (child is IVariableDeclarationGroupOperation declarationGroup)
+                {
+                    foreach (var declarator in declarationGroup.Declarations.SelectMany(static declaration => declaration.Declarators))
+                    {
+                        if (declarator.Initializer is null ||
+                            !IsAnyRenderFragmentType(declarator.Symbol.Type))
+                        {
+                            return false;
+                        }
+                    }
+
+                    declarations.Add(declarationGroup);
+                    continue;
+                }
+
+                if (child is IReturnOperation { ReturnedValue: not null } returnOperation &&
+                    returnedOperation is null)
+                {
+                    returnedOperation = returnOperation.ReturnedValue;
+                    continue;
+                }
+
+                return false;
+            }
+
+            if (returnedOperation is null)
+                return false;
+
+            localRenderFragmentDeclarations = declarations.ToImmutable();
+            return true;
         }
 
         private static IOperation? TryGetSingleReturnValue(IOperation? operation)
@@ -2496,10 +2797,10 @@ internal static class RazorSgDirectRenderOperationEmitter
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
-    private static bool IsMarkupStringOperationValue(IOperation operation)
-    {
-        while (operation is IConversionOperation conversion)
-            operation = conversion.Operand;
+        private static bool IsMarkupStringOperationValue(IOperation operation)
+        {
+            while (operation is IConversionOperation conversion)
+                operation = conversion.Operand;
 
         var type = operation.Type;
         if (type is null)
@@ -2521,7 +2822,22 @@ internal static class RazorSgDirectRenderOperationEmitter
                    nullable.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
                    MarkupStringMetadataName,
                    StringComparison.Ordinal);
-    }
+        }
+
+        private static bool IsNullableMarkupStringOperationValue(IOperation operation)
+        {
+            while (operation is IConversionOperation conversion)
+                operation = conversion.Operand;
+
+            return operation.Type is INamedTypeSymbol nullable &&
+                   nullable.IsGenericType &&
+                   nullable.TypeArguments.Length == 1 &&
+                   nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+                   string.Equals(
+                       nullable.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
+                       MarkupStringMetadataName,
+                       StringComparison.Ordinal);
+        }
 
     private static bool IsTerminatingWithoutOutput(IOperation? operation)
     {
@@ -2785,23 +3101,36 @@ internal static class RazorSgDirectRenderOperationEmitter
     private static ImmutableDictionary<string, string> BuildComponentParameterNameMap(INamedTypeSymbol componentType)
     {
         var names = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
-        foreach (var attribute in componentType.GetAttributes())
+        // Vue descriptor metadata describes the complete component contract. A derived
+        // component may override a base parameter name, while base metadata remains the
+        // fallback for parameters it inherits unchanged.
+        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
         {
-            var attributeName = attribute.AttributeClass?.ToDisplayString();
-            if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+            var currentNames = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
+            foreach (var attribute in current.GetAttributes())
             {
-                AddDescriptorName(attribute, names, listener: false);
-                continue;
+                var attributeName = attribute.AttributeClass?.ToDisplayString();
+                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+                {
+                    AddDescriptorName(attribute, currentNames, listener: false);
+                    continue;
+                }
+
+                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+                {
+                    AddDescriptorName(attribute, currentNames, listener: true);
+                    continue;
+                }
+
+                if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
+                    AddSlotDescriptorName(attribute, currentNames);
             }
 
-            if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+            foreach (var entry in currentNames)
             {
-                AddDescriptorName(attribute, names, listener: true);
-                continue;
+                if (!names.ContainsKey(entry.Key))
+                    names.Add(entry.Key, entry.Value);
             }
-
-            if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
-                AddSlotDescriptorName(attribute, names);
         }
 
         return names.ToImmutable();
@@ -2848,6 +3177,36 @@ internal static class RazorSgDirectRenderOperationEmitter
     private static bool IsAnyRenderFragmentType(ITypeSymbol type)
         => IsRenderFragmentType(type) || IsGenericRenderFragmentType(type);
 
+    private static bool IsRenderFragmentDescriptorType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var hasRenderFragmentProperty = false;
+        for (INamedTypeSymbol? current = namedType;
+             current is not null && current.SpecialType != SpecialType.System_Object;
+             current = current.BaseType)
+        {
+            foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (property.IsStatic)
+                    continue;
+                if (property.IsIndexer || !IsAnyRenderFragmentType(property.Type))
+                    return false;
+
+                hasRenderFragmentProperty = true;
+            }
+
+            if (current.GetMembers().OfType<IFieldSymbol>()
+                .Any(static field => !field.IsStatic && !field.IsImplicitlyDeclared))
+            {
+                return false;
+            }
+        }
+
+        return hasRenderFragmentProperty;
+    }
+
     private static void AddDescriptorName(
         AttributeData attribute,
         ImmutableDictionary<string, string>.Builder names,
@@ -2864,7 +3223,7 @@ internal static class RazorSgDirectRenderOperationEmitter
         if (string.IsNullOrWhiteSpace(name))
             return;
 
-        names[publicName] = listener ? ToVueListenerPropName(name!) : name!;
+        names[publicName] = listener ? VueDescriptorNaming.ToListenerPropertyName(name!) : name!;
     }
 
     private static void AddSlotDescriptorName(
@@ -2906,13 +3265,6 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         return null;
     }
-
-    private static string ToVueListenerPropName(string eventName)
-        => eventName.StartsWith("on", StringComparison.Ordinal) &&
-           eventName.Length > 2 &&
-           char.IsUpper(eventName[2])
-            ? eventName
-            : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
 
     private static FunctionDeclaration BuildComponentAttributeNormalizer(string helperName)
     {
@@ -3050,6 +3402,12 @@ internal static class RazorSgDirectRenderOperationEmitter
             Null());
     }
 
+    private static Expression BuildSlotValueExpression(string slotName)
+        => new ConditionalExpression(
+            BuildSlotAvailabilityCondition(slotName),
+            FormatSlotAccessExpression(slotName),
+            Null());
+
     private static Expression BuildSlotAvailabilityCondition(string slotName)
         => new NonLogicalBinaryExpression(
             Operator.StrictEquality,
@@ -3074,6 +3432,30 @@ internal static class RazorSgDirectRenderOperationEmitter
             expression: true,
             async: false);
         return Call(function, argument);
+    }
+
+    private static Expression BuildNullableMarkupContent(Expression markupExpression)
+    {
+        // AddContent(MarkupString?) omits null rather than materializing a static vnode.
+        // Keep the source expression single-evaluated because a component property getter can
+        // be observable, then let parent frames expand null to zero children.
+        var markup = new Identifier("__markup");
+        var isAbsent = new LogicalExpression(
+            Operator.LogicalOr,
+            new NonLogicalBinaryExpression(Operator.StrictEquality, markup, Null()),
+            new NonLogicalBinaryExpression(Operator.StrictEquality, markup, new Identifier("undefined")));
+        var content = new ConditionalExpression(
+            isAbsent,
+            Null(),
+            Call("createStaticVNode", markup, new NumericLiteral(1, "1")));
+        var declaration = new VariableDeclaration(
+            VariableDeclarationKind.Const,
+            NodeList.From(new VariableDeclarator(markup, markupExpression)));
+        return Call(new ArrowFunctionExpression(
+            NodeList.Empty<Node>(),
+            new FunctionBody(NodeList.From<Statement>(declaration, new ReturnStatement(content)), strict: true),
+            expression: false,
+            async: false));
     }
 
     private static Expression FormatSlotAccessExpression(string slotName)
@@ -3283,6 +3665,17 @@ internal static class RazorSgDirectRenderOperationEmitter
                 VueSlotAstFactory.NormalizeContent(expression)));
         }
 
+        public void AddOptionalChild(Expression expression)
+        {
+            if (Stack.Count == 0)
+            {
+                AddChild(expression);
+                return;
+            }
+
+            AddChildSequence(expression);
+        }
+
         public void AddGuard(Expression expression)
         {
             Guards.Add(expression);
@@ -3351,16 +3744,17 @@ internal static class RazorSgDirectRenderOperationEmitter
             _lastAttributeName = attribute.Name;
         }
 
-        public void AddMultipleAttributes(Expression attributesExpression)
+        public bool AddMultipleAttributes(Expression attributesExpression)
         {
             if (attributesExpression is NullLiteral ||
                 attributesExpression is Identifier { Name: "undefined" })
             {
-                return;
+                return false;
             }
 
             _propSources.Add(new MultipleAttributesPropSource(attributesExpression));
             _lastAttributeName = null;
+            return true;
         }
 
         public void AddConditionalAttributes(
@@ -3624,7 +4018,9 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return Call("h", _componentExpression, props);
 
             var children = Children.Count == 1
-                ? Children[0]
+                ? Children[0] is SpreadElement spread
+                    ? spread.Argument
+                    : Children[0]
                 : CreateArray(Children);
             return Call("h", _componentExpression, props, children);
         }
@@ -3797,6 +4193,12 @@ internal static class RazorSgDirectRenderOperationEmitter
         Expression? RenderExpressionWhenAvailable = null,
         ConditionalRenderFragmentSelection? Selection = null,
         bool ReturnsVueSlotContent = false);
+
+    private readonly record struct RenderFragmentHelperBody(
+        IParameterSymbol? ValueParameter,
+        IParameterSymbol Builder,
+        IOperation Body,
+        ImmutableArray<IVariableDeclarationGroupOperation> LocalRenderFragmentDeclarations);
 
     private readonly record struct DirectRenderFunction(
         string FunctionName,

@@ -8,6 +8,13 @@ namespace Jazor.RazorVue.Generation;
 [Generator]
 public sealed class RazorVueGenerator : IIncrementalGenerator
 {
+    public RazorVueGenerator()
+    {
+        // GeneratorDriver invokes Initialize from inside RunGeneratorsAndUpdateCompilation.
+        // Revalidate here so a tiered-JIT replacement is repaired before that driver call.
+        RazorSourceGeneratorBootstrap.Initialize();
+    }
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         RazorSourceGeneratorBootstrap.Initialize();

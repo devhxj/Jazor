@@ -517,6 +517,29 @@ public sealed class SemanticWalkerPatternTest
     StringAssert.Contains(script, "let possible = maybe != null;", StringComparison.Ordinal);
   }
 
+  [TestMethod]
+  public void Visit_IsType_ErasedInterface_FromTypeParameterConstraint_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                bool TestMethod<TValue>(TValue value)
+                    where TValue : class, IComparable<TValue>
+                {
+                    return value is IComparable<TValue>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  return value != null;
+}", script);
+  }
+
   /// <summary>
   /// 测试 Visit - IsNull null 检查
   /// </summary>
@@ -1707,6 +1730,46 @@ public sealed class SemanticWalkerPatternTest
     AssertContainsCount(script, "list.slice(1, -1)", 0);
   }
 
+  [TestMethod]
+  public void Visit_ListPattern_CustomSource_UsesStructuralLengthIndexerAndSliceContracts()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                sealed class Segment
+                {
+                    public int Length => 0;
+                    public int this[int index] => 0;
+                    public Segment Slice(int start, int length) => this;
+                }
+
+                void TestMethod(Segment segment)
+                {
+                    if (segment is [var first, .. var middle, var last])
+                    {
+                        Console.WriteLine(first + last);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "first, middle, last;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "segment != null", StringComparison.Ordinal);
+    StringAssert.Contains(script, "segment.length", StringComparison.Ordinal);
+    StringAssert.Contains(script, "segment[0]", StringComparison.Ordinal);
+    StringAssert.Contains(script, "segment.slice(1, ", StringComparison.Ordinal);
+    Assert.IsFalse(script.Contains("Array.isArray(segment)", StringComparison.Ordinal), script);
+    Assert.IsTrue(
+      script.IndexOf("segment != null", StringComparison.Ordinal) <
+      script.IndexOf("segment.length", StringComparison.Ordinal),
+      script);
+  }
+
   /// <summary>
   /// 测试 Visit - SlicePattern 切片模式
   /// </summary>
@@ -2326,7 +2389,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && obj != null && ""length"" in obj && obj.length > 0;
+  let result = typeof obj === ""string"" && obj != null && obj.length > 0;
 }", script);
 
   }
@@ -4128,7 +4191,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "value.Length", 1);
-    StringAssert.Contains(script, "\"length\" in value && (v$0 = value.length, v$0 > 0 && v$0 < 10)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(v$0 = value.length, v$0 > 0 && v$0 < 10)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4155,7 +4218,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let value = """";
-  let result = typeof value === ""string"" && value != null && ""length"" in value && value.length === 0;
+  let result = typeof value === ""string"" && value != null && value.length === 0;
 }", script);
 
   }
@@ -5128,6 +5191,61 @@ line2"";
   }
 
   /// <summary>
+  /// A generic value can satisfy an erased interface through a domain-specific derived
+  /// interface constraint. The runtime has no interface declaration to inspect, so this
+  /// must lower to the only provable contract: the value is non-null.
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_GenericDerivedConstraint_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            interface IScore : IComparable { }
+
+            class TestClass
+            {
+                void TestMethod<T>(T candidate) where T : IScore
+                {
+                    bool result = candidate is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    AssertStringContainsJsNaming(script, "let result = candidate != null;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// A non-nullable value-type generic constraint has a stronger compile-time contract
+  /// than a reference-capable interface constraint, so the erased interface test is
+  /// always true and must not retain a redundant null guard.
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_GenericValueTypeConstraint_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T candidate) where T : struct, IComparable
+                {
+                    bool result = candidate is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    AssertStringContainsJsNaming(script, "let result = true;", StringComparison.Ordinal);
+    Assert.IsFalse(script.Contains("candidate != null", StringComparison.Ordinal));
+  }
+
+  /// <summary>
   /// 测试 Visit - 属性子模式中的接口 TypePattern 使用子模式输入类型静态折叠，而非误用外层 is 输入
   /// </summary>
   [TestMethod]
@@ -5986,7 +6104,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "obj.Length", 1);
-    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -6444,7 +6562,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "obj.Length", 1);
-    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
     StringAssert.Contains(script, "|| typeof obj === \"number\";", StringComparison.Ordinal);
   }
 
@@ -6560,7 +6678,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let obj = 42;
-  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && obj != null && ""length"" in obj && obj.length > 0;
+  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && obj != null && obj.length > 0;
 }", script);
 
   }

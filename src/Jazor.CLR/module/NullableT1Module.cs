@@ -13,9 +13,9 @@ public static class NullableT1Module<T>
 
 	/// <summary>
 	/// C#: nullable.Value
-	/// JS: value (throws if null)
+	/// JS: compiler-owned nullish guard that throws if the carrier is empty.
 	/// </summary>
-	[Jazor(Op.Inline, "System.Nullable<T>.Value.get", "__arg1")]
+	[Jazor(Op.Compile, "System.Nullable<T>.Value.get", "NullableValue")]
 	public extern static T _value(T? instance);
 
 	/// <summary>

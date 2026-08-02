@@ -1,5 +1,6 @@
 using Acornima;
 using Acornima.Ast;
+using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -5398,7 +5399,97 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "let v = value;");
+    StringAssert.Contains(script, "let v = value ?? (() => {");
+    StringAssert.Contains(script, "throw new Error(\"InvalidOperationException: Nullable object must have a value.\");");
+
+    var blockStatement = node as BlockStatement;
+    Assert.IsNotNull(blockStatement);
+    var declaration = blockStatement.Body.OfType<VariableDeclaration>().Single();
+    var initializer = declaration.Declarations.Single().Init;
+    Assert.IsInstanceOfType<LogicalExpression>(initializer);
+    var guard = (LogicalExpression)initializer;
+    Assert.AreEqual(Operator.NullishCoalescing, guard.Operator);
+    Assert.IsInstanceOfType<Identifier>(guard.Left);
+    Assert.IsInstanceOfType<CallExpression>(guard.Right);
+    var throwCall = (CallExpression)guard.Right;
+    Assert.IsInstanceOfType<ArrowFunctionExpression>(throwCall.Callee);
+    var throwBody = ((ArrowFunctionExpression)throwCall.Callee).Body as FunctionBody;
+    Assert.IsNotNull(throwBody);
+    Assert.HasCount(1, throwBody.Body);
+    Assert.IsInstanceOfType<ThrowStatement>(throwBody.Body[0]);
+  }
+
+  [TestMethod]
+  public async Task Visit_Nullable_Value_ThrowsForEmptyCarrierOnDenoHost()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                static int Read(int? value)
+                {
+                    return value.Value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var script = walker.Visit(block, new())?.ToKnRECMAScript();
+    Assert.IsNotNull(script);
+
+    var root = Path.Combine(
+      Path.GetTempPath(),
+      "jazor-compiler-nullable-value-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(root);
+
+    try
+    {
+      var modulePath = Path.Combine(root, "nullable-value.mjs");
+      var testPath = Path.Combine(root, "nullable-value.test.mjs");
+      await System.IO.File.WriteAllTextAsync(
+        modulePath,
+        "export function read(value) " + script,
+        new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+      await System.IO.File.WriteAllTextAsync(
+        testPath,
+        """
+        import { read } from "./nullable-value.mjs";
+
+        function assert(condition, message) {
+          if (!condition)
+            throw new Error(message);
+        }
+
+        Deno.test("Nullable Value preserves value and throws for an empty carrier", () => {
+          assert(read(42) === 42, "a populated nullable value must be returned unchanged");
+
+          for (const emptyValue of [null, undefined]) {
+            let thrown = null;
+            try {
+              read(emptyValue);
+            } catch (error) {
+              thrown = error;
+            }
+
+            assert(thrown instanceof Error, "an empty nullable value must throw an Error");
+            assert(
+              thrown.message === "InvalidOperationException: Nullable object must have a value.",
+              "the exception message must identify Nullable<T>.Value");
+          }
+        });
+        """,
+        new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+      using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+      await Deno.Execute(
+        new DenoExecuteBaseOptions { WorkingDirectory = root },
+        ["test", "--quiet", "--allow-read", testPath],
+        timeout.Token);
+    }
+    finally
+    {
+      if (Directory.Exists(root))
+        Directory.Delete(root, recursive: true);
+    }
   }
 
   [TestMethod]

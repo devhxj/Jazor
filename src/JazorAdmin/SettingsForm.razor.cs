@@ -1,7 +1,5 @@
 namespace JazorAdmin;
 
-using Microsoft.AspNetCore.Components.Web;
-
 [ECMAScriptModule("./components/jazor-admin-settings-form")]
 public partial class SettingsForm : AppComponentBase, IVueContainerComponent
 {
@@ -26,133 +24,17 @@ public partial class SettingsForm : AppComponentBase, IVueContainerComponent
     private VueClassValue RootCssClass
         => BuildCssClass("jazor-admin-settings-form");
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var fields = BuildEffectiveFields(Fields?.AsArray);
-        var statusText = Text.Normalize(StatusText);
-
-        builder.OpenElement(0, "form");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", CssStyle);
-        builder.AddAttribute(4, "onsubmit", EventCallback.Factory.Create(this, OnSubmit));
-        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 5, "onsubmit", true);
-
-        foreach (var field in fields)
-        {
-            var source = field.Source;
-            var checkbox = source.Kind == SettingsFieldKind.Checkbox;
-            builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", checkbox ? "jazor-admin-settings-form__checkbox-field" : "jazor-admin-settings-form__field");
-
-            if (checkbox)
-            {
-                builder.OpenElement(6, "input");
-                builder.AddAttribute(7, "id", field.InputId);
-                builder.AddAttribute(8, "class", "jazor-admin-settings-form__checkbox");
-                builder.AddAttribute(9, "data-form-field", field.Key);
-                builder.AddAttribute(10, "name", field.Key);
-                builder.AddAttribute(11, "type", "checkbox");
-                builder.AddAttribute(12, "checked", source.Checked ?? false);
-                builder.AddAttribute(13, "required", source.Required ?? false);
-                builder.AddAttribute(14, "disabled", source.Disabled ?? false);
-                builder.AddAttribute(15, "aria-describedby", field.HelpId);
-                builder.AddAttribute(16, "onchange", EventCallback.Factory.Create(this, () => OnCheckboxFieldChanged(field.Key, source.Checked ?? false)));
-                builder.CloseElement();
-            }
-
-            builder.OpenElement(17, "label");
-            builder.AddAttribute(18, "class", "jazor-admin-settings-form__label");
-            builder.AddAttribute(19, "for", field.InputId);
-            builder.AddContent(20, field.Label);
-            builder.CloseElement();
-
-            if (source.Kind == SettingsFieldKind.Text)
-            {
-                builder.OpenElement(21, "input");
-                builder.AddAttribute(22, "id", field.InputId);
-                builder.AddAttribute(23, "class", "jazor-admin-settings-form__input");
-                builder.AddAttribute(24, "data-form-field", field.Key);
-                builder.AddAttribute(25, "name", field.Key);
-                builder.AddAttribute(26, "type", source.TextType ?? SettingsTextFieldType.Text);
-                builder.AddAttribute(27, "value", source.Value ?? string.Empty);
-                builder.AddAttribute(28, "placeholder", Text.Normalize(source.Placeholder));
-                builder.AddAttribute(29, "autocomplete", Text.Normalize(source.Autocomplete));
-                builder.AddAttribute(30, "required", source.Required ?? false);
-                builder.AddAttribute(31, "disabled", source.Disabled ?? false);
-                builder.AddAttribute(32, "aria-describedby", field.HelpId);
-                builder.AddAttribute(33, "oninput", EventCallback.Factory.Create<string>(this, value => OnTextFieldChanged(field.Key, value)));
-                builder.SetUpdatesAttributeName("value");
-                builder.CloseElement();
-            }
-            else if (source.Kind == SettingsFieldKind.Select)
-            {
-                builder.OpenElement(34, "select");
-                builder.AddAttribute(35, "id", field.InputId);
-                builder.AddAttribute(36, "class", "jazor-admin-settings-form__select");
-                builder.AddAttribute(37, "data-form-field", field.Key);
-                builder.AddAttribute(38, "name", field.Key);
-                builder.AddAttribute(39, "value", source.Value ?? string.Empty);
-                builder.AddAttribute(40, "required", source.Required ?? false);
-                builder.AddAttribute(41, "disabled", source.Disabled ?? false);
-                builder.AddAttribute(42, "aria-describedby", field.HelpId);
-                builder.AddAttribute(43, "onchange", EventCallback.Factory.Create<string>(this, value => OnSelectFieldChanged(field.Key, value)));
-                builder.SetUpdatesAttributeName("value");
-
-                foreach (var option in BuildEffectiveOptions(source.Options?.AsArray))
-                {
-                    builder.OpenElement(44, "option");
-                    builder.AddAttribute(45, "value", option.Value);
-                    builder.AddAttribute(46, "disabled", option.Disabled ?? false);
-                    builder.AddContent(47, Text.Normalize(option.Label) ?? option.Value);
-                    builder.CloseElement();
-                }
-
-                builder.CloseElement();
-            }
-
-            if (field.HelpText is not null)
-            {
-                builder.OpenElement(48, "small");
-                builder.AddAttribute(49, "id", field.HelpId);
-                builder.AddAttribute(50, "class", "jazor-admin-settings-form__help");
-                builder.AddContent(51, field.HelpText);
-                builder.CloseElement();
-            }
-
-            builder.CloseElement();
-        }
-
-        builder.OpenElement(52, "button");
-        builder.AddAttribute(53, "class", "jazor-admin-settings-form__submit");
-        builder.AddAttribute(54, "data-form-action", "submit");
-        builder.AddAttribute(55, "type", "submit");
-        builder.AddAttribute(56, "disabled", SubmitDisabled);
-        builder.AddContent(58, Text.Normalize(SubmitText) ?? "Save");
-        builder.CloseElement();
-
-        if (statusText is not null)
-        {
-            builder.OpenElement(59, "p");
-            builder.AddAttribute(60, "class", "jazor-admin-settings-form__status");
-            builder.AddAttribute(61, "aria-live", "polite");
-            builder.AddContent(62, statusText);
-            builder.CloseElement();
-        }
-
-        builder.CloseElement();
-    }
-
     private Task OnSubmit()
         => Submit.InvokeAsync();
 
-    private Task OnTextFieldChanged(string key, string value)
-        => NotifyFieldChanged(key, value);
+    private Task OnTextFieldChanged(string key, string? value)
+        => NotifyFieldChanged(key, value ?? string.Empty);
 
-    private Task OnSelectFieldChanged(string key, string value)
-        => NotifyFieldChanged(key, value);
+    private Task OnSelectFieldChanged(string key, string? value)
+        => NotifyFieldChanged(key, value ?? string.Empty);
 
     private Task OnCheckboxFieldChanged(string key, bool checkedValue)
-        => NotifyFieldChanged(key, !checkedValue);
+        => NotifyFieldChanged(key, checkedValue);
 
     private Task NotifyFieldChanged(string key, SettingsValue value)
         => FieldChanged.InvokeAsync(new SettingsFieldChange

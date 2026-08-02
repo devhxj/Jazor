@@ -24,22 +24,33 @@ internal static class RazorSgOfficialAuthoringTestHost
         string documentText,
         string codeBehindSource,
         string rootNamespace,
-        string componentMetadataName)
+        string componentMetadataName,
+        IReadOnlyDictionary<string, string>? supportingSources = null)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var syntaxTrees = ImmutableArray.CreateBuilder<SyntaxTree>();
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+            GlobalUsingsSource,
+            options: parseOptions,
+            path: "GlobalUsings.g.cs"));
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+            codeBehindSource,
+            options: parseOptions,
+            path: documentPath + ".cs"));
+        if (supportingSources is not null)
+        {
+            foreach (var source in supportingSources.OrderBy(static item => item.Key, StringComparer.Ordinal))
+            {
+                syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+                    source.Value,
+                    options: parseOptions,
+                    path: source.Key));
+            }
+        }
+
         var baseCompilation = CSharpCompilation.Create(
             assemblyName: "RazorSg.OfficialAuthoring.Tests",
-            syntaxTrees:
-            [
-                CSharpSyntaxTree.ParseText(
-                    GlobalUsingsSource,
-                    options: parseOptions,
-                    path: "GlobalUsings.g.cs"),
-                CSharpSyntaxTree.ParseText(
-                    codeBehindSource,
-                    options: parseOptions,
-                    path: documentPath + ".cs")
-            ],
+            syntaxTrees: syntaxTrees,
             references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -103,7 +114,8 @@ internal static class RazorSgOfficialAuthoringTestHost
         var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(binding, component, closure!);
         return new RazorSgOfficialAuthoringObservation(
             generatedSource.ReplaceLineEndings("\n"),
-            artifact.ModuleText.ReplaceLineEndings("\n"));
+            artifact.ModuleText.ReplaceLineEndings("\n"),
+            artifact.SourceMapContent.ReplaceLineEndings("\n"));
     }
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
@@ -154,4 +166,5 @@ internal static class RazorSgOfficialAuthoringTestHost
 
 internal sealed record RazorSgOfficialAuthoringObservation(
     string GeneratedCSharp,
-    string ModuleText);
+    string ModuleText,
+    string SourceMapContent);

@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 namespace Jazor.RazorVue.Generation;
@@ -14,15 +13,12 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
     private const int UnixProtWrite = 0x2;
     private const int UnixProtExecute = 0x4;
 
-    private readonly object _sync = new();
     private readonly MethodInfo _target;
     private readonly IntPtr _patchAddress;
     private readonly int _patchLength;
     private readonly byte[] _original;
     private readonly byte[] _jump;
     private bool _applied;
-    [ThreadStatic]
-    private static bool _invokingOriginal;
     private static int _selfTestReplacementCount;
 
     private RazorSourceGeneratorInitializeNativeHook(MethodInfo target, MethodInfo replacement)
@@ -30,10 +26,12 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
         if (!IsCurrentPlatformSupported(out var unsupportedReason))
             throw new PlatformNotSupportedException(unsupportedReason);
 
-        _target = target ?? throw new ArgumentNullException(nameof(target));
+        if (target is null)
+            throw new ArgumentNullException(nameof(target));
         if (replacement is null)
             throw new ArgumentNullException(nameof(replacement));
 
+        _target = target;
         RuntimeHelpers.PrepareMethod(target.MethodHandle);
         RuntimeHelpers.PrepareMethod(replacement.MethodHandle);
 
@@ -156,49 +154,17 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
         }
     }
 
-    public object? InvokeOriginal(object? instance, object?[] arguments)
-    {
-        if (arguments is null)
-            throw new ArgumentNullException(nameof(arguments));
-
-        lock (_sync)
-        {
-            if (_invokingOriginal)
-                throw new InvalidOperationException("RazorVue native hook attempted to recursively invoke its original method.");
-
-            _invokingOriginal = true;
-            try
-            {
-                Unapply();
-                try
-                {
-                    var result = _target.Invoke(instance, arguments);
-                    return result;
-                }
-                catch (TargetInvocationException ex) when (ex.InnerException is not null)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                }
-                finally
-                {
-                    Apply();
-                }
-            }
-            finally
-            {
-                _invokingOriginal = false;
-            }
-        }
-
-        throw new InvalidOperationException("The original method invocation completed without returning a result.");
-    }
-
     public void Dispose()
+        => Unapply();
+
+    // Tiered JIT can replace the native body after the initial install. Keep the
+    // process-wide driver hook bound to the method's current executable entry.
+    internal bool IsCurrentTargetPatched()
     {
-        lock (_sync)
-        {
-            Unapply();
-        }
+        RuntimeHelpers.PrepareMethod(_target.MethodHandle);
+        var currentPatchAddress = ResolvePatchAddress(_target.MethodHandle.GetFunctionPointer(), _patchLength);
+        return currentPatchAddress == _patchAddress &&
+               ReadBytes(currentPatchAddress, _patchLength).AsSpan().SequenceEqual(_jump);
     }
 
     private void Apply()

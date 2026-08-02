@@ -237,7 +237,7 @@ internal sealed class CurrentComponentMemberClosure
 
         private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
             => symbol.ContainingType is not null &&
-               IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType) &&
+               RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType) &&
                symbol.ContainingType.DeclaringSyntaxReferences.Length > 0;
 
         private bool CanInclude(ISymbol symbol)
@@ -256,30 +256,12 @@ internal sealed class CurrentComponentMemberClosure
                 return false;
             }
 
-            return IsDeclaredOnCurrentComponentHierarchy(namedType.ContainingType);
+            return RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, namedType.ContainingType);
         }
 
         private bool IsNestedRuntimeClassMember(ISymbol symbol)
             => symbol.ContainingType is not null &&
                IsRuntimeClassNestedInCurrentComponent(symbol.ContainingType);
-
-        private bool IsDeclaredOnCurrentComponentHierarchy(INamedTypeSymbol? containingType)
-        {
-            if (containingType is null)
-                return false;
-
-            for (var current = _componentType; current is not null; current = current.BaseType)
-            {
-                if (SymbolEqualityComparer.Default.Equals(
-                        containingType.OriginalDefinition,
-                        current.OriginalDefinition))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         private IOperation? GetMethodOperation(IMethodSymbol method)
         {

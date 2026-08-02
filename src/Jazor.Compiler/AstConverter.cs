@@ -609,7 +609,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
 
-        return null;
+        var walker = CreateSemanticWalker(CancellationToken.None);
+        var argument = CreateImportAwareArgument(Sense.Any);
+        var defaultValue = walker.BuildImplicitMemberFieldDefaultValue(symbol, argument);
+        MergeImports(argument);
+        return defaultValue;
     }
 
     private FunctionBody ConvertMemberOperationToFunctionBody(
@@ -727,10 +731,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 parameters.Add(ConvertParameter(p));
         }
 
-        var name = GetSymbolName(symbol);
+        var isIndexerAccessor = symbol.AssociatedSymbol is IPropertySymbol { IsIndexer: true };
+        var name = isIndexerAccessor
+            ? Util.GetMemberIndexerAccessorHelperName(symbol)
+            : GetSymbolName(symbol);
         var key = new Identifier(name);
 
-        var propertyKind = isProperty
+        var propertyKind = isProperty && !isIndexerAccessor
             ? (symbol.MethodKind == MethodKind.PropertyGet ? PropertyKind.Get : PropertyKind.Set)
             : PropertyKind.Method;
 
@@ -1375,8 +1382,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (value is LiteralExpressionSyntax lit)
+        if (value is LiteralExpressionSyntax lit &&
+            !lit.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.DefaultLiteralExpression))
             return CreateLiteralExpression(lit.Token.Value);
+
+        // The null-forgiving postfix is an authoring-time nullable annotation. Roslyn may not
+        // expose an IOperation for the wrapper syntax, so lower its operand directly instead.
+        if (value is PostfixUnaryExpressionSyntax suppressNullableWarning &&
+            suppressNullableWarning.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression))
+            return ConvertExpressionSyntax(suppressNullableWarning.Operand, cancellationToken);
 
         var operation = GetSemanticModel(value).GetOperation(value);
         if (operation is not null)

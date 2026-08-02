@@ -1546,7 +1546,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function createCounterSetupScope(props, slots)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function createCounterSetupScope(slots)", StringComparison.Ordinal);
         StringAssert.Contains(
             script,
             "...suppressLogo() ? {} : typeof slots.logo === \"function\" ? { logo: () => [].concat(slots.logo() ?? []) } : {}",
@@ -1878,6 +1878,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "slots.extra", StringComparison.Ordinal);
 
@@ -5040,7 +5041,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_EmitsChildContentDefaultSlotBridge()
+    public async Task BuildVueComponentModule_EmitsChildContentAsDirectVueSlot()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -5084,17 +5085,15 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("\"childContent\"", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "setup(props, { slots }) {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const componentProps = Object.create(props);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "componentProps.childContent = typeof slots.default === \"function\" ? builder => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const content = slots.default();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "[].concat(content ?? []).forEach(slotItem => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "builder.addContent(slotItem);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "syncSlotParameters();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "createPanelSetupScope(componentProps, slots)", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
+        StringAssert.Contains(script, "slots.default", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("componentProps", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("syncSlotParameters", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "createPanelSetupScope(props, slots)", StringComparison.Ordinal);
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_RuntimeBridgesNamedRenderFragmentSlot()
+    public async Task BuildVueComponentModule_RuntimeRendersNamedRenderFragmentSlotDirectly()
     {
         var childFixture = CreateManualGeneratedFixture(
             """
@@ -5130,8 +5129,8 @@ public sealed class RazorSgComponentMemberClosureTests
             childFixture.Component,
             childClosure);
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
-        StringAssert.Contains(childScript, "componentProps.header = typeof slots.header === \"function\" ? builder => {", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, ": null;", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
+        StringAssert.Contains(childScript, "slots.header", StringComparison.Ordinal);
         Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
 
         var parentFixture = CreateManualGeneratedFixture(
@@ -5289,7 +5288,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_TransportsTypedRenderFragmentParameterAsScopedVueSlot()
+    public async Task BuildVueComponentModule_RendersTypedRenderFragmentParameterAsScopedVueSlot()
     {
         var childFixture = CreateManualGeneratedFixture(
             """
@@ -5323,8 +5322,8 @@ public sealed class RazorSgComponentMemberClosureTests
             childClosure);
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
         StringAssert.Contains(childScript, "setup(props, { slots }) {", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "componentProps.header = typeof slots.header === \"function\" ? value => builder => {", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "const content = slots.header(value);", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
+        StringAssert.Contains(childScript, "slots.header(\"Scoped header\")", StringComparison.Ordinal);
         Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
 
         var parentFixture = CreateManualGeneratedFixture(
@@ -5521,8 +5520,8 @@ public sealed class RazorSgComponentMemberClosureTests
             childClosure);
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(childScript, "componentProps.header = typeof slots.title === \"function\" ? builder => {", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "const content = slots.title();", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
+        StringAssert.Contains(childScript, "slots.title", StringComparison.Ordinal);
         Assert.IsFalse(childScript.Contains("slots.header", StringComparison.Ordinal), childScript);
         Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
 
@@ -5593,8 +5592,8 @@ public sealed class RazorSgComponentMemberClosureTests
             childClosure);
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(childScript, "componentProps.titleContent = typeof slots.title === \"function\" ? value => builder => {", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "const content = slots.title(value);", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
+        StringAssert.Contains(childScript, "slots.title(\"Descriptor title\")", StringComparison.Ordinal);
         Assert.IsFalse(childScript.Contains("slots.titleContent", StringComparison.Ordinal), childScript);
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
@@ -6588,7 +6587,8 @@ public sealed class RazorSgComponentMemberClosureTests
 
         StringAssert.Contains(childScript, "props.modelValue", StringComparison.Ordinal);
         StringAssert.Contains(childScript, "props.onAction?.(props.modelValue);", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "const content = slots.title(value);", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
+        StringAssert.Contains(childScript, "slots.title(props.modelValue)", StringComparison.Ordinal);
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);

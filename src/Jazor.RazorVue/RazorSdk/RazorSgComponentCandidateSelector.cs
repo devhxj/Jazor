@@ -48,6 +48,11 @@ internal static class RazorSgComponentCandidateSelector
             .Where(static component => HasHandwrittenBuildRenderTree(component))
             .ToImmutableArray();
 
+    public static ImmutableArray<INamedTypeSymbol> DiscoverTailOutputComponents(Compilation compilation)
+        => DiscoverCurrentComponents(compilation)
+            .Where(static component => FindBuildRenderTreeMethod(component) is not null)
+            .ToImmutableArray();
+
     public static IMethodSymbol? FindHandwrittenBuildRenderTreeMethod(INamedTypeSymbol component)
     {
         var buildRenderTree = FindBuildRenderTreeMethod(component);

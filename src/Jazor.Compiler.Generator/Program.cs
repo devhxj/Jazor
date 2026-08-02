@@ -144,8 +144,9 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
     var typesInit = string.Join(Split, types
         .OrderBy(x => x.Op)
         .Select(n => $"types[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatRuntimeValueCarrier(runtimeValueCarriers.GetValueOrDefault(n.Member))});"));
+    // The catalog is shared by the analyzer and compiler. Compile mappings additionally
+    // generate dispatch slots below, but remain normal supported member entries here.
     var membersInit = string.Join(Split, members
-        .Where(x => x.Op != nameof(Op.Compile))
         .Select(n => $"members[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatModulePath(n.Op, n.ModulePath)});"));
     var compilesInit = string.Join("", members
         .Where(x => x.Op == nameof(Op.Compile))
@@ -235,7 +236,6 @@ public partial class SemanticWalker
             entry.Member,
             CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath, runtimeValueCarriers.GetValueOrDefault(entry.Member)))),
         members
-            .Where(static entry => entry.Op != nameof(Op.Compile))
             .Select(static entry => new KeyValuePair<string, WhiteListValue>(
                 entry.Member,
                 CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath))));

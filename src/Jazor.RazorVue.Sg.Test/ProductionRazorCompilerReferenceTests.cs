@@ -219,6 +219,35 @@ public sealed class ProductionRazorCompilerReferenceTests
         Assert.AreEqual(0, razorSdkRegexSites.Length, DescribeSourceLines(razorSdkRegexSites));
     }
 
+    [TestMethod]
+    public void RazorVueModuleBuilder_DoesNotRetainBuilderProtocolFallback()
+    {
+        var root = FindRepositoryRoot();
+        var moduleBuilderPath = Path.Combine(
+            root,
+            "src",
+            "Jazor.RazorVue",
+            "RazorSdk",
+            "RazorSgVueComponentModuleBuilder.cs");
+        var moduleBuilderText = File.ReadAllText(moduleBuilderPath);
+        var retiredFallbackTokens = new[]
+        {
+            "createRenderContext",
+            "scope.buildRenderTree(builder)",
+            "builder.finish()",
+            "componentProps",
+            "syncSlotParameters",
+            "SlotParameterBridge"
+        };
+
+        foreach (var token in retiredFallbackTokens)
+        {
+            Assert.IsFalse(
+                moduleBuilderText.Contains(token, StringComparison.Ordinal),
+                "Direct RazorVue lowering must not restore the retired RenderTreeBuilder fallback: " + token);
+        }
+    }
+
     private static string DescribeSourceLines(IEnumerable<SourceLine> sourceLines)
         => string.Join(
             Environment.NewLine,

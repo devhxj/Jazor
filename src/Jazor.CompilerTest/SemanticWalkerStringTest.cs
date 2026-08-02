@@ -1845,6 +1845,32 @@ ${name}!`;
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_String_SplitSingleStringSeparator_WithDefaultOptions_UsesNativeSplit()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = ""region::release::ready"";
+					string[] implicitNone = text.Split(""::"");
+					string[] explicitNone = text.Split(""|"", StringSplitOptions.None);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let text = ""region::release::ready"";
+  let implicitNone = text.split(""::"");
+  let explicitNone = text.split(""|"");
+}", script);
+	}
+
 	/// <summary>
 	/// 测试字符串 Join 方法
 	/// </summary>

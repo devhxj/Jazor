@@ -92,4 +92,51 @@ public sealed class RazorSourceGeneratorTailOutputTests
         Assert.IsTrue(result, failure);
         Assert.IsNull(catalogSource);
     }
+
+    [TestMethod]
+    public void TryBuildFinalCompilationCatalog_ReportsDirectRenderFailureWithComponentIdentity()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.DynamicTag",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+                using Microsoft.AspNetCore.Components;
+                using Microsoft.AspNetCore.Components.Rendering;
+                using static ECMAScript.Vue3;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/dynamic-tag")]
+                public sealed class DynamicTag : ComponentBase, IVueComponent
+                {
+                    [Parameter] public string TagName { get; set; } = "section";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, TagName);
+                        builder.CloseElement();
+                    }
+                }
+                """,
+                parseOptions,
+                "Pages/DynamicTag.razor.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
+
+        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+            compilation,
+            CancellationToken.None,
+            out var catalogSource,
+            out var failure);
+
+        Assert.IsFalse(result);
+        Assert.IsNull(catalogSource);
+        Assert.IsNotNull(failure);
+        StringAssert.Contains(failure, "Demo.Pages.DynamicTag", StringComparison.Ordinal);
+        StringAssert.Contains(failure, "OpenElement tag names must be compile-time strings", StringComparison.Ordinal);
+    }
 }

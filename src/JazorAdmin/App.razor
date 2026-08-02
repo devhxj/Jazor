@@ -111,7 +111,54 @@
                                                 Dismissible
                                                 Dismissed="@DismissActionStatus" />
                     }
-                    @SelectedPageContent
+                    @if (IsReleasesPage)
+                    {
+                        <ReleaseQueue SectionClass="jazor-admin__release-section jazor-admin__release-section--focused"
+                                      SelectedRowKey="@selectedReleaseKey"
+                                      SelectedRowKeyChanged="@(value => selectedReleaseKey = value)"
+                                      SelectedRowKeys="@selectedReleaseKeys"
+                                      SelectedRowKeysChanged="@(value => selectedReleaseKeys = value)"
+                                      SearchText="@releaseSearchText"
+                                      SearchTextChanged="@(value => releaseSearchText = value)"
+                                      PageIndex="@releasePageIndex"
+                                      PageIndexChanged="@(value => releasePageIndex = value)"
+                                      SortColumnKey="@releaseSortColumnKey"
+                                      SortColumnKeyChanged="@(value => releaseSortColumnKey = value)"
+                                      SortDescending="@releaseSortDescending"
+                                      SortDescendingChanged="@(value => releaseSortDescending = value)"
+                                      Loading="@releaseLoading" />
+                    }
+                    else if (IsAuditPage)
+                    {
+                        <AuditPage />
+                    }
+                    else if (IsSettingsPage)
+                    {
+                        <SettingsPage Fields="@GetSettingsFields()"
+                                      StatusText="@settingsStatus"
+                                      Submit="@SaveSettings"
+                                      FieldChanged="@OnSettingsFieldChanged" />
+                    }
+                    else if (IsWorkspacePage)
+                    {
+                        <WorkspacePage />
+                    }
+                    else
+                    {
+                        <DashboardPage SelectedRowKey="@selectedReleaseKey"
+                                       SelectedRowKeyChanged="@(value => selectedReleaseKey = value)"
+                                       SelectedRowKeys="@selectedReleaseKeys"
+                                       SelectedRowKeysChanged="@(value => selectedReleaseKeys = value)"
+                                       SearchText="@releaseSearchText"
+                                       SearchTextChanged="@(value => releaseSearchText = value)"
+                                       PageIndex="@releasePageIndex"
+                                       PageIndexChanged="@(value => releasePageIndex = value)"
+                                       SortColumnKey="@releaseSortColumnKey"
+                                       SortColumnKeyChanged="@(value => releaseSortColumnKey = value)"
+                                       SortDescending="@releaseSortDescending"
+                                       SortDescendingChanged="@(value => releaseSortDescending = value)"
+                                       Loading="@releaseLoading" />
+                    }
                 </TDesignPageContainer>
             </ChildContent>
         </TDesignLayout>

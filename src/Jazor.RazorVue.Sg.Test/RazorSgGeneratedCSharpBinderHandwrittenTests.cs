@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -55,6 +56,65 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
         Assert.AreEqual(3, binding.Components.Single().BuildRenderTreeBody.Operations.Length);
         Assert.AreEqual(1, binding.ReusedGeneratedTreeCount);
         Assert.AreEqual(0, binding.DerivedGeneratedTreeCount);
+    }
+
+    [TestMethod]
+    public void TryBindHandwritten_OrdersComponentsAndSharesTheirSourceDocument()
+    {
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using static ECMAScript.Vue3;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/zebra")]
+            public sealed class Zebra : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "zebra");
+                }
+            }
+
+            [ECMAScriptModule("./components/alpha")]
+            public sealed class Alpha : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "alpha");
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Pages/Components.razor.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.HandwrittenCompilation.StableOrder",
+            [sourceTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var alpha = compilation.GetTypeByMetadataName("Demo.Pages.Alpha");
+        var zebra = compilation.GetTypeByMetadataName("Demo.Pages.Zebra");
+
+        Assert.IsNotNull(alpha);
+        Assert.IsNotNull(zebra);
+        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+            compilation,
+            ImmutableArray.Create(zebra!, alpha!),
+            out var binding,
+            out var failure), failure);
+        Assert.IsNotNull(binding);
+
+        CollectionAssert.AreEqual(
+            new[] { "Demo.Pages.Alpha", "Demo.Pages.Zebra" },
+            binding!.Components.Select(static component => component.ComponentSymbol.ToDisplayString()).ToArray());
+        Assert.AreEqual(1, binding.Documents.Length);
+        Assert.AreSame(binding.Documents[0], binding.Components[0].Document);
+        Assert.AreSame(binding.Documents[0], binding.Components[1].Document);
+        Assert.AreEqual("Pages/Components.razor.cs", binding.Documents[0].SourcePath);
+        Assert.AreEqual(1, binding.ReusedGeneratedTreeCount);
     }
 
     [TestMethod]

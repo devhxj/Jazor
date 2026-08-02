@@ -475,6 +475,12 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         => StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(invocation);
 
     private bool IsDirectlySupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
+        => IsDirectlySupportedExternalType(typeSymbol, TryGetCurrentSourceBoundaryType(operation));
+
+    private bool IsDirectlySupportedImplicitFieldDefaultType(IFieldSymbol field, ITypeSymbol typeSymbol)
+        => IsDirectlySupportedExternalType(typeSymbol, GetTopMostContainingType(field));
+
+    private bool IsDirectlySupportedExternalType(ITypeSymbol typeSymbol, INamedTypeSymbol? currentSourceBoundary)
     {
         var original = typeSymbol.OriginalDefinition;
         if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter ||
@@ -482,8 +488,24 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             IsStructuralType(typeSymbol))
             return true;
 
-        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, typeSymbol))
-            return true;
+        if (_moduleDeclaredNames is not null)
+        {
+            foreach (var candidate in EnumerateSupportMarkerCandidates(typeSymbol))
+            {
+                if (_moduleDeclaredNames.ContainsKey(candidate.OriginalDefinition))
+                    return true;
+            }
+        }
+
+        if (currentSourceBoundary is not null)
+        {
+            foreach (var candidate in EnumerateSupportMarkerCandidates(typeSymbol))
+            {
+                if (candidate.Locations.Any(static location => location.IsInSource) &&
+                    IsSymbolWithinBoundary(candidate, currentSourceBoundary))
+                    return true;
+            }
+        }
 
         if (HasEcmascriptSupportMarker(typeSymbol))
             return true;

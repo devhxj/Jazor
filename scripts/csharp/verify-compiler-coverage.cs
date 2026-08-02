@@ -37,6 +37,8 @@ try
         arguments.Add("--no-build");
     if (options.NoRestore)
         arguments.Add("--no-restore");
+    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
+        arguments.Add("-p:BaseOutputPath=" + Path.GetFullPath(options.BaseOutputPath));
 
     await RunDotNetAsync(arguments, repoRoot);
 
@@ -179,6 +181,8 @@ internal sealed record CoverageGateOptions
 
     public string? ResultsDirectory { get; init; }
 
+    public string? BaseOutputPath { get; init; }
+
     public static CoverageGateOptions Parse(string[] args)
     {
         var result = new CoverageGateOptions();
@@ -198,6 +202,9 @@ internal sealed record CoverageGateOptions
                     break;
                 case "--results-directory":
                     result = result with { ResultsDirectory = ReadValue(args, ref index) };
+                    break;
+                case "--base-output-path":
+                    result = result with { BaseOutputPath = ReadValue(args, ref index) };
                     break;
                 default:
                     throw new InvalidOperationException("Unknown argument: " + args[index]);

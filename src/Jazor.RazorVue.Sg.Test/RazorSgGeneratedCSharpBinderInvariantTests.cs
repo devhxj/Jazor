@@ -64,4 +64,91 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
         Assert.AreSame(generatedTree, binding.Components[0].BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree);
         Assert.AreEqual(0, binding.DerivedGeneratedTreeCount);
     }
+
+    [TestMethod]
+    public void TryBindFinalCompilation_OrdersMultipleGeneratedComponentsIndependentlyOfCallerOrder()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var authoredTree = CSharpSyntaxTree.ParseText(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/alpha")]
+            public partial class Alpha : ComponentBase, IVueComponent
+            {
+            }
+
+            [ECMAScriptModule("./components/zebra")]
+            public partial class Zebra : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            parseOptions,
+            "Pages/Components.razor.cs");
+        var zebraTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public partial class Zebra
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "zebra");
+                }
+            }
+            """,
+            parseOptions,
+            "Pages/Zebra.razor.g.cs");
+        var alphaTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public partial class Alpha
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "alpha");
+                }
+            }
+            """,
+            parseOptions,
+            "Pages/Alpha.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.StableOrder",
+            [authoredTree, zebraTree, alphaTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var alpha = compilation.GetTypeByMetadataName("Demo.Pages.Alpha");
+        var zebra = compilation.GetTypeByMetadataName("Demo.Pages.Zebra");
+
+        Assert.IsNotNull(alpha);
+        Assert.IsNotNull(zebra);
+        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+            compilation,
+            ImmutableArray.Create(zebra!, alpha!),
+            out var binding,
+            out var failure), failure);
+        Assert.IsNotNull(binding);
+
+        CollectionAssert.AreEqual(
+            new[] { "Demo.Pages.Alpha", "Demo.Pages.Zebra" },
+            binding!.Components.Select(static component => component.ComponentSymbol.ToDisplayString()).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "Alpha.razor.g.cs", "Zebra.razor.g.cs" },
+            binding.Documents.Select(static document => document.HintName).ToArray());
+        Assert.AreEqual(2, binding.ReusedGeneratedTreeCount);
+        Assert.IsTrue(binding.Components.All(static component =>
+            string.Equals(
+                component.Document.SourcePath,
+                component.BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree.FilePath,
+                StringComparison.Ordinal)));
+    }
 }

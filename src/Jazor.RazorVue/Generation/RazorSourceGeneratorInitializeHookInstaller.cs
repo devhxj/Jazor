@@ -10,6 +10,7 @@ namespace Jazor.RazorVue.Generation;
 
 internal static class RazorSourceGeneratorInitializeHookInstaller
 {
+    private static readonly object InstallationSync = new();
     private static int _initialized;
     private static int _platformValidated;
     private static RazorSourceGeneratorInitializeNativeHook? _hook;
@@ -18,24 +19,41 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
 
     internal static bool TryInstall()
     {
-        if (Interlocked.Exchange(ref _initialized, 1) != 0)
-            return Volatile.Read(ref _hook) is not null;
-
-        try
+        lock (InstallationSync)
         {
-            if (Interlocked.Exchange(ref _platformValidated, 1) == 0 &&
-                !RazorSourceGeneratorInitializeNativeHook.TryValidateCurrentPlatform(out var platformFailure))
+            if (Volatile.Read(ref _initialized) != 0)
             {
-                SetFailure(platformFailure);
-                return false;
+                var hook = Volatile.Read(ref _hook);
+                if (hook is null)
+                    return false;
+
+                // Long-running hosts can promote GeneratorDriver's target method to a
+                // different JIT body. Reinstall rather than silently losing tail output.
+                return hook.IsCurrentTargetPatched() || TryPatchGeneratorDriver();
             }
 
-            return TryPatchGeneratorDriver();
-        }
-        catch (Exception ex)
-        {
-            SetFailure(ex.GetType().FullName + ": " + ex.Message);
-            return false;
+            try
+            {
+                if (Interlocked.Exchange(ref _platformValidated, 1) == 0 &&
+                    !RazorSourceGeneratorInitializeNativeHook.TryValidateCurrentPlatform(out var platformFailure))
+                {
+                    SetFailure(platformFailure);
+                    return false;
+                }
+
+                return TryPatchGeneratorDriver();
+            }
+            catch (Exception ex)
+            {
+                SetFailure(ex.GetType().FullName + ": " + ex.Message);
+                return false;
+            }
+            finally
+            {
+                // The hook is process-global. Publish completion only after _hook has
+                // been assigned, otherwise concurrent Razor drivers can miss tail output.
+                Volatile.Write(ref _initialized, 1);
+            }
         }
     }
 
@@ -96,16 +114,14 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
             throw new InvalidOperationException("GeneratorDriver hook was invoked before its hook handle was published.");
         }
 
-        var arguments = new object?[]
-        {
-            compilation,
-            null,
-            default(ImmutableArray<Diagnostic>),
-            cancellationToken
-        };
-        var result = (GeneratorDriver)hook.InvokeOriginal(instance, arguments)!;
-        outputCompilation = (Compilation)arguments[1]!;
-        diagnostics = (ImmutableArray<Diagnostic>)arguments[2]!;
+        // Calling the patched method's original body required temporarily restoring its
+        // process-wide machine code. A concurrent driver could enter during that window and
+        // bypass RazorVue tail output entirely. Reproduce Roslyn's public completion contract
+        // from RunGenerators/GetRunResult so the hook remains installed for every thread.
+        var result = instance.RunGenerators(compilation, cancellationToken);
+        var runResult = result.GetRunResult();
+        outputCompilation = compilation.AddSyntaxTrees(runResult.GeneratedTrees);
+        diagnostics = runResult.Diagnostics;
         if (ContainsVueRenderCatalog(outputCompilation))
             return result;
 

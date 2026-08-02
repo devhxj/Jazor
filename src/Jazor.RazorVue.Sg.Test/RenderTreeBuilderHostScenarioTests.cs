@@ -225,7 +225,8 @@ public enum RenderTreeBuilderHostSuccessKind
     ReusedLocalComponentType,
     NestedLocalComponentType,
     RenderFragmentSequenceEvaluation,
-    RenderFragmentReceiverEvaluation
+    RenderFragmentReceiverEvaluation,
+    InheritedDescriptorMap
 }
 
 public enum RenderTreeBuilderHostFailureKind
@@ -274,6 +275,43 @@ internal static class RenderTreeBuilderHostScenarioCatalog
 {
     public static IReadOnlyList<RenderTreeBuilderHostSuccessScenario> Successes { get; } =
     [
+        Success(
+            "inherited-descriptor-map",
+            "derived-component-inherits-prop-emit-and-slot-runtime-name-map",
+            RenderTreeBuilderHostSuccessKind.InheritedDescriptorMap,
+            """
+            [VueProp(nameof(Value), Name = "model-value")]
+            [VueLibraryEmit(nameof(ValueChanged), Name = "value-change")]
+            [VueSlot(nameof(ChildContent), IsDefault = true)]
+            abstract class EditorBase : ComponentBase
+            {
+                [Parameter] public string Value { get; set; } = "";
+                [Parameter] public EventCallback<string> ValueChanged { get; set; }
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+
+            [ECMAScriptModule("./components/inherited-editor")]
+            sealed class Editor : EditorBase
+            {
+            }
+
+            sealed class TestClass
+            {
+                void Render(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<Editor>(0);
+                    builder.CloseComponent();
+                }
+            }
+            """,
+            [
+                "\"ChildContent\": \"default\"",
+                "\"Value\": \"model-value\"",
+                "\"ValueChanged\": \"onValueChange\""
+            ],
+            ["onValue-change", "onOnValueChange"],
+            ["\"ChildContent\"", "\"Value\"", "\"ValueChanged\""],
+            [DefaultImport("./components/inherited-editor.mjs")]),
         Success(
             "combined-descriptor-map",
             "prop-emit-default-slot-runtime-name-map",

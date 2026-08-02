@@ -1,0 +1,76 @@
+@inherits AppComponentBase
+
+<form class="@RootCssClass" style="@CssStyle" @onsubmit="OnSubmit" @onsubmit:preventDefault>
+    @foreach (var field in BuildEffectiveFields(Fields?.AsArray))
+    {
+        var source = field.Source;
+        var checkbox = source.Kind == SettingsFieldKind.Checkbox;
+
+        <div class="@(checkbox ? "jazor-admin-settings-form__checkbox-field" : "jazor-admin-settings-form__field")">
+            @if (checkbox)
+            {
+                <input id="@field.InputId"
+                       class="jazor-admin-settings-form__checkbox"
+                       data-form-field="@field.Key"
+                       name="@field.Key"
+                       type="checkbox"
+                       required="@(source.Required ?? false)"
+                       disabled="@(source.Disabled ?? false)"
+                       aria-describedby="@field.HelpId"
+                       @bind:get="(source.Checked ?? false)"
+                       @bind:set="@(value => OnCheckboxFieldChanged(field.Key, value))" />
+            }
+
+            <label class="jazor-admin-settings-form__label" for="@field.InputId">@field.Label</label>
+
+            @if (source.Kind == SettingsFieldKind.Text)
+            {
+                <input id="@field.InputId"
+                       class="jazor-admin-settings-form__input"
+                       data-form-field="@field.Key"
+                       name="@field.Key"
+                       type="@(source.TextType ?? SettingsTextFieldType.Text)"
+                       placeholder="@Text.Normalize(source.Placeholder)"
+                       autocomplete="@Text.Normalize(source.Autocomplete)"
+                       required="@(source.Required ?? false)"
+                       disabled="@(source.Disabled ?? false)"
+                       aria-describedby="@field.HelpId"
+                       @bind:get="source.Value"
+                       @bind:set="@(value => OnTextFieldChanged(field.Key, value))"
+                       @bind:event="oninput" />
+            }
+            else if (source.Kind == SettingsFieldKind.Select)
+            {
+                <select id="@field.InputId"
+                        class="jazor-admin-settings-form__select"
+                        data-form-field="@field.Key"
+                        name="@field.Key"
+                        required="@(source.Required ?? false)"
+                        disabled="@(source.Disabled ?? false)"
+                        aria-describedby="@field.HelpId"
+                        @bind:get="source.Value"
+                        @bind:set="@(value => OnSelectFieldChanged(field.Key, value))">
+                    @foreach (var option in BuildEffectiveOptions(source.Options?.AsArray))
+                    {
+                        <option value="@option.Value" disabled="@(option.Disabled ?? false)">@(Text.Normalize(option.Label) ?? option.Value)</option>
+                    }
+                </select>
+            }
+
+            @if (field.HelpText is not null)
+            {
+                <small id="@field.HelpId" class="jazor-admin-settings-form__help">@field.HelpText</small>
+            }
+        </div>
+    }
+
+    <button class="jazor-admin-settings-form__submit"
+            data-form-action="submit"
+            type="submit"
+            disabled="@SubmitDisabled">@(Text.Normalize(SubmitText) ?? "Save")</button>
+
+    @if (Text.Normalize(StatusText) is { } statusText)
+    {
+        <p class="jazor-admin-settings-form__status" aria-live="polite">@statusText</p>
+    }
+</form>

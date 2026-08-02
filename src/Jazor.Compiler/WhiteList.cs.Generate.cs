@@ -82,6 +82,7 @@ internal static partial class WhiteList
 		types["System.Nullable<T>"] = new(Op.Allowed);
 		types["System.Type"] = new(Op.Allowed);
 		types["void"] = new(Op.Allowed);
+		types["Microsoft.AspNetCore.Components.ComponentBase"] = new(Op.Allowed);
 		types["Microsoft.AspNetCore.Components.EventCallback"] = new(Op.Allowed);
 		types["Microsoft.AspNetCore.Components.EventCallback<TValue>"] = new(Op.Allowed);
 		types["Microsoft.AspNetCore.Components.EventCallbackFactory"] = new(Op.Allowed);
@@ -90,6 +91,7 @@ internal static partial class WhiteList
 		
 		// 初始化成员
 		members["static extern ECMAScript.Global.Undefined<T>()"] = new(Op.Inline, "undefined");
+		members["static extern ECMAScript.Global.TypeOf(object)"] = new(Op.Compile, "_27d71701fd254382");
 		members["static extern ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");
 		members["static extern ECMAScript.BigInt.One.get"] = new(Op.Inline, "1n");
 		members["static extern ECMAScript.BigInt.Two.get"] = new(Op.Inline, "2n");
@@ -1470,7 +1472,8 @@ internal static partial class WhiteList
 		members["static System.Math.Truncate(double)"] = new(Op.Alias, "trunc");
 		members["static System.Math.ScaleB(double, int)"] = new(Op.Inline, "(__arg1 * Math.pow(2, __arg2))");
 		members["System.Nullable<T>.HasValue.get"] = new(Op.Inline, "(__arg1 !== null && __arg1 !== undefined)");
-		members["System.Nullable<T>.Value.get"] = new(Op.Inline, "__arg1");
+		members["System.Nullable<T>.Value.get"] = new(Op.Compile, "NullableValue");
+		members["System.Nullable<T>.GetValueOrDefault()"] = new(Op.Compile, "NullableGetValueOrDefault");
 		members["System.Nullable<T>.GetValueOrDefault(T)"] = new(Op.Inline, "(__arg1 ?? __arg2)");
 		members["object.GetType()"] = new(Op.Inline, "typeof __arg1");
 		members["object.Object()"] = new(Op.Allowed);
@@ -2130,6 +2133,9 @@ internal static partial class WhiteList
 		members["System.WeakReference.WeakReference(object)"] = new(Op.Inline, "new WeakRef(__arg1)");
 		members["virtual System.WeakReference.IsAlive.get"] = new(Op.Inline, "(__arg1.deref() !== undefined)");
 		members["virtual System.WeakReference.Target.get"] = new(Op.Inline, "__arg1.deref()");
+		members["Microsoft.AspNetCore.Components.ComponentBase.StateHasChanged()"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Action)"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Func<System.Threading.Tasks.Task>)"] = new(Op.Allowed);
 		members["static readonly Microsoft.AspNetCore.Components.EventCallback.Factory"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.EventCallback.InvokeAsync()"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue)"] = new(Op.Allowed);

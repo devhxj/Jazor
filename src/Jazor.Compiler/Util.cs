@@ -271,6 +271,23 @@ public static class Util
     public static string GetMemberConstructorHelperName(IMethodSymbol symbol)
         => $"$ctor_{Format.HashName(symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
 
+    /// <summary>
+    /// Gets the stable JavaScript helper name for a runtime-class indexer accessor.
+    /// JavaScript has no class indexer declaration syntax, so both declaration and use sites
+    /// bind to the Roslyn accessor symbol instead of attempting a raw <c>instance[index]</c> fallback.
+    /// </summary>
+    public static string GetMemberIndexerAccessorHelperName(IMethodSymbol symbol)
+    {
+        var prefix = symbol.MethodKind switch
+        {
+            MethodKind.PropertyGet => "$get_",
+            MethodKind.PropertySet => "$set_",
+            _ => throw new ArgumentException("A runtime-class indexer helper requires a property getter or setter accessor.", nameof(symbol))
+        };
+
+        return prefix + Format.HashName(symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
+    }
+
     private static bool ShouldUseJsMemberNamingFallback(ISymbol symbol)
         => symbol switch
         {

@@ -656,6 +656,61 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	private bool IsCurrentModuleRuntimeIndexer(IPropertySymbol property)
+		=> !property.IsStatic &&
+			(property.IsIndexer || property.Parameters.Length > 0) &&
+			TryGetCurrentModuleDeclaredName(property.ContainingType, out _);
+
+	private bool TryBuildCurrentModuleIndexerGetterCall(
+		IPropertySymbol property,
+		Expression? instance,
+		IReadOnlyList<Expression> arguments,
+		out Expression? expression)
+	{
+		expression = null;
+		if (instance is null ||
+			property.GetMethod is null ||
+			!IsCurrentModuleRuntimeIndexer(property))
+		{
+			return false;
+		}
+
+		var helper = new MemberExpression(
+			instance,
+			new Identifier(Util.GetMemberIndexerAccessorHelperName(property.GetMethod)),
+			computed: false,
+			optional: false);
+		expression = new CallExpression(helper, NodeList.From(arguments), optional: false);
+		return true;
+	}
+
+	private bool TryBuildCurrentModuleIndexerSetterCall(
+		IPropertySymbol property,
+		Expression? instance,
+		IReadOnlyList<Expression> arguments,
+		Expression value,
+		out Expression? expression)
+	{
+		expression = null;
+		if (instance is null ||
+			property.SetMethod is null ||
+			!IsCurrentModuleRuntimeIndexer(property))
+		{
+			return false;
+		}
+
+		var setterArguments = new List<Expression>(arguments.Count + 1);
+		setterArguments.AddRange(arguments);
+		setterArguments.Add(value);
+		var helper = new MemberExpression(
+			instance,
+			new Identifier(Util.GetMemberIndexerAccessorHelperName(property.SetMethod)),
+			computed: false,
+			optional: false);
+		expression = new CallExpression(helper, NodeList.From(setterArguments), optional: false);
+		return true;
+	}
+
 	private bool TryBuildImportedModulePropertySetterCall(IPropertySymbol property, SenseArgument? context, Expression value, out Expression? expression)
 	{
 		expression = null;
@@ -1129,8 +1184,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	=> parameter.GetAttributes().Any(static attribute =>
 		attribute.AttributeClass?.ToDisplayString() == PreserveParamsArrayAttributeFullName);
 
-private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out string template)
-{
+	private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out string template)
+	{
 	foreach (var attribute in method.GetAttributes())
 	{
 		if (attribute.AttributeClass?.ToDisplayString() != ECMAScriptInlineAttributeFullName)
@@ -1146,10 +1201,29 @@ private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out str
 	}
 
 	template = string.Empty;
-	return false;
-}
+		return false;
+	}
 
-private bool TryExpandEcmascriptParamsArgument(
+	private static bool HasDirectStringSplitShape(IInvocationOperation operation, List<Expression> arguments)
+	{
+		if (operation.TargetMethod.Parameters.Length == 0 ||
+			operation.TargetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String)
+			return false;
+
+		if (arguments.Count == 1 && arguments[0] is StringLiteral)
+			return true;
+
+		if (arguments.Count != 2 ||
+			arguments[0] is not StringLiteral ||
+			operation.Arguments.Length != 2)
+			return false;
+
+		// Roslyn materializes the optional StringSplitOptions.None argument.
+		// Its explicit and implicit forms both preserve native JavaScript split semantics.
+		return operation.Arguments[1].Value.ConstantValue is { HasValue: true, Value: 0 };
+	}
+
+	private bool TryExpandEcmascriptParamsArgument(
 	IMethodSymbol method,
 	IArgumentOperation arg,
 	SenseArgument argument,
@@ -1248,7 +1322,7 @@ private bool TryExpandEcmascriptParamsArgument(
 				{
 					// string.Split 的“多字符分隔符数组”不能直接翻成 JS split(array)。
 					// 这里只保留真正的一元字符串/字符分隔符直译；带 count/options 的重载回退到白名单/helper。
-					"Split" when arguments.Count == 1 && arguments[0] is StringLiteral =>
+					"Split" when HasDirectStringSplitShape(operation, arguments) =>
 						BuildInstanceMethodCall(instance, "split", arguments[0]),
 					"PadLeft" when arguments.Count == 1 =>
 						BuildInstanceMethodCall(instance, "padStart", arguments[0]),
@@ -1706,6 +1780,12 @@ private bool TryExpandEcmascriptParamsArgument(
 			if (mapperExpr is not null)
 				return mapperExpr;
 
+			if (TryBuildCurrentModuleIndexerSetterCall(property, instance, arguments, value, out var indexerSetterCall) &&
+				indexerSetterCall is not null)
+			{
+				return indexerSetterCall;
+			}
+
 			if (string.IsNullOrEmpty(setterAlias))
 				RejectUnsupportedRuntimeFallback(operation, property.SetMethod, "implicit indexer assignment", operation.Instance.Type ?? property.ContainingType);
 		}
@@ -2076,6 +2156,12 @@ private bool TryExpandEcmascriptParamsArgument(
 		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias, operation);
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
+
+		if (TryBuildCurrentModuleIndexerGetterCall(operation.Property, instance, arguments, out var indexerGetterCall) &&
+			indexerGetterCall is not null)
+		{
+			return WithOriginIfMissing(indexerGetterCall, operation);
+		}
 
 		if (string.IsNullOrEmpty(alias) && IsStructuralMember(operation.Property))
 		{

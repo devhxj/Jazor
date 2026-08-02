@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-08-01）
+# Jazor Compiler 主线状态（2026-08-02）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8117 / 8117 通过
-- `Jazor.Compiler` 行覆盖：13828 / 14341（96.42%）
-- `Jazor.Compiler` 分支覆盖：5941 / 6543（90.80%）
+- `Jazor.CompilerTest`：8158 / 8158 通过
+- `Jazor.Compiler` 行覆盖：14003 / 14522（96.43%）
+- `Jazor.Compiler` 分支覆盖：6051 / 6671（90.71%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -51,7 +51,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `tuple`：走表达式组合 lowering，保使用点行为，不保 `System.ValueTuple` runtime identity
 - `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
-- `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact
+- `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact；erased interface `is` 仅在 Roslyn 可证明时折叠，`T : IContract` 保留非空判断，`T : struct, IContract` 折叠为 `true`
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
 - 模块导出：固定只支持 named export；任何成员若解析到导出名 `default` 都应显式失败
 - 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
@@ -82,6 +82,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 **目标**：巩固 `compiler -> catalog -> emit` 边界与物化契约
 
 **具体行动**：
+- 已覆盖外部消费者的官方 Razor SG -> VueRenderCatalog -> `Jazor.Emit` -> 最终 `.mjs` -> bundled DenoHost 闭环；Counter 的点击事件必须在下一次 render 中观察到状态更新及条件内容切换，且产物不得回退到 render-context / `.vue` 协议
 - 避免文档把 compiler 产 catalog 和 emit 写文件混成一个未定义阶段
 - 让 catalog、模块文本与最终物化产物的关系保持一致
 
@@ -94,6 +95,9 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 **目标**：稳定 `Inline` / `Compile` 分工
 
 **具体行动**：
+- `Nullable<T>.Value` 作为 compiler-owned `Op.Compile` lowering：通过 AST 构造短路 nullish guard，保证 receiver 单次求值，并在 `null` / `undefined` carrier 上抛出稳定的 `InvalidOperationException` 语义。
+- ECMAScript runtime `params` 默认映射为 JavaScript rest arguments；显式 `[PreserveParamsArray]` 则保留为单个数组实参，保护 Vue `withModifiers` 等 runtime array contract。
+- C# 14 `field` 属性在成员运行时类中使用合法的 JavaScript private slot；回归同时校验 Acornima AST 可解析与 Deno.host 的 setter/getter 读写语义。
 - 避免宿主语义扩张又跑回来破坏 compiler 主线边界
 - 保持 `Inline` 和 `Compile` 的职责清晰分离
 
@@ -124,6 +128,6 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 
 ## 当前缺口
 
-- output / emit / sourcemap 侧还需要继续巩固真实构建闭环
+- output / emit / sourcemap 侧仍需继续扩展真实构建闭环的场景覆盖；当前已具备外部 Razor Counter 的 catalog -> emit -> DenoHost 事件状态基线
 - 宿主语义扩张仍然可能反向污染 compiler 边界，需要持续约束
 - 还需要继续把 compiler 局部文档里的 active / historical 边界写清楚，避免旧阶段表述回流成“当前事实”

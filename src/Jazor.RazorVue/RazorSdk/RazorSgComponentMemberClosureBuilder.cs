@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 using Jazor.Compiler;
+using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.RazorSdk;
 
@@ -117,8 +119,11 @@ internal static class RazorSgComponentMemberClosureBuilder
         INamedTypeSymbol? disposable,
         INamedTypeSymbol? asyncDisposable)
     {
+        // Explicit IDisposable/IAsyncDisposable implementations have a distinct Roslyn
+        // MethodKind but remain valid component unmount roots.
         if (method.IsStatic ||
-            method.MethodKind != MethodKind.Ordinary ||
+            (method.MethodKind != MethodKind.Ordinary &&
+             method.MethodKind != MethodKind.ExplicitInterfaceImplementation) ||
             method.Parameters.Length != 0 ||
             !Comparer.Equals(method.ContainingType?.OriginalDefinition, componentSymbol.OriginalDefinition))
         {
@@ -235,7 +240,8 @@ internal sealed record RazorSgComponentMemberClosure(
     public AstConverterOptions CreateAstConverterOptions(
         string stateIdentifier = "state",
         string propsIdentifier = "props",
-        IReadOnlyDictionary<ISymbol, string>? declaredNames = null)
+        IReadOnlyDictionary<ISymbol, string>? declaredNames = null,
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
         => new(
             AstConverterProfile.Standard,
             MemberFilter: ShouldIncludeCompilerMember,
@@ -245,7 +251,8 @@ internal sealed record RazorSgComponentMemberClosure(
                 stateIdentifier,
                 propsIdentifier,
                 BuildParameterRuntimeNameMap(ComponentSymbol),
-                declaredNames),
+                declaredNames,
+                propertyReferenceRewriter: propertyReferenceRewriter),
             ModulePolicy: RazorVueModulePolicy.Instance);
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)
@@ -298,17 +305,28 @@ internal sealed record RazorSgComponentMemberClosure(
     private static IReadOnlyDictionary<string, string> BuildParameterRuntimeNameMap(INamedTypeSymbol componentSymbol)
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var attribute in componentSymbol.GetAttributes())
+        // A derived component owns any redefinition; base descriptors complete the contract.
+        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
         {
-            var attributeName = attribute.AttributeClass?.ToDisplayString();
-            if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+            var currentMap = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var attribute in current.GetAttributes())
             {
-                AddDescriptorName(attribute, map, listener: false);
-                continue;
+                var attributeName = attribute.AttributeClass?.ToDisplayString();
+                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+                {
+                    AddDescriptorName(attribute, currentMap, listener: false);
+                    continue;
+                }
+
+                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+                    AddDescriptorName(attribute, currentMap, listener: true);
             }
 
-            if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
-                AddDescriptorName(attribute, map, listener: true);
+            foreach (var entry in currentMap)
+            {
+                if (!map.ContainsKey(entry.Key))
+                    map.Add(entry.Key, entry.Value);
+            }
         }
 
         return map;
@@ -331,7 +349,7 @@ internal sealed record RazorSgComponentMemberClosure(
             return;
 
         map[publicName] = listener
-            ? ToVueListenerPropName(name!)
+            ? VueDescriptorNaming.ToListenerPropertyName(name!)
             : name!;
     }
 
@@ -349,15 +367,4 @@ internal sealed record RazorSgComponentMemberClosure(
         return null;
     }
 
-    private static string ToVueListenerPropName(string eventName)
-    {
-        if (eventName.Length == 0)
-            return eventName;
-
-        return eventName.StartsWith("on", StringComparison.Ordinal) &&
-               eventName.Length > 2 &&
-               char.IsUpper(eventName[2])
-            ? eventName
-            : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
-    }
 }

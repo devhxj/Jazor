@@ -1,0 +1,10 @@
+@inherits AppComponentBase
+
+<section class="jazor-admin__settings">
+    <h2>Application Settings</h2>
+    <SettingsForm Fields="@Fields"
+                  SubmitText="Save settings"
+                  StatusText="@StatusText"
+                  Submit="@Submit"
+                  FieldChanged="@FieldChanged" />
+</section>

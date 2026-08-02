@@ -1,0 +1,34 @@
+@inherits AppComponentBase
+
+<section class="jazor-admin__metrics">
+    <article class="jazor-admin__metric">
+        <h2>Direct VNode</h2>
+        <strong>enabled</strong>
+        <p>Razor SG -> IOperation -> Vue h()</p>
+    </article>
+    <article class="jazor-admin__metric">
+        <h2>Shell</h2>
+        <strong>TDesign</strong>
+        <p>Application-local layout, navigation, header, and page container</p>
+    </article>
+    <article class="jazor-admin__metric">
+        <h2>Smoke</h2>
+        <strong>integration</strong>
+        <p>Local packages and generated .mjs artifacts</p>
+    </article>
+</section>
+
+<ReleaseQueue SectionClass="jazor-admin__release-section"
+              SelectedRowKey="@SelectedRowKey"
+              SelectedRowKeyChanged="@SelectedRowKeyChanged"
+              SelectedRowKeys="@SelectedRowKeys"
+              SelectedRowKeysChanged="@SelectedRowKeysChanged"
+              SearchText="@SearchText"
+              SearchTextChanged="@SearchTextChanged"
+              PageIndex="@PageIndex"
+              PageIndexChanged="@PageIndexChanged"
+              SortColumnKey="@SortColumnKey"
+              SortColumnKeyChanged="@SortColumnKeyChanged"
+              SortDescending="@SortDescending"
+              SortDescendingChanged="@SortDescendingChanged"
+              Loading="@Loading" />

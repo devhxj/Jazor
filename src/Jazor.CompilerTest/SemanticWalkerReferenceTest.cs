@@ -3727,6 +3727,37 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	/// <summary>
+	/// 静态局部函数没有捕获接收者，作为回调时必须直接引用 lexical declaration。
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_StaticLocalFunction_UsesLexicalDeclaration()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    static int Double(int value) => value * 2;
+                    Func<int, int> transform = Double;
+                    int result = transform(21);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  function Double(value) {
+    return value * 2;
+  }
+  let transform = Double;
+  let result = transform(21);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
 	#endregion
 
 	#region 扩展测试用例 - this引用变体
@@ -8472,6 +8503,38 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	/// <summary>
+	/// C# collection expressions and array variables are two distinct params call forms.
+	/// ECMAScript runtime methods use JavaScript rest parameters, so a collection expression
+	/// expands to individual arguments while an existing array is forwarded with spread.
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ArrayParams_CollectionExpressionAndArrayVariable_PreserveRestProtocol()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var values = Array<int>.Of(1, 2, 3);
+                    int[] suffix = [4, 5];
+                    var fromCollection = values.Concat([6, 7]);
+                    var fromArray = values.Concat(suffix);
+                }
+            }
+        ");
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = Array.of(1, 2, 3);
+  let suffix = [4, 5];
+  let fromCollection = values.concat(6, 7);
+  let fromArray = values.concat(...suffix);
+}", script);
+		_ = new Acornima.Parser().ParseScript(script!);
+	}
+
 	[TestMethod]
 	public void Visit_Reference_ArrayResize_UsesRefLowering()
 	{
@@ -9989,6 +10052,42 @@ public sealed class SemanticWalkerReferenceTest
             }
             """, script);
 		_ = new Acornima.Parser().ParseScript(script!);
+	}
+
+	/// <summary>
+	/// Vue event modifiers are a runtime array contract rather than JavaScript rest arguments.
+	/// The authored params syntax remains ergonomic, while PreserveParamsArray keeps the
+	/// runtime call shape expected by Vue's withModifiers helper.
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_VueModifiers_PreservesParamsArrayArgument()
+	{
+		var block = GetBlockOperation("""
+            using static ECMAScript.Vue3;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Action handler = () => { };
+                    var wrapped = WithModifiers(handler, "stop", "prevent");
+                }
+            }
+            """,
+			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let handler = () => {
+                return;
+              };
+              let wrapped = withModifiers(handler, ["stop", "prevent"]);
+            }
+            """, script);
+		Assert.IsFalse(script!.Contains("withModifiers(handler, \"stop\", \"prevent\")", StringComparison.Ordinal));
+		_ = new Acornima.Parser().ParseScript(script);
 	}
 
 	#endregion

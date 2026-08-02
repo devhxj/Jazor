@@ -103,6 +103,112 @@ public sealed class SemanticWalkerLoopTest
   }
 
   /// <summary>
+  /// Dictionary entries are represented by JavaScript Map entries. Deconstruction in a
+  /// foreach header must therefore retain the KeyValuePair-to-array binding contract.
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_DictionaryDeconstruction_UsesMapEntryArrayBinding()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var stages = new Dictionary<string, int>
+                    {
+                        [""Queued""] = 2,
+                        [""Complete""] = 4
+                    };
+
+                    foreach (var (stage, count) in stages)
+                    {
+                        Console.WriteLine(stage + "":"" + count);
+                    }
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let stages = new Map([[""Queued"", 2], [""Complete"", 4]]);
+  for (let [stage, count] of stages) {
+    console.log(stage + "":"" + count);
+  }
+}", script);
+    _ = new Acornima.Parser().ParseScript(script!);
+  }
+
+  /// <summary>
+  /// A Map entry can discard its key while retaining the value. The omitted binding must
+  /// remain an array-pattern hole; emitting an identifier would create a needless local.
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_DictionaryDeconstruction_DiscardedKey_UsesArrayPatternHole()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(Dictionary<string, int> releases)
+                {
+                    foreach (var (_, pending) in releases)
+                    {
+                        Console.WriteLine(pending);
+                    }
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  for (let [, pending] of releases) {
+    console.log(pending);
+  }
+}", script);
+    _ = new Acornima.Parser().ParseScript(script!);
+  }
+
+  /// <summary>
+  /// Positional records erase to structural objects. A foreach deconstruction must bind
+  /// their runtime property names instead of assuming the Map-entry array protocol.
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_RecordDeconstruction_UsesStructuralObjectBinding()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                record ReleaseStage(string Name, int Pending);
+
+                void TestMethod()
+                {
+                    var stages = new[]
+                    {
+                        new ReleaseStage(""Queued"", 2),
+                        new ReleaseStage(""Validating"", 1)
+                    };
+
+                    foreach (var (name, pending) in stages)
+                    {
+                        Console.WriteLine(name + "":"" + pending);
+                    }
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let stages = [{ name: ""Queued"", pending: 2 }, { name: ""Validating"", pending: 1 }];
+  for (let { name: name, pending: pending } of stages) {
+    console.log(name + "":"" + pending);
+  }
+}", script);
+    _ = new Acornima.Parser().ParseScript(script!);
+  }
+
+  /// <summary>
   /// 测试 VisitForEachLoop - await foreach 应保留异步枚举语义
   /// </summary>
   [TestMethod]

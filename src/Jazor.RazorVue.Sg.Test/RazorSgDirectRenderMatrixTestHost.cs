@@ -478,6 +478,7 @@ internal static partial class DirectRenderCaseCatalog
             var prefix = "item-slot-" + suffix + ":";
             AddRenderFragmentCase(cases, "item_slot_" + suffix, "ItemTemplate", "item", prefix, typed: true);
         }
+
     }
 
     private static void AddControlFlowCases(List<DirectRenderCase> cases)
@@ -529,6 +530,25 @@ internal static partial class DirectRenderCaseCatalog
                 importCount: 1);
         }
 
+        // Handwritten BuildRenderTree implementations commonly omit braces for a
+        // single attribute in each branch. Roslyn exposes that form as expression
+        // statements instead of blocks, while Razor SG normally emits blocks.
+        Add(
+            cases,
+            "control_single_statement_conditional_attribute",
+            "builder.OpenElement(0, \"button\"); " +
+            "if (Visible) builder.AddAttribute(1, \"data-state\", \"ready\"); " +
+            "else builder.AddAttribute(2, \"data-state\", \"blocked\"); " +
+            "builder.CloseElement();",
+            "props.visible",
+            "data-state",
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.ControlFlow,
+            members: "[Parameter] public bool Visible { get; set; }",
+            usesProps: true,
+            importCount: 1);
+
         for (var index = 0; index < 16; index++)
         {
             var suffix = index.ToString("D2", System.Globalization.CultureInfo.InvariantCulture);
@@ -548,6 +568,7 @@ internal static partial class DirectRenderCaseCatalog
                 members: "[Parameter] public string[] Items { get; set; } = [];",
                 usesProps: true);
         }
+
     }
 
     private static void AddComponentParameterCase(

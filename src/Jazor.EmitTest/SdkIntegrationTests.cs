@@ -1090,6 +1090,182 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedCounterOnDenoHost()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDenoConsumer");
+        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor"),
+            """
+            <button @onclick="IncrementAsync">Clicks: @count</button>
+            @if (count > 0)
+            {
+                <span>Counter changed</span>
+            }
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ExternalRazorSgG0Consumer;
+
+            [ECMAScriptModule("./components/counter")]
+            public partial class Counter : ComponentBase, IVueComponent
+            {
+                private int count;
+
+                private async Task IncrementAsync()
+                {
+                    await InvokeAsync(IncrementCoreAsync);
+                }
+
+                private async Task IncrementCoreAsync()
+                {
+                    count++;
+                    StateHasChanged();
+                }
+            }
+            """);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
+        Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue Counter module was not materialized: {componentModulePath}");
+        var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
+        Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
+        var generatedModules = Directory
+            .EnumerateFiles(outputRoot, "*.mjs", SearchOption.AllDirectories)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToArray();
+        Assert.IsNotEmpty(generatedModules, "External Razor SG consumer did not materialize any ECMAScript modules.");
+        foreach (var modulePath in generatedModules)
+        {
+            var moduleText = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+            Assert.IsFalse(moduleText.Contains("createRenderContext", StringComparison.Ordinal), modulePath);
+            Assert.IsFalse(moduleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), modulePath);
+            Assert.IsFalse(moduleText.Contains("builder.finish()", StringComparison.Ordinal), modulePath);
+            Assert.IsFalse(moduleText.Contains(".vue", StringComparison.OrdinalIgnoreCase), modulePath);
+        }
+
+        // The emitted module imports the real Vue package by bare specifier. This minimal local
+        // implementation keeps the closed-loop test focused on Jazor's generated artifact.
+        WriteFile(
+            Path.Combine(outputRoot, "package.json"),
+            """
+            {"type":"module"}
+            """);
+        WriteFile(
+            Path.Combine(outputRoot, "node_modules", "vue", "package.json"),
+            """
+            {"type":"module","exports":"./index.mjs"}
+            """);
+        WriteFile(
+            Path.Combine(outputRoot, "node_modules", "vue", "index.mjs"),
+            """
+            export const Fragment = Symbol("Fragment");
+
+            export function createStaticVNode(html, count) {
+                return { kind: "static", html, count };
+            }
+
+            export function defineComponent(options) {
+                return options;
+            }
+
+            export function reactive(value) {
+                return value;
+            }
+
+            export function h(name, props, children) {
+                return { name, props, children };
+            }
+            """);
+
+        var testFile = Path.Combine(outputRoot, "materialized-counter.test.mjs");
+        WriteFile(
+            testFile,
+            """
+            import component from "./components/counter.mjs";
+
+            function assertEqual(actual, expected, message) {
+                if (!Object.is(actual, expected))
+                    throw new Error(`${message}: expected ${String(expected)}, got ${String(actual)}`);
+            }
+
+            function renderedText(vnode) {
+                if (vnode == null)
+                    return "";
+                if (Array.isArray(vnode))
+                    return vnode.map(renderedText).join("");
+                if (typeof vnode === "object")
+                    return renderedText(vnode.children);
+                return String(vnode);
+            }
+
+            function findElement(vnode, name) {
+                if (Array.isArray(vnode))
+                    return vnode.map(value => findElement(value, name)).find(Boolean);
+                if (vnode != null && typeof vnode === "object")
+                    return vnode.name === name
+                        ? vnode
+                        : findElement(vnode.children, name);
+                return undefined;
+            }
+
+            function hasStaticHtml(vnode, expectedHtml) {
+                if (Array.isArray(vnode))
+                    return vnode.some(value => hasStaticHtml(value, expectedHtml));
+                if (vnode != null && typeof vnode === "object")
+                    return vnode.kind === "static"
+                        ? vnode.html === expectedHtml
+                        : hasStaticHtml(vnode.children, expectedHtml);
+                return false;
+            }
+
+            Deno.test("materialized RazorVue counter updates event state and conditional content", async () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                const initialButton = findElement(initial, "button");
+                assertEqual(initialButton?.name, "button", "initial vnode element");
+                assertEqual(renderedText(initial), "Clicks: 0", "initial rendered text");
+                assertEqual(hasStaticHtml(initial, "<span>Counter changed</span>"), false, "initial conditional content");
+                assertEqual(typeof initialButton?.props.onClick, "function", "click handler");
+
+                await Promise.resolve(initialButton.props.onClick());
+
+                const updated = render();
+                assertEqual(renderedText(updated), "Clicks: 1", "updated rendered text");
+                assertEqual(hasStaticHtml(updated, "<span>Counter changed</span>"), true, "updated conditional content");
+            });
+            """);
+
+        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+    }
+
+    [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BundlesThroughNetpackToolchain()
     {
         var package = await LocalPackage.Value;
@@ -1644,6 +1820,39 @@ public sealed class SdkIntegrationTests
         return new ProcessResult(
             process.ExitCode,
             await standardOutput,
+            await standardError);
+    }
+
+    private static async Task RunDenoTestAsync(string denoExecutablePath, string testFile, string workingDirectory)
+    {
+        Assert.IsTrue(File.Exists(denoExecutablePath), $"Bundled DenoHost runtime was not found: {denoExecutablePath}");
+
+        var startInfo = new ProcessStartInfo(denoExecutablePath)
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add("test");
+        startInfo.ArgumentList.Add("--quiet");
+        startInfo.ArgumentList.Add("--allow-all");
+        startInfo.ArgumentList.Add(testFile);
+        // A test-local cache keeps Deno's module resolution independent from a developer cache.
+        startInfo.Environment["DENO_DIR"] = Path.Combine(workingDirectory, ".deno-cache");
+
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
+
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        Assert.AreEqual(
+            0,
+            process.ExitCode,
+            "Bundled DenoHost runtime test failed." + Environment.NewLine +
+            await standardOutput + Environment.NewLine +
             await standardError);
     }
 

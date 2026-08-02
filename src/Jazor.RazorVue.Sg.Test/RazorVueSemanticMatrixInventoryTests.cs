@@ -4,9 +4,9 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains3990UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains3991UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(3312, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(3313, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
@@ -14,7 +14,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             64,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Component));
         Assert.HasCount(
-            48,
+            49,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.ControlFlow));
         Assert.HasCount(
             448,
@@ -39,6 +39,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             "component_item_slot_");
         AssertDirectRenderCaseCount(16, "control_conditional_content_");
         AssertDirectRenderCaseCount(16, "control_conditional_attribute_");
+        AssertDirectRenderCaseCount(1, "control_single_statement_conditional_attribute");
         AssertDirectRenderCaseCount(16, "control_foreach_");
         AssertDirectRenderCaseCount(64, "expression_content_");
         AssertDirectRenderCaseCount(64, "dynamic_attribute_");
@@ -86,7 +87,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(3990, ids);
+        Assert.HasCount(3991, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,

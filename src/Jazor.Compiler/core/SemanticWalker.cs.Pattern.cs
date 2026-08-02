@@ -361,6 +361,8 @@ public partial class SemanticWalker
 		if (operation.PropertySubpatterns.Length > 0)
 		{
 			conditions.Add(new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null));
+			var canCheckPropertyExistence = CanUseInOperatorForPropertyExistenceCheck(
+				operation.MatchedType ?? operation.InputType);
 
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 			{
@@ -369,7 +371,7 @@ public partial class SemanticWalker
 					var propertyAccess = BuildPatternMemberAccess(m, targetExpr, patternArgument, out var existencePropertyName);
 					var propertyArg = patternArgument.WithPatternInput(propertyAccess);
 					var right = Translate<Expression>(propertySubpattern.Pattern, propertyArg);
-					if (!string.IsNullOrEmpty(existencePropertyName))
+					if (canCheckPropertyExistence && !string.IsNullOrEmpty(existencePropertyName))
 					{
 						var exists = new NonLogicalBinaryExpression(
 							Operator.In,
@@ -640,7 +642,8 @@ public partial class SemanticWalker
 		obj = StabilizePatternExpression(operation, obj, argument, "list", out var listInitialization);
 		var hostType = operation.InputType!;
 		var isIntrinsicArrayCarrier = hostType.TypeKind == TypeKind.Array;
-		Expression result = BuildListPatternCarrierCheck(operation, obj, argument);
+		var carrierCheck = BuildListPatternCarrierCheck(operation, obj, argument);
+		Expression result;
 		var lengthExpr = BuildListPatternLengthAccess(operation, obj, argument, isIntrinsicArrayCarrier, hostType);
 		var usesLengthMultipleTimes = ListPatternUsesLengthMultipleTimes(operation);
 		var shouldCacheLength = usesLengthMultipleTimes && !IsPureListPatternLengthAccess(operation, isIntrinsicArrayCarrier);
@@ -657,7 +660,9 @@ public partial class SemanticWalker
 				lengthExpr,
 				new NumericLiteral(0, "0")
 			);
-			result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
+			result = lengthInitialization is null
+				? new LogicalExpression(Operator.LogicalAnd, carrierCheck, lengthCheck)
+				: lengthCheck;
 		}
 		else
 		{
@@ -681,7 +686,9 @@ public partial class SemanticWalker
 				lengthExpr,
 				new NumericLiteral(fixedLen, fixedLen.ToString())
 			);
-			result = new LogicalExpression(Operator.LogicalAnd, result, lengthCheck);
+			result = lengthInitialization is null
+				? new LogicalExpression(Operator.LogicalAnd, carrierCheck, lengthCheck)
+				: lengthCheck;
 
 			// 模式处理
 			for (int i = 0; i < operation.Patterns.Length; i++)
@@ -778,7 +785,18 @@ public partial class SemanticWalker
 				result,
 				BuildPatternDeclaredSymbolAssignment(operation.DeclaredSymbol, obj, operation, argument));
 
-		return PrependEvaluation(listInitialization, PrependEvaluation(lengthInitialization, result));
+		// A custom Length/Count getter is only valid after the carrier check succeeds. Keep the
+		// cache inside the short-circuit RHS so `null is [...]` remains a non-match instead of a
+		// JavaScript null dereference, while still reading the getter exactly once for a match.
+		// The no-cache path has already joined the carrier and length checks above, preserving its
+		// established AST shape for deterministic output.
+		if (lengthInitialization is not null)
+			result = new LogicalExpression(
+				Operator.LogicalAnd,
+				carrierCheck,
+				PrependEvaluation(lengthInitialization, result));
+
+		return PrependEvaluation(listInitialization, result);
 	}
 
 	private static Expression BuildRecursivePatternFallbackMatch(IRecursivePatternOperation operation, Expression targetExpr)
@@ -790,6 +808,20 @@ public partial class SemanticWalker
 		}
 
 		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
+	}
+
+	private static bool CanUseInOperatorForPropertyExistenceCheck(ITypeSymbol? inputType)
+	{
+		if (inputType is null)
+			return true;
+
+		// JavaScript's `in` accepts only objects. Scalar CLR carriers already have a
+		// preceding type check, and their mapped member read is the C# property contract.
+		return GetMapperType(inputType).Mapper is not (
+			TypeMapper.String or
+			TypeMapper.Number or
+			TypeMapper.Boolean or
+			TypeMapper.BigInt);
 	}
 
 	private static bool IsRecursivePatternTypeMatchStaticallyTrue(IRecursivePatternOperation operation)
@@ -1051,6 +1083,12 @@ public partial class SemanticWalker
 	{
 		if (property.IsIndexer || property.Parameters.Length > 0)
 		{
+			if (TryBuildCurrentModuleIndexerGetterCall(property, targetExpr, arguments, out var indexerGetterCall) &&
+				indexerGetterCall is not null)
+			{
+				return indexerGetterCall;
+			}
+
 			if (arguments.Count != 1)
 			{
 				return HandleTransformationFailure<Expression>(

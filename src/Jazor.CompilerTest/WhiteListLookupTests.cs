@@ -1,5 +1,6 @@
 using Jazor.Common;
 using Jazor.Compiler;
+using ECMAScript.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,6 +11,20 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class WhiteListLookupTests
 {
+	[TestMethod]
+	[DataRow("System.Nullable<T>.Value.get", "NullableValue")]
+	[DataRow("System.Nullable<T>.GetValueOrDefault()", "NullableGetValueOrDefault")]
+	public void WhiteListMembers_CompileMappings_ArePublishedToSharedCatalog(
+		string memberName,
+		string expectedCompiler)
+	{
+		Assert.IsTrue(
+			WhiteList.Members.TryGetValue(memberName, out var mapping),
+			$"Compile mapping '{memberName}' was missing from the shared whitelist catalog.");
+		Assert.AreEqual(Op.Compile, mapping.Op);
+		Assert.AreEqual(expectedCompiler, mapping.Value);
+	}
+
 	[TestMethod]
 	public void TryGetValue_SourceExternAccessor_UsesExactNameFormatKey()
 	{
