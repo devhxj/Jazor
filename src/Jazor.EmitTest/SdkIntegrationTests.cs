@@ -1100,6 +1100,7 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "Counter.razor"),
             """
+            <input @bind:get="Note" @bind:set="SetNote" @bind:event="oninput" data-saved="@SavedNote" />
             <button @onclick="IncrementAsync">Clicks: @count</button>
             @if (count > 0)
             {
@@ -1120,6 +1121,16 @@ public sealed class SdkIntegrationTests
             public partial class Counter : ComponentBase, IVueComponent
             {
                 private int count;
+
+                private string Note { get; set; } = "Draft note";
+
+                private string SavedNote { get; set; } = "none";
+
+                private void SetNote(string value)
+                {
+                    Note = value.Trim();
+                    SavedNote = "saved:" + Note;
+                }
 
                 private async Task IncrementAsync()
                 {
@@ -1155,6 +1166,7 @@ public sealed class SdkIntegrationTests
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "setNote(__value)", StringComparison.Ordinal);
         Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
         var generatedModules = Directory
             .EnumerateFiles(outputRoot, "*.mjs", SearchOption.AllDirectories)
@@ -1245,16 +1257,32 @@ public sealed class SdkIntegrationTests
                 return false;
             }
 
-            Deno.test("materialized RazorVue counter updates event state and conditional content", async () => {
+            Deno.test("materialized RazorVue consumer preserves bind:set and async event state", async () => {
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
+                const initialInput = findElement(initial, "input");
                 const initialButton = findElement(initial, "button");
+                assertEqual(initialInput?.name, "input", "initial input element");
                 assertEqual(initialButton?.name, "button", "initial vnode element");
+                assertEqual(initialInput?.props.value, "Draft note", "initial bound input value");
+                assertEqual(initialInput?.props["data-saved"], "none", "initial saved note");
+                assertEqual(typeof initialInput?.props.onInput, "function", "input handler");
                 assertEqual(renderedText(initial), "Clicks: 0", "initial rendered text");
                 assertEqual(hasStaticHtml(initial, "<span>Counter changed</span>"), false, "initial conditional content");
                 assertEqual(typeof initialButton?.props.onClick, "function", "click handler");
 
-                await Promise.resolve(initialButton.props.onClick());
+                assertEqual(
+                    initialInput.props.onInput({ target: { value: "  package consumer  " } }),
+                    undefined,
+                    "synchronous bind:set result");
+
+                const bound = render();
+                const boundInput = findElement(bound, "input");
+                assertEqual(boundInput?.props.value, "package consumer", "bound input value");
+                assertEqual(boundInput?.props["data-saved"], "saved:package consumer", "bound saved note");
+
+                const boundButton = findElement(bound, "button");
+                await Promise.resolve(boundButton.props.onClick());
 
                 const updated = render();
                 assertEqual(renderedText(updated), "Clicks: 1", "updated rendered text");
