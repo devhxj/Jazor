@@ -26,6 +26,7 @@
 - direct-render 的 `foreach` 解构绑定复用 `SemanticWalker.BuildForEachLoopBinding`：tuple、`KeyValuePair<TKey,TValue>` 与 structural record 按核心编译器的运行时 shape 生成 mapper 参数；未声明稳定结构的自定义 `Deconstruct` 保持显式不支持。
 - production artifact 是 Vue render-function `.mjs`，不回退为 SFC、render-context marker protocol、`scope.buildRenderTree(builder)` 或 `builder.finish()`。
 - DOM `@bind` 只接受当前组件 state 的直接赋值；官方 Razor SDK 为 `@bind:after` 和 `@bind:set` 生成的 `RuntimeHelpers.CreateInferredBindSetter<T>(Action<T>, T)` 或 `RuntimeHelpers.CreateInferredBindSetter<T>(Func<T, Task>, T)` 是唯一额外支持的 binder protocol，lambda 与当前组件单参方法组仍交由 compiler lowering 以保原始调用顺序。任意手写多语句 `CreateBinder` handler 不作为兼容 fallback。
+- 当前组件的 `EventCallback` 与 `EventCallback<T>` 参数会映射为可选 Vue listener prop；`InvokeAsync` 保留传参和 await 完成顺序，未传 listener 时正常完成。
 - `.mjs`、source map、manifest 和 bundle 的物化属于 `Jazor.Emit`。
 
 ## Current Layout
