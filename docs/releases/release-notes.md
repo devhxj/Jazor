@@ -4,8 +4,9 @@
 
 - Nullable values and nested list patterns now preserve their C# null and single-evaluation semantics in generated JavaScript, including a stable failure for `Nullable<T>.Value` on an empty carrier.
 - Official Razor components now retain static source-map paths, support optional `EventCallback` parameters with or without a listener, asynchronous `@bind:after` updates, and synchronous or asynchronous `@bind:set` method groups; their final render catalog generation remains stable across concurrent generator-driver use.
+- Razor authoring errors reported by the official source generator now remain the sole diagnostic: RazorVue skips render-catalog generation for that invalid compilation instead of adding a secondary conversion failure.
 - JazorAdmin now provides an expanded native RazorVue reference application with dashboard, release, audit, workspace, and settings flows, including controlled release-table selection and bulk actions.
-- The compiler quality gate now verifies 8,158 scenarios at 96.43% line coverage and 90.71% branch coverage. The RazorVue quality gate verifies 4,471 official Razor SG scenarios at 93.44% line coverage and 83.68% branch coverage.
+- The compiler quality gate now verifies 8,158 scenarios at 96.43% line coverage and 90.71% branch coverage. The RazorVue quality gate verifies 4,472 official Razor SG scenarios at 93.44% line coverage and 83.67% branch coverage.
 
 ## 2026-08-01
 

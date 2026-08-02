@@ -125,6 +125,13 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         if (ContainsVueRenderCatalog(outputCompilation))
             return result;
 
+        // Only a successful final Compilation is a valid lowering input. Razor SG diagnostics
+        // remain authoritative for invalid Razor authoring, and existing C# errors likewise
+        // must not be masked by a secondary RazorVue failure or produce a partial catalog.
+        if (diagnostics.Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error) ||
+            outputCompilation.GetDiagnostics().Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+            return result;
+
         if (!RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
                 outputCompilation,
                 cancellationToken,

@@ -26,6 +26,52 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
         await Task.WhenAll(tasks);
     }
 
+    [TestMethod]
+    public void DriverCompletionHook_CompilationError_DoesNotCreatePartialCatalog()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\InvalidCounter.razor";
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.DriverCompletion.InvalidCounter",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+                using static ECMAScript.Vue3;
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/invalid-counter")]
+                public partial class InvalidCounter : ComponentBase, IVueComponent
+                {
+                    private MissingCounterState? _state;
+                }
+                """,
+                parseOptions,
+                "Pages/InvalidCounter.razor.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new RazorVueGenerator().AsSourceGenerator(), new RazorSourceGenerator().AsSourceGenerator()],
+            [new InMemoryAdditionalText(documentPath, "<button>Invalid counter</button>")],
+            parseOptions,
+            CreateOptions(documentPath, "Pages/InvalidCounter.razor"));
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+
+        var allDiagnostics = diagnostics
+            .Concat(outputCompilation.GetDiagnostics())
+            .ToArray();
+        Assert.IsTrue(
+            allDiagnostics.Any(static diagnostic => diagnostic.Id == "CS0246"),
+            string.Join(Environment.NewLine, allDiagnostics));
+        Assert.IsFalse(
+            allDiagnostics.Any(static diagnostic => diagnostic.Id == "JAZORVGA020"),
+            string.Join(Environment.NewLine, allDiagnostics));
+        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs"));
+    }
+
     private static void AssertDriverCompletionCatalog()
     {
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
@@ -49,20 +95,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                 "Pages/Counter.razor.cs")],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var options = new TestAnalyzerConfigOptionsProvider(
-            new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["build_property.RazorLangVersion"] = "11.0",
-                ["build_property.RootNamespace"] = "Demo",
-                ["build_property.MSBuildProjectDirectory"] = @"D:\repo\Demo"
-            },
-            new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
-            {
-                [documentPath] = new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    ["build_metadata.AdditionalFiles.TargetPath"] = Convert.ToBase64String(Encoding.UTF8.GetBytes("Pages/Counter.razor"))
-                }
-            });
+        var options = CreateOptions(documentPath, "Pages/Counter.razor");
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             [new RazorVueGenerator().AsSourceGenerator(), new RazorSourceGenerator().AsSourceGenerator()],
@@ -84,6 +117,22 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             string.Join(Environment.NewLine, outputCompilation.GetDiagnostics()));
 
     }
+
+    private static TestAnalyzerConfigOptionsProvider CreateOptions(string documentPath, string targetPath)
+        => new(
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["build_property.RazorLangVersion"] = "11.0",
+                ["build_property.RootNamespace"] = "Demo",
+                ["build_property.MSBuildProjectDirectory"] = @"D:\repo\Demo"
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                [documentPath] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["build_metadata.AdditionalFiles.TargetPath"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(targetPath))
+                }
+            });
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
     {

@@ -1090,6 +1090,62 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalPackages_RazorAuthoringError_DoesNotAddSecondaryRazorVueDiagnostic()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgInvalidBindingConsumer");
+        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot);
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor"),
+            "<input @bind:get=\"Note\" @bind:set=\"SetNoteAsync\" @bind:after=\"PersistNoteAsync\" />");
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ExternalRazorSgG0Consumer;
+
+            [ECMAScriptModule("./components/counter")]
+            public partial class Counter : ComponentBase, IVueComponent
+            {
+                private string Note { get; set; } = string.Empty;
+
+                private Task SetNoteAsync(string value)
+                {
+                    Note = value;
+                    return Task.CompletedTask;
+                }
+
+                private Task PersistNoteAsync()
+                    => Task.CompletedTask;
+            }
+            """);
+
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreNotEqual(0, build.ExitCode, build.ToString());
+        StringAssert.Contains(build.ToString(), "RZ10019", StringComparison.Ordinal);
+        Assert.IsFalse(build.ToString().Contains("JAZORVGA020", StringComparison.Ordinal), build.ToString());
+    }
+
+    [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnDenoHost()
     {
         var package = await LocalPackage.Value;
