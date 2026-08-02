@@ -82,7 +82,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 **目标**：巩固 `compiler -> catalog -> emit` 边界与物化契约
 
 **具体行动**：
-- 已覆盖外部消费者的官方 Razor SG -> VueRenderCatalog -> `Jazor.Emit` -> 最终 `.mjs` -> bundled DenoHost 闭环；Counter 的点击事件必须在下一次 render 中观察到状态更新及条件内容切换，且产物不得回退到 render-context / `.vue` 协议
+- 已覆盖外部消费者的官方 Razor SG -> VueRenderCatalog -> `Jazor.Emit` -> 最终 `.mjs` -> bundled DenoHost 闭环；同一 Counter consumer 同时验证 DOM `@bind:get/@bind:set`、descriptor 子组件 `@bind-Value:get/@bind-Value:set` 的相对模块 import 与经 setter 的 `update:modelValue` 回写，以及异步点击后的条件内容切换，且产物不得回退到 render-context / `.vue` 协议
 - 避免文档把 compiler 产 catalog 和 emit 写文件混成一个未定义阶段
 - 让 catalog、模块文本与最终物化产物的关系保持一致
 
@@ -128,6 +128,6 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 
 ## 当前缺口
 
-- output / emit / sourcemap 侧仍需继续扩展真实构建闭环的场景覆盖；当前已具备外部 Razor Counter 的 catalog -> emit -> DenoHost 事件状态基线
+- output / emit / sourcemap 侧仍需继续扩展真实构建闭环的场景覆盖；当前外部 Razor Counter 已具备 DOM binder、子组件 explicit model setter、catalog import 与事件状态的 DenoHost 基线
 - 宿主语义扩张仍然可能反向污染 compiler 边界，需要持续约束
 - 还需要继续把 compiler 局部文档里的 active / historical 边界写清楚，避免旧阶段表述回流成“当前事实”

@@ -1090,7 +1090,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedCounterOnDenoHost()
+    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnDenoHost()
     {
         var package = await LocalPackage.Value;
 
@@ -1101,6 +1101,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "Counter.razor"),
             """
             <input @bind:get="Note" @bind:set="SetNote" @bind:event="oninput" data-saved="@SavedNote" />
+            <ReleaseEditor @bind-Value:get="Note" @bind-Value:set="SetNote" />
             <button @onclick="IncrementAsync">Clicks: @count</button>
             @if (count > 0)
             {
@@ -1144,6 +1145,34 @@ public sealed class SdkIntegrationTests
                 }
             }
             """);
+        WriteFile(
+            Path.Combine(projectRoot, "ReleaseEditor.razor"),
+            """
+            <span>Release editor</span>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "ReleaseEditor.razor.cs"),
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ExternalRazorSgG0Consumer;
+
+            [ECMAScriptModule("./components/release-editor")]
+            [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+            [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+            public partial class ReleaseEditor : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string Value { get; set; } = "";
+
+                [Parameter]
+                public EventCallback<string> ValueChanged { get; set; }
+            }
+            """);
         var build = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             [
@@ -1162,11 +1191,16 @@ public sealed class SdkIntegrationTests
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
+        var releaseEditorModulePath = Path.Combine(outputRoot, "components", "release-editor.mjs");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue Counter module was not materialized: {componentModulePath}");
+        Assert.IsTrue(File.Exists(releaseEditorModulePath), $"RazorVue ReleaseEditor module was not materialized: {releaseEditorModulePath}");
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "setNote(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "from \"./release-editor.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "modelValue: state.note", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "onUpdate:modelValue", StringComparison.Ordinal);
         Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
         var generatedModules = Directory
             .EnumerateFiles(outputRoot, "*.mjs", SearchOption.AllDirectories)
@@ -1221,6 +1255,7 @@ public sealed class SdkIntegrationTests
             testFile,
             """
             import component from "./components/counter.mjs";
+            import releaseEditor from "./components/release-editor.mjs";
 
             function assertEqual(actual, expected, message) {
                 if (!Object.is(actual, expected))
@@ -1247,6 +1282,16 @@ public sealed class SdkIntegrationTests
                 return undefined;
             }
 
+            function findComponent(vnode, component) {
+                if (Array.isArray(vnode))
+                    return vnode.map(value => findComponent(value, component)).find(Boolean);
+                if (vnode != null && typeof vnode === "object")
+                    return vnode.name === component
+                        ? vnode
+                        : findComponent(vnode.children, component);
+                return undefined;
+            }
+
             function hasStaticHtml(vnode, expectedHtml) {
                 if (Array.isArray(vnode))
                     return vnode.some(value => hasStaticHtml(value, expectedHtml));
@@ -1261,12 +1306,16 @@ public sealed class SdkIntegrationTests
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
                 const initialInput = findElement(initial, "input");
+                const initialEditor = findComponent(initial, releaseEditor);
                 const initialButton = findElement(initial, "button");
                 assertEqual(initialInput?.name, "input", "initial input element");
+                assertEqual(initialEditor?.name, releaseEditor, "initial release editor component");
                 assertEqual(initialButton?.name, "button", "initial vnode element");
                 assertEqual(initialInput?.props.value, "Draft note", "initial bound input value");
                 assertEqual(initialInput?.props["data-saved"], "none", "initial saved note");
                 assertEqual(typeof initialInput?.props.onInput, "function", "input handler");
+                assertEqual(initialEditor?.props.modelValue, "Draft note", "initial component model value");
+                assertEqual(typeof initialEditor?.props["onUpdate:modelValue"], "function", "component model update handler");
                 assertEqual(renderedText(initial), "Clicks: 0", "initial rendered text");
                 assertEqual(hasStaticHtml(initial, "<span>Counter changed</span>"), false, "initial conditional content");
                 assertEqual(typeof initialButton?.props.onClick, "function", "click handler");
@@ -1278,10 +1327,21 @@ public sealed class SdkIntegrationTests
 
                 const bound = render();
                 const boundInput = findElement(bound, "input");
+                const boundEditor = findComponent(bound, releaseEditor);
                 assertEqual(boundInput?.props.value, "package consumer", "bound input value");
                 assertEqual(boundInput?.props["data-saved"], "saved:package consumer", "bound saved note");
+                assertEqual(boundEditor?.props.modelValue, "package consumer", "bound component model value");
 
-                const boundButton = findElement(bound, "button");
+                boundEditor.props["onUpdate:modelValue"]("component update");
+
+                const componentBound = render();
+                const componentBoundInput = findElement(componentBound, "input");
+                const componentBoundEditor = findComponent(componentBound, releaseEditor);
+                assertEqual(componentBoundInput?.props.value, "component update", "component-updated input value");
+                assertEqual(componentBoundInput?.props["data-saved"], "saved:component update", "component update uses the explicit setter");
+                assertEqual(componentBoundEditor?.props.modelValue, "component update", "component-updated model value");
+
+                const boundButton = findElement(componentBound, "button");
                 await Promise.resolve(boundButton.props.onClick());
 
                 const updated = render();
