@@ -82,7 +82,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 **目标**：巩固 `compiler -> catalog -> emit` 边界与物化契约
 
 **具体行动**：
-- 已覆盖外部消费者的官方 Razor SG -> VueRenderCatalog -> `Jazor.Emit` -> 最终 `.mjs` -> bundled DenoHost 闭环；同一 Counter consumer 同时验证 DOM `@bind:get/@bind:set`、descriptor 子组件 `@bind-Value:get/@bind-Value:set` 的相对模块 import 与经 setter 的 `update:modelValue` 回写，以及异步点击后的条件内容切换，且产物不得回退到 render-context / `.vue` 协议
+- 已覆盖外部消费者的官方 Razor SG -> VueRenderCatalog -> `Jazor.Emit` -> 最终 `.mjs` -> bundled DenoHost 闭环；同一 Counter consumer 同时验证 DOM 与 descriptor 子组件显式 async `@bind:set` 的相对模块 import、`update:modelValue` 回写，以及 setter 内部先规范化 state 后完成持久化的顺序，另有异步点击后的条件内容切换，且产物不得回退到 render-context / `.vue` 协议。Razor SDK 禁止 `:set` 与 `:after` 组合，后续逻辑由显式 setter 承担。
 - 避免文档把 compiler 产 catalog 和 emit 写文件混成一个未定义阶段
 - 让 catalog、模块文本与最终物化产物的关系保持一致
 

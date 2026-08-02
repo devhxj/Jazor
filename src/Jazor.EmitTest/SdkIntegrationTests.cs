@@ -1100,8 +1100,8 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "Counter.razor"),
             """
-            <input @bind:get="Note" @bind:set="SetNote" @bind:event="oninput" data-saved="@SavedNote" />
-            <ReleaseEditor @bind-Value:get="Note" @bind-Value:set="SetNote" />
+            <input @bind:get="Note" @bind:set="SetNoteAsync" @bind:event="oninput" data-saved="@SavedNote" data-persisted="@PersistedNote" />
+            <ReleaseEditor @bind-Value:get="Note" @bind-Value:set="SetNoteAsync" />
             <button @onclick="IncrementAsync">Clicks: @count</button>
             @if (count > 0)
             {
@@ -1127,10 +1127,26 @@ public sealed class SdkIntegrationTests
 
                 private string SavedNote { get; set; } = "none";
 
+                private string PersistedNote { get; set; } = "none";
+
                 private void SetNote(string value)
                 {
                     Note = value.Trim();
                     SavedNote = "saved:" + Note;
+                }
+
+                // Razor forbids combining @bind:set with @bind:after. The setter owns
+                // the ordered state update and follow-up task so both bind targets share it.
+                private Task SetNoteAsync(string value)
+                {
+                    SetNote(value);
+                    return PersistNoteAsync();
+                }
+
+                private Task PersistNoteAsync()
+                {
+                    PersistedNote = "persisted:" + Note;
+                    return Task.CompletedTask;
                 }
 
                 private async Task IncrementAsync()
@@ -1197,7 +1213,7 @@ public sealed class SdkIntegrationTests
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "setNote(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "setNoteAsync(__value)", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "from \"./release-editor.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "modelValue: state.note", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "onUpdate:modelValue", StringComparison.Ordinal);
@@ -1320,25 +1336,24 @@ public sealed class SdkIntegrationTests
                 assertEqual(hasStaticHtml(initial, "<span>Counter changed</span>"), false, "initial conditional content");
                 assertEqual(typeof initialButton?.props.onClick, "function", "click handler");
 
-                assertEqual(
-                    initialInput.props.onInput({ target: { value: "  package consumer  " } }),
-                    undefined,
-                    "synchronous bind:set result");
+                await Promise.resolve(initialInput.props.onInput({ target: { value: "  package consumer  " } }));
 
                 const bound = render();
                 const boundInput = findElement(bound, "input");
                 const boundEditor = findComponent(bound, releaseEditor);
                 assertEqual(boundInput?.props.value, "package consumer", "bound input value");
                 assertEqual(boundInput?.props["data-saved"], "saved:package consumer", "bound saved note");
+                assertEqual(boundInput?.props["data-persisted"], "persisted:package consumer", "DOM async bind setter persists the normalized value");
                 assertEqual(boundEditor?.props.modelValue, "package consumer", "bound component model value");
 
-                boundEditor.props["onUpdate:modelValue"]("component update");
+                await Promise.resolve(boundEditor.props["onUpdate:modelValue"]("  component update  "));
 
                 const componentBound = render();
                 const componentBoundInput = findElement(componentBound, "input");
                 const componentBoundEditor = findComponent(componentBound, releaseEditor);
                 assertEqual(componentBoundInput?.props.value, "component update", "component-updated input value");
                 assertEqual(componentBoundInput?.props["data-saved"], "saved:component update", "component update uses the explicit setter");
+                assertEqual(componentBoundInput?.props["data-persisted"], "persisted:component update", "component async bind setter persists the normalized value");
                 assertEqual(componentBoundEditor?.props.modelValue, "component update", "component-updated model value");
 
                 const boundButton = findElement(componentBound, "button");
