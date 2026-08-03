@@ -12,6 +12,7 @@ internal static partial class DirectRenderCaseCatalog
         AddHelperMethodCases(cases);
         AddInlineRenderFragmentCases(cases);
         AddGenericRenderFragmentCases(cases);
+        AddRenderFragmentMethodGroupCase(cases);
         AddConditionalElementAttributeCases(cases);
         AddConditionalComponentParameterCases(cases);
         AddNestedControlFlowCases(cases);

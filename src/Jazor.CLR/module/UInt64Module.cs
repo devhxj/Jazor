@@ -17,6 +17,9 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "ulong", "BigInt")]
 public static class UInt64Module
 {
+	private static BigInt Mask => BigIntFn("18446744073709551615");
+	private static BigInt Modulus => BigIntFn("18446744073709551616");
+
 	/// <summary>
 	/// C#: ulong.MaxValue
 	/// JS: 18446744073709551615n
@@ -31,7 +34,7 @@ public static class UInt64Module
 	[Jazor(Op.Inline, "static ulong.MinValue", "0n")]
 	public extern static BigInt _0e4e92f6bb2f0389();
 
-	[Jazor(Op.Discard ,"ulong.UInt64()")]
+	[Jazor(Op.Inline ,"ulong.UInt64()", "0n")]
 	public extern static BigInt _6e7ac89a8d6e0188();
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
@@ -63,8 +66,9 @@ public static class UInt64Module
 	public extern static bool _aefa4fdc77a1c743(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard, "override ulong.GetHashCode()")]
-	public extern static Number _19d2adbbe01a8cf8(BigInt instance);
+	[Jazor(Op.Import, "override ulong.GetHashCode()")]
+	public static Number _19d2adbbe01a8cf8(BigInt instance)
+		=> RuntimeModule.GetInt64HashCode(instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
 	[Jazor(Op.Alias, "override ulong.ToString()", "toString")]
@@ -163,12 +167,14 @@ public static class UInt64Module
 	}
 
 	///<summary>Tries to convert the span representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)")]
-	public extern static Array<object?> _6563986efd5413c0(Uint32Array s, BigInt result);
+	[Jazor(Op.Import, "static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)")]
+	public static Array<object?> _6563986efd5413c0(string s, BigInt result)
+		=> _a2771534d71206bd(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 64-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static ulong.TryParse(System.ReadOnlySpan<byte>, out ulong)")]
-	public extern static Array<object?> _908c702d612b8a82(Uint8Array utf8Text, BigInt result);
+	[Jazor(Op.Import, "static ulong.TryParse(System.ReadOnlySpan<byte>, out ulong)")]
+	public static Array<object?> _908c702d612b8a82(Uint8Array utf8Text, BigInt result)
+		=> _a2771534d71206bd(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static ulong.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out ulong)")]
@@ -183,28 +189,34 @@ public static class UInt64Module
 	public extern static System.TypeCode _84c4fbd7bbbd131e(BigInt instance);
 
 	///<summary>Computes the quotient and remainder of two values.</summary>
-	[Jazor(Op.Discard ,"static ulong.DivRem(ulong, ulong)")]
-	public extern static (ulong Quotient, ulong Remainder) _fbae7adf5aedb1a5(BigInt left, BigInt right);
+	[Jazor(Op.Import ,"static ulong.DivRem(ulong, ulong)")]
+	public static (BigInt Quotient, BigInt Remainder) _fbae7adf5aedb1a5(BigInt left, BigInt right)
+		=> BigIntIntegerRuntime.DivRemUnsigned(left, right);
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static ulong.LeadingZeroCount(ulong)")]
-	public extern static BigInt _cc30bd61ff8ae745(BigInt value);
+	[Jazor(Op.Import ,"static ulong.LeadingZeroCount(ulong)")]
+	public static BigInt _cc30bd61ff8ae745(BigInt value)
+		=> BigIntIntegerRuntime.LeadingZeroCount(value, 64, Mask);
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
-	[Jazor(Op.Discard ,"static ulong.PopCount(ulong)")]
-	public extern static BigInt _c09e2e8cf64d343e(BigInt value);
+	[Jazor(Op.Import ,"static ulong.PopCount(ulong)")]
+	public static BigInt _c09e2e8cf64d343e(BigInt value)
+		=> BigIntIntegerRuntime.PopCount(value, Mask);
 
 	///<summary>Rotates a value left by a given amount.</summary>
-	[Jazor(Op.Discard ,"static ulong.RotateLeft(ulong, int)")]
-	public extern static BigInt _642261af29c95cb4(BigInt value, Number rotateAmount);
+	[Jazor(Op.Import ,"static ulong.RotateLeft(ulong, int)")]
+	public static BigInt _642261af29c95cb4(BigInt value, Number rotateAmount)
+		=> BigIntIntegerRuntime.RotateLeft(value, rotateAmount, 64, Mask, Modulus, BigInt.Zero, false);
 
 	///<summary>Rotates a value right by a given amount.</summary>
-	[Jazor(Op.Discard ,"static ulong.RotateRight(ulong, int)")]
-	public extern static BigInt _1a784d80426cfa87(BigInt value, Number rotateAmount);
+	[Jazor(Op.Import ,"static ulong.RotateRight(ulong, int)")]
+	public static BigInt _1a784d80426cfa87(BigInt value, Number rotateAmount)
+		=> BigIntIntegerRuntime.RotateRight(value, rotateAmount, 64, Mask, Modulus, BigInt.Zero, false);
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
-	[Jazor(Op.Discard ,"static ulong.TrailingZeroCount(ulong)")]
-	public extern static BigInt _bb2bc7ee16cb0d6d(BigInt value);
+	[Jazor(Op.Import ,"static ulong.TrailingZeroCount(ulong)")]
+	public static BigInt _bb2bc7ee16cb0d6d(BigInt value)
+		=> BigIntIntegerRuntime.TrailingZeroCount(value, 64, Mask);
 
 	/// <summary>
 	/// C#: ulong.IsPow2(value)

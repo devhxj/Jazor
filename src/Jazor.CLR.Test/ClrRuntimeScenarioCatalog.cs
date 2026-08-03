@@ -8,6 +8,7 @@ internal enum ClrRuntimeValueKind
     Boolean,
     BigInt,
     Array,
+    ArrayElement,
     Set,
     Map,
     WeakMap,
@@ -17,6 +18,7 @@ internal enum ClrRuntimeValueKind
     Disposable,
     AsyncDisposable,
     RuntimeInvocation,
+    Error,
     Undefined
 }
 
@@ -27,7 +29,20 @@ internal enum ClrRuntimeCallableKind
     IsPositive,
     DoubleNumber,
     AddIndex,
-    CompareDescending
+    ExpandNumber,
+    ExpandWithIndex,
+    CombineOuterInner,
+    CombineOuterGroupCount,
+    GroupKeyAndSum,
+    CompareDescending,
+    AddNumbers,
+    ToBigInt,
+    ToDecimalText,
+    ReturnFactoryText,
+    ReturnFactoryArgument,
+    Identity,
+    SameParity,
+    ParityHash
 }
 
 internal sealed record ClrRuntimeInvocationValue(
@@ -61,6 +76,12 @@ internal sealed record ClrRuntimeValue(
 
     public static ClrRuntimeValue Array(params ClrRuntimeValue[] values)
         => new(ClrRuntimeValueKind.Array, Items: values);
+
+    public static ClrRuntimeValue ArrayElement(ClrRuntimeValue array, int index)
+        => new(
+            ClrRuntimeValueKind.ArrayElement,
+            index.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            [array]);
 
     public static ClrRuntimeValue Set(params ClrRuntimeValue[] values)
         => new(ClrRuntimeValueKind.Set, Items: values);
@@ -99,6 +120,9 @@ internal sealed record ClrRuntimeValue(
             Invocation: new(member, mapping.ModulePath, mapping.ExportName, arguments));
     }
 
+    public static ClrRuntimeValue Error(string message, ClrRuntimeValue? cause = null)
+        => new(ClrRuntimeValueKind.Error, message, [cause ?? Null()]);
+
     public static ClrRuntimeValue Undefined() => new(ClrRuntimeValueKind.Undefined);
 
     private static IReadOnlyList<ClrRuntimeValue> FlattenEntries(
@@ -123,22 +147,65 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeSetScenarios.HashSet,
         .. ClrRuntimeSetScenarios.InterfaceSet,
         .. ClrRuntimeDictionaryScenarios.All,
+        .. ClrRuntimeCollectionDiscardScenarios.All,
         .. ClrRuntimeIntegralScenarios.All,
+        .. ClrRuntimeScalarHashCodeScenarios.All,
         .. ClrRuntimeReadOnlyCollectionScenarios.All,
+        .. ClrRuntimeEnumerableSelectManyScenarios.All,
+        .. ClrRuntimeEnumerableCountScenarios.All,
+		.. ClrRuntimeEnumerableLongCountScenarios.All,
+		.. ClrRuntimeEnumerableIndexScenarios.All,
+		.. ClrRuntimeEnumerableTryGetNonEnumeratedCountScenarios.All,
+		.. ClrRuntimeEnumerableSumScenarios.All,
+		.. ClrRuntimeEnumerableAverageScenarios.All,
+		.. ClrRuntimeEnumerableNullableNumericScenarios.All,
+		.. ClrRuntimeEnumerableNullableMinMaxScenarios.All,
+		.. ClrRuntimeEnumerableNullableNumericSelectorScenarios.All,
+		.. ClrRuntimeEnumerableNumericSelectorScenarios.All,
+		.. ClrRuntimeEnumerableMinMaxScenarios.All,
+        .. ClrRuntimeEnumerableConcatScenarios.All,
+		.. ClrRuntimeEnumerableAppendPrependScenarios.All,
+		.. ClrRuntimeEnumerableWhileScenarios.All,
+		.. ClrRuntimeEnumerableFactoryScenarios.All,
+		.. ClrRuntimeEnumerableSkipTakeLastScenarios.All,
+		.. ClrRuntimeEnumerableTakeRangeScenarios.All,
+		.. ClrRuntimeEnumerableDefaultIfEmptyScenarios.All,
+        .. ClrRuntimeEnumerableDefaultTerminalScenarios.All,
+        .. ClrRuntimeEnumerableElementAtScenarios.All,
+        .. ClrRuntimeEnumerableDistinctByScenarios.All,
+        .. ClrRuntimeEnumerableMinMaxByScenarios.All,
+        .. ClrRuntimeEnumerableChunkScenarios.All,
+        .. ClrRuntimeEnumerableReverseScenarios.All,
+        .. ClrRuntimeEnumerableTerminalScenarios.All,
+		.. ClrRuntimeEnumerableSequenceEqualScenarios.All,
+		.. ClrRuntimeEnumerableAggregateScenarios.All,
+		.. ClrRuntimeEnumerableSetByScenarios.All,
+		.. ClrRuntimeMemoryExtensionsSequenceEqualScenarios.All,
+		.. ClrRuntimeMemoryExtensionsTrimScenarios.All,
+        .. ClrRuntimeEnumerableSetScenarios.All,
+		.. ClrRuntimeEnumerableComparerScenarios.All,
+		.. ClrRuntimeEnumerableGroupByScenarios.All,
+		.. ClrRuntimeEnumerableLookupScenarios.All,
+		.. ClrRuntimeEnumerableJoinScenarios.All,
         .. ClrRuntimeQueueStackScenarios.All,
         .. ClrRuntimeComparerScenarios.All,
+        .. ClrRuntimeIndexRangeScenarios.All,
         .. ClrRuntimeTailScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
+        .. ClrRuntimeExceptionScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,
         .. ClrRuntimeStringScenarios.All,
         .. ClrRuntimeStringExtendedScenarios.All,
+        .. ClrRuntimeStringBuilderScenarios.All,
         .. ClrRuntimeArrayScenarios.All,
         .. ClrRuntimeArrayExtendedScenarios.All,
         .. ClrRuntimeListScenarios.All,
         .. ClrRuntimeDoubleScenarios.All,
         .. ClrRuntimeSingleScenarios.All,
 		.. ClrRuntimeNumericWidthScenarios.All,
+		.. ClrRuntimeUtf8NumericParsingScenarios.All,
+        .. ClrRuntimeNullableScenarios.All,
         .. ClrRuntimeMathScenarios.All,
         .. ClrRuntimeBigIntegerScenarios.All,
         .. ClrRuntimeBigIntegerBinaryScenarios.All,

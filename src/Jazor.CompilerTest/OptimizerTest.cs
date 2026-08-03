@@ -75,6 +75,43 @@ public sealed class OptimizerTest
         Assert.AreEqual("b", ((Identifier)logical.Right).Name);
     }
 
+    [TestMethod]
+    public void OptimizeLogical_NullishDisjunctionWithStableIdentifier_ElidesImpliedNonNullGuard()
+    {
+        var value = new Identifier("value");
+        var nullBranch = new NonLogicalBinaryExpression(Operator.Equality, value, new NullLiteral("null"));
+        var nonNullGuard = new NonLogicalBinaryExpression(Operator.Inequality, value, new NullLiteral("null"));
+        var matches = new CallExpression(new Identifier("matches"), NodeList.Empty<Expression>(), optional: false);
+        var expression = new LogicalExpression(
+            Operator.LogicalOr,
+            nullBranch,
+            new LogicalExpression(Operator.LogicalAnd, nonNullGuard, matches));
+
+        var result = Optimizer.OptimizeLogical(expression);
+
+        Assert.AreEqual("value == null || matches()", result.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void OptimizeLogical_NullishDisjunctionWithMemberRead_PreservesNonNullGuard()
+    {
+        var value = new MemberExpression(
+            new Identifier("source"),
+            new Identifier("current"),
+            computed: false,
+            optional: false);
+        var nullBranch = new NonLogicalBinaryExpression(Operator.Equality, value, new NullLiteral("null"));
+        var nonNullGuard = new NonLogicalBinaryExpression(Operator.Inequality, value, new NullLiteral("null"));
+        var expression = new LogicalExpression(
+            Operator.LogicalOr,
+            nullBranch,
+            new LogicalExpression(Operator.LogicalAnd, nonNullGuard, new Identifier("matches")));
+
+        var result = Optimizer.OptimizeLogical(expression);
+
+        Assert.AreEqual("source.current == null || source.current != null && matches", result.ToKnRECMAScript());
+    }
+
     #endregion
 
     #region 多操作数去重测试
@@ -692,8 +729,8 @@ public sealed class OptimizerTest
     /// <summary>
     /// 测试混合 || 和 && 的复杂表达式
     /// 输入: (obj == null) || ((obj != null && ("Name" in obj && obj.Name === "John")) && (obj != null && ("Age" in obj && obj.Age > 18))) || c > 0
-    /// 期望: obj == null || obj != null && "Name" in obj && obj.Name === "John" && "Age" in obj && obj.Age > 18 || c > 0
-    /// 说明: || 结构保持，中间 && 部分的 obj != null 去重
+    /// 期望: 首个 <c>obj != null</c> 会由前面的 null 分支蕴含；属性读取后的
+    /// <c>obj != null</c> 仍保留，因为 Proxy trap 可能在两次读取之间改变局部值。
     /// 注意：由于 && 优先级高于 ||，括号可以省略
     /// </summary>
     [TestMethod]
@@ -710,7 +747,7 @@ public sealed class OptimizerTest
         // Assert: the proxy-sensitive `in` and member operations keep their
         // surrounding checks and evaluation order intact.
         Assert.AreEqual(
-@"obj == null || obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18)) || c > 0", script);
+@"obj == null || ""Name"" in obj && obj.Name === ""John"" && obj != null && ""Age"" in obj && obj.Age > 18 || c > 0", script);
     }
 
     #endregion

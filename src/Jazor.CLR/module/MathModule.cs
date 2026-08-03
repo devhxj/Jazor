@@ -62,6 +62,33 @@ public static class MathModule
 		return Math.MinFn(x, y);
 	}
 
+	private static (sbyte Quotient, sbyte Remainder) DivRemSByteCore(Number left, Number right)
+	{
+		if (right == 0)
+			throw new Error("DivideByZeroException");
+		if (left == -128 && right == -1)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		var quotient = Math.TruncFn(left / right);
+		return ((sbyte)quotient, (sbyte)(left - quotient * right));
+	}
+
+	private static Array<object?> BigMulUnsigned64(BigInt left, BigInt right)
+	{
+		var product = left * right;
+		var low = BigInt.AsUintN(64, product);
+		var high = BigInt.AsUintN(64, product >> BigIntFn(64));
+		return [high, low];
+	}
+
+	private static Array<object?> BigMulSigned64(BigInt left, BigInt right)
+	{
+		var product = left * right;
+		var low = BigInt.AsIntN(64, product);
+		var high = BigInt.AsIntN(64, product >> BigIntFn(64));
+		return [high, low];
+	}
+
 	// 常量 - 使用 Op.Inline
 	/// <summary>
 	/// C#: Math.E
@@ -223,12 +250,14 @@ public static class MathModule
 	public extern static BigInt _f8dfabc9cf61c7c8(Number a, Number b);
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.BigMul(ulong, ulong, out ulong)")]
-	public extern static Array<object?> _99697fddb05f0646(BigInt a, BigInt b, BigInt low);
+	[Jazor(Op.Import ,"static System.Math.BigMul(ulong, ulong, out ulong)")]
+	public static Array<object?> _99697fddb05f0646(BigInt a, BigInt b, BigInt low)
+		=> BigMulUnsigned64(a, b);
 
 	///<summary>Produces the full product of two 64-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.BigMul(long, long, out long)")]
-	public extern static Array<object?> _1f2b3fb549b0a774(BigInt a, BigInt b, BigInt low);
+	[Jazor(Op.Import ,"static System.Math.BigMul(long, long, out long)")]
+	public static Array<object?> _1f2b3fb549b0a774(BigInt a, BigInt b, BigInt low)
+		=> BigMulSigned64(a, b);
 
 	///<summary>Produces the full product of two unsigned 64-bit numbers.</summary>
 	[Jazor(Op.Inline, "static System.Math.BigMul(ulong, ulong)", "(__arg1 * __arg2)")]
@@ -239,56 +268,74 @@ public static class MathModule
 	public extern static BigInt _9eceeda3d33f938a(BigInt a, BigInt b);
 
 	///<summary>Returns the largest value that compares less than a specified value.</summary>
-	[Jazor(Op.Discard ,"static System.Math.BitDecrement(double)")]
-	public extern static Number _bc28ec82e8385202(Number x);
+	[Jazor(Op.Import, "static System.Math.BitDecrement(double)")]
+	public static Number _bc28ec82e8385202(Number x)
+		=> DoubleModule.BitDecrementCore(x);
 
 	///<summary>Returns the smallest value that compares greater than a specified value.</summary>
-	[Jazor(Op.Discard ,"static System.Math.BitIncrement(double)")]
-	public extern static Number _655bd4d428ca20ea(Number x);
+	[Jazor(Op.Import, "static System.Math.BitIncrement(double)")]
+	public static Number _655bd4d428ca20ea(Number x)
+		=> DoubleModule.BitIncrementCore(x);
 
 	///<summary>Returns a value with the magnitude of <paramref name="x" /> and the sign of <paramref name="y" />.</summary>
 	[Jazor(Op.Inline, "static System.Math.CopySign(double, double)", "((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _f51bc6e5d8ce272b(Number x, Number y);
 
 	///<summary>Calculates the quotient of two 32-bit signed integers and also returns the remainder in an output parameter.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(int, int, out int)")]
-	public extern static Array<object?> _2a90cb0f64781864(Number a, Number b, Number result);
+	[Jazor(Op.Import ,"static System.Math.DivRem(int, int, out int)")]
+	public static Array<object?> _2a90cb0f64781864(Number a, Number b, Number result)
+	{
+		var pair = Int32Module._d4cc9914e60e5643(a, b);
+		return [pair.Quotient, pair.Remainder];
+	}
 
 	///<summary>Calculates the quotient of two 64-bit signed integers and also returns the remainder in an output parameter.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(long, long, out long)")]
-	public extern static Array<object?> _1961d3558bd76ea4(BigInt a, BigInt b, BigInt result);
+	[Jazor(Op.Import ,"static System.Math.DivRem(long, long, out long)")]
+	public static Array<object?> _1961d3558bd76ea4(BigInt a, BigInt b, BigInt result)
+	{
+		var pair = Int64Module._28273cd350760efe(a, b);
+		return [pair.Quotient, pair.Remainder];
+	}
 
 	///<summary>Produces the quotient and the remainder of two signed 8-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(sbyte, sbyte)")]
-	public extern static (sbyte Quotient, sbyte Remainder) _e0661118fd9ce98d(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(sbyte, sbyte)")]
+	public static (sbyte Quotient, sbyte Remainder) _e0661118fd9ce98d(Number left, Number right)
+		=> DivRemSByteCore(left, right);
 
 	///<summary>Produces the quotient and the remainder of two unsigned 8-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(byte, byte)")]
-	public extern static (byte Quotient, byte Remainder) _09ec2eababe53085(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(byte, byte)")]
+	public static (Number Quotient, Number Remainder) _09ec2eababe53085(Number left, Number right)
+		=> ByteModule._42cbe2ef401fb8c9(left, right);
 
 	///<summary>Produces the quotient and the remainder of two signed 16-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(short, short)")]
-	public extern static (short Quotient, short Remainder) _f6eb115003bc623f(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(short, short)")]
+	public static (short Quotient, short Remainder) _f6eb115003bc623f(Number left, Number right)
+		=> Int16Module._b2c1f15fae072110(left, right);
 
 	///<summary>Produces the quotient and the remainder of two unsigned 16-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(ushort, ushort)")]
-	public extern static (ushort Quotient, ushort Remainder) _267e04d7693208d4(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(ushort, ushort)")]
+	public static (ushort Quotient, ushort Remainder) _267e04d7693208d4(Number left, Number right)
+		=> UInt16Module._80e78c0aa0b98fef(left, right);
 
 	///<summary>Produces the quotient and the remainder of two signed 32-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(int, int)")]
-	public extern static (int Quotient, int Remainder) _45a4ab35fd8b6be8(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(int, int)")]
+	public static (int Quotient, int Remainder) _45a4ab35fd8b6be8(Number left, Number right)
+		=> Int32Module._d4cc9914e60e5643(left, right);
 
 	///<summary>Produces the quotient and the remainder of two unsigned 32-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(uint, uint)")]
-	public extern static (uint Quotient, uint Remainder) _c8e57fe110813408(Number left, Number right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(uint, uint)")]
+	public static (uint Quotient, uint Remainder) _c8e57fe110813408(Number left, Number right)
+		=> UInt32Module._8a073d758132b5bb(left, right);
 
 	///<summary>Produces the quotient and the remainder of two signed 64-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(long, long)")]
-	public extern static (long Quotient, long Remainder) _96f1b2c20bd2e40b(BigInt left, BigInt right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(long, long)")]
+	public static (BigInt Quotient, BigInt Remainder) _96f1b2c20bd2e40b(BigInt left, BigInt right)
+		=> Int64Module._28273cd350760efe(left, right);
 
 	///<summary>Produces the quotient and the remainder of two unsigned 64-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static System.Math.DivRem(ulong, ulong)")]
-	public extern static (ulong Quotient, ulong Remainder) _4d9536a1220a7365(BigInt left, BigInt right);
+	[Jazor(Op.Import ,"static System.Math.DivRem(ulong, ulong)")]
+	public static (BigInt Quotient, BigInt Remainder) _4d9536a1220a7365(BigInt left, BigInt right)
+		=> UInt64Module._fbae7adf5aedb1a5(left, right);
 
 	///<summary>Produces the quotient and the remainder of two signed native-size numbers.</summary>
 	[Jazor(Op.Discard ,"static System.Math.DivRem(nint, nint)")]
@@ -368,12 +415,14 @@ public static class MathModule
 		=> DecimalModule._518facaaeeb29ead(d);
 
 	///<summary>Returns the remainder resulting from the division of a specified number by another specified number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.IEEERemainder(double, double)")]
-	public extern static Number _288c181b5d9cf968(Number x, Number y);
+	[Jazor(Op.Import, "static System.Math.IEEERemainder(double, double)")]
+	public static Number _288c181b5d9cf968(Number x, Number y)
+		=> DoubleModule.Ieee754RemainderCore(x, y);
 
 	///<summary>Returns the base 2 integer logarithm of a specified number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.ILogB(double)")]
-	public extern static Number _51e4d6005e6e11ef(Number x);
+	[Jazor(Op.Import, "static System.Math.ILogB(double)")]
+	public static Number _51e4d6005e6e11ef(Number x)
+		=> DoubleModule.ILogBCore(x);
 
 	///<summary>Returns the logarithm of a specified number in a specified base.</summary>
 	[Jazor(Op.Inline, "static System.Math.Log(double, double)", "(Math.log(__arg1) / Math.log(__arg2))")]
@@ -536,20 +585,24 @@ public static class MathModule
 		=> DecimalModule._09ee3a4652dbe73c(d, decimals, mode);
 
 	///<summary>Rounds a double-precision floating-point value to the nearest integral value, and rounds midpoint values to the nearest even number.</summary>
-	[Jazor(Op.Alias, "static System.Math.Round(double)", "round")]
-	public extern static Number _6cd7f67f98eae0bc(Number a);
+	[Jazor(Op.Import, "static System.Math.Round(double)")]
+	public static Number _6cd7f67f98eae0bc(Number a)
+		=> DoubleModule.RoundToEvenCore(a);
 
 	///<summary>Rounds a double-precision floating-point value to a specified number of fractional digits, and rounds midpoint values to the nearest even number.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(double, int)")]
-	public extern static Number _dab059b61a5b7428(Number value, Number digits);
+	[Jazor(Op.Import, "static System.Math.Round(double, int)")]
+	public static Number _dab059b61a5b7428(Number value, Number digits)
+		=> DoubleModule.RoundCore(value, digits, 0);
 
 	///<summary>Rounds a double-precision floating-point value to an integer using the specified rounding convention.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(double, System.MidpointRounding)")]
-	public extern static Number _a7f99c51d0db12b5(Number value, object mode);
+	[Jazor(Op.Import, "static System.Math.Round(double, System.MidpointRounding)")]
+	public static Number _a7f99c51d0db12b5(Number value, Number mode)
+		=> DoubleModule.RoundCore(value, 0, mode);
 
 	///<summary>Rounds a double-precision floating-point value to a specified number of fractional digits using the specified rounding convention.</summary>
-	[Jazor(Op.Discard ,"static System.Math.Round(double, int, System.MidpointRounding)")]
-	public extern static Number _ef441dda2abcc022(Number value, Number digits, object mode);
+	[Jazor(Op.Import, "static System.Math.Round(double, int, System.MidpointRounding)")]
+	public static Number _ef441dda2abcc022(Number value, Number digits, Number mode)
+		=> DoubleModule.RoundCore(value, digits, mode);
 
 	///<summary>Returns an integer that indicates the sign of a decimal number.</summary>
 	[Jazor(Op.Import ,"static System.Math.Sign(decimal)")]

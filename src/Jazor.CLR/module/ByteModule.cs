@@ -91,7 +91,7 @@ public static class ByteModule
 		return parsed < 0 || parsed > 255;
 	}
 
-	[Jazor(Op.Discard ,"byte.Byte()")]
+	[Jazor(Op.Inline ,"byte.Byte()", "0")]
 	public extern static Number _c16a6a35ab0f1a78();
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
@@ -119,7 +119,7 @@ public static class ByteModule
 	public extern static bool _4885d24d76ef9f6d(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard, "override byte.GetHashCode()")]
+	[Jazor(Op.Inline, "override byte.GetHashCode()", "__arg1")]
 	public extern static Number _0db3f15e7e706cc7(Number instance);
 
 	///<summary>Converts the value of the current byte object to its equivalent string representation.</summary>
@@ -195,12 +195,14 @@ public static class ByteModule
 	}
 
 	///<summary>Tries to convert the span representation of a number to its byte equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[Jazor(Op.Discard, "static byte.TryParse(System.ReadOnlySpan<char>, out byte)")]
-	public extern static Array<object?> _413c6f7752002edf(string s, Number result);
+	[Jazor(Op.Import, "static byte.TryParse(System.ReadOnlySpan<char>, out byte)")]
+	public static Array<object?> _413c6f7752002edf(string s, Number result)
+		=> _03c07d3f3ee012f9(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 8-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard, "static byte.TryParse(System.ReadOnlySpan<byte>, out byte)")]
-	public extern static Array<object?> _0e02bd74e5960e4d(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static byte.TryParse(System.ReadOnlySpan<byte>, out byte)")]
+	public static Array<object?> _0e02bd74e5960e4d(Uint8Array utf8Text, Number result)
+		=> _03c07d3f3ee012f9(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its byte equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard, "static byte.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out byte)")]

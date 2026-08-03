@@ -143,6 +143,7 @@ internal static class RazorSgVueComponentModuleBuilder
                 declaredNames: declaredNames,
                 propertyReferenceRewriter: CreateDirectRenderSlotParameterPropertyReferenceRewriter(closure)));
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
+        module = AppendFlattenedRuntimeClasses(module, converter, component, closure, cancellationToken);
         var layout = module is null
             ? null
             : module.ToKnRECMAScriptWithSourceMapAndNodePositions(
@@ -152,6 +153,97 @@ internal static class RazorSgVueComponentModuleBuilder
                 readSourceContent: null);
         return new CompilerOutput(module, layout);
     }
+
+    private static Module? AppendFlattenedRuntimeClasses(
+        Module? module,
+        AstConverter converter,
+        RazorSgBoundComponent component,
+        RazorSgComponentMemberClosure closure,
+        CancellationToken cancellationToken)
+    {
+        var flattenedClasses = GetFlattenedRuntimeClasses(component.ComponentSymbol, closure);
+        if (flattenedClasses.Length == 0)
+            return module;
+
+        var members = new List<Statement>();
+        foreach (var runtimeClass in flattenedClasses)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            members.Add(converter.ConvertRuntimeClass(runtimeClass, cancellationToken));
+        }
+
+        if (module is not null)
+        {
+            members.AddRange(module.Body.Where(static statement => statement is not ImportDeclaration));
+        }
+
+        var imports = converter.FlushImportDeclarations(members);
+        return new Module(NodeList.From<Statement>(imports.Concat(members)));
+    }
+
+    private static ImmutableArray<INamedTypeSymbol> GetFlattenedRuntimeClasses(
+        INamedTypeSymbol componentType,
+        RazorSgComponentMemberClosure closure)
+    {
+        var candidates = ImmutableHashSet.CreateRange<INamedTypeSymbol>(
+            SymbolComparer,
+            closure.OrderedMembers
+                .OfType<INamedTypeSymbol>()
+                .Where(type => IsFlattenedRuntimeClass(componentType, type)));
+        if (candidates.Count == 0)
+            return [];
+
+        var ordered = ImmutableArray.CreateBuilder<INamedTypeSymbol>(candidates.Count);
+        foreach (var runtimeClass in candidates
+                     .Where(type => type.ContainingType is not INamedTypeSymbol containingType || !candidates.Contains(containingType))
+                     .OrderBy(static type => GetStableSymbolSortKey(type), StringComparer.Ordinal))
+        {
+            AppendFlattenedRuntimeClass(runtimeClass, candidates, ordered);
+        }
+
+        return ordered.ToImmutable();
+    }
+
+    private static void AppendFlattenedRuntimeClass(
+        INamedTypeSymbol runtimeClass,
+        ImmutableHashSet<INamedTypeSymbol> candidates,
+        ImmutableArray<INamedTypeSymbol>.Builder ordered)
+    {
+        foreach (var nestedClass in candidates
+                     .Where(candidate => SymbolComparer.Equals(candidate.ContainingType, runtimeClass))
+                     .OrderBy(static type => GetStableSymbolSortKey(type), StringComparer.Ordinal))
+        {
+            AppendFlattenedRuntimeClass(nestedClass, candidates, ordered);
+        }
+
+        ordered.Add(runtimeClass);
+    }
+
+    private static bool IsFlattenedRuntimeClass(INamedTypeSymbol componentType, INamedTypeSymbol type)
+    {
+        if (!IsRuntimeMemberClass(type) ||
+            type.ContainingType is not INamedTypeSymbol containingRuntimeClass ||
+            RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(componentType, containingRuntimeClass))
+        {
+            return false;
+        }
+
+        for (var current = containingRuntimeClass; current is not null; current = current.ContainingType)
+        {
+            if (RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(componentType, current))
+                return true;
+
+            if (!IsRuntimeMemberClass(current))
+                return false;
+        }
+
+        return false;
+    }
+
+    private static string GetStableSymbolSortKey(ISymbol symbol)
+        => symbol.Locations.FirstOrDefault(static location => location.IsInSource) is { } location
+            ? (location.SourceTree?.FilePath ?? string.Empty).Replace('\\', '/') + ":" + location.SourceSpan.Start.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     private static DirectRenderBuildResult BuildOperationDirectRender(
         RazorSgGeneratedCSharpBinding binding,

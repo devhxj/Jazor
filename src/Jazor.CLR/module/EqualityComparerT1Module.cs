@@ -12,6 +12,8 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.EqualityComparer<T>", "Object")]
 public static class EqualityComparerT1Module<T>
 {
+	private static object? DefaultInstance = null;
+
 	internal static void EnsureComparerInstance(object instance)
 	{
 		if (instance is null)
@@ -26,27 +28,28 @@ public static class EqualityComparerT1Module<T>
 		return hash;
 	}
 
-	internal static bool EqualsCore(T left, T right)
+	internal static bool EqualsCore(T? left, T? right)
 	{
 		if (Object.Is(left, right))
 			return true;
 
-		if (left is Number leftNumber && right is Number rightNumber)
-			return leftNumber == rightNumber;
+		if (TypeOf(left) == "number" && TypeOf(right) == "number")
+			return (Number)(object)left! == (Number)(object)right!;
 
 		return false;
 	}
 
-	internal static Number GetHashCodeCore(T value)
+	internal static Number GetHashCodeCore(T? value)
 	{
 		if (value is null)
 			return 0;
 
-		if (value is bool boolValue)
-			return boolValue ? 1 : 0;
+		if (TypeOf(value) == "boolean")
+			return (bool)(object)value ? 1 : 0;
 
-		if (value is Number numberValue)
+		if (TypeOf(value) == "number")
 		{
+			var numberValue = (Number)(object)value;
 			if (IsNaN(numberValue) || numberValue == 0)
 				return 0;
 
@@ -58,22 +61,53 @@ public static class EqualityComparerT1Module<T>
 			return HashStringCore(numberValue.ToString());
 		}
 
-		if (value is string stringValue)
-			return HashStringCore(stringValue);
+		if (TypeOf(value) == "string")
+			return HashStringCore((string)(object)value);
 
-		if (value is BigInt bigIntValue)
-			return HashStringCore(bigIntValue.ToString());
+		if (TypeOf(value) == "bigint")
+			return HashStringCore(((BigInt)(object)value).ToString());
 
 		var text = value.ToString();
 		return text is null ? 0 : HashStringCore(text);
+	}
+
+	internal static bool EqualsInstance(object instance, T x, T y)
+	{
+		EnsureComparerInstance(instance);
+		var equals = Reflect.Get(instance, "equals");
+		if (equals == null)
+			throw new Error("MissingMethodException: comparer does not expose equals.");
+
+		return (bool)Reflect.Apply(equals, instance, [x, y])!;
+	}
+
+	internal static Number GetHashCodeInstance(object instance, T value)
+	{
+		EnsureComparerInstance(instance);
+		var getHashCode = Reflect.Get(instance, "getHashCode");
+		if (getHashCode == null)
+			throw new Error("MissingMethodException: comparer does not expose getHashCode.");
+
+		return (Number)Reflect.Apply(getHashCode, instance, [value])!;
 	}
 
 	/// <summary>
 	/// C#: EqualityComparer&lt;T&gt;.Default
 	/// JS: 全局缓存单例比较器对象
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Collections.Generic.EqualityComparer<T>.Default.get", "(globalThis.__jazorEqualityComparerDefault ??= {})")]
-	public extern static object _74d554fc30b2950f();
+	[Jazor(Op.Import, "static System.Collections.Generic.EqualityComparer<T>.Default.get", "getDefault")]
+	public static object GetDefault()
+	{
+		if (DefaultInstance == null)
+		{
+			var instance = Object.Create(null);
+			Reflect.Set(instance, "equals", (Func<T, T, bool>)EqualsCore);
+			Reflect.Set(instance, "getHashCode", (Func<T, Number>)GetHashCodeCore);
+			DefaultInstance = instance;
+		}
+
+		return DefaultInstance;
+	}
 
 	/// <summary>
 	/// C#: comparer.Equals(x, y)
@@ -83,11 +117,7 @@ public static class EqualityComparerT1Module<T>
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)")]
 	public static bool _4614e5ce6b42a7ad(object instance, T x, T y)
-	{
-		// Keep receiver null-check: virtual instance call on null must surface NullReferenceException semantics.
-		EnsureComparerInstance(instance);
-		return EqualsCore(x, y);
-	}
+		=> EqualsInstance(instance, x, y);
 
 	/// <summary>
 	/// C#: comparer.GetHashCode(obj)
@@ -95,9 +125,5 @@ public static class EqualityComparerT1Module<T>
 	/// </summary>
 	[Jazor(Op.Import, "virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)")]
 	public static Number _2c3736bd7d205921(object instance, T obj)
-	{
-		// Keep receiver null-check: virtual instance call on null must surface NullReferenceException semantics.
-		EnsureComparerInstance(instance);
-		return GetHashCodeCore(obj);
-	}
+		=> GetHashCodeInstance(instance, obj);
 }

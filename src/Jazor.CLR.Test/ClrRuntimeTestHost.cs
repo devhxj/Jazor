@@ -9,7 +9,8 @@ internal sealed record ClrRuntimeInvocation(
     string Id,
     string ModulePath,
     string ExportName,
-    IReadOnlyList<ClrRuntimeValue> Arguments);
+    IReadOnlyList<ClrRuntimeValue> Arguments,
+    bool CaptureArguments);
 
 internal sealed record ClrRuntimeExecutionResult(
     string Id,
@@ -52,7 +53,8 @@ internal static class ClrRuntimeTestHost
                         scenario.Id,
                         scenario.ModulePath,
                         mapping.ExportName,
-                        scenario.Arguments);
+                        scenario.Arguments,
+                        scenario.ExpectedArguments is not null);
                 })
                 .ToArray();
 
@@ -171,6 +173,10 @@ internal static class ClrRuntimeTestHost
             case "boolean": return value.scalar === "true";
             case "bigInt": return BigInt(value.scalar);
             case "array": return await decodeAll(value.items, references);
+            case "arrayElement": {
+              const array = await decode(value.items[0], references);
+              return array[Number(value.scalar)];
+            }
             case "set": return new Set(await decodeAll(value.items, references));
             case "map": return new Map(await decodeEntries(value.items, references));
             case "weakMap": return createTrackedWeakMap(await decodeEntries(value.items, references));
@@ -194,7 +200,20 @@ internal static class ClrRuntimeTestHost
                 case "IsPositive": fn = item => typeof item === "number" && item > 0; break;
                 case "DoubleNumber": fn = item => item * 2; break;
                 case "AddIndex": fn = (item, index) => item + index; break;
+                case "ExpandNumber": fn = item => [item, item * 10]; break;
+                case "ExpandWithIndex": fn = (item, index) => [item + index]; break;
+                case "CombineOuterInner": fn = (outer, inner) => outer * 100 + inner; break;
+                case "CombineOuterGroupCount": fn = (outer, group) => outer * 10 + Array.from(group).length; break;
+                case "GroupKeyAndSum": fn = (key, group) => (key ? 100 : 0) + Array.from(group).reduce((sum, item) => sum + item, 0); break;
                 case "CompareDescending": fn = (left, right) => right - left; break;
+                case "AddNumbers": fn = (left, right) => left + right; break;
+                case "ToBigInt": fn = item => BigInt(item); break;
+                case "ToDecimalText": fn = item => String(item); break;
+                case "ReturnFactoryText": fn = _ => "factory"; break;
+                case "ReturnFactoryArgument": fn = (_, argument) => argument; break;
+                case "Identity": fn = item => item; break;
+                case "SameParity": fn = (left, right) => Math.abs(left) % 2 === Math.abs(right) % 2; break;
+                case "ParityHash": fn = item => Math.abs(item) % 2; break;
                 default: throw new Error(`Unsupported CLR runtime callable kind: ${value.scalar}`);
               }
               Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
@@ -226,6 +245,10 @@ internal static class ClrRuntimeTestHost
               const args = await decodeAll(invocation.arguments, references);
               return await runtimeFunction(...args);
             }
+            case "error": {
+              const cause = await decode(value.items[0], references);
+              return new Error(value.scalar, { cause });
+            }
             case "undefined": return undefined;
             default: throw new Error(`Unsupported CLR runtime value kind: ${value.kind}`);
           }
@@ -245,11 +268,23 @@ internal static class ClrRuntimeTestHost
           if (value?.constructor?.name === "JStack") {
             return { kind: "record", properties: { items: encode(value.items) } };
           }
+          // Index/Range carriers expose their state through generated prototype getters. Encode
+          // the CLR-facing value fields explicitly so Deno scenarios verify their contracts.
+          if (value?.constructor?.name === "JIndex") {
+            return { kind: "record", properties: { value: encode(value.value), fromEnd: encode(value.fromEnd) } };
+          }
+          if (value?.constructor?.name === "JRange") {
+            return { kind: "record", properties: { start: encode(value.start), end: encode(value.end) } };
+          }
           if (value?.__clrRuntimeCarrier === "disposable") {
             return { kind: "disposable", scalar: String(value.disposeCount) };
           }
           if (value?.__clrRuntimeCarrier === "asyncDisposable") {
             return { kind: "asyncDisposable", scalar: String(value.disposeCount) };
+          }
+          if (value instanceof Error) {
+            const cause = Object.hasOwn(value, "cause") ? value.cause : null;
+            return { kind: "error", scalar: value.message, items: [encode(cause)] };
           }
           if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
             const primitive = value[Symbol.toPrimitive]("string");
@@ -294,7 +329,7 @@ internal static class ClrRuntimeTestHost
               id: scenario.id,
               succeeded: true,
               value: encode(value),
-              arguments: args.map(encode),
+              arguments: scenario.captureArguments ? args.map(encode) : null,
               error: null
             });
           } catch (error) {

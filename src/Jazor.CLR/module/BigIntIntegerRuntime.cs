@@ -55,6 +55,65 @@ internal static class BigIntIntegerRuntime
 		return [true, value];
 	}
 
+	internal static BigInt EnsureRange(BigInt value, BigInt minValue, BigInt maxValue)
+	{
+		if (value < minValue || value > maxValue)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return value;
+	}
+
+	internal static Number ToCheckedNumber(BigInt value, BigInt minValue, BigInt maxValue)
+		=> NumberFn(EnsureRange(value, minValue, maxValue));
+
+	internal static BigInt FromFloatingChecked(Number value, BigInt minValue, BigInt maxValue)
+	{
+		if (!DoubleModule.IsFiniteCore(value))
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return EnsureRange(BigIntFn(Math.TruncFn(value)), minValue, maxValue);
+	}
+
+	internal static BigInt FromFloatingCheckedUInt128(Number value, BigInt maxValue)
+	{
+		// UInt128's checked floating conversion rejects every negative source, including -0.5.
+		if (value < 0)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return FromFloatingChecked(value, BigInt.Zero, maxValue);
+	}
+
+	internal static BigInt FromFloatingSaturatingSigned(Number value, BigInt minValue, BigInt maxValue)
+	{
+		if (IsNaN(value))
+			return BigInt.Zero;
+		if (!DoubleModule.IsFiniteCore(value))
+			return value < 0 ? minValue : maxValue;
+
+		var integer = BigIntFn(Math.TruncFn(value));
+		return integer < minValue ? minValue : (integer > maxValue ? maxValue : integer);
+	}
+
+	internal static BigInt FromFloatingSaturatingUnsigned(Number value, BigInt maxValue)
+	{
+		if (IsNaN(value) || value <= 0)
+			return BigInt.Zero;
+		if (!DoubleModule.IsFiniteCore(value))
+			return maxValue;
+
+		var integer = BigIntFn(Math.TruncFn(value));
+		return integer > maxValue ? maxValue : integer;
+	}
+
+	internal static string ToDecimal(BigInt value, BigInt minValue, BigInt maxValue)
+		=> EnsureRange(value, minValue, maxValue).ToString() ?? "";
+
+	internal static BigInt FromDecimal(string value, BigInt minValue, BigInt maxValue)
+	{
+		var integral = BigIntFn(DecimalModule._be8b149ea0e1d76b(value));
+		return EnsureRange(integral, minValue, maxValue);
+	}
+
 	internal static (BigInt Quotient, BigInt Remainder) DivRemSigned(BigInt left, BigInt right, BigInt minValue)
 	{
 		if (right == BigInt.Zero)
@@ -225,6 +284,54 @@ internal static class BigIntIntegerRuntime
 		}
 
 		return count;
+	}
+
+	internal static BigInt Log2Signed(BigInt value)
+	{
+		if (value < BigInt.Zero)
+			throw new Error("ArgumentOutOfRangeException: value must be non-negative.");
+
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		var result = -BigInt.One;
+		while (value > BigInt.Zero)
+		{
+			value = value >> BigInt.One;
+			result = result + BigInt.One;
+		}
+
+		return result;
+	}
+
+	internal static BigInt Log10(BigInt value)
+	{
+		if (value < BigInt.Zero)
+			throw new Error("ArgumentOutOfRangeException: value must be non-negative.");
+
+		return value == BigInt.Zero
+			? BigInt.Zero
+			: BigIntFn(value.ToString().Length - 1);
+	}
+
+	internal static Array<BigInt> BigMulSigned(BigInt left, BigInt right, Number bitWidth)
+	{
+		var product = left * right;
+		var shift = BigIntFn(bitWidth);
+		return [
+			BigInt.AsIntN(bitWidth, product >> shift),
+			BigInt.AsIntN(bitWidth, product)
+		];
+	}
+
+	internal static Array<BigInt> BigMulUnsigned(BigInt left, BigInt right, Number bitWidth)
+	{
+		var product = left * right;
+		var shift = BigIntFn(bitWidth);
+		return [
+			BigInt.AsUintN(bitWidth, product >> shift),
+			BigInt.AsUintN(bitWidth, product)
+		];
 	}
 
 	internal static BigInt MaxMagnitude(BigInt x, BigInt y)

@@ -1762,10 +1762,10 @@ ${name}!`;
 	}
 
 	/// <summary>
-	/// 测试字符串 intrinsic 方法在可选链下保留短路语义
+	/// 测试字符串 Import 方法在可选链下保留短路语义
 	/// </summary>
 	[TestMethod]
-	public void Visit_String_PadLeft_ConditionalAccess_UsesNullishShortCircuit()
+	public void Visit_String_PadLeftImport_ConditionalAccess_UsesNullishShortCircuit()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -1785,7 +1785,7 @@ ${name}!`;
 		AssertScriptEqual(@"{
   let v$0;
   let text = null;
-  let value = (v$0 = text, v$0 == null ? undefined : v$0.padStart(3));
+  let value = (v$0 = text, v$0 == null ? undefined : _26620c4bafb4f435(v$0, 3));
 }", script);
 	}
 
@@ -1846,7 +1846,7 @@ ${name}!`;
 	}
 
 	[TestMethod]
-	public void Visit_String_SplitSingleStringSeparator_WithDefaultOptions_UsesNativeSplit()
+	public void Visit_String_SplitSingleStringSeparator_WithDefaultOptions_UsesRuntimeImport()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -1866,8 +1866,8 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""region::release::ready"";
-  let implicitNone = text.split(""::"");
-  let explicitNone = text.split(""|"");
+  let implicitNone = _189761f781df8770(text, ""::"", 0);
+  let explicitNone = _189761f781df8770(text, ""|"", 0);
 }", script);
 	}
 
@@ -1894,7 +1894,7 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let parts = [""a"", ""b"", ""c""];
-  let joined = Array.from(parts).join("","");
+  let joined = _f269cd27a4bbd549("","", parts);
 }", script);
 	}
 
@@ -2084,8 +2084,8 @@ ${name}!`;
 
 		Assert.AreEqual(@"{
   let text = ""42"";
-  let paddedLeft = text.padStart(5);
-  let paddedRight = text.padEnd(5);
+  let paddedLeft = _26620c4bafb4f435(text, 5);
+  let paddedRight = _0e8f0a28fc1de8c2(text, 5);
 }", script);
 	}
 
@@ -2357,7 +2357,7 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let parts = [""a"", ""b"", ""c""];
-  let joined = Array.from(parts).join("","");
+  let joined = _f269cd27a4bbd549("","", parts);
 }", script);
 	}
 
@@ -2732,7 +2732,7 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""42"";
-  let padded = text.padStart(5, ""0"");
+  let padded = _7894e0294f780eb5(text, 5, ""0"");
 }", script);
 	}
 
@@ -2759,7 +2759,7 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""42"";
-  let padded = text.padEnd(5, ""-"");
+  let padded = _685227781124d327(text, 5, ""-"");
 }", script);
 	}
 
@@ -2786,8 +2786,8 @@ ${name}!`;
 		AssertScriptEqual(@"{
   let text = ""42"";
   let pad = ""0"";
-  let left = text.padStart(5, pad);
-  let right = text.padEnd(5, pad);
+  let left = _7894e0294f780eb5(text, 5, pad);
+  let right = _685227781124d327(text, 5, pad);
 }", script);
 	}
 

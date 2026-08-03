@@ -150,6 +150,29 @@ public sealed class SemanticWalkerOrdinaryTest
     throw new InvalidOperationException("未找到构造函数体操作");
   }
 
+  [TestMethod]
+  public void Visit_Block_StaticBlockSense_ProducesClassStaticBlock()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                static int value;
+
+                static void Initialize()
+                {
+                    value = 42;
+                }
+            }
+            ");
+
+    var node = new SemanticWalker(true).Visit(block, new SenseArgument(Sense: Sense.StaticBlock));
+
+    Assert.IsInstanceOfType<StaticBlock>(node);
+    AssertScriptEqual(@"static {
+  TestClass.value = 42;
+}", node.ToKnRECMAScript());
+  }
+
   private static void AssertScriptEqual(string expected, string? actual)
     => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
@@ -320,6 +343,30 @@ public sealed class SemanticWalkerOrdinaryTest
   label1: {
     console.log(""Labeled block"");
   }
+}", script);
+  }
+
+  /// <summary>
+  /// 空标签在 Roslyn 中是 IEmptyOperation，仍需保留为合法的 JavaScript 标签目标。
+  /// </summary>
+  [TestMethod]
+  public void Visit_LabeledStatement_EmptyTarget()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    label1:
+                    ;
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  label1: ;
 }", script);
   }
 
@@ -3459,7 +3506,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual("""
 {
-  let number = Number(value);
+  let number = _7c261f922cc43235(value);
 }
 """, script);
   }

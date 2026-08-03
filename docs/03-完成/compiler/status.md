@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-08-02）
+# Jazor Compiler 主线状态（2026-08-03）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8158 / 8158 通过
-- `Jazor.Compiler` 行覆盖：14003 / 14522（96.43%）
-- `Jazor.Compiler` 分支覆盖：6051 / 6671（90.71%）
+- `Jazor.CompilerTest`：8265 / 8265 通过
+- `Jazor.Compiler` 行覆盖：15423 / 16022（96.26%）
+- `Jazor.Compiler` 分支覆盖：6194 / 6881（90.02%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -53,6 +53,10 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
 - `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact；erased interface `is` 仅在 Roslyn 可证明时折叠，`T : IContract` 保留非空判断，`T : struct, IContract` 折叠为 `true`
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
+- `System.Index` / `System.Range`：允许作为真实 carrier 跨 local/argument 边界；数组及具备 `Length`、`this[int]` 和 `Slice(int, int)` 的隐式索引器可消费该 carrier。materialized `Index` 保留读写及复合赋值的单次 getter/setter 求值，materialized `Range` 将 `(offset, length)` 明确转换为 JavaScript `slice(start, endExclusive)` 或等价的 `(start, length)` 调用，并保留 carrier projection 单次求值与越界异常语义
+- lambda / delegate：普通、async 和捕获 lambda 均通过匿名函数/委托创建 lowering 进入箭头函数；函数边界隔离局部声明，同时共享模块 import 收集
+- LINQ query：`ITranslatedQueryOperation` 只移除 Roslyn wrapper，复用绑定后的 `Enumerable.Where`、`Select`、`ToList`、`ToArray` AST intrinsic；`Skip` / `Take` 提供物化分页链路（非正 `Skip` 保留全部元素，非正 `Take` 为空）；`Any` / `All` 通过迭代立即短路，每个已观察元素只调用一次 predicate；`OrderBy` / `OrderByDescending` 走 CLR `Import` 的稳定物化排序，selector 每个元素只求值一次，并通过 `Comparer<T>` 默认比较；`ThenBy` / `ThenByDescending` 仅支持直接衔接当前 module 生成的 materialized order state，未知外部 `IOrderedEnumerable<T>` 明确失败；当前仍是受控 Array/IEnumerable 物化子集，不承诺延迟枚举、自定义 `IComparer<T>`、`Queryable` 或完整 LINQ provider 语义
+- LINQ materialized equality slice：`SelectMany`、`Count`、`Contains`、`SequenceEqual`、`Concat`、`Append`、`Prepend`、`Chunk`、`Distinct`、`DistinctBy`、`Union`、`Except`、`Intersect`、`GroupBy`、`Join`、`GroupJoin`、`Order`、`OrderDescending`、`Reverse`、`ElementAt(int)`、`First`、`Last`、`Single`、`MinBy`、`MaxBy` 与 `Aggregate` 已进入绑定映射；集合与联接先以 `EqualityComparer<T>.GetHashCode` 收窄 bucket，再以 `Equals` 确认，保留源序、首次值和 `NaN`/有符号零规则，不退回 JavaScript `Set`/`Map` 键语义。`Reverse` 返回新的逆序 Array，不改变输入 source，并分别覆盖 `IEnumerable<T>` 和数组 overload；`SequenceEqual` 的显式 LINQ 调用绑定 `Enumerable.SequenceEqual`，SDK 默认 imports 下的数组实例调用则绑定 `ReadOnlySpan<T>.SequenceEqual(ReadOnlySpan<T>)`。两条路径均使用同一 Array carrier 的长度预判与同步默认相等比较，在首个不等项短路且不修改输入；`Concat` 先完整枚举 first 再枚举 second；`Append` 先枚举 source 再追加 element，`Prepend` 先写入 element 再枚举 source。三者均返回新的 Array carrier，不使用 JavaScript 数组原生 mutation 或 `Array.concat` 退化为数组专用协议；`Chunk` 顺序物化为独立 nested Array carriers，保留 tail chunk；`DistinctBy` 对每个枚举项调用 key selector 一次，并通过同一 comparer 合约保留每个 key 的首项；`Order` / `OrderDescending` 复用 default `Comparer<T>`、稳定排序与 existing `ThenBy` order-state，不开放 custom comparer；`MinBy` / `MaxBy` 对每项 selector 一次、default `Comparer<TKey>` 选值且保留首个并列 source 项；`ElementAt(int)` 对负 index 直接失败、对非负 index 在命中时立即停止枚举，越界明确失败；`ReadOnlySpan<T>` 仅是这个受控 Array view 的静态 alias，不引入地址、切片 identity 或生命周期模型。`First` / `Last` / `Single` 及 predicate overload 保留短路或完整遍历、空序列、无匹配和多项异常；`Aggregate` 覆盖无 seed、带 seed、带 result selector 的 accumulator 顺序与空 source 行为。`ElementAtOrDefault`、`FirstOrDefault` / `LastOrDefault` / `SingleOrDefault` 通过 compiler-owned closed-default protocol 在使用点发射 `default(T)`；无法安全发射未约束泛型默认值时明确失败，而不以 `null` 近似。该子集不承诺延迟枚举、自定义 `IEqualityComparer<T>`、自定义 `IComparer<T>`、`Queryable` 或 provider identity。SDK Razor 默认 imports 下的 array `Contains` 也会绑定 `System.MemoryExtensions.Contains(ReadOnlySpan<T>, T)`，其 Array carrier 同样使用默认 comparer。
 - 模块导出：固定只支持 named export；任何成员若解析到导出名 `default` 都应显式失败
 - 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
 - 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher
@@ -122,6 +126,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 ## 深度文档
 
 - [Compiler Architecture Bridge](../../01-目标/compiler/architecture.md)
+- [真实场景覆盖矩阵](ScenarioCoverageMatrix.md)
 - [Compiler 文档索引](../../01-目标/compiler/README.md)
 - [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 - [Jazor.Compiler README](../../../src/Jazor.Compiler/README.md)

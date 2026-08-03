@@ -102,7 +102,7 @@ public static class UInt16Module
 	[Jazor(Op.Inline, "static ushort.MinValue", "0")]
 	public extern static Number _minValue();
 
-	[Jazor(Op.Discard ,"ushort.UInt16()")]
+	[Jazor(Op.Inline ,"ushort.UInt16()", "0")]
 	public extern static Number _2b4f1af6b7fc0173();
 
 	/// <summary>
@@ -143,7 +143,7 @@ public static class UInt16Module
 	public extern static bool _0faff9447540bf0f(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard, "override ushort.GetHashCode()")]
+	[Jazor(Op.Inline, "override ushort.GetHashCode()", "__arg1")]
 	public extern static Number _1289c3b26567b431(Number instance);
 
 	/// <summary>
@@ -222,12 +222,14 @@ public static class UInt16Module
 	}
 
 	///<summary>Tries to convert the span representation of a number to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard, "static ushort.TryParse(System.ReadOnlySpan<char>, out ushort)")]
-	public extern static Array<object?> _0103a8bec9e9dfd7(Uint32Array s, Number result);
+	[Jazor(Op.Import, "static ushort.TryParse(System.ReadOnlySpan<char>, out ushort)")]
+	public static Array<object?> _0103a8bec9e9dfd7(string s, Number result)
+		=> _2efd27d401f7def7(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 16-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard, "static ushort.TryParse(System.ReadOnlySpan<byte>, out ushort)")]
-	public extern static Array<object?> _f90ee83a31a4d447(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static ushort.TryParse(System.ReadOnlySpan<byte>, out ushort)")]
+	public static Array<object?> _f90ee83a31a4d447(Uint8Array utf8Text, Number result)
+		=> _2efd27d401f7def7(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 16-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard, "static ushort.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out ushort)")]

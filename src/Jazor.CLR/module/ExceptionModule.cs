@@ -17,6 +17,24 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Exception","Error")]
 public static class ExceptionModule
 {
+	// Error has no CLR HelpLink equivalent. Keep metadata external so the Error carrier remains native.
+	private static readonly WeakMap<Error, string?> HelpLinks = new();
+	// Source is CLR metadata rather than a JavaScript Error field. Keep it per carrier for the
+	// same reason as HelpLink: mutating Source must not alter the native Error shape.
+	private static readonly WeakMap<Error, string?> Sources = new();
+
+	private static void EnsureInstance(Error instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static Error? GetInnerExceptionCore(Error instance)
+	{
+		EnsureInstance(instance);
+		return instance.Cause as Error;
+	}
+
 	[Jazor(Op.Discard ,"System.Exception.TargetSite.get")]
 	public extern static System.Reflection.MethodBase? _1645aa9cae2c858e(Error instance);
 
@@ -39,8 +57,9 @@ public static class ExceptionModule
 	/// JS: new Error(message, { cause: innerException }) (ES2022+)
 	/// Note: JavaScript Error cause is an optional feature
 	/// </summary>
-	[Jazor(Op.Discard ,"System.Exception.Exception(string, System.Exception)")]
-	public extern static Error _553ffa41c7b954da(string? message, Error? innerException);
+	[Jazor(Op.Import, "System.Exception.Exception(string, System.Exception)")]
+	public static Error _553ffa41c7b954da(string? message, Error? innerException)
+		=> new(message ?? "", new ErrorOptions { Cause = innerException });
 
 	/// <summary>
 	/// C#: Exception.Message
@@ -60,23 +79,52 @@ public static class ExceptionModule
 	public extern static System.Collections.IDictionary _72d5829c989f130e(Error instance);
 
 	///<summary>When overridden in a derived class, returns the <see cref="T:System.Exception" /> that is the root cause of one or more subsequent exceptions.</summary>
-	[Jazor(Op.Discard ,"virtual System.Exception.GetBaseException()")]
-	public extern static System.Exception _f062594f9ecd0366(Error instance);
+	[Jazor(Op.Import, "virtual System.Exception.GetBaseException()")]
+	public static Error _f062594f9ecd0366(Error instance)
+	{
+		EnsureInstance(instance);
+		var current = instance;
+		var inner = GetInnerExceptionCore(current);
+		while (inner != null)
+		{
+			current = inner;
+			inner = GetInnerExceptionCore(current);
+		}
 
-	[Jazor(Op.Discard ,"System.Exception.InnerException.get")]
-	public extern static System.Exception? _463c6b2780b746af(Error instance);
+		return current;
+	}
 
-	[Jazor(Op.Discard ,"virtual System.Exception.HelpLink.get")]
-	public extern static string? _cbc65d16d0767d67(Error instance);
+	[Jazor(Op.Import, "System.Exception.InnerException.get")]
+	public static Error? _463c6b2780b746af(Error instance)
+		=> GetInnerExceptionCore(instance);
 
-	[Jazor(Op.Discard ,"virtual System.Exception.HelpLink.set")]
-	public extern static void _30c969b3bbd3fa2e(Error instance, string? value);
+	[Jazor(Op.Import, "virtual System.Exception.HelpLink.get")]
+	public static string? _cbc65d16d0767d67(Error instance)
+	{
+		EnsureInstance(instance);
+		return HelpLinks.Has(instance) ? HelpLinks.Get(instance) : null;
+	}
 
-	[Jazor(Op.Discard ,"virtual System.Exception.Source.get")]
-	public extern static string? _21e71d416a10c806(Error instance);
+	[Jazor(Op.Import, "virtual System.Exception.HelpLink.set")]
+	public static void _30c969b3bbd3fa2e(Error instance, string? value)
+	{
+		EnsureInstance(instance);
+		HelpLinks.Set(instance, value);
+	}
 
-	[Jazor(Op.Discard ,"virtual System.Exception.Source.set")]
-	public extern static void _48095d5ec6492dcb(Error instance, string? value);
+	[Jazor(Op.Import, "virtual System.Exception.Source.get")]
+	public static string? _21e71d416a10c806(Error instance)
+	{
+		EnsureInstance(instance);
+		return Sources.Has(instance) ? Sources.Get(instance) : null;
+	}
+
+	[Jazor(Op.Import, "virtual System.Exception.Source.set")]
+	public static void _48095d5ec6492dcb(Error instance, string? value)
+	{
+		EnsureInstance(instance);
+		Sources.Set(instance, value);
+	}
 
 	///<summary>When overridden in a derived class, sets the <see cref="T:System.Runtime.Serialization.SerializationInfo" /> with information about the exception.</summary>
 	[Jazor(Op.Discard ,"virtual System.Exception.GetObjectData(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)")]

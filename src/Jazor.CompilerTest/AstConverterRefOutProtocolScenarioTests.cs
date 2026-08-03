@@ -1,5 +1,6 @@
 using Acornima;
 using Acornima.Ast;
+using DenoHost.Core;
 using Jazor.Compiler;
 using Jazor.ComplierTest;
 using Microsoft.CodeAnalysis;
@@ -12,8 +13,151 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class AstConverterRefOutProtocolScenarioTests
 {
-    [TestMethod]
-    public async Task Convert_LocalFunctionWithRefParameter_UsesSharedCalleeAndCallerProtocol()
+
+	[TestMethod]
+	public async Task Convert_AnonymousFunctionsWithRefAndOut_UseSharedCalleeAndCallerProtocol()
+	{
+		const string scenarioId = "ast-converter-ref-out.anonymous-functions-round-trip";
+		var fixture = CompileModule(
+			"""
+			public delegate int RefTransformer(ref int value);
+			public delegate void OutProjector(int source, out int value);
+
+			public static class TestModule
+			{
+				public static int Run(int initial)
+				{
+					RefTransformer transform = delegate(ref int current)
+					{
+						current += 2;
+						return current * 10;
+					};
+					OutProjector project = (int source, out int current) => current = source + 1;
+
+					var transformed = transform(ref initial);
+					project(transformed, out var projected);
+					return projected + initial;
+				}
+			}
+			""",
+			scenarioId);
+		var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+		Assert.IsNotNull(module, scenarioId);
+		var run = GetExportedFunction(module, scenarioId);
+		var functionInitializers = run.Body.Body
+			.OfType<VariableDeclaration>()
+			.SelectMany(static declaration => declaration.Declarations)
+			.Where(static declarator => declarator.Init is ArrowFunctionExpression)
+			.Select(static declarator => (ArrowFunctionExpression)declarator.Init!)
+			.ToArray();
+		Assert.HasCount(2, functionInitializers, scenarioId);
+
+		var transformReturn = ((FunctionBody)functionInitializers[0].Body).Body
+			.OfType<ReturnStatement>()
+			.Single();
+		AssertProtocolArray(transformReturn.Argument, ["current * 10", "current"], scenarioId);
+
+		var projectReturns = ((FunctionBody)functionInitializers[1].Body).Body
+			.OfType<ReturnStatement>()
+			.ToArray();
+		Assert.IsNotEmpty(projectReturns, scenarioId);
+		foreach (var projectReturn in projectReturns)
+			AssertProtocolArray(projectReturn.Argument, ["current"], scenarioId);
+
+		var transformed = run.Body.Body
+			.OfType<VariableDeclaration>()
+			.SelectMany(static declaration => declaration.Declarations)
+			.Single(static declarator => declarator.Id is Identifier { Name: "transformed" });
+		Assert.IsInstanceOfType<SequenceExpression>(transformed.Init, scenarioId);
+		var transformCall = (SequenceExpression)transformed.Init!;
+		AssertWriteBack(transformCall, "initial", 1, scenarioId);
+		AssertSequenceResult(transformCall, 0, scenarioId);
+
+		var projectCall = run.Body.Body
+			.OfType<NonSpecialExpressionStatement>()
+			.Select(static statement => statement.Expression)
+			.OfType<SequenceExpression>()
+			.Single();
+		AssertWriteBack(projectCall, "projected", 0, scenarioId);
+
+		_ = new Parser().ParseModule(module.ToKnRECMAScript());
+	}
+
+	[TestMethod]
+	public async Task ConvertModule_AnonymousFunctionsWithRefAndOut_PreserveRoundTripOnDenoHost()
+	{
+		const string scenarioId = "ast-converter-ref-out.anonymous-functions-deno-round-trip";
+		var fixture = CompileModule(
+			"""
+			public delegate int RefTransformer(ref int value);
+			public delegate void OutProjector(int source, out int value);
+
+			public static class TestModule
+			{
+				public static int Run(int initial)
+				{
+					RefTransformer transform = delegate(ref int current)
+					{
+						current += 2;
+						return current * 10;
+					};
+					OutProjector project = (int source, out int current) => current = source + 1;
+
+					var transformed = transform(ref initial);
+					project(transformed, out var projected);
+					return projected + initial;
+				}
+			}
+			""",
+			scenarioId);
+		var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+		var script = module?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script, scenarioId);
+		_ = new Parser().ParseModule(script);
+
+		var root = Path.Combine(
+			Path.GetTempPath(),
+			"jazor-anonymous-ref-out-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(root);
+
+		try
+		{
+			var modulePath = Path.Combine(root, "anonymous-ref-out.mjs");
+			var testPath = Path.Combine(root, "anonymous-ref-out.test.mjs");
+			await File.WriteAllTextAsync(
+				modulePath,
+				script,
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+			await File.WriteAllTextAsync(
+				testPath,
+				"""
+				import { run } from "./anonymous-ref-out.mjs";
+
+				Deno.test("anonymous ref and out delegates write values back through the shared protocol", () => {
+				  const result = run(3);
+				  if (result !== 56)
+				    throw new Error(`expected 56 after ref and out write-back, got ${result}`);
+				});
+				""",
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+			await Deno.Execute(
+				new DenoExecuteBaseOptions { WorkingDirectory = root },
+				["test", "--quiet", "--allow-read", testPath],
+				timeout.Token);
+		}
+		finally
+		{
+			if (Directory.Exists(root))
+				Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[TestMethod]
+	public async Task Convert_LocalFunctionWithRefParameter_UsesSharedCalleeAndCallerProtocol()
     {
         const string scenarioId = "ast-converter-ref-out.local-function-ref-round-trip";
         const string source = """
@@ -320,20 +464,19 @@ public sealed class AstConverterRefOutProtocolScenarioTests
         return (FunctionDeclaration)exportedMethod.Declaration!;
     }
 
-    private static void AssertProtocolArray(
-        Expression? expression,
-        IReadOnlyList<string> expectedIdentifiers,
-        string scenarioId)
-    {
-        Assert.IsInstanceOfType<ArrayExpression>(expression, scenarioId);
-        var array = (ArrayExpression)expression!;
-        Assert.HasCount(expectedIdentifiers.Count, array.Elements, scenarioId);
-        for (var index = 0; index < expectedIdentifiers.Count; index++)
-        {
-            Assert.IsInstanceOfType<Identifier>(array.Elements[index], scenarioId);
-            Assert.AreEqual(expectedIdentifiers[index], ((Identifier)array.Elements[index]!).Name, scenarioId);
-        }
-    }
+	private static void AssertProtocolArray(
+		Expression? expression,
+		IReadOnlyList<string> expectedExpressions,
+		string scenarioId)
+	{
+		Assert.IsInstanceOfType<ArrayExpression>(expression, scenarioId);
+		var array = (ArrayExpression)expression!;
+		Assert.HasCount(expectedExpressions.Count, array.Elements, scenarioId);
+		for (var index = 0; index < expectedExpressions.Count; index++)
+		{
+			Assert.AreEqual(expectedExpressions[index], array.Elements[index]!.ToKnRECMAScript(), scenarioId);
+		}
+	}
 
     private static void AssertWriteBack(
         SequenceExpression sequence,

@@ -130,6 +130,15 @@ public sealed class RazorSgComponentMemberClosureTests
 
             namespace Demo.Pages
             {
+                [ECMAScriptModule("./format.mjs")]
+                public static class FormatModule
+                {
+                    public static string Compose(string prefix, string suffix)
+                    {
+                        return prefix + suffix;
+                    }
+                }
+
                 [ECMAScriptModule("./components/counter")]
                 public partial class Counter : ComponentBase, IVueComponent
                 {
@@ -148,23 +157,42 @@ public sealed class RazorSgComponentMemberClosureTests
 
                     private sealed class HeaderState
                     {
+                        private static readonly PrefixFormatter Formatter = new PrefixFormatter("header:");
+
                         public HeaderState(string text)
                         {
-                            Text = text;
+                            Text = Formatter.Format(text);
                         }
 
                         public string Text { get; }
+
+                        private sealed class PrefixFormatter
+                        {
+                            private readonly string prefix;
+
+                            public PrefixFormatter(string value)
+                            {
+                                prefix = value;
+                            }
+
+                            public string Format(string suffix)
+                            {
+                                return FormatModule.Compose(prefix, suffix);
+                            }
+                        }
                     }
                 }
             }
             """);
         var closure = BuildClosure(fixture);
 
-        Assert.IsTrue(
+        CollectionAssert.AreEqual(
+            new[] { "HeaderState", "PrefixFormatter" },
             closure.OrderedMembers
                 .OfType<INamedTypeSymbol>()
-                .Any(static type => type.Name == "HeaderState"),
-            "The current-component closure should include constructed nested runtime classes.");
+                .Select(static type => type.Name)
+                .OrderBy(static name => name, StringComparer.Ordinal)
+                .ToArray());
 
         var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
             fixture.Binding,
@@ -173,8 +201,80 @@ public sealed class RazorSgComponentMemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "class HeaderState", StringComparison.Ordinal);
+        StringAssert.Contains(script, "class PrefixFormatter", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { compose } from \"../format.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "return new HeaderState(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "new PrefixFormatter(\"header:\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return compose(this.#prefix, suffix);", StringComparison.Ordinal);
+        var importIndex = script.IndexOf("import { compose } from \"../format.mjs\";", StringComparison.Ordinal);
+        var formatterIndex = script.IndexOf("class PrefixFormatter", StringComparison.Ordinal);
+        var headerIndex = script.IndexOf("class HeaderState", StringComparison.Ordinal);
+        Assert.IsTrue(
+            importIndex < formatterIndex && formatterIndex < headerIndex,
+            script);
         Assert.IsFalse(script.Contains("from \"./components/counter", StringComparison.Ordinal), script);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Build_CurrentComponentClosure_UsesVueDescriptorNamesForPropsAndListeners()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/counter")]
+                [VueProp(nameof(Title), Name = "data-title")]
+                [VueLibraryEmit(nameof(OnSave), Name = "saved")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = "";
+
+                    [Parameter]
+                    public EventCallback<string> OnSave { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, Notify));
+                        builder.AddContent(2, ReadTitle());
+                        builder.CloseElement();
+                    }
+
+                    private string ReadTitle()
+                    {
+                        return Title;
+                    }
+
+                    private async Task Notify()
+                    {
+                        await OnSave.InvokeAsync(Title);
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "return props[\"data-title\"];", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props.onSaved?.(props[\"data-title\"]);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props: [\"data-title\", \"onSave\"]", StringComparison.Ordinal);
+        StringAssert.Contains(script, "emits: [\"saved\"]", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("props.title", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("props.onSave?.", StringComparison.Ordinal), script);
     }
 
     [TestMethod]

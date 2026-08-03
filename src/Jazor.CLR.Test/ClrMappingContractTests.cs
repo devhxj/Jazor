@@ -70,7 +70,7 @@ public sealed class ClrMappingContractTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(mapping.ModulePath));
 
         var artifact = ClrRuntimeCatalog.Get(mapping.ModulePath);
-        Assert.Contains(mapping.ExportName, artifact.GetExportedFunctionNames(),
+        Assert.Contains(mapping.ExportName, artifact.GetExportedNames(),
             $"{mapping.Member} must be exported from {mapping.ModulePath} as {mapping.ExportName}.");
     }
 }

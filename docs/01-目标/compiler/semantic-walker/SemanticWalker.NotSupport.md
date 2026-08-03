@@ -39,17 +39,35 @@
 - 资源管理：当前未承接 `await using` 之外的更复杂 async render/resource-runtime 语义边界
 - 事件系统：raise / event reference / event assignment
 - dynamic：动态创建、动态成员访问、动态调用、动态索引
-- CLR / unsafe：`sizeof`、取地址、函数指针
-- 查询 / 高级运行时：translated query、插值字符串处理器、UTF-8 字符串
+- CLR / unsafe：取地址、函数指针
+- 查询 / 高级运行时：插值字符串处理器、UTF-8 字符串
 - 编译器内部 / flow analysis：`Stop`、`End`、`FlowCapture`、`CaughtException` 等
 - VB 特有节点：`ForToLoop`、`RangeCaseClause`、`ReDim` 等
-- 其他明确拒绝的输入：独立 `RangeOperation`、`InlineArrayAccess`、`IInvalidOperation`
+- 其他明确拒绝的输入：`InlineArrayAccess`、`IInvalidOperation`
 
 已经从这份“不支持面”中移出、进入正式 lowering 主线的切片包括：
 
 - `using` / `using declaration` / `await using`
 - `lock`
 - 窄语义 `typeof(T)` 运行时类型令牌
+- `ITranslatedQueryOperation`：仅移除 Roslyn query wrapper，复用已绑定的 invocation/lambda lowering
+- `System.Index` / `System.Range` 值：通过 CLR `JIndex` / `JRange` carrier 和白名单成员映射传递
+- 窄语义 `sizeof(T)`：仅编译期 primitive scalar 或 enum underlying size，输出数值常量
+
+### 29 个剩余 visitor 的分类决策
+
+当前文件实际保留 29 个不支持 visitor。这个数字是当前代码结果，不是早期“约 31 个”的估算值。
+
+| 分类 | visitor 数 | 代表节点 | 决策 |
+| --- | ---: | --- | --- |
+| Roslyn / FlowAnalysis 内部节点 | 8 | `Stop` 、`End` 、`FlowCapture` 、`CaughtException` 、collection placeholder | 不是稳定源语言输入，不建立 lowering |
+| VB 专有语法 | 5 | `ForToLoop` 、`RangeCaseClause` 、`ReDim` | Razor/C# 产品输入面不需要 |
+| C# dynamic 与事件 | 7 | dynamic create/member/invoke/indexer，event raise/reference/assignment | 需要 DLR 和多播委托运行时模型，不以 JS 属性访问冒充 |
+| unsafe 语义 | 2 | `AddressOf` 、function pointer invoke | JavaScript 无 CLR 地址模型，明确拒绝 |
+| custom interpolated-string handler | 4 | handler creation/addition/append/placeholder | 需要完整 handler 协议与参数传递模型，不以模板字符串降级 |
+| 其他明确边界 | 3 | UTF-8 literal，inline-array access，`IInvalidOperation` | 分别缺少字节 / 栈布局语义，或表示 Roslyn 已无法绑定 |
+
+结论：当前 29 个条目中没有可以只补一个 ESTree 节点就获得正确 C# 语义的候选。后续如果要开放 dynamic、event 或 handler，必须先提出独立的宿主运行时协议、类型/求值顺序合约与 Deno.host 端到端测试；不属于普通 compiler visitor 补全。
 
 ### 3. 文档化当前设计边界
 
@@ -70,7 +88,6 @@
 - dynamic
 - 事件系统
 - 函数指针
-- 独立 `RangeOperation`
 
 这些都不只是“以后补个 AST 节点”就能解决的问题，而是涉及 C# / JS 运行时模型差异。
 
@@ -93,19 +110,23 @@
 - 它们不是面向最终 JS 输出的稳定语言语义
 - 而是 Roslyn 内部或分析阶段节点
 
-### 3. `RangeOperation` 只允许作为别处 lowering 的组成部分
+### 3. `RangeOperation` 是映射值，不是 array-only 语法糖
 
-当前 `VisitRangeOperation(...)` 明确拒绝“独立 range”。
+当前 `VisitRangeOperation(...)` 将 range 通过已绑定的 `System.Range(Index, Index)`、
+`Index.Start` / `Index.End` 和 `System.Index` 工厂成员转换为 `JRange` carrier。
 
-这说明当前设计只接受：
+- 直接 array/indexer range 仍走数字 offset fast path，避免不必要的 carrier
+- 传过 local、argument 或 return 边界的 `Index` / `Range` 值，会在消费点调用
+  `GetOffset(int)` / `GetOffsetAndLength(int)`，保持范围校验和单次求值
+- 不为普通 JavaScript 对象猜测 Range/Index 结构；缺少 CLR mapping 时仍明确失败
 
-- range 在索引器 / 切片语义中被上层专门消费
+### 4. `sizeof` 仅保留可证明的编译期常量
 
-而不接受：
+`sizeof(bool)`、数值 primitive、`decimal` 和 enum underlying type 会直接输出其 Roslyn 已计算的数值。
+这不是 JavaScript memory-layout lowering：`DateTime` 等 carrier-backed CLR 类型和用户 struct 仍拒绝，
+因为它们的 JS 表示不承诺 CLR storage layout。
 
-- 把 range 当成一个独立 JS 运行时对象直接输出
-
-### 4. `VisitInvalid(...)` 已归并到不支持路径
+### 5. `VisitInvalid(...)` 已归并到不支持路径
 
 这也是当前现状的一个重要信号：
 
@@ -149,7 +170,7 @@ var range = 1..5;
 
 当前结果：
 
-- 直接 transformation failure
+- 通过 `JRange` carrier 输出；传递后可由 array、string 或具备 `Length`/`Slice(int,int)` 协议的目标消费
 
 ### 插值字符串处理器
 

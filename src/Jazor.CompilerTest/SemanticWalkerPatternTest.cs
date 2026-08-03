@@ -1396,7 +1396,7 @@ public sealed class SemanticWalkerPatternTest
   }
 
   [TestMethod]
-  public void Visit_RecursivePattern_InsideDisjunction_EmitsSingleNullGuard()
+  public void Visit_RecursivePattern_InsideDisjunction_ElidesImpliedNonNullGuard()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -1418,7 +1418,7 @@ public sealed class SemanticWalkerPatternTest
 @"{
   let obj = { Name: ""John"", Age: 30 };
   let c = 1;
-  let result = obj == null || obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18 || c > 0;
+  let result = obj == null || ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18 || c > 0;
 }", script);
   }
 
@@ -1656,9 +1656,8 @@ public sealed class SemanticWalkerPatternTest
     var block = GetBlockOperation(@"
             class TestClass
             {
-                void TestMethod()
+                void TestMethod(System.Collections.ObjectModel.ReadOnlyCollection<int> list)
                 {
-                    var list = new System.Collections.ObjectModel.ReadOnlyCollection<int>(new List<int> { 1, 2, 3 });
                     bool result = list is [1, 2, 3];
                 }
             }
@@ -4413,7 +4412,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let obj = getDefault();
   let result = obj != null;
 }", script);
   }
@@ -4441,7 +4440,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let comparer;
-  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let obj = getDefault();
   let result = obj != null && (comparer = obj, true) && _dae184550b995be1(comparer, 1, 1);
 }", script);
   }
@@ -4468,7 +4467,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let obj = getDefault();
   let result = obj != null;
 }", script);
   }
@@ -4496,7 +4495,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let comparer;
-  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let obj = getDefault();
   let result = obj != null && (comparer = obj, true) && _eb0a1792ad8b44b7(comparer, 1, 1);
 }", script);
   }

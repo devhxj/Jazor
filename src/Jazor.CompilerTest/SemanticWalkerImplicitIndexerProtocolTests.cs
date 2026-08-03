@@ -20,20 +20,11 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
                 DisplayName = testCase.Id
             });
 
-    public static IEnumerable<TestDataRow<ImplicitIndexerProtocolFailureCase>> FailureCases
-        => ImplicitIndexerProtocolCatalog.FailureCases.Select(static testCase =>
-            new TestDataRow<ImplicitIndexerProtocolFailureCase>(testCase)
-            {
-                DisplayName = testCase.Id
-            });
-
     [TestMethod]
     public void ScenarioCatalog_HasUniqueIdsDimensionsAndBodies()
     {
         var all = ImplicitIndexerProtocolCatalog.SuccessCases
             .Select(static testCase => (testCase.Id, testCase.Dimension, testCase.Body))
-            .Concat(ImplicitIndexerProtocolCatalog.FailureCases.Select(static testCase =>
-                (testCase.Id, testCase.Dimension, testCase.Body)))
             .ToArray();
 
         Assert.IsNotEmpty(all);
@@ -42,7 +33,6 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
         Assert.HasCount(all.Length, all.Select(static item => item.Body).Distinct(StringComparer.Ordinal));
         Assert.IsTrue(all.All(static item => item.Id.StartsWith("implicit-indexer.", StringComparison.Ordinal)));
         Assert.IsTrue(ImplicitIndexerProtocolCatalog.SuccessCases.All(static item => item.ExpectedFragments.Count > 0));
-        Assert.IsTrue(ImplicitIndexerProtocolCatalog.FailureCases.All(static item => item.ExpectedDiagnosticFragments.Count > 0));
     }
 
     [TestMethod]
@@ -76,22 +66,6 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
         _ = new Parser().ParseScript(first);
     }
 
-    [TestMethod]
-    [DynamicData(nameof(FailureCases))]
-    public void Visit_ImplicitIndexerProtocol_RejectsStandaloneIndexAndRangeValues(ImplicitIndexerProtocolFailureCase testCase)
-    {
-        var block = Operations.Value[testCase.Id];
-        var operation = EnumerateOperations(block).OfType<IImplicitIndexerReferenceOperation>().Single();
-        Assert.IsNotNull(operation.LengthSymbol, testCase.Id);
-        Assert.IsNotNull(operation.IndexerSymbol, testCase.Id);
-
-        var exception = Assert.Throws<OperationTransformationException>(() =>
-            new SemanticWalker(true).Visit(block, new SenseArgument()));
-
-        foreach (var fragment in testCase.ExpectedDiagnosticFragments)
-            StringAssert.Contains(exception.Message, fragment, testCase.Id);
-    }
-
     private static int CountOccurrences(string value, string fragment)
     {
         var count = 0;
@@ -119,8 +93,6 @@ public sealed class SemanticWalkerImplicitIndexerProtocolTests
     {
         var all = ImplicitIndexerProtocolCatalog.SuccessCases
             .Select(static testCase => (testCase.Id, testCase.Body))
-            .Concat(ImplicitIndexerProtocolCatalog.FailureCases.Select(static testCase =>
-                (testCase.Id, testCase.Body)))
             .ToArray();
         var methods = string.Join(
             Environment.NewLine,
@@ -220,12 +192,6 @@ public sealed record ImplicitIndexerProtocolCase(
     IReadOnlyList<string> ExpectedFragments,
     IReadOnlyList<string> SingleOccurrenceFragments,
     IReadOnlyList<string> OrderedFragments);
-
-public sealed record ImplicitIndexerProtocolFailureCase(
-    string Id,
-    string Dimension,
-    string Body,
-    IReadOnlyList<string> ExpectedDiagnosticFragments);
 
 internal static class ImplicitIndexerProtocolCatalog
 {
@@ -345,29 +311,70 @@ internal static class ImplicitIndexerProtocolCatalog
                 """,
             ["buffer.slice(buffer.length - 3, buffer.length - 1 - (buffer.length - 3))"],
             [],
-            [])
-    ];
-
-    public static IReadOnlyList<ImplicitIndexerProtocolFailureCase> FailureCases { get; } =
-    [
-        Failure(
+            []),
+        Success(
+            "index.standalone-from-start-value",
+            "form=index;operand=System.Index.FromStart;access=read;offset=mapped-carrier",
+            """
+                        var buffer = new LengthBuffer();
+                        Index index = Index.FromStart(NextOffset());
+                        var value = buffer[index];
+                """,
+            ["_1b0e1c2ab6c4cd39(ImplicitIndexerProtocolScenarios.nextOffset())", "buffer[_9b817e75f3f8f58f(index, buffer.length)]"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()"],
+            []),
+        Success(
             "index.standalone-value",
-            "form=index;operand=System.Index-local;result=rejected",
+            "form=index;operand=System.Index-local;access=read;offset=mapped-carrier",
             """
                         var buffer = new LengthBuffer();
                         Index index = ^1;
                         var value = buffer[index];
                 """,
-            "Standalone System.Index values are not supported"),
-        Failure(
+            ["_ce8b9229a41c8545(1)", "buffer[_9b817e75f3f8f58f(index, buffer.length)]"],
+            [],
+            []),
+        Success(
+            "index.standalone-assignment",
+            "form=index;operand=System.Index-local;access=assignment;offset=mapped-carrier",
+            """
+                        Index index = ^NextOffset();
+                        GetLengthBuffer()[index] = NextValue();
+                """,
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+        Success(
+            "index.standalone-compound-assignment",
+            "form=index;operand=System.Index-local;access=compound-add;evaluation=single;offset=mapped-carrier",
+            """
+                        Index index = ^NextOffset();
+                        GetLengthBuffer()[index] += NextValue();
+                """,
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+        Success(
+            "index.standalone-coalesce-assignment",
+            "form=index;operand=System.Index-local;access=coalesce-assignment;evaluation=single;offset=mapped-carrier",
+            """
+                        Index index = ^NextOffset();
+                        var value = GetNullableLengthBuffer()[index] ??= NextText();
+                """,
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextText()"],
+            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextText()"]),
+        Success(
             "range.standalone-value",
-            "form=range;operand=System.Range-local;result=rejected",
+            "form=range;operand=System.Range-local;access=slice;offset-length=mapped-carrier",
             """
                         var buffer = new SliceBuffer();
                         Range range = 1..^1;
                         var value = buffer[range];
                 """,
-            "Standalone System.Range values are not supported")
+            ["_fc3dfc5dbaa397eb", "_1c7a1e658ed790ff(range, buffer.length)", ".offset", ".length"],
+            ["_1c7a1e658ed790ff(range, buffer.length)"],
+            [])
     ];
 
     private static ImplicitIndexerProtocolCase Success(
@@ -385,14 +392,4 @@ internal static class ImplicitIndexerProtocolCatalog
             singleOccurrenceFragments,
             orderedFragments);
 
-    private static ImplicitIndexerProtocolFailureCase Failure(
-        string id,
-        string dimension,
-        string body,
-        params string[] expectedDiagnosticFragments)
-        => new(
-            $"implicit-indexer.{id}",
-            dimension,
-            body,
-            expectedDiagnosticFragments);
 }

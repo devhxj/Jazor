@@ -17,6 +17,25 @@ public partial class SemanticWalker
 	{
 		// 初始白名单特殊编译处理
 		funcs["static extern ECMAScript.Global.TypeOf(object)"] = Compile_27d71701fd254382;
+		funcs["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = CompileEnumerableArrayLike;
+		funcs["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)"] = CompileEnumerableArrayLike;
+		funcs["static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TResult>)"] = CompileEnumerableArrayLike;
+		funcs["static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, TResult>)"] = CompileEnumerableArrayLike;
+		funcs["static System.Linq.Enumerable.DefaultIfEmpty<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableDefaultIfEmpty;
+		funcs["static System.Linq.Enumerable.FirstOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableFirstOrDefault;
+		funcs["static System.Linq.Enumerable.FirstOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = CompileEnumerableFirstOrDefault;
+		funcs["static System.Linq.Enumerable.LastOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableLastOrDefault;
+		funcs["static System.Linq.Enumerable.LastOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = CompileEnumerableLastOrDefault;
+		funcs["static System.Linq.Enumerable.SingleOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableSingleOrDefault;
+		funcs["static System.Linq.Enumerable.SingleOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = CompileEnumerableSingleOrDefault;
+		funcs["static System.Linq.Enumerable.ElementAtOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)"] = CompileEnumerableElementAtOrDefault;
+		funcs["static System.Linq.Enumerable.ElementAtOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)"] = CompileEnumerableElementAtOrDefault;
+		funcs["static System.Linq.Enumerable.Zip<TFirst, TSecond>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>)"] = CompileEnumerableZip;
+		funcs["static System.Linq.Enumerable.Zip<TFirst, TSecond, TResult>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Func<TFirst, TSecond, TResult>)"] = CompileEnumerableZip;
+		funcs["static System.Linq.Enumerable.Cast<TResult>(System.Collections.IEnumerable)"] = CompileEnumerableCast;
+		funcs["static System.Linq.Enumerable.OfType<TResult>(System.Collections.IEnumerable)"] = CompileEnumerableOfType;
+		funcs["static System.Linq.Enumerable.ToList<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableArrayLike;
+		funcs["static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableArrayLike;
 		funcs["System.Nullable<T>.Value.get"] = CompileNullableValue;
 		funcs["System.Nullable<T>.GetValueOrDefault()"] = CompileNullableGetValueOrDefault;
 	}

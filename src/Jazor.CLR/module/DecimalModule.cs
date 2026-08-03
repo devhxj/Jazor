@@ -603,6 +603,37 @@ public static class DecimalModule
 		return integral;
 	}
 
+	private static string FromOACurrencyCore(BigInt currency)
+	{
+		var scale = 4;
+		while (currency != BigInt.Zero && scale > 0 && currency % BigIntFn(10) == BigInt.Zero)
+		{
+			currency /= BigIntFn(10);
+			scale--;
+		}
+
+		// CLR keeps four fractional digits for zero, but removes redundant trailing zeros
+		// from every non-zero OA Currency value.
+		return FormatDecimal(currency, scale);
+	}
+
+	private static BigInt ToOACurrencyCore(string value)
+	{
+		var parts = ParseDecimal(value);
+		var unscaled = GetUnscaled(parts);
+		var scale = GetScale(parts);
+		BigInt currency;
+		if (scale <= 4)
+			currency = unscaled * Pow10(4 - scale);
+		else
+			currency = DivideAndRound(unscaled, Pow10(scale - 4));
+
+		if (currency < Int64MinValue || currency > Int64MaxValue)
+			throw new Error("OverflowException: Value was either too large or too small for a Currency.");
+
+		return currency;
+	}
+
 	// MidpointRounding 在当前 lowering 中会擦除为数值字面量。
 	private static Number GetMidpointRoundingValue(object mode)
 	{
@@ -904,12 +935,14 @@ public static class DecimalModule
 		=> CreateDecimalFromNumber(value);
 
 	///<summary>Converts the specified 64-bit signed integer, which contains an OLE Automation Currency value, to the equivalent <see cref="T:System.Decimal" /> value.</summary>
-	[Jazor(Op.Discard ,"static decimal.FromOACurrency(long)")]
-	public extern static string _6cd0f8dfbedd7209(BigInt cy);
+	[Jazor(Op.Import ,"static decimal.FromOACurrency(long)")]
+	public static string _6cd0f8dfbedd7209(BigInt cy)
+		=> FromOACurrencyCore(cy);
 
 	///<summary>Converts the specified <see cref="T:System.Decimal" /> value to the equivalent OLE Automation Currency value, which is contained in a 64-bit signed integer.</summary>
-	[Jazor(Op.Discard ,"static decimal.ToOACurrency(decimal)")]
-	public extern static BigInt _5d257b5cc33cdaeb(string value);
+	[Jazor(Op.Import ,"static decimal.ToOACurrency(decimal)")]
+	public static BigInt _5d257b5cc33cdaeb(string value)
+		=> ToOACurrencyCore(value);
 
 	///<summary>Initializes a new instance of <see cref="T:System.Decimal" /> to a decimal value represented in binary and contained in a specified array.</summary>
 	[Jazor(Op.Discard ,"decimal.Decimal(int[])")]
@@ -1107,8 +1140,9 @@ public static class DecimalModule
 		=> _e96278809bb50e35(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its signed decimal equivalent.</summary>
-	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<byte>, out decimal)")]
-	public extern static Array<object?> _0111d7c27998205b(Uint8Array utf8Text, string result);
+	[Jazor(Op.Import, "static decimal.TryParse(System.ReadOnlySpan<byte>, out decimal)")]
+	public static Array<object?> _0111d7c27998205b(Uint8Array utf8Text, string result)
+		=> _e96278809bb50e35(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Converts the string representation of a number to its <see cref="T:System.Decimal" /> equivalent using the specified style and culture-specific format. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import ,"static decimal.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
@@ -1586,18 +1620,22 @@ public static class DecimalModule
 		=> _a3ffdb214a9c82a0(s, provider, result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
-	public extern static string _e81acb76373d457e(Uint8Array utf8Text, object style, Intl.NumberFormat? provider);
+	[Jazor(Op.Import, "static decimal.Parse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider)")]
+	public static string _e81acb76373d457e(Uint8Array utf8Text, object style, Intl.NumberFormat? provider)
+		=> _f525a420b2d600ec(RuntimeModule.DecodeUtf8OrThrowFormat(utf8Text), style, provider);
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
-	public extern static Array<object?> _acbda6e104ca3de4(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, string result);
+	[Jazor(Op.Import, "static decimal.TryParse(System.ReadOnlySpan<byte>, System.Globalization.NumberStyles, System.IFormatProvider, out decimal)")]
+	public static Array<object?> _acbda6e104ca3de4(Uint8Array utf8Text, object style, Intl.NumberFormat? provider, string result)
+		=> _b4ecd2424c9a371e(RuntimeModule.TryDecodeUtf8(utf8Text), style, provider, result);
 
 	///<summary>Parses a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static decimal.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
-	public extern static string _d3d821054d142668(Uint8Array utf8Text, Intl.NumberFormat? provider);
+	[Jazor(Op.Import, "static decimal.Parse(System.ReadOnlySpan<byte>, System.IFormatProvider)")]
+	public static string _d3d821054d142668(Uint8Array utf8Text, Intl.NumberFormat? provider)
+		=> _01be2a34fe2cda4e(RuntimeModule.DecodeUtf8OrThrowFormat(utf8Text), provider);
 
 	///<summary>Tries to parse a span of UTF-8 characters into a value.</summary>
-	[Jazor(Op.Discard ,"static decimal.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out decimal)")]
-	public extern static Array<object?> _8122c647766e18ff(Uint8Array utf8Text, Intl.NumberFormat? provider, string result);
+	[Jazor(Op.Import, "static decimal.TryParse(System.ReadOnlySpan<byte>, System.IFormatProvider, out decimal)")]
+	public static Array<object?> _8122c647766e18ff(Uint8Array utf8Text, Intl.NumberFormat? provider, string result)
+		=> _a3ffdb214a9c82a0(RuntimeModule.TryDecodeUtf8(utf8Text), provider, result);
 }

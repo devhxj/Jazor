@@ -259,12 +259,12 @@ public partial class SemanticWalker
 		if (Host?.ShouldSkipLocalFunctionDeclaration(operation, argument) == true)
 			return WithOriginIfMissing(new SequenceExpression(NodeList.Empty<Expression>()), operation);
 
-		var id = new Identifier(operation.Symbol.Name);
+		var id = new Identifier(GetJavaScriptBindingName(operation.Symbol));
 		var parameters = new List<Node>();
 		var refParameters = new List<Expression>();
 		foreach (var param in operation.Symbol.Parameters)
 		{
-			var parameter = new Identifier(param.Name);
+			var parameter = new Identifier(GetJavaScriptBindingName(param));
 			parameters.Add(parameter);
 			if (param.RefKind is RefKind.Out or RefKind.Ref)
 				refParameters.Add(parameter);
@@ -819,14 +819,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitUnaryOperator(IUnaryOperation operation, SenseArgument argument)
 	{
-		// '^' needs the containing indexer/range to supply Length/Count. Reaching the
-		// unary visitor directly means C# is materializing a standalone System.Index value.
+		// The direct indexer/range path intercepts '^' to compute a numeric offset from its
+		// receiver. Reaching this visitor means C# is materializing System.Index as a value.
 		if (operation.OperatorKind == UnaryOperatorKind.Hat)
-		{
-			return HandleTransformationFailure<Node>(
-				operation,
-				"Standalone System.Index values are not supported in JavaScript conversion. Use '^' directly in an array, string, or supported indexer access.");
-		}
+			return WithOriginIfMissing(BuildStandaloneFromEndIndex(operation, argument), operation);
 
 		var operand = Translate<Expression>(operation.Operand, argument);
 		if (operation.OperatorMethod is not null)
@@ -914,7 +910,7 @@ public partial class SemanticWalker
 
 		// 逻辑运算符 → LogicalExpression
 		if (@operator is Operator.LogicalAnd or Operator.LogicalOr)
-			return new LogicalExpression(@operator, left, right);
+			return Optimizer.OptimizeLogical(new LogicalExpression(@operator, left, right));
 
 		// 其余 → BinaryExpression
 		return new NonLogicalBinaryExpression(@operator, left, right);
@@ -983,10 +979,13 @@ public partial class SemanticWalker
 	public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, SenseArgument argument)
 	{
 		var parameters = new List<Node>();
+		var refParameters = new List<Expression>();
 		foreach (var param in operation.Symbol.Parameters)
 		{
-			var paramName = param.Name;
-			parameters.Add(new Identifier(paramName));
+			var parameter = new Identifier(GetJavaScriptBindingName(param));
+			parameters.Add(parameter);
+			if (param.RefKind is RefKind.Out or RefKind.Ref)
+				refParameters.Add(parameter);
 		}
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
@@ -997,12 +996,177 @@ public partial class SemanticWalker
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
+		// Delegate invocation already applies the shared caller-side ref/out protocol. An
+		// anonymous function with writable parameters must therefore return the same layout
+		// as a local or module method, while nested functions remain isolated by the rewriter.
+		if (refParameters.Count > 0)
+			body = RefOutReturnProtocol.Apply(body, refParameters, !operation.Symbol.ReturnsVoid);
 
 		// 创建箭头函数
 		return new ArrowFunctionExpression(
 			NodeList.From(parameters), body,
 			@async: operation.Symbol.IsAsync,
 			expression: false);
+	}
+
+	/// <summary>
+	/// 处理 C# query syntax 已展开后的查询操作。
+	/// </summary>
+	/// <remarks>
+	/// Roslyn 已将 from/where/select 等语法绑定并展开为普通的 invocation/lambda operation。
+	/// 这里仅移除 wrapper，确保已有 WhiteList、lambda、求值顺序与使用点失败路径完全复用；
+	/// 不自行模拟 LINQ，也不把未映射的 Queryable/Enumerable 调用降级为原始 JavaScript。
+	/// </remarks>
+	public override Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, SenseArgument argument)
+		=> Translate<Expression>(operation.Operation, argument);
+
+	/// <summary>
+	/// Materializes a C# <c>..</c> expression through the bound System.Range/Index API surface.
+	/// </summary>
+	/// <remarks>
+	/// Range literals are real values: they can cross a local/argument/return boundary before an
+	/// indexer consumes them. The compiler must therefore use the CLR module mappings instead of
+	/// reinterpreting the syntax as an array-only <c>slice</c> shorthand. Direct indexer syntax still
+	/// has its specialised path in <c>SemanticWalker.Reference</c> to avoid unnecessary carriers.
+	/// </remarks>
+	public override Node? VisitRangeOperation(IRangeOperation operation, SenseArgument argument)
+	{
+		if (operation.Type is not INamedTypeSymbol rangeType || !IsSystemRangeType(rangeType))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"Range operation requires the bound System.Range runtime contract.");
+		}
+
+		var constructor = rangeType.InstanceConstructors.SingleOrDefault(static candidate =>
+			candidate.Parameters.Length == 2 &&
+			IsSystemIndexType(candidate.Parameters[0].Type) &&
+			IsSystemIndexType(candidate.Parameters[1].Type));
+		if (constructor is null)
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"System.Range(Index, Index) is required to lower a range expression.");
+		}
+
+		var indexType = (INamedTypeSymbol)constructor.Parameters[0].Type;
+		var start = operation.LeftOperand is null
+			? BuildDefaultRangeBoundary(operation, indexType, "Start", argument)
+			: Translate<Expression>(operation.LeftOperand, argument);
+		var end = operation.RightOperand is null
+			? BuildDefaultRangeBoundary(operation, indexType, "End", argument)
+			: Translate<Expression>(operation.RightOperand, argument);
+
+		var mapped = GetWhiteListExpression(constructor, argument, [start, end], out _, operation);
+		return mapped is not null
+			? WithOriginIfMissing(mapped, operation)
+			: HandleTransformationFailure<Node>(
+				operation,
+				"System.Range values require the generated System.Range constructor mapping.");
+	}
+
+	private Expression BuildDefaultRangeBoundary(
+		IRangeOperation operation,
+		INamedTypeSymbol indexType,
+		string propertyName,
+		SenseArgument argument)
+	{
+		var property = indexType.GetMembers(propertyName)
+			.OfType<IPropertySymbol>()
+			.SingleOrDefault(static candidate => candidate.IsStatic && candidate.GetMethod is not null);
+		if (property?.GetMethod is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"System.Index.{propertyName} is required to lower an open range boundary.");
+		}
+
+		return GetWhiteListExpression(property.GetMethod, argument, [], out _, operation)
+			?? HandleTransformationFailure<Expression>(
+				operation,
+				$"System.Index.{propertyName} requires the generated System.Index mapping.");
+	}
+
+	/// <summary>
+	/// Lowers standalone <c>^value</c> to the bound System.Index factory.
+	/// </summary>
+	/// <remarks>
+	/// The direct array/indexer route deliberately intercepts <c>^</c> earlier and computes a
+	/// numeric offset from its receiver. Reaching this visitor means the source is materializing an
+	/// Index value, so a carrier is required and is supplied by the CLR mapping.
+	/// </remarks>
+	private Expression BuildStandaloneFromEndIndex(IUnaryOperation operation, SenseArgument argument)
+	{
+		if (operation.Type is not INamedTypeSymbol indexType || !IsSystemIndexType(indexType))
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				"From-end indexing requires the bound System.Index runtime contract.");
+		}
+
+		var factory = indexType.GetMembers("FromEnd")
+			.OfType<IMethodSymbol>()
+			.SingleOrDefault(static candidate =>
+				candidate.IsStatic &&
+				candidate.Parameters.Length == 1 &&
+				candidate.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
+		if (factory is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				"System.Index.FromEnd(int) is required to lower a standalone from-end index.");
+		}
+
+		var value = Translate<Expression>(operation.Operand, argument);
+		return GetWhiteListExpression(factory, argument, [value], out _, operation)
+			?? HandleTransformationFailure<Expression>(
+				operation,
+				"System.Index.FromEnd(int) requires the generated System.Index mapping.");
+	}
+
+	/// <summary>
+	/// Lowers a compile-time CLR storage-size constant without inventing a JavaScript memory model.
+	/// </summary>
+	/// <remarks>
+	/// Only primitive scalar types and enum underlying types are admitted. Carrier-backed and user
+	/// defined structs deliberately remain unsupported because their JavaScript representation is not
+	/// their CLR storage layout.
+	/// </remarks>
+	public override Node? VisitSizeOf(ISizeOfOperation operation, SenseArgument argument)
+	{
+		if (!IsSupportedSizeOfType(operation.TypeOperand) ||
+			!operation.ConstantValue.HasValue ||
+			operation.ConstantValue.Value is not int size)
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"sizeof is supported only for compile-time primitive scalar or enum-underlying sizes; CLR carrier and user-defined layouts have no JavaScript storage-layout contract.");
+		}
+
+		return WithOriginIfMissing(
+			new NumericLiteral(size, size.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			operation);
+	}
+
+	private static bool IsSupportedSizeOfType(ITypeSymbol type)
+	{
+		if (type.TypeKind == TypeKind.Enum && type is INamedTypeSymbol enumType && enumType.EnumUnderlyingType is not null)
+			return IsSupportedSizeOfType(enumType.EnumUnderlyingType);
+
+		return type.OriginalDefinition.SpecialType is
+			SpecialType.System_Boolean or
+			SpecialType.System_Char or
+			SpecialType.System_SByte or
+			SpecialType.System_Byte or
+			SpecialType.System_Int16 or
+			SpecialType.System_UInt16 or
+			SpecialType.System_Int32 or
+			SpecialType.System_UInt32 or
+			SpecialType.System_Int64 or
+			SpecialType.System_UInt64 or
+			SpecialType.System_Single or
+			SpecialType.System_Double or
+			SpecialType.System_Decimal;
 	}
 
 	/// <summary>

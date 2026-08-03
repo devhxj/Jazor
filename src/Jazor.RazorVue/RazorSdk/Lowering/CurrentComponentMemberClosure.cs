@@ -256,7 +256,19 @@ internal sealed class CurrentComponentMemberClosure
                 return false;
             }
 
-            return RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, namedType.ContainingType);
+            // Component helpers can use nested runtime classes for implementation details.
+            // Follow only an all-runtime-class containment chain so records/interfaces never
+            // become accidental artifact declarations.
+            for (var current = namedType.ContainingType; current is not null; current = current.ContainingType)
+            {
+                if (RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, current))
+                    return true;
+
+                if (current.TypeKind != TypeKind.Class || current.IsRecord || current.IsStatic)
+                    return false;
+            }
+
+            return false;
         }
 
         private bool IsNestedRuntimeClassMember(ISymbol symbol)

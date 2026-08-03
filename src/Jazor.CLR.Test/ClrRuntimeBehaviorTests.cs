@@ -123,7 +123,35 @@ public sealed class ClrRuntimeBehaviorTests
     private static void AssertValue(ClrRuntimeValue expected, ClrRuntimeValue actual, string path)
     {
         Assert.AreEqual(expected.Kind, actual.Kind, path);
-        Assert.AreEqual(expected.Scalar, actual.Scalar, path);
+        if (expected.Kind == ClrRuntimeValueKind.Number)
+        {
+            Assert.IsNotNull(expected.Scalar, path);
+            Assert.IsNotNull(actual.Scalar, path);
+            var expectedNumber = double.Parse(
+                expected.Scalar,
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture);
+            var actualNumber = double.Parse(
+                actual.Scalar,
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture);
+
+            if (double.IsNaN(expectedNumber))
+            {
+                Assert.IsTrue(double.IsNaN(actualNumber), path);
+            }
+            else
+            {
+                Assert.AreEqual(
+                    BitConverter.DoubleToInt64Bits(expectedNumber),
+                    BitConverter.DoubleToInt64Bits(actualNumber),
+                    path);
+            }
+        }
+        else
+        {
+            Assert.AreEqual(expected.Scalar, actual.Scalar, path);
+        }
 
         var expectedItems = expected.Items ?? [];
         var actualItems = actual.Items ?? [];

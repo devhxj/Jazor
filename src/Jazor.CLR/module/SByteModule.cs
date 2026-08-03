@@ -61,7 +61,7 @@ public static class SByteModule
 	[Jazor(Op.Inline, "static sbyte.MinValue", "-128")]
 	public extern static Number _minValue();
 
-	[Jazor(Op.Discard ,"sbyte.SByte()")]
+	[Jazor(Op.Inline ,"sbyte.SByte()", "0")]
 	public extern static Number _0b5843a5a69b4fde();
 
 	/// <summary>
@@ -101,7 +101,7 @@ public static class SByteModule
 	public extern static bool _4105db2840795661(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard ,"override sbyte.GetHashCode()")]
+	[Jazor(Op.Inline, "override sbyte.GetHashCode()", "__arg1")]
 	public extern static Number _5131b1d6df49bbfb(Number instance);
 
 	/// <summary>
@@ -176,12 +176,14 @@ public static class SByteModule
 	}
 
 	///<summary>Tries to convert the span representation of a number to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)")]
-	public extern static Array<object?> _a3ccaa03549862bc(Uint32Array s, Number result);
+	[Jazor(Op.Import, "static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)")]
+	public static Array<object?> _a3ccaa03549862bc(string s, Number result)
+		=> _d9082c2537283f95(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 8-bit signed integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static sbyte.TryParse(System.ReadOnlySpan<byte>, out sbyte)")]
-	public extern static Array<object?> _f25602df99a7ca89(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static sbyte.TryParse(System.ReadOnlySpan<byte>, out sbyte)")]
+	public static Array<object?> _f25602df99a7ca89(Uint8Array utf8Text, Number result)
+		=> _d9082c2537283f95(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.SByte" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static sbyte.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out sbyte)")]

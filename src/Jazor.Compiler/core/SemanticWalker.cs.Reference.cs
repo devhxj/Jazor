@@ -112,7 +112,9 @@ public partial class SemanticWalker
 	}
 
 	private string GetCurrentModuleDeclaredOrConfigName(ISymbol symbol)
-		=> TryGetCurrentModuleDeclaredName(symbol, out var declaredName)
+		=> symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction }
+			? GetJavaScriptBindingName(symbol)
+			: TryGetCurrentModuleDeclaredName(symbol, out var declaredName)
 			? declaredName
 			: Util.GetConfigOrSymbolName(symbol);
 
@@ -1090,7 +1092,11 @@ public partial class SemanticWalker
 		}
 	}
 
-	private bool TryBuildEnumerableArrayLikeIntrinsic(IInvocationOperation operation, IMethodSymbol method, List<Expression> arguments, out Expression? expression)
+	private bool TryBuildEnumerableArrayLikeIntrinsic(
+		IMethodSymbol method,
+		List<Expression> arguments,
+		ITypeSymbol? sourceType,
+		out Expression? expression)
 	{
 		expression = null;
 		if (!EnumerableArrayLikeIntrinsics.TryGetValue(method.Name, out var intrinsic) ||
@@ -1098,16 +1104,15 @@ public partial class SemanticWalker
 			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T ||
 			method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat) != "System.Linq.Enumerable" ||
 			!TryGetWhiteListValue(WhiteList.Members, method, out _, out var memberEntry) ||
-			memberEntry.Op != Op.Import)
+			memberEntry.Op is not (Op.Import or Op.Compile))
 			return false;
 
-		var sourceOperation = UnwrapImplicitConversions(operation.Arguments[0].Value);
 		var sourceExpression = arguments[0];
 		var sourceIsArrayProducingExpression = IsArrayProducingExpression(sourceExpression);
-		var sourceIsEnumerableContract = IsEnumerableContractType(sourceOperation.Type);
+		var sourceIsEnumerableContract = IsEnumerableContractType(sourceType);
 		var sourceSupportsArrayMethods =
-			IsListLikeContractType(sourceOperation.Type) ||
-			(IsConcreteArrayLikeType(sourceOperation.Type) && !sourceIsEnumerableContract) ||
+			IsListLikeContractType(sourceType) ||
+			(IsConcreteArrayLikeType(sourceType) && !sourceIsEnumerableContract) ||
 			sourceIsArrayProducingExpression;
 
 		var sourceParameter = new Identifier("__src");
@@ -1204,25 +1209,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		return false;
 	}
 
-	private static bool HasDirectStringSplitShape(IInvocationOperation operation, List<Expression> arguments)
-	{
-		if (operation.TargetMethod.Parameters.Length == 0 ||
-			operation.TargetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String)
-			return false;
-
-		if (arguments.Count == 1 && arguments[0] is StringLiteral)
-			return true;
-
-		if (arguments.Count != 2 ||
-			arguments[0] is not StringLiteral ||
-			operation.Arguments.Length != 2)
-			return false;
-
-		// Roslyn materializes the optional StringSplitOptions.None argument.
-		// Its explicit and implicit forms both preserve native JavaScript split semantics.
-		return operation.Arguments[1].Value.ConstantValue is { HasValue: true, Value: 0 };
-	}
-
 	private bool TryExpandEcmascriptParamsArgument(
 	IMethodSymbol method,
 	IArgumentOperation arg,
@@ -1286,20 +1272,14 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		}
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		var hostContext = new SemanticInvocationLoweringContext(
-			argument,
-			TryBuildImportedModuleMember,
-			GetModuleImportPath,
-			GetMapperType,
-			EnumerateNamedTypeHierarchyBaseFirst,
-			CreateOperationTransformationException);
-		if (Host?.RewriteInvocationIntrinsic(operation, instance, arguments, hostContext) is Expression hostIntrinsic)
-		{
-			expression = hostIntrinsic;
-			return true;
-		}
 
-		if (TryBuildEnumerableArrayLikeIntrinsic(operation, method, arguments, out expression))
+		if (TryBuildEnumerableArrayLikeIntrinsic(
+			method,
+			arguments,
+			operation.Arguments.Length > 0
+				? UnwrapImplicitConversions(operation.Arguments[0].Value).Type
+				: null,
+			out expression))
 			return true;
 
 		if (method.ContainingType.SpecialType == SpecialType.System_String || containingType == "string")
@@ -1320,10 +1300,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			{
 				expression = method.Name switch
 				{
-					// string.Split 的“多字符分隔符数组”不能直接翻成 JS split(array)。
-					// 这里只保留真正的一元字符串/字符分隔符直译；带 count/options 的重载回退到白名单/helper。
-					"Split" when HasDirectStringSplitShape(operation, arguments) =>
-						BuildInstanceMethodCall(instance, "split", arguments[0]),
 					"PadLeft" when arguments.Count == 1 =>
 						BuildInstanceMethodCall(instance, "padStart", arguments[0]),
 					"PadLeft" when arguments.Count == 2 =>
@@ -1496,13 +1472,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		if (indexOperation is IRangeOperation range)
 		{
-			var start = TryUnwrapArrayFromEndIndex(range.LeftOperand, out var leftUnary)
-				? BuildArrayFromEndIndex(target, leftUnary, argument)
-				: Translate<Expression>(range.LeftOperand, argument, null);
-
-			var end = TryUnwrapArrayFromEndIndex(range.RightOperand, out var rightUnary)
-				? BuildArrayFromEndIndex(target, rightUnary, argument)
-				: Translate<Expression>(range.RightOperand, argument, null);
+			var start = BuildArrayRangeBoundary(target, range.LeftOperand, argument);
+			var end = BuildArrayRangeBoundary(target, range.RightOperand, argument);
 
 			var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
 			var args = NodeList.Empty<Expression>();
@@ -1514,6 +1485,31 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				args = NodeList.From<Expression>(new NumericLiteral(0, "0"), end);
 
 			return new CallExpression(slice, args, optional: false);
+		}
+
+		if (indexOperation.Type is INamedTypeSymbol rangeType && IsSystemRangeType(rangeType))
+		{
+			var (offset, length) = BuildMaterializedRangeOffsetAndLength(
+				ownerOperation,
+				indexOperation,
+				rangeType,
+				() => new MemberExpression(target, new Identifier("length"), computed: false, optional: false),
+				argument,
+				initializations,
+				ownerOperation);
+			var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
+			// Range.GetOffsetAndLength returns (offset, length), while Array.prototype.slice takes
+			// (start, endExclusive). The projection is materialized above, so reusing its offset
+			// for the end calculation preserves the single carrier invocation.
+			var endExclusive = new NonLogicalBinaryExpression(Operator.Addition, offset, length);
+			return new CallExpression(slice, NodeList.From(offset, endExclusive), optional: false);
+		}
+
+		if (indexOperation.Type is INamedTypeSymbol indexType && IsSystemIndexType(indexType))
+		{
+			var length = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
+			var offset = BuildMaterializedIndexOffset(ownerOperation, indexOperation, indexType, length, argument);
+			return new MemberExpression(target, offset, computed: true, optional: false);
 		}
 
 		var indexCalculation = Translate<Expression>(indexOperation, argument);
@@ -1529,9 +1525,31 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		return new MemberExpression(target, indexCalculation, computed: true, optional: false);
 	}
 
+	private Expression? BuildArrayRangeBoundary(
+		Expression target,
+		IOperation? boundaryOperation,
+		SenseArgument argument)
+	{
+		if (boundaryOperation is null)
+			return null;
+
+		if (TryUnwrapArrayFromEndIndex(boundaryOperation, out var fromEnd))
+			return BuildArrayFromEndIndex(target, fromEnd, argument);
+
+		// The language-level array range protocol uses numeric offsets. An implicit int -> Index
+		// conversion belongs to that protocol and must not materialize a JIndex carrier.
+		if (TryUnwrapFromStartIndexArgument(boundaryOperation, out var fromStart))
+			return Translate<Expression>(fromStart, argument);
+
+		return Translate<Expression>(boundaryOperation, argument);
+	}
+
 	private static bool RequiresArrayReceiverCaching(IOperation indexOperation)
 	{
 		if (TryUnwrapArrayFromEndIndex(indexOperation, out _))
+			return true;
+
+		if (IsSystemIndexType(indexOperation.Type) || IsSystemRangeType(indexOperation.Type))
 			return true;
 
 		return indexOperation is IRangeOperation range &&
@@ -1630,6 +1648,16 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				?? GetLengthExpr();
 			arguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr);
 		}
+		else if (IsSystemRangeType(operation.Argument.Type))
+		{
+			arguments = BuildMaterializedRangeArguments(
+				operation,
+				operation.Argument,
+				GetLengthExpr,
+				argument,
+				ownerOperation,
+				initializations);
+		}
 		else
 		{
 			var lengthForIndex = RequiresImplicitIndexerLengthAccess(operation.Argument)
@@ -1662,7 +1690,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		SenseArgument argument,
 		ITypeSymbol? hostType)
 	{
-		var usage = TryGetRangeArgument(operation.Argument, out _)
+		var usage = TryGetRangeArgument(operation.Argument, out _) || IsSystemRangeType(operation.Argument.Type)
 			? "implicit range access"
 			: "implicit indexer access";
 		return BuildListPatternBoundAccess(
@@ -1740,6 +1768,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 	private static bool RequiresImplicitIndexerLengthAccess(IOperation argumentOperation)
 	{
+		if (IsSystemRangeType(argumentOperation.Type))
+			return true;
+
 		if (TryGetRangeArgument(argumentOperation, out var rangeArgument))
 		{
 			return rangeArgument.RightOperand is null ||
@@ -1747,7 +1778,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				IsFromEndIndexArgument(rangeArgument.RightOperand);
 		}
 
-		return IsFromEndIndexArgument(argumentOperation);
+		return IsFromEndIndexArgument(argumentOperation) ||
+			(IsSystemIndexType(argumentOperation.Type) &&
+			 !TryUnwrapFromStartIndexArgument(argumentOperation, out _));
 	}
 
 	private static bool IsFromEndIndexArgument(IOperation? operation)
@@ -1839,9 +1872,12 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryUnwrapFromStartIndexArgument(argumentOperation, out var fromStartOperand))
 			return Translate<Expression>(fromStartOperand, argument);
 
+		if (argumentOperation.Type is INamedTypeSymbol indexType && IsSystemIndexType(indexType))
+			return BuildMaterializedIndexOffset(ownerOperation, argumentOperation, indexType, lengthExpr, argument);
+
 		return HandleTransformationFailure<Expression>(
 			ownerOperation,
-			"Implicit indexing requires a direct numeric index, '^', or range expression. Standalone System.Index/System.Range values are not supported in JavaScript lowering.");
+			"Implicit indexing requires a direct numeric index, '^', range expression, or mapped System.Index value.");
 	}
 
 	private static bool TryGetRangeArgument(IOperation operation, out IRangeOperation rangeOperation)
@@ -1936,6 +1972,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryBuildFromEndIndexExpression(boundaryOperation, getLengthExpr(), argument, out var fromEndExpr))
 			return fromEndExpr;
 
+		// Direct range syntax is normalized by this implicit-indexer protocol. Do not route an
+		// implicit int -> Index conversion through the standalone JIndex carrier path.
+		if (TryUnwrapFromStartIndexArgument(boundaryOperation, out var fromStartOperand))
+			return Translate<Expression>(fromStartOperand, argument);
+
 		return Translate<Expression>(boundaryOperation, argument);
 	}
 
@@ -1945,10 +1986,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		Expression startExpr,
 		Expression endExpr)
 	{
-		if (indexerSymbol is not IMethodSymbol method ||
-			method.Parameters.Length != 2 ||
-			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
-			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+		if (!IsImplicitRangeIndexer(indexerSymbol))
 		{
 			return HandleUnsupportedSliceArguments(
 				ownerOperation,
@@ -1960,6 +1998,128 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			startExpr,
 			BuildImplicitRangeLengthExpression(startExpr, endExpr)
 		];
+	}
+
+	private static bool IsImplicitRangeIndexer(ISymbol indexerSymbol)
+		=> indexerSymbol is IMethodSymbol method &&
+			method.Parameters.Length == 2 &&
+			method.Parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Int32 &&
+			method.Parameters[1].Type.OriginalDefinition.SpecialType == SpecialType.System_Int32;
+
+	/// <summary>
+	/// Converts a stored System.Range value to the bound Slice/Substring integer pair.
+	/// </summary>
+	/// <remarks>
+	/// GetOffsetAndLength validates the whole range in one CLR carrier call. Its tuple result is
+	/// cached before exposing offset and length so range expressions, range properties, and checks
+	/// are evaluated exactly once.
+	/// </remarks>
+	private List<Expression> BuildMaterializedRangeArguments(
+		IImplicitIndexerReferenceOperation operation,
+		IOperation rangeOperation,
+		Func<Expression> getLengthExpression,
+		SenseArgument argument,
+		IOperation ownerOperation,
+		List<Expression> initializations)
+	{
+		var (offset, length) = BuildMaterializedRangeOffsetAndLength(
+			operation,
+			rangeOperation,
+			(INamedTypeSymbol)rangeOperation.Type!,
+			getLengthExpression,
+			argument,
+			initializations,
+			ownerOperation);
+
+		if (!IsImplicitRangeIndexer(operation.IndexerSymbol))
+		{
+			return HandleUnsupportedSliceArguments(
+				operation,
+				$"Implicit range symbol '{operation.IndexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must be a Slice/Substring-style method with two int parameters.");
+		}
+
+		// GetOffsetAndLength already returns the exact (start, length) pair. Reusing the
+		// literal-range end-minus-start helper here would subtract the offset a second time.
+		return [offset, length];
+	}
+
+	private (Expression Offset, Expression Length) BuildMaterializedRangeOffsetAndLength(
+		IOperation operation,
+		IOperation rangeOperation,
+		INamedTypeSymbol rangeType,
+		Func<Expression> getLengthExpression,
+		SenseArgument argument,
+		List<Expression> initializations,
+		IOperation materializationOwner)
+	{
+		// The two callers enter only after Roslyn has bound System.Range. Its sole public
+		// GetOffsetAndLength(int) member returns the canonical two-value tuple, so repeating a
+		// reflective shape probe here would add unreachable protocol branches.
+		var getOffsetAndLength = rangeType.GetMembers("GetOffsetAndLength")
+			.OfType<IMethodSymbol>()
+			.Single();
+		var tupleType = (INamedTypeSymbol)getOffsetAndLength.ReturnType;
+
+		var range = Translate<Expression>(rangeOperation, argument);
+		var projection = GetWhiteListExpression(
+			getOffsetAndLength,
+			argument,
+			[getLengthExpression()],
+			range,
+			out _,
+			operation);
+		if (projection is null)
+		{
+			return HandleTransformationFailure<(Expression Offset, Expression Length)>(
+				operation,
+				"System.Range.GetOffsetAndLength(int) requires the generated System.Range mapping.");
+		}
+
+		var offsets = MaterializePropertyMutationOperand(
+			projection,
+			materializationOwner,
+			argument,
+			initializations,
+			"irange");
+		return (
+			new MemberExpression(
+				offsets,
+				new Identifier(GetTupleRuntimeFieldName(tupleType.TupleElements[0])),
+				computed: false,
+				optional: false),
+			new MemberExpression(
+				offsets,
+				new Identifier(GetTupleRuntimeFieldName(tupleType.TupleElements[1])),
+				computed: false,
+				optional: false));
+	}
+
+	private Expression BuildMaterializedIndexOffset(
+		IOperation ownerOperation,
+		IOperation indexOperation,
+		INamedTypeSymbol indexType,
+		Expression? lengthExpr,
+		SenseArgument argument)
+	{
+		if (lengthExpr is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				ownerOperation,
+				"A materialized System.Index value requires a supported Length/Count symbol.");
+		}
+
+		// This helper is reached only after the bound System.Index path requested Length/Count.
+		// System.Index has one public GetOffset(int) member; probing alternatives here cannot alter
+		// lowering and only obscures the fixed BCL contract.
+		var getOffset = indexType.GetMembers("GetOffset")
+			.OfType<IMethodSymbol>()
+			.Single();
+
+		var index = Translate<Expression>(indexOperation, argument);
+		return GetWhiteListExpression(getOffset, argument, [lengthExpr], index, out _, ownerOperation)
+			?? HandleTransformationFailure<Expression>(
+				ownerOperation,
+				"System.Index.GetOffset(int) requires the generated System.Index mapping.");
 	}
 
 	private Expression BuildImplicitRangeLengthExpression(Expression startExpr, Expression endExpr)
@@ -1985,7 +2145,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (Host?.RewriteLocalReference(operation, argument) is Expression hostExpression)
 			return WithOriginIfMissing(hostExpression, operation);
 
-		return WithOrigin(new Identifier(operation.Local.Name), operation);
+		return WithOrigin(new Identifier(GetJavaScriptBindingName(operation.Local)), operation);
 	}
 
 	/// <summary>
@@ -2004,7 +2164,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (Host?.RewriteParameterReference(operation, argument) is Expression hostExpression)
 			return WithOriginIfMissing(hostExpression, operation);
 
-		return WithOrigin(new Identifier(operation.Parameter.Name), operation);
+		return WithOrigin(new Identifier(GetJavaScriptBindingName(operation.Parameter)), operation);
 	}
 
 	/// <summary>
@@ -2247,7 +2407,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		if (operation.Method.MethodKind == MethodKind.LocalFunction)
 		{
-			var localFunction = new Identifier(GetCurrentModuleDeclaredOrConfigName(operation.Method));
+			var localFunction = new Identifier(GetJavaScriptBindingName(operation.Method));
 			if (operation.Method.IsStatic || operation.Instance is null)
 				return WithOriginIfMissing(localFunction, operation);
 
@@ -2548,15 +2708,32 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			hostType ?? targetMethod.ContainingType,
 			"method invocation");
 
+		// Host extensions are an explicit override boundary and must see the already-lowered
+		// operands before CLR dispatch. Compiler-owned intrinsics remain a fallback after mappings.
+		if (allowIntrinsic && invocationOperation is not null && Host is not null)
+		{
+			var hostContext = new SemanticInvocationLoweringContext(
+				argument,
+				TryBuildImportedModuleMember,
+				GetModuleImportPath,
+				GetMapperType,
+				EnumerateNamedTypeHierarchyBaseFirst,
+				CreateOperationTransformationException);
+			if (Host.RewriteInvocationIntrinsic(invocationOperation, instance, arguments, hostContext) is Expression hostIntrinsic)
+				return hostIntrinsic;
+		}
+
+		// CLR mappings own supported member semantics. Compiler intrinsics are only a fallback for
+		// members without Compile/Alias/Inline/Import mappings.
+		var mapperExpr = GetWhiteListExpression(targetMethod, argument, arguments, instance, out var alias, ownerOperation);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
 		if (allowIntrinsic &&
 			invocationOperation is not null &&
 			TryBuildIntrinsicMethodInvocation(invocationOperation, targetMethod, instance, arguments, argument, out var intrinsicExpr) &&
 			intrinsicExpr is not null)
 			return intrinsicExpr;
-
-		var mapperExpr = GetWhiteListExpression(targetMethod, argument, arguments, instance, out var alias, ownerOperation);
-		if (mapperExpr is not null)
-			return mapperExpr;
 
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType ?? targetMethod.ContainingType);

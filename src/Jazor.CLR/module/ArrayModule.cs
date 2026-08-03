@@ -36,6 +36,42 @@ public static class ArrayModule<T>
 	private static Number CompareDefaultKey<TKey>(TKey left, TKey right)
 		=> ComparerT1Module<TKey>.CompareCore(left, right);
 
+	private static Array<object?> RequireSingleDimensionArray(object instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		return (Array<object?>)instance;
+	}
+
+	private static Number RequireSingleIndex(Array<object?> instance, Array<Number>? indices)
+	{
+		if (indices == null)
+			throw new Error("ArgumentNullException: indices is null.");
+		if (indices.Length != 1)
+			throw new Error("ArgumentException: Indices length does not match array rank.");
+
+		var index = indices[0];
+		if (IsNaN(index) || Math.FloorFn(index) != index || index < 0 || index >= instance.Length)
+			throw new Error("IndexOutOfRangeException: index is out of range.");
+
+		return index;
+	}
+
+	private static Number RequireSingleIndex(Array<object?> instance, Array<BigInt>? indices)
+	{
+		if (indices == null)
+			throw new Error("ArgumentNullException: indices is null.");
+		if (indices.Length != 1)
+			throw new Error("ArgumentException: Indices length does not match array rank.");
+
+		var index = indices[0];
+		if (index < BigInt.Zero || index >= BigIntFn(instance.Length))
+			throw new Error("IndexOutOfRangeException: index is out of range.");
+
+		return NumberFn(index);
+	}
+
 	#region 属性
 
 	/// <summary>
@@ -53,15 +89,16 @@ public static class ArrayModule<T>
 	public extern static BigInt _82dc944f60373152(Array instance);
 
 	/// <summary>
-	/// JavaScript 数组始终是一维的，不支持 Rank
+	/// 当前 Array carrier 只表示一维数组；多维数组在进入 runtime mapping 前即保持不支持。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.Rank.get")]
+	[Jazor(Op.Inline, "System.Array.Rank.get", "1")]
 	public extern static Number _6ab1259f55d0dd24(Array instance);
 
 	/// <summary>
-	/// JavaScript 数组元素初始化为 undefined，无需 Initialize
+	/// Array.Initialize 是 CLR 为编译器保留的无状态初始化钩子；已构造的数组不会因此重置元素。
+	/// 保留 length 解引用以维持空实例调用的失败语义，再返回 void。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.Initialize()")]
+	[Jazor(Op.Inline, "System.Array.Initialize()", "void __arg1.length")]
 	public extern static void _a93e4c6dc74a4cff(Array instance);
 
 	#endregion
@@ -69,16 +106,10 @@ public static class ArrayModule<T>
 	#region 静态工厂方法
 
 	/// <summary>
-	/// C#: Array.AsReadOnly&lt;T&gt;(T[])
-	/// JS: 使用 Object.freeze() 创建只读数组
+	/// C# 返回的是跟踪原数组变化的实时只读视图；当前 Array carrier 尚无只读 view 协议。
 	/// </summary>
-	[Jazor(Op.Import, "static System.Array.AsReadOnly<T>(T[])")]
-	public static Array<T> _abd52ebcdb6fefcb(Array<T> array)
-	{
-		if (array == null)
-			throw new Error("ArgumentNullException: array is null");
-		return Object.Freeze(array.Slice());
-	}
+	[Jazor(Op.Discard, "static System.Array.AsReadOnly<T>(T[])")]
+	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _abd52ebcdb6fefcb(T[] array);
 
 	/// <summary>
 	/// C#: Array.Resize&lt;T&gt;(ref T[], int)
@@ -322,10 +353,15 @@ public static class ArrayModule<T>
 	#region GetValue/SetValue 方法
 
 	/// <summary>
-	/// JavaScript 不支持多维数组的索引数组访问
+	/// C#: array.GetValue(indices)
+	/// 当前 Array carrier 只表示一维 CLR array；因此 indices 必须恰好含一个有效索引。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.GetValue(params int[])")]
-	public extern static object? _e938260256ca4a08(object instance, object indices);
+	[Jazor(Op.Import, "System.Array.GetValue(params int[])")]
+	public static object? _e938260256ca4a08(object instance, Array<Number>? indices)
+	{
+		var target = RequireSingleDimensionArray(instance);
+		return target[RequireSingleIndex(target, indices)];
+	}
 
 	/// <summary>
 	/// C#: array.GetValue(index)
@@ -366,10 +402,15 @@ public static class ArrayModule<T>
 	public extern static void _a8dff91417f83303(object instance, object? value, Number index1, Number index2, Number index3);
 
 	/// <summary>
-	/// JavaScript 不支持多维数组的索引数组访问
+	/// C#: array.SetValue(value, indices)
+	/// 当前 Array carrier 只表示一维 CLR array；保持 params overload 的 rank 与边界校验。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.SetValue(object, params int[])")]
-	public extern static void _8752076a83fbb3f1(object instance, object? value, object indices);
+	[Jazor(Op.Import, "System.Array.SetValue(object, params int[])")]
+	public static void _8752076a83fbb3f1(object instance, object? value, Array<Number>? indices)
+	{
+		var target = RequireSingleDimensionArray(instance);
+		target[RequireSingleIndex(target, indices)] = value;
+	}
 
 	/// <summary>
 	/// C#: array.GetValue(longIndex)
@@ -392,10 +433,15 @@ public static class ArrayModule<T>
 	public extern static object? _8e8e4b0752cd3155(object instance, BigInt index1, BigInt index2, BigInt index3);
 
 	/// <summary>
-	/// JavaScript 不支持多维数组的索引数组访问
+	/// C#: array.GetValue(longIndices)
+	/// long index remains a BigInt until the one-dimensional carrier bounds check succeeds.
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.GetValue(params long[])")]
-	public extern static object? _6a12948779406121(object instance, object indices);
+	[Jazor(Op.Import, "System.Array.GetValue(params long[])")]
+	public static object? _6a12948779406121(object instance, Array<BigInt>? indices)
+	{
+		var target = RequireSingleDimensionArray(instance);
+		return target[RequireSingleIndex(target, indices)];
+	}
 
 	/// <summary>
 	/// C#: array.SetValue(value, longIndex)
@@ -417,20 +463,24 @@ public static class ArrayModule<T>
 	public extern static void _314db333058e554d(object instance, object? value, BigInt index1, BigInt index2, BigInt index3);
 
 	/// <summary>
-	/// JavaScript 不支持多维数组的索引数组访问
+	/// C#: array.SetValue(value, longIndices)
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.SetValue(object, params long[])")]
-	public extern static void _e3923681669a96b5(object instance, object? value, object indices);
+	[Jazor(Op.Import, "System.Array.SetValue(object, params long[])")]
+	public static void _e3923681669a96b5(object instance, object? value, Array<BigInt>? indices)
+	{
+		var target = RequireSingleDimensionArray(instance);
+		target[RequireSingleIndex(target, indices)] = value;
+	}
 
 	#endregion
 
 	#region 接口实现属性
 
 	/// <summary>
-	/// JavaScript 没有同步根概念
+	/// CLR Array 的 SyncRoot 就是数组实例本身。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Array.SyncRoot.get")]
-	public extern static object _5df324fc2064bf14(object instance);
+	[Jazor(Op.Inline, "System.Array.SyncRoot.get", "__arg1")]
+	public extern static object _5df324fc2064bf14(Array instance);
 
 	/// <summary>
 	/// JavaScript 数组不是只读的
@@ -439,10 +489,10 @@ public static class ArrayModule<T>
 	public extern static bool _957efa892fba2b42(object instance);
 
 	/// <summary>
-	/// JavaScript 数组大小可变
+	/// CLR Array 的长度固定；JavaScript carrier 可变不改变该 API 的 CLR 契约。
 	/// </summary>
-	[Jazor(Op.Inline, "System.Array.IsFixedSize.get", "false")]
-	public extern static bool _af3654cc2dd2fa42(object instance);
+	[Jazor(Op.Inline, "System.Array.IsFixedSize.get", "true")]
+	public extern static bool _af3654cc2dd2fa42(Array instance);
 
 	/// <summary>
 	/// JavaScript 数组不是线程同步的

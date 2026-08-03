@@ -129,6 +129,37 @@ public static class ListT1Module<T>
 			throw new Error("ArgumentOutOfRangeException: count is out of range.");
 	}
 
+	private static Number CompareWith(IComparer<T>? comparer, T left, T right)
+		=> comparer is null
+			? ComparerT1Module<T>.CompareCore(left, right)
+			: comparer.Compare(left, right);
+
+	private static Number BinarySearchCore(
+		Array<T> instance,
+		Number index,
+		Number count,
+		T item,
+		IComparer<T>? comparer)
+	{
+		EnsureRemoveRange(instance, index, count);
+
+		var lower = index;
+		var upper = index + count - 1;
+		while (lower <= upper)
+		{
+			var midpoint = lower + Math.FloorFn((upper - lower) / 2);
+			var comparison = CompareWith(comparer, instance[midpoint], item);
+			if (comparison == 0)
+				return midpoint;
+			if (comparison < 0)
+				lower = midpoint + 1;
+			else
+				upper = midpoint - 1;
+		}
+
+		return ~lower;
+	}
+
 	// Avoid depending on EqualityComparer<T> CLR coverage inside runtime modules.
 	// Keep list search/remove equality aligned to JS SameValueZero-like behavior.
 	private static bool EqualsForListSearch(T left, T right)
@@ -237,17 +268,29 @@ public static class ListT1Module<T>
 	public static void _a2660853a4ebc1f6(Array<T> instance, IEnumerable<T> collection)
 		=> AppendRange(instance, collection);
 
+	// ReadOnlyCollection<T> is a live read-only view over the same List<T>. Array is shared
+	// by List<T> and T[] in the JavaScript runtime, so it cannot retain that distinct carrier
+	// identity without a new collection-view protocol.
 	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.AsReadOnly()")]
-	public extern static Array<T> _f7981b5a4cd02bdb(Array<T> instance);
+	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _f7981b5a4cd02bdb(Array<T> instance);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.BinarySearch(int, int, T, System.Collections.Generic.IComparer<T>)")]
-	public extern static Number _95ada27dd960bae5(Array<T> instance, Number index, Number count, T item, IComparer<T>? comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.BinarySearch(int, int, T, System.Collections.Generic.IComparer<T>)")]
+	public static Number _95ada27dd960bae5(Array<T> instance, Number index, Number count, T item, IComparer<T>? comparer)
+		=> BinarySearchCore(instance, index, count, item, comparer);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.BinarySearch(T)")]
-	public extern static Number _3d21965eedc9916f(Array<T> instance, T item);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.BinarySearch(T)")]
+	public static Number _3d21965eedc9916f(Array<T> instance, T item)
+	{
+		EnsureInstance(instance);
+		return BinarySearchCore(instance, 0, instance.Length, item, comparer: null);
+	}
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.BinarySearch(T, System.Collections.Generic.IComparer<T>)")]
-	public extern static Number _65e239056cc65177(Array<T> instance, T item, IComparer<T>? comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.BinarySearch(T, System.Collections.Generic.IComparer<T>)")]
+	public static Number _65e239056cc65177(Array<T> instance, T item, IComparer<T>? comparer)
+	{
+		EnsureInstance(instance);
+		return BinarySearchCore(instance, 0, instance.Length, item, comparer);
+	}
 
 	/// <summary>
 	/// C#: list.Clear()
@@ -263,8 +306,15 @@ public static class ListT1Module<T>
 	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Contains(T)", "includes")]
 	public extern static bool _d9fab27c685b7de9(Array<T> instance, T item);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.ConvertAll<TOutput>(System.Converter<T, TOutput>)")]
-	public extern static Array<TOutput> _098c2e027f3a5996<TOutput>(Array<T> instance, object converter);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.ConvertAll<TOutput>(System.Converter<T, TOutput>)")]
+	public static Array<TOutput> _098c2e027f3a5996<TOutput>(Array<T> instance, Func<T, TOutput> converter)
+	{
+		EnsureInstance(instance);
+		if (converter is null)
+			throw new Error("ArgumentNullException: converter is null.");
+
+		return instance.Map(converter);
+	}
 
 	/// <summary>
 	/// C#: list.CopyTo(array)
@@ -796,8 +846,13 @@ public static class ListT1Module<T>
 	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.ToArray()", "slice")]
 	public extern static Array<T> _eedb6fcf490f54cb(Array<T> instance);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.TrimExcess()")]
-	public extern static void _27c95e83eced65e9(Array<T> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.TrimExcess()")]
+	public static void _27c95e83eced65e9(Array<T> instance)
+	{
+		// Array carriers do not expose capacity or CLR enumerator invalidation. After the
+		// null-instance check, trimming has no observable effect in the supported surface.
+		EnsureInstance(instance);
+	}
 
 	/// <summary>
 	/// C#: list.TrueForAll(match)

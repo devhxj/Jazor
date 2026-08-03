@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Alias: 直接落到稳定 carrier 成员的方法
 /// - Import: 需要显式承载 CLR 语义检查的方法
-/// - Discard: 同步/锁相关语义在当前运行时边界不可可靠表达
+/// - Inline: CLR Array-backed ICollection 的同步属性具有稳定常量/identity 语义
 /// </summary>
 [ECMAScriptModule("System/Collections/ICollectionModule.js")]
 [Jazor(Op.Alias, "System.Collections.ICollection", "Array")]
@@ -49,9 +49,9 @@ public static class ICollectionModule
 			array[(uint)index + i] = instance[i];
 	}
 
-	[Jazor(Op.Discard, "System.Collections.ICollection.SyncRoot.get")]
-	public extern static object _594fb8edb0d7b6c1(object instance);
+	[Jazor(Op.Inline, "System.Collections.ICollection.SyncRoot.get", "__arg1")]
+	public extern static object _594fb8edb0d7b6c1(Array<object?> instance);
 
-	[Jazor(Op.Discard, "System.Collections.ICollection.IsSynchronized.get")]
-	public extern static bool _65695a034b0b0a95(object instance);
+	[Jazor(Op.Inline, "System.Collections.ICollection.IsSynchronized.get", "false")]
+	public extern static bool _65695a034b0b0a95(Array<object?> instance);
 }

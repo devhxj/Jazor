@@ -211,8 +211,8 @@ public partial class SemanticWalker
                 "Try statement catch clause could not be translated to JavaScript.");
         }
 
-        return Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
-            new Identifier(local.Name);
+		return Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
+			new Identifier(GetJavaScriptBindingName(local));
     }
 
     private Identifier? TryExtractSharedCatchParam(ImmutableArray<ICatchClauseOperation> catches, SenseArgument argument)

@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2026-08-03
+
+- LINQ mappings now cover `Cast`, `OfType`, `TryGetNonEnumeratedCount`, comparer-aware `ToDictionary` and `ToHashSet`, and a broader set of selector, grouping, ordering, aggregation, and set operations through shared runtime helpers.
+- CLR support now includes fixed-width integer and floating conversions, checked arithmetic, UTF-8 numeric parsing, Unicode character classification, deterministic scalar hash codes, and comparer-backed dictionary and set behavior.
+- String span trimming and concatenation, line-ending replacement, joins and padding, one-dimensional `Array` parameter-index access, `ConditionalWeakTable` factory and clear operations, and `Exception` cause, `HelpLink`, and `Source` metadata now execute through generated runtime modules.
+- `StringBuilder` fixed `float` and `double` append/insert overloads now reuse their corresponding numeric `ToString()` carrier semantics. Object/generic formatting, capacity, live views, CLR enumerators, and type/reflection protocols remain deliberate support boundaries.
+- Read-only collection constructors and factories that require live views remain explicit support boundaries instead of returning writable or snapshot carriers.
+- The compiler quality gate now verifies 8,265 scenarios at 96.26% line coverage and 90.02% branch coverage. The RazorVue quality gate verifies 4,482 official Razor SG scenarios at 93.44% line coverage and 83.68% branch coverage.
+
 ## 2026-08-02
 
 - Nullable values and nested list patterns now preserve their C# null and single-evaluation semantics in generated JavaScript, including a stable failure for `Nullable<T>.Value` on an empty carrier.

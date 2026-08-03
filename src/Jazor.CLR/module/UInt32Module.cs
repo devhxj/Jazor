@@ -101,11 +101,11 @@ public static class UInt32Module
 	[Jazor(Op.Inline, "static uint.MinValue", "0")]
 	public extern static Number _0e4e92f6bb2f0389();
 
-	[Jazor(Op.Discard ,"uint.UInt32()")]
+	[Jazor(Op.Inline ,"uint.UInt32()", "0")]
 	public extern static Number _3221bd6546b20843();
 
 	///<summary>Produces the full product of two unsigned 32-bit numbers.</summary>
-	[Jazor(Op.Discard ,"static uint.BigMul(uint, uint)")]
+	[Jazor(Op.Inline ,"static uint.BigMul(uint, uint)", "(BigInt(__arg1) * BigInt(__arg2))")]
 	public extern static BigInt _e37a28b31d6aed2a(Number left, Number right);
 
 	///<summary>Compares this instance to a specified object and returns an indication of their relative values.</summary>
@@ -134,7 +134,7 @@ public static class UInt32Module
 	public extern static bool _cb191ad5776dddb3(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard ,"override uint.GetHashCode()")]
+	[Jazor(Op.Inline, "override uint.GetHashCode()", "(__arg1 | 0)")]
 	public extern static Number _d42f9fcffa604eb2(Number instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
@@ -210,12 +210,14 @@ public static class UInt32Module
 	}
 
 	///<summary>Tries to convert the span representation of a number to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<char>, out uint)")]
-	public extern static Array<object?> _104b334d48c2aecd(Uint32Array s, Number result);
+	[Jazor(Op.Import, "static uint.TryParse(System.ReadOnlySpan<char>, out uint)")]
+	public static Array<object?> _104b334d48c2aecd(string s, Number result)
+		=> _ad4f3364f146e5da(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 32-bit unsigned integer equivalent.</summary>
-	[Jazor(Op.Discard ,"static uint.TryParse(System.ReadOnlySpan<byte>, out uint)")]
-	public extern static Array<object?> _2526f7e27fec4657(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static uint.TryParse(System.ReadOnlySpan<byte>, out uint)")]
+	public static Array<object?> _2526f7e27fec4657(Uint8Array utf8Text, Number result)
+		=> _ad4f3364f146e5da(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its 32-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static uint.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out uint)")]

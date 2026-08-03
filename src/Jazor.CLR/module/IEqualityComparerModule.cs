@@ -18,9 +18,12 @@ public static class IEqualityComparerModule
 	[Jazor(Op.Import, "System.Collections.IEqualityComparer.Equals(object, object)")]
 	public static bool _eb0a1792ad8b44b7(object instance, object? x, object? y)
 	{
-		// Keep receiver null-check: interface dispatch on null must surface NullReferenceException semantics.
 		EqualityComparerT1Module<object?>.EnsureComparerInstance(instance);
-		return EqualityComparerT1Module<object?>.EqualsCore(x, y);
+		var equals = Reflect.Get(instance, "equals");
+		if (equals == null)
+			throw new Error("MissingMethodException: comparer does not expose equals.");
+
+		return (bool)Reflect.Apply(equals, instance, [x, y])!;
 	}
 
 	/// <summary>
@@ -30,8 +33,11 @@ public static class IEqualityComparerModule
 	[Jazor(Op.Import, "System.Collections.IEqualityComparer.GetHashCode(object)")]
 	public static Number _8f16da840d40722e(object instance, object? obj)
 	{
-		// Keep receiver null-check: interface dispatch on null must surface NullReferenceException semantics.
 		EqualityComparerT1Module<object?>.EnsureComparerInstance(instance);
-		return EqualityComparerT1Module<object?>.GetHashCodeCore(obj);
+		var getHashCode = Reflect.Get(instance, "getHashCode");
+		if (getHashCode == null)
+			throw new Error("MissingMethodException: comparer does not expose getHashCode.");
+
+		return (Number)Reflect.Apply(getHashCode, instance, [obj])!;
 	}
 }

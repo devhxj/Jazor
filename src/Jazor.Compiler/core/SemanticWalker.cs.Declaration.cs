@@ -103,7 +103,7 @@ public partial class SemanticWalker
 			return WithOriginIfMissing(preorderHostDeclarator, operation);
 
 		var identifier = Host?.RewriteLocalDeclarationIdentifier(operation.Symbol, operation, argument) ??
-			new Identifier(operation.Symbol.Name);
+			new Identifier(GetJavaScriptBindingName(operation.Symbol));
 		var init = operation.Initializer?.Value is IOperation value
 			? TranslateTupleForTarget(value, operation.Symbol.Type, argument)
 			: null;

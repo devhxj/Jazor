@@ -102,33 +102,64 @@ public static class BigIntegerModule
 		return rotated;
 	}
 
+	private static BigInt FromFloatingPointCore(Number value)
+	{
+		if (!DoubleModule.IsFiniteCore(value))
+			throw new Error("OverflowException: Cannot convert a non-finite floating-point value to BigInteger.");
+
+		return BigIntFn(Math.TruncFn(value));
+	}
+
+	private static BigInt FromDecimalCore(string value)
+		=> BigIntFn(DecimalModule._be8b149ea0e1d76b(value));
+
+	private static BigInt RequireRangeCore(BigInt value, BigInt min, BigInt max)
+	{
+		if (value < min || value > max)
+			throw new Error("OverflowException: Value was either too large or too small for the target type.");
+
+		return value;
+	}
+
+	private static Number RequireNumberRangeCore(BigInt value, BigInt min, BigInt max)
+		=> NumberFn(RequireRangeCore(value, min, max));
+
+	private static string ToDecimalCore(BigInt value)
+	{
+		var limit = BigIntFn("79228162514264337593543950335");
+		return RequireRangeCore(value, -limit, limit).ToString();
+	}
+
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(int)")]
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.BigInteger(int)", "BigInt(__arg1)")]
 	public extern static BigInt _ba6e0e86598dc8b2(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using an unsigned 32-bit integer value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(uint)")]
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.BigInteger(uint)", "BigInt(__arg1)")]
 	public extern static BigInt _b7b735a5d507d449(Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 64-bit signed integer value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(long)")]
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.BigInteger(long)", "__arg1")]
 	public extern static BigInt _74973910762e0e86(BigInt value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure with an unsigned 64-bit integer value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(ulong)")]
+	[Jazor(Op.Inline ,"System.Numerics.BigInteger.BigInteger(ulong)", "__arg1")]
 	public extern static BigInt _0421ba6c202fdc80(BigInt value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a single-precision floating-point value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(float)")]
-	public extern static BigInt _cfd2038efd505e1f(Number value);
+	[Jazor(Op.Import, "System.Numerics.BigInteger.BigInteger(float)")]
+	public static BigInt _cfd2038efd505e1f(Number value)
+		=> FromFloatingPointCore(value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a double-precision floating-point value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(double)")]
-	public extern static BigInt _38c7caccfd5e120e(Number value);
+	[Jazor(Op.Import, "System.Numerics.BigInteger.BigInteger(double)")]
+	public static BigInt _38c7caccfd5e120e(Number value)
+		=> FromFloatingPointCore(value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a <see cref="T:System.Decimal" /> value.</summary>
-	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(System.Decimal)")]
-	public extern static BigInt _f715f85cc5dcfe92(object value);
+	[Jazor(Op.Import, "System.Numerics.BigInteger.BigInteger(decimal)")]
+	public static BigInt _f715f85cc5dcfe92(string value)
+		=> FromDecimalCore(value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a byte array.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.BigInteger(byte[])")]
@@ -301,8 +332,9 @@ public static class BigIntegerModule
 	public extern static BigInt _00d39f2029fd4266(Uint32Array value, object style, Intl.NumberFormat? provider);
 
 	///<summary>Tries to convert the representation of a number contained in the specified read-only character span, to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, out System.Numerics.BigInteger)")]
-	public extern static Array<object?> _ded03bf84977945f(Uint32Array value, BigInt result);
+	[Jazor(Op.Import ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, out System.Numerics.BigInteger)")]
+	public static Array<object?> _ded03bf84977945f(string value, BigInt result)
+		=> _59acea2facdaa757(value, result);
 
 	///<summary>Tries to convert the string representation of a number to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, System.Globalization.NumberStyles, System.IFormatProvider, out System.Numerics.BigInteger)")]
@@ -497,8 +529,9 @@ public static class BigIntegerModule
 	}	
 
 	///<summary>Returns the hash code for the current <see cref="T:System.Numerics.BigInteger" /> object.</summary>
-	[Jazor(Op.Discard ,"override System.Numerics.BigInteger.GetHashCode()")]
-	public extern static Number _fe64082374302a77(BigInt instance);
+	[Jazor(Op.Import ,"override System.Numerics.BigInteger.GetHashCode()")]
+	public static Number _fe64082374302a77(BigInt instance)
+		=> EqualityComparerT1Module<BigInt>.GetHashCodeCore(instance);
 
 	/// <summary>
 	/// C#: value.Equals(obj)
@@ -664,140 +697,160 @@ public static class BigIntegerModule
 	public extern static BigInt _28554dca4c0c49f8(BigInt left, BigInt right);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned byte value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator byte(System.Numerics.BigInteger)")]
-	public extern static Number _c1afe3218f0f82f9();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator byte(System.Numerics.BigInteger)")]
+	public static Number _c1afe3218f0f82f9(BigInt value)
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(255));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.Char" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator char(System.Numerics.BigInteger)")]
-	public extern static Number _ac2920ee8216c023();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator char(System.Numerics.BigInteger)")]
+	public static Number _ac2920ee8216c023(BigInt value)
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(65535));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a <see cref="T:System.Decimal" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Decimal(System.Numerics.BigInteger)")]
-	public extern static System.Decimal _9d2085a2aa8febea();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator decimal(System.Numerics.BigInteger)")]
+	public static string _9d2085a2aa8febea(BigInt value)
+		=> ToDecimalCore(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a <see cref="T:System.Double" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator double(System.Numerics.BigInteger)")]
-	public extern static Number _4a6bc22c1d5cd472();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.explicit operator double(System.Numerics.BigInteger)", "Number(__arg1)")]
+	public extern static Number _4a6bc22c1d5cd472(BigInt value);
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.Half" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Half(System.Numerics.BigInteger)")]
-	public extern static System.Half _7c41bbf7746a0266();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Half(System.Numerics.BigInteger)")]
+	public static Number _7c41bbf7746a0266(BigInt value)
+		=> HalfModule.FromBigIntCore(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 16-bit signed integer value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator short(System.Numerics.BigInteger)")]
-	public extern static Number _c57fc79b767bf069();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator short(System.Numerics.BigInteger)")]
+	public static Number _c57fc79b767bf069(BigInt value)
+		=> RequireNumberRangeCore(value, BigIntFn(-32768), BigIntFn(32767));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 32-bit signed integer value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator int(System.Numerics.BigInteger)")]
-	public extern static Number _7c261f922cc43235();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator int(System.Numerics.BigInteger)")]
+	public static Number _7c261f922cc43235(BigInt value)
+		=> RequireNumberRangeCore(value, BigIntFn(-2147483648), BigIntFn(2147483647));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 64-bit signed integer value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator long(System.Numerics.BigInteger)")]
-	public extern static BigInt _15fe350cf299c580();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator long(System.Numerics.BigInteger)")]
+	public static BigInt _15fe350cf299c580(BigInt value)
+		=> RequireRangeCore(value, BigIntFn("-9223372036854775808"), BigIntFn("9223372036854775807"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.Int128" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Int128(System.Numerics.BigInteger)")]
-	public extern static BigInt _5958070a15559320();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Int128(System.Numerics.BigInteger)")]
+	public static BigInt _5958070a15559320(BigInt value)
+		=> RequireRangeCore(
+			value,
+			BigIntFn("-170141183460469231731687303715884105728"),
+			BigIntFn("170141183460469231731687303715884105727"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.IntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator nint(System.Numerics.BigInteger)")]
 	public extern static nint _11cea9efbc3d0c62();
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a signed 8-bit value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int16" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator sbyte(System.Numerics.BigInteger)")]
-	public extern static Number _63d8cc7789144528();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator sbyte(System.Numerics.BigInteger)")]
+	public static Number _63d8cc7789144528(BigInt value)
+		=> RequireNumberRangeCore(value, BigIntFn(-128), BigIntFn(127));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a single-precision floating-point value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator float(System.Numerics.BigInteger)")]
-	public extern static Number _24972b9ed8006ec8();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.explicit operator float(System.Numerics.BigInteger)", "Math.fround(Number(__arg1))")]
+	public extern static Number _24972b9ed8006ec8(BigInt value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 16-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int32" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator ushort(System.Numerics.BigInteger)")]
-	public extern static Number _b2311568a6faa3b8();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator ushort(System.Numerics.BigInteger)")]
+	public static Number _b2311568a6faa3b8(BigInt value)
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(65535));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 32-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int64" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator uint(System.Numerics.BigInteger)")]
-	public extern static Number _385437ecb9a2b10a();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator uint(System.Numerics.BigInteger)")]
+	public static Number _385437ecb9a2b10a(BigInt value)
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn("4294967295"));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 64-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Double" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator ulong(System.Numerics.BigInteger)")]
-	public extern static BigInt _6043725cddf263dd();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator ulong(System.Numerics.BigInteger)")]
+	public static BigInt _6043725cddf263dd(BigInt value)
+		=> RequireRangeCore(value, BigInt.Zero, BigIntFn("18446744073709551615"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.UInt128" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.UInt128(System.Numerics.BigInteger)")]
-	public extern static BigInt _f8ae8a4213449843();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.UInt128(System.Numerics.BigInteger)")]
+	public static BigInt _f8ae8a4213449843(BigInt value)
+		=> RequireRangeCore(value, BigInt.Zero, BigIntFn("340282366920938463463374607431768211455"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator nuint(System.Numerics.BigInteger)")]
 	public extern static nuint _bbf68528b2eedf55();
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Decimal" /> object to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(System.Decimal)")]
-	public extern static BigInt _8e505e0ce7efa99c();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(decimal)")]
+	public static BigInt _8e505e0ce7efa99c(string value)
+		=> FromDecimalCore(value);
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Double" /> value to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(double)")]
-	public extern static BigInt _933b3164355c792a();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(double)")]
+	public static BigInt _933b3164355c792a(Number value)
+		=> FromFloatingPointCore(value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Half" /> value to a big integer.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(System.Half)")]
-	public extern static BigInt _c186238bc3a46d2b();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(System.Half)")]
+	public static BigInt _c186238bc3a46d2b(Number value)
+		=> FromFloatingPointCore(value);
 
 	///<summary>Explicitly converts a <see cref="T:System.Numerics.Complex" /> value to a big integer.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(System.Numerics.Complex)")]
 	public extern static BigInt _088fa1b2a09829ce();
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Single" /> value to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(float)")]
-	public extern static BigInt _212b6e60ce4e6836();
+	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(float)")]
+	public static BigInt _212b6e60ce4e6836(Number value)
+		=> FromFloatingPointCore(value);
 
 	///<summary>Defines an implicit conversion of an unsigned byte to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(byte)")]
-	public extern static BigInt _24f94dfe434ed1de();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(byte)", "BigInt(__arg1)")]
+	public extern static BigInt _24f94dfe434ed1de(Number value);
 
 	///<summary>Implicitly converts a <see cref="T:System.Char" /> value to a big integer.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(char)")]
-	public extern static BigInt _6f52f939cef7ebfc();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(char)", "BigInt(__arg1)")]
+	public extern static BigInt _6f52f939cef7ebfc(Number value);
 
 	///<summary>Defines an implicit conversion of a signed 16-bit integer to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(short)")]
-	public extern static BigInt _5eb359c063a4b04b();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(short)", "BigInt(__arg1)")]
+	public extern static BigInt _5eb359c063a4b04b(Number value);
 
 	///<summary>Defines an implicit conversion of a signed 32-bit integer to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(int)")]
-	public extern static BigInt _84639f9693379307();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(int)", "BigInt(__arg1)")]
+	public extern static BigInt _84639f9693379307(Number value);
 
 	///<summary>Defines an implicit conversion of a signed 64-bit integer to a <see cref="T:System.Numerics.BigInteger" /> value.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(long)")]
-	public extern static BigInt _7de492bb278503c8();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(long)", "__arg1")]
+	public extern static BigInt _7de492bb278503c8(BigInt value);
 
 	///<summary>Implicitly converts a <see cref="T:System.Int128" /> value to a big integer.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(System.Int128)")]
-	public extern static BigInt _aa5bafc867e9b5eb();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(System.Int128)", "__arg1")]
+	public extern static BigInt _aa5bafc867e9b5eb(BigInt value);
 
 	///<summary>Implicitly converts a <see cref="T:System.IntPtr" /> value to a big integer.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(nint)")]
 	public extern static BigInt _70a902bafd0ce64e();
 
 	///<summary>Defines an implicit conversion of an 8-bit signed integer to a <see cref="T:System.Numerics.BigInteger" /> value. This API is not CLS-compliant. The compliant alternative is <see cref="M:System.Numerics.BigInteger.#ctor(System.Int32)" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(sbyte)")]
-	public extern static BigInt _ff8ba3cf17ec3f75();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(sbyte)", "BigInt(__arg1)")]
+	public extern static BigInt _ff8ba3cf17ec3f75(Number value);
 
 	///<summary>Defines an implicit conversion of a 16-bit unsigned integer to a <see cref="T:System.Numerics.BigInteger" /> value. This API is not CLS-compliant. The compliant alternative is <see cref="M:System.Numerics.BigInteger.op_Implicit(System.Int32)~System.Numerics.BigInteger" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(ushort)")]
-	public extern static BigInt _9b2419d65cfa19ab();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(ushort)", "BigInt(__arg1)")]
+	public extern static BigInt _9b2419d65cfa19ab(Number value);
 
 	///<summary>Defines an implicit conversion of a 32-bit unsigned integer to a <see cref="T:System.Numerics.BigInteger" /> value. This API is not CLS-compliant. The compliant alternative is <see cref="M:System.Numerics.BigInteger.op_Implicit(System.Int64)~System.Numerics.BigInteger" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(uint)")]
-	public extern static BigInt _cf078fbbc4130e0c();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(uint)", "BigInt(__arg1)")]
+	public extern static BigInt _cf078fbbc4130e0c(Number value);
 
 	///<summary>Defines an implicit conversion of a 64-bit unsigned integer to a <see cref="T:System.Numerics.BigInteger" /> value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Double" />.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(ulong)")]
-	public extern static BigInt _9b4a5ecbd0f90bd4();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(ulong)", "__arg1")]
+	public extern static BigInt _9b4a5ecbd0f90bd4(BigInt value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UInt128" /> value to a big integer.</summary>
-	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(System.UInt128)")]
-	public extern static BigInt _16f7ae7cb82a7523();
+	[Jazor(Op.Inline, "static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(System.UInt128)", "__arg1")]
+	public extern static BigInt _16f7ae7cb82a7523(BigInt value);
 
 	///<summary>Implicitly converts a <see cref="T:System.UIntPtr" /> value to a big integer.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.implicit operator System.Numerics.BigInteger(nuint)")]

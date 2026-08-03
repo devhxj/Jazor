@@ -100,6 +100,125 @@ public static class SingleModule
 		return 0;
 	}
 
+	private static Number RoundToEvenCore(Number value)
+		=> Math.FroundFn(DoubleModule.RoundToEvenCore(value));
+
+	internal static Number RoundCore(Number value, Number digits, Number mode)
+	{
+		if (digits < 0 || digits > 6)
+			throw new Error("ArgumentOutOfRangeException: digits must be between 0 and 6.");
+		if (mode < 0 || mode > 4)
+			throw new Error("ArgumentException: Invalid MidpointRounding value.");
+
+		// Keep every arithmetic boundary binary32. Delegating to the binary64 core would
+		// change results around midpoint and large-significand values.
+		if (Math.AbsFn(value) >= 100000000d)
+			return value;
+
+		var power = Math.FroundFn(Math.PowFn(10, digits));
+		var scaled = Math.FroundFn(value * power);
+		var rounded = DoubleModule.RoundIntegralCore(scaled, mode);
+		return Math.FroundFn(rounded / power);
+	}
+
+	private static Number Ieee754RemainderCore(Number left, Number right)
+	{
+		if (IsNaN(left))
+			return left;
+		if (IsNaN(right))
+			return right;
+
+		var regular = Math.FroundFn(left % right);
+		if (IsNaN(regular))
+			return Number.NaN;
+		if (regular == 0)
+			return left < 0 || Object.Is(left, -0) ? -0 : 0;
+
+		var alternative = Math.FroundFn(regular - Math.AbsFn(right) * (left < 0 ? -1 : 1));
+		var regularMagnitude = Math.AbsFn(regular);
+		var alternativeMagnitude = Math.AbsFn(alternative);
+		if (alternativeMagnitude == regularMagnitude)
+		{
+			var quotient = Math.FroundFn(left / right);
+			return Math.AbsFn(RoundToEvenCore(quotient)) > Math.AbsFn(quotient)
+				? alternative
+				: regular;
+		}
+
+		return alternativeMagnitude < regularMagnitude ? alternative : regular;
+	}
+
+	private static Number MaxNativeCore(Number left, Number right)
+		=> left > right ? left : right;
+
+	private static Number MinNativeCore(Number left, Number right)
+		=> left < right ? left : right;
+
+	private static Number ClampNativeCore(Number value, Number min, Number max)
+	{
+		if (min > max)
+			throw new Error("ArgumentException: 'min' cannot be greater than max.");
+
+		return MinNativeCore(MaxNativeCore(value, min), max);
+	}
+
+	private static Number ILogBCore(Number value)
+	{
+		if (IsNaN(value) || !IsFiniteCore(value))
+			return 2147483647;
+		if (value == 0)
+			return -2147483648;
+
+		var buffer = new ArrayBuffer(4);
+		var view = new DataView(buffer);
+		view.SetFloat32(0, (float)Math.AbsFn(value), false);
+		var bits = view.GetUint32(0, false);
+		var exponentBits = Math.FloorFn(bits / 8388608d) % 256d;
+		if (exponentBits != 0)
+			return exponentBits - 127;
+
+		return HighestSetBitCore(bits % 8388608d) - 149;
+	}
+
+	private static Number BitIncrementCore(Number value)
+		=> OffsetAdjacentCore(value, true);
+
+	private static Number BitDecrementCore(Number value)
+		=> OffsetAdjacentCore(value, false);
+
+	private static Number HighestSetBitCore(Number value)
+	{
+		var bit = -1;
+		while (value > 0)
+		{
+			value = Math.FloorFn(value / 2);
+			bit++;
+		}
+
+		return bit;
+	}
+
+	private static Number OffsetAdjacentCore(Number value, bool increment)
+	{
+		if (IsNaN(value))
+			return value;
+		if (increment && value == Number.POSITIVE_INFINITY)
+			return value;
+		if (!increment && value == Number.NEGATIVE_INFINITY)
+			return value;
+		if (value == 0)
+			return increment ? 1.401298464324817e-45 : -1.401298464324817e-45;
+
+		var buffer = new ArrayBuffer(4);
+		var view = new DataView(buffer);
+		view.SetFloat32(0, (float)value, false);
+		var bits = view.GetUint32(0, false);
+		var increaseBits = increment ? value > 0 : value < 0;
+		bits = increaseBits ? bits + 1 : bits - 1;
+		view.SetUint32(0, bits, false);
+		return view.GetFloat32(0, false);
+	}
+
 	private static Number MaxMagnitudeCore(Number x, Number y)
 	{
 		if (IsNaN(x) || IsNaN(y))
@@ -183,7 +302,7 @@ public static class SingleModule
 	[Jazor(Op.Inline, "static float.Tau", "(Math.PI * 2)")]
 	public extern static Number _tau();
 
-	[Jazor(Op.Discard ,"float.Single()")]
+	[Jazor(Op.Inline ,"float.Single()", "0")]
 	public extern static Number _a6b96ca392da4917();
 
 	/// <summary>
@@ -305,8 +424,9 @@ public static class SingleModule
 	public extern static bool _5c45db76bd764c38(Number instance, Number obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard ,"override float.GetHashCode()")]
-	public extern static Number _96e065ea302b67da(Number instance);
+	[Jazor(Op.Import, "override float.GetHashCode()")]
+	public static Number _96e065ea302b67da(Number instance)
+		=> EqualityComparerT1Module<Number>.GetHashCodeCore(instance);
 
 	/// <summary>
 	/// C#: float.ToString()
@@ -379,12 +499,14 @@ public static class SingleModule
 	}
 
 	///<summary>Converts the string representation of a number in a character span to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<char>, out float)")]
-	public extern static Array<object?> _8f337f9f610204bb(string s, Number result);
+	[Jazor(Op.Import ,"static float.TryParse(System.ReadOnlySpan<char>, out float)")]
+	public static Array<object?> _8f337f9f610204bb(string s, Number result)
+		=> _ced8b209dbd75890(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its single-precision floating-point number equivalent.</summary>
-	[Jazor(Op.Discard ,"static float.TryParse(System.ReadOnlySpan<byte>, out float)")]
-	public extern static Array<object?> _35fa5333706d7ec4(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static float.TryParse(System.ReadOnlySpan<byte>, out float)")]
+	public static Array<object?> _35fa5333706d7ec4(Uint8Array utf8Text, Number result)
+		=> _ced8b209dbd75890(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard ,"static float.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out float)")]
@@ -448,20 +570,24 @@ public static class SingleModule
 	public extern static Number _32eec2aa95114e61(Number x);
 
 	///<summary>Rounds a value to the nearest integer using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
-	[Jazor(Op.Inline ,"static float.Round(float)", "Math.round(__arg1)")]
-	public extern static Number _99c8e34b34aa762c(Number x);
+	[Jazor(Op.Import, "static float.Round(float)")]
+	public static Number _99c8e34b34aa762c(Number x)
+		=> RoundToEvenCore(x);
 
 	///<summary>Rounds a value to a specified number of fractional-digits using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
-	[Jazor(Op.Discard ,"static float.Round(float, int)")]
-	public extern static Number _a0ef44092a5b0a96(Number x, Number digits);
+	[Jazor(Op.Import, "static float.Round(float, int)")]
+	public static Number _a0ef44092a5b0a96(Number x, Number digits)
+		=> RoundCore(x, digits, 0);
 
 	///<summary>Rounds a value to the nearest integer using the specified rounding mode.</summary>
-	[Jazor(Op.Discard ,"static float.Round(float, System.MidpointRounding)")]
-	public extern static Number _34bdf4b36464daa4(Number x, object mode);
+	[Jazor(Op.Import, "static float.Round(float, System.MidpointRounding)")]
+	public static Number _34bdf4b36464daa4(Number x, Number mode)
+		=> RoundCore(x, 0, mode);
 
 	///<summary>Rounds a value to a specified number of fractional-digits using the default rounding mode (<xref data-throw-if-not-resolved="true" uid="System.MidpointRounding.ToEven"></xref>).</summary>
-	[Jazor(Op.Discard ,"static float.Round(float, int, System.MidpointRounding)")]
-	public extern static Number _b0f1294dc766b202(Number x, Number digits, object mode);
+	[Jazor(Op.Import, "static float.Round(float, int, System.MidpointRounding)")]
+	public static Number _b0f1294dc766b202(Number x, Number digits, Number mode)
+		=> RoundCore(x, digits, mode);
 
 	///<summary>Truncates a value.</summary>
 	[Jazor(Op.Inline ,"static float.Truncate(float)", "Math.trunc(__arg1)")]
@@ -476,24 +602,28 @@ public static class SingleModule
 	public extern static Number _6af9ae0f6ba947de(Number y, Number x);
 
 	///<summary>Decrements a value to the smallest value that compares less than a given value.</summary>
-	[Jazor(Op.Discard ,"static float.BitDecrement(float)")]
-	public extern static Number _9840b2a560428b4a(Number x);
+	[Jazor(Op.Import, "static float.BitDecrement(float)")]
+	public static Number _9840b2a560428b4a(Number x)
+		=> BitDecrementCore(x);
 
 	///<summary>Increments a value to the smallest value that compares greater than a given value.</summary>
-	[Jazor(Op.Discard ,"static float.BitIncrement(float)")]
-	public extern static Number _eac91380a48fb7bd(Number x);
+	[Jazor(Op.Import, "static float.BitIncrement(float)")]
+	public static Number _eac91380a48fb7bd(Number x)
+		=> BitIncrementCore(x);
 
 	///<summary>Computes the fused multiply-add of three values.</summary>
 	[Jazor(Op.Inline ,"static float.FusedMultiplyAdd(float, float, float)", "(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _aff67a0c1864d405(Number left, Number right, Number addend);
 
 	///<summary>Computes the remainder of two values as specified by IEEE 754.</summary>
-	[Jazor(Op.Inline ,"static float.Ieee754Remainder(float, float)", "(__arg1 - __arg2 * Math.round(__arg1 / __arg2))")]
-	public extern static Number _e54bb5d6b1fb386d(Number left, Number right);
+	[Jazor(Op.Import, "static float.Ieee754Remainder(float, float)")]
+	public static Number _e54bb5d6b1fb386d(Number left, Number right)
+		=> Ieee754RemainderCore(left, right);
 
 	///<summary>Computes the integer logarithm of a value.</summary>
-	[Jazor(Op.Inline ,"static float.ILogB(float)", "Math.log2(__arg1)")]
-	public extern static Number _390f9dfb01584a29(Number x);
+	[Jazor(Op.Import, "static float.ILogB(float)")]
+	public static Number _390f9dfb01584a29(Number x)
+		=> ILogBCore(x);
 
 	///<summary>Performs a linear interpolation between two values based on the given weight.</summary>
 	[Jazor(Op.Inline ,"static float.Lerp(float, float, float)", "(__arg1 + (__arg2 - __arg1) * __arg3)")]
@@ -563,8 +693,9 @@ public static class SingleModule
 	[Jazor(Op.Inline ,"static float.Clamp(float, float, float)", "(Math.max(__arg2, Math.min(__arg1, __arg3)))")]
 	public extern static Number _fa04e6b14ed00f24(Number value, Number min, Number max);
 
-	[Jazor(Op.Discard ,"static float.ClampNative(float, float, float)")]
-	public extern static Number _e50ccb4182ec0a52(Number value, Number min, Number max);
+	[Jazor(Op.Import ,"static float.ClampNative(float, float, float)")]
+	public static Number _e50ccb4182ec0a52(Number value, Number min, Number max)
+		=> ClampNativeCore(value, min, max);
 
 	/// <summary>
 	/// C#: float.CopySign(value, sign)
@@ -577,7 +708,7 @@ public static class SingleModule
 	[Jazor(Op.Inline ,"static float.Max(float, float)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _b4d95f21e04b4768(Number x, Number y);
 
-	[Jazor(Op.Discard ,"static float.MaxNative(float, float)")]
+	[Jazor(Op.Inline ,"static float.MaxNative(float, float)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static Number _6f3b48cdfa90d3a2(Number x, Number y);
 
 	///<summary>Compares two values to compute which is greater and returning the other value if an input is <code data-dev-comment-type="c">NaN</code>.</summary>
@@ -588,7 +719,7 @@ public static class SingleModule
 	[Jazor(Op.Inline ,"static float.Min(float, float)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _f0e565231f96990c(Number x, Number y);
 
-	[Jazor(Op.Discard ,"static float.MinNative(float, float)")]
+	[Jazor(Op.Inline ,"static float.MinNative(float, float)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static Number _334fae190a459e2d(Number x, Number y);
 
 	///<summary>Compares two values to compute which is lesser and returning the other value if an input is <code data-dev-comment-type="c">NaN</code>.</summary>
@@ -669,7 +800,7 @@ public static class SingleModule
 		=> MinMagnitudeNumberCore(x, y);
 
 	///<summary>Computes an estimate of (<code data-dev-comment-type="paramref">left</code> * <code data-dev-comment-type="paramref">right</code>) + <code data-dev-comment-type="paramref">addend</code>.</summary>
-	[Jazor(Op.Discard ,"static float.MultiplyAddEstimate(float, float, float)")]
+	[Jazor(Op.Inline ,"static float.MultiplyAddEstimate(float, float, float)", "Math.fround(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _0790dc6c4730eb68(Number left, Number right, Number addend);
 
 	///<summary>Tries to parse a string into a value.</summary>

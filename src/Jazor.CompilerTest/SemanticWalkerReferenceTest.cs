@@ -367,7 +367,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_SingleMathIntrinsics_UseDirectMathShapes()
+	public void Visit_Reference_SingleMathIntrinsics_UseMappedExactOperationsAndDirectMathShapes()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -414,11 +414,11 @@ public sealed class SemanticWalkerReferenceTest
   let expM1 = Math.exp(value) - 1;
   let ceil = Math.ceil(value);
   let floor = Math.floor(value);
-  let round = Math.round(value);
+  let round = _99c8e34b34aa762c(value);
   let trunc = Math.trunc(value);
   let atan2Pi = Math.atan2(left, right) / Math.PI;
   let fused = left * right + third;
-  let ieee = left - right * Math.round(left / right);
+  let ieee = _e54bb5d6b1fb386d(left, right);
   let lerp = left + (right - left) * third;
   let reciprocal = 1 / value;
   let acosh = Math.acosh(value);
@@ -3050,7 +3050,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_ImplicitIndexerReference_StandaloneIndexValue_RejectsUnmaterializedIndexCarrier()
+	public void Visit_ImplicitIndexerReference_StoredIndexValue_UsesCarrierGetOffset()
 	{
 		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>("""
 			class TestClass
@@ -3066,14 +3066,13 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(OperationKind.ImplicitIndexerReference, operation.Kind);
 		Assert.AreNotEqual(OperationKind.Invalid, operation.Argument.Kind);
 
-		var exception = Assert.Throws<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(operation, new SenseArgument()));
+		var script = new SemanticWalker(true).Visit(operation, new SenseArgument())?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "Standalone System.Index/System.Range values are not supported");
+		AssertScriptEqual("_d389c31d59037b42(values, _9b817e75f3f8f58f(index, values.length))", script);
 	}
 
 	[TestMethod]
-	public void Visit_ImplicitIndexerReference_StandaloneRangeValue_RejectsUnmaterializedRangeCarrier()
+	public void Visit_ImplicitIndexerReference_StoredRangeValue_UsesCarrierOffsetAndLength()
 	{
 		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>("""
 			class TestClass
@@ -3089,10 +3088,12 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(OperationKind.ImplicitIndexerReference, operation.Kind);
 		Assert.AreNotEqual(OperationKind.Invalid, operation.Argument.Kind);
 
-		var exception = Assert.Throws<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(operation, new SenseArgument()));
+		var script = new SemanticWalker(true).Visit(operation, new SenseArgument())?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "Standalone System.Index/System.Range values are not supported");
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "_1c7a1e658ed790ff(range, values.length)");
+		StringAssert.Contains(script, ".offset");
+		StringAssert.Contains(script, ".length");
 	}
 
 	[TestMethod]
@@ -3141,7 +3142,7 @@ public sealed class SemanticWalkerReferenceTest
   let last = _5ad63706a889c294(text, text.length - 1);
   let upper = last.toUpperCase();
   let lower = last.toLowerCase();
-  let letter = /[a-zA-Z]/.test(last);
+  let letter = _38721338a529a8d7(last);
   let whitespace = _16e351e6f7b127f7(last);
   let numeric = _d86c1e9964250116(last);
 }", script);
@@ -5134,10 +5135,10 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
-	/// 测试只读字典索引器 getter 必须保留运行时 helper 语义
+	/// 只读字典构造要求源字典的 live view；当前 Map carrier 无法无损表达该协议。
 	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyDictionary_UsesRuntimeHelper()
+	public void Visit_IndexerReference_ReadOnlyDictionary_ConstructionIsRejectedWithoutLiveWrapperCarrier()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5152,23 +5153,18 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-		AssertScriptEqual(@"{
-  let source = new Map;
-  source.set(""key"", 42);
-  let dict = _b22e987e1be225aa(source);
-  let value = _ed4a7913b74bfd87(dict, ""key"");
-}", script);
+		StringAssert.Contains(exception.Message, "ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary", StringComparison.Ordinal);
+		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
 	}
 
 	/// <summary>
 	/// 只读字典经 IDictionary 写入口时必须走 helper 并保留只读约束。
 	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyDictionary_AsIDictionarySet_UsesReadOnlyGuardedHelper()
+	public void Visit_IndexerReference_ReadOnlyDictionary_AsIDictionarySetRejectsUnsupportedConstruction()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5184,21 +5180,14 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-		AssertScriptEqual(@"{
-  let source = new Map;
-  source.set(""key"", 1);
-  let readOnly = _b22e987e1be225aa(source);
-  let dict = readOnly;
-  _f3b177bfce76ed5c(dict, ""key"", 2);
-}", script);
+		StringAssert.Contains(exception.Message, "ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary", StringComparison.Ordinal);
 	}
 
 	[TestMethod]
-	public void Visit_Reference_ReadOnlySet_ConstructionAndEmpty_UseRuntimeHelpers()
+	public void Visit_Reference_ReadOnlySet_ConstructionIsRejectedWithoutLiveWrapperCarrier()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5213,20 +5202,35 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+		StringAssert.Contains(exception.Message, "ReadOnlySet<T>.ReadOnlySet", StringComparison.Ordinal);
+		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ReadOnlySet_Empty_UsesRuntimeHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var empty = System.Collections.ObjectModel.ReadOnlySet<int>.Empty;
+                }
+            }
+        ");
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let source = new Set;
-  _e1d2ba750a2788cb(source, 1);
-  let readOnly = _aede400efbd05842(source);
   let empty = _843cd8664672a9f8();
 }", script);
 	}
 
 	[TestMethod]
-	public void Visit_Reference_ReadOnlySet_AsISetAdd_UsesGuardedISetHelper()
+	public void Visit_Reference_ReadOnlySet_AsISetAddRejectsUnsupportedConstruction()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5242,24 +5246,17 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-		AssertScriptEqual(@"{
-  let source = new Set;
-  _e1d2ba750a2788cb(source, 1);
-  let readOnly = _aede400efbd05842(source);
-  let set = readOnly;
-  let added = _fa512a510bd763de(set, 2);
-}", script);
+		StringAssert.Contains(exception.Message, "ReadOnlySet<T>.ReadOnlySet", StringComparison.Ordinal);
 	}
 
 	/// <summary>
-	/// 测试只读集合索引器 getter 必须保留运行时 helper 语义
+	/// 只读集合构造要求源列表的 live view；当前 Array carrier 无法无损表达该协议。
 	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyCollection_UsesRuntimeHelper()
+	public void Visit_IndexerReference_ReadOnlyCollection_ConstructionIsRejectedWithoutLiveWrapperCarrier()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5273,15 +5270,11 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-		AssertScriptEqual(@"{
-  let source = [1, 2, 3];
-  let list = _d4e5f6a7b8c9d0e1(source);
-  let value = _b8c9d0e1f2a3b4c5(list, 1);
-}", script);
+		StringAssert.Contains(exception.Message, "ReadOnlyCollection<T>.ReadOnlyCollection", StringComparison.Ordinal);
+		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
 	}
 
 	[TestMethod]
@@ -7665,7 +7658,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let same = _4614e5ce6b42a7ad(globalThis.__jazorEqualityComparerDefault ??= {}, left, right);
+  let same = _4614e5ce6b42a7ad(getDefault(), left, right);
 }", script);
 	}
 
@@ -7688,7 +7681,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let comparer = getDefault();
   let same = _dae184550b995be1(comparer, left, right);
 }", script);
 	}
@@ -7711,7 +7704,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let hash = _2c3736bd7d205921(globalThis.__jazorEqualityComparerDefault ??= {}, value);
+  let hash = _2c3736bd7d205921(getDefault(), value);
 }", script);
 	}
 
@@ -7734,7 +7727,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let comparer = getDefault();
   let hash = _f53ff8f6435182d7(comparer, value);
 }", script);
 	}
@@ -7758,7 +7751,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let comparer = getDefault();
   let same = _eb0a1792ad8b44b7(comparer, left, right);
 }", script);
 	}
@@ -7782,7 +7775,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let comparer = getDefault();
   let hash = _8f16da840d40722e(comparer, value);
 }", script);
 	}
@@ -7805,7 +7798,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let order = _a4222c99b516b861(globalThis.__jazorComparerDefault ??= {}, left, right);
+  let order = _a4222c99b516b861(getDefault(), left, right);
 }", script);
 	}
 
@@ -7828,7 +7821,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorComparerDefault ??= {};
+  let comparer = getDefault();
   let order = _0289dcf579b8a65e(comparer, left, right);
 }", script);
 	}
@@ -7852,7 +7845,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorComparerDefault ??= {};
+  let comparer = getDefault();
   let order = _7dffdd7244581cc5(comparer, left, right);
 }", script);
 	}
@@ -8055,8 +8048,8 @@ public sealed class SemanticWalkerReferenceTest
 		var defaultValueType = defaultValue.GetType();
 		var defaultOp = defaultValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue)?.ToString();
 		var defaultTemplate = (string?)defaultValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue);
-		Assert.AreEqual("Inline", defaultOp);
-		Assert.AreEqual("(globalThis.__jazorEqualityComparerDefault ??= {})", defaultTemplate);
+		Assert.AreEqual("Import", defaultOp);
+		Assert.AreEqual("getDefault", defaultTemplate);
 
 		var equalsValue = members["virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"];
 		Assert.IsNotNull(equalsValue);
@@ -8175,8 +8168,8 @@ public sealed class SemanticWalkerReferenceTest
 		var defaultValueType = defaultValue.GetType();
 		var defaultOp = defaultValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue)?.ToString();
 		var defaultTemplate = (string?)defaultValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue);
-		Assert.AreEqual("Inline", defaultOp);
-		Assert.AreEqual("(globalThis.__jazorComparerDefault ??= {})", defaultTemplate);
+		Assert.AreEqual("Import", defaultOp);
+		Assert.AreEqual("getDefault", defaultTemplate);
 
 		var compareValue = members["virtual System.Collections.Generic.Comparer<T>.Compare(T, T)"];
 		Assert.IsNotNull(compareValue);

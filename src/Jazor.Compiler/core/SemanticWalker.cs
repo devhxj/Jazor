@@ -1199,8 +1199,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             _ => ScopeSite.RootFragment()
         };
 
-    private string AllocateUniqueName(IOperation operation, SenseArgument argument, LoweringSite site)
-    {
+	private string AllocateUniqueName(IOperation operation, SenseArgument argument, LoweringSite site)
+	{
         var scopedArgument = EnsureScopeContext(operation, argument);
         var owner = CreateLoweringNameOwner(operation, site, scopedArgument);
         var canonicalName = scopedArgument.AllocateName(owner, site);
@@ -1212,10 +1212,32 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         alias = $"v${_testNameAliases.Count}";
         _testNameAliases.Add(canonicalName, alias);
-        return alias;
-    }
+		return alias;
+	}
 
-    private LoweringNameOwner CreateLoweringNameOwner(IOperation operation, LoweringSite site, SenseArgument argument)
+	/// <summary>
+	/// Resolves a source-local binding to an ECMAScript-safe identifier without changing valid
+	/// author names. Roslyn can synthesize parameter symbols for query transparent identifiers;
+	/// their CLR-oriented names are not legal JavaScript bindings and must never leak into output.
+	/// </summary>
+	private static string GetJavaScriptBindingName(ISymbol symbol)
+	{
+		if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(symbol.Name))
+			return symbol.Name;
+
+		var sourceLocation = symbol.Locations.FirstOrDefault(static location => location.IsInSource);
+		var locationKey = sourceLocation is null
+			? "<no-source-location>"
+			: string.Concat(
+				sourceLocation.SourceSpan.Start.ToString(CultureInfo.InvariantCulture),
+				":",
+				sourceLocation.SourceSpan.Length.ToString(CultureInfo.InvariantCulture));
+		var containingKey = symbol.ContainingSymbol?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<no-containing-symbol>";
+		var key = string.Concat(symbol.Kind.ToString(), "|", containingKey, "|", symbol.Name, "|", locationKey);
+		return "__binding$" + Format.HashName(key).TrimStart('_');
+	}
+
+	private LoweringNameOwner CreateLoweringNameOwner(IOperation operation, LoweringSite site, SenseArgument argument)
     {
         var session = argument.ScopeContext?.Session ?? _uniqueNameSession;
         if (session is null)

@@ -14,7 +14,7 @@ namespace ECMAScript.Contract;
 /// </summary>
 /// <param name="member">使用 Jazor.Common 格式化后的完整成员签名，例如 <c>string.Length.get</c> 或 <c>static bool.Parse(string)</c></param>
 /// <param name="op">成员处理方式，见 <see cref="Op"/></param>
-/// <param name="value">附加值：Alias 时通常是 JS 名称，Inline 时通常是表达式模板</param>
+/// <param name="value">附加值：Alias 时通常是 JS 名称，Inline 时通常是表达式模板，Import 时是显式 runtime export 名称</param>
 [AttributeUsage(
 	AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method,
 	AllowMultiple = false,

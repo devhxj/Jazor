@@ -241,6 +241,63 @@ public sealed class RazorVueSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_PreservesUsingLifetimeAroundSkippedComponentTypeCarrier()
+    {
+        var fixture = CompileComponent(
+            """
+            [ECMAScriptModule("./components/child")]
+            public sealed class Child : ComponentBase
+            {
+            }
+
+            public sealed class Counter : ComponentBase
+            {
+                private sealed class RenderScope : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    using var scope = new RenderScope();
+                    var childType = typeof(Child);
+                    builder.OpenComponent(0, childType);
+                    builder.AddComponentParameter(1, "Title", "queued");
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new RazorVueSemanticWalkerHost(fixture.Component)
+        };
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = walker.Visit(fixture.BuildRenderTreeBody, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+        Assert.IsNotNull(body);
+
+        var imports = argument.FlushImportSpecifiers()
+            .Select(static pair =>
+            {
+                var names = string.Join(
+                    ", ",
+                    pair.Value.Select(static specifier => specifier.ToECMAScript()));
+                return "import " + names + " from \"" + pair.Key + "\";";
+            });
+        var script = string.Join("\n", imports.Concat([body!])).ReplaceLineEndings("\n");
+
+        _ = new Acornima.Parser().ParseModule(script);
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let scope = new RenderScope;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "try {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.dispose();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addComponentParameter(\"Title\", \"queued\");", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_UnwrapsEventCallbackFactoryCreateHandler()
     {
         var fixture = CompileComponent(

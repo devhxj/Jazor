@@ -19,6 +19,13 @@ public static class IDictionaryT2Module<TKey, TValue>
 			throw new Error("NullReferenceException: instance is null.");
 	}
 
+	private static void EnsureWritable(Map<TKey, TValue> instance)
+	{
+		EnsureInstance(instance);
+		if (RuntimeModule.IsReadOnlyDictionaryCarrier(instance))
+			throw new Error("NotSupportedException: Collection is read-only.");
+	}
+
 	/// <summary>
 	/// C#: dict[key]
 	/// JS: instance.get(key) (缺失时抛出 KeyNotFoundException)
@@ -73,15 +80,25 @@ public static class IDictionaryT2Module<TKey, TValue>
 	/// JS: map.set(key, value)
 	/// 注意：IDictionary.Add 在键已存在时抛出异常
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.Generic.IDictionary<TKey, TValue>.Add(TKey, TValue)")]
-	public extern static void _93efc3872e59b431(Map<TKey, TValue> instance, TKey key, TValue value);
+	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.Add(TKey, TValue)")]
+	public static void _93efc3872e59b431(Map<TKey, TValue> instance, TKey key, TValue value)
+	{
+		EnsureWritable(instance);
+		if (instance.Has(key))
+			throw new Error("ArgumentException: An item with the same key has already been added.");
+		instance.Set(key, value);
+	}
 
 	/// <summary>
 	/// C#: dict.Remove(key)
 	/// JS: map.delete(key)
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.Generic.IDictionary<TKey, TValue>.Remove(TKey)")]
-	public extern static bool _fc84b7a31e5cdfe4(Map<TKey, TValue> instance, TKey key);
+	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.Remove(TKey)")]
+	public static bool _fc84b7a31e5cdfe4(Map<TKey, TValue> instance, TKey key)
+	{
+		EnsureWritable(instance);
+		return instance.Delete(key);
+	}
 
 	/// <summary>
 	/// C#: dict.TryGetValue(key, out value)

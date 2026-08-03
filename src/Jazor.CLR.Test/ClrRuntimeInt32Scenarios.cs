@@ -34,6 +34,7 @@ internal static class ClrRuntimeInt32Scenarios
             [Number(-17), Number(5)],
             Record(("quotient", Number(-3)), ("remainder", Number(-2)))),
         Failure("int32.div-rem.zero-divisor", "static int.DivRem(int, int)", [Number(17), Number(0)], "DivideByZeroException"),
+        Failure("int32.div-rem.minimum-overflow", "static int.DivRem(int, int)", [Number(-2147483648), Number(-1)], "OverflowException"),
         Success("int32.pop-count.zero", "static int.PopCount(int)", [Number(0)], Number(0)),
         Success("int32.pop-count.all-bits-set", "static int.PopCount(int)", [Number(-1)], Number(32)),
         Success("int32.max-magnitude.equal-magnitude-prefers-positive", "static int.MaxMagnitude(int, int)", [Number(-7), Number(7)], Number(7)),

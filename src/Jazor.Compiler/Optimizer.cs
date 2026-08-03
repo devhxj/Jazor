@@ -32,6 +32,17 @@ public static class Optimizer
 
         var op = logical.Operator;
 
+        // A null-pattern disjunction commonly lowers as
+        // `value == null || value != null && <remaining pattern checks>`.
+        // For a lexical value the second null guard is implied by the first branch
+        // being false. Do not generalize this to member reads: they can invoke a
+        // getter or Proxy trap, and removing that read would change observable behavior.
+        if (op == Operator.LogicalOr &&
+            TryElideRedundantNullishGuard(leftOptimized, rightOptimized, out var nullishSimplified))
+        {
+            return nullishSimplified;
+        }
+
         // 检查是否有副作用，如果有则不进行去重优化
         // 但仍然需要用优化后的子节点重建表达式
         if (IsEffect(leftOptimized) || IsEffect(rightOptimized))
@@ -120,6 +131,87 @@ public static class Optimizer
 
         static bool IsPureUnaryOperator(Operator op)
             => op is Operator.LogicalNot or Operator.TypeOf or Operator.Void;
+    }
+
+    private static bool TryElideRedundantNullishGuard(
+        Expression nullishBranch,
+        Expression guardedBranch,
+        out Expression simplified)
+    {
+        simplified = null!;
+        if (!TryGetNullishEqualityOperand(nullishBranch, out var guardedValue) ||
+            !IsStableNullishGuardOperand(guardedValue))
+        {
+            return false;
+        }
+
+        var conjuncts = new List<Expression>();
+        FlattenLogicalOperands(guardedBranch, Operator.LogicalAnd, conjuncts);
+        if (conjuncts.Count < 2 ||
+            !IsNonNullGuardFor(conjuncts[0], guardedValue))
+        {
+            return false;
+        }
+
+        Expression remaining = conjuncts[1];
+        for (var index = 2; index < conjuncts.Count; index++)
+            remaining = new LogicalExpression(Operator.LogicalAnd, remaining, conjuncts[index]);
+
+        simplified = new LogicalExpression(Operator.LogicalOr, nullishBranch, remaining);
+        return true;
+    }
+
+    private static bool TryGetNullishEqualityOperand(Expression expression, out Expression operand)
+    {
+        operand = null!;
+        if (expression is not NonLogicalBinaryExpression { Operator: Operator.Equality } comparison)
+            return false;
+
+        if (comparison.Left is NullLiteral)
+        {
+            operand = comparison.Right;
+            return true;
+        }
+
+        if (comparison.Right is NullLiteral)
+        {
+            operand = comparison.Left;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsNonNullGuardFor(Expression expression, Expression guardedValue)
+    {
+        if (expression is not NonLogicalBinaryExpression comparison ||
+            comparison.Operator is not (Operator.Inequality or Operator.StrictInequality))
+        {
+            return false;
+        }
+
+        return comparison.Left is NullLiteral
+            ? PureExpressionComparer.Instance.Equals(comparison.Right, guardedValue)
+            : comparison.Right is NullLiteral &&
+              PureExpressionComparer.Instance.Equals(comparison.Left, guardedValue);
+    }
+
+    private static bool IsStableNullishGuardOperand(Expression expression)
+        => expression is Identifier or ThisExpression or Super;
+
+    private static void FlattenLogicalOperands(
+        Expression expression,
+        Operator op,
+        List<Expression> operands)
+    {
+        if (expression is LogicalExpression logical && logical.Operator == op)
+        {
+            FlattenLogicalOperands(logical.Left, op, operands);
+            FlattenLogicalOperands(logical.Right, op, operands);
+            return;
+        }
+
+        operands.Add(expression);
     }
 
     internal sealed class PureExpressionComparer : IEqualityComparer<Expression>

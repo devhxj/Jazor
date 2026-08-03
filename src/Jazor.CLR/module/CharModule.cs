@@ -18,6 +18,40 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "char","String")]
 public static class CharModule
 {
+	private static readonly RegExp LetterPattern = new(@"^\p{L}$", "u");
+	private static readonly RegExp NumberPattern = new(@"^\p{N}$", "u");
+	private static readonly RegExp PunctuationPattern = new(@"^\p{P}$", "u");
+	private static readonly RegExp SeparatorPattern = new(@"^\p{Z}$", "u");
+	private static readonly RegExp SymbolPattern = new(@"^\p{S}$", "u");
+	private static readonly RegExp UppercaseLetterPattern = new(@"^\p{Lu}$", "u");
+	private static readonly RegExp LowercaseLetterPattern = new(@"^\p{Ll}$", "u");
+	private static readonly RegExp TitlecaseLetterPattern = new(@"^\p{Lt}$", "u");
+	private static readonly RegExp ModifierLetterPattern = new(@"^\p{Lm}$", "u");
+	private static readonly RegExp OtherLetterPattern = new(@"^\p{Lo}$", "u");
+	private static readonly RegExp NonSpacingMarkPattern = new(@"^\p{Mn}$", "u");
+	private static readonly RegExp SpacingCombiningMarkPattern = new(@"^\p{Mc}$", "u");
+	private static readonly RegExp EnclosingMarkPattern = new(@"^\p{Me}$", "u");
+	private static readonly RegExp DecimalDigitNumberPattern = new(@"^\p{Nd}$", "u");
+	private static readonly RegExp LetterNumberPattern = new(@"^\p{Nl}$", "u");
+	private static readonly RegExp OtherNumberPattern = new(@"^\p{No}$", "u");
+	private static readonly RegExp SpaceSeparatorPattern = new(@"^\p{Zs}$", "u");
+	private static readonly RegExp LineSeparatorPattern = new(@"^\p{Zl}$", "u");
+	private static readonly RegExp ParagraphSeparatorPattern = new(@"^\p{Zp}$", "u");
+	private static readonly RegExp ControlPattern = new(@"^\p{Cc}$", "u");
+	private static readonly RegExp FormatPattern = new(@"^\p{Cf}$", "u");
+	private static readonly RegExp PrivateUsePattern = new(@"^\p{Co}$", "u");
+	private static readonly RegExp ConnectorPunctuationPattern = new(@"^\p{Pc}$", "u");
+	private static readonly RegExp DashPunctuationPattern = new(@"^\p{Pd}$", "u");
+	private static readonly RegExp OpenPunctuationPattern = new(@"^\p{Ps}$", "u");
+	private static readonly RegExp ClosePunctuationPattern = new(@"^\p{Pe}$", "u");
+	private static readonly RegExp InitialQuotePunctuationPattern = new(@"^\p{Pi}$", "u");
+	private static readonly RegExp FinalQuotePunctuationPattern = new(@"^\p{Pf}$", "u");
+	private static readonly RegExp OtherPunctuationPattern = new(@"^\p{Po}$", "u");
+	private static readonly RegExp MathSymbolPattern = new(@"^\p{Sm}$", "u");
+	private static readonly RegExp CurrencySymbolPattern = new(@"^\p{Sc}$", "u");
+	private static readonly RegExp ModifierSymbolPattern = new(@"^\p{Sk}$", "u");
+	private static readonly RegExp OtherSymbolPattern = new(@"^\p{So}$", "u");
+
 	private static Number CompareCore(string left, string right)
 	{
 		var leftChar = left[0];
@@ -47,7 +81,55 @@ public static class CharModule
 		|| code == 0x205F
 		|| code == 0x3000;
 
-	[Jazor(Op.Discard, "char.Char()")]
+	private static string GetCharacterAt(string value, Number index)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException");
+		if (Math.FloorFn(index) != index || index < 0 || index >= value.Length)
+			throw new Error("ArgumentOutOfRangeException");
+
+		return value[(int)index].ToString();
+	}
+
+	private static Number GetUnicodeCategoryCore(string value)
+	{
+		// V8 property escapes classify Unicode scalar values and do not recognize an
+		// isolated UTF-16 surrogate, while System.Char must report Surrogate (16).
+		var codeUnit = GetCodeUnit(value);
+		if (codeUnit >= 0xD800 && codeUnit <= 0xDFFF) return 16;
+
+		if (UppercaseLetterPattern.Test(value)) return 0;
+		if (LowercaseLetterPattern.Test(value)) return 1;
+		if (TitlecaseLetterPattern.Test(value)) return 2;
+		if (ModifierLetterPattern.Test(value)) return 3;
+		if (OtherLetterPattern.Test(value)) return 4;
+		if (NonSpacingMarkPattern.Test(value)) return 5;
+		if (SpacingCombiningMarkPattern.Test(value)) return 6;
+		if (EnclosingMarkPattern.Test(value)) return 7;
+		if (DecimalDigitNumberPattern.Test(value)) return 8;
+		if (LetterNumberPattern.Test(value)) return 9;
+		if (OtherNumberPattern.Test(value)) return 10;
+		if (SpaceSeparatorPattern.Test(value)) return 11;
+		if (LineSeparatorPattern.Test(value)) return 12;
+		if (ParagraphSeparatorPattern.Test(value)) return 13;
+		if (ControlPattern.Test(value)) return 14;
+		if (FormatPattern.Test(value)) return 15;
+		if (PrivateUsePattern.Test(value)) return 17;
+		if (ConnectorPunctuationPattern.Test(value)) return 18;
+		if (DashPunctuationPattern.Test(value)) return 19;
+		if (OpenPunctuationPattern.Test(value)) return 20;
+		if (ClosePunctuationPattern.Test(value)) return 21;
+		if (InitialQuotePunctuationPattern.Test(value)) return 22;
+		if (FinalQuotePunctuationPattern.Test(value)) return 23;
+		if (OtherPunctuationPattern.Test(value)) return 24;
+		if (MathSymbolPattern.Test(value)) return 25;
+		if (CurrencySymbolPattern.Test(value)) return 26;
+		if (ModifierSymbolPattern.Test(value)) return 27;
+		if (OtherSymbolPattern.Test(value)) return 28;
+		return 29;
+	}
+
+	[Jazor(Op.Inline, "char.Char()", "\"\\0\"")]
 	public extern static string _920bd6d3d675c7b2();
 
 	/// <summary>
@@ -57,7 +139,7 @@ public static class CharModule
 	[Jazor(Op.Inline, "static char.IsAscii(char)", "(__arg1.charCodeAt(0) <= 127)")]
 	public extern static bool _39826354b8bd0f55(string c);
 
-	[Jazor(Op.Discard, "override char.GetHashCode()")]
+	[Jazor(Op.Inline, "override char.GetHashCode()", "__arg1.charCodeAt(0)")]
 	public extern static Number _5b81ebfb78d5415c(string instance);
 
 	/// <summary>
@@ -103,7 +185,7 @@ public static class CharModule
 	[Jazor(Op.Inline, "override char.ToString()", "__arg1")]
 	public extern static string _4861ba21870a2ec3(string instance);
 
-	[Jazor(Op.Discard, "char.ToString(System.IFormatProvider)")]
+	[Jazor(Op.Inline, "char.ToString(System.IFormatProvider)", "__arg1")]
 	public extern static string _fc3c2436fe7b6197(string instance, Intl.NumberFormat? provider);
 
 	/// <summary>
@@ -199,8 +281,9 @@ public static class CharModule
 	/// C#: char.IsDigit(c)
 	/// JS: 仅支持 ASCII 数字
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsDigit(char)", "(__arg1 >= \"0\" && __arg1 <= \"9\")")]
-	public extern static bool _91a882221d295c32(string c);
+	[Jazor(Op.Import, "static char.IsDigit(char)")]
+	public static bool _91a882221d295c32(string c)
+		=> DecimalDigitNumberPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.IsBetween(c, min, max)
@@ -213,8 +296,9 @@ public static class CharModule
 	/// C#: char.IsLetter(c)
 	/// JS: /[a-zA-Z]/.test(c)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsLetter(char)", "/[a-zA-Z]/.test(__arg1)")]
-	public extern static bool _38721338a529a8d7(string c);
+	[Jazor(Op.Import, "static char.IsLetter(char)")]
+	public static bool _38721338a529a8d7(string c)
+		=> LetterPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.IsWhiteSpace(c)
@@ -228,29 +312,33 @@ public static class CharModule
 	/// C#: char.IsUpper(c)
 	/// JS: /[A-Z]/.test(c)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsUpper(char)", "/[A-Z]/.test(__arg1)")]
-	public extern static bool _7d70d8021ab255a8(string c);
+	[Jazor(Op.Import, "static char.IsUpper(char)")]
+	public static bool _7d70d8021ab255a8(string c)
+		=> UppercaseLetterPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.IsLower(c)
 	/// JS: /[a-z]/.test(c)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsLower(char)", "/[a-z]/.test(__arg1)")]
-	public extern static bool _b344d14ce0e33570(string c);
+	[Jazor(Op.Import, "static char.IsLower(char)")]
+	public static bool _b344d14ce0e33570(string c)
+		=> LowercaseLetterPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.IsPunctuation(c)
 	/// JS: 常见标点符号范围检查
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsPunctuation(char)", "/[!\\\"#$%&'()*+,\\-./:;<=>?@[\\\\]^_`{|}~]/.test(__arg1)")]
-	public extern static bool _ce3de1c060963041(string c);
+	[Jazor(Op.Import, "static char.IsPunctuation(char)")]
+	public static bool _ce3de1c060963041(string c)
+		=> PunctuationPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.IsLetterOrDigit(c)
 	/// JS: /[a-zA-Z0-9]/.test(c)
 	/// </summary>
-	[Jazor(Op.Inline, "static char.IsLetterOrDigit(char)", "/[a-zA-Z0-9]/.test(__arg1)")]
-	public extern static bool _49432dd2165d98f0(string c);
+	[Jazor(Op.Import, "static char.IsLetterOrDigit(char)")]
+	public static bool _49432dd2165d98f0(string c)
+		=> LetterPattern.Test(c) || DecimalDigitNumberPattern.Test(c);
 
 	/// <summary>
 	/// C#: char.ToUpper(c, culture)
@@ -326,35 +414,17 @@ public static class CharModule
 	/// </summary>
 	[Jazor(Op.Import, "static char.IsDigit(string, int)")]
 	public static bool _52eb020022da112b(string s, Number index)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException");
-		if (index < 0 || index >= s.Length)
-			throw new Error("ArgumentOutOfRangeException");
-		var c = s[(int)index];
-		return c >= '0' && c <= '9';
-	}
+		=> DecimalDigitNumberPattern.Test(GetCharacterAt(s, index));
 
 	[Jazor(Op.Import, "static char.IsLetter(string, int)")]
 	public static bool _e7ee64c732d21cd5(string s, Number index)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException");
-		if (index < 0 || index >= s.Length)
-			throw new Error("ArgumentOutOfRangeException");
-		var c = s[(int)index];
-		return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-	}
+		=> LetterPattern.Test(GetCharacterAt(s, index));
 
 	[Jazor(Op.Import, "static char.IsLetterOrDigit(string, int)")]
 	public static bool _d752ce4eaadf7612(string s, Number index)
 	{
-		if (s == null)
-			throw new Error("ArgumentNullException");
-		if (index < 0 || index >= s.Length)
-			throw new Error("ArgumentOutOfRangeException");
-		var c = s[(int)index];
-		return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
+		var value = GetCharacterAt(s, index);
+		return LetterPattern.Test(value) || DecimalDigitNumberPattern.Test(value);
 	}
 
 	/// <summary>
@@ -364,29 +434,27 @@ public static class CharModule
 	/// </summary>
 	[Jazor(Op.Import, "static char.IsLower(string, int)")]
 	public static bool _6ebe08db86ea37a2(string s, Number index)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException");
-		if (index < 0 || index >= s.Length)
-			throw new Error("ArgumentOutOfRangeException");
-		var c = s[(int)index];
-		return c >= 'a' && c <= 'z';
-	}
+		=> LowercaseLetterPattern.Test(GetCharacterAt(s, index));
 
-	[Jazor(Op.Discard, "static char.IsNumber(char)")]
-	public extern static bool _77e97c648607e65e(string c);
+	[Jazor(Op.Import, "static char.IsNumber(char)")]
+	public static bool _77e97c648607e65e(string c)
+		=> NumberPattern.Test(c);
 
-	[Jazor(Op.Discard, "static char.IsNumber(string, int)")]
-	public extern static bool _5180e5acb1d4bcb0(string s, Number index);
+	[Jazor(Op.Import, "static char.IsNumber(string, int)")]
+	public static bool _5180e5acb1d4bcb0(string s, Number index)
+		=> NumberPattern.Test(GetCharacterAt(s, index));
 
-	[Jazor(Op.Discard, "static char.IsPunctuation(string, int)")]
-	public extern static bool _5f7e394ed1d09372(string s, Number index);
+	[Jazor(Op.Import, "static char.IsPunctuation(string, int)")]
+	public static bool _5f7e394ed1d09372(string s, Number index)
+		=> PunctuationPattern.Test(GetCharacterAt(s, index));
 
-	[Jazor(Op.Discard, "static char.IsSeparator(char)")]
-	public extern static bool _066fc76a18dc824f(string c);
+	[Jazor(Op.Import, "static char.IsSeparator(char)")]
+	public static bool _066fc76a18dc824f(string c)
+		=> SeparatorPattern.Test(c);
 
-	[Jazor(Op.Discard, "static char.IsSeparator(string, int)")]
-	public extern static bool _3d391ade47da71a6(string s, Number index);
+	[Jazor(Op.Import, "static char.IsSeparator(string, int)")]
+	public static bool _3d391ade47da71a6(string s, Number index)
+		=> SeparatorPattern.Test(GetCharacterAt(s, index));
 
 	/// <summary>
 	/// C#: char.IsSurrogate(c)
@@ -410,11 +478,13 @@ public static class CharModule
 		return c >= 55296 && c <= 57343;
 	}
 
-	[Jazor(Op.Discard, "static char.IsSymbol(char)")]
-	public extern static bool _0f18b1b6d2524322(string c);
+	[Jazor(Op.Import, "static char.IsSymbol(char)")]
+	public static bool _0f18b1b6d2524322(string c)
+		=> SymbolPattern.Test(c);
 
-	[Jazor(Op.Discard, "static char.IsSymbol(string, int)")]
-	public extern static bool _16587492d280e91d(string s, Number index);
+	[Jazor(Op.Import, "static char.IsSymbol(string, int)")]
+	public static bool _16587492d280e91d(string s, Number index)
+		=> SymbolPattern.Test(GetCharacterAt(s, index));
 
 	/// <summary>
 	/// C#: char.IsUpper(s, index)
@@ -422,14 +492,7 @@ public static class CharModule
 	/// </summary>
 	[Jazor(Op.Import, "static char.IsUpper(string, int)")]
 	public static bool _1ae24de44f4b499e(string s, Number index)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException");
-		if (index < 0 || index >= s.Length)
-			throw new Error("ArgumentOutOfRangeException");
-		var c = s[(int)index];
-		return c >= 'A' && c <= 'Z';
-	}
+		=> UppercaseLetterPattern.Test(GetCharacterAt(s, index));
 
 	/// <summary>
 	/// C#: char.IsWhiteSpace(s, index)
@@ -445,11 +508,13 @@ public static class CharModule
 		return IsWhiteSpaceCode(GetCodeUnitFromChar(s[(int)index]));
 	}
 
-	[Jazor(Op.Discard, "static char.GetUnicodeCategory(char)")]
-	public extern static System.Globalization.UnicodeCategory _226cc4ffd552fcf9(string c);
+	[Jazor(Op.Import, "static char.GetUnicodeCategory(char)")]
+	public static Number _226cc4ffd552fcf9(string c)
+		=> GetUnicodeCategoryCore(c);
 
-	[Jazor(Op.Discard, "static char.GetUnicodeCategory(string, int)")]
-	public extern static System.Globalization.UnicodeCategory _e41ad686bd01aff1(string s, Number index);
+	[Jazor(Op.Import, "static char.GetUnicodeCategory(string, int)")]
+	public static Number _e41ad686bd01aff1(string s, Number index)
+		=> GetUnicodeCategoryCore(GetCharacterAt(s, index));
 
 	/// <summary>
 	/// C#: char.GetNumericValue(c)

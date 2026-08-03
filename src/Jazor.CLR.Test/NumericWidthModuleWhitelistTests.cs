@@ -14,8 +14,13 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.operator +(System.Half, System.Half)", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Parse(string)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Round(System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Round(System.Half, int)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Round(System.Half, System.MidpointRounding)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Round(System.Half, int, System.MidpointRounding)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Ieee754Remainder(System.Half, System.Half)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.ILogB(System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.BitIncrement(System.Half)", Op.Import, "System/HalfModule.js");
+		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.BitDecrement(System.Half)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.Clamp(System.Half, System.Half, System.Half)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.RootN(System.Half, int)", Op.Import, "System/HalfModule.js");
 		AssertMember(typeof(Jazor.CLR.HalfModule), "static System.Half.MaxMagnitude(System.Half, System.Half)", Op.Import, "System/HalfModule.js");
@@ -27,12 +32,16 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertTypeAlias(typeof(Jazor.CLR.Int128Module), "System.Int128", "BigInt");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.MaxValue.get", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.operator +(System.Int128, System.Int128)", Op.Inline);
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.explicit operator float(System.Int128)", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.operator /(System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Parse(string)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.RotateLeft(System.Int128, int)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Abs(System.Int128)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.CopySign(System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
 		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Clamp(System.Int128, System.Int128, System.Int128)", Op.Import, "System/Int128Module.js");
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.Log10(System.Int128)", Op.Import, "System/Int128Module.js");
+		AssertMember(typeof(Jazor.CLR.Int128Module), "static System.Int128.BigMul(System.Int128, System.Int128, out System.Int128)", Op.Import, "System/Int128Module.js");
+		AssertRecoveredInt128CheckedAndSpanMembers(typeof(Jazor.CLR.Int128Module), "System.Int128", "System/Int128Module.js");
 	}
 
 	[TestMethod]
@@ -41,10 +50,27 @@ public sealed class NumericWidthModuleWhitelistTests
 		AssertTypeAlias(typeof(Jazor.CLR.UInt128Module), "System.UInt128", "BigInt");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.MaxValue.get", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.operator -(System.UInt128, System.UInt128)", Op.Inline);
+		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.explicit operator float(System.UInt128)", Op.Inline);
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.operator %(System.UInt128, System.UInt128)", Op.Import, "System/UInt128Module.js");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Parse(string)", Op.Import, "System/UInt128Module.js");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.RotateRight(System.UInt128, int)", Op.Import, "System/UInt128Module.js");
 		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Clamp(System.UInt128, System.UInt128, System.UInt128)", Op.Import, "System/UInt128Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.Log10(System.UInt128)", Op.Import, "System/UInt128Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt128Module), "static System.UInt128.BigMul(System.UInt128, System.UInt128, out System.UInt128)", Op.Import, "System/UInt128Module.js");
+		AssertRecoveredInt128CheckedAndSpanMembers(typeof(Jazor.CLR.UInt128Module), "System.UInt128", "System/UInt128Module.js");
+	}
+
+	[TestMethod]
+	public void FixedWidthIntegerReadOnlyCharSpanTryParse_UsesTypedRuntimeImports()
+	{
+		AssertMember(typeof(Jazor.CLR.ByteModule), "static byte.TryParse(System.ReadOnlySpan<char>, out byte)", Op.Import, "System/ByteModule.js");
+		AssertMember(typeof(Jazor.CLR.SByteModule), "static sbyte.TryParse(System.ReadOnlySpan<char>, out sbyte)", Op.Import, "System/SByteModule.js");
+		AssertMember(typeof(Jazor.CLR.Int16Module), "static short.TryParse(System.ReadOnlySpan<char>, out short)", Op.Import, "System/Int16Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt16Module), "static ushort.TryParse(System.ReadOnlySpan<char>, out ushort)", Op.Import, "System/UInt16Module.js");
+		AssertMember(typeof(Jazor.CLR.Int32Module), "static int.TryParse(System.ReadOnlySpan<char>, out int)", Op.Import, "System/Int32Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt32Module), "static uint.TryParse(System.ReadOnlySpan<char>, out uint)", Op.Import, "System/UInt32Module.js");
+		AssertMember(typeof(Jazor.CLR.Int64Module), "static long.TryParse(System.ReadOnlySpan<char>, out long)", Op.Import, "System/Int64Module.js");
+		AssertMember(typeof(Jazor.CLR.UInt64Module), "static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)", Op.Import, "System/UInt64Module.js");
 	}
 
 	[TestMethod]
@@ -82,6 +108,108 @@ public sealed class NumericWidthModuleWhitelistTests
 					methodName);
 			}
 		}
+	}
+
+	[TestMethod]
+	public void Int128RecoveredConversions_DeclareWidthSpecificInlineAndImportContracts()
+	{
+		AssertMembers(
+			typeof(Jazor.CLR.Int128Module),
+			Op.Inline,
+			null,
+			"static System.Int128.explicit operator byte(System.Int128)",
+			"static System.Int128.explicit operator double(System.Int128)",
+			"static System.Int128.explicit operator float(System.Int128)",
+			"static System.Int128.explicit operator short(System.Int128)",
+			"static System.Int128.explicit operator int(System.Int128)",
+			"static System.Int128.explicit operator long(System.Int128)",
+			"static System.Int128.explicit operator sbyte(System.Int128)",
+			"static System.Int128.explicit operator ushort(System.Int128)",
+			"static System.Int128.explicit operator uint(System.Int128)",
+			"static System.Int128.explicit operator ulong(System.Int128)",
+			"static System.Int128.explicit operator System.UInt128(System.Int128)",
+			"static System.Int128.implicit operator System.Int128(byte)",
+			"static System.Int128.implicit operator System.Int128(short)",
+			"static System.Int128.implicit operator System.Int128(int)",
+			"static System.Int128.implicit operator System.Int128(long)",
+			"static System.Int128.implicit operator System.Int128(sbyte)",
+			"static System.Int128.implicit operator System.Int128(ushort)",
+			"static System.Int128.implicit operator System.Int128(uint)",
+			"static System.Int128.implicit operator System.Int128(ulong)");
+
+		AssertMembers(
+			typeof(Jazor.CLR.Int128Module),
+			Op.Import,
+			"System/Int128Module.js",
+			"static System.Int128.explicit operator checked byte(System.Int128)",
+			"static System.Int128.explicit operator decimal(System.Int128)",
+			"static System.Int128.explicit operator checked short(System.Int128)",
+			"static System.Int128.explicit operator checked int(System.Int128)",
+			"static System.Int128.explicit operator checked long(System.Int128)",
+			"static System.Int128.explicit operator checked sbyte(System.Int128)",
+			"static System.Int128.explicit operator checked ushort(System.Int128)",
+			"static System.Int128.explicit operator checked uint(System.Int128)",
+			"static System.Int128.explicit operator checked ulong(System.Int128)",
+			"static System.Int128.explicit operator checked System.UInt128(System.Int128)",
+			"static System.Int128.explicit operator System.Int128(decimal)");
+	}
+
+	[TestMethod]
+	public void UInt128RecoveredConversions_DeclareWidthSpecificInlineAndImportContracts()
+	{
+		AssertMembers(
+			typeof(Jazor.CLR.UInt128Module),
+			Op.Inline,
+			null,
+			"static System.UInt128.explicit operator byte(System.UInt128)",
+			"static System.UInt128.explicit operator double(System.UInt128)",
+			"static System.UInt128.explicit operator float(System.UInt128)",
+			"static System.UInt128.explicit operator short(System.UInt128)",
+			"static System.UInt128.explicit operator int(System.UInt128)",
+			"static System.UInt128.explicit operator long(System.UInt128)",
+			"static System.UInt128.explicit operator System.Int128(System.UInt128)",
+			"static System.UInt128.explicit operator sbyte(System.UInt128)",
+			"static System.UInt128.explicit operator ushort(System.UInt128)",
+			"static System.UInt128.explicit operator uint(System.UInt128)",
+			"static System.UInt128.explicit operator ulong(System.UInt128)",
+			"static System.UInt128.explicit operator System.UInt128(short)",
+			"static System.UInt128.explicit operator System.UInt128(int)",
+			"static System.UInt128.explicit operator System.UInt128(long)",
+			"static System.UInt128.explicit operator System.UInt128(sbyte)",
+			"static System.UInt128.implicit operator System.UInt128(byte)",
+			"static System.UInt128.implicit operator System.UInt128(ushort)",
+			"static System.UInt128.implicit operator System.UInt128(uint)",
+			"static System.UInt128.implicit operator System.UInt128(ulong)");
+
+		AssertMembers(
+			typeof(Jazor.CLR.UInt128Module),
+			Op.Import,
+			"System/UInt128Module.js",
+			"static System.UInt128.explicit operator checked byte(System.UInt128)",
+			"static System.UInt128.explicit operator decimal(System.UInt128)",
+			"static System.UInt128.explicit operator checked short(System.UInt128)",
+			"static System.UInt128.explicit operator checked int(System.UInt128)",
+			"static System.UInt128.explicit operator checked long(System.UInt128)",
+			"static System.UInt128.explicit operator checked System.Int128(System.UInt128)",
+			"static System.UInt128.explicit operator checked sbyte(System.UInt128)",
+			"static System.UInt128.explicit operator checked ushort(System.UInt128)",
+			"static System.UInt128.explicit operator checked uint(System.UInt128)",
+			"static System.UInt128.explicit operator checked ulong(System.UInt128)",
+			"static System.UInt128.explicit operator System.UInt128(decimal)",
+			"static System.UInt128.explicit operator checked System.UInt128(short)",
+			"static System.UInt128.explicit operator checked System.UInt128(int)",
+			"static System.UInt128.explicit operator checked System.UInt128(long)",
+			"static System.UInt128.explicit operator checked System.UInt128(sbyte)");
+	}
+
+	[TestMethod]
+	public void BigIntegerToSingleConversion_UsesBigIntCarrierAndInlineSinglePrecisionProjection()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.BigIntegerModule), "System.Numerics.BigInteger", "BigInt");
+		AssertMember(
+			typeof(Jazor.CLR.BigIntegerModule),
+			"static System.Numerics.BigInteger.explicit operator float(System.Numerics.BigInteger)",
+			Op.Inline);
 	}
 
 	[TestMethod]
@@ -131,6 +259,26 @@ public sealed class NumericWidthModuleWhitelistTests
 		}
 	}
 
+	private static void AssertRecoveredInt128CheckedAndSpanMembers(Type moduleType, string typeName, string modulePath)
+	{
+		foreach (var member in new[]
+		{
+			$"static {typeName}.TryParse(System.ReadOnlySpan<char>, out {typeName})",
+			$"static {typeName}.Parse(System.ReadOnlySpan<char>, System.IFormatProvider)",
+			$"static {typeName}.TryParse(System.ReadOnlySpan<char>, System.IFormatProvider, out {typeName})",
+			$"static {typeName}.operator checked +({typeName}, {typeName})",
+			$"static {typeName}.operator checked --({typeName})",
+			$"static {typeName}.operator checked /({typeName}, {typeName})",
+			$"static {typeName}.operator checked ++({typeName})",
+			$"static {typeName}.operator checked *({typeName}, {typeName})",
+			$"static {typeName}.operator checked -({typeName}, {typeName})",
+			$"static {typeName}.operator checked -({typeName})"
+		})
+		{
+			AssertMember(moduleType, member, Op.Import, modulePath);
+		}
+	}
+
 	private static void AssertTypeAlias(Type type, string member, string alias)
 	{
 		var attribute = type.GetCustomAttribute<JazorAttribute>();
@@ -151,6 +299,12 @@ public sealed class NumericWidthModuleWhitelistTests
 		Assert.AreEqual(op, attribute.Op, member);
 		if (modulePath is not null)
 			Assert.AreEqual(modulePath, ClrRuntimeMappingCatalog.GetImport(member).ModulePath, member);
+	}
+
+	private static void AssertMembers(Type type, Op op, string? modulePath, params string[] members)
+	{
+		foreach (var member in members)
+			AssertMember(type, member, op, modulePath);
 	}
 
 	private static string GetClrTypeName(Type moduleType)

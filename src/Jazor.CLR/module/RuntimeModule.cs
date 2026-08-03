@@ -11,6 +11,65 @@ namespace Jazor.CLR;
 [ECMAScriptModule("System/RuntimeModule.js")]
 public static class RuntimeModule
 {
+	/// <summary>
+	/// ReadOnlySpan&lt;char&gt; 的已支持来源保持原生 string/Array 表示；该 union 只提供
+	/// adapter 侧的强类型闭合输入面，转译后不创建包装对象。
+	/// </summary>
+	[ECMAScript]
+	public readonly union JReadOnlyCharSpan(string, Array<string>);
+
+	internal static string MaterializeReadOnlyCharSpan(JReadOnlyCharSpan value)
+	{
+		var raw = value.Value;
+		if (raw == null)
+			return "";
+		var text = raw as string;
+		if (text != null)
+			return text;
+
+		var characters = (Array<string>)raw;
+		var result = "";
+		for (var index = 0; index < characters.Length; index++)
+			result += characters[index];
+		return result;
+	}
+
+	/// <summary>
+	/// Strictly decodes a UTF-8 parsing input without erasing malformed bytes or a leading BOM.
+	/// </summary>
+	/// <remarks>
+	/// Numeric UTF-8 parsers are failure-returning APIs. TextDecoder's replacement mode could turn
+	/// malformed input into different text, while its default BOM handling could silently accept a
+	/// prefix that CLR numeric parsers reject. Keep that boundary centralized for every numeric type.
+	/// </remarks>
+	internal static string? TryDecodeUtf8(Uint8Array utf8Text)
+	{
+		// TextDecoder consumes a UTF-8 BOM as transport metadata. CLR's UTF-8 numeric span
+		// parsers receive raw characters instead, so the same bytes must remain invalid input.
+		if (utf8Text.Length >= 3 && utf8Text[0] == 0xef && utf8Text[1] == 0xbb && utf8Text[2] == 0xbf)
+			return null;
+
+		try
+		{
+			var decoder = new TextDecoder(
+				"utf-8",
+				new TextDecoderOptions(Fatal: true, IgnoreBOM: true));
+			return decoder.Decode(new Uint8Array(utf8Text));
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	internal static string DecodeUtf8OrThrowFormat(Uint8Array utf8Text)
+	{
+		var text = TryDecodeUtf8(utf8Text);
+		if (text == null)
+			throw new Error("FormatException: The UTF-8 input was not in a correct format.");
+		return text;
+	}
+
 	private static void EnsureWholeNumber(Number value, string message)
 	{
 		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
@@ -350,6 +409,66 @@ public static class RuntimeModule
 	}
 
 	/// <summary>
+	/// System.Index 的 runtime carrier，保留从起点/终点计数的值语义。
+	/// </summary>
+	/// <remarks>它只承载已绑定的 Index API；实际 collection 边界仍由消费它的索引器负责。</remarks>
+	public sealed class JIndex
+	{
+		[Description("@#value")]
+		public Number Value { get; }
+
+		[Description("@#fromEnd")]
+		public bool IsFromEnd { get; }
+
+		public JIndex(Number value, bool fromEnd)
+		{
+			EnsureWholeNumber(value, "ArgumentOutOfRangeException: Index value must be a non-negative whole number.");
+			if (value < 0)
+				throw new Error("ArgumentOutOfRangeException: Index value must be non-negative.");
+
+			Value = value;
+			IsFromEnd = fromEnd;
+		}
+
+		public Number GetOffset(Number length)
+		{
+			EnsureWholeNumber(length, "ArgumentOutOfRangeException: Length must be a non-negative whole number.");
+			if (length < 0)
+				throw new Error("ArgumentOutOfRangeException: Length must be non-negative.");
+
+			return IsFromEnd ? length - Value : Value;
+		}
+	}
+
+	/// <summary>
+	/// System.Range 的 runtime carrier，以两个 JIndex 保留左闭右开的边界协议。
+	/// </summary>
+	public sealed class JRange
+	{
+		[Description("@#start")]
+		public JIndex Start { get; }
+
+		[Description("@#end")]
+		public JIndex End { get; }
+
+		public JRange(JIndex start, JIndex end)
+		{
+			Start = start;
+			End = end;
+		}
+
+		public (Number Offset, Number Length) GetOffsetAndLength(Number length)
+		{
+			var start = Start.GetOffset(length);
+			var end = End.GetOffset(length);
+			if (start < 0 || end < start || end > length)
+				throw new Error("ArgumentOutOfRangeException: Range is outside the bounds of the collection.");
+
+			return (start, end - start);
+		}
+	}
+
+	/// <summary>
 	/// Queue&lt;T&gt; 的最小 runtime carrier，使用数组和游标模拟先进先出队列。
 	/// </summary>
 	/// <remarks>游标与数组增长策略属于内部实现，外部只能通过白名单成员访问。</remarks>
@@ -572,6 +691,13 @@ public static class RuntimeModule
 		var low = (int)NumberFn(BigInt.AsIntN(32, value));
 		var high = (int)NumberFn(BigInt.AsIntN(32, value >> BigIntFn(32)));
 		return low ^ high;
+	}
+
+	public static Number GetInt128HashCode(BigInt value)
+	{
+		var low = BigInt.AsIntN(64, value);
+		var high = BigInt.AsIntN(64, value >> BigIntFn(64));
+		return GetInt64HashCode(low) ^ GetInt64HashCode(high);
 	}
 
 	private static void EnsureValidDateParts(Number year, Number month, Number day)

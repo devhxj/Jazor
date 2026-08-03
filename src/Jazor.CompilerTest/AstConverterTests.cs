@@ -4200,7 +4200,8 @@ export let value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export function check(value = 1.5) {
+@"import { _c698784c1b652292 } from ""System/HalfModule.js"";
+export function check(value = _c698784c1b652292(1.5)) {
   return 0;
 }
 ", script);
@@ -4559,6 +4560,127 @@ export function logValue() {
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithLinqQuerySyntaxWhereSelectAndCapturedValue_UsesExistingEnumerableMappings()
+    {
+        var code = """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class TestClass
+            {
+                public static List<int> Filter(IEnumerable<int> source, int threshold) =>
+                    (from item in source
+                     where item > threshold
+                     select item * 2).ToList();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+        StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
+        StringAssert.Contains(script, "item > threshold");
+        StringAssert.Contains(script, "item * 2");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithLinqQuerySyntaxLet_UsesExistingSelectWhereAndAnonymousProjection()
+    {
+        var code = """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class TestClass
+            {
+                public static int[] Filter(IEnumerable<int> source, int threshold) =>
+                    (from item in source
+                     let doubled = item * 2
+                     where doubled > threshold
+                     select doubled).ToArray();
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
+        StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+        StringAssert.Contains(script, "doubled");
+        StringAssert.Contains(script, "item * 2");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithLinqQuerySyntaxOrderByAndPaging_ImportsStableMaterializedEnumerableModule()
+    {
+        var code = """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class TestClass
+            {
+                public static int[] Sort(IEnumerable<int> source) =>
+                    (from item in source
+                     orderby item
+                     select item).ToArray();
+
+                public static int[] SortDescending(IEnumerable<int> source) =>
+                    (from item in source
+                     orderby item descending
+                     select item).ToArray();
+
+                public static int[] SortByTwoKeys(IEnumerable<int> source) =>
+                    (from item in source
+                     orderby item % 2, item descending
+                     select item).ToArray();
+
+                public static int[] Page(IEnumerable<int> source, int skip, int take) =>
+                    source.Skip(skip).Take(take).ToArray();
+
+                public static bool HasAny(IEnumerable<int> source) => source.Any();
+
+                public static bool HasEven(IEnumerable<int> source) => source.Any(item => item % 2 == 0);
+
+                public static bool AllPositive(IEnumerable<int> source) => source.All(item => item > 0);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "System/Linq/EnumerableModule.js");
+        StringAssert.Contains(script, "_c8e0de6cfb4d0b1e");
+        StringAssert.Contains(script, "_c955435630a10962");
+        StringAssert.Contains(script, "_c08a571c42e14ee7");
+        StringAssert.Contains(script, "_7a0726e65cb5b3a2");
+        StringAssert.Contains(script, "_4abc4f56a4100834");
+        StringAssert.Contains(script, "_9832a60d5939c887");
+        StringAssert.Contains(script, "_8995eebc6c105f1d");
+        StringAssert.Contains(script, "_7e4a11c411867592");
+        StringAssert.Contains(script, "_c8e0de6cfb4d0b1e(source, item => {");
+        StringAssert.Contains(script, "_c955435630a10962(source, item => {");
+        StringAssert.Contains(script, "_c08a571c42e14ee7(_c8e0de6cfb4d0b1e(source, item => {");
+        StringAssert.Contains(script, "_4abc4f56a4100834(_7a0726e65cb5b3a2(source, skip), take)");
+        StringAssert.Contains(script, "return _9832a60d5939c887(source);");
+        StringAssert.Contains(script, "return _8995eebc6c105f1d(source, item => {");
+        StringAssert.Contains(script, "return _7e4a11c411867592(source, item => {");
+        StringAssert.Contains(script, "return item;");
     }
 
     [TestMethod]
@@ -5617,7 +5739,7 @@ export function minNumber(left, right) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithSingleMathIntrinsics_UsesDirectMathWithoutImports()
+    public async Task Convert_ClassWithSingleMathIntrinsics_UsesMappedExactOperationsAndDirectMath()
     {
         var code = """
             public static class TestClass
@@ -5666,16 +5788,17 @@ export function minNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function run(value, left, right, third) {
+@"import { _99c8e34b34aa762c, _e54bb5d6b1fb386d } from ""System/SingleModule.js"";
+export function run(value, left, right, third) {
   let log2 = Math.log2(value);
   let expM1 = Math.exp(value) - 1;
   let ceil = Math.ceil(value);
   let floor = Math.floor(value);
-  let round = Math.round(value);
+  let round = _99c8e34b34aa762c(value);
   let trunc = Math.trunc(value);
   let atan2Pi = Math.atan2(left, right) / Math.PI;
   let fused = left * right + third;
-  let ieee = left - right * Math.round(left / right);
+  let ieee = _e54bb5d6b1fb386d(left, right);
   let lerp = left + (right - left) * third;
   let reciprocal = 1 / value;
   let acosh = Math.acosh(value);
@@ -15000,7 +15123,7 @@ export function create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "globalThis.__jazorEqualityComparerDefault ??= {}");
+        StringAssert.Contains(script, "getDefault");
         StringAssert.Contains(script, "System/Collections/Generic/EqualityComparerT1Module.js");
         StringAssert.Contains(script, "System/Collections/Generic/IEqualityComparerT1Module.js");
 

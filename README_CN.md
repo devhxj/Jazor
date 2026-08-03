@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8158 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8158%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.43%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.43%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.71%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.71%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8265 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8265%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.26%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.26%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.02%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.02%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -35,13 +35,13 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ## 已验证的编译器基线
 
-`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-08-02：
+`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-08-03：
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8158 / 8158 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 14003 / 14522（96.43%） | 95% |
-| 分支覆盖率 | 6051 / 6671（90.71%） | 90% |
+| 编译器回归测试 | 8265 / 8265 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 15423 / 16022（96.26%） | 95% |
+| 分支覆盖率 | 6194 / 6881（90.02%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -57,9 +57,9 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| RazorVue SG 场景 | 4472 / 4472 通过 | 至少通过 4000 项 |
-| 行覆盖率 | 8077 / 8644（93.44%） | 90% |
-| 分支覆盖率 | 3530 / 4219（83.67%） | 80% |
+| RazorVue SG 场景 | 4482 / 4482 通过 | 至少通过 4000 项 |
+| 行覆盖率 | 8147 / 8719（93.44%） | 90% |
+| 分支覆盖率 | 3569 / 4265（83.68%） | 80% |
 
 在仓库根目录运行 RazorVue 覆盖率门禁：
 
@@ -86,27 +86,20 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## 最新更新
 
-### 2026-08-02
+### 2026-08-03
 
-- `Nullable<T>.Value` 现由编译器内置 lowering 处理，保证 receiver 只求值一次，并仅在空 carrier 上抛出稳定异常；嵌套列表模式会先完成 null 检查，再访问自定义长度成员。
-- RazorVue 直接渲染生成会保留静态 Razor 组件的源映射路径，支持可选 `EventCallback` 参数在有/无 listener 时的调用、官方异步 `@bind:after` 协议以及同步/异步 `@bind:set` 方法组，并在并发或 tiered-JIT 的 generator driver 中持续保持完成阶段 hook。
-- Razor 编写错误继续由官方 Razor 源生成器单独诊断；无效组件不会额外产生 RazorVue 转换错误或部分 render catalog。
-- JazorAdmin 现在作为更完整的原生 RazorVue 参考应用，包含 dashboard、release queue、audit、workspace 与 settings 页面；发布表格支持受控搜索、排序、分页、选择与批量操作。
-- Compiler 门禁已验证 8,158 个场景，行覆盖率 96.43%、分支覆盖率 90.71%；RazorVue 门禁已验证 4,472 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.67%。
-
-### 2026-08-01
-
-- Razor-to-Vue 已将 ASP.NET Components catalog 与 Razor 专属 lowering 收敛在 `Jazor.Vue` 产品边界，同时保持核心转译器的受支持扩展契约。
-- 官方 Razor 源生成器输出持续直接生成 Vue render-function `.mjs` 产物，不回退为 SFC、render-context 或生成 builder 协议。
-- Razor 组件的动态 `@attributes` 现可接收对象、`Map` 和 KeyValuePair 形态序列；组件参数会先按 Vue descriptor 映射，且显式 `@bind` 保持优先级。
-- JazorAdmin 参考应用已通过打包 Deno host 验证本地包消费、native 与 `VueInject` 构建、生成产物和浏览器挂载。
+- LINQ 映射现覆盖 `Cast`、`OfType`、`TryGetNonEnumeratedCount`、支持 comparer 的 `ToDictionary` / `ToHashSet`，以及更多 selector、分组、排序、聚合和集合运算，并统一复用运行时 helper。
+- CLR 支持现包括固定宽度整数与浮点转换、checked 算术、UTF-8 数值解析、Unicode 字符分类、确定性标量哈希，以及更完整的 comparer 集合语义。
+- 字符串 span 裁剪与拼接、换行替换、join 与 padding、一维 `Array` 参数索引访问、`ConditionalWeakTable` 工厂与清空，以及 `Exception` cause、`HelpLink`、`Source` 元数据均通过生成的运行时模块执行。
+- `StringBuilder` 的固定 `float` / `double` 追加与插入 overload 已复用对应 `ToString()` 的数值载体契约；`object`、泛型格式化、容量和实时只读视图仍保持明确边界。
+- Compiler 门禁已验证 8,265 个场景，行覆盖率 96.26%、分支覆盖率 90.02%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.38
+dotnet add package Jazor --version 0.1.39
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -115,8 +108,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.38" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.38" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.39" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.39" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -124,11 +117,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.38" />
+  <PackageReference Include="Jazor" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.39" />
 </ItemGroup>
 ```
 

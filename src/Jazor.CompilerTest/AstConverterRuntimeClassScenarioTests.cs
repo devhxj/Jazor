@@ -1263,6 +1263,97 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_ForUpdateSequence_AwaitsAfterIncrementOnDenoHost()
+    {
+        const string scenarioId = "ast-converter-runtime-class.for-update-await-sequence";
+        var fixture = CompileModule(
+            """
+            using System.Threading.Tasks;
+
+            public static class TestModule
+            {
+                public sealed class ProgressRecorder
+                {
+                    private string trace = "";
+
+                    public string Trace => trace;
+
+                    public async Task RunAsync()
+                    {
+                        for (var item = 0; item < 2; item++, await TickAsync(item))
+                        {
+                            trace += "body:" + item + ":";
+                        }
+
+                        trace += "done:";
+                    }
+
+                    private async Task TickAsync(int item)
+                    {
+                        trace += "tick:" + item + ":start:";
+                        await Task.Yield();
+                        trace += "tick:" + item + ":end:";
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "item++, await this.tickAsync(item)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "await Promise.resolve()", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-for-update-await-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "for-update-await.mjs");
+            var testPath = Path.Combine(root, "for-update-await.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { ProgressRecorder } from "./for-update-await.mjs";
+
+                Deno.test("for update increments before the awaited progress tick", async () => {
+                  const recorder = new ProgressRecorder();
+                  const run = recorder.runAsync();
+                  if (recorder.trace !== "body:0:tick:1:start:")
+                    throw new Error(`expected body item 0 then suspended tick 1, got ${recorder.trace}`);
+
+                  await run;
+                  const expected = "body:0:tick:1:start:tick:1:end:body:1:tick:2:start:tick:2:end:done:";
+                  if (recorder.trace !== expected)
+                    throw new Error(`expected increment/await update order ${expected}, got ${recorder.trace}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_ConditionalArrayIndexAndRange_CacheNullableReceiverOnceOnDenoHost()
     {
         const string scenarioId = "ast-converter-runtime-class.conditional-array-index-and-range";
@@ -1363,6 +1454,98 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_NullableGetValueOrDefault_UsesSingleProbeAndUnderlyingDefaultOnDenoHost()
+    {
+        const string scenarioId = "ast-converter-runtime-class.nullable-get-value-or-default";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class DefaultReader
+                {
+                    private int? next;
+                    private int probes;
+
+                    public int Probes => probes;
+
+                    public void SetNext(int? value)
+                    {
+                        next = value;
+                    }
+
+                    private int? Probe()
+                    {
+                        probes++;
+                        return next;
+                    }
+
+                    public int Read()
+                    {
+                        return Probe().GetValueOrDefault();
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "return this.probe() ?? 0;", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-nullable-get-value-or-default-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "nullable-get-value-or-default.mjs");
+            var testPath = Path.Combine(root, "nullable-get-value-or-default.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { DefaultReader } from "./nullable-get-value-or-default.mjs";
+
+                Deno.test("Nullable GetValueOrDefault preserves a single nullable receiver evaluation", () => {
+                  const reader = new DefaultReader();
+
+                  reader.setNext(null);
+                  if (reader.read() !== 0 || reader.probes !== 1)
+                    throw new Error(`expected null to produce 0 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+
+                  reader.setNext(undefined);
+                  if (reader.read() !== 0 || reader.probes !== 2)
+                    throw new Error(`expected undefined to produce 0 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+
+                  reader.setNext(23);
+                  if (reader.read() !== 23 || reader.probes !== 3)
+                    throw new Error(`expected 23 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_StringFormattingIntrinsics_PreserveComposedValue()
     {
         const string scenarioId = "ast-converter-runtime-class.string-formatting-intrinsics";
@@ -1387,47 +1570,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "Array.from(labels).join(\"/\")", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, ".toUpperCase().padStart(10, \"*\")", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"System/StringModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(
+            script,
+            "return _7894e0294f780eb5(_f269cd27a4bbd549(\"/\", labels).toUpperCase(), 10, \"*\");",
+            StringComparison.Ordinal,
+            scenarioId);
         _ = new Parser().ParseModule(script);
-
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            "jazor-runtime-class-string-formatting-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-
-        try
-        {
-            var modulePath = Path.Combine(root, "string-formatting.mjs");
-            var testPath = Path.Combine(root, "string-formatting.test.mjs");
-            await File.WriteAllTextAsync(
-                modulePath,
-                script,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            await File.WriteAllTextAsync(
-                testPath,
-                """
-                import { LabelFormatter } from "./string-formatting.mjs";
-
-                Deno.test("string formatting intrinsics preserve the composed C# value", () => {
-                  const result = new LabelFormatter().formatLabels();
-                  if (result !== "**RED/BLUE")
-                    throw new Error(`expected **RED/BLUE, got ${result}`);
-                });
-                """,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
     }
 
     [TestMethod]

@@ -77,7 +77,7 @@ public static class Int32Module
 	[Jazor(Op.Inline, "static int.MinValue", "-2147483648")]
 	public extern static int _minValue();
 
-	[Jazor(Op.Discard, "int.Int32()")]
+	[Jazor(Op.Inline, "int.Int32()", "0")]
 	public extern static Number _d8bb920f83e7d97e();
 
 	/// <summary>
@@ -123,7 +123,7 @@ public static class Int32Module
 	[Jazor(Op.Inline, "int.Equals(int)", "(__arg1 === __arg2)")]
 	public extern static bool _5e7fb3a45e5a8f45(Number instance, Number obj);
 
-	[Jazor(Op.Discard, "override int.GetHashCode()")]
+	[Jazor(Op.Inline, "override int.GetHashCode()", "__arg1")]
 	public extern static Number _74e858272ce4a15a(Number instance);
 
 	/// <summary>
@@ -193,11 +193,13 @@ public static class Int32Module
 		return [true, value];
 	}
 
-	[Jazor(Op.Discard, "static int.TryParse(System.ReadOnlySpan<char>, out int)")]
-	public extern static Array<object?> _f6a664534980b0f4(Uint32Array s, Number result);
+	[Jazor(Op.Import, "static int.TryParse(System.ReadOnlySpan<char>, out int)")]
+	public static Array<object?> _f6a664534980b0f4(string s, Number result)
+		=> _16e2a901535b765e(s, result);
 
-	[Jazor(Op.Discard, "static int.TryParse(System.ReadOnlySpan<byte>, out int)")]
-	public extern static Array<object?> _2acff5418dba43bd(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static int.TryParse(System.ReadOnlySpan<byte>, out int)")]
+	public static Array<object?> _2acff5418dba43bd(Uint8Array utf8Text, Number result)
+		=> _16e2a901535b765e(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	[Jazor(Op.Discard, "static int.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out int)")]
 	public extern static Array<object?> _69f925b0bfe7fa2a(string? s, object style, Intl.NumberFormat? provider, Number result);
@@ -217,6 +219,8 @@ public static class Int32Module
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
+		if (left == -2147483648 && right == -1)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 		var quotient = Math.TruncFn(left / right);
 		var remainder = left - quotient * right;
 		return ((int)quotient, (int)remainder);

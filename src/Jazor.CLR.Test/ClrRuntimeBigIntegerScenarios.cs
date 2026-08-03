@@ -7,12 +7,17 @@ internal static class ClrRuntimeBigIntegerScenarios
     private const string ModulePath = "System/Numerics/BigIntegerModule.js";
     private static readonly BigInteger TwoPow100 = BigInteger.One << 100;
     private static readonly BigInteger TenPow20 = BigInteger.Pow(10, 20);
+    private static readonly BigInteger DecimalMax = BigInteger.Parse("79228162514264337593543950335");
+    private static readonly BigInteger Int128Min = BigInteger.Parse("-170141183460469231731687303715884105728");
+    private static readonly BigInteger Int128Max = BigInteger.Parse("170141183460469231731687303715884105727");
+    private static readonly BigInteger UInt128Max = BigInteger.Parse("340282366920938463463374607431768211455");
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
         Success("big-integer.sign.negative", "System.Numerics.BigInteger.Sign.get", [Big(-99)], Number(-1)),
         Success("big-integer.sign.zero", "System.Numerics.BigInteger.Sign.get", [Big(0)], Number(0)),
         Success("big-integer.sign.positive", "System.Numerics.BigInteger.Sign.get", [Big(99)], Number(1)),
+        Success("big-integer.hash-code.zero", "override System.Numerics.BigInteger.GetHashCode()", [Big(0)], Number(575)),
         Success("big-integer.parse.large-decimal", "static System.Numerics.BigInteger.Parse(string)", [Text(TwoPow100.ToString())], Big(TwoPow100)),
         Success("big-integer.parse.signed-whitespace", "static System.Numerics.BigInteger.Parse(string)", [Text("  +123  ")], Big(123)),
         Failure("big-integer.parse.javascript-hex-is-invalid", "static System.Numerics.BigInteger.Parse(string)", [Text("0x10")], "FormatException"),
@@ -39,6 +44,11 @@ internal static class ClrRuntimeBigIntegerScenarios
             "static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)",
             [Null(), Big(7)],
             Array(Bool(false), Big(0))),
+        Success(
+            "big-integer.try-parse.span-large-decimal",
+            "static System.Numerics.BigInteger.TryParse(System.ReadOnlySpan<char>, out System.Numerics.BigInteger)",
+            [Text(TwoPow100.ToString()), Big(7)],
+            Array(Bool(true), Big(TwoPow100))),
         Success(
             "big-integer.div-rem.out-negative-dividend",
             "static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger, out System.Numerics.BigInteger)",
@@ -102,7 +112,35 @@ internal static class ClrRuntimeBigIntegerScenarios
         Success("big-integer.max-magnitude.tie-prefers-positive", "static System.Numerics.BigInteger.MaxMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)", [Big(-3), Big(3)], Big(3)),
         Success("big-integer.max-magnitude.dominant-negative", "static System.Numerics.BigInteger.MaxMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)", [Big(-9), Big(4)], Big(-9)),
         Success("big-integer.min-magnitude.tie-prefers-negative", "static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)", [Big(3), Big(-3)], Big(-3)),
-        Success("big-integer.min-magnitude.smaller-positive", "static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)", [Big(-9), Big(4)], Big(4))
+        Success("big-integer.min-magnitude.smaller-positive", "static System.Numerics.BigInteger.MinMagnitude(System.Numerics.BigInteger, System.Numerics.BigInteger)", [Big(-9), Big(4)], Big(4)),
+        Success("big-integer.ctor-float.truncates", "System.Numerics.BigInteger.BigInteger(float)", [Number(-123.75)], Big(-123)),
+        Success("big-integer.ctor-double.truncates", "System.Numerics.BigInteger.BigInteger(double)", [Number(123.75)], Big(123)),
+        Failure("big-integer.ctor-double.rejects-nan", "System.Numerics.BigInteger.BigInteger(double)", [Number(double.NaN)], "OverflowException"),
+        Success("big-integer.ctor-decimal.truncates", "System.Numerics.BigInteger.BigInteger(decimal)", [Text("-123.75")], Big(-123)),
+        Success("big-integer.from-double.truncates", "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(double)", [Number(-17.875)], Big(-17)),
+        Failure("big-integer.from-double.rejects-infinity", "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(double)", [Number(double.PositiveInfinity)], "OverflowException"),
+        Success("big-integer.from-float.truncates", "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(float)", [Number(17.875)], Big(17)),
+        Success("big-integer.from-half.truncates", "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(System.Half)", [Number(-7.5)], Big(-7)),
+        Success("big-integer.from-decimal.truncates", "static System.Numerics.BigInteger.explicit operator System.Numerics.BigInteger(decimal)", [Text("17.875")], Big(17)),
+        Success("big-integer.to-half.maximum-finite-boundary", "static System.Numerics.BigInteger.explicit operator System.Half(System.Numerics.BigInteger)", [Big(65519)], Number((double)Half.MaxValue)),
+        Success("big-integer.to-half.overflow-boundary", "static System.Numerics.BigInteger.explicit operator System.Half(System.Numerics.BigInteger)", [Big(65520)], Number(double.PositiveInfinity)),
+        Success("big-integer.to-byte.maximum", "static System.Numerics.BigInteger.explicit operator byte(System.Numerics.BigInteger)", [Big(255)], Number(255)),
+        Failure("big-integer.to-byte.overflow", "static System.Numerics.BigInteger.explicit operator byte(System.Numerics.BigInteger)", [Big(256)], "OverflowException"),
+        Success("big-integer.to-char.maximum", "static System.Numerics.BigInteger.explicit operator char(System.Numerics.BigInteger)", [Big(65535)], Number(65535)),
+        Success("big-integer.to-sbyte.minimum", "static System.Numerics.BigInteger.explicit operator sbyte(System.Numerics.BigInteger)", [Big(-128)], Number(-128)),
+        Success("big-integer.to-short.minimum", "static System.Numerics.BigInteger.explicit operator short(System.Numerics.BigInteger)", [Big(-32768)], Number(-32768)),
+        Success("big-integer.to-ushort.maximum", "static System.Numerics.BigInteger.explicit operator ushort(System.Numerics.BigInteger)", [Big(65535)], Number(65535)),
+        Success("big-integer.to-int.maximum", "static System.Numerics.BigInteger.explicit operator int(System.Numerics.BigInteger)", [Big(2147483647)], Number(2147483647)),
+        Success("big-integer.to-uint.maximum", "static System.Numerics.BigInteger.explicit operator uint(System.Numerics.BigInteger)", [Big(BigInteger.Parse("4294967295"))], Number(4294967295)),
+        Success("big-integer.to-long.maximum", "static System.Numerics.BigInteger.explicit operator long(System.Numerics.BigInteger)", [Big(long.MaxValue)], Big(long.MaxValue)),
+        Failure("big-integer.to-long.overflow", "static System.Numerics.BigInteger.explicit operator long(System.Numerics.BigInteger)", [Big((BigInteger)long.MaxValue + 1)], "OverflowException"),
+        Success("big-integer.to-ulong.maximum", "static System.Numerics.BigInteger.explicit operator ulong(System.Numerics.BigInteger)", [Big(BigInteger.Parse("18446744073709551615"))], Big(BigInteger.Parse("18446744073709551615"))),
+        Success("big-integer.to-int128.minimum", "static System.Numerics.BigInteger.explicit operator System.Int128(System.Numerics.BigInteger)", [Big(Int128Min)], Big(Int128Min)),
+        Failure("big-integer.to-int128.overflow", "static System.Numerics.BigInteger.explicit operator System.Int128(System.Numerics.BigInteger)", [Big(Int128Max + 1)], "OverflowException"),
+        Success("big-integer.to-uint128.maximum", "static System.Numerics.BigInteger.explicit operator System.UInt128(System.Numerics.BigInteger)", [Big(UInt128Max)], Big(UInt128Max)),
+        Failure("big-integer.to-uint128.negative-overflow", "static System.Numerics.BigInteger.explicit operator System.UInt128(System.Numerics.BigInteger)", [Big(-1)], "OverflowException"),
+        Success("big-integer.to-decimal.maximum", "static System.Numerics.BigInteger.explicit operator decimal(System.Numerics.BigInteger)", [Big(DecimalMax)], Text(DecimalMax.ToString())),
+        Failure("big-integer.to-decimal.overflow", "static System.Numerics.BigInteger.explicit operator decimal(System.Numerics.BigInteger)", [Big(DecimalMax + 1)], "OverflowException")
     ];
 
     private static ClrRuntimeScenario Success(

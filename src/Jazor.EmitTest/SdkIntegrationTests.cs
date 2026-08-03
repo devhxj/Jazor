@@ -389,6 +389,623 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalJazorPackage_StoredIndexAndRange_ExecutesMaterializedRuntimeOnDenoHost()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
+        CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
+
+        var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
+        var wwwroot = Path.Combine(hostRoot, "wwwroot");
+        if (Directory.Exists(wwwroot))
+            Directory.Delete(wwwroot, recursive: true);
+
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using Index = System.Index;
+            using Range = System.Range;
+
+            namespace Sample.Host;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public sealed class SliceBuffer
+                {
+                    private int[] values = [3, 5, 7, 11, 13, 17];
+                    private int sliceCalls;
+                    private int reads;
+                    private int writes;
+
+                    public int Length => values.Length;
+                    public int SliceCalls => sliceCalls;
+                    public int ReadCount => reads;
+                    public int WriteCount => writes;
+                    public int LastValue => values[values.Length - 1];
+
+                    public int this[int index]
+                    {
+                        get
+                        {
+                            reads++;
+                            return values[index];
+                        }
+                        set
+                        {
+                            writes++;
+                            values[index] = value;
+                        }
+                    }
+
+                    public int[] Slice(int start, int length)
+                    {
+                        sliceCalls++;
+                        var result = new int[length];
+                        for (var index = 0; index < length; index++)
+                            result[index] = values[start + index];
+                        return result;
+                    }
+                }
+
+                public static string Boot() => "index-range-ready";
+
+                public static int[] SliceInterior(int[] values)
+                {
+                    Index start = ^4;
+                    Range range = start..^1;
+                    return values[range];
+                }
+
+                public static int IncreaseLast(int[] values, int amount)
+                {
+                    Index last = ^1;
+                    values[last] += amount;
+                    return values[last];
+                }
+
+                public static int[] SliceStoredRangeWithProtocol()
+                {
+                    var buffer = new SliceBuffer();
+                    Range range = ^4..^1;
+                    var slice = buffer[range];
+                    return [buffer.SliceCalls, slice[0], slice[1], slice[2]];
+                }
+
+                public static int TriggerInvalidStoredRange()
+                {
+                    var buffer = new SliceBuffer();
+                    Range range = ^1..1;
+                    return buffer[range].Length;
+                }
+
+                public static int[] IncreaseStoredIndexWithProtocol()
+                {
+                    var buffer = new SliceBuffer();
+                    Index last = ^1;
+                    buffer[last] += 4;
+                    return [buffer.ReadCount, buffer.WriteCount, buffer.LastValue];
+                }
+            }
+            """);
+
+        var projectPath = Path.Combine(hostRoot, "Sample.Host.csproj");
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+
+        var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
+        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+
+        var indexImport = GetImportLine(module, "System/IndexModule.js");
+        StringAssert.Contains(indexImport, "_ce8b9229a41c8545");
+        StringAssert.Contains(indexImport, "_9b817e75f3f8f58f");
+
+        var rangeImport = GetImportLine(module, "System/RangeModule.js");
+        StringAssert.Contains(rangeImport, "_fc3dfc5dbaa397eb");
+        StringAssert.Contains(rangeImport, "_1c7a1e658ed790ff");
+
+        var emittedRelativePaths = LoadManifest(manifestPath).Modules
+            .Select(static module => module.RelativePath)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray();
+        CollectionAssert.Contains(emittedRelativePaths, "System/IndexModule.js");
+        CollectionAssert.Contains(emittedRelativePaths, "System/RangeModule.js");
+        CollectionAssert.Contains(emittedRelativePaths, "System/RuntimeModule.js");
+
+        // Generated runtime imports use the deployment-time System/ module namespace. Resolve it
+        // through Deno's standard import map so the test executes the artifact without rewriting it.
+        WriteFile(
+            Path.Combine(outputRoot, "deno.json"),
+            """
+            {
+              "imports": {
+                "System/": "./System/"
+              }
+            }
+            """);
+        var testFile = Path.Combine(outputRoot, "materialized-index-range.test.mjs");
+        WriteFile(
+            testFile,
+            """
+            import {
+                sliceInterior,
+                increaseLast,
+                sliceStoredRangeWithProtocol,
+                triggerInvalidStoredRange,
+                increaseStoredIndexWithProtocol
+            } from "./host/app.mjs";
+
+            function assertEqual(actual, expected, message) {
+                if (!Object.is(actual, expected))
+                    throw new Error(`${message}: expected ${String(expected)}, got ${String(actual)}`);
+            }
+
+            function assertArrayEqual(actual, expected, message) {
+                assertEqual(actual.length, expected.length, `${message} length`);
+                for (let index = 0; index < expected.length; index++)
+                    assertEqual(actual[index], expected[index], `${message} at ${index}`);
+            }
+
+            Deno.test("materialized stored Index and Range preserve array offsets and mutation", () => {
+                const source = [3, 5, 7, 11, 13, 17];
+                assertArrayEqual(sliceInterior(source), [7, 11, 13], "stored range slice");
+                assertArrayEqual(source, [3, 5, 7, 11, 13, 17], "slice source remains unchanged");
+
+                const mutable = [2, 4, 6];
+                assertEqual(increaseLast(mutable, 5), 11, "stored index return value");
+                assertArrayEqual(mutable, [2, 4, 11], "stored index compound assignment");
+
+                assertArrayEqual(
+                    sliceStoredRangeWithProtocol(),
+                    [1, 7, 11, 13],
+                    "stored range custom Slice protocol and single invocation");
+
+                assertArrayEqual(
+                    increaseStoredIndexWithProtocol(),
+                    [1, 1, 21],
+                    "stored Index custom indexer compound assignment");
+
+                let invalidRangeError = null;
+                try {
+                    triggerInvalidStoredRange();
+                } catch (error) {
+                    invalidRangeError = error;
+                }
+
+                if (!(invalidRangeError instanceof Error) ||
+                    invalidRangeError.message !== "ArgumentOutOfRangeException: Range is outside the bounds of the collection.") {
+                    throw new Error(`expected the materialized Range carrier bounds error, got ${String(invalidRangeError)}`);
+                }
+            });
+            """);
+
+        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_QuerySyntaxWithCapturedLambda_ExecutesOnDenoHost()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
+        CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
+
+        var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
+        var wwwroot = Path.Combine(hostRoot, "wwwroot");
+        if (Directory.Exists(wwwroot))
+            Directory.Delete(wwwroot, recursive: true);
+
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using System.Linq;
+            using ECMAScript;
+
+            namespace Sample.Host;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "query-ready";
+
+                public static int[] SelectEvenProducts(int[] values, int factor)
+                {
+                    return (from value in values
+                            where value % 2 == 0
+                            select value * factor).ToArray();
+                }
+
+                public static int[] SortByParity(int[] values)
+                {
+                    return (from value in values
+                            orderby value % 2
+                            select value).ToArray();
+                }
+
+                public static int[] SortByParityDescending(int[] values)
+                {
+                    return (from value in values
+                            orderby value % 2 descending
+                            select value).ToArray();
+                }
+
+                public static int[] SortByParityThenDescendingValue(int[] values)
+                {
+                    return (from value in values
+                            orderby value % 2, value descending
+                            select value).ToArray();
+                }
+
+                public static int CountOrderKeyInvocations(int[] values)
+                {
+                    var invocations = 0;
+                    var ordered = values.OrderBy(value =>
+                    {
+                        invocations++;
+                        return value % 2;
+                    }).ToArray();
+                    return invocations + ordered.Length * 0;
+                }
+
+                public static int[] PageAfterThreshold(int[] values, int threshold, int skip, int take)
+                {
+                    return values.Where(value => value > threshold).Skip(skip).Take(take).ToArray();
+                }
+
+                public static int CountAnyChecksUntilMatch(int[] values)
+                {
+                    var checks = 0;
+                    var found = values.Any(value =>
+                    {
+                        checks++;
+                        return value % 2 == 0;
+                    });
+                    return found ? checks : -checks;
+                }
+
+                public static int CountAllChecksUntilFailure(int[] values)
+                {
+                    var checks = 0;
+                    var allPositive = values.All(value =>
+                    {
+                        checks++;
+                        return value > 0;
+                    });
+                    return allPositive ? checks : -checks;
+                }
+
+                public static int[] JoinAllowedReleaseIds(int[] releaseIds, int[] allowedIds)
+                {
+                    return (from releaseId in releaseIds
+                            join allowedId in allowedIds on releaseId equals allowedId
+                            select releaseId).ToArray();
+                }
+
+                public static int[] GroupJoinAllowedReleaseCounts(int[] releaseIds, int[] allowedIds)
+                {
+                    return (from releaseId in releaseIds
+                            join allowedId in allowedIds on releaseId equals allowedId into matches
+                            select releaseId * 10 + matches.Count()).ToArray();
+                }
+
+                public static int[] ExpandPositiveValues(int[] values, int threshold, int offset)
+                {
+                    return (from outer in values
+                            where outer > threshold
+                            from inner in new[] { outer + offset, outer * 10 + offset }
+                            select outer + inner).ToArray();
+                }
+
+                public static int[] ReverseVisibleReleaseIds(int[] releaseIds)
+                {
+                    return releaseIds.Reverse().ToArray();
+                }
+
+                public static bool HasMatchingReleaseSequence(int[] expectedReleaseIds, int[] actualReleaseIds)
+                {
+                    return expectedReleaseIds.SequenceEqual(actualReleaseIds);
+                }
+
+                public static int[] ConcatenateReleaseIds(int[] firstReleaseIds, int[] secondReleaseIds)
+                {
+                    return firstReleaseIds.Concat(secondReleaseIds).ToArray();
+                }
+
+                public static int[] FrameReleaseIds(int[] releaseIds, int firstReleaseId, int lastReleaseId)
+                {
+                    return releaseIds.Prepend(firstReleaseId).Append(lastReleaseId).ToArray();
+                }
+
+                public static int SelectReleaseAt(int[] releaseIds, int index)
+                {
+                    return releaseIds.ElementAt(index);
+                }
+
+                public static int[] DistinctReleaseIdsByParity(int[] releaseIds)
+                {
+                    return releaseIds.DistinctBy(releaseId => releaseId % 2).ToArray();
+                }
+
+                public static int[] OrderReleaseIds(int[] releaseIds)
+                {
+                    return releaseIds.Order().ToArray();
+                }
+
+                public static int[] OrderReleaseIdsDescending(int[] releaseIds)
+                {
+                    return releaseIds.OrderDescending().ToArray();
+                }
+
+                public static int FindReleaseWithMinimumLastDigit(int[] releaseIds)
+                {
+                    return releaseIds.MinBy(releaseId => releaseId % 10);
+                }
+
+                public static int FindReleaseWithMaximumLastDigit(int[] releaseIds)
+                {
+                    return releaseIds.MaxBy(releaseId => releaseId % 10);
+                }
+
+                public static int[][] ChunkReleaseIds(int[] releaseIds, int size)
+                {
+                    return releaseIds.Chunk(size).ToArray();
+                }
+
+                public static int TerminalReleaseScore(int[] releaseIds, int threshold)
+                {
+                    return releaseIds.First() +
+                        releaseIds.First(releaseId => releaseId > threshold) +
+                        releaseIds.Last() +
+                        releaseIds.Last(releaseId => releaseId > threshold);
+                }
+
+                public static int TerminalSingleScore(int[] onlyReleaseId, int[] releaseIds, int threshold)
+                {
+                    return onlyReleaseId.Single() + releaseIds.Single(releaseId => releaseId > threshold);
+                }
+
+                public static int AggregateReleaseScore(int[] releaseIds, int seed)
+                {
+                    return releaseIds.Aggregate((total, releaseId) => total + releaseId) +
+                        releaseIds.Aggregate(seed, (total, releaseId) => total + releaseId) +
+                        releaseIds.Aggregate(seed, (total, releaseId) => total + releaseId, total => total * 2);
+                }
+            }
+            """);
+
+        var projectPath = Path.Combine(hostRoot, "Sample.Host.csproj");
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+
+        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(module, "return __src.filter(__callback);");
+        StringAssert.Contains(module, "return Array.from(__src).map(__callback);");
+        StringAssert.Contains(module, "System/Linq/EnumerableModule.js");
+        StringAssert.Contains(module, "sequenceEqual");
+        StringAssert.Contains(module, "concat");
+        StringAssert.Contains(module, "append");
+        StringAssert.Contains(module, "prepend");
+        StringAssert.Contains(module, "elementAt");
+        StringAssert.Contains(module, "distinctBy");
+        StringAssert.Contains(module, "order");
+        StringAssert.Contains(module, "orderDescending");
+        StringAssert.Contains(module, "minBy");
+        StringAssert.Contains(module, "maxBy");
+        StringAssert.Contains(module, "chunk");
+
+        var emittedRelativePaths = LoadManifest(manifestPath).Modules
+            .Select(static module => module.RelativePath)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray();
+        CollectionAssert.Contains(emittedRelativePaths, "System/Linq/EnumerableModule.js");
+        CollectionAssert.Contains(emittedRelativePaths, "System/Collections/Generic/ComparerT1Module.js");
+        CollectionAssert.Contains(emittedRelativePaths, "System/Collections/Generic/EqualityComparerT1Module.js");
+
+        // OrderBy introduces CLR runtime imports. Keep the deployment module namespace resolvable
+        // under Deno without rewriting generated source text.
+        WriteFile(
+            Path.Combine(outputRoot, "deno.json"),
+            """
+            {
+              "imports": {
+                "System/": "./System/"
+              }
+            }
+            """);
+
+        var testFile = Path.Combine(outputRoot, "materialized-query.test.mjs");
+        WriteFile(
+            testFile,
+            """
+            import { aggregateReleaseScore, chunkReleaseIds, concatenateReleaseIds, countAllChecksUntilFailure, countAnyChecksUntilMatch, countOrderKeyInvocations, distinctReleaseIdsByParity, expandPositiveValues, findReleaseWithMaximumLastDigit, findReleaseWithMinimumLastDigit, frameReleaseIds, groupJoinAllowedReleaseCounts, hasMatchingReleaseSequence, joinAllowedReleaseIds, orderReleaseIds, orderReleaseIdsDescending, pageAfterThreshold, reverseVisibleReleaseIds, selectEvenProducts, selectReleaseAt, sortByParity, sortByParityDescending, sortByParityThenDescendingValue, terminalReleaseScore, terminalSingleScore } from "./host/app.mjs";
+
+            function assertEqual(actual, expected, message) {
+                if (!Object.is(actual, expected))
+                    throw new Error(`${message}: expected ${String(expected)}, got ${String(actual)}`);
+            }
+
+            function assertArrayEqual(actual, expected, message) {
+                assertEqual(actual.length, expected.length, `${message} length`);
+                for (let index = 0; index < expected.length; index++)
+                    assertEqual(actual[index], expected[index], `${message} at ${index}`);
+            }
+
+            Deno.test("materialized query syntax preserves lambda capture and source values", () => {
+                const source = [1, 2, 3, 4, 5];
+                assertArrayEqual(selectEvenProducts(source, 7), [14, 28], "query result");
+                assertArrayEqual(source, [1, 2, 3, 4, 5], "query source remains unchanged");
+
+                const sortable = [2, 3, 4, 1];
+                assertArrayEqual(sortByParity(sortable), [2, 4, 3, 1], "ascending stable query order");
+                assertArrayEqual(sortByParityDescending(sortable), [3, 1, 2, 4], "descending stable query order");
+                assertArrayEqual(sortable, [2, 3, 4, 1], "order query source remains unchanged");
+
+                const chained = [2, 1, 4, 3];
+                assertArrayEqual(sortByParityThenDescendingValue(chained), [4, 2, 3, 1], "primary and secondary query order");
+                assertArrayEqual(chained, [2, 1, 4, 3], "then-by query source remains unchanged");
+
+                assertEqual(countOrderKeyInvocations([2, 3, 4, 1]), 4, "order key selector invocation count");
+
+                const pageSource = [1, 2, 3, 4, 5, 6];
+                assertArrayEqual(pageAfterThreshold(pageSource, 2, 1, 2), [4, 5], "filtered page");
+                assertArrayEqual(pageAfterThreshold(pageSource, 2, -1, 0), [], "empty page");
+                assertArrayEqual(pageSource, [1, 2, 3, 4, 5, 6], "page source remains unchanged");
+
+                assertEqual(countAnyChecksUntilMatch([1, 3, 4, 6]), 3, "any predicate short-circuits at match");
+                assertEqual(countAllChecksUntilFailure([4, 2, -1, 8]), -3, "all predicate short-circuits at failure");
+
+                const releaseIds = [7, 2, 7, 3];
+                const allowedIds = [2, 7, 7];
+                assertArrayEqual(
+                    joinAllowedReleaseIds(releaseIds, allowedIds),
+                    [7, 7, 2, 7, 7],
+                    "join preserves outer order and duplicate inner match order");
+                assertArrayEqual(
+                    groupJoinAllowedReleaseCounts(releaseIds, allowedIds),
+                    [72, 21, 72, 30],
+                    "group join preserves unmatched outer values as empty groups");
+                assertArrayEqual(releaseIds, [7, 2, 7, 3], "join outer source remains unchanged");
+                assertArrayEqual(allowedIds, [2, 7, 7], "join inner source remains unchanged");
+
+                const expansionSource = [2, -1, 3];
+                assertArrayEqual(
+                    expandPositiveValues(expansionSource, 0, 5),
+                    [9, 27, 11, 38],
+                    "multiple from clauses preserve capture and outer/inner expansion order");
+                assertArrayEqual(expansionSource, [2, -1, 3], "multiple from source remains unchanged");
+
+                const reverseSource = [2, 7, 2, 9];
+                assertArrayEqual(
+                    reverseVisibleReleaseIds(reverseSource),
+                    [9, 2, 7, 2],
+                    "reverse materializes descending source order");
+                assertArrayEqual(reverseSource, [2, 7, 2, 9], "reverse source remains unchanged");
+
+                const expectedSequence = [Number.NaN, -0, 7];
+                const actualSequence = [Number.NaN, 0, 7];
+                assertEqual(
+                    hasMatchingReleaseSequence(expectedSequence, actualSequence),
+                    true,
+                    "sequence equality uses the CLR default equality contract");
+                assertEqual(
+                    hasMatchingReleaseSequence(expectedSequence, [Number.NaN, 0, 8]),
+                    false,
+                    "sequence equality rejects the first unequal release");
+                assertArrayEqual(expectedSequence, [Number.NaN, -0, 7], "sequence equality expected input remains unchanged");
+                assertArrayEqual(actualSequence, [Number.NaN, 0, 7], "sequence equality actual input remains unchanged");
+
+                const firstReleaseIds = [2, 7];
+                const secondReleaseIds = [3, 9];
+                assertArrayEqual(
+                    concatenateReleaseIds(firstReleaseIds, secondReleaseIds),
+                    [2, 7, 3, 9],
+                    "concat preserves first then second source order");
+                assertArrayEqual(firstReleaseIds, [2, 7], "concat first input remains unchanged");
+                assertArrayEqual(secondReleaseIds, [3, 9], "concat second input remains unchanged");
+
+                const frameSource = [2, 7];
+                assertArrayEqual(
+                    frameReleaseIds(frameSource, 1, 9),
+                    [1, 2, 7, 9],
+                    "prepend and append frame source in bound order");
+                assertArrayEqual(frameSource, [2, 7], "prepend and append input remains unchanged");
+
+                const elementAtSource = [2, 7, 9];
+                assertEqual(selectReleaseAt(elementAtSource, 1), 7, "element at bound index");
+                assertArrayEqual(elementAtSource, [2, 7, 9], "element at input remains unchanged");
+
+                const distinctBySource = [2, 7, 4, 9, 3];
+                assertArrayEqual(
+                    distinctReleaseIdsByParity(distinctBySource),
+                    [2, 7],
+                    "distinct by preserves the first release for each bound key");
+                assertArrayEqual(distinctBySource, [2, 7, 4, 9, 3], "distinct by input remains unchanged");
+
+                const orderSource = [2, 7, 4, 1];
+                assertArrayEqual(orderReleaseIds(orderSource), [1, 2, 4, 7], "order uses the bound default comparer");
+                assertArrayEqual(orderReleaseIdsDescending(orderSource), [7, 4, 2, 1], "order descending uses the bound default comparer");
+                assertArrayEqual(orderSource, [2, 7, 4, 1], "order input remains unchanged");
+
+                const extremumSource = [22, 15, 35, 12];
+                assertEqual(findReleaseWithMinimumLastDigit(extremumSource), 22, "min by preserves the first tied key");
+                assertEqual(findReleaseWithMaximumLastDigit(extremumSource), 15, "max by preserves the first tied key");
+                assertArrayEqual(extremumSource, [22, 15, 35, 12], "min and max by input remains unchanged");
+
+                const chunkSource = [2, 7, 3, 9, 4];
+                assertEqual(
+                    chunkReleaseIds(chunkSource, 2).map(chunk => chunk.join(",")).join("|"),
+                    "2,7|3,9|4",
+                    "chunk preserves source order and final partial chunk");
+                assertArrayEqual(chunkSource, [2, 7, 3, 9, 4], "chunk input remains unchanged");
+
+                const terminalSource = [2, 7, 3, 9];
+                assertEqual(
+                    terminalReleaseScore(terminalSource, 3),
+                    27,
+                    "terminal query operators preserve bound first and last values");
+                assertArrayEqual(terminalSource, [2, 7, 3, 9], "terminal query source remains unchanged");
+
+                const singleSource = [2, 7, 3];
+                assertEqual(
+                    terminalSingleScore([7], singleSource, 3),
+                    14,
+                    "single query operators preserve the unique bound values");
+                assertArrayEqual(singleSource, [2, 7, 3], "single query source remains unchanged");
+
+                const aggregateSource = [2, 3];
+                assertEqual(
+                    aggregateReleaseScore(aggregateSource, 10),
+                    50,
+                    "aggregate query operators preserve accumulator and result selector values");
+                assertArrayEqual(aggregateSource, [2, 3], "aggregate query source remains unchanged");
+            });
+            """);
+
+        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+    }
+
+    [TestMethod]
     public async Task Build_LocalJazorPackage_StaticHost_UsesWwwrootJazorByDefault()
     {
         var package = await LocalPackage.Value;

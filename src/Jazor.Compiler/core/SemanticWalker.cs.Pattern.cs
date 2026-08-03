@@ -585,7 +585,11 @@ public partial class SemanticWalker
 			? Operator.LogicalAnd
 			: Operator.LogicalOr;
 
-		return PrependEvaluation(patternInitialization, new LogicalExpression(@operator, left, right));
+		// Keep pattern-specific null-guard normalization in the shared AST optimizer so
+		// `is`, switch cases and switch expressions lower the same way. Any cache is
+		// prepended afterwards, making its identifier safe for the optimizer to reason about.
+		var result = Optimizer.OptimizeLogical(new LogicalExpression(@operator, left, right));
+		return PrependEvaluation(patternInitialization, result);
 	}
 
 	/// <summary>
@@ -1938,8 +1942,8 @@ public partial class SemanticWalker
 		SenseArgument argument)
 	{
 		var id = declaredSymbol is ILocalSymbol local
-			? Host?.RewriteLocalDeclarationIdentifier(local, operation, argument) ?? new Identifier(declaredSymbol.Name)
-			: new Identifier(declaredSymbol.Name);
+			? Host?.RewriteLocalDeclarationIdentifier(local, operation, argument) ?? new Identifier(GetJavaScriptBindingName(declaredSymbol))
+			: new Identifier(GetJavaScriptBindingName(declaredSymbol));
 		argument.AddVarDeclarator(new VariableDeclarator(id, null), _recursionDepth);
 		return id;
 	}

@@ -107,6 +107,189 @@ public static class DoubleModule
 		return 0;
 	}
 
+	internal static Number RoundToEvenCore(Number value)
+	{
+		if (!IsFiniteCore(value) || value == 0)
+			return value;
+
+		var truncated = Math.TruncFn(value);
+		var difference = Math.AbsFn(value - truncated);
+		if (difference < 0.5)
+			return truncated;
+		if (difference > 0.5)
+			return truncated + (value < 0 ? -1 : 1);
+
+		return truncated % 2 == 0
+			? truncated
+			: truncated + (value < 0 ? -1 : 1);
+	}
+
+	internal static Number RoundIntegralCore(Number value, Number mode)
+	{
+		if (mode == 0)
+			return RoundToEvenCore(value);
+		if (mode == 1)
+		{
+			if (!IsFiniteCore(value) || value == 0)
+				return value;
+
+			var truncated = Math.TruncFn(value);
+			return Math.AbsFn(value - truncated) < 0.5
+				? truncated
+				: truncated + (value < 0 ? -1 : 1);
+		}
+		if (mode == 2)
+			return Math.TruncFn(value);
+		if (mode == 3)
+			return Math.FloorFn(value);
+
+		return Math.CeilFn(value);
+	}
+
+	internal static Number RoundCore(Number value, Number digits, Number mode)
+	{
+		if (digits < 0 || digits > 15)
+			throw new Error("ArgumentOutOfRangeException: digits must be between 0 and 15.");
+		if (mode < 0 || mode > 4)
+			throw new Error("ArgumentException: Invalid MidpointRounding value.");
+
+		// .NET skips decimal scaling once every binary64 value in the range is integral.
+		if (Math.AbsFn(value) >= 10000000000000000d)
+			return value;
+
+		var power = Math.PowFn(10, digits);
+		return RoundIntegralCore(value * power, mode) / power;
+	}
+
+	internal static Number Ieee754RemainderCore(Number left, Number right)
+	{
+		if (IsNaN(left))
+			return left;
+		if (IsNaN(right))
+			return right;
+
+		// 先做 IEEE remainder 对应的普通余数，避免 x - y * round(x / y)
+		// 在大商值处发生额外溢出或灾难性消减。
+		var regular = left % right;
+		if (IsNaN(regular))
+			return Number.NaN;
+		if (regular == 0)
+			return left < 0 || Object.Is(left, -0) ? -0 : 0;
+
+		var alternative = regular - Math.AbsFn(right) * (left < 0 ? -1 : 1);
+		var regularMagnitude = Math.AbsFn(regular);
+		var alternativeMagnitude = Math.AbsFn(alternative);
+		if (alternativeMagnitude == regularMagnitude)
+		{
+			var quotient = left / right;
+			return Math.AbsFn(RoundToEvenCore(quotient)) > Math.AbsFn(quotient)
+				? alternative
+				: regular;
+		}
+
+		return alternativeMagnitude < regularMagnitude ? alternative : regular;
+	}
+
+	private static Number MaxNativeCore(Number left, Number right)
+		=> left > right ? left : right;
+
+	private static Number MinNativeCore(Number left, Number right)
+		=> left < right ? left : right;
+
+	private static Number ClampNativeCore(Number value, Number min, Number max)
+	{
+		if (min > max)
+			throw new Error("ArgumentException: 'min' cannot be greater than max.");
+
+		// Native comparison deliberately returns the right operand for unordered/equal inputs;
+		// argument order therefore preserves the target platform's NaN and signed-zero behavior.
+		return MinNativeCore(MaxNativeCore(value, min), max);
+	}
+
+	internal static Number ILogBCore(Number value)
+	{
+		if (IsNaN(value) || !IsFiniteCore(value))
+			return 2147483647;
+		if (value == 0)
+			return -2147483648;
+
+		var buffer = new ArrayBuffer(8);
+		var view = new DataView(buffer);
+		view.SetFloat64(0, Math.AbsFn(value), false);
+		var high = view.GetUint32(0, false);
+		var low = view.GetUint32(4, false);
+		var exponentBits = Math.FloorFn(high / 1048576d) % 2048d;
+		if (exponentBits != 0)
+			return exponentBits - 1023;
+
+		var highMantissa = high % 1048576d;
+		return highMantissa != 0
+			? HighestSetBitCore(highMantissa) - 1042
+			: HighestSetBitCore(low) - 1074;
+	}
+
+	internal static Number BitIncrementCore(Number value)
+		=> OffsetAdjacentCore(value, true);
+
+	internal static Number BitDecrementCore(Number value)
+		=> OffsetAdjacentCore(value, false);
+
+	private static Number HighestSetBitCore(Number value)
+	{
+		var bit = -1;
+		while (value > 0)
+		{
+			value = Math.FloorFn(value / 2);
+			bit++;
+		}
+
+		return bit;
+	}
+
+	private static Number OffsetAdjacentCore(Number value, bool increment)
+	{
+		if (IsNaN(value))
+			return value;
+		if (increment && value == Number.POSITIVE_INFINITY)
+			return value;
+		if (!increment && value == Number.NEGATIVE_INFINITY)
+			return value;
+		if (value == 0)
+			return increment ? Number.MIN_VALUE : -Number.MIN_VALUE;
+
+		var buffer = new ArrayBuffer(8);
+		var view = new DataView(buffer);
+		view.SetFloat64(0, value, false);
+		var high = view.GetUint32(0, false);
+		var low = view.GetUint32(4, false);
+		var increaseBits = increment ? value > 0 : value < 0;
+		if (increaseBits)
+		{
+			if (low == 4294967295d)
+			{
+				low = 0;
+				high++;
+			}
+			else
+			{
+				low++;
+			}
+		}
+		else if (low == 0)
+		{
+			low = 4294967295u;
+			high--;
+		}
+		else
+		{
+			low--;
+		}
+
+		view.SetUint32(0, high, false);
+		view.SetUint32(4, low, false);
+		return view.GetFloat64(0, false);
+	}
+
 	internal static Number MaxMagnitudeCore(Number x, Number y)
 	{
 		if (IsNaN(x) || IsNaN(y))
@@ -190,7 +373,7 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Tau", "(Math.PI * 2)")]
 	public extern static Number _tau();
 
-	[Jazor(Op.Discard, "double.Double()")]
+	[Jazor(Op.Inline, "double.Double()", "0")]
 	public extern static Number _f28ac141e9398355();
 
 	// 静态判断方法
@@ -266,8 +449,9 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "double.Equals(double)", "(isNaN(__arg1) ? isNaN(__arg2) : (isNaN(__arg2) ? false : (!(__arg1 < __arg2) && !(__arg1 > __arg2))))")]
 	public extern static bool _6c01d37504f73181(Number instance, Number obj);
 
-	[Jazor(Op.Discard, "override double.GetHashCode()")]
-	public extern static Number _73dea7106d8085a6(Number instance);
+	[Jazor(Op.Import, "override double.GetHashCode()")]
+	public static Number _73dea7106d8085a6(Number instance)
+		=> EqualityComparerT1Module<Number>.GetHashCodeCore(instance);
 
 	// ToString
 	[Jazor(Op.Alias, "override double.ToString()", "toString")]
@@ -322,11 +506,13 @@ public static class DoubleModule
 		return [true, value];
 	}
 
-	[Jazor(Op.Discard, "static double.TryParse(System.ReadOnlySpan<char>, out double)")]
-	public extern static Array<object?> _059799e0a3b763c1(string s, Number result);
+	[Jazor(Op.Import, "static double.TryParse(System.ReadOnlySpan<char>, out double)")]
+	public static Array<object?> _059799e0a3b763c1(string s, Number result)
+		=> _a29d389185c5e37d(s, result);
 
-	[Jazor(Op.Discard, "static double.TryParse(System.ReadOnlySpan<byte>, out double)")]
-	public extern static Array<object?> _ec88293b6cb03791(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static double.TryParse(System.ReadOnlySpan<byte>, out double)")]
+	public static Array<object?> _ec88293b6cb03791(Uint8Array utf8Text, Number result)
+		=> _a29d389185c5e37d(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	[Jazor(Op.Discard, "static double.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out double)")]
 	public extern static Array<object?> _ac0f50fde0490598(string? s, object style, Intl.NumberFormat? provider, Number result);
@@ -375,17 +561,21 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Floor(double)", "Math.floor(__arg1)")]
 	public extern static Number _52dffd07187dd0c2(Number x);
 
-	[Jazor(Op.Inline, "static double.Round(double)", "Math.round(__arg1)")]
-	public extern static Number _0bc6b7459346bc5f(Number x);
+	[Jazor(Op.Import, "static double.Round(double)")]
+	public static Number _0bc6b7459346bc5f(Number x)
+		=> RoundToEvenCore(x);
 
-	[Jazor(Op.Discard, "static double.Round(double, int)")]
-	public extern static Number _b439595e3752c6a9(Number x, Number digits);
+	[Jazor(Op.Import, "static double.Round(double, int)")]
+	public static Number _b439595e3752c6a9(Number x, Number digits)
+		=> RoundCore(x, digits, 0);
 
-	[Jazor(Op.Discard, "static double.Round(double, System.MidpointRounding)")]
-	public extern static Number _7aeacc68b27f02f7(Number x, object mode);
+	[Jazor(Op.Import, "static double.Round(double, System.MidpointRounding)")]
+	public static Number _7aeacc68b27f02f7(Number x, Number mode)
+		=> RoundCore(x, 0, mode);
 
-	[Jazor(Op.Discard, "static double.Round(double, int, System.MidpointRounding)")]
-	public extern static Number _6e429701c9779ef6(Number x, Number digits, object mode);
+	[Jazor(Op.Import, "static double.Round(double, int, System.MidpointRounding)")]
+	public static Number _6e429701c9779ef6(Number x, Number digits, Number mode)
+		=> RoundCore(x, digits, mode);
 
 	[Jazor(Op.Inline, "static double.Truncate(double)", "Math.trunc(__arg1)")]
 	public extern static Number _98f3d13b9b717048(Number x);
@@ -396,20 +586,24 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Atan2Pi(double, double)", "(Math.atan2(__arg1, __arg2) / Math.PI)")]
 	public extern static Number _f54e39103ea7d6b5(Number y, Number x);
 
-	[Jazor(Op.Discard, "static double.BitDecrement(double)")]
-	public extern static Number _4ce9474a7b3b7534(Number x);
+	[Jazor(Op.Import, "static double.BitDecrement(double)")]
+	public static Number _4ce9474a7b3b7534(Number x)
+		=> BitDecrementCore(x);
 
-	[Jazor(Op.Discard, "static double.BitIncrement(double)")]
-	public extern static Number _a83d47e386f63de0(Number x);
+	[Jazor(Op.Import, "static double.BitIncrement(double)")]
+	public static Number _a83d47e386f63de0(Number x)
+		=> BitIncrementCore(x);
 
 	[Jazor(Op.Inline, "static double.FusedMultiplyAdd(double, double, double)", "(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _a7385e0d1e651c3f(Number left, Number right, Number addend);
 
-	[Jazor(Op.Inline, "static double.Ieee754Remainder(double, double)", "(__arg1 - __arg2 * Math.round(__arg1 / __arg2))")]
-	public extern static Number _092bc2bc891d33a8(Number left, Number right);
+	[Jazor(Op.Import, "static double.Ieee754Remainder(double, double)")]
+	public static Number _092bc2bc891d33a8(Number left, Number right)
+		=> Ieee754RemainderCore(left, right);
 
-	[Jazor(Op.Inline, "static double.ILogB(double)", "Math.log2(__arg1)")]
-	public extern static Number _48628732b1dc8ac9(Number x);
+	[Jazor(Op.Import, "static double.ILogB(double)")]
+	public static Number _48628732b1dc8ac9(Number x)
+		=> ILogBCore(x);
 
 	[Jazor(Op.Inline, "static double.Lerp(double, double, double)", "(__arg1 + (__arg2 - __arg1) * __arg3)")]
 	public extern static Number _a5426c98bc8a2df3(Number value1, Number value2, Number amount);
@@ -462,8 +656,9 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Clamp(double, double, double)", "(Math.max(__arg2, Math.min(__arg1, __arg3)))")]
 	public extern static Number _8a90b4c9a1beefd9(Number value, Number min, Number max);
 
-	[Jazor(Op.Discard, "static double.ClampNative(double, double, double)")]
-	public extern static Number _ead55aa3a172f045(Number value, Number min, Number max);
+	[Jazor(Op.Import, "static double.ClampNative(double, double, double)")]
+	public static Number _ead55aa3a172f045(Number value, Number min, Number max)
+		=> ClampNativeCore(value, min, max);
 
 	[Jazor(Op.Inline, "static double.CopySign(double, double)", "((__arg2 < 0 || Object.is(__arg2, -0)) ? -Math.abs(__arg1) : Math.abs(__arg1))")]
 	public extern static Number _7d753440d9da2ba5(Number value, Number sign);
@@ -471,7 +666,7 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Max(double, double)", "Math.max(__arg1, __arg2)")]
 	public extern static Number _4d275f0cc2087a70(Number x, Number y);
 
-	[Jazor(Op.Discard, "static double.MaxNative(double, double)")]
+	[Jazor(Op.Inline, "static double.MaxNative(double, double)", "(__arg1 > __arg2 ? __arg1 : __arg2)")]
 	public extern static Number _a0dd8cfd308fc2ee(Number x, Number y);
 
 	[Jazor(Op.Inline, "static double.MaxNumber(double, double)", "(isNaN(__arg1) ? __arg2 : (isNaN(__arg2) ? __arg1 : Math.max(__arg1, __arg2)))")]
@@ -480,7 +675,7 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Min(double, double)", "Math.min(__arg1, __arg2)")]
 	public extern static Number _8a25c3cdacb6ea23(Number x, Number y);
 
-	[Jazor(Op.Discard, "static double.MinNative(double, double)")]
+	[Jazor(Op.Inline, "static double.MinNative(double, double)", "(__arg1 < __arg2 ? __arg1 : __arg2)")]
 	public extern static Number _2aadcd7ef1e13714(Number x, Number y);
 
 	[Jazor(Op.Inline, "static double.MinNumber(double, double)", "(isNaN(__arg1) ? __arg2 : (isNaN(__arg2) ? __arg1 : Math.min(__arg1, __arg2)))")]
@@ -533,7 +728,7 @@ public static class DoubleModule
 	public static Number _315c6cdfa11efcf2(Number x, Number y)
 		=> MinMagnitudeNumberCore(x, y);
 
-	[Jazor(Op.Discard, "static double.MultiplyAddEstimate(double, double, double)")]
+	[Jazor(Op.Inline, "static double.MultiplyAddEstimate(double, double, double)", "(__arg1 * __arg2 + __arg3)")]
 	public extern static Number _a3676143141ac38a(Number left, Number right, Number addend);
 
 	[Jazor(Op.Import, "static double.TryParse(string, System.IFormatProvider, out double)")]

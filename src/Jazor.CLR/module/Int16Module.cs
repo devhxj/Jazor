@@ -95,7 +95,7 @@ public static class Int16Module
 	[Jazor(Op.Inline, "static short.MinValue", "-32768")]
 	public extern static Number _minValue();
 
-	[Jazor(Op.Discard, "short.Int16()")]
+	[Jazor(Op.Inline, "short.Int16()", "0")]
 	public extern static Number _562bb08ad63be5d7();
 
 	/// <summary>
@@ -134,7 +134,7 @@ public static class Int16Module
 	[Jazor(Op.Inline, "short.Equals(short)", "(__arg1 === __arg2)")]
 	public extern static bool _cc018b8cb5a7c74c(Number instance, Number obj);
 
-	[Jazor(Op.Discard, "override short.GetHashCode()")]
+	[Jazor(Op.Inline, "override short.GetHashCode()", "__arg1")]
 	public extern static Number _b813268a9990cfbe(Number instance);
 
 	/// <summary>
@@ -199,11 +199,13 @@ public static class Int16Module
 		return [true, value];
 	}
 
-	[Jazor(Op.Discard, "static short.TryParse(System.ReadOnlySpan<char>, out short)")]
-	public extern static Array<object?> _f06bf367c8a26691(Uint32Array s, Number result);
+	[Jazor(Op.Import, "static short.TryParse(System.ReadOnlySpan<char>, out short)")]
+	public static Array<object?> _f06bf367c8a26691(string s, Number result)
+		=> _65bc2566851a5ef7(s, result);
 
-	[Jazor(Op.Discard, "static short.TryParse(System.ReadOnlySpan<byte>, out short)")]
-	public extern static Array<object?> _af732a8ac69b6f6e(Uint8Array utf8Text, Number result);
+	[Jazor(Op.Import, "static short.TryParse(System.ReadOnlySpan<byte>, out short)")]
+	public static Array<object?> _af732a8ac69b6f6e(Uint8Array utf8Text, Number result)
+		=> _65bc2566851a5ef7(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	[Jazor(Op.Discard, "static short.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out short)")]
 	public extern static Array<object?> _cb5aaf07104e3199(string? s, object style, Intl.NumberFormat? provider, Number result);
@@ -223,6 +225,8 @@ public static class Int16Module
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
+		if (left == -32768 && right == -1)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 		var quotient = Math.TruncFn(left / right);
 		var remainder = left - quotient * right;
 		return ((short)quotient, (short)remainder);

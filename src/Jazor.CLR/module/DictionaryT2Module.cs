@@ -17,10 +17,251 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>","Map")]
 public static class DictionaryT2Module<TKey, TValue>
 {
+	// Native Map remains the physical carrier. The private WeakMap supplies CLR key equality
+	// without exposing bookkeeping fields or changing iteration, representative keys, or size.
+	private static readonly WeakMap<Map<TKey, TValue>, (System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash)> States = new();
+
 	private static void EnsureInstance(Map<TKey, TValue> instance)
 	{
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static Number GetHashCode(
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state,
+		TKey key)
+		=> state.Comparer == null
+			? EqualityComparerT1Module<TKey>.GetHashCodeCore(key)
+			: state.Comparer.GetHashCode(key!);
+
+	private static bool Equals(
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state,
+		TKey left,
+		TKey right)
+		=> state.Comparer == null
+			? EqualityComparerT1Module<TKey>.EqualsCore(left, right)
+			: state.Comparer.Equals(left, right);
+
+	private static Number FindEquivalentIndex(
+		Array<TKey> bucket,
+		TKey key,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		for (Number index = 0; index < bucket.Length; index++)
+		{
+			if (Equals(state, bucket[index], key))
+				return index;
+		}
+
+		return -1;
+	}
+
+	private static Array<TKey> GetOrCreateBucket(
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state,
+		Number hashCode)
+	{
+		if (state.KeysByHash.Has(hashCode))
+			return state.KeysByHash.Get(hashCode)!;
+
+		var bucket = new Array<TKey>();
+		state.KeysByHash.Set(hashCode, bucket);
+		return bucket;
+	}
+
+	private static void NativeSet(Map<TKey, TValue> instance, TKey key, TValue value)
+	{
+		var set = Reflect.Get(Map.Prototype, "set");
+		if (set == null)
+			throw new Error("MissingMethodException: Map.prototype.set is unavailable.");
+
+		Reflect.Apply(set, instance, [key, value]);
+	}
+
+	private static TValue? NativeGet(Map<TKey, TValue> instance, TKey key)
+	{
+		var get = Reflect.Get(Map.Prototype, "get");
+		if (get == null)
+			throw new Error("MissingMethodException: Map.prototype.get is unavailable.");
+
+		return (TValue?)Reflect.Apply(get, instance, [key]);
+	}
+
+	private static bool NativeDelete(Map<TKey, TValue> instance, TKey key)
+	{
+		var delete = Reflect.Get(Map.Prototype, "delete");
+		if (delete == null)
+			throw new Error("MissingMethodException: Map.prototype.delete is unavailable.");
+
+		return (bool)Reflect.Apply(delete, instance, [key])!;
+	}
+
+	private static void NativeClear(Map<TKey, TValue> instance)
+	{
+		var clear = Reflect.Get(Map.Prototype, "clear");
+		if (clear == null)
+			throw new Error("MissingMethodException: Map.prototype.clear is unavailable.");
+
+		Reflect.Apply(clear, instance, []);
+	}
+
+	private static Map<TKey, TValue> SetCore(
+		Map<TKey, TValue> instance,
+		TKey key,
+		TValue value,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		var hashCode = GetHashCode(state, key);
+		var bucket = GetOrCreateBucket(state, hashCode);
+		var index = FindEquivalentIndex(bucket, key, state);
+		if (index >= 0)
+		{
+			// Dictionary preserves its original key representative when an equivalent key is assigned.
+			NativeSet(instance, bucket[index], value);
+			return instance;
+		}
+
+		bucket.Push(key);
+		NativeSet(instance, key, value);
+		return instance;
+	}
+
+	private static bool HasCore(
+		TKey key,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		var hashCode = GetHashCode(state, key);
+		if (!state.KeysByHash.Has(hashCode))
+			return false;
+
+		return FindEquivalentIndex(state.KeysByHash.Get(hashCode)!, key, state) >= 0;
+	}
+
+	private static TValue? GetCore(
+		Map<TKey, TValue> instance,
+		TKey key,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		var hashCode = GetHashCode(state, key);
+		if (!state.KeysByHash.Has(hashCode))
+			return NativeGet(instance, key);
+
+		var bucket = state.KeysByHash.Get(hashCode)!;
+		var index = FindEquivalentIndex(bucket, key, state);
+		return index < 0 ? NativeGet(instance, key) : NativeGet(instance, bucket[index]);
+	}
+
+	private static bool DeleteCore(
+		Map<TKey, TValue> instance,
+		TKey key,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		var hashCode = GetHashCode(state, key);
+		if (!state.KeysByHash.Has(hashCode))
+			return false;
+
+		var bucket = state.KeysByHash.Get(hashCode)!;
+		var index = FindEquivalentIndex(bucket, key, state);
+		if (index < 0)
+			return false;
+
+		var representative = bucket[index];
+		bucket.Splice(index, 1);
+		if (bucket.Length == 0)
+			state.KeysByHash.Delete(hashCode);
+
+		return NativeDelete(instance, representative);
+	}
+
+	private static void ClearCore(
+		Map<TKey, TValue> instance,
+		(System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash) state)
+	{
+		state.KeysByHash.Clear();
+		NativeClear(instance);
+	}
+
+	internal static Map<TKey, TValue> Create(System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		var instance = new Map<TKey, TValue>();
+		var state = (Comparer: comparer, KeysByHash: new Map<Number, Array<TKey>>());
+		States.Set(instance, state);
+		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, TValue, Map<TKey, TValue>>)(
+				(key, value) => SetCore(instance, key, value, state)),
+			Enumerable = false,
+			Writable = false,
+			Configurable = true
+		});
+		Object.DefineProperty(instance, "get", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, TValue?>)(key => GetCore(instance, key, state)),
+			Enumerable = false,
+			Writable = false,
+			Configurable = true
+		});
+		Object.DefineProperty(instance, "has", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, bool>)(key => HasCore(key, state)),
+			Enumerable = false,
+			Writable = false,
+			Configurable = true
+		});
+		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, bool>)(key => DeleteCore(instance, key, state)),
+			Enumerable = false,
+			Writable = false,
+			Configurable = true
+		});
+		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Action)(() => ClearCore(instance, state)),
+			Enumerable = false,
+			Writable = false,
+			Configurable = true
+		});
+		return instance;
+	}
+
+	internal static Map<TKey, TValue> CreateFromMap(
+		Map<TKey, TValue> source,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (source == null)
+			throw new Error("ArgumentNullException: dictionary is null");
+
+		var result = Create(comparer);
+		foreach (var key in source.Keys())
+			result.Set(key, source.Get(key)!);
+		return result;
+	}
+
+	private static Map<TKey, TValue> CreateFromPairs(
+		IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>> source,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (source == null)
+			throw new Error("ArgumentNullException: collection is null.");
+
+		var result = Create(comparer);
+		// KeyValuePair is emitted as a Map-entry array. Deconstruction keeps this adapter
+		// on the compiler's structural protocol instead of depending on a CLR wrapper type.
+		foreach (var (key, value) in source)
+		{
+			if (result.Has(key))
+				throw new Error("ArgumentException: An item with the same key has already been added.");
+
+			result.Set(key, value);
+		}
+
+		return result;
+	}
+
+	internal static System.Collections.Generic.IEqualityComparer<TKey>? GetComparer(Map<TKey, TValue> instance)
+	{
+		EnsureInstance(instance);
+		return States.Has(instance) ? States.Get(instance)!.Comparer : null;
 	}
 
 	/// <summary>
@@ -28,39 +269,61 @@ public static class DictionaryT2Module<TKey, TValue>
 	/// JS: new Map()
 	/// </summary>
 	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()", "new Map()")]
-	public extern static Map<TKey,TValue> _30796a6445def409();
+	public extern static Map<TKey, TValue> _30796a6445def409();
 
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;(capacity)
 	/// JS: new Map() (Map 没有容量概念)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int)", "new Map()")]
-	public extern static Map<TKey,TValue> _8e497c9f7d546fbb(Number capacity);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int)", "createWithCapacity")]
+	public static Map<TKey, TValue> CreateWithCapacity(Number capacity)
+	{
+		if (capacity < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+		return Create(comparer: null);
+	}
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEqualityComparer<TKey>)")]
-	public extern static Map<TKey,TValue> _03710ff0cda22f26(object comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEqualityComparer<TKey>)", "createWithComparer")]
+	public static Map<TKey, TValue> CreateWithComparer(System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> Create(comparer);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int, System.Collections.Generic.IEqualityComparer<TKey>)")]
-	public extern static Map<TKey,TValue> _2bb0c02fab9a88cb(Number capacity, object comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int, System.Collections.Generic.IEqualityComparer<TKey>)", "createWithCapacityAndComparer")]
+	public static Map<TKey, TValue> CreateWithCapacityAndComparer(
+		Number capacity,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (capacity < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+		return Create(comparer);
+	}
 
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;(dictionary)
 	/// JS: new Map(dictionary.entries())
 	/// </summary>
 	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "new Map(__arg1)")]
-	public extern static Map<TKey,TValue> _70d1054600376f0b(Map<TKey,TValue> dictionary);
+	public extern static Map<TKey, TValue> _70d1054600376f0b(Map<TKey, TValue> dictionary);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.IEqualityComparer<TKey>)")]
-	public extern static Map<TKey,TValue> _06de6f2da368940d(object dictionary, object comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.IEqualityComparer<TKey>)", "createFromDictionaryWithComparer")]
+	public static Map<TKey, TValue> CreateFromDictionaryWithComparer(
+		Map<TKey, TValue> dictionary,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> CreateFromMap(dictionary, comparer);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>)")]
-	public extern static Map<TKey,TValue> _27d751bfb444b6b6(object collection);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>)", "createFromPairs")]
+	public static Map<TKey, TValue> CreateFromPairs(
+		IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>> collection)
+		=> CreateFromPairs(collection, comparer: null);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEqualityComparer<TKey>)")]
-	public extern static Map<TKey,TValue> _193763263aaa47e4(object collection, object comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEqualityComparer<TKey>)", "createFromPairsWithComparer")]
+	public static Map<TKey, TValue> CreateFromPairsWithComparer(
+		IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>> collection,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> CreateFromPairs(collection, comparer);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Comparer.get")]
-	public extern static System.Collections.Generic.IEqualityComparer<TKey> _1a4a1b31526edb7a(Map<TKey,TValue> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Comparer.get")]
+	public static System.Collections.Generic.IEqualityComparer<TKey> _1a4a1b31526edb7a(Map<TKey, TValue> instance)
+		=> GetComparer(instance) ?? (System.Collections.Generic.IEqualityComparer<TKey>)EqualityComparerT1Module<TKey>.GetDefault();
 
 	/// <summary>
 	/// C#: dict.Count
@@ -216,9 +479,19 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)")]
 	public extern static Number _fdba95f6eefaa760(Map<TKey,TValue> instance, Number capacity);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess()")]
-	public extern static void _44cc5aa04712525c(Map<TKey,TValue> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess()")]
+	public static void _44cc5aa04712525c(Map<TKey,TValue> instance)
+	{
+		// Map has no observable capacity. Preserve the receiver check and erase only the
+		// backing-storage optimization that the supported CLR surface cannot observe.
+		EnsureInstance(instance);
+	}
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess(int)")]
-	public extern static void _dd7fceb710b10915(Map<TKey,TValue> instance, Number capacity);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess(int)")]
+	public static void _dd7fceb710b10915(Map<TKey,TValue> instance, Number capacity)
+	{
+		EnsureInstance(instance);
+		if (capacity < instance.Size)
+			throw new Error("ArgumentOutOfRangeException: capacity cannot be less than Count.");
+	}
 }

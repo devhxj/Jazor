@@ -561,7 +561,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
-    private static bool IsCurrentComponentEventCallbackReceiver(IOperation operation)
+    private bool IsCurrentComponentEventCallbackReceiver(IOperation operation)
         => operation switch
         {
             IConversionOperation conversion => IsCurrentComponentEventCallbackReceiver(conversion.Operand),
@@ -569,7 +569,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             {
                 ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
                     InstanceReferenceKind.ImplicitReceiver
-            } => true,
+            } instanceReference => IsComponentHierarchyType(instanceReference.Type),
             _ => false
         };
 
@@ -809,17 +809,25 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                "Microsoft.AspNetCore.Components.CompilerServices",
                StringComparison.Ordinal);
 
-    private static bool IsCurrentComponentReceiver(IOperation? operation)
+    private bool IsCurrentComponentReceiver(IOperation? operation)
         => operation switch
         {
             IConversionOperation conversion => IsCurrentComponentReceiver(conversion.Operand),
+            // An implicit receiver also occurs inside nested runtime classes. Only a receiver
+            // whose static type belongs to the component hierarchy may use the state/props
+            // projection; other classes must retain normal compiler member dispatch.
             IInstanceReferenceOperation
             {
                 ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
                     InstanceReferenceKind.ImplicitReceiver
-            } => true,
+            } instanceReference => IsComponentHierarchyType(instanceReference.Type),
             _ => false
         };
+
+    private bool IsComponentHierarchyType(ITypeSymbol? type)
+        => RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(
+            _componentType,
+            type as INamedTypeSymbol);
 
     private static OperationTransformationException CreateUnsupportedIndirectCurrentComponentDispatchException(
         IOperation operation,
@@ -854,7 +862,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
         => RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType);
 
-    private static bool IsCurrentComponentInstance(bool isStatic, IOperation? instance)
+    private bool IsCurrentComponentInstance(bool isStatic, IOperation? instance)
     {
         if (isStatic)
             return instance is null;

@@ -16,7 +16,16 @@ internal static class ClrRuntimeMappingCatalog
     public static IReadOnlyList<ClrImportMappingCase> Imports { get; } = ReadImports();
 
     public static ClrImportMappingCase GetImport(string member)
-        => Imports.Single(mapping => string.Equals(mapping.Member, member, StringComparison.Ordinal));
+    {
+        var matches = Imports
+            .Where(mapping => string.Equals(mapping.Member, member, StringComparison.Ordinal))
+            .ToArray();
+        if (matches.Length == 1)
+            return matches[0];
+
+        throw new InvalidOperationException(
+            $"Import mapping lookup for '{member}' expected exactly one match but found {matches.Length}.");
+    }
 
     public static ClrImportMappingCase GetImportById(string id)
         => Imports.Single(mapping => string.Equals(mapping.Id, id, StringComparison.Ordinal));
@@ -47,11 +56,14 @@ internal static class ClrRuntimeMappingCatalog
                 foreach (var method in GetRuntimeMethods(member))
                 {
                     var resolvedModulePath = modulePath ?? string.Empty;
+                    // Op.Import may publish a deliberate JavaScript export name. The adapter
+                    // method name is only the generator fallback when no name was authored.
+                    var exportName = string.IsNullOrEmpty(mapping.Value) ? method.Name : mapping.Value;
                     imports.Add(new ClrImportMappingCase(
-                        $"{mapping.Member} -> {resolvedModulePath}#{method.Name}",
+                        $"{mapping.Member} -> {resolvedModulePath}#{exportName}",
                         mapping.Member,
                         resolvedModulePath,
-                        method.Name));
+                        exportName));
                 }
             }
         }

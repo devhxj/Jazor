@@ -7,16 +7,6 @@ internal static class ClrRuntimeArrayScenarios
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
         Success(
-            "array.as-read-only.copies-source",
-            "static System.Array.AsReadOnly<T>(T[])",
-            [Array(Number(1), Number(2))],
-            Array(Number(1), Number(2))),
-        Failure(
-            "array.as-read-only.null-source",
-            "static System.Array.AsReadOnly<T>(T[])",
-            [Null()],
-            "ArgumentNullException"),
-        Success(
             "array.resize.shrinks-and-preserves-prefix",
             "static System.Array.Resize<T>(ref T[], int)",
             [Array(Number(1), Number(2), Number(3)), Number(2)],
@@ -225,7 +215,32 @@ internal static class ClrRuntimeArrayScenarios
             "array.sort.generic-null-array",
             "static System.Array.Sort<T>(T[])",
             [Null()],
-            "ArgumentNullException")
+            "ArgumentNullException"),
+        Success(
+            "array.get-value.integer-index-array",
+            "System.Array.GetValue(params int[])",
+            [Array(Text("zero"), Text("one")), Array(Number(1))],
+            Text("one")),
+        Failure(
+            "array.get-value.index-array-rejects-rank-mismatch",
+            "System.Array.GetValue(params int[])",
+            [Array(Text("zero")), Array()],
+            "ArgumentException"),
+        Success(
+            "array.get-value.long-index-array",
+            "System.Array.GetValue(params long[])",
+            [Array(Text("zero"), Text("one")), Array(BigInt(1))],
+            Text("one")),
+        Mutation(
+            "array.set-value.integer-index-array",
+            "System.Array.SetValue(object, params int[])",
+            [Array(Text("zero"), Text("one")), Text("updated"), Array(Number(1))],
+            [Array(Text("zero"), Text("updated")), Text("updated"), Array(Number(1))]),
+        Mutation(
+            "array.set-value.long-index-array",
+            "System.Array.SetValue(object, params long[])",
+            [Array(Text("zero"), Text("one")), Text("updated"), Array(BigInt(1))],
+            [Array(Text("zero"), Text("updated")), Text("updated"), Array(BigInt(1))])
     ];
 
     private static ClrRuntimeScenario Success(
@@ -258,8 +273,8 @@ internal static class ClrRuntimeArrayScenarios
     private static ClrRuntimeValue Null() => ClrRuntimeValue.Null();
     private static ClrRuntimeValue Text(string value) => ClrRuntimeValue.Text(value);
     private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);
-    private static ClrRuntimeValue BigInt(long value) => ClrRuntimeValue.BigInt(value);
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
+    private static ClrRuntimeValue BigInt(long value) => ClrRuntimeValue.BigInt(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
     private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);
 }

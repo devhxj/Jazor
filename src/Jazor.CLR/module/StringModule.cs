@@ -11,6 +11,196 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "string","String")]
 public static class StringModule
 {
+	[ECMAScriptInline("__arg1.normalize()")]
+	private extern static string NormalizeDefault(string value);
+
+	[ECMAScriptInline("__arg1.normalize(__arg2)")]
+	private extern static string NormalizeWithForm(string value, string form);
+
+	private static void EnsureNonNegativeWholeNumber(Number value, string parameterName)
+	{
+		if (IsNaN(value) || Math.FloorFn(value) != value || value < 0)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a non-negative whole number.");
+	}
+
+	private static string JoinCharacters(Array<string> value, Number startIndex, Number length)
+	{
+		var result = "";
+		for (var index = startIndex; index < startIndex + length; index++)
+			result += value[index];
+		return result;
+	}
+
+	private static void EnsureStringIndex(string value, Number index, string parameterName)
+	{
+		EnsureNonNegativeWholeNumber(index, parameterName);
+		if (index > value.Length)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} is outside the string.");
+	}
+
+	private static Number CompareOrdinalRange(
+		string? strA,
+		Number indexA,
+		string? strB,
+		Number indexB,
+		Number length)
+	{
+		if (strA == null)
+			return strB == null ? 0 : -1;
+		if (strB == null)
+			return 1;
+
+		EnsureStringIndex(strA, indexA, "indexA");
+		EnsureStringIndex(strB, indexB, "indexB");
+		EnsureNonNegativeWholeNumber(length, "length");
+
+		var availableA = strA.Length - indexA;
+		var availableB = strB.Length - indexB;
+		var countA = length < availableA ? length : availableA;
+		var countB = length < availableB ? length : availableB;
+		var sharedCount = countA < countB ? countA : countB;
+		for (var offset = 0; offset < sharedCount; offset++)
+		{
+			var difference = strA.CharCodeAt(indexA + offset) - strB.CharCodeAt(indexB + offset);
+			if (difference != 0)
+				return difference;
+		}
+
+		return countA - countB;
+	}
+
+	private static void CopyCharacters(
+		string instance,
+		Number sourceIndex,
+		Array<string> destination,
+		Number destinationIndex,
+		Number count)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+		EnsureStringIndex(instance, sourceIndex, "sourceIndex");
+		if (destination == null)
+			throw new Error("ArgumentNullException: destination is null.");
+		EnsureNonNegativeWholeNumber(destinationIndex, "destinationIndex");
+		EnsureNonNegativeWholeNumber(count, "count");
+		if (sourceIndex > instance.Length - count)
+			throw new Error("ArgumentOutOfRangeException: sourceIndex and count exceed the string.");
+		if (destinationIndex > destination.Length - count)
+			throw new Error("ArgumentException: destination array is too small.");
+
+		for (var offset = 0; offset < count; offset++)
+			destination[destinationIndex + offset] = instance[sourceIndex + offset].ToString();
+	}
+
+	private static string ConcatStrings(IEnumerable<string?> values, string separator, string parameterName)
+	{
+		if (values == null)
+			throw new Error($"ArgumentNullException: {parameterName} is null.");
+
+		var result = "";
+		var first = true;
+		foreach (var value in values)
+		{
+			if (!first)
+				result += separator;
+			result += value ?? "";
+			first = false;
+		}
+		return result;
+	}
+
+	private static string ConcatStrings(Array<string?> values, string separator, string parameterName)
+	{
+		if (values == null)
+			throw new Error($"ArgumentNullException: {parameterName} is null.");
+
+		var result = "";
+		for (var index = 0; index < values.Length; index++)
+		{
+			if (index != 0)
+				result += separator;
+			result += values[index] ?? "";
+		}
+		return result;
+	}
+
+	private static string JoinRange(string separator, Array<string?> value, Number startIndex, Number count)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException: value is null.");
+		EnsureNonNegativeWholeNumber(startIndex, nameof(startIndex));
+		EnsureNonNegativeWholeNumber(count, nameof(count));
+		if (startIndex > value.Length - count)
+			throw new Error("ArgumentOutOfRangeException: startIndex and count must identify a valid range.");
+
+		var result = "";
+		for (var index = startIndex; index < startIndex + count; index++)
+		{
+			if (index != startIndex)
+				result += separator;
+			result += value[index] ?? "";
+		}
+		return result;
+	}
+
+	private static string GetNormalizationForm(Number normalizationForm)
+	{
+		if (normalizationForm == 1)
+			return "NFC";
+		if (normalizationForm == 2)
+			return "NFD";
+		if (normalizationForm == 5)
+			return "NFKC";
+		if (normalizationForm == 6)
+			return "NFKD";
+		throw new Error("ArgumentException: Invalid normalization form.");
+	}
+
+	private static string ReplaceLineEndingsCore(string instance, string replacementText)
+	{
+		if (replacementText == null)
+			throw new Error("ArgumentNullException: replacementText is null.");
+
+		var result = "";
+		var segmentStart = 0;
+		for (var index = 0; index < instance.Length; index++)
+		{
+			var codeUnit = instance.CharCodeAt(index);
+			var isCarriageReturn = codeUnit == 13;
+			var isLineEnding = isCarriageReturn
+				|| codeUnit == 10
+				|| codeUnit == 12
+				|| codeUnit == 133
+				|| codeUnit == 8232
+				|| codeUnit == 8233;
+			if (!isLineEnding)
+				continue;
+
+			result += instance.Substring(segmentStart, index - segmentStart);
+			result += replacementText;
+			if (isCarriageReturn && index + 1 < instance.Length && instance.CharCodeAt(index + 1) == 10)
+				index++;
+			segmentStart = index + 1;
+		}
+
+		return segmentStart == 0 ? instance : result + instance.Substring(segmentStart);
+	}
+
+	private static string TrimReadOnlyCharacterSpan(
+		string instance,
+		RuntimeModule.JReadOnlyCharSpan trimChars,
+		bool trimStart,
+		bool trimEnd)
+	{
+		var characters = RuntimeModule.MaterializeReadOnlyCharSpan(trimChars);
+		// Span overloads treat an empty character set as "trim nothing". The char[] overload
+		// intentionally has different CLR semantics and falls back to whitespace trimming.
+		if (characters.Length == 0)
+			return instance;
+
+		return TrimCharacterSet(instance, NormalizeCharSet(characters), trimStart, trimEnd);
+	}
+
 	///<summary>Represents the empty string. This field is read-only.</summary>
 	[Jazor(Op.Inline, "static readonly string.Empty", "\"\"")]
 	public extern static string _b16f79dc7b155be3();
@@ -99,8 +289,9 @@ public static class StringModule
 		=> _e16eea9fe3891a62(strA, strB);
 
 	///<summary>Compares substrings of two specified <see cref="T:System.String" /> objects by evaluating the numeric values of the corresponding <see cref="T:System.Char" /> objects in each substring.</summary>
-	[Jazor(Op.Discard ,"static string.CompareOrdinal(string, int, string, int, int)")]
-	public extern static Number _dc789454b6ef6bcb(string? strA, Number indexA, string? strB, Number indexB, Number length);
+	[Jazor(Op.Import ,"static string.CompareOrdinal(string, int, string, int, int)")]
+	public static Number _dc789454b6ef6bcb(string? strA, Number indexA, string? strB, Number indexB, Number length)
+		=> CompareOrdinalRange(strA, indexA, strB, indexB, length);
 
 	///<summary>Compares this instance with a specified <see cref="T:System.Object" /> and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified <see cref="T:System.Object" />.</summary>
 	[Jazor(Op.Import ,"string.CompareTo(object)")]
@@ -157,11 +348,11 @@ public static class StringModule
 	public extern static bool _7619ce4eda48c8e8(string instance, Number value);
 
 	///<summary>Determines whether this instance and a specified object, which must also be a <see cref="T:System.String" /> object, have the same value.</summary>
-	[Jazor(Op.Discard ,"override string.Equals(object)")]
+	[Jazor(Op.Inline ,"override string.Equals(object)", "(__arg1 === __arg2)")]
 	public extern static bool _def18c2802a57249(string instance, object? obj);
 
 	///<summary>Determines whether this instance and another specified <see cref="T:System.String" /> object have the same value.</summary>
-	[Jazor(Op.Discard ,"string.Equals(string)")]
+	[Jazor(Op.Inline ,"string.Equals(string)", "(__arg1 === __arg2)")]
 	public extern static bool _6ee9bc86e4384225(string instance, string? value);
 
 	///<summary>Determines whether this string and a specified <see cref="T:System.String" /> object have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
@@ -172,7 +363,7 @@ public static class StringModule
 			: instance == value;
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value.</summary>
-	[Jazor(Op.Discard ,"static string.Equals(string, string)")]
+	[Jazor(Op.Inline ,"static string.Equals(string, string)", "(__arg1 === __arg2)")]
 	public extern static bool _e6b1648151c863d5(string? a, string? b);
 
 	///<summary>Determines whether two specified <see cref="T:System.String" /> objects have the same value. A parameter specifies the culture, case, and sort rules used in the comparison.</summary>
@@ -191,16 +382,18 @@ public static class StringModule
 	public extern static bool _1573803c425863d3(string? a, string? b);
 
 	///<summary>Returns the hash code for this string.</summary>
-	[Jazor(Op.Discard ,"override string.GetHashCode()")]
-	public extern static Number _bccdd3f386a6fbbc(string instance);
+	[Jazor(Op.Import, "override string.GetHashCode()")]
+	public static Number _bccdd3f386a6fbbc(string instance)
+		=> EqualityComparerT1Module<string>.GetHashCodeCore(instance);
 
 	///<summary>Returns the hash code for this string using the specified rules.</summary>
 	[Jazor(Op.Discard ,"string.GetHashCode(System.StringComparison)")]
 	public extern static Number _04edfc3090710ca7(string instance, object comparisonType);
 
 	///<summary>Returns the hash code for the provided read-only character span.</summary>
-	[Jazor(Op.Discard ,"static string.GetHashCode(System.ReadOnlySpan<char>)")]
-	public extern static Number _4598a18be32f839d(Uint32Array value);
+	[Jazor(Op.Import, "static string.GetHashCode(System.ReadOnlySpan<char>)")]
+	public static Number _4598a18be32f839d(RuntimeModule.JReadOnlyCharSpan value)
+		=> EqualityComparerT1Module<string>.GetHashCodeCore(RuntimeModule.MaterializeReadOnlyCharSpan(value));
 
 	///<summary>Returns the hash code for the provided read-only character span using the specified rules.</summary>
 	[Jazor(Op.Discard ,"static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)")]
@@ -248,20 +441,39 @@ public static class StringModule
 	public extern static bool _ef46304ffa6d6ccf(string instance, Number value);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the Unicode characters indicated in the specified character array.</summary>
-	[Jazor(Op.Discard ,"string.String(char[])")]
-	public extern static string _6651b0a853e8e991(object value);
+	[Jazor(Op.Import ,"string.String(char[])")]
+	public static string _6651b0a853e8e991(Array<string> value)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException: value is null.");
+		return JoinCharacters(value, 0, value.Length);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the value indicated by an array of Unicode characters, a starting character position within that array, and a length.</summary>
-	[Jazor(Op.Discard ,"string.String(char[], int, int)")]
-	public extern static string _ddce1a944159fc8b(object value, Number startIndex, Number length);
+	[Jazor(Op.Import ,"string.String(char[], int, int)")]
+	public static string _ddce1a944159fc8b(Array<string> value, Number startIndex, Number length)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException: value is null.");
+		EnsureNonNegativeWholeNumber(startIndex, nameof(startIndex));
+		EnsureNonNegativeWholeNumber(length, nameof(length));
+		if (startIndex > value.Length - length)
+			throw new Error("ArgumentOutOfRangeException: startIndex and length must identify a valid range.");
+		return JoinCharacters(value, startIndex, length);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the value indicated by a specified Unicode character repeated a specified number of times.</summary>
-	[Jazor(Op.Discard ,"string.String(char, int)")]
-	public extern static string _0ce0d88e18c041c8(Number c, Number count);
+	[Jazor(Op.Import ,"string.String(char, int)")]
+	public static string _0ce0d88e18c041c8(string c, Number count)
+	{
+		EnsureNonNegativeWholeNumber(count, nameof(count));
+		return c.Repeat(count);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.String" /> class to the Unicode characters indicated in the specified read-only span.</summary>
-	[Jazor(Op.Discard ,"string.String(System.ReadOnlySpan<char>)")]
-	public extern static string _009fee2e166a416d(Uint32Array value);
+	[Jazor(Op.Import, "string.String(System.ReadOnlySpan<char>)")]
+	public static string _009fee2e166a416d(RuntimeModule.JReadOnlyCharSpan value)
+		=> RuntimeModule.MaterializeReadOnlyCharSpan(value);
 
 	///<summary>Creates a new string with a specific length and initializes it after creation by using the specified callback.</summary>
 	[Jazor(Op.Discard ,"static string.Create<TState>(int, TState, System.Buffers.SpanAction<char, TState>)")]
@@ -276,11 +488,12 @@ public static class StringModule
 	public extern static Array<object?> _1978314137f5a599(Intl.NumberFormat? provider, Uint32Array initialBuffer, object handler);
 
 	///<summary>Defines an implicit conversion of a given string to a read-only span of characters.</summary>
-	[Jazor(Op.Discard ,"static string.implicit operator System.ReadOnlySpan<char>(string)")]
-	public extern static Uint32Array _5ff800b094791eb0();
+	[Jazor(Op.Import, "static string.implicit operator System.ReadOnlySpan<char>(string)")]
+	public static RuntimeModule.JReadOnlyCharSpan _5ff800b094791eb0(string? value)
+		=> value ?? "";
 
 	///<summary>Returns a reference to this instance of <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"string.Clone()")]
+	[Jazor(Op.Inline ,"string.Clone()", "__arg1")]
 	public extern static object _488d7e5ec582c6fb(string instance);
 
 	///<summary>Creates a new instance of <see cref="T:System.String" /> with the same value as a specified <see cref="T:System.String" />.</summary>
@@ -288,8 +501,14 @@ public static class StringModule
 	public extern static string _0dc0a16fd99401f8(string str);
 
 	///<summary>Copies a specified number of characters from a specified position in this instance to a specified position in an array of Unicode characters.</summary>
-	[Jazor(Op.Discard ,"string.CopyTo(int, char[], int, int)")]
-	public extern static void _45bb6097c28a2f1e(string instance, Number sourceIndex, object destination, Number destinationIndex, Number count);
+	[Jazor(Op.Import ,"string.CopyTo(int, char[], int, int)")]
+	public static void _45bb6097c28a2f1e(
+		string instance,
+		Number sourceIndex,
+		Array<string> destination,
+		Number destinationIndex,
+		Number count)
+		=> CopyCharacters(instance, sourceIndex, destination, destinationIndex, count);
 
 	///<summary>Copies the contents of this string into the destination span.</summary>
 	[Jazor(Op.Discard ,"string.CopyTo(System.Span<char>)")]
@@ -339,7 +558,7 @@ public static class StringModule
 	public extern static string _3158320a4854cc16(string instance);
 
 	///<summary>Returns this instance of <see cref="T:System.String" />; no actual conversion is performed.</summary>
-	[Jazor(Op.Discard ,"string.ToString(System.IFormatProvider)")]
+	[Jazor(Op.Inline ,"string.ToString(System.IFormatProvider)", "__arg1")]
 	public extern static string _555baf594c383de9(string instance, Intl.NumberFormat? provider);
 
 	///<summary>Retrieves an object that can iterate through the individual characters in this string.</summary>
@@ -355,20 +574,24 @@ public static class StringModule
 	public extern static System.TypeCode _b4f593c93e2f2c61(string instance);
 
 	///<summary>Indicates whether this string is in Unicode normalization form C.</summary>
-	[Jazor(Op.Discard ,"string.IsNormalized()")]
-	public extern static bool _f645a0207f41fd4a(string instance);
+	[Jazor(Op.Import ,"string.IsNormalized()")]
+	public static bool _f645a0207f41fd4a(string instance)
+		=> instance == NormalizeDefault(instance);
 
 	///<summary>Indicates whether this string is in the specified Unicode normalization form.</summary>
-	[Jazor(Op.Discard ,"string.IsNormalized(System.Text.NormalizationForm)")]
-	public extern static bool _30d0ce62702ae938(string instance, object normalizationForm);
+	[Jazor(Op.Import ,"string.IsNormalized(System.Text.NormalizationForm)")]
+	public static bool _30d0ce62702ae938(string instance, Number normalizationForm)
+		=> instance == NormalizeWithForm(instance, GetNormalizationForm(normalizationForm));
 
 	///<summary>Returns a new string whose textual value is the same as this string, but whose binary representation is in Unicode normalization form C.</summary>
-	[Jazor(Op.Discard ,"string.Normalize()")]
-	public extern static string _967ef647d59f3e39(string instance);
+	[Jazor(Op.Import ,"string.Normalize()")]
+	public static string _967ef647d59f3e39(string instance)
+		=> NormalizeDefault(instance);
 
 	///<summary>Returns a new string whose textual value is the same as this string, but whose binary representation is in the specified Unicode normalization form.</summary>
-	[Jazor(Op.Discard ,"string.Normalize(System.Text.NormalizationForm)")]
-	public extern static string _59b116010f03241b(string instance, object normalizationForm);
+	[Jazor(Op.Import ,"string.Normalize(System.Text.NormalizationForm)")]
+	public static string _59b116010f03241b(string instance, Number normalizationForm)
+		=> NormalizeWithForm(instance, GetNormalizationForm(normalizationForm));
 
 	/// <summary>
 	/// C#: str[index]
@@ -416,49 +639,67 @@ public static class StringModule
 	public extern static string _68574aee669f440f<T>(Array<T> values);
 
 	///<summary>Concatenates the members of a constructed <see cref="T:System.Collections.Generic.IEnumerable`1" /> collection of type <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(System.Collections.Generic.IEnumerable<string>)")]
-	public extern static string _a2a66aa54427416c(object values);
+	[Jazor(Op.Import ,"static string.Concat(System.Collections.Generic.IEnumerable<string>)")]
+	public static string _a2a66aa54427416c(IEnumerable<string?> values)
+		=> ConcatStrings(values, "", "values");
 
 	/// <summary>
 	/// C#: string.Concat(str0, str1)
 	/// JS: str0 + str1
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string)", "(__arg1 + __arg2)")]
+	[Jazor(Op.Inline, "static string.Concat(string, string)", "((__arg1 ?? \"\") + (__arg2 ?? \"\"))")]
 	public extern static string _021d71ef80d7918e(string? str0, string? str1);
 
 	/// <summary>
 	/// C#: string.Concat(str0, str1, str2)
 	/// JS: str0 + str1 + str2
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string, string)", "(__arg1 + __arg2 + __arg3)")]
+	[Jazor(Op.Inline, "static string.Concat(string, string, string)", "((__arg1 ?? \"\") + (__arg2 ?? \"\") + (__arg3 ?? \"\"))")]
 	public extern static string _ccc7897cb6f89406(string? str0, string? str1, string? str2);
 
 	/// <summary>
 	/// C#: string.Concat(str0, str1, str2, str3)
 	/// JS: str0 + str1 + str2 + str3
 	/// </summary>
-	[Jazor(Op.Inline, "static string.Concat(string, string, string, string)", "(__arg1 + __arg2 + __arg3 + __arg4)")]
+	[Jazor(Op.Inline, "static string.Concat(string, string, string, string)", "((__arg1 ?? \"\") + (__arg2 ?? \"\") + (__arg3 ?? \"\") + (__arg4 ?? \"\"))")]
 	public extern static string _abe4ba2b38df2f54(string? str0, string? str1, string? str2, string? str3);
 
 	///<summary>Concatenates the string representations of two specified read-only character spans.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
-	public extern static string _a6102c27abe1ff18(Uint32Array str0, Uint32Array str1);
+	[Jazor(Op.Import, "static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
+	public static string _a6102c27abe1ff18(RuntimeModule.JReadOnlyCharSpan str0, RuntimeModule.JReadOnlyCharSpan str1)
+		=> RuntimeModule.MaterializeReadOnlyCharSpan(str0) + RuntimeModule.MaterializeReadOnlyCharSpan(str1);
 
 	///<summary>Concatenates the string representations of three specified read-only character spans.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
-	public extern static string _7de0cfb062a343ee(Uint32Array str0, Uint32Array str1, Uint32Array str2);
+	[Jazor(Op.Import, "static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
+	public static string _7de0cfb062a343ee(
+		RuntimeModule.JReadOnlyCharSpan str0,
+		RuntimeModule.JReadOnlyCharSpan str1,
+		RuntimeModule.JReadOnlyCharSpan str2)
+		=> RuntimeModule.MaterializeReadOnlyCharSpan(str0) +
+			RuntimeModule.MaterializeReadOnlyCharSpan(str1) +
+			RuntimeModule.MaterializeReadOnlyCharSpan(str2);
 
 	///<summary>Concatenates the string representations of four specified read-only character spans.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
-	public extern static string _5177ae056c5ca775(Uint32Array str0, Uint32Array str1, Uint32Array str2, Uint32Array str3);
+	[Jazor(Op.Import, "static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)")]
+	public static string _5177ae056c5ca775(
+		RuntimeModule.JReadOnlyCharSpan str0,
+		RuntimeModule.JReadOnlyCharSpan str1,
+		RuntimeModule.JReadOnlyCharSpan str2,
+		RuntimeModule.JReadOnlyCharSpan str3)
+		=> RuntimeModule.MaterializeReadOnlyCharSpan(str0) +
+			RuntimeModule.MaterializeReadOnlyCharSpan(str1) +
+			RuntimeModule.MaterializeReadOnlyCharSpan(str2) +
+			RuntimeModule.MaterializeReadOnlyCharSpan(str3);
 
 	///<summary>Concatenates the elements of a specified <see cref="T:System.String" /> array.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(params string[])")]
-	public extern static string _0f681227152a171b( object values);
+	[Jazor(Op.Import ,"static string.Concat(params string[])")]
+	public static string _0f681227152a171b(Array<string?> values)
+		=> ConcatStrings(values, "", "values");
 
 	///<summary>Concatenates the elements of a specified span of <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(params System.ReadOnlySpan<string>)")]
-	public extern static string _22098d7fa5ce7a81( object values);
+	[Jazor(Op.Import ,"static string.Concat(params System.ReadOnlySpan<string>)")]
+	public static string _22098d7fa5ce7a81(Array<string?> values)
+		=> ConcatStrings(values, "", "values");
 
 	/// <summary>
 	/// C#: string.Format(string, object)
@@ -570,32 +811,39 @@ public static class StringModule
 	public extern static string _91223088dad76801(string instance, Number startIndex, string value);
 
 	///<summary>Concatenates an array of strings, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(char, params string[])")]
-	public extern static string _14ec7ebbb72b7d13(Number separator,  object value);
+	[Jazor(Op.Import ,"static string.Join(char, params string[])")]
+	public static string _14ec7ebbb72b7d13(string separator, Array<string?> value)
+		=> ConcatStrings(value, separator, "value");
 
 	///<summary>Concatenates a span of strings, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(char, params System.ReadOnlySpan<string>)")]
-	public extern static string _9f939553178c2ca6(Number separator,  object value);
+	[Jazor(Op.Import ,"static string.Join(char, params System.ReadOnlySpan<string>)")]
+	public static string _9f939553178c2ca6(string separator, Array<string?> value)
+		=> ConcatStrings(value, separator, "value");
 
 	///<summary>Concatenates all the elements of a string array, using the specified separator between each element.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, params string[])")]
-	public extern static string _f269cd27a4bbd549(string? separator,  object value);
+	[Jazor(Op.Import ,"static string.Join(string, params string[])")]
+	public static string _f269cd27a4bbd549(string? separator, Array<string?> value)
+		=> ConcatStrings(value, separator ?? "", "value");
 
 	///<summary>Concatenates a span of strings, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, params System.ReadOnlySpan<string>)")]
-	public extern static string _224682d778b9facf(string? separator,  object value);
+	[Jazor(Op.Import ,"static string.Join(string, params System.ReadOnlySpan<string>)")]
+	public static string _224682d778b9facf(string? separator, Array<string?> value)
+		=> ConcatStrings(value, separator ?? "", "value");
 
 	///<summary>Concatenates an array of strings, using the specified separator between each member, starting with the element in <paramref name="value" /> located at the <paramref name="startIndex" /> position, and concatenating up to <paramref name="count" /> elements.</summary>
-	[Jazor(Op.Discard ,"static string.Join(char, string[], int, int)")]
-	public extern static string _f461a3c632706317(Number separator, object value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"static string.Join(char, string[], int, int)")]
+	public static string _f461a3c632706317(string separator, Array<string?> value, Number startIndex, Number count)
+		=> JoinRange(separator, value, startIndex, count);
 
 	///<summary>Concatenates the specified elements of a string array, using the specified separator between each element.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, string[], int, int)")]
-	public extern static string _f1ad756b7baec84b(string? separator, object value, Number startIndex, Number count);
+	[Jazor(Op.Import ,"static string.Join(string, string[], int, int)")]
+	public static string _f1ad756b7baec84b(string? separator, Array<string?> value, Number startIndex, Number count)
+		=> JoinRange(separator ?? "", value, startIndex, count);
 
 	///<summary>Concatenates the members of a constructed <see cref="T:System.Collections.Generic.IEnumerable`1" /> collection of type <see cref="T:System.String" />, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, System.Collections.Generic.IEnumerable<string>)")]
-	public extern static string _d8814705c8078096(string? separator, object values);
+	[Jazor(Op.Import ,"static string.Join(string, System.Collections.Generic.IEnumerable<string>)")]
+	public static string _d8814705c8078096(string? separator, IEnumerable<string?> values)
+		=> ConcatStrings(values, separator ?? "", "values");
 
 	///<summary>Concatenates the string representations of an array of objects, using the specified separator between each member.</summary>
 	[Jazor(Op.Discard ,"static string.Join(char, params object[])")]
@@ -622,20 +870,36 @@ public static class StringModule
 	public extern static string _c78854b22e947a4f<T>(string? separator, Array<T> values);
 
 	///<summary>Returns a new string that right-aligns the characters in this instance by padding them with spaces on the left, for a specified total length.</summary>
-	[Jazor(Op.Discard ,"string.PadLeft(int)")]
-	public extern static string _26620c4bafb4f435(string instance, Number totalWidth);
+	[Jazor(Op.Import ,"string.PadLeft(int)")]
+	public static string _26620c4bafb4f435(string instance, Number totalWidth)
+	{
+		EnsureNonNegativeWholeNumber(totalWidth, nameof(totalWidth));
+		return instance.PadStart(totalWidth, " ");
+	}
 
 	///<summary>Returns a new string that right-aligns the characters in this instance by padding them on the left with a specified Unicode character, for a specified total length.</summary>
-	[Jazor(Op.Discard ,"string.PadLeft(int, char)")]
-	public extern static string _7894e0294f780eb5(string instance, Number totalWidth, Number paddingChar);
+	[Jazor(Op.Import ,"string.PadLeft(int, char)")]
+	public static string _7894e0294f780eb5(string instance, Number totalWidth, string paddingChar)
+	{
+		EnsureNonNegativeWholeNumber(totalWidth, nameof(totalWidth));
+		return instance.PadStart(totalWidth, paddingChar);
+	}
 
 	///<summary>Returns a new string that left-aligns the characters in this string by padding them with spaces on the right, for a specified total length.</summary>
-	[Jazor(Op.Discard ,"string.PadRight(int)")]
-	public extern static string _0e8f0a28fc1de8c2(string instance, Number totalWidth);
+	[Jazor(Op.Import ,"string.PadRight(int)")]
+	public static string _0e8f0a28fc1de8c2(string instance, Number totalWidth)
+	{
+		EnsureNonNegativeWholeNumber(totalWidth, nameof(totalWidth));
+		return instance.PadEnd(totalWidth, " ");
+	}
 
 	///<summary>Returns a new string that left-aligns the characters in this string by padding them on the right with a specified Unicode character, for a specified total length.</summary>
-	[Jazor(Op.Discard ,"string.PadRight(int, char)")]
-	public extern static string _685227781124d327(string instance, Number totalWidth, Number paddingChar);
+	[Jazor(Op.Import ,"string.PadRight(int, char)")]
+	public static string _685227781124d327(string instance, Number totalWidth, string paddingChar)
+	{
+		EnsureNonNegativeWholeNumber(totalWidth, nameof(totalWidth));
+		return instance.PadEnd(totalWidth, paddingChar);
+	}
 
 	/// <summary>
 	/// C#: str.Remove(startIndex, count)
@@ -676,12 +940,15 @@ public static class StringModule
 	public extern static string _78a0e353c29afbc9(string instance, string oldValue, string? newValue);
 
 	///<summary>Replaces all newline sequences in the current string with <see cref="P:System.Environment.NewLine" />.</summary>
-	[Jazor(Op.Discard ,"string.ReplaceLineEndings()")]
-	public extern static string _3720e4de26fa4c1b(string instance);
+	[Jazor(Op.Import, "string.ReplaceLineEndings()")]
+	public static string _3720e4de26fa4c1b(string instance)
+		// Jazor runtime artifacts execute under Deno.host, where Environment.NewLine is LF.
+		=> ReplaceLineEndingsCore(instance, "\n");
 
 	///<summary>Replaces all newline sequences in the current string with <paramref name="replacementText" />.</summary>
-	[Jazor(Op.Discard ,"string.ReplaceLineEndings(string)")]
-	public extern static string _35041c0250b36108(string instance, string replacementText);
+	[Jazor(Op.Import ,"string.ReplaceLineEndings(string)")]
+	public static string _35041c0250b36108(string instance, string replacementText)
+		=> ReplaceLineEndingsCore(instance, replacementText);
 
 	///<summary>Splits a string into substrings based on a specified delimiting character and, optionally, options.</summary>
 	[Jazor(Op.Import ,"string.Split(char, System.StringSplitOptions)")]
@@ -1127,23 +1394,17 @@ public static class StringModule
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Import ,"string.Trim(params char[])")]
-	public static string _c6c444b4e71e14f7(string instance, object trimChars)
+	public static string _c6c444b4e71e14f7(string instance, Array<string>? trimChars)
 	{
-		var any = NormalizeCharSet(trimChars);
-		var start = 0;
-		var end = instance.Length - 1;
-		while (start <= end && any.Contains(instance[start].ToString()))
-			start++;
-
-		while (end >= start && any.Contains(instance[end].ToString()))
-			end--;
-
-		return start > end ? string.Empty : instance.Substring(start, end - start + 1);
+		if (trimChars == null || trimChars.Length == 0)
+			return instance.Trim();
+		return TrimCharacterSet(instance, NormalizeCharSet(trimChars), trimStart: true, trimEnd: true);
 	}
 
 	///<summary>Removes all leading and trailing occurrences of a set of characters specified in a span from the current string.</summary>
-	[Jazor(Op.Discard ,"string.Trim(params System.ReadOnlySpan<char>)")]
-	public extern static string _0e8e4169883e5222(string instance,  Uint32Array trimChars);
+	[Jazor(Op.Import, "string.Trim(params System.ReadOnlySpan<char>)")]
+	public static string _0e8e4169883e5222(string instance, RuntimeModule.JReadOnlyCharSpan trimChars)
+		=> TrimReadOnlyCharacterSpan(instance, trimChars, trimStart: true, trimEnd: true);
 
 	/// <summary>
 	/// C#: str.TrimStart()
@@ -1172,19 +1433,17 @@ public static class StringModule
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Import ,"string.TrimStart(params char[])")]
-	public static string _98731360726c6976(string instance, object trimChars)
+	public static string _98731360726c6976(string instance, Array<string>? trimChars)
 	{
-		var any = NormalizeCharSet(trimChars);
-		var start = 0;
-		while (start < instance.Length && any.Contains(instance[start].ToString()))
-			start++;
-
-		return start == 0 ? instance : instance.Substring(start);
+		if (trimChars == null || trimChars.Length == 0)
+			return instance.TrimStart();
+		return TrimCharacterSet(instance, NormalizeCharSet(trimChars), trimStart: true, trimEnd: false);
 	}
 
 	///<summary>Removes all the leading occurrences of a set of characters specified in a span from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimStart(params System.ReadOnlySpan<char>)")]
-	public extern static string _f0473806a2e03bb6(string instance,  Uint32Array trimChars);
+	[Jazor(Op.Import, "string.TrimStart(params System.ReadOnlySpan<char>)")]
+	public static string _f0473806a2e03bb6(string instance, RuntimeModule.JReadOnlyCharSpan trimChars)
+		=> TrimReadOnlyCharacterSpan(instance, trimChars, trimStart: true, trimEnd: false);
 
 	/// <summary>
 	/// C#: str.TrimEnd()
@@ -1213,19 +1472,17 @@ public static class StringModule
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in an array from the current string.</summary>
 	[Jazor(Op.Import ,"string.TrimEnd(params char[])")]
-	public static string _a62862c1fbaa21c3(string instance, object trimChars)
+	public static string _a62862c1fbaa21c3(string instance, Array<string>? trimChars)
 	{
-		var any = NormalizeCharSet(trimChars);
-		var end = instance.Length - 1;
-		while (end >= 0 && any.Contains(instance[end].ToString()))
-			end--;
-
-		return end == instance.Length - 1 ? instance : end < 0 ? string.Empty : instance.Substring(0, end + 1);
+		if (trimChars == null || trimChars.Length == 0)
+			return instance.TrimEnd();
+		return TrimCharacterSet(instance, NormalizeCharSet(trimChars), trimStart: false, trimEnd: true);
 	}
 
 	///<summary>Removes all the trailing occurrences of a set of characters specified in a span from the current string.</summary>
-	[Jazor(Op.Discard ,"string.TrimEnd(params System.ReadOnlySpan<char>)")]
-	public extern static string _4f8d256566de4b17(string instance,  Uint32Array trimChars);
+	[Jazor(Op.Import, "string.TrimEnd(params System.ReadOnlySpan<char>)")]
+	public static string _4f8d256566de4b17(string instance, RuntimeModule.JReadOnlyCharSpan trimChars)
+		=> TrimReadOnlyCharacterSpan(instance, trimChars, trimStart: false, trimEnd: true);
 
 	/// <summary>
 	/// C#: str.Contains(value)
@@ -1470,6 +1727,30 @@ public static class StringModule
 		}
 
 		return set;
+	}
+
+	private static string TrimCharacterSet(
+		string instance,
+		HashSet<string> characters,
+		bool trimStart,
+		bool trimEnd)
+	{
+		var start = 0;
+		var end = instance.Length - 1;
+		if (trimStart)
+		{
+			while (start <= end && characters.Contains(instance[start].ToString()))
+				start++;
+		}
+		if (trimEnd)
+		{
+			while (end >= start && characters.Contains(instance[end].ToString()))
+				end--;
+		}
+
+		if (start == 0 && end == instance.Length - 1)
+			return instance;
+		return start > end ? string.Empty : instance.Substring(start, end - start + 1);
 	}
 
 	///<summary>Reports the zero-based index position of the last occurrence in this instance of one or more characters specified in a Unicode array. The search starts at a specified character position and proceeds backward toward the beginning of the string.</summary>

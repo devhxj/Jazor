@@ -304,29 +304,6 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void VisitTranslatedQuery_NotSupported()
-    {
-        const string code = """
-            class TestClass
-            {
-                void TestMethod(int[] source)
-                {
-                    var query = from item in source where item > 0 select item;
-                }
-            }
-            """;
-
-        var block = GetBlockOperation(code);
-        AssertUnsupportedDirect(
-            block,
-            static x => FindFirstOperation<ITranslatedQueryOperation>(x),
-            static (walker, operation) => walker.VisitTranslatedQuery(operation, new()),
-            "Translated LINQ queries are not supported");
-
-        AssertUnsupportedByDispatch(code, OperationKind.TranslatedQuery, "Translated LINQ queries are not supported");
-    }
-
-    [TestMethod]
     public void VisitTypeOf_Record_NotSupported()
     {
         const string code = """
@@ -448,29 +425,6 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void VisitRangeOperation_NotSupported()
-    {
-        const string code = """
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    System.Range range = 1..3;
-                }
-            }
-            """;
-
-        var block = GetBlockOperation(code);
-        AssertUnsupportedDirect(
-            block,
-            static x => FindFirstOperation<IRangeOperation>(x),
-            static (walker, operation) => walker.VisitRangeOperation(operation, new()),
-            "Standalone System.Range values are not supported");
-
-        AssertUnsupportedByDispatch(code, OperationKind.Range, "Standalone System.Range values are not supported");
-    }
-
-    [TestMethod]
     public void Visit_WhenCancellationRequested_ThrowsOperationCanceledException()
     {
         const string code = """
@@ -497,9 +451,9 @@ public sealed class SemanticWalkerNotSupportTest
         const string code = """
             class TestClass
             {
-                void TestMethod()
+                void TestMethod(dynamic source)
                 {
-                    System.Range range = 1..3;
+                    var value = source.Name;
                 }
             }
             """;
@@ -507,7 +461,7 @@ public sealed class SemanticWalkerNotSupportTest
         var block = GetBlockOperation(code);
         var walker = new SemanticWalker(true);
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
-        Assert.AreEqual(OperationKind.Range, exception.Kind);
+        Assert.AreEqual(OperationKind.DynamicMemberReference, exception.Kind);
 
         var path = exception.Data["location.path"] as string;
         Assert.IsFalse(string.IsNullOrWhiteSpace(path));
@@ -558,7 +512,7 @@ public sealed class SemanticWalkerNotSupportTest
     public void UnsupportedHandlerCatalog_HasUniqueIdsMethodsAndOperationTypes()
     {
         var handlers = LoadNotSupportHandlers();
-        Assert.HasCount(32, handlers);
+        Assert.HasCount(29, handlers);
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.Id).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.MethodName).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.OperationType).Distinct());

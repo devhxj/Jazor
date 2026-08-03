@@ -427,7 +427,7 @@ public partial class SemanticWalker
 			var valueOperation = value.Operation;
 			if (valueOperation is ILocalReferenceOperation localRef)
 			{
-				var obj = new Identifier(localRef.Local.Name);
+				var obj = new Identifier(GetJavaScriptBindingName(localRef.Local));
 				return new MemberExpression(obj, new Identifier(fieldName), false, false);
 			}
 			if (valueOperation is ITupleOperation tupleOp)
@@ -839,7 +839,7 @@ public partial class SemanticWalker
 					}
 					else if (element is ILocalReferenceOperation localReference)
 					{
-						var id = new Identifier(localReference.Local.Name);
+						var id = new Identifier(GetJavaScriptBindingName(localReference.Local));
 						args.Add(id);
 						assignmentTargets[index] = localReference;
 					}

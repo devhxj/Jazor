@@ -158,38 +158,6 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Dynamic indexer access is not supported in JavaScript conversion.");
 
 	/// <summary>
-	/// 处理已翻译的 LINQ 查询操作
-	/// C# 示例：
-	/// var result = from x in collection
-	///              where x > 0
-	///              select x * 2;              // LINQ 查询表达式
-	/// var filtered = list.Where(x => x > 0); // LINQ 方法链
-	/// 转换结果：不支持，LINQ 语义复杂且 JavaScript 没有对应构造
-	/// 原因：LINQ 提供了延迟执行、表达式树和查询提供程序模式，JavaScript 没有对应的查询构造
-	/// 替代方案：在 JavaScript 中使用数组方法（filter、map、reduce）或第三方库（如 lodash）
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Translated LINQ queries are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理 sizeof 运算符操作
-	/// C# 示例：
-	/// sizeof(int)                         // 4 字节
-	/// sizeof(double)                      // 8 字节
-	/// 转换结果：不支持，JavaScript 没有直接的内存大小概念
-	/// 原因：JavaScript 是垃圾回收语言，不提供直接的内存大小控制，值的大小由引擎管理
-	/// 替代方案：在 JavaScript 中使用 Buffer.byteLength（Node.js）或序列化后的字节长度估算
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitSizeOf(ISizeOfOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "sizeof operator is not supported in JavaScript conversion.");
-
-	/// <summary>
 	/// 处理取地址运算符操作
 	/// C# 示例：
 	/// unsafe {
@@ -299,29 +267,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitRelationalCaseClause(IRelationalCaseClauseOperation operation, SenseArgument argument)
 		=> HandleTransformationFailure<Node>(operation, "Relational case clause operations are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理范围操作（Range 操作符）
-	/// C# 示例：
-	/// Range range = 1..5;                // 创建范围 1 到 5
-	/// var slice = array[1..^1];          // 使用范围进行切片
-	/// array[start..end]                  // 数组切片操作
-	/// list[2..^2]                        // 列表切片，从索引 2 到倒数第 2 个
-	/// 转换结果：不支持
-	/// 原因：C# Range 操作必须在索引器操作中被消费转换为 slice/splice 调用，单独的 Range 对象在 JavaScript 中无意义
-	/// 替代方案：在 JavaScript 中直接使用 end-exclusive 的 slice：array.slice(1, 5) 或 array.slice(start, endExclusive)
-	/// </summary>
-	/// <param name="operation">范围操作</param>
-	/// <param name="argument">当前operation所属的父operation</param>
-	/// <returns>JavaScript范围对象字面量</returns>
-	public override Node? VisitRangeOperation(IRangeOperation operation, SenseArgument argument)
-	{
-		// 单独的范围操作在 JavaScript 中没有直接等价物
-		// 数组、string 或受支持 slice 上下文会由各自的父级访问节点消费。
-		return HandleTransformationFailure<Node>(
-			operation,
-			"Standalone System.Range values are not supported in JavaScript conversion. Use '..' directly in an array, string, or supported slice access.");
-	}
 
 	/// <summary>
 	/// 处理 ReDim 操作（VB.NET 特有）

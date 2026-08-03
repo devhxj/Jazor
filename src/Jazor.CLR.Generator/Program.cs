@@ -36,6 +36,8 @@ var outTypes = new Type[]{
 	typeof(TimeOnly),
 	typeof(DateTimeOffset),
 	typeof(TimeSpan),
+	typeof(Index),
+	typeof(Range),
 	typeof(String),
 	typeof(Exception),
 	typeof(StringBuilder),

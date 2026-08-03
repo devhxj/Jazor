@@ -22,6 +22,105 @@ partial interface IWhiteList
 	Expression? Compile_27d71701fd254382(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 	/// <summary>
+	/// static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableArrayLike(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.DefaultIfEmpty<TSource>(System.Collections.Generic.IEnumerable<TSource>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableDefaultIfEmpty(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.FirstOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableFirstOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.LastOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableLastOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.SingleOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableSingleOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.ElementAtOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableElementAtOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.Zip<TFirst, TSecond>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableZip(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.Cast<TResult>(System.Collections.IEnumerable)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableCast(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static System.Linq.Enumerable.OfType<TResult>(System.Collections.IEnumerable)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileEnumerableOfType(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
 	/// System.Nullable<T>.Value.get
 	/// </summary>
 	/// <param name="symbol"></param>

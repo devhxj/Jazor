@@ -10,6 +10,66 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueModuleProjectionTests
 {
     [TestMethod]
+    public async Task Convert_InternalComponentWithNestedRuntimeClass_FlattensArtifactMembersWithStableNames()
+    {
+        const string source = """
+            internal sealed class Counter
+            {
+                internal string Label => "counter";
+
+                internal string Build(string value)
+                {
+                    return new RuntimeState("ready:").Format(value);
+                }
+
+                private sealed class RuntimeState
+                {
+                    private readonly string _prefix;
+
+                    public RuntimeState(string prefix)
+                    {
+                        _prefix = prefix;
+                    }
+
+                    public string Format(string value)
+                    {
+                        return _prefix + value;
+                    }
+                }
+            }
+            """;
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.ModuleProjection.Tests",
+            syntaxTrees: [syntaxTree],
+            references: TestMetadataReferences.Net11,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var componentType = compilation.GetTypeByMetadataName("Counter");
+
+        Assert.IsNotNull(componentType);
+        var converter = new AstConverter(
+            componentType,
+            semanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                Host: new RazorVueSemanticWalkerHost(componentType),
+                ModulePolicy: RazorVueModulePolicy.Instance));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "function label()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export { label as get_Label };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export function build(value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return new RuntimeState(\"ready:\").format(value);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "class RuntimeState", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return this.#_prefix + value;", StringComparison.Ordinal);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_ComponentBaseHelper_ProjectsReachableBaseMethodIntoArtifactModule()
     {
         const string source = """

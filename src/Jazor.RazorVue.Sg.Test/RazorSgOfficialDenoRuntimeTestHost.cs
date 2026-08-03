@@ -1,4 +1,9 @@
+using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
+using Acornima;
+using Acornima.Ast;
+using ECMAScriptGlobal = ECMAScript.Global;
 
 namespace Jazor.RazorVue.Sg.Test;
 
@@ -12,6 +17,8 @@ namespace Jazor.RazorVue.Sg.Test;
 /// </remarks>
 internal static class RazorSgOfficialDenoRuntimeTestHost
 {
+    private static readonly IReadOnlyDictionary<string, string> CatalogModules = ReadCatalogModules();
+
     public static async Task RunModuleTestAsync(
         string moduleRelativePath,
         string moduleText,
@@ -31,9 +38,13 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 foreach (var module in supportingModules)
                     WriteFile(Path.Combine(root, module.Key), module.Value);
             }
+            MaterializeCatalogDependencies(root, moduleText, supportingModules);
             WriteFile(
                 Path.Combine(root, "package.json"),
                 """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(root, "deno.json"),
+                """{"imports":{"System/":"./System/"}}""");
             WriteFile(
                 Path.Combine(root, "node_modules", "vue", "package.json"),
                 """{"type":"module","exports":"./index.mjs"}""");
@@ -128,6 +139,89 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         File.WriteAllText(path, content);
     }
 
+    private static void MaterializeCatalogDependencies(
+        string root,
+        string moduleText,
+        IReadOnlyDictionary<string, string>? supportingModules)
+    {
+        // 只从 JavaScript module AST 收集 System/ import；package.json 等 supporting file 不是 JS 输入。
+        var pendingPaths = new Queue<string>(GetSystemImportPaths(moduleText));
+        if (supportingModules is not null)
+        {
+            foreach (var supportingModule in supportingModules)
+            {
+                if (!IsJavaScriptModulePath(supportingModule.Key))
+                    continue;
+
+                foreach (var path in GetSystemImportPaths(supportingModule.Value))
+                    pendingPaths.Enqueue(path);
+            }
+        }
+
+        var materializedPaths = new HashSet<string>(StringComparer.Ordinal);
+        while (pendingPaths.TryDequeue(out var relativePath))
+        {
+            if (!materializedPaths.Add(relativePath))
+                continue;
+
+            if (!CatalogModules.TryGetValue(relativePath, out var content))
+            {
+                throw new InvalidOperationException(
+                    $"CLR runtime catalog does not contain imported module '{relativePath}'.");
+            }
+
+            WriteFile(Path.Combine(root, relativePath), content);
+            foreach (var dependency in GetSystemImportPaths(content))
+                pendingPaths.Enqueue(dependency);
+        }
+    }
+
+    private static bool IsJavaScriptModulePath(string path)
+        => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
+           path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> GetSystemImportPaths(string moduleText)
+        => new Parser().ParseModule(moduleText).Body
+            .OfType<ImportDeclaration>()
+            .Select(static import => import.Source.Value)
+            .Where(static path => path.StartsWith("System/", StringComparison.Ordinal));
+
+    private static IReadOnlyDictionary<string, string> ReadCatalogModules()
+    {
+        var catalogType = typeof(ECMAScriptGlobal).Assembly.GetType("ECMAScript.Catalog", throwOnError: true)!;
+        var getModules = catalogType.GetMethod(
+            "GetModules",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() was not found.");
+        var modules = getModules.Invoke(null, null) as IEnumerable
+            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() returned no module collection.");
+
+        var catalogModules = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var module in modules)
+        {
+            if (module is null)
+                continue;
+
+            var moduleType = module.GetType();
+            var relativePath = ReadCatalogProperty(moduleType, module, "RelativePath");
+            var content = ReadCatalogProperty(moduleType, module, "Content");
+            if (!relativePath.StartsWith("System/", StringComparison.Ordinal))
+                continue;
+
+            if (!catalogModules.TryAdd(relativePath, content))
+                throw new InvalidOperationException($"CLR runtime catalog contains duplicate path '{relativePath}'.");
+        }
+
+        return catalogModules;
+    }
+
+    private static string ReadCatalogProperty(Type moduleType, object module, string propertyName)
+        => moduleType.GetProperty(
+            propertyName,
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(module) as string
+            ?? throw new InvalidOperationException(
+                $"Catalog module property '{propertyName}' was not found on '{moduleType.FullName}'.");
+
     private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
     {
         var startInfo = new ProcessStartInfo
@@ -141,6 +235,8 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         startInfo.ArgumentList.Add("test");
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--allow-all");
+        startInfo.ArgumentList.Add("--config");
+        startInfo.ArgumentList.Add(Path.Combine(workingDirectory, "deno.json"));
         startInfo.ArgumentList.Add(testFile);
         startInfo.Environment["DENO_DIR"] = Path.Combine(workingDirectory, ".deno-cache");
 

@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 ///
 /// C# ReadOnlyCollection&lt;T&gt; 与 JavaScript Array 的对应关系：
 /// - ReadOnlyCollection&lt;T&gt; 映射为 JavaScript Array（只读视图）
-/// - 运行时通过快照 + freeze 保持只读语义，不依赖调用方约束
+/// - 构造函数要求实时跟踪原 IList；当前 Array carrier 尚无对应 view 协议
 ///
 /// Op 类型选择原则：
 /// - Alias: JS Array 有同名方法/属性
@@ -48,18 +48,10 @@ public static class ReadOnlyCollectionT1Module<T>
 	}
 
 	/// <summary>
-	/// C#: new ReadOnlyCollection&lt;T&gt;(list)
-	/// JS: Object.freeze(Array.from(list))
+	/// C# 包装器必须实时反映原 IList 的变化，不能用冻结快照近似。
 	/// </summary>
-	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)")]
-	public static Array<T> _d4e5f6a7b8c9d0e1(IEnumerable<T> list)
-	{
-		if (list == null)
-			throw new Error("ArgumentNullException: list is null");
-
-		var snapshot = Array<T>.From(list);
-		return Object.Freeze(snapshot);
-	}
+	[Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)")]
+	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _d4e5f6a7b8c9d0e1(System.Collections.Generic.IList<T> list);
 
 	/// <summary>
 	/// C#: ReadOnlyCollection.Empty
@@ -164,9 +156,17 @@ public static class ReadOnlyCollectionT1Module<T>
 	[Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyCollection<T>.GetEnumerator()")]
 	public extern static object _a3b4c5d6e7f8a9b0(Array<T> instance);
 
-	[Jazor(Op.Discard, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateCollection<T>(params System.ReadOnlySpan<T>)")]
-	public extern static Array<T> _a0cccd63a3a3eee1(object values);
+	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateCollection<T>(params System.ReadOnlySpan<T>)")]
+	public static Array<T> _a0cccd63a3a3eee1(Array<T> values)
+		=> Object.Freeze(values.Slice());
 
-	[Jazor(Op.Discard, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateSet<T>(params System.ReadOnlySpan<T>)")]
-	public extern static System.Collections.ObjectModel.ReadOnlySet<T> _b80678a096dde585(object values);
+	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateSet<T>(params System.ReadOnlySpan<T>)")]
+	public static Set<T> _b80678a096dde585(Array<T> values)
+	{
+		var result = HashSetT1Module<T>.Create(null);
+		for (uint index = 0; index < values.Length; index++)
+			HashSetT1Module<T>.AddCore(result, values[index]);
+
+		return RuntimeModule.MarkAsReadOnlySetCarrier(result);
+	}
 }

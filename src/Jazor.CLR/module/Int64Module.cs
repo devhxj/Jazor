@@ -17,21 +17,10 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "long","BigInt")]
 public static class Int64Module
 {
-	private static BigInt RotateBitWidth => BigIntFn(64);
 	private static BigInt RotateMask => BigIntFn("18446744073709551615");
 	private static BigInt RotateModulus => BigIntFn("18446744073709551616");
 	private static BigInt RotateSignBit => BigIntFn("9223372036854775808");
-
-	private static BigInt NormalizeRotateBits(BigInt value)
-		=> value & RotateMask;
-
-	private static BigInt NormalizeSignedRotateResult(BigInt value)
-	{
-		var masked = NormalizeRotateBits(value);
-		return masked >= RotateSignBit
-			? masked - RotateModulus
-			: masked;
-	}
+	private static BigInt MinValueCore => BigIntFn("-9223372036854775808");
 
 	/// <summary>
 	/// C#: long.MaxValue
@@ -47,7 +36,7 @@ public static class Int64Module
 	[Jazor(Op.Inline, "static long.MinValue", "-9223372036854775808n")]
 	public extern static BigInt _0e4e92f6bb2f0389();
 
-	[Jazor(Op.Discard ,"long.Int64()")]
+	[Jazor(Op.Inline ,"long.Int64()", "0n")]
 	public extern static BigInt _74cd360dde6bde69();
 
 	///<summary>Produces the full product of two 64-bit numbers.</summary>
@@ -79,8 +68,9 @@ public static class Int64Module
 	public extern static bool _73c4e4cb572f07f1(BigInt instance, BigInt obj);
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard, "override long.GetHashCode()")]
-	public extern static Number _a6f06b90e3618c16(BigInt instance);
+	[Jazor(Op.Import, "override long.GetHashCode()")]
+	public static Number _a6f06b90e3618c16(BigInt instance)
+		=> RuntimeModule.GetInt64HashCode(instance);
 
 	///<summary>Converts the numeric value of this instance to its equivalent string representation.</summary>
 	[Jazor(Op.Alias, "override long.ToString()", "toString")]
@@ -179,12 +169,14 @@ public static class Int64Module
 	}
 
 	///<summary>Converts the span representation of a number to its 64-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
-	[Jazor(Op.Discard, "static long.TryParse(System.ReadOnlySpan<char>, out long)")]
-	public extern static Array<object?> _f65dcae3cb8d9ffc(Uint32Array s, BigInt result);
+	[Jazor(Op.Import, "static long.TryParse(System.ReadOnlySpan<char>, out long)")]
+	public static Array<object?> _f65dcae3cb8d9ffc(string s, BigInt result)
+		=> _2cba636c245c1675(s, result);
 
 	///<summary>Tries to convert a UTF-8 character span containing the string representation of a number to its 64-bit signed integer equivalent.</summary>
-	[Jazor(Op.Discard, "static long.TryParse(System.ReadOnlySpan<byte>, out long)")]
-	public extern static Array<object?> _8bee07df79eb3a90(Uint8Array utf8Text, BigInt result);
+	[Jazor(Op.Import, "static long.TryParse(System.ReadOnlySpan<byte>, out long)")]
+	public static Array<object?> _8bee07df79eb3a90(Uint8Array utf8Text, BigInt result)
+		=> _2cba636c245c1675(RuntimeModule.TryDecodeUtf8(utf8Text), result);
 
 	///<summary>Converts the string representation of a number in a specified style and culture-specific format to its 64-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Discard, "static long.TryParse(string, System.Globalization.NumberStyles, System.IFormatProvider, out long)")]
@@ -201,90 +193,41 @@ public static class Int64Module
 	///<summary>Computes the quotient and remainder of two values.</summary>
 	[Jazor(Op.Import, "static long.DivRem(long, long)")]
 	public static (BigInt Quotient, BigInt Remainder) _28273cd350760efe(BigInt left, BigInt right)
-	{
-		if (right == BigInt.Zero)
-			throw new Error("DivideByZeroException");
-		var quotient = left / right;
-		var remainder = left % right;
-		return (quotient, remainder);
-	}
+		=> BigIntIntegerRuntime.DivRemSigned(left, right, MinValueCore);
 
 	///<summary>Computes the number of leading zeros in a value.</summary>
-	[Jazor(Op.Discard, "static long.LeadingZeroCount(long)")]
-	public extern static BigInt _f67b17bf5c4120f2(BigInt value);
+	[Jazor(Op.Import, "static long.LeadingZeroCount(long)")]
+	public static BigInt _f67b17bf5c4120f2(BigInt value)
+		=> BigIntIntegerRuntime.LeadingZeroCount(value, 64, RotateMask);
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
 	[Jazor(Op.Import, "static long.PopCount(long)")]
 	public static BigInt _77fd605bbb6ce669(BigInt value)
-	{
-		var count = BigInt.Zero;
-		// CLR long uses a fixed 64-bit two's-complement representation for bit operations.
-		var v = NormalizeRotateBits(value);
-		while (v > BigInt.Zero)
-		{
-			count = count + (v & BigInt.One);
-			v = v >> BigInt.One;
-		}
-		return count;
-	}
+		=> BigIntIntegerRuntime.PopCount(value, RotateMask);
 
 	///<summary>Rotates a value left by a given amount.</summary>
 	[Jazor(Op.Import, "static long.RotateLeft(long, int)")]
 	public static BigInt _62ef461b6a515b85(BigInt value, Number rotateAmount)
-	{
-		var amount = rotateAmount % 64;
-		if (amount < 0)
-			amount += 64;
-
-		var shift = BigIntFn(amount);
-		var normalized = NormalizeRotateBits(value);
-		if (shift == 0)
-			return NormalizeSignedRotateResult(normalized);
-
-		var rotated = ((normalized << shift) | (normalized >> (RotateBitWidth - shift))) & RotateMask;
-		return NormalizeSignedRotateResult(rotated);
-	}
+		=> BigIntIntegerRuntime.RotateLeft(value, rotateAmount, 64, RotateMask, RotateModulus, RotateSignBit, true);
 
 	///<summary>Rotates a value right by a given amount.</summary>
 	[Jazor(Op.Import, "static long.RotateRight(long, int)")]
 	public static BigInt _6a70bc88f689ce73(BigInt value, Number rotateAmount)
-	{
-		var amount = rotateAmount % 64;
-		if (amount < 0)
-			amount += 64;
-
-		var shift = BigIntFn(amount);
-		var normalized = NormalizeRotateBits(value);
-		if (shift == 0)
-			return NormalizeSignedRotateResult(normalized);
-
-		var rotated = ((normalized >> shift) | (normalized << (RotateBitWidth - shift))) & RotateMask;
-		return NormalizeSignedRotateResult(rotated);
-	}
+		=> BigIntIntegerRuntime.RotateRight(value, rotateAmount, 64, RotateMask, RotateModulus, RotateSignBit, true);
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
 	[Jazor(Op.Import, "static long.TrailingZeroCount(long)")]
 	public static BigInt _df6d7288bc845b53(BigInt value)
-	{
-		if (value == BigInt.Zero)
-			return BigIntFn(64);
-		var count = BigInt.Zero;
-		var v = value;
-		while ((v & BigInt.One) == BigInt.Zero)
-		{
-			v = v >> BigInt.One;
-			count = count + BigInt.One;
-		}
-		return count;
-	}
+		=> BigIntIntegerRuntime.TrailingZeroCount(value, 64, RotateMask);
 
 	///<summary>Determines if a value is a power of two.</summary>
 	[Jazor(Op.Inline, "static long.IsPow2(long)", "(__arg1 > 0n && (__arg1 & (__arg1 - 1n)) === 0n)")]
 	public extern static bool _fd78c89cf0a7feff(BigInt value);
 
 	///<summary>Computes the log2 of a value.</summary>
-	[Jazor(Op.Discard, "static long.Log2(long)")]
-	public extern static BigInt _e90fc1096a04c8f9(BigInt value);
+	[Jazor(Op.Import, "static long.Log2(long)")]
+	public static BigInt _e90fc1096a04c8f9(BigInt value)
+		=> BigIntIntegerRuntime.Log2Signed(value);
 
 	/// <summary>
 	/// C#: long.Clamp(value, min, max)

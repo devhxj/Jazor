@@ -23,7 +23,7 @@ public static class WeakReferenceModule
 	[Jazor(Op.Discard ,"virtual System.WeakReference.GetObjectData(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)")]
 	public extern static void _5b37dc51e15031e2(WeakRef instance, object info, object context);
 
-	[Jazor(Op.Discard ,"virtual System.WeakReference.TrackResurrection.get")]
+	[Jazor(Op.Inline ,"virtual System.WeakReference.TrackResurrection.get", "false")]
 	public extern static bool _a2251c9f4ed1f026(WeakRef instance);
 
 	[Jazor(Op.Inline ,"virtual System.WeakReference.IsAlive.get", "(__arg1.deref() !== undefined)")]

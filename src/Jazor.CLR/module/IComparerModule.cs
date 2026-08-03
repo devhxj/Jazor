@@ -17,8 +17,11 @@ public static class IComparerModule
 	[Jazor(Op.Import, "System.Collections.IComparer.Compare(object, object)")]
 	public static Number _7dffdd7244581cc5(object instance, object? x, object? y)
 	{
-		// Keep receiver null-check: interface dispatch on null must surface NullReferenceException semantics.
 		ComparerT1Module<object?>.EnsureComparerInstance(instance);
-		return ComparerT1Module<object?>.CompareObjectsCore(x, y);
+		var compare = Reflect.Get(instance, "compare");
+		if (compare == null)
+			throw new Error("MissingMethodException: comparer does not expose compare.");
+
+		return (Number)Reflect.Apply(compare, instance, [x, y])!;
 	}
 }

@@ -34,6 +34,11 @@ internal static class ClrRuntimeDoubleScenarios
             [Null(), Number(7)],
             Array(Bool(false), Number(0))),
         Success(
+            "double.try-parse.span",
+            "static double.TryParse(System.ReadOnlySpan<char>, out double)",
+            [Text("1.25e2"), Number(7)],
+            Array(Bool(true), Number(125))),
+        Success(
             "double.try-parse.provider-overload",
             "static double.TryParse(string, System.IFormatProvider, out double)",
             [Text("2.5"), Null(), Number(0)],
@@ -52,6 +57,10 @@ internal static class ClrRuntimeDoubleScenarios
         Success("double.min-magnitude.equal-prefers-negative", "static double.MinMagnitude(double, double)", [Number(-7), Number(7)], Number(-7)),
         Success("double.min-magnitude.negative-zero", "static double.MinMagnitude(double, double)", [Number(-0.0), Number(0.0)], Number(-0.0)),
         Success("double.min-magnitude-number.skips-nan", "static double.MinMagnitudeNumber(double, double)", [Number(4), Number(double.NaN)], Number(4)),
+        Success("double.clamp-native.nan-value-selects-min", "static double.ClampNative(double, double, double)", [Number(double.NaN), Number(0), Number(1)], Number(0)),
+        Success("double.clamp-native.nan-min-selects-max", "static double.ClampNative(double, double, double)", [Number(0.5), Number(double.NaN), Number(1)], Number(1)),
+        Success("double.clamp-native.signed-zero-follows-right-operand", "static double.ClampNative(double, double, double)", [Number(-0.0), Number(0.0), Number(1)], Number(0.0)),
+        Failure("double.clamp-native.rejects-inverted-range", "static double.ClampNative(double, double, double)", [Number(1), Number(2), Number(0)], "ArgumentException"),
         Success(
             "double.sin-cos.zero",
             "static double.SinCos(double)",
@@ -61,7 +70,27 @@ internal static class ClrRuntimeDoubleScenarios
             "double.sin-cos-pi.zero",
             "static double.SinCosPi(double)",
             [Number(0)],
-            Record(("sinPi", Number(0)), ("cosPi", Number(1))))
+            Record(("sinPi", Number(0)), ("cosPi", Number(1)))),
+        Success("double.round.positive-even-midpoint", "static double.Round(double)", [Number(2.5)], Number(2)),
+        Success("double.round.negative-even-midpoint", "static double.Round(double)", [Number(-2.5)], Number(-2)),
+        Success("double.round.decimal-digits", "static double.Round(double, int)", [Number(2.675), Number(2)], Number(double.Round(2.675, 2))),
+        Success("double.round.away-from-zero", "static double.Round(double, System.MidpointRounding)", [Number(-2.5), Number(1)], Number(-3)),
+        Success("double.round.directed-with-digits", "static double.Round(double, int, System.MidpointRounding)", [Number(-1.234), Number(2), Number(3)], Number(-1.24)),
+        Failure("double.round.rejects-digits", "static double.Round(double, int)", [Number(1), Number(16)], "ArgumentOutOfRangeException"),
+        Failure("double.round.rejects-mode", "static double.Round(double, System.MidpointRounding)", [Number(1), Number(5)], "ArgumentException"),
+        Success("double.bit-increment.zero", "static double.BitIncrement(double)", [Number(0)], Number(double.Epsilon)),
+        Success("double.bit-increment.one", "static double.BitIncrement(double)", [Number(1)], Number(double.BitIncrement(1))),
+        Success("double.bit-increment.negative-infinity", "static double.BitIncrement(double)", [Number(double.NegativeInfinity)], Number(-double.MaxValue)),
+        Success("double.bit-decrement.negative-zero", "static double.BitDecrement(double)", [Number(-0.0)], Number(-double.Epsilon)),
+        Success("double.bit-decrement.one", "static double.BitDecrement(double)", [Number(1)], Number(double.BitDecrement(1))),
+        Success("double.bit-decrement.positive-infinity", "static double.BitDecrement(double)", [Number(double.PositiveInfinity)], Number(double.MaxValue)),
+        Success("double.ieee-remainder.lower-even-quotient", "static double.Ieee754Remainder(double, double)", [Number(5), Number(2)], Number(1)),
+        Success("double.ieee-remainder.upper-even-quotient", "static double.Ieee754Remainder(double, double)", [Number(7), Number(2)], Number(-1)),
+        Success("double.ieee-remainder.negative-zero", "static double.Ieee754Remainder(double, double)", [Number(-4), Number(2)], Number(-0.0)),
+        Success("double.ilogb.maximum", "static double.ILogB(double)", [Number(double.MaxValue)], Number(1023)),
+        Success("double.ilogb.minimum-subnormal", "static double.ILogB(double)", [Number(double.Epsilon)], Number(-1074)),
+        Success("double.ilogb.zero-sentinel", "static double.ILogB(double)", [Number(0)], Number(int.MinValue)),
+        Success("double.ilogb.infinity-sentinel", "static double.ILogB(double)", [Number(double.PositiveInfinity)], Number(int.MaxValue))
     ];
 
     private static ClrRuntimeScenario Success(

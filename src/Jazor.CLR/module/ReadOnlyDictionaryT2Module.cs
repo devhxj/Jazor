@@ -19,17 +19,9 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 
 	// Keep TryGetValue in an import so the out-value contract is expressed directly in Jazor
 	// rather than hidden in a conditional JS expression.
-	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
-	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)")]
-	public static Map<TKey, TValue> _b22e987e1be225aa(object dictionary)
-	{
-		if (dictionary == null)
-			throw new Error("ArgumentNullException: dictionary is null");
-
-		var source = (Map<TKey, TValue>)dictionary;
-		var snapshot = new Map<TKey, TValue>(source.Entries());
-		return RuntimeModule.MarkAsReadOnlyDictionaryCarrier(snapshot);
-	}
+	///<summary>The wrapper must remain live over the source dictionary; the current Map carrier has no view protocol.</summary>
+	[Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)")]
+	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _b22e987e1be225aa(System.Collections.Generic.IDictionary<TKey, TValue> dictionary);
 
 	/// <summary>
 	/// C#: ReadOnlyDictionary.Empty
@@ -37,7 +29,7 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 	/// </summary>
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get")]
 	public static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _43b396f1b8e0a68f()
-		=> (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)RuntimeModule.MarkAsReadOnlyDictionaryCarrier(new Map<TKey, TValue>());
+		=> (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)RuntimeModule.MarkAsReadOnlyDictionaryCarrier(DictionaryT2Module<TKey, TValue>.Create(null));
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get")]
 	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.KeyCollection _4044dececdd2d744(Map<TKey,TValue> instance);

@@ -41,6 +41,31 @@ internal static class ClrRuntimeListScenarios
             "System.Collections.Generic.List<T>.AddRange(System.Collections.Generic.IEnumerable<T>)",
             [Array(Number(1)), Null()],
             "ArgumentNullException"),
+        Success(
+            "list.binary-search.default-finds-sorted-item",
+            "System.Collections.Generic.List<T>.BinarySearch(T)",
+            [Array(Number(1), Number(3), Number(5)), Number(3)],
+            Number(1)),
+        Success(
+            "list.binary-search.comparer-uses-custom-order",
+            "System.Collections.Generic.List<T>.BinarySearch(T, System.Collections.Generic.IComparer<T>)",
+            [Array(Number(5), Number(3), Number(1)), Number(3), DescendingComparer()],
+            Number(1)),
+        Success(
+            "list.binary-search.range-honors-custom-order",
+            "System.Collections.Generic.List<T>.BinarySearch(int, int, T, System.Collections.Generic.IComparer<T>)",
+            [Array(Number(9), Number(5), Number(3), Number(1), Number(8)), Number(1), Number(3), Number(3), DescendingComparer()],
+            Number(2)),
+        Success(
+            "list.convert-all.projects-every-item",
+            "System.Collections.Generic.List<T>.ConvertAll<TOutput>(System.Converter<T, TOutput>)",
+            [Array(Number(1), Number(2), Number(3)), Callable(ClrRuntimeCallableKind.DoubleNumber)],
+            Array(Number(2), Number(4), Number(6))),
+        Failure(
+            "list.convert-all.rejects-null-converter",
+            "System.Collections.Generic.List<T>.ConvertAll<TOutput>(System.Converter<T, TOutput>)",
+            [Array(Number(1)), Null()],
+            "ArgumentNullException"),
         Mutation(
             "list.copy-to.whole-list",
             "System.Collections.Generic.List<T>.CopyTo(T[])",
@@ -195,6 +220,11 @@ internal static class ClrRuntimeListScenarios
             [Array(Number(30), Number(10), Number(20))],
             [Array(Number(10), Number(20), Number(30))]),
         Mutation(
+            "list.trim-excess.preserves-content",
+            "System.Collections.Generic.List<T>.TrimExcess()",
+            [Array(Number(1), Number(2))],
+            [Array(Number(1), Number(2))]),
+        Mutation(
             "list.sort.null-comparer-uses-default",
             "System.Collections.Generic.List<T>.Sort(System.Collections.Generic.IComparer<T>)",
             [Array(Text("c"), Text("a"), Text("b")), Null()],
@@ -251,5 +281,7 @@ internal static class ClrRuntimeListScenarios
     private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
+    private static ClrRuntimeValue DescendingComparer() => ClrRuntimeValue.Record(
+        ("compare", Callable(ClrRuntimeCallableKind.CompareDescending)));
     private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);
 }

@@ -26,7 +26,7 @@ public static class BooleanModule
 	public extern static bool _2bd9618624257446();
 
 	///<summary>Returns the hash code for this instance.</summary>
-	[Jazor(Op.Discard, "override bool.GetHashCode()")]
+	[Jazor(Op.Inline, "override bool.GetHashCode()", "(__arg1 ? 1 : 0)")]
 	public extern static Number _80b6c29cc0038969(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
@@ -34,7 +34,7 @@ public static class BooleanModule
 	public extern static string _d48c2d39317daf8f(bool instance);
 
 	///<summary>Converts the value of this instance to its equivalent string representation (either "True" or "False").</summary>
-	[Jazor(Op.Discard, "bool.ToString(System.IFormatProvider)")]
+	[Jazor(Op.Inline, "bool.ToString(System.IFormatProvider)", "(__arg1 ? \"True\" : \"False\")")]
 	public extern static string _6e30cb91da447de8(bool instance, Intl.NumberFormat? provider);
 
 	///<summary>Tries to format the value of the current boolean instance into the provided span of characters.</summary>

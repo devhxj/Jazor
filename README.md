@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8158 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8158%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.43 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.43%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.71 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.71%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8265 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8265%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.26 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.26%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.02 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.02%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -35,13 +35,13 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Verified Compiler Baseline
 
-`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-02, is:
+`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-03, is:
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8158 / 8158 passed | 8000 passed |
-| Line coverage | 14003 / 14522 (96.43%) | 95% |
-| Branch coverage | 6051 / 6671 (90.71%) | 90% |
+| Compiler regression tests | 8265 / 8265 passed | 8000 passed |
+| Line coverage | 15423 / 16022 (96.26%) | 95% |
+| Branch coverage | 6194 / 6881 (90.02%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -57,9 +57,9 @@ Official Razor SG output is tested through Roslyn binding, direct Vue render-fun
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| RazorVue SG scenarios | 4472 / 4472 passed | 4000 passed |
-| Line coverage | 8077 / 8644 (93.44%) | 90% |
-| Branch coverage | 3530 / 4219 (83.67%) | 80% |
+| RazorVue SG scenarios | 4482 / 4482 passed | 4000 passed |
+| Line coverage | 8147 / 8719 (93.44%) | 90% |
+| Branch coverage | 3569 / 4265 (83.68%) | 80% |
 
 Run the RazorVue coverage gate from the repository root:
 
@@ -86,27 +86,20 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-02
+### 2026-08-03
 
-- `Nullable<T>.Value` now uses compiler-owned lowering that preserves single receiver evaluation and throws a stable exception only for empty carriers; nested list patterns keep null checks ahead of custom length access.
-- RazorVue direct render generation preserves static Razor source-map paths, supports optional `EventCallback` parameters with or without a listener, official asynchronous `@bind:after`, and synchronous or asynchronous `@bind:set` method groups; generator completion remains patched across concurrent or tiered-JIT driver invocations.
-- Razor authoring errors remain owned by the official Razor source generator; invalid components do not produce a secondary RazorVue conversion diagnostic or partial render catalog.
-- JazorAdmin now serves as a broader native RazorVue reference application with dashboard, release queue, audit, workspace, and settings pages; its release table supports controlled search, sort, pagination, selection, and bulk actions.
-- The compiler gate verifies 8,158 scenarios at 96.43% line and 90.71% branch coverage; the RazorVue gate verifies 4,472 official SG scenarios at 93.44% line and 83.67% branch coverage.
-
-### 2026-08-01
-
-- Razor-to-Vue now keeps its ASP.NET Components catalog and Razor-specific lowering in the `Jazor.Vue` product boundary while preserving the supported core compiler extension contracts.
-- Official Razor source-generator output continues to produce direct Vue render-function `.mjs` artifacts without SFC, render-context, or generated-builder fallbacks.
-- Dynamic component `@attributes` accepts object, `Map`, and KeyValuePair-shaped sources while mapping C# component parameters to their Vue descriptor names and preserving explicit `@bind` precedence.
-- The JazorAdmin reference application now verifies local package consumption, native and `VueInject` builds, generated artifacts, and browser mounting through the packaged Deno host.
+- LINQ mappings now cover `Cast`, `OfType`, `TryGetNonEnumeratedCount`, comparer-aware `ToDictionary` and `ToHashSet`, and a broader set of selector, grouping, ordering, aggregation, and set operations through shared runtime helpers.
+- CLR support now includes fixed-width integer and floating conversions, checked arithmetic, UTF-8 numeric parsing, Unicode character classification, deterministic scalar hash codes, and stronger comparer-backed collection semantics.
+- String span trimming and concatenation, line-ending replacement, joins and padding, one-dimensional `Array` parameter-index access, `ConditionalWeakTable` factories and clearing, and `Exception` cause, `HelpLink`, and `Source` metadata now execute through generated runtime modules.
+- `StringBuilder` now supports its fixed `float` and `double` append/insert overloads through the same numeric carrier contract as their corresponding `ToString()` calls; object, generic, capacity, and live-view APIs remain explicit boundaries.
+- The compiler gate verifies 8,265 scenarios at 96.26% line and 90.02% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.38
+dotnet add package Jazor --version 0.1.39
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -115,8 +108,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.38" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.38" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.39" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.39" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -124,11 +117,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.38" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.38" />
+  <PackageReference Include="Jazor" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.39" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.39" />
 </ItemGroup>
 ```
 
