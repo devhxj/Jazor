@@ -20,11 +20,38 @@ public static class DictionaryT2Module<TKey, TValue>
 	// Native Map remains the physical carrier. The private WeakMap supplies CLR key equality
 	// without exposing bookkeeping fields or changing iteration, representative keys, or size.
 	private static readonly WeakMap<Map<TKey, TValue>, (System.Collections.Generic.IEqualityComparer<TKey>? Comparer, Map<Number, Array<TKey>> KeysByHash)> States = new();
+	private static readonly WeakMap<Map<TKey, TValue>, Number> Capacities = new();
 
 	private static void EnsureInstance(Map<TKey, TValue> instance)
 	{
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static Number GetCapacity(Map<TKey, TValue> instance)
+	{
+		EnsureInstance(instance);
+		if (!Capacities.Has(instance))
+			Capacities.Set(instance, RuntimeModule.GetHashCollectionCapacity(instance.Size));
+		return Capacities.Get(instance)!;
+	}
+
+	private static void EnsureEntryCapacity(Map<TKey, TValue> instance, Number requiredCount)
+	{
+		var capacity = GetCapacity(instance);
+		if (requiredCount > capacity)
+			Capacities.Set(instance, RuntimeModule.ExpandHashCollectionCapacity(capacity));
+	}
+
+	private static Number EnsureCapacityCore(Map<TKey, TValue> instance, Number capacity)
+	{
+		var requested = RuntimeModule.GetHashCollectionCapacity(capacity);
+		var current = GetCapacity(instance);
+		if (requested <= current)
+			return current;
+
+		Capacities.Set(instance, requested);
+		return requested;
 	}
 
 	private static Number GetHashCode(
@@ -120,6 +147,7 @@ public static class DictionaryT2Module<TKey, TValue>
 			return instance;
 		}
 
+		EnsureEntryCapacity(instance, instance.Size + 1);
 		bucket.Push(key);
 		NativeSet(instance, key, value);
 		return instance;
@@ -181,8 +209,16 @@ public static class DictionaryT2Module<TKey, TValue>
 	}
 
 	internal static Map<TKey, TValue> Create(System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> Create(comparer, capacity: 0);
+
+	private static Map<TKey, TValue> Create(System.Collections.Generic.IEqualityComparer<TKey>? comparer, Number capacity)
 	{
+		var normalizedCapacity = RuntimeModule.GetHashCollectionCapacity(capacity);
 		var instance = new Map<TKey, TValue>();
+		Capacities.Set(instance, normalizedCapacity);
+		if (comparer is null)
+			return instance;
+
 		var state = (Comparer: comparer, KeysByHash: new Map<Number, Array<TKey>>());
 		States.Set(instance, state);
 		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
@@ -224,6 +260,14 @@ public static class DictionaryT2Module<TKey, TValue>
 		return instance;
 	}
 
+	private static void SetItemCore(Map<TKey, TValue> instance, TKey key, TValue value)
+	{
+		EnsureInstance(instance);
+		if (!instance.Has(key))
+			EnsureEntryCapacity(instance, instance.Size + 1);
+		instance.Set(key, value);
+	}
+
 	internal static Map<TKey, TValue> CreateFromMap(
 		Map<TKey, TValue> source,
 		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
@@ -231,7 +275,7 @@ public static class DictionaryT2Module<TKey, TValue>
 		if (source == null)
 			throw new Error("ArgumentNullException: dictionary is null");
 
-		var result = Create(comparer);
+		var result = Create(comparer, source.Size);
 		foreach (var key in source.Keys())
 			result.Set(key, source.Get(key)!);
 		return result;
@@ -244,7 +288,10 @@ public static class DictionaryT2Module<TKey, TValue>
 		if (source == null)
 			throw new Error("ArgumentNullException: collection is null.");
 
-		var result = Create(comparer);
+		Number initialCapacity = source is Array<System.Collections.Generic.KeyValuePair<TKey, TValue>> values
+			? values.Length
+			: 0;
+		var result = Create(comparer, initialCapacity);
 		// KeyValuePair is emitted as a Map-entry array. Deconstruction keeps this adapter
 		// on the compiler's structural protocol instead of depending on a CLR wrapper type.
 		foreach (var (key, value) in source)
@@ -252,7 +299,7 @@ public static class DictionaryT2Module<TKey, TValue>
 			if (result.Has(key))
 				throw new Error("ArgumentException: An item with the same key has already been added.");
 
-			result.Set(key, value);
+			SetItemCore(result, key, value);
 		}
 
 		return result;
@@ -268,8 +315,9 @@ public static class DictionaryT2Module<TKey, TValue>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;()
 	/// JS: new Map()
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()", "new Map()")]
-	public extern static Map<TKey, TValue> _30796a6445def409();
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()", "createDefault")]
+	public static Map<TKey, TValue> CreateDefault()
+		=> Create(comparer: null);
 
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;(capacity)
@@ -277,11 +325,7 @@ public static class DictionaryT2Module<TKey, TValue>
 	/// </summary>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int)", "createWithCapacity")]
 	public static Map<TKey, TValue> CreateWithCapacity(Number capacity)
-	{
-		if (capacity < 0)
-			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-		return Create(comparer: null);
-	}
+		=> Create(comparer: null, capacity);
 
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IEqualityComparer<TKey>)", "createWithComparer")]
 	public static Map<TKey, TValue> CreateWithComparer(System.Collections.Generic.IEqualityComparer<TKey>? comparer)
@@ -291,18 +335,15 @@ public static class DictionaryT2Module<TKey, TValue>
 	public static Map<TKey, TValue> CreateWithCapacityAndComparer(
 		Number capacity,
 		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
-	{
-		if (capacity < 0)
-			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-		return Create(comparer);
-	}
+		=> Create(comparer, capacity);
 
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;(dictionary)
 	/// JS: new Map(dictionary.entries())
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "new Map(__arg1)")]
-	public extern static Map<TKey, TValue> _70d1054600376f0b(Map<TKey, TValue> dictionary);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", "createFromDictionary")]
+	public static Map<TKey, TValue> CreateFromDictionary(Map<TKey, TValue> dictionary)
+		=> CreateFromMap(dictionary, comparer: null);
 
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.IEqualityComparer<TKey>)", "createFromDictionaryWithComparer")]
 	public static Map<TKey, TValue> CreateFromDictionaryWithComparer(
@@ -332,8 +373,9 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>.Count.get", "size")]
 	public extern static Number _8603bbd90bf60fc3(Map<TKey,TValue> instance);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get")]
-	public extern static Number _93c9c28de958b6e8(Map<TKey,TValue> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get", "getCapacityMember")]
+	public static Number GetCapacityMember(Map<TKey, TValue> instance)
+		=> GetCapacity(instance);
 
 	/// <summary>
 	/// C#: dict.Keys
@@ -366,8 +408,9 @@ public static class DictionaryT2Module<TKey, TValue>
 	/// C#: dict[key] = value
 	/// JS: map.set(key, value)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set", "__arg1.set(__arg2, __arg3)")]
-	public extern static void _63d62bee2698301f(Map<TKey,TValue> instance, TKey key, TValue value);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set", "setItem")]
+	public static void SetItem(Map<TKey,TValue> instance, TKey key, TValue value)
+		=> SetItemCore(instance, key, value);
 
 	/// <summary>
 	/// C#: dict.Add(key, value)
@@ -383,6 +426,7 @@ public static class DictionaryT2Module<TKey, TValue>
 		// .NET Dictionary 在键已存在时会抛出异常
 		if (instance.Has(key))
 			throw new Error("ArgumentException: An item with the same key has already been added.");
+		EnsureEntryCapacity(instance, instance.Size + 1);
 		instance.Set(key, value);
 	}
 
@@ -472,26 +516,32 @@ public static class DictionaryT2Module<TKey, TValue>
 
 		if (instance.Has(key))
 			return false;
+		EnsureEntryCapacity(instance, instance.Size + 1);
 		instance.Set(key, value);
 		return true;
 	}
 
-	[Jazor(Op.Discard, "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)")]
-	public extern static Number _fdba95f6eefaa760(Map<TKey,TValue> instance, Number capacity);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)", "ensureCapacity")]
+	public static Number EnsureCapacity(Map<TKey, TValue> instance, Number capacity)
+		=> EnsureCapacityCore(instance, capacity);
 
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess()")]
 	public static void _44cc5aa04712525c(Map<TKey,TValue> instance)
 	{
-		// Map has no observable capacity. Preserve the receiver check and erase only the
-		// backing-storage optimization that the supported CLR surface cannot observe.
-		EnsureInstance(instance);
+		var capacity = GetCapacity(instance);
+		var trimmed = RuntimeModule.GetHashCollectionCapacity(instance.Size);
+		if (trimmed < capacity)
+			Capacities.Set(instance, trimmed);
 	}
 
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TrimExcess(int)")]
 	public static void _dd7fceb710b10915(Map<TKey,TValue> instance, Number capacity)
 	{
-		EnsureInstance(instance);
+		var current = GetCapacity(instance);
 		if (capacity < instance.Size)
 			throw new Error("ArgumentOutOfRangeException: capacity cannot be less than Count.");
+		var trimmed = RuntimeModule.GetHashCollectionCapacity(capacity);
+		if (trimmed < current)
+			Capacities.Set(instance, trimmed);
 	}
 }

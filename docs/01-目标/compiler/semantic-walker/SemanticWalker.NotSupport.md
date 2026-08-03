@@ -54,6 +54,10 @@
 - `System.Index` / `System.Range` 值：通过 CLR `JIndex` / `JRange` carrier 和白名单成员映射传递
 - 窄语义 `sizeof(T)`：仅编译期 primitive scalar 或 enum underlying size，输出数值常量
 
+`Enumerable` query 继续走普通 delegate callback；`System.Linq.Expressions.Expression<TDelegate>`
+和 `IQueryable<T>` query 的 lambda 则在 conversion 使用点明确拒绝。它们要求保留供 provider
+检查和改写的表达式树，而箭头函数只能表示可执行 delegate，不能作为近似替代。
+
 ### 29 个剩余 visitor 的分类决策
 
 当前文件实际保留 29 个不支持 visitor。这个数字是当前代码结果，不是早期“约 31 个”的估算值。

@@ -186,6 +186,12 @@ internal static class ClrRuntimeTestHost
               references.set(value.scalar, resolved);
               return resolved;
             }
+            case "sequence": {
+              let result;
+              for (const step of value.items)
+                result = await decode(step, references);
+              return result;
+            }
             case "record": {
               const entries = [];
               for (const [name, item] of Object.entries(value.properties))
@@ -211,6 +217,7 @@ internal static class ClrRuntimeTestHost
                 case "ToDecimalText": fn = item => String(item); break;
                 case "ReturnFactoryText": fn = _ => "factory"; break;
                 case "ReturnFactoryArgument": fn = (_, argument) => argument; break;
+                case "ReturnHashCode": fn = () => 713; break;
                 case "Identity": fn = item => item; break;
                 case "SameParity": fn = (left, right) => Math.abs(left) % 2 === Math.abs(right) % 2; break;
                 case "ParityHash": fn = item => Math.abs(item) % 2; break;

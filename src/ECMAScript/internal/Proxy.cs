@@ -53,6 +53,40 @@ public sealed class Proxy<TTarget> where TTarget : class
 	/// Creates a JavaScript proxy for the supplied target and handler.
 	/// </summary>
 	public extern Proxy(TTarget target, ProxyHandler<TTarget> handler);
+
+	/// <summary>
+	/// Creates a JavaScript proxy with an object-shaped mutation handler. This form avoids
+	/// external host inheritance when callers only need to guard writes.
+	/// </summary>
+	public extern Proxy(TTarget target, ProxyMutationHandler<TTarget> handler);
+}
+
+/// <summary>
+/// Strongly typed object-shaped subset of JavaScript Proxy traps for write interception.
+/// This is useful when a host needs mutation policy but no read or invocation interception.
+/// </summary>
+/// <typeparam name="TTarget">Static CLR view of the proxied target object.</typeparam>
+[ECMAScript]
+[Description("@#")]
+public sealed class ProxyMutationHandler<TTarget> where TTarget : class
+{
+	/// <summary>
+	/// Trap for property reads. It is optional so mutation-only handlers remain compact.
+	/// </summary>
+	[Description("@#get")]
+	public Func<TTarget, PropertyKey, object, object?>? Get { get; init; }
+
+	/// <summary>Trap for property writes.</summary>
+	[Description("@#set")]
+	public Func<TTarget, PropertyKey, object?, object, bool>? Set { get; init; }
+
+	/// <summary>Trap for deleting an own property.</summary>
+	[Description("@#deleteProperty")]
+	public Func<TTarget, PropertyKey, bool>? DeleteProperty { get; init; }
+
+	/// <summary>Trap for defining or reconfiguring an own property.</summary>
+	[Description("@#defineProperty")]
+	public Func<TTarget, PropertyKey, PropertyDescriptor, bool>? DefineProperty { get; init; }
 }
 
 /// <summary>

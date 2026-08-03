@@ -3433,7 +3433,7 @@ public static class EnumerableModule<TSource>
 
 	[Jazor(Op.Compile, "static System.Linq.Enumerable.ToList<TSource>(System.Collections.Generic.IEnumerable<TSource>)", "EnumerableArrayLike")]
 	public static Array<TSource> _6293e95141f14a55(IEnumerable<TSource> source)
-		=> Materialize(source);
+		=> RuntimeModule.MarkAsMutableListCarrier(Materialize(source));
 
 	[Jazor(Op.Compile, "static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)", "EnumerableArrayLike")]
 	public static Array<TSource> _ea56f0fe56c44ae7(IEnumerable<TSource> source)

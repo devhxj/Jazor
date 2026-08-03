@@ -12,7 +12,7 @@ namespace Jazor.CLR;
 /// - Inline: JavaScript 有对应操作符（typeof、===）
 /// - Alias: JavaScript 有原生方法（toString）
 /// - Allowed: 无操作，保持默认行为（Object 构造函数）
-/// - Discard: JavaScript 无对应概念（GetHashCode、Type 类型）
+/// - Import: 需要共享运行时状态或保留虚分派（GetHashCode）
 ///
 /// 类型映射：
 /// - System.Type → object（JavaScript 无类型系统）
@@ -71,9 +71,28 @@ public static class ObjectModule
 	public extern static bool _b7bcdcecb3f79c07(object? objA, object? objB);
 
 	/// <summary>
-	/// JavaScript 没有统一的 GetHashCode 机制
-	/// Map 和 Set 使用引用相等或值相等，不需要哈希码
+	/// Gets a deterministic hash code for the current CLR carrier.
 	/// </summary>
-	[Jazor(Op.Discard, "virtual object.GetHashCode()")]
-	public extern static Number _97891de43f43ceb4(object instance);
+	/// <remarks>
+	/// A source class can override <c>GetHashCode()</c>; compiled classes expose that override as
+	/// <c>getHashCode</c>, so preserve virtual dispatch before falling back to the shared carrier
+	/// hash. The fallback is centralized in <see cref="RuntimeModule"/> to keep object and
+	/// EqualityComparer hash semantics aligned.
+	/// </remarks>
+	[Jazor(Op.Import, "virtual object.GetHashCode()")]
+	public static Number _97891de43f43ceb4(object instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		var type = TypeOf(instance);
+		if (type == "object" || type == "function")
+		{
+			var customHashCode = Reflect.Get(instance, "getHashCode");
+			if (TypeOf(customHashCode) == "function")
+				return (Number)Reflect.Apply(customHashCode!, instance, [])!;
+		}
+
+		return RuntimeModule.GetObjectHashCode(instance);
+	}
 }

@@ -20,14 +20,6 @@ public static class EqualityComparerT1Module<T>
 			throw new Error("NullReferenceException: instance is null.");
 	}
 
-	private static Number HashStringCore(string text)
-	{
-		var hash = 17;
-		for (int i = 0; i < text.Length; i++)
-			hash = ((hash * 31) + text[i]) | 0;
-		return hash;
-	}
-
 	internal static bool EqualsCore(T? left, T? right)
 	{
 		if (Object.Is(left, right))
@@ -40,36 +32,7 @@ public static class EqualityComparerT1Module<T>
 	}
 
 	internal static Number GetHashCodeCore(T? value)
-	{
-		if (value is null)
-			return 0;
-
-		if (TypeOf(value) == "boolean")
-			return (bool)(object)value ? 1 : 0;
-
-		if (TypeOf(value) == "number")
-		{
-			var numberValue = (Number)(object)value;
-			if (IsNaN(numberValue) || numberValue == 0)
-				return 0;
-
-			if (Math.FloorFn(numberValue) == numberValue &&
-				numberValue >= -2147483648 &&
-				numberValue <= 2147483647)
-				return numberValue | 0;
-
-			return HashStringCore(numberValue.ToString());
-		}
-
-		if (TypeOf(value) == "string")
-			return HashStringCore((string)(object)value);
-
-		if (TypeOf(value) == "bigint")
-			return HashStringCore(((BigInt)(object)value).ToString());
-
-		var text = value.ToString();
-		return text is null ? 0 : HashStringCore(text);
-	}
+		=> RuntimeModule.GetObjectHashCode(value);
 
 	internal static bool EqualsInstance(object instance, T x, T y)
 	{

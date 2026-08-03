@@ -1096,6 +1096,7 @@ public partial class SemanticWalker
 		IMethodSymbol method,
 		List<Expression> arguments,
 		ITypeSymbol? sourceType,
+		SenseArgument context,
 		out Expression? expression)
 	{
 		expression = null;
@@ -1132,9 +1133,21 @@ public partial class SemanticWalker
 			callbackArgument = callbackParameter;
 		}
 
-		var intrinsicExpression = intrinsic.ArrayMethodName is not null
+		Expression intrinsicExpression = intrinsic.ArrayMethodName is not null
 			? BuildInstanceMethodCall(normalizedSource, intrinsic.ArrayMethodName, callbackArgument!)
 			: sourceIsArrayProducingExpression ? sourceArgument : BuildArrayFrom(sourceArgument);
+		if (method.Name == "ToList")
+		{
+			// ToList transfers a fresh Array into List<T> ownership. The runtime marker is the
+			// interface-mutation contract; ToArray deliberately remains an unmarked fixed array.
+			var markAsMutableListCarrier = context.BindImportSpecifier(
+				"System/RuntimeModule.js",
+				"markAsMutableListCarrier");
+			intrinsicExpression = new CallExpression(
+				markAsMutableListCarrier,
+				NodeList.From(intrinsicExpression),
+				optional: false);
+		}
 
 		var statements = new List<Statement>
 		{
@@ -1279,6 +1292,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			operation.Arguments.Length > 0
 				? UnwrapImplicitConversions(operation.Arguments[0].Value).Type
 				: null,
+			argument,
 			out expression))
 			return true;
 

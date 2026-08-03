@@ -93,7 +93,11 @@ public partial class SemanticWalker
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
-			if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
+			// A mapped constructor may validate arguments, establish private runtime state, or select
+			// host equality semantics. Replacing it with a physical literal would also bypass the
+			// bound Add/indexer mappings, so the literal fast path is valid only for native hosts.
+			if (mappedConstructor is null &&
+				TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
 			{
 				expr = collectionLiteral;
 			}

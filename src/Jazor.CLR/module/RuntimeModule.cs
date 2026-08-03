@@ -76,6 +76,79 @@ public static class RuntimeModule
 			throw new Error(message);
 	}
 
+	// Dictionary and HashSet share the CLR hash-table prime sequence. JavaScript Map/Set do
+	// not expose backing capacity, so this algorithm is the sole source of observed capacity.
+	private static readonly Array<Number> HashCapacityPrimes =
+	[
+		3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197,
+		239, 293, 353, 431, 521, 631, 761, 919, 1103, 1327, 1597, 1931,
+		2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143,
+		14591, 17519, 21023, 25229, 30293, 36353, 43627, 52361, 62851,
+		75431, 90523, 108631, 130363, 156437, 187751, 225307, 270371,
+		324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687,
+		1395263, 1674319, 2009191, 2411033, 2893249, 3471899, 4166287,
+		4999559, 5999471, 7199369
+	];
+
+	private static readonly Number MaxHashCapacity = 2146435069;
+
+	internal static Number GetHashCollectionCapacity(Number minimum)
+	{
+		EnsureWholeNumber(minimum, "ArgumentOutOfRangeException: capacity must be a whole number.");
+		if (minimum < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+		if (minimum == 0)
+			return 0;
+
+		for (var index = 0; index < HashCapacityPrimes.Length; index++)
+		{
+			if (HashCapacityPrimes[index] >= minimum)
+				return HashCapacityPrimes[index];
+		}
+
+		var candidate = minimum % 2 == 0 ? minimum + 1 : minimum;
+		while (candidate <= MaxHashCapacity)
+		{
+			if (IsHashCapacityPrime(candidate) && (candidate - 1) % 101 != 0)
+				return candidate;
+			candidate += 2;
+		}
+
+		throw new Error("OutOfMemoryException: requested collection capacity is too large.");
+	}
+
+	internal static Number ExpandHashCollectionCapacity(Number currentCapacity)
+	{
+		EnsureWholeNumber(currentCapacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+		if (currentCapacity < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+		if (currentCapacity == 0)
+			return GetHashCollectionCapacity(1);
+		if (currentCapacity >= MaxHashCapacity)
+			return MaxHashCapacity;
+
+		var minimum = currentCapacity * 2;
+		if (minimum > MaxHashCapacity)
+			return MaxHashCapacity;
+		return GetHashCollectionCapacity(minimum);
+	}
+
+	private static bool IsHashCapacityPrime(Number candidate)
+	{
+		if (candidate == 2)
+			return true;
+		if (candidate < 2 || candidate % 2 == 0)
+			return false;
+
+		var limit = Math.FloorFn(Math.Sqrt(candidate));
+		for (var divisor = 3; divisor <= limit; divisor += 2)
+		{
+			if (candidate % divisor == 0)
+				return false;
+		}
+		return true;
+	}
+
 	private static void EnsureYearAndMonth(Number year, Number month)
 	{
 		EnsureWholeNumber(year, "ArgumentOutOfRangeException: Year must be a whole number between 1 and 9999.");
@@ -99,7 +172,166 @@ public static class RuntimeModule
 	}
 
 	private const string ReadOnlyCarrierMutationMessage = "NotSupportedException: Collection is read-only.";
+
+	private static bool ThrowReadOnlyArraySet<TItem>(
+		Array<TItem> target,
+		ECMAScript.PropertyKey property,
+		object? value,
+		object receiver)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.PropertyKey property)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlyArrayDefine<TItem>(
+		Array<TItem> target,
+		ECMAScript.PropertyKey property,
+		ECMAScript.PropertyDescriptor attributes)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	internal static Array<TItem> CreateReadOnlyArrayView<TItem>(Array<TItem>? source, string nullMessage)
+	{
+		if (source is null)
+			throw new Error(nullMessage);
+
+		// The proxy remains an Array at runtime, so indexed access, length, and iteration retain
+		// their normal carrier shape. Source writes stay observable through the live view, while
+		// writes through the view are rejected even after the CLR collection type is erased.
+		var handler = new ECMAScript.ProxyMutationHandler<Array<TItem>>
+		{
+			Set = ThrowReadOnlyArraySet<TItem>,
+			DeleteProperty = ThrowReadOnlyArrayDelete<TItem>,
+			DefineProperty = ThrowReadOnlyArrayDefine<TItem>
+		};
+		var view = (Array<TItem>)(object)new ECMAScript.Proxy<Array<TItem>>(source, handler);
+		ReadOnlyCarriers.Add(view);
+		return view;
+	}
+
 	private static readonly WeakSet ReadOnlyCarriers = new();
+	private static readonly WeakSet MutableListCarriers = new();
+
+	/// <summary>
+	/// Marks an Array carrier whose CLR source contract is <see cref="System.Collections.Generic.List{T}"/>.
+	/// </summary>
+	/// <remarks>
+	/// Both <c>T[]</c> and <c>List&lt;T&gt;</c> erase to JavaScript arrays. The marker is therefore
+	/// necessary to preserve interface mutation rules without treating fixed-size arrays as lists.
+	/// It is attached only by List-producing factories, never inferred from array shape.
+	/// </remarks>
+	internal static Array<T> MarkAsMutableListCarrier<T>(Array<T> instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		MutableListCarriers.Add(instance);
+		return instance;
+	}
+
+	internal static bool IsMutableListCarrier<T>(Array<T>? instance)
+		=> instance != null && MutableListCarriers.Has(instance);
+
+	internal static void RequireMutableListCarrier<T>(Array<T>? instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+		if (MutableListCarriers.Has(instance))
+			return;
+		if (ReadOnlyCarriers.Has(instance))
+			throw new Error(ReadOnlyCarrierMutationMessage);
+
+		throw new Error("NotSupportedException: Collection has a fixed size.");
+	}
+
+	// CLR object hashes need identity stability for reference carriers, while JavaScript has no
+	// intrinsic object hash. WeakMap keeps the association without extending object lifetime.
+	private static readonly WeakMap<object, Number> ReferenceHashCodes = new();
+	private static Number NextReferenceHashCode = 1;
+
+	private static Number HashString(string text)
+	{
+		var hash = 17;
+		for (var index = 0; index < text.Length; index++)
+			hash = ((hash * 31) + text[index]) | 0;
+		return hash;
+	}
+
+	private static Number GetReferenceHashCode(object value)
+	{
+		if (ReferenceHashCodes.Has(value))
+			return ReferenceHashCodes.Get(value)!;
+
+		var hash = NextReferenceHashCode;
+		NextReferenceHashCode = (NextReferenceHashCode + 1) | 0;
+		if (NextReferenceHashCode == 0)
+			NextReferenceHashCode = 1;
+		ReferenceHashCodes.Set(value, hash);
+		return hash;
+	}
+
+	/// <summary>
+	/// Produces the deterministic hash contract shared by erased CLR object values.
+	/// </summary>
+	/// <remarks>
+	/// Primitive carriers retain the existing comparer hashes. Object/function carriers receive a
+	/// stable identity hash; this is the only case where JavaScript needs runtime state to model
+	/// <c>object.GetHashCode()</c>. Callers retain their own null-receiver behavior.
+	/// </remarks>
+	internal static Number GetObjectHashCode(object? value)
+	{
+		if (value == null)
+			return 0;
+
+		var type = TypeOf(value);
+		if (type == "boolean")
+			return (bool)value ? 1 : 0;
+
+		if (type == "number")
+		{
+			var number = (Number)value;
+			if (IsNaN(number) || number == 0)
+				return 0;
+			if (Math.FloorFn(number) == number && number >= -2147483648 && number <= 2147483647)
+				return number | 0;
+			return HashString(number.ToString());
+		}
+
+		if (type == "string")
+			return HashString((string)value);
+		if (type == "bigint")
+			return HashString(((BigInt)value).ToString());
+
+		if (type == "object" || type == "function")
+			return GetReferenceHashCode(value);
+
+		return HashString(value.ToString() ?? "");
+	}
+
+	/// <summary>
+	/// Materializes the CLR string representation used by object-based string APIs.
+	/// </summary>
+	/// <remarks>
+	/// These overloads have already erased the static value type, so this is the one shared
+	/// boundary that can preserve null-as-empty, the CLR Boolean spelling, and a compiled
+	/// object's virtual <c>toString</c> dispatch without duplicating ad hoc conversions.
+	/// </remarks>
+	internal static string GetStringRepresentation(object? value)
+	{
+		if (value == null)
+			return "";
+
+		if (TypeOf(value) == "boolean")
+			return (bool)value ? "True" : "False";
+
+		return value.ToString() ?? "";
+	}
+
+	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.PropertyKey property)
+		where TTarget : class
+	{
+		var value = ECMAScript.Reflect.Get(target, property, target);
+		return TypeOf(value) == "function" ? value!.Bind(target) : value;
+	}
 
 	internal static bool IsReadOnlySetCarrier<T>(Set<T> instance)
 		=> instance != null && ReadOnlyCarriers.Has(instance);
@@ -113,6 +345,35 @@ public static class RuntimeModule
 	private static void ThrowReadOnlySetClear<T>()
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
+	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.PropertyKey property, object receiver)
+	{
+		var propertyName = property.AsString;
+		if (propertyName == "add")
+			return (Func<T, Set<T>>)ThrowReadOnlySetAdd<T>;
+		if (propertyName == "delete")
+			return (Func<T, bool>)ThrowReadOnlySetDelete<T>;
+		if (propertyName == "clear")
+			return (Action)ThrowReadOnlySetClear<T>;
+
+		return BindReadOnlyCollectionProperty(target, property);
+	}
+
+	private static bool ThrowReadOnlySetPropertySet<T>(
+		Set<T> target,
+		ECMAScript.PropertyKey property,
+		object? value,
+		object receiver)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.PropertyKey property)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlySetPropertyDefine<T>(
+		Set<T> target,
+		ECMAScript.PropertyKey property,
+		ECMAScript.PropertyDescriptor attributes)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
 	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
 	{
 		if (instance == null)
@@ -121,31 +382,16 @@ public static class RuntimeModule
 		if (IsReadOnlySetCarrier(instance))
 			return instance;
 
-		ReadOnlyCarriers.Add(instance);
-
-		// Set cannot be made read-only via Object.freeze; override mutators on the carrier.
-		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptor
+		var handler = new ECMAScript.ProxyMutationHandler<Set<T>>
 		{
-			Value = (Func<T, Set<T>>)ThrowReadOnlySetAdd<T>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
-		{
-			Value = (Func<T, bool>)ThrowReadOnlySetDelete<T>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
-		{
-			Value = (Action)ThrowReadOnlySetClear<T>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		return instance;
+			Get = GetReadOnlySetProperty<T>,
+			Set = ThrowReadOnlySetPropertySet<T>,
+			DeleteProperty = ThrowReadOnlySetPropertyDelete<T>,
+			DefineProperty = ThrowReadOnlySetPropertyDefine<T>
+		};
+		var view = (Set<T>)(object)new ECMAScript.Proxy<Set<T>>(instance, handler);
+		ReadOnlyCarriers.Add(view);
+		return view;
 	}
 
 	internal static bool IsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
@@ -160,6 +406,38 @@ public static class RuntimeModule
 	private static void ThrowReadOnlyDictionaryClear<TKey, TValue>()
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
+	private static object? GetReadOnlyDictionaryProperty<TKey, TValue>(
+		Map<TKey, TValue> target,
+		ECMAScript.PropertyKey property,
+		object receiver)
+	{
+		var propertyName = property.AsString;
+		if (propertyName == "set")
+			return (Func<TKey, TValue, Map<TKey, TValue>>)ThrowReadOnlyDictionarySet<TKey, TValue>;
+		if (propertyName == "delete")
+			return (Func<TKey, bool>)ThrowReadOnlyDictionaryDelete<TKey, TValue>;
+		if (propertyName == "clear")
+			return (Action)ThrowReadOnlyDictionaryClear<TKey, TValue>;
+
+		return BindReadOnlyCollectionProperty(target, property);
+	}
+
+	private static bool ThrowReadOnlyDictionaryPropertySet<TKey, TValue>(
+		Map<TKey, TValue> target,
+		ECMAScript.PropertyKey property,
+		object? value,
+		object receiver)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.PropertyKey property)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlyDictionaryPropertyDefine<TKey, TValue>(
+		Map<TKey, TValue> target,
+		ECMAScript.PropertyKey property,
+		ECMAScript.PropertyDescriptor attributes)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
 	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
 	{
 		if (instance == null)
@@ -168,31 +446,16 @@ public static class RuntimeModule
 		if (IsReadOnlyDictionaryCarrier(instance))
 			return instance;
 
-		ReadOnlyCarriers.Add(instance);
-
-		// Map cannot be made read-only via Object.freeze; override mutators on the carrier.
-		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
+		var handler = new ECMAScript.ProxyMutationHandler<Map<TKey, TValue>>
 		{
-			Value = (Func<TKey, TValue, Map<TKey, TValue>>)ThrowReadOnlyDictionarySet<TKey, TValue>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
-		{
-			Value = (Func<TKey, bool>)ThrowReadOnlyDictionaryDelete<TKey, TValue>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
-		{
-			Value = (Action)ThrowReadOnlyDictionaryClear<TKey, TValue>,
-			Enumerable = false,
-			Writable = false,
-			Configurable = false
-		});
-		return instance;
+			Get = GetReadOnlyDictionaryProperty<TKey, TValue>,
+			Set = ThrowReadOnlyDictionaryPropertySet<TKey, TValue>,
+			DeleteProperty = ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>,
+			DefineProperty = ThrowReadOnlyDictionaryPropertyDefine<TKey, TValue>
+		};
+		var view = (Map<TKey, TValue>)(object)new ECMAScript.Proxy<Map<TKey, TValue>>(instance, handler);
+		ReadOnlyCarriers.Add(view);
+		return view;
 	}
 
 	/// <summary>
@@ -675,6 +938,18 @@ public static class RuntimeModule
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
 			=> ToString();
+	}
+
+	/// <summary>
+	/// Calendar 基类和 GregorianCalendar 目前共享 JGregorianCalendar carrier。构造函数必须
+	/// 保持 CLR 对 null calendar 的 ArgumentNullException 优先级，再委托具体日期 helper。
+	/// </summary>
+	internal static JGregorianCalendar RequireGregorianCalendar(JGregorianCalendar? calendar)
+	{
+		if (calendar == null)
+			throw new Error("ArgumentNullException: calendar is null.");
+
+		return calendar;
 	}
 
 	public static Number GetDaysInMonth(Number year, Number month)

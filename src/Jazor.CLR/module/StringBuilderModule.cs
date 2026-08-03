@@ -4,6 +4,10 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Text.StringBuilder","String")]
 public static class StringBuilderModule
 {
+	private static readonly Number DefaultCapacity = 16;
+	private static readonly Number DefaultMaxCapacity = 2147483647;
+	private static readonly WeakMap<Array<string>, Array<Number>> CapacityStates = new();
+
 	private static void EnsureInstance(Array<string> instance)
 	{
 		if (instance == null)
@@ -21,6 +25,99 @@ public static class StringBuilderModule
 		EnsureWholeNumber(value, parameterName);
 		if (value < 0)
 			throw new Error($"ArgumentOutOfRangeException: {parameterName} cannot be negative.");
+	}
+
+	private static Array<Number> GetCapacityState(Array<string> instance)
+	{
+		EnsureInstance(instance);
+		if (CapacityStates.Has(instance))
+			return CapacityStates.Get(instance)!;
+
+		// Imported StringBuilder values always enter through a constructor below. The lazy path
+		// only covers a host-provided carrier, whose existing content is the minimum capacity.
+		var capacity = instance.Length > DefaultCapacity ? instance.Length : DefaultCapacity;
+		var state = new Array<Number>(capacity, DefaultMaxCapacity);
+		CapacityStates.Set(instance, state);
+		return state;
+	}
+
+	private static Number GetInitialCapacity(Number requestedCapacity, Number maxCapacity, Number textLength)
+	{
+		EnsureNonNegative(requestedCapacity, "capacity");
+		EnsureWholeNumber(maxCapacity, "maxCapacity");
+		if (maxCapacity <= 0 || requestedCapacity > maxCapacity || textLength > maxCapacity)
+			throw new Error("ArgumentOutOfRangeException: Capacity exceeds maximum capacity.");
+
+		var capacity = requestedCapacity == 0
+			? (maxCapacity < DefaultCapacity ? maxCapacity : DefaultCapacity)
+			: requestedCapacity;
+		return textLength > capacity ? textLength : capacity;
+	}
+
+	private static Array<string> CreateBuilder(string? value, Number capacity, Number maxCapacity)
+	{
+		var text = value ?? "";
+		var initialCapacity = GetInitialCapacity(capacity, maxCapacity, text.Length);
+		var instance = new Array<string>();
+		for (var index = 0; index < text.Length; index++)
+			instance.Push(text[index].ToString());
+
+		CapacityStates.Set(instance, new Array<Number>(initialCapacity, maxCapacity));
+		return instance;
+	}
+
+	private static void EnsureTargetLength(Array<string> instance, Number targetLength)
+	{
+		var state = GetCapacityState(instance);
+		if (state[0] < instance.Length)
+			state[0] = instance.Length;
+		if (targetLength <= instance.Length)
+			return;
+		if (targetLength <= state[0])
+			return;
+		if (targetLength > state[1])
+			throw new Error("ArgumentOutOfRangeException: The length cannot be greater than the capacity.");
+
+		// CLR validates the requested new length against MaxCapacity before allocating. Its normal
+		// doubling strategy may then produce a backing capacity slightly above MaxCapacity; later
+		// appends may use that spare room but cannot trigger another expansion above the limit.
+		var doubledCapacity = state[0] * 2;
+		state[0] = targetLength > doubledCapacity ? targetLength : doubledCapacity;
+	}
+
+	private static void EnsureAdditionalCapacity(Array<string> instance, Number additionalLength)
+	{
+		if (additionalLength == 0)
+			return;
+		EnsureTargetLength(instance, instance.Length + additionalLength);
+	}
+
+	private static Number GetCapacity(Array<string> instance)
+		=> GetCapacityState(instance)[0];
+
+	private static Number GetMaxCapacity(Array<string> instance)
+		=> GetCapacityState(instance)[1];
+
+	private static void SetCapacity(Array<string> instance, Number value)
+	{
+		EnsureInstance(instance);
+		EnsureNonNegative(value, "value");
+		var state = GetCapacityState(instance);
+		if (value > state[1] || value < instance.Length)
+			throw new Error("ArgumentOutOfRangeException: Capacity is outside the supported range.");
+		state[0] = value;
+	}
+
+	private static Number EnsureCapacity(Array<string> instance, Number value)
+	{
+		EnsureInstance(instance);
+		EnsureNonNegative(value, "capacity");
+		var state = GetCapacityState(instance);
+		if (value > state[1])
+			throw new Error("ArgumentOutOfRangeException: Capacity exceeds maximum capacity.");
+		if (value > state[0])
+			state[0] = value;
+		return state[0];
 	}
 
 	private static void EnsureInsertIndex(Array<string> instance, Number index)
@@ -56,11 +153,29 @@ public static class StringBuilderModule
 		return result;
 	}
 
+	private static bool EqualsBuilder(Array<string> instance, Array<string>? other)
+	{
+		EnsureInstance(instance);
+		if (other == null || instance.Length != other.Length)
+			return false;
+
+		// StringBuilder.Equals compares the current character sequence only. Capacity state is
+		// intentionally excluded by the CLR contract, so it must not affect the Array carrier result.
+		for (var index = 0; index < instance.Length; index++)
+		{
+			if (instance[index] != other[index])
+				return false;
+		}
+
+		return true;
+	}
+
 	private static Array<string> AppendText(Array<string> instance, string? value)
 	{
 		EnsureInstance(instance);
 		if (value == null)
 			return instance;
+		EnsureAdditionalCapacity(instance, value.Length);
 
 		for (var index = 0; index < value.Length; index++)
 			instance.Push(value[index].ToString());
@@ -89,6 +204,50 @@ public static class StringBuilderModule
 		return AppendText(instance, text);
 	}
 
+	private static Array<string> AppendJoinedValues<T>(
+		Array<string> instance,
+		string? separator,
+		IEnumerable<T> values)
+	{
+		EnsureInstance(instance);
+		if (values == null)
+			throw new Error("ArgumentNullException: values is null.");
+
+		// Build before the first mutation so an aliased source follows StringBuilder's snapshot
+		// behavior, just like the string-only overloads above.
+		var text = "";
+		var first = true;
+		foreach (var value in values)
+		{
+			if (!first)
+				text += separator ?? "";
+			text += RuntimeModule.GetStringRepresentation(value);
+			first = false;
+		}
+
+		return AppendText(instance, text);
+	}
+
+	private static Array<string> AppendJoinedValues<T>(
+		Array<string> instance,
+		string? separator,
+		Array<T> values)
+	{
+		EnsureInstance(instance);
+		if (values == null)
+			throw new Error("ArgumentNullException: values is null.");
+
+		var text = "";
+		for (var index = 0; index < values.Length; index++)
+		{
+			if (index != 0)
+				text += separator ?? "";
+			text += RuntimeModule.GetStringRepresentation(values[index]);
+		}
+
+		return AppendText(instance, text);
+	}
+
 	private static Array<string> AppendArrayRange(
 		Array<string> instance,
 		Array<string>? value,
@@ -109,6 +268,7 @@ public static class StringBuilderModule
 
 		// Capture the range before mutation so self-append keeps StringBuilder snapshot semantics.
 		var snapshot = value.Slice(startIndex, startIndex + count);
+		EnsureAdditionalCapacity(instance, snapshot.Length);
 		for (var index = 0; index < snapshot.Length; index++)
 			instance.Push(snapshot[index]);
 		return instance;
@@ -131,6 +291,7 @@ public static class StringBuilderModule
 		}
 		if (startIndex > value.Length - count)
 			throw new Error("ArgumentOutOfRangeException: startIndex and count must identify a valid range.");
+		EnsureAdditionalCapacity(instance, count);
 
 		for (var offset = 0; offset < count; offset++)
 			instance.Push(value[startIndex + offset].ToString());
@@ -143,6 +304,7 @@ public static class StringBuilderModule
 		EnsureNonNegative(count, "count");
 		if (value == null || value.Length == 0 || count == 0)
 			return instance;
+		EnsureAdditionalCapacity(instance, value.Length * count);
 
 		// Reverse insertion preserves text order while using one stable array mutation primitive.
 		for (var repeat = 0; repeat < count; repeat++)
@@ -189,64 +351,70 @@ public static class StringBuilderModule
 		EnsureRange(instance, startIndex, count);
 
 		var replaced = JoinRange(instance, startIndex, count).ReplaceAll(oldValue, newValue ?? "");
+		EnsureTargetLength(instance, instance.Length - count + replaced.Length);
 		instance.Splice(startIndex, count);
 		return InsertText(instance, startIndex, replaced, 1);
 	}
 	/// <summary>
 	/// C#: new StringBuilder()
-	/// JS: [] (空数组)
+	/// JS: 字符数组与默认容量状态
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder()", "[]")]
-	public extern static System.Text.StringBuilder _2154365d1f9a2abf();
+	[Jazor(Op.Import, "System.Text.StringBuilder.StringBuilder()")]
+	public static Array<string> _2154365d1f9a2abf()
+		=> CreateBuilder(null, DefaultCapacity, DefaultMaxCapacity);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified capacity.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.StringBuilder(int)")]
 	public static Array<string> _404c94878c905b27(Number capacity)
-	{
-		EnsureNonNegative(capacity, "capacity");
-		return new Array<string>();
-	}
+		=> CreateBuilder(null, capacity, DefaultMaxCapacity);
 
 	/// <summary>
 	/// C#: new StringBuilder(string)
-	/// JS: (value ?? "").split("")
+	/// JS: 字符数组并初始化与内容相容的容量。
 	/// 保持 UTF-16 code unit 语义，与逐字符循环行为一致。
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.StringBuilder(string)", "(__arg1 ?? '').split('')")]
-	public extern static System.Text.StringBuilder _c2c8c4778873ccdc(string? value);
+	[Jazor(Op.Import, "System.Text.StringBuilder.StringBuilder(string)")]
+	public static Array<string> _c2c8c4778873ccdc(string? value)
+		=> CreateBuilder(value, DefaultCapacity, DefaultMaxCapacity);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class using the specified string and capacity.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.StringBuilder(string, int)")]
 	public static Array<string> _8ddc5378f62c27cc(string? value, Number capacity)
-	{
-		EnsureNonNegative(capacity, "capacity");
-		return AppendText(new Array<string>(), value);
-	}
+		=> CreateBuilder(value, capacity, DefaultMaxCapacity);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class from the specified substring and capacity.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.StringBuilder(string, int, int, int)")]
 	public static Array<string> _70c61ab8ef3313c3(string? value, Number startIndex, Number length, Number capacity)
 	{
-		EnsureNonNegative(capacity, "capacity");
-		return AppendStringRange(new Array<string>(), value ?? "", startIndex, length);
+		var text = value ?? "";
+		EnsureNonNegative(startIndex, "startIndex");
+		EnsureNonNegative(length, "length");
+		if (startIndex > text.Length - length)
+			throw new Error("ArgumentOutOfRangeException: startIndex and length must identify a valid range.");
+		return CreateBuilder(text.Substring(startIndex, length), capacity, DefaultMaxCapacity);
 	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Text.StringBuilder" /> class that starts with a specified capacity and can grow to a specified maximum.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.StringBuilder(int, int)")]
-	public extern static System.Text.StringBuilder _f69cee28dea8bcdc(Number capacity, Number maxCapacity);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.StringBuilder(int, int)")]
+	public static Array<string> _f69cee28dea8bcdc(Number capacity, Number maxCapacity)
+		=> CreateBuilder(null, capacity, maxCapacity);
 
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Capacity.get")]
-	public extern static Number _20274b0eadfc0539(System.Text.StringBuilder instance);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.Capacity.get")]
+	public static Number _20274b0eadfc0539(Array<string> instance)
+		=> GetCapacity(instance);
 
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Capacity.set")]
-	public extern static void _d58ab6215b243f4f(System.Text.StringBuilder instance, Number value);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.Capacity.set")]
+	public static void _d58ab6215b243f4f(Array<string> instance, Number value)
+		=> SetCapacity(instance, value);
 
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.MaxCapacity.get")]
-	public extern static Number _32a883f2233e3134(System.Text.StringBuilder instance);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.MaxCapacity.get")]
+	public static Number _32a883f2233e3134(Array<string> instance)
+		=> GetMaxCapacity(instance);
 
 	///<summary>Ensures that the capacity of this instance of <see cref="T:System.Text.StringBuilder" /> is at least the specified value.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.EnsureCapacity(int)")]
-	public extern static Number _e957bcfaa166161c(System.Text.StringBuilder instance, Number capacity);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.EnsureCapacity(int)")]
+	public static Number _e957bcfaa166161c(Array<string> instance, Number capacity)
+		=> EnsureCapacity(instance, capacity);
 
 	/// <summary>
 	/// C#: sb.ToString()
@@ -287,6 +455,7 @@ public static class StringBuilderModule
 			instance.Splice(value, instance.Length - value);
 			return;
 		}
+		EnsureTargetLength(instance, value);
 
 		while (instance.Length < value)
 			instance.Push("\0");
@@ -322,10 +491,11 @@ public static class StringBuilderModule
 
 	/// <summary>
 	/// C#: sb.Append(string)
-	/// JS: push(...(value ?? "").split(""))，再返回 instance
+	/// JS: 通过 helper 维护容量和最大容量。
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.Append(string)", "(__arg1.push(...(__arg2 ?? '').split('')), __arg1)")]
-	public extern static System.Text.StringBuilder _2879b76db56f25fb(Array<string> instance, string? value);
+	[Jazor(Op.Import, "System.Text.StringBuilder.Append(string)")]
+	public static Array<string> _2879b76db56f25fb(Array<string> instance, string? value)
+		=> AppendText(instance, value);
 
 	///<summary>Appends a copy of a specified substring to this instance.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.Append(string, int, int)")]
@@ -344,17 +514,22 @@ public static class StringBuilderModule
 
 	/// <summary>
 	/// C#: sb.AppendLine()
-	/// JS: push('\n')，再返回 instance
+	/// JS: 通过 helper 维护容量和最大容量。
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine()", "(__arg1.push('\\n'), __arg1)")]
-	public extern static System.Text.StringBuilder _35fe8bcf463e879b(Array<string> instance);
+	[Jazor(Op.Import, "System.Text.StringBuilder.AppendLine()")]
+	public static Array<string> _35fe8bcf463e879b(Array<string> instance)
+		=> AppendText(instance, "\n");
 
 	/// <summary>
 	/// C#: sb.AppendLine(string)
-	/// JS: 先追加 value，再 push('\n')，最后返回 instance
+	/// JS: 先追加 value，再追加换行，容量状态保持与两次 CLR append 一致。
 	/// </summary>
-	[Jazor(Op.Inline, "System.Text.StringBuilder.AppendLine(string)", "(__arg1.push(...(__arg2 ?? '').split('')), __arg1.push('\\n'), __arg1)")]
-	public extern static System.Text.StringBuilder _c06aaa44e213e405(Array<string> instance, string? value);
+	[Jazor(Op.Import, "System.Text.StringBuilder.AppendLine(string)")]
+	public static Array<string> _c06aaa44e213e405(Array<string> instance, string? value)
+	{
+		AppendText(instance, value);
+		return AppendText(instance, "\n");
+	}
 
 	///<summary>Copies the characters from a specified segment of this instance to a specified segment of a destination <see cref="T:System.Char" /> array.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.CopyTo(int, char[], int, int)")]
@@ -466,8 +641,9 @@ public static class StringBuilderModule
 		=> AppendText(instance, value.ToString());
 
 	///<summary>Appends the string representation of a specified object to this instance.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Append(object)")]
-	public extern static System.Text.StringBuilder _06379efa8addb10d(System.Text.StringBuilder instance, object? value);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.Append(object)")]
+	public static Array<string> _06379efa8addb10d(Array<string> instance, object? value)
+		=> AppendText(instance, RuntimeModule.GetStringRepresentation(value));
 
 	///<summary>Appends the string representation of the Unicode characters in a specified array to this instance.</summary>
 	[Jazor(Op.Import ,"System.Text.StringBuilder.Append(char[])")]
@@ -500,16 +676,19 @@ public static class StringBuilderModule
 	public extern static Array<object?> _0192e43c680249a7(System.Text.StringBuilder instance, Intl.NumberFormat? provider, object handler);
 
 	///<summary>Concatenates the string representations of the elements in the provided array of objects, using the specified separator between each member, then appends the result to the current instance of the string builder.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params object[])")]
-	public extern static System.Text.StringBuilder _8bc8cc43c6d93195(System.Text.StringBuilder instance, string? separator,  object values);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.AppendJoin(string, params object[])")]
+	public static Array<string> _8bc8cc43c6d93195(Array<string> instance, string? separator, Array<object?> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates the string representations of the elements in the provided span of objects, using the specified separator between each member, then appends the result to the current instance of the string builder.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<object>)")]
-	public extern static System.Text.StringBuilder _f4377679fddd51ad(System.Text.StringBuilder instance, string? separator,  object values);
+	[Jazor(Op.Import, "System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<object>)")]
+	public static Array<string> _f4377679fddd51ad(Array<string> instance, string? separator, Array<object?> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates and appends the members of a collection, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin<T>(string, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static System.Text.StringBuilder _8d04089684a00c7b<T>(System.Text.StringBuilder instance, string? separator, Array<T> values);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.AppendJoin<T>(string, System.Collections.Generic.IEnumerable<T>)")]
+	public static Array<string> _8d04089684a00c7b<T>(Array<string> instance, string? separator, IEnumerable<T> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates the strings of the provided array, using the specified separator between each string, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Import, "System.Text.StringBuilder.AppendJoin(string, params string[])")]
@@ -522,16 +701,19 @@ public static class StringBuilderModule
 		=> AppendJoinedStrings(instance, separator, values);
 
 	///<summary>Concatenates the string representations of the elements in the provided array of objects, using the specified char separator between each member, then appends the result to the current instance of the string builder.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(char, params object[])")]
-	public extern static System.Text.StringBuilder _a5aab658026ac255(System.Text.StringBuilder instance, Number separator,  object values);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.AppendJoin(char, params object[])")]
+	public static Array<string> _a5aab658026ac255(Array<string> instance, string separator, Array<object?> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates the string representations of the elements in the provided span of objects, using the specified char separator between each member, then appends the result to the current instance of the string builder.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin(char, params System.ReadOnlySpan<object>)")]
-	public extern static System.Text.StringBuilder _f9ca702aaa0e6322(System.Text.StringBuilder instance, Number separator,  object values);
+	[Jazor(Op.Import, "System.Text.StringBuilder.AppendJoin(char, params System.ReadOnlySpan<object>)")]
+	public static Array<string> _f9ca702aaa0e6322(Array<string> instance, string separator, Array<object?> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates and appends the members of a collection, using the specified char separator between each member.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.AppendJoin<T>(char, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static System.Text.StringBuilder _3510fcab582042e0<T>(System.Text.StringBuilder instance, Number separator, Array<T> values);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.AppendJoin<T>(char, System.Collections.Generic.IEnumerable<T>)")]
+	public static Array<string> _3510fcab582042e0<T>(Array<string> instance, string separator, IEnumerable<T> values)
+		=> AppendJoinedValues(instance, separator, values);
 
 	///<summary>Concatenates the strings of the provided array, using the specified char separator between each string, then appends the result to the current instance of the string builder.</summary>
 	[Jazor(Op.Import, "System.Text.StringBuilder.AppendJoin(char, params string[])")]
@@ -624,8 +806,9 @@ public static class StringBuilderModule
 		=> InsertText(instance, index, value.ToString(), 1);
 
 	///<summary>Inserts the string representation of an object into this instance at the specified character position.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Insert(int, object)")]
-	public extern static System.Text.StringBuilder _463fe06f693b73f1(System.Text.StringBuilder instance, Number index, object? value);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.Insert(int, object)")]
+	public static Array<string> _463fe06f693b73f1(Array<string> instance, Number index, object? value)
+		=> InsertText(instance, index, RuntimeModule.GetStringRepresentation(value), 1);
 
 	///<summary>Inserts the sequence of characters into this instance at the specified character position.</summary>
 	[Jazor(Op.Import, "System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)")]
@@ -714,8 +897,9 @@ public static class StringBuilderModule
 			instance.Length);
 
 	///<summary>Returns a value indicating whether this instance is equal to a specified object.</summary>
-	[Jazor(Op.Discard ,"System.Text.StringBuilder.Equals(System.Text.StringBuilder)")]
-	public extern static bool _843038bb92e97c63(System.Text.StringBuilder instance, object sb);
+	[Jazor(Op.Import ,"System.Text.StringBuilder.Equals(System.Text.StringBuilder)")]
+	public static bool _843038bb92e97c63(Array<string> instance, Array<string>? sb)
+		=> EqualsBuilder(instance, sb);
 
 	///<summary>Returns a value indicating whether the characters in this instance are equal to the characters in a specified read-only character span.</summary>
 	[Jazor(Op.Import, "System.Text.StringBuilder.Equals(System.ReadOnlySpan<char>)")]

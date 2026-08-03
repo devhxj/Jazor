@@ -6,6 +6,120 @@ internal static class ClrRuntimeStringBuilderScenarios
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
+        Success(
+            "string-builder.capacity.default-constructor",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke("System.Text.StringBuilder.StringBuilder()")],
+            Number(16)),
+        Success(
+            "string-builder.capacity.zero-request-uses-default",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int)", Number(0))],
+            Number(16)),
+        Success(
+            "string-builder.capacity.string-constructor-fits-content",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke("System.Text.StringBuilder.StringBuilder(string)", Text("01234567890123456789"))],
+            Number(20)),
+        Success(
+            "string-builder.capacity.append-grows-by-doubling",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke(
+                "System.Text.StringBuilder.Append(char, int)",
+                Invoke("System.Text.StringBuilder.StringBuilder(int)", Number(3)),
+                Text("x"),
+                Number(4))],
+            Number(6)),
+        Success(
+            "string-builder.capacity.small-append-may-grow-above-maximum",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke(
+                "System.Text.StringBuilder.Append(char, int)",
+                Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(4), Number(5)),
+                Text("x"),
+                Number(5))],
+            Number(8)),
+        Success(
+            "string-builder.capacity.spare-room-above-maximum-remains-usable",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke(
+                "System.Text.StringBuilder.Append(char, int)",
+                Invoke(
+                    "System.Text.StringBuilder.Append(char, int)",
+                    Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(4), Number(5)),
+                    Text("x"),
+                    Number(5)),
+                Text("x"),
+                Number(3))],
+            Number(8)),
+        Failure(
+            "string-builder.capacity.above-maximum-spare-room-cannot-grow-again",
+            "System.Text.StringBuilder.Append(char, int)",
+            [
+                Invoke(
+                    "System.Text.StringBuilder.Append(char, int)",
+                    Invoke(
+                        "System.Text.StringBuilder.Append(char, int)",
+                        Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(4), Number(5)),
+                        Text("x"),
+                        Number(5)),
+                    Text("x"),
+                    Number(3)),
+                Text("x"),
+                Number(1)
+            ],
+            "ArgumentOutOfRangeException"),
+        Success(
+            "string-builder.max-capacity.bounded-constructor",
+            "System.Text.StringBuilder.MaxCapacity.get",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(2), Number(5))],
+            Number(5)),
+        Success(
+            "string-builder.capacity.bounded-zero-request-uses-maximum",
+            "System.Text.StringBuilder.Capacity.get",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(0), Number(5))],
+            Number(5)),
+        Failure(
+            "string-builder.constructor.rejects-capacity-above-maximum",
+            "System.Text.StringBuilder.StringBuilder(int, int)",
+            [Number(6), Number(5)],
+            "ArgumentOutOfRangeException"),
+        Success(
+            "string-builder.ensure-capacity.expands-exactly",
+            "System.Text.StringBuilder.EnsureCapacity(int)",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(2), Number(5)), Number(5)],
+            Number(5)),
+        Success(
+            "string-builder.capacity.setter-persists",
+            "System.Text.StringBuilder.Capacity.get",
+            [
+                Reference("capacity-builder", Invoke("System.Text.StringBuilder.StringBuilder(int)", Number(2))),
+                Invoke(
+                    "System.Text.StringBuilder.Capacity.set",
+                    Reference("capacity-builder", Array()),
+                    Number(7))
+            ],
+            Number(7)),
+        Failure(
+            "string-builder.capacity.setter-rejects-below-length",
+            "System.Text.StringBuilder.Capacity.set",
+            [Invoke("System.Text.StringBuilder.StringBuilder(string)", Text("abcd")), Number(3)],
+            "ArgumentOutOfRangeException"),
+        Failure(
+            "string-builder.ensure-capacity.rejects-above-maximum",
+            "System.Text.StringBuilder.EnsureCapacity(int)",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(2), Number(5)), Number(6)],
+            "ArgumentOutOfRangeException"),
+        Failure(
+            "string-builder.ensure-capacity.null-receiver-precedes-argument-validation",
+            "System.Text.StringBuilder.EnsureCapacity(int)",
+            [Null(), Number(-1)],
+            "NullReferenceException"),
+        Failure(
+            "string-builder.max-capacity.rejects-growth",
+            "System.Text.StringBuilder.Append(char, int)",
+            [Invoke("System.Text.StringBuilder.StringBuilder(int, int)", Number(2), Number(5)), Text("x"), Number(6)],
+            "ArgumentOutOfRangeException"),
         Success("string-builder.ctor.capacity", "System.Text.StringBuilder.StringBuilder(int)", [Number(8)], Array()),
         Failure("string-builder.ctor.capacity.rejects-negative", "System.Text.StringBuilder.StringBuilder(int)", [Number(-1)], "ArgumentOutOfRangeException"),
         Success("string-builder.ctor.text-capacity", "System.Text.StringBuilder.StringBuilder(string, int)", [Text("Vue"), Number(1)], Characters("Vue")),
@@ -28,7 +142,10 @@ internal static class ClrRuntimeStringBuilderScenarios
 
         Success("string-builder.append.character-repeat", "System.Text.StringBuilder.Append(char, int)", [Characters("a"), Text("b"), Number(3)], Characters("abbb")),
         Success("string-builder.append.character-range", "System.Text.StringBuilder.Append(char[], int, int)", [Characters("a"), Characters("WXYZ"), Number(1), Number(2)], Characters("aXY")),
+        Success("string-builder.append.string", "System.Text.StringBuilder.Append(string)", [Characters("a"), Text("bc")], Characters("abc")),
         Success("string-builder.append.string-range", "System.Text.StringBuilder.Append(string, int, int)", [Characters("a"), Text("WXYZ"), Number(1), Number(2)], Characters("aXY")),
+        Success("string-builder.append-line", "System.Text.StringBuilder.AppendLine()", [Characters("a")], Characters("a\n")),
+        Success("string-builder.append-line.string", "System.Text.StringBuilder.AppendLine(string)", [Characters("a"), Text("bc")], Characters("abc\n")),
         Failure("string-builder.append.string-range.rejects-null", "System.Text.StringBuilder.Append(string, int, int)", [Characters("a"), Null(), Number(0), Number(1)], "ArgumentNullException"),
         SuccessMutation(
             "string-builder.append.builder-self-snapshots",
@@ -59,12 +176,21 @@ internal static class ClrRuntimeStringBuilderScenarios
         Success("string-builder.append.uint16", "System.Text.StringBuilder.Append(ushort)", [Array(), Number(65535)], Characters("65535")),
         Success("string-builder.append.uint32", "System.Text.StringBuilder.Append(uint)", [Array(), Number(4294967295)], Characters("4294967295")),
         Success("string-builder.append.uint64", "System.Text.StringBuilder.Append(ulong)", [Array(), UnsignedBig("18446744073709551615")], Characters("18446744073709551615")),
+		Success("string-builder.append.object-boolean", "System.Text.StringBuilder.Append(object)", [Characters("a"), Bool(true)], Characters("aTrue")),
+		Success("string-builder.append.object-null", "System.Text.StringBuilder.Append(object)", [Characters("a"), Null()], Characters("a")),
         Success("string-builder.append.character-array", "System.Text.StringBuilder.Append(char[])", [Characters("a"), Characters("bc")], Characters("abc")),
         Success("string-builder.append.character-span", "System.Text.StringBuilder.Append(System.ReadOnlySpan<char>)", [Characters("a"), Text("bc")], Characters("abc")),
         Success("string-builder.append.array-backed-character-span", "System.Text.StringBuilder.Append(System.ReadOnlySpan<char>)", [Characters("a"), Characters("bc")], Characters("abc")),
         Success("string-builder.append.default-character-span", "System.Text.StringBuilder.Append(System.ReadOnlySpan<char>)", [Characters("ab"), Null()], Characters("ab")),
         Success("string-builder.append-join.string-array", "System.Text.StringBuilder.AppendJoin(string, params string[])", [Characters("a"), Text("|"), Array(Text("b"), Null(), Text("c"))], Characters("ab||c")),
-        Success("string-builder.append-join.string-span", "System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<string>)", [Characters("a"), Null(), Array(Text("b"), Text("c"))], Characters("abc")),
+		Success("string-builder.append-join.string-span", "System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<string>)", [Characters("a"), Null(), Array(Text("b"), Text("c"))], Characters("abc")),
+		Success("string-builder.append-join.object-array", "System.Text.StringBuilder.AppendJoin(string, params object[])", [Characters("a"), Text("|"), Array(Bool(true), Null(), Number(2))], Characters("aTrue||2")),
+		Success("string-builder.append-join.object-span", "System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<object>)", [Characters("a"), Text("|"), Array(Bool(true), Null(), Number(2))], Characters("aTrue||2")),
+		Success("string-builder.append-join.generic-enumerable", "System.Text.StringBuilder.AppendJoin<T>(string, System.Collections.Generic.IEnumerable<T>)", [Characters("a"), Text("-"), Array(Number(1), Number(2))], Characters("a1-2")),
+		Failure("string-builder.append-join.object-array.rejects-null", "System.Text.StringBuilder.AppendJoin(string, params object[])", [Characters("a"), Text("|"), Null()], "ArgumentNullException"),
+		Success("string-builder.append-join.character-object-array", "System.Text.StringBuilder.AppendJoin(char, params object[])", [Characters("a"), Text("|"), Array(Bool(true), Null(), Number(2))], Characters("aTrue||2")),
+		Success("string-builder.append-join.character-object-span", "System.Text.StringBuilder.AppendJoin(char, params System.ReadOnlySpan<object>)", [Characters("a"), Text("|"), Array(Bool(true), Null(), Number(2))], Characters("aTrue||2")),
+		Success("string-builder.append-join.character-generic-enumerable", "System.Text.StringBuilder.AppendJoin<T>(char, System.Collections.Generic.IEnumerable<T>)", [Characters("a"), Text("-"), Array(Number(1), Number(2))], Characters("a1-2")),
         Success("string-builder.append-join.character-array", "System.Text.StringBuilder.AppendJoin(char, params string[])", [Characters("a"), Text("|"), Array(Text("b"), Null(), Text("c"))], Characters("ab||c")),
         Success("string-builder.append-join.character-span", "System.Text.StringBuilder.AppendJoin(char, params System.ReadOnlySpan<string>)", [Characters("a"), Text("/"), Array(Text("b"), Text("c"))], Characters("ab/c")),
         Failure("string-builder.append-join.rejects-null-values", "System.Text.StringBuilder.AppendJoin(string, params string[])", [Characters("a"), Text("|"), Null()], "ArgumentNullException"),
@@ -85,6 +211,8 @@ internal static class ClrRuntimeStringBuilderScenarios
         Success("string-builder.insert.uint16", "System.Text.StringBuilder.Insert(int, ushort)", [Characters("ab"), Number(1), Number(65535)], Characters("a65535b")),
         Success("string-builder.insert.uint32", "System.Text.StringBuilder.Insert(int, uint)", [Characters("ab"), Number(1), Number(4294967295)], Characters("a4294967295b")),
         Success("string-builder.insert.uint64", "System.Text.StringBuilder.Insert(int, ulong)", [Characters("ab"), Number(1), UnsignedBig("18446744073709551615")], Characters("a18446744073709551615b")),
+		Success("string-builder.insert.object-boolean", "System.Text.StringBuilder.Insert(int, object)", [Characters("ab"), Number(1), Bool(false)], Characters("aFalseb")),
+		Success("string-builder.insert.object-null", "System.Text.StringBuilder.Insert(int, object)", [Characters("ab"), Number(1), Null()], Characters("ab")),
         Success("string-builder.insert.character-span", "System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)", [Characters("ad"), Number(1), Text("bc")], Characters("abcd")),
         Success("string-builder.insert.array-backed-character-span", "System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)", [Characters("ad"), Number(1), Characters("bc")], Characters("abcd")),
         Success("string-builder.insert.default-character-span", "System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)", [Characters("ab"), Number(1), Null()], Characters("ab")),
@@ -96,6 +224,32 @@ internal static class ClrRuntimeStringBuilderScenarios
         Success("string-builder.replace.array-backed-character-span", "System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)", [Characters("ababa"), Characters("aba"), Characters("X")], Characters("Xba")),
         Success("string-builder.replace.character-span-with-default", "System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)", [Characters("ababa"), Text("aba"), Null()], Characters("ba")),
         Failure("string-builder.replace.character-span.rejects-default-old-value", "System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)", [Characters("abc"), Null(), Text("x")], "ArgumentException"),
+        Success(
+            "string-builder.equals.builder-compares-content-not-capacity",
+            "System.Text.StringBuilder.Equals(System.Text.StringBuilder)",
+            [
+                Invoke("System.Text.StringBuilder.StringBuilder(string)", Text("Jazor")),
+                Invoke(
+                    "System.Text.StringBuilder.Append(string)",
+                    Invoke("System.Text.StringBuilder.StringBuilder(int)", Number(32)),
+                    Text("Jazor"))
+            ],
+            Bool(true)),
+        Success(
+            "string-builder.equals.builder-rejects-different-content",
+            "System.Text.StringBuilder.Equals(System.Text.StringBuilder)",
+            [Characters("Jazor"), Characters("Razor")],
+            Bool(false)),
+        Success(
+            "string-builder.equals.builder-accepts-null",
+            "System.Text.StringBuilder.Equals(System.Text.StringBuilder)",
+            [Characters("Jazor"), Null()],
+            Bool(false)),
+        Failure(
+            "string-builder.equals.builder-null-receiver",
+            "System.Text.StringBuilder.Equals(System.Text.StringBuilder)",
+            [Null(), Characters("Jazor")],
+            "NullReferenceException"),
         Success("string-builder.equals.character-span", "System.Text.StringBuilder.Equals(System.ReadOnlySpan<char>)", [Characters("Jazor"), Text("Jazor")], Bool(true)),
         Success("string-builder.equals.array-backed-character-span", "System.Text.StringBuilder.Equals(System.ReadOnlySpan<char>)", [Characters("Jazor"), Characters("Jazor")], Bool(true)),
         Success("string-builder.equals.default-character-span", "System.Text.StringBuilder.Equals(System.ReadOnlySpan<char>)", [Array(), Null()], Bool(true)),
@@ -146,4 +300,6 @@ internal static class ClrRuntimeStringBuilderScenarios
     private static ClrRuntimeValue Characters(string value)
         => ClrRuntimeValue.Array(value.Select(static character => Text(character.ToString())).ToArray());
     private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value) => ClrRuntimeValue.Reference(id, value);
+    private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
+        => ClrRuntimeValue.Invoke(member, arguments);
 }

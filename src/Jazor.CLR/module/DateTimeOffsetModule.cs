@@ -1440,8 +1440,12 @@ public static class DateTimeOffsetModule
 	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTimeOffset" /> structure using the specified year, month, day, hour, minute, second, millisecond, and offset of a specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")]
-	public extern static RuntimeModule.JDateTimeOffset _61ea80919619bab9(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar, RuntimeModule.JTimeSpan offset);
+	[Jazor(Op.Import ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")]
+	public static RuntimeModule.JDateTimeOffset _61ea80919619bab9(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, RuntimeModule.JGregorianCalendar? calendar, RuntimeModule.JTimeSpan offset)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _6abaa2b2082f575c(year, month, day, hour, minute, second, millisecond, offset);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTimeOffset" /> structure using the specified <paramref name="year" />, <paramref name="month" />, <paramref name="day" />, <paramref name="hour" />, <paramref name="minute" />, <paramref name="second" />, <paramref name="millisecond" />, <paramref name="microsecond" /> and <paramref name="offset" />.</summary>
 	[Jazor(Op.Import ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.TimeSpan)")]
@@ -1454,8 +1458,12 @@ public static class DateTimeOffsetModule
 	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTimeOffset" /> structure using the specified <paramref name="year" />, <paramref name="month" />, <paramref name="day" />, <paramref name="hour" />, <paramref name="minute" />, <paramref name="second" />, <paramref name="millisecond" />, <paramref name="microsecond" /> and <paramref name="offset" />.</summary>
-	[Jazor(Op.Discard ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")]
-	public extern static RuntimeModule.JDateTimeOffset _d027561c1f6af451(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, RuntimeModule.JTimeSpan offset);
+	[Jazor(Op.Import ,"System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")]
+	public static RuntimeModule.JDateTimeOffset _d027561c1f6af451(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, RuntimeModule.JGregorianCalendar? calendar, RuntimeModule.JTimeSpan offset)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _04123d597aa761a3(year, month, day, hour, minute, second, millisecond, microsecond, offset);
+	}
 
 	/// <summary>
 	/// C#: DateTimeOffset.UtcNow

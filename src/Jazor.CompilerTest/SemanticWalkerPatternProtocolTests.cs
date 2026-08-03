@@ -290,7 +290,7 @@ internal static class PatternProtocolCatalog
                 """,
             "Array.isArray(values)",
             "values.length >= 1",
-            "rest = values.slice(1, 1 + (values.length - 1))"),
+            "rest = slice(values, 1, values.length - 1)"),
         Success(
             "nested.fixed-arrays",
             "carrier=int[][];pattern=nested-list;position=all;shape=fixed",

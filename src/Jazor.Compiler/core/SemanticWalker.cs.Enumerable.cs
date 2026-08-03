@@ -30,7 +30,7 @@ public partial class SemanticWalker
 		var sourceType = originOperation is IInvocationOperation invocation
 			? UnwrapImplicitConversions(invocation.Arguments[0].Value).Type
 			: method.Parameters[0].Type;
-		if (TryBuildEnumerableArrayLikeIntrinsic(method, arguments, sourceType, out var loweredExpression))
+		if (TryBuildEnumerableArrayLikeIntrinsic(method, arguments, sourceType, context, out var loweredExpression))
 			return loweredExpression;
 
 		return HandleTransformationFailure<Expression>(

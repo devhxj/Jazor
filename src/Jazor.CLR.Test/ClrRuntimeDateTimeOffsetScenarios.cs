@@ -29,6 +29,10 @@ internal static class ClrRuntimeDateTimeOffsetScenarios
         SuccessOffset("datetime-offset.ctor.components-seconds", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, System.TimeSpan)", [Number(2024), Number(2), Number(29), Number(23), Number(59), Number(58), Span(TimeSpan.FromHours(-4))], new DateTimeOffset(2024, 2, 29, 23, 59, 58, TimeSpan.FromHours(-4))),
         SuccessOffset("datetime-offset.ctor.components-milliseconds", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.TimeSpan)", [Number(2024), Number(2), Number(29), Number(23), Number(59), Number(58), Number(999), Span(TimeSpan.FromHours(-4))], new DateTimeOffset(2024, 2, 29, 23, 59, 58, 999, TimeSpan.FromHours(-4))),
         SuccessOffset("datetime-offset.ctor.components-microseconds", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.TimeSpan)", [Number(2024), Number(2), Number(29), Number(23), Number(59), Number(58), Number(999), Number(321), Span(TimeSpan.FromHours(-4))], new DateTimeOffset(2024, 2, 29, 23, 59, 58, 999, 321, TimeSpan.FromHours(-4))),
+        SuccessOffset("datetime-offset.ctor.calendar.milliseconds", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)", [Number(2024), Number(2), Number(29), Number(23), Number(59), Number(58), Number(999), Gregorian(), Span(TimeSpan.FromHours(-4))], new DateTimeOffset(2024, 2, 29, 23, 59, 58, 999, TimeSpan.FromHours(-4))),
+        SuccessOffset("datetime-offset.ctor.calendar.microseconds", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)", [Number(2024), Number(2), Number(29), Number(23), Number(59), Number(58), Number(999), Number(321), Gregorian(), Span(TimeSpan.FromHours(-4))], new DateTimeOffset(2024, 2, 29, 23, 59, 58, 999, 321, TimeSpan.FromHours(-4))),
+        Failure("datetime-offset.ctor.calendar.null-precedes-offset-validation", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)", [Number(2024), Number(1), Number(1), Number(0), Number(0), Number(0), Number(0), Null(), Span(TimeSpan.FromHours(15))], "ArgumentNullException"),
+        Failure("datetime-offset.ctor.calendar.valid-calendar-validates-offset", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)", [Number(2024), Number(1), Number(1), Number(0), Number(0), Number(0), Number(0), Gregorian(), Span(TimeSpan.FromHours(15))], "ArgumentOutOfRangeException"),
         Failure("datetime-offset.ctor.invalid-calendar-day", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, System.TimeSpan)", [Number(2023), Number(2), Number(29), Number(0), Number(0), Number(0), Span(TimeSpan.Zero)], "ArgumentOutOfRangeException"),
         Failure("datetime-offset.ctor.invalid-microsecond", "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.TimeSpan)", [Number(2024), Number(1), Number(1), Number(0), Number(0), Number(0), Number(0), Number(1000), Span(TimeSpan.Zero)], "ArgumentOutOfRangeException"),
 
@@ -151,6 +155,9 @@ internal static class ClrRuntimeDateTimeOffsetScenarios
 
     private static ClrRuntimeValue TimeOnlyValue(TimeOnly value)
         => Invoke("System.TimeOnly.TimeOnly(long)", Big(value.Ticks));
+
+    private static ClrRuntimeValue Gregorian()
+        => Invoke("System.Globalization.GregorianCalendar.GregorianCalendar()");
 
     private static ClrRuntimeValue Span(TimeSpan value)
         => Invoke("System.TimeSpan.TimeSpan(long)", Big(value.Ticks));

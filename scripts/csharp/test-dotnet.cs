@@ -112,11 +112,14 @@ if (testTargets.Contains(styleTestProject, StringComparer.OrdinalIgnoreCase))
 }
 
 var sharedBuildPathArguments = ScriptHelpers.GetSharedBuildPathArguments(repoRoot, options.BaseOutputPath, options.BaseIntermediateOutputPath);
-var buildTarget = testTargets.Length > 1 ? Path.Combine(repoRoot, "Jazor.slnx") : testTargets[0];
-
-var buildArgs = new List<string> { "build", buildTarget, "-c", options.Configuration, "/m:1", "/p:BuildInParallel=false", "-v", "minimal" };
-buildArgs.AddRange(sharedBuildPathArguments);
-await ScriptHelpers.RunDotNetAsync(buildArgs, repoRoot, dotnetCliHome);
+foreach (var testTarget in testTargets)
+{
+    // Build exactly the projects this runner will execute. Package-consumer samples
+    // validate through their own local-pack workflow and may target the next unreleased version.
+    var buildArgs = new List<string> { "build", testTarget, "-c", options.Configuration, "/m:1", "/p:BuildInParallel=false", "-v", "minimal" };
+    buildArgs.AddRange(sharedBuildPathArguments);
+    await ScriptHelpers.RunDotNetAsync(buildArgs, repoRoot, dotnetCliHome);
+}
 
 foreach (var testProject in testTargets)
 {

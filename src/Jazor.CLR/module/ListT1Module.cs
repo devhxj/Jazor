@@ -17,6 +17,9 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.List<T>","Array")]
 public static class ListT1Module<T>
 {
+	private static readonly Number MaxListCapacity = 2147483591;
+	private static readonly WeakMap<Array<T>, Number> Capacities = new();
+
 	[ECMAScriptInline("null")]
 	private extern static T? MissingValue();
 
@@ -24,6 +27,76 @@ public static class ListT1Module<T>
 	{
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static Number GetCapacity(Array<T> instance)
+	{
+		EnsureInstance(instance);
+		if (!Capacities.Has(instance))
+			Capacities.Set(instance, instance.Length);
+		return Capacities.Get(instance)!;
+	}
+
+	private static Array<T> CreateWithCapacity(Number capacity)
+	{
+		EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+		if (capacity < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+		if (capacity > MaxListCapacity)
+			throw new Error("OutOfMemoryException: requested list capacity is too large.");
+
+		var instance = RuntimeModule.MarkAsMutableListCarrier(new Array<T>());
+		Capacities.Set(instance, capacity);
+		return instance;
+	}
+
+	private static Number ExpandCapacity(Number currentCapacity, Number requiredCapacity)
+	{
+		if (requiredCapacity > MaxListCapacity)
+			throw new Error("OutOfMemoryException: requested list capacity is too large.");
+
+		Number expanded = currentCapacity == 0 ? 4 : currentCapacity * 2;
+		if (expanded > MaxListCapacity)
+			expanded = MaxListCapacity;
+		return expanded < requiredCapacity ? requiredCapacity : expanded;
+	}
+
+	private static Number EnsureCapacityCore(Array<T> instance, Number capacity)
+	{
+		EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+		if (capacity < 0)
+			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+
+		var current = GetCapacity(instance);
+		if (capacity <= current)
+			return current;
+
+		var expanded = ExpandCapacity(current, capacity);
+		Capacities.Set(instance, expanded);
+		return expanded;
+	}
+
+	private static void AddCore(Array<T> instance, T item)
+	{
+		EnsureInstance(instance);
+		EnsureCapacityCore(instance, instance.Length + 1);
+		instance.Push(item);
+	}
+
+	private static Array<T> CreateFrom(IEnumerable<T> collection)
+	{
+		if (collection is null)
+			throw new Error("ArgumentNullException: collection is null.");
+
+		var capacity = collection is Array<T> array
+			? array.Length
+			: collection is Set<T> set
+				? set.Size
+				: 0;
+		var result = CreateWithCapacity(capacity);
+		foreach (var item in collection)
+			AddCore(result, item);
+		return result;
 	}
 
 	private static void EnsureWholeNumber(Number value, string message)
@@ -187,40 +260,53 @@ public static class ListT1Module<T>
 		{
 			var originalLength = source.Length;
 			for (uint i = 0; i < originalLength; i++)
-				instance.Push(source[i]);
+				AddCore(instance, source[i]);
 			return;
 		}
 
 		foreach (var item in collection)
-			instance.Push(item);
+			AddCore(instance, item);
 	}
 
 	/// <summary>
 	/// C#: new List&lt;T&gt;()
 	/// JS: []
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.List()", "[]")]
-	public extern static Array<T> _01dceb3b4d503bbf();
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.List()", "createDefault")]
+	public static Array<T> CreateDefault()
+		=> CreateWithCapacity(0);
 
 	/// <summary>
 	/// C#: new List&lt;T&gt;(capacity)
 	/// JS: new Array(capacity) 或 []
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.List(int)", "[]")]
-	public extern static Array<T> _feacfe24abeee54b(Number capacity);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.List(int)", "createWithInitialCapacity")]
+	public static Array<T> CreateWithInitialCapacity(Number capacity)
+		=> CreateWithCapacity(capacity);
 
 	/// <summary>
 	/// C#: new List&lt;T&gt;(collection)
 	/// JS: Array.from(collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", "Array.from(__arg1)")]
-	public extern static Array<T> _ea4c991aac8688c0(Array<T> collection);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", "createFromCollection")]
+	public static Array<T> CreateFromCollection(IEnumerable<T> collection)
+		=> CreateFrom(collection);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.Capacity.get")]
-	public extern static Number _ffa580d06e0078ae(Array<T> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Capacity.get", "getCapacityMember")]
+	public static Number GetCapacityMember(Array<T> instance)
+		=> GetCapacity(instance);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.Capacity.set")]
-	public extern static void _db03a5f0f4bc11af(Array<T> instance, Number value);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Capacity.set", "setCapacity")]
+	public static void SetCapacity(Array<T> instance, Number value)
+	{
+		EnsureWholeNumber(value, "ArgumentOutOfRangeException: capacity must be a whole number.");
+		if (value < instance.Length)
+			throw new Error("ArgumentOutOfRangeException: capacity cannot be less than Count.");
+		if (value > MaxListCapacity)
+			throw new Error("OutOfMemoryException: requested list capacity is too large.");
+		GetCapacity(instance);
+		Capacities.Set(instance, value);
+	}
 
 	/// <summary>
 	/// C#: list.Count
@@ -257,8 +343,9 @@ public static class ListT1Module<T>
 	/// C#: list.Add(item)
 	/// JS: array.push(item)
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Add(T)", "push")]
-	public extern static void _342f4a7099c7ddf0(Array<T> instance, T item);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Add(T)", "add")]
+	public static void Add(Array<T> instance, T item)
+		=> AddCore(instance, item);
 
 	/// <summary>
 	/// C#: list.AddRange(collection)
@@ -268,11 +355,18 @@ public static class ListT1Module<T>
 	public static void _a2660853a4ebc1f6(Array<T> instance, IEnumerable<T> collection)
 		=> AppendRange(instance, collection);
 
-	// ReadOnlyCollection<T> is a live read-only view over the same List<T>. Array is shared
-	// by List<T> and T[] in the JavaScript runtime, so it cannot retain that distinct carrier
-	// identity without a new collection-view protocol.
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.AsReadOnly()")]
-	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _f7981b5a4cd02bdb(Array<T> instance);
+	/// <summary>
+	/// Produces a live read-only view over the List carrier through the shared RuntimeModule
+	/// Array Proxy protocol. Source mutations remain visible; view mutations fail.
+	/// </summary>
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.AsReadOnly()")]
+	public static System.Collections.ObjectModel.ReadOnlyCollection<T> _f7981b5a4cd02bdb(Array<T> instance)
+	{
+		EnsureInstance(instance);
+		return (System.Collections.ObjectModel.ReadOnlyCollection<T>)(object)RuntimeModule.CreateReadOnlyArrayView(
+			instance,
+			"NullReferenceException: instance is null.");
+	}
 
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.BinarySearch(int, int, T, System.Collections.Generic.IComparer<T>)")]
 	public static Number _95ada27dd960bae5(Array<T> instance, Number index, Number count, T item, IComparer<T>? comparer)
@@ -313,7 +407,9 @@ public static class ListT1Module<T>
 		if (converter is null)
 			throw new Error("ArgumentNullException: converter is null.");
 
-		return instance.Map(converter);
+		// ConvertAll materializes exactly one output per source item. The generic output carrier
+		// lazily observes its Length as capacity, which matches List<TOutput>'s construction size.
+		return RuntimeModule.MarkAsMutableListCarrier(instance.Map(converter));
 	}
 
 	/// <summary>
@@ -371,8 +467,9 @@ public static class ListT1Module<T>
 			array[(uint)arrayIndex + i] = instance[i];
 	}
 
-	[Jazor(Op.Discard, "System.Collections.Generic.List<T>.EnsureCapacity(int)")]
-	public extern static Number _6dffb0ed23f010e0(Array<T> instance, Number capacity);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.EnsureCapacity(int)", "ensureCapacity")]
+	public static Number EnsureCapacity(Array<T> instance, Number capacity)
+		=> EnsureCapacityCore(instance, capacity);
 
 	/// <summary>
 	/// C#: list.Exists(match)
@@ -392,8 +489,19 @@ public static class ListT1Module<T>
 	/// C#: list.FindAll(match)
 	/// JS: array.filter(match)
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)", "filter")]
-	public extern static Array<T> _d8e500da425f2be5(Array<T> instance, Predicate<T> match);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)", "findAll")]
+	public static Array<T> FindAll(Array<T> instance, Predicate<T> match)
+	{
+		EnsureInstance(instance);
+		EnsureMatch(match);
+		var result = CreateWithCapacity(0);
+		for (uint index = 0; index < instance.Length; index++)
+		{
+			if (match(instance[index]))
+				AddCore(result, instance[index]);
+		}
+		return result;
+	}
 
 	/// <summary>
 	/// C#: list.FindIndex(match)
@@ -538,15 +646,19 @@ public static class ListT1Module<T>
 	public static Array<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count)
 	{
 		EnsureRemoveRange(instance, index, count);
-		return instance.Slice(index, index + count);
+		var result = CreateWithCapacity(count);
+		for (var offset = 0; offset < count; offset++)
+			AddCore(result, instance[index + offset]);
+		return result;
 	}
 
 	/// <summary>
 	/// C#: list.Slice(start, length)
 	/// JS: array.slice(start, start + length)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.Slice(int, int)", "__arg1.slice(__arg2, __arg2 + __arg3)")]
-	public extern static Array<T> _adcf2df90da54ec8(Array<T> instance, Number start, Number length);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Slice(int, int)", "slice")]
+	public static Array<T> Slice(Array<T> instance, Number start, Number length)
+		=> _c35c9c99a23ff96a(instance, start, length);
 
 	/// <summary>
 	/// C#: list.IndexOf(item)
@@ -602,6 +714,7 @@ public static class ListT1Module<T>
 	public static void _0dc538197c677986(Array<T> instance, Number index, T item)
 	{
 		EnsureInsertIndex(instance, index);
+		EnsureCapacityCore(instance, instance.Length + 1);
 		instance.Splice(index, 0, item);
 	}
 
@@ -627,6 +740,7 @@ public static class ListT1Module<T>
 			var selfInsertionIndex = index;
 			for (uint i = 0; i < snapshot.Length; i++)
 			{
+				EnsureCapacityCore(instance, instance.Length + 1);
 				instance.Splice(selfInsertionIndex, 0, snapshot[i]);
 				selfInsertionIndex++;
 			}
@@ -636,6 +750,7 @@ public static class ListT1Module<T>
 		var insertionIndex = index;
 		foreach (var item in collection)
 		{
+			EnsureCapacityCore(instance, instance.Length + 1);
 			instance.Splice(insertionIndex, 0, item);
 			insertionIndex++;
 		}
@@ -849,9 +964,9 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.TrimExcess()")]
 	public static void _27c95e83eced65e9(Array<T> instance)
 	{
-		// Array carriers do not expose capacity or CLR enumerator invalidation. After the
-		// null-instance check, trimming has no observable effect in the supported surface.
-		EnsureInstance(instance);
+		var capacity = GetCapacity(instance);
+		if (instance.Length < Math.FloorFn(capacity * 0.9))
+			Capacities.Set(instance, instance.Length);
 	}
 
 	/// <summary>

@@ -236,7 +236,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_StringBuilderAppendLine_UsesInlineSequence()
+	public void Visit_Reference_StringBuilderAppendLine_UsesCapacityAwareImports()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -254,13 +254,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let sb = [];
-  let appended = (sb.push(...(text ?? '').split('')), sb.push('\n'), sb);
+  let sb = _2154365d1f9a2abf();
+  let appended = _c06aaa44e213e405(sb, text);
 }", script);
 	}
 
 	[TestMethod]
-	public void Visit_Reference_StringBuilderAppendLineWithoutValue_UsesInlineSequence()
+	public void Visit_Reference_StringBuilderAppendLineWithoutValue_UsesCapacityAwareImports()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -278,8 +278,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let sb = [];
-  let appended = (sb.push('\n'), sb);
+  let sb = _2154365d1f9a2abf();
+  let appended = _35fe8bcf463e879b(sb);
 }", script);
 	}
 
@@ -1401,7 +1401,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_StringBuilderAppend_UsesInlineSequence()
+	public void Visit_Reference_StringBuilderAppend_UsesCapacityAwareImports()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -1420,14 +1420,14 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let sb = [];
-  let appended = (sb.push(...(text ?? '').split('')), sb);
+  let sb = _2154365d1f9a2abf();
+  let appended = _2879b76db56f25fb(sb, text);
   let value = sb.join('');
 }", script);
 	}
 
 	[TestMethod]
-	public void Visit_Reference_StringBuilderClearAndLength_UseInlineShapes()
+	public void Visit_Reference_StringBuilderClearAndLength_PreservesCapacityAwareConstruction()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -1447,7 +1447,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let sb = (text ?? '').split('');
+  let sb = _c2c8c4778873ccdc(text);
   let length = sb.length;
   let cleared = (sb.length = 0, sb);
   let nextLength = sb.length;
@@ -3011,7 +3011,12 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let array = [10, 20, 30];
-  let indexes = [1, 2];
+  let indexes = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    return v$0;
+  })();
   let x = array[_d389c31d59037b42(indexes, indexes.length - 1)];
 }", script);
 	}
@@ -3841,7 +3846,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let list = [1, 2, 3];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let first = _d389c31d59037b42(list, 0);
 }", script);
 	}
@@ -3869,8 +3880,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let dict = new Map;
-  dict.set(""key"", 42);
+  let dict = createDefault();
+  setItem(dict, ""key"", 42);
   let value = _e73dbdff85c46ddc(dict, ""key"");
 }", script);
 	}
@@ -3961,8 +3972,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertJsNamingScriptEqual(@"{
   let person = null;
-  let dict = new Map;
-  dict.set(person?.Name, 42);
+  let dict = createDefault();
+  setItem(dict, person?.Name, 42);
   let value = _e73dbdff85c46ddc(dict, person?.Name);
 }", script);
 	}
@@ -4054,10 +4065,10 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
-	/// 测试白名单运行时类型上未进入支持表的属性 getter 不会静默回退成普通 JS 访问
+	/// List 容量 getter 必须走 CLR Import，不能退化成 Array 的虚构属性读取。
 	/// </summary>
 	[TestMethod]
-	public void Visit_Reference_UnmappedRuntimePropertyGetter_Throws()
+	public void Visit_Reference_ListCapacityGetter_UsesRuntimeImport()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -4071,17 +4082,18 @@ public sealed class SemanticWalkerReferenceTest
         ");
 
 		var walker = new SemanticWalker(true);
-		Assert.Throws<OperationTransformationException>(() =>
-		{
-			_ = walker.Visit(block, new());
-		});
+		var script = walker.Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "getCapacityMember");
+		StringAssert.Contains(script, "createDefault()");
 	}
 
 	/// <summary>
-	/// 测试白名单运行时类型上未进入支持表的属性 setter 不会静默回退成普通 JS 赋值
+	/// List 容量 setter 必须走 CLR Import，保持 Count 边界和容量状态的运行时语义。
 	/// </summary>
 	[TestMethod]
-	public void Visit_SimpleAssignment_UnmappedRuntimePropertySetter_Throws()
+	public void Visit_SimpleAssignment_ListCapacitySetter_UsesRuntimeImport()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -4095,10 +4107,11 @@ public sealed class SemanticWalkerReferenceTest
         ");
 
 		var walker = new SemanticWalker(true);
-		Assert.Throws<OperationTransformationException>(() =>
-		{
-			_ = walker.Visit(block, new());
-		});
+		var script = walker.Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "setCapacity");
+		StringAssert.Contains(script, "createDefault()");
 	}
 
 	/// <summary>
@@ -4287,7 +4300,14 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let values = [10, 20, 30, 20];
+  let values = (() => {
+    let v$0 = createDefault();
+    add(v$0, 10);
+    add(v$0, 20);
+    add(v$0, 30);
+    add(v$0, 20);
+    return v$0;
+  })();
   let first = _71ee35e0e260eb27(values, 20, 1);
   let last = _279befda6399cda5(values, 20, 2);
 }", script);
@@ -4338,7 +4358,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let dict = new Map;
+  let dict = createDefault();
   let found = dict.has(""key"");
 }", script);
 	}
@@ -4834,7 +4854,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let dict = new Map;
+  let dict = createDefault();
   _f3b177bfce76ed5c(dict, ""key"", 42);
   let value = _371fad9265e864a1(dict, ""key"");
 }", script);
@@ -4872,7 +4892,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertJsNamingScriptEqual(@"{
-  let dict = new Map;
+  let dict = createDefault();
   _f3b177bfce76ed5c(dict, ""key"", 42);
   let value = _371fad9265e864a1(dict, this.NextKey());
 }", script);
@@ -4910,8 +4930,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertJsNamingScriptEqual(@"{
-  let dict = new Map;
-  dict.set(""key"", 42);
+  let dict = createDefault();
+  setItem(dict, ""key"", 42);
   let value = _e73dbdff85c46ddc(this.Pick(dict), ""key"");
 }", script);
 	}
@@ -5134,11 +5154,8 @@ public sealed class SemanticWalkerReferenceTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
-	/// <summary>
-	/// 只读字典构造要求源字典的 live view；当前 Map carrier 无法无损表达该协议。
-	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyDictionary_ConstructionIsRejectedWithoutLiveWrapperCarrier()
+	public void Visit_IndexerReference_ReadOnlyDictionary_ConstructionUsesLiveViewRuntimeImports()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5153,18 +5170,24 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(block, new SenseArgument()));
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary", StringComparison.Ordinal);
-		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
+		Assert.IsNotNull(script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(2, imports, script);
+		Assert.HasCount(2, imports["System/Collections/Generic/DictionaryT2Module.js"], script);
+		Assert.HasCount(2, imports["System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
+		StringAssert.Contains(script, "let dict = _b22e987e1be225aa(source);", StringComparison.Ordinal);
+		StringAssert.Contains(script, "let value = _ed4a7913b74bfd87(dict, \"key\");", StringComparison.Ordinal);
+		_ = new Acornima.Parser().ParseScript("function verify() " + script);
 	}
 
 	/// <summary>
 	/// 只读字典经 IDictionary 写入口时必须走 helper 并保留只读约束。
 	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyDictionary_AsIDictionarySetRejectsUnsupportedConstruction()
+	public void Visit_IndexerReference_ReadOnlyDictionary_AsIDictionarySetUsesReadOnlyRuntimeGuard()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5180,14 +5203,22 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(block, new SenseArgument()));
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary", StringComparison.Ordinal);
+		Assert.IsNotNull(script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(3, imports, script);
+		Assert.HasCount(2, imports["System/Collections/Generic/DictionaryT2Module.js"], script);
+		Assert.HasCount(1, imports["System/Collections/Generic/IDictionaryT2Module.js"], script);
+		Assert.HasCount(1, imports["System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
+		StringAssert.Contains(script, "let readOnly = _b22e987e1be225aa(source);", StringComparison.Ordinal);
+		StringAssert.Contains(script, "_f3b177bfce76ed5c(dict, \"key\", 2);", StringComparison.Ordinal);
+		_ = new Acornima.Parser().ParseScript("function verify() " + script);
 	}
 
 	[TestMethod]
-	public void Visit_Reference_ReadOnlySet_ConstructionIsRejectedWithoutLiveWrapperCarrier()
+	public void Visit_Reference_ReadOnlySet_ConstructionUsesLiveViewRuntimeImports()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5202,11 +5233,17 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(block, new SenseArgument()));
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "ReadOnlySet<T>.ReadOnlySet", StringComparison.Ordinal);
-		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
+		Assert.IsNotNull(script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(2, imports, script);
+		Assert.HasCount(2, imports["System/Collections/Generic/HashSetT1Module.js"], script);
+		Assert.HasCount(2, imports["System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
+		StringAssert.Contains(script, "let readOnly = _aede400efbd05842(source);", StringComparison.Ordinal);
+		StringAssert.Contains(script, "let empty = _843cd8664672a9f8();", StringComparison.Ordinal);
+		_ = new Acornima.Parser().ParseScript("function verify() " + script);
 	}
 
 	[TestMethod]
@@ -5230,7 +5267,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_ReadOnlySet_AsISetAddRejectsUnsupportedConstruction()
+	public void Visit_Reference_ReadOnlySet_AsISetAddUsesReadOnlyRuntimeGuard()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5246,17 +5283,22 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(block, new SenseArgument()));
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "ReadOnlySet<T>.ReadOnlySet", StringComparison.Ordinal);
+		Assert.IsNotNull(script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(3, imports, script);
+		Assert.HasCount(2, imports["System/Collections/Generic/HashSetT1Module.js"], script);
+		Assert.HasCount(1, imports["System/Collections/Generic/ISetT1Module.js"], script);
+		Assert.HasCount(1, imports["System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
+		StringAssert.Contains(script, "let readOnly = _aede400efbd05842(source);", StringComparison.Ordinal);
+		StringAssert.Contains(script, "let added = _fa512a510bd763de(set, 2);", StringComparison.Ordinal);
+		_ = new Acornima.Parser().ParseScript("function verify() " + script);
 	}
 
-	/// <summary>
-	/// 只读集合构造要求源列表的 live view；当前 Array carrier 无法无损表达该协议。
-	/// </summary>
 	[TestMethod]
-	public void Visit_IndexerReference_ReadOnlyCollection_ConstructionIsRejectedWithoutLiveWrapperCarrier()
+	public void Visit_IndexerReference_ReadOnlyCollection_ConstructionUsesLiveViewRuntimeImport()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -5270,11 +5312,17 @@ public sealed class SemanticWalkerReferenceTest
             }
         ");
 
-		var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-			new SemanticWalker(true).Visit(block, new SenseArgument()));
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
-		StringAssert.Contains(exception.Message, "ReadOnlyCollection<T>.ReadOnlyCollection", StringComparison.Ordinal);
-		StringAssert.Contains(exception.Message, "not supported", StringComparison.Ordinal);
+		Assert.IsNotNull(script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(2, imports, script);
+		Assert.HasCount(2, imports["System/Collections/Generic/ListT1Module.js"], script);
+		Assert.HasCount(2, imports["System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], script);
+		StringAssert.Contains(script, "let list = _d4e5f6a7b8c9d0e1(source);", StringComparison.Ordinal);
+		StringAssert.Contains(script, "let value = _b8c9d0e1f2a3b4c5(list, 1);", StringComparison.Ordinal);
+		_ = new Acornima.Parser().ParseScript("function verify() " + script);
 	}
 
 	[TestMethod]
@@ -5318,7 +5366,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let values = [1, 2, 3];
+  let values = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let segment = _c35c9c99a23ff96a(values, 1, 2);
 }", script);
 	}
@@ -5483,9 +5537,15 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0;
-  let list = [1, 2, 3];
-  v$0 = _d389c31d59037b42(list, 0) + 5, _c16a7960302ea054(list, 0, v$0), v$0;
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  v$1 = _d389c31d59037b42(list, 0) + 5, _c16a7960302ea054(list, 0, v$1), v$1;
 }", script);
 	}
 
@@ -5883,12 +5943,18 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0;
-  let list = [1, 2, 3];
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let next = () => {
     return list;
   };
-  v$0 = next(), _c16a7960302ea054(v$0, v$0.length - 1, 4);
+  v$1 = next(), _c16a7960302ea054(v$1, v$1.length - 1, 4);
 }", script);
 	}
 
@@ -5912,12 +5978,18 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0, v$1, v$2;
-  let list = [1, 2, 3];
+  let v$1, v$2, v$3;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let next = () => {
     return list;
   };
-  v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1) + 5, _c16a7960302ea054(v$0, v$1, v$2), v$2;
+  v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) + 5, _c16a7960302ea054(v$1, v$2, v$3), v$3;
 }", script);
 	}
 
@@ -5943,9 +6015,15 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0;
-  let list = [1, 2, 3];
-  let before = (v$0 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$0 + 1), v$0);
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 + 1), v$1);
 }", script);
 	}
 
@@ -6024,12 +6102,18 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0, v$1, v$2;
-  let list = [1, 2, 3];
+  let v$1, v$2, v$3;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let next = () => {
     return list;
   };
-  let before = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), _c16a7960302ea054(v$0, v$1, v$2 + 1), v$2);
+  let before = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2), _c16a7960302ea054(v$1, v$2, v$3 + 1), v$3);
 }", script);
 	}
 
@@ -6057,9 +6141,9 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let v$0;
-  let dict = new Map;
-  dict.set(""key"", 1);
-  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
+  let dict = createDefault();
+  setItem(dict, ""key"", 1);
+  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, setItem(dict, ""key"", v$0), v$0;
 }", script);
 	}
 
@@ -6085,9 +6169,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0;
-  let list = [null];
-  let value = (v$0 = _d389c31d59037b42(list, 0), v$0 == null ? (v$0 = ""fallback"", _c16a7960302ea054(list, 0, v$0), v$0) : v$0);
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, null);
+    return v$0;
+  })();
+  let value = (v$1 = _d389c31d59037b42(list, 0), v$1 == null ? (v$1 = ""fallback"", _c16a7960302ea054(list, 0, v$1), v$1) : v$1);
 }", script);
 	}
 
@@ -6111,12 +6199,17 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0, v$1, v$2;
-  let list = [""a"", null];
+  let v$1, v$2, v$3;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, ""a"");
+    add(v$0, null);
+    return v$0;
+  })();
   let next = () => {
     return list;
   };
-  let value = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$2 == null ? (v$2 = ""fallback"", _c16a7960302ea054(v$0, v$1, v$2), v$2) : v$2);
+  let value = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2), v$3 == null ? (v$3 = ""fallback"", _c16a7960302ea054(v$1, v$2, v$3), v$3) : v$3);
 }", script);
 	}
 
@@ -6171,13 +6264,19 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
 		AssertScriptEqual(@"{
-  let v$0, v$1;
+  let v$1, v$2;
   let index = 0;
   let nextIndex = () => {
     return index++;
   };
-  let list = [1, 2, 3];
-  v$0 = nextIndex(), v$1 = _d389c31d59037b42(list, v$0) + 5, _c16a7960302ea054(list, v$0, v$1), v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  v$1 = nextIndex(), v$2 = _d389c31d59037b42(list, v$1) + 5, _c16a7960302ea054(list, v$1, v$2), v$2;
 }", script);
 	}
 
@@ -6521,7 +6620,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let list = [1, 2, 3];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
   let first = _d389c31d59037b42(list, 0);
 }", script);
 	}
@@ -6549,8 +6654,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let dict = new Map;
-  dict.set(""key"", 42);
+  let dict = createDefault();
+  setItem(dict, ""key"", 42);
   let value = _e73dbdff85c46ddc(dict, ""key"");
 }", script);
 	}
@@ -8921,7 +9026,11 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "let list = [1, 2, 3];");
+		StringAssert.Contains(script, "let list = (() => {");
+		StringAssert.Contains(script, "let v$0 = createDefault();");
+		StringAssert.Contains(script, "add(v$0, 1);");
+		StringAssert.Contains(script, "add(v$0, 2);");
+		StringAssert.Contains(script, "add(v$0, 3);");
 		StringAssert.Contains(script, "throw new TypeError(\"source\");");
 		StringAssert.Contains(script, "throw new TypeError(\"selector\");");
 		StringAssert.Contains(script, "return __src.map(__callback);");
@@ -8951,7 +9060,7 @@ public sealed class SemanticWalkerReferenceTest
               let empty = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return __src;
+                return markAsMutableListCarrier(__src);
               })([]);
               let literal = (__src => {
                 if (__src == null)
@@ -8961,8 +9070,8 @@ public sealed class SemanticWalkerReferenceTest
               let copied = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return __src;
-              })(Array.from(source));
+                return markAsMutableListCarrier(Array.from(__src));
+              })(createFromCollection(source));
             }
             """, script);
 	}
@@ -8994,20 +9103,38 @@ public sealed class SemanticWalkerReferenceTest
               let filtered = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return __src;
-              })([1, 2, 3].filter(value => {
+                return markAsMutableListCarrier(Array.from(__src));
+              })(findAll((() => {
+                let v$0 = createDefault();
+                add(v$0, 1);
+                add(v$0, 2);
+                add(v$0, 3);
+                return v$0;
+              })(), value => {
                 return value > 1;
               }));
               let sliced = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return __src;
-              })([1, 2, 3].slice(1, 1 + 2));
+                return Array.from(__src);
+              })(slice((() => {
+                let v$0 = createDefault();
+                add(v$0, 1);
+                add(v$0, 2);
+                add(v$0, 3);
+                return v$0;
+              })(), 1, 2));
               let copied = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return __src;
-              })([1, 2, 3].slice());
+                return markAsMutableListCarrier(__src);
+              })((() => {
+                let v$0 = createDefault();
+                add(v$0, 1);
+                add(v$0, 2);
+                add(v$0, 3);
+                return v$0;
+              })().slice());
             }
             """, script);
 	}
@@ -9083,7 +9210,7 @@ public sealed class SemanticWalkerReferenceTest
 			  let list = (__src => {
 			    if (__src == null)
 			      throw new TypeError("source");
-			    return Array.from(__src);
+			    return markAsMutableListCarrier(Array.from(__src));
 			  })(null);
 			  let array = (__src => {
 			    if (__src == null)
@@ -9164,7 +9291,8 @@ public sealed class SemanticWalkerReferenceTest
 		StringAssert.Contains(script, "})(source.reverse());");
 		StringAssert.Contains(script, "})(source.sort());");
 		StringAssert.Contains(script, "})(source.fill(0));");
-		Assert.AreEqual(3, script.Split(["return Array.from(__src);"], StringSplitOptions.None).Length - 1);
+		Assert.AreEqual(2, script.Split(["return Array.from(__src);"], StringSplitOptions.None).Length - 1);
+		StringAssert.Contains(script, "return markAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
 	}
 
 	[TestMethod]
@@ -9255,7 +9383,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "let source = new Set;");
+		StringAssert.Contains(script, "let source = createDefault();");
 		StringAssert.Contains(script, "throw new TypeError(\"source\");");
 		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
@@ -9280,7 +9408,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "let source = new Map;");
+		StringAssert.Contains(script, "let source = createDefault();");
 		StringAssert.Contains(script, "throw new TypeError(\"source\");");
 		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");

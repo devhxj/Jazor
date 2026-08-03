@@ -451,7 +451,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("[]", script);
+        AssertScriptEqual("createDefault()", script);
     }
 
     [TestMethod]
@@ -2185,7 +2185,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(@"v$0.push(1), v$0.push(2), v$0.push(3)", script);
+        AssertScriptEqual(@"add(v$0, 1), add(v$0, 2), add(v$0, 3)", script);
     }
 
     [TestMethod]
@@ -2209,7 +2209,20 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(@"v$0.push([1]), v$0.push([2, 4]), v$0.push([3])".ReplaceLineEndings(), script?.ReplaceLineEndings());
+        AssertScriptEqual(@"add(v$0, (() => {
+  let v$1 = createDefault();
+  add(v$1, 1);
+  return v$1;
+})()), add(v$0, (() => {
+  let v$0 = createDefault();
+  add(v$0, 2);
+  add(v$0, 4);
+  return v$0;
+})()), add(v$0, (() => {
+  let v$0 = createDefault();
+  add(v$0, 3);
+  return v$0;
+})())".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -2432,8 +2445,8 @@ public sealed class SemanticWalkerCreationTest
         // 当对象创建没有初始化器时，会直接内联创建
         AssertScriptEqual(
 @"{
-  let list = [];
-  list.push((() => {
+  let list = createDefault();
+  add(list, (() => {
     let v$0 = new Outer;
     v$0.Inner = (() => {
       let v$1 = new Inner;
@@ -2723,8 +2736,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // List 映射为 Array
-        AssertScriptEqual("[]", script);
+        AssertScriptEqual("createDefault()", script);
     }
 
     [TestMethod]
@@ -2745,8 +2757,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // Dictionary 映射为 Map
-        AssertScriptEqual("new Map", script);
+        AssertScriptEqual("createDefault()", script);
     }
 
     [TestMethod]
@@ -2767,8 +2778,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        // HashSet 映射为 Set
-        AssertScriptEqual("new Set", script);
+        AssertScriptEqual("createDefault()", script);
     }
 
     [TestMethod]
@@ -2822,7 +2832,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("new Map", script);
+        AssertScriptEqual("createDefault()", script);
     }
 
     [TestMethod]
@@ -2935,8 +2945,8 @@ public sealed class SemanticWalkerCreationTest
 
         AssertScriptEqual(
 @"{
-  let list = [];
-  list.push((new Outer).Value);
+  let list = createDefault();
+  add(list, (new Outer).Value);
 }", script);
 
     }
@@ -3400,7 +3410,15 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let list = [1, 2, 3, 4, 5];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    add(v$0, 4);
+    add(v$0, 5);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3425,7 +3443,11 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let list = [{ first: ""John"", years: 30 }];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, { first: ""John"", years: 30 });
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3455,7 +3477,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let dict = new Map([[""one"", 1], [""two"", 2], [""three"", 3]]);
+  let dict = (() => {
+    let v$0 = createDefault();
+    _39d6e632c4c102f9(v$0, ""one"", 1);
+    _39d6e632c4c102f9(v$0, ""two"", 2);
+    _39d6e632c4c102f9(v$0, ""three"", 3);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3480,7 +3508,11 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let dict = new Map([[""one"", { first: ""John"", years: 30 }]]);
+  let dict = (() => {
+    let v$0 = createDefault();
+    setItem(v$0, ""one"", { first: ""John"", years: 30 });
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3530,7 +3562,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let set = new Set([1, 2, 3]);
+  let set = (() => {
+    let v$0 = createDefault();
+    _e1d2ba750a2788cb(v$0, 1);
+    _e1d2ba750a2788cb(v$0, 2);
+    _e1d2ba750a2788cb(v$0, 3);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3589,7 +3627,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     /// <summary>
-    /// 测试StringBuilder创建
+    /// 默认构造必须初始化容量状态，不能退回为裸数组。
     /// </summary>
     [TestMethod]
     public void Visit_ObjectCreation_StringBuilder()
@@ -3609,12 +3647,12 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let sb = [];
+  let sb = _2154365d1f9a2abf();
 }", script);
     }
 
     [TestMethod]
-    public void Visit_ObjectCreation_StringBuilder_WithString_UsesInlineSplit()
+    public void Visit_ObjectCreation_StringBuilder_WithString_UsesCapacityAwareImport()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -3631,7 +3669,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let sb = (text ?? '').split('');
+  let sb = _c2c8c4778873ccdc(text);
 }", script);
     }
 
@@ -3947,7 +3985,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let list = [1, 2, 3];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -3975,7 +4019,12 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
         AssertScriptEqual(@"{
-  let dict = new Map([[""one"", 1], [""two"", 2]]);
+  let dict = (() => {
+    let v$0 = createDefault();
+    _39d6e632c4c102f9(v$0, ""one"", 1);
+    _39d6e632c4c102f9(v$0, ""two"", 2);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -4000,7 +4049,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let set = new Set([1, 2, 3]);
+  let set = (() => {
+    let v$0 = createDefault();
+    _e1d2ba750a2788cb(v$0, 1);
+    _e1d2ba750a2788cb(v$0, 2);
+    _e1d2ba750a2788cb(v$0, 3);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -4172,7 +4227,15 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let list = [1, 2, 3, 4, 5];
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    add(v$0, 4);
+    add(v$0, 5);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -4200,7 +4263,12 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
         AssertScriptEqual(@"{
-  let dict = new Map([[""one"", 1], [""two"", 2]]);
+  let dict = (() => {
+    let v$0 = createDefault();
+    setItem(v$0, ""one"", 1);
+    setItem(v$0, ""two"", 2);
+    return v$0;
+  })();
 }", script);
     }
 
@@ -4225,7 +4293,13 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let set = new Set([""a"", ""b"", ""c""]);
+  let set = (() => {
+    let v$0 = createDefault();
+    _e1d2ba750a2788cb(v$0, ""a"");
+    _e1d2ba750a2788cb(v$0, ""b"");
+    _e1d2ba750a2788cb(v$0, ""c"");
+    return v$0;
+  })();
 }", script);
     }
 

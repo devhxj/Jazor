@@ -6,8 +6,8 @@ namespace Jazor.CLR;
 /// IList 是非泛型列表接口，直接映射到 JavaScript Array。
 ///
 /// Op 类型选择原则：
-/// - Import: 纯读取/查找语义，且不依赖具体可变 carrier
-/// - Discard: 写入、容量与可变性语义依赖具体实现，接口层不能静默假设
+/// - Import: 使用 List carrier marker 保留可变列表、固定数组和只读视图之间的边界
+/// - Discard: 仅保留尚无完整运行时协议的成员
 /// </summary>
 [ECMAScriptModule("System/Collections/IListModule.js")]
 [Jazor(Op.Alias, "System.Collections.IList", "Array")]
@@ -17,6 +17,15 @@ public static class IListModule
 	{
 		if (IsNaN(value) || Math.FloorFn(value) != value)
 			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
+	}
+
+	private static void EnsureExistingIndex(Array<object?> instance, Number index)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+		EnsureWholeNumber(index, nameof(index));
+		if (index < 0 || index >= instance.Length)
+			throw new Error("ArgumentOutOfRangeException: index is out of range.");
 	}
 
 	/// <summary>
@@ -39,15 +48,25 @@ public static class IListModule
 	/// C#: list[index] = value
 	/// JS: array[index] = value
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.this[int].set")]
-	public extern static void _d1d1f177e5b9f8db(Array<object?> instance, Number index, object? value);
+	[Jazor(Op.Import, "System.Collections.IList.this[int].set")]
+	public static void _d1d1f177e5b9f8db(Array<object?> instance, Number index, object? value)
+	{
+		EnsureExistingIndex(instance, index);
+		instance[index] = value;
+	}
 
 	/// <summary>
 	/// C#: list.Add(item)
 	/// JS: array.push(item) 返回索引
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.Add(object)")]
-	public extern static Number _436bcdacebfc9159(Array<object?> instance, object? value);
+	[Jazor(Op.Import, "System.Collections.IList.Add(object)")]
+	public static Number _436bcdacebfc9159(Array<object?> instance, object? value)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		var index = instance.Length;
+		ListT1Module<object?>.Add(instance, value);
+		return index;
+	}
 
 	/// <summary>
 	/// C#: list.Contains(item)
@@ -60,20 +79,36 @@ public static class IListModule
 	/// C#: list.Clear()
 	/// JS: array.length = 0
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.Clear()")]
-	public extern static void _00d8476a94b1a75c(Array<object?> instance);
+	[Jazor(Op.Import, "System.Collections.IList.Clear()")]
+	public static void _00d8476a94b1a75c(Array<object?> instance)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		instance.Splice(0, instance.Length);
+	}
 
 	/// <summary>
-	/// JavaScript 数组不是只读的
+	/// 原生数组映射 CLR T[]，因此在 IList 表面是固定大小；只有显式 List carrier 可写。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.IsReadOnly.get")]
-	public extern static bool _2ce407a9d9be8186(Array<object?> instance);
+	[Jazor(Op.Import, "System.Collections.IList.IsReadOnly.get")]
+	public static bool _2ce407a9d9be8186(Array<object?> instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		return !RuntimeModule.IsMutableListCarrier(instance);
+	}
 
 	/// <summary>
-	/// JavaScript 数组大小不固定
+	/// 非 List carrier 在 CLR IList 表面保持固定大小。
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.IsFixedSize.get")]
-	public extern static bool _b17a6c1583e0a5af(Array<object?> instance);
+	[Jazor(Op.Import, "System.Collections.IList.IsFixedSize.get")]
+	public static bool _b17a6c1583e0a5af(Array<object?> instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		return !RuntimeModule.IsMutableListCarrier(instance);
+	}
 
 	/// <summary>
 	/// C#: list.IndexOf(item)
@@ -86,20 +121,32 @@ public static class IListModule
 	/// C#: list.Insert(index, item)
 	/// JS: array.splice(index, 0, item)
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.Insert(int, object)")]
-	public extern static void _9e2711121aad1093(Array<object?> instance, Number index, object? value);
+	[Jazor(Op.Import, "System.Collections.IList.Insert(int, object)")]
+	public static void _9e2711121aad1093(Array<object?> instance, Number index, object? value)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		ListT1Module<object?>._0dc538197c677986(instance, index, value);
+	}
 
 	/// <summary>
 	/// C#: list.Remove(item)
 	/// JS: 找到并删除第一个匹配项
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.Remove(object)")]
-	public extern static void _305c8313418aa043(Array<object?> instance, object? value);
+	[Jazor(Op.Import, "System.Collections.IList.Remove(object)")]
+	public static void _305c8313418aa043(Array<object?> instance, object? value)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		ListT1Module<object?>._562f832fd220e768(instance, value);
+	}
 
 	/// <summary>
 	/// C#: list.RemoveAt(index)
 	/// JS: array.splice(index, 1)
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.IList.RemoveAt(int)")]
-	public extern static void _72d07d6eb16afece(Array<object?> instance, Number index);
+	[Jazor(Op.Import, "System.Collections.IList.RemoveAt(int)")]
+	public static void _72d07d6eb16afece(Array<object?> instance, Number index)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		ListT1Module<object?>._a5e8c6b27df6470b(instance, index);
+	}
 }

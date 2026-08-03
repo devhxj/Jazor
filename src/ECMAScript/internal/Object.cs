@@ -213,6 +213,17 @@ public static partial class Global
 		public extern object ValueOf();
 
 		/// <summary>
+		/// Returns a callable that permanently uses the supplied receiver.
+		/// </summary>
+		/// <remarks>
+		/// This is the exact <c>Function.prototype.bind</c> host shape. The receiver remains
+		/// <see cref="object"/> because JavaScript functions can bind arbitrary values; callers
+		/// must establish callability before invoking this member.
+		/// </remarks>
+		[Description("@#bind")]
+		public extern object Bind(object? thisArg);
+
+		/// <summary>
 		/// Determines whether an object has a property with the specified name.
 		/// </summary>
 		/// <param name="v">A property name.</param>

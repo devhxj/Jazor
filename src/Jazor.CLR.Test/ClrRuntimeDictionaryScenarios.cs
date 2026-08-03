@@ -9,6 +9,49 @@ internal static class ClrRuntimeDictionaryScenarios
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
+        Success(
+            "dictionary.capacity.default-constructor",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get",
+            DictionaryModulePath,
+            [Invoke("System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()")],
+            Number(0)),
+        Success(
+            "dictionary.constructor.copy-preserves-entries",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)",
+            DictionaryModulePath,
+            [Map((Text("release"), Number(42)), (Text("owner"), Text("platform")))],
+            Map((Text("release"), Number(42)), (Text("owner"), Text("platform")))),
+        Mutation(
+            "dictionary.indexer.set-inserts-new-key",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set",
+            DictionaryModulePath,
+            [Map((Text("release"), Number(42))), Text("owner"), Text("platform")],
+            [Map((Text("release"), Number(42)), (Text("owner"), Text("platform"))), Text("owner"), Text("platform")]),
+        Success(
+            "dictionary.capacity.indexer-set-expands-prime-storage",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get",
+            DictionaryModulePath,
+            [
+                Reference("capacity-dictionary", Invoke("System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()")),
+                Invoke(
+                    "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set",
+                    Reference("capacity-dictionary", Map()),
+                    Text("release"),
+                    Number(42))
+            ],
+            Number(3)),
+        Success(
+            "dictionary.ensure-capacity.rounds-to-clr-prime",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)",
+            DictionaryModulePath,
+            [Invoke("System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()"), Number(4)],
+            Number(7)),
+        Failure(
+            "dictionary.ensure-capacity.rejects-negative-capacity",
+            "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)",
+            DictionaryModulePath,
+            [Map(), Number(-1)],
+            "ArgumentOutOfRangeException"),
         Success("dictionary.indexer.get-existing", "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", DictionaryModulePath, [Map((Text("release"), Number(42))), Text("release")], Number(42)),
         Failure("dictionary.indexer.rejects-missing-key", "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", DictionaryModulePath, [Map(), Text("release")], "KeyNotFoundException"),
         Failure("dictionary.indexer.rejects-null-instance", "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", DictionaryModulePath, [Null(), Text("release")], "NullReferenceException"),
@@ -29,9 +72,50 @@ internal static class ClrRuntimeDictionaryScenarios
 
         Success("read-only-dictionary.try-get.missing-key", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)", ReadOnlyModulePath, [Map(), Text("release"), Null()], Array(Bool(false), Null())),
         Success("read-only-dictionary.try-get.existing-key", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)", ReadOnlyModulePath, [Map((Text("release"), Number(42))), Text("release"), Null()], Array(Bool(true), Number(42))),
+        Success("read-only-dictionary.keys.projects-key-sequence", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get", ReadOnlyModulePath, [Map((Text("release"), Number(42)), (Text("owner"), Number(7)))], Array(Text("release"), Text("owner"))),
+        Success("read-only-dictionary.values.projects-value-sequence", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Values.get", ReadOnlyModulePath, [Map((Text("release"), Number(42)), (Text("owner"), Number(7)))], Array(Number(42), Number(7))),
         Failure("read-only-dictionary.indexer.rejects-missing-key", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get", ReadOnlyModulePath, [Map(), Text("release")], "KeyNotFoundException"),
         Failure("read-only-dictionary.indexer.rejects-null-instance", "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get", ReadOnlyModulePath, [Null(), Text("release")], "NullReferenceException"),
         Success("read-only-dictionary.empty", "static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get", ReadOnlyModulePath, [], Map()),
+        Success(
+            "read-only-dictionary.constructor-live-view",
+            "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get",
+            ReadOnlyModulePath,
+            [
+                Sequence(
+                    Reference("read-only-dictionary.source", Map((Text("release"), Number(1)))),
+                    Reference(
+                        "read-only-dictionary.view",
+                        Invoke(
+                            "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)",
+                            Reference("read-only-dictionary.source", Map()))),
+                    Invoke(
+                        "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set",
+                        Reference("read-only-dictionary.source", Map()),
+                        Text("release"),
+                        Number(2)),
+                    Reference("read-only-dictionary.view", Map())),
+                Text("release")
+            ],
+            Number(2)),
+        Failure(
+            "read-only-dictionary.constructor-rejects-view-mutation",
+            "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set",
+            InterfaceModulePath,
+            [
+                Invoke(
+                    "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)",
+                    Map((Text("release"), Number(1)))),
+                Text("release"),
+                Number(2)
+            ],
+            "NotSupportedException: Collection is read-only."),
+        Failure(
+            "read-only-dictionary.constructor-rejects-null",
+            "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)",
+            ReadOnlyModulePath,
+            [Null()],
+            "ArgumentNullException"),
 
         Success("weak-table.try-get.existing-reference-key", "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.TryGetValue(TKey, out TValue)", WeakTableModulePath, [WeakMap((Key("try-get"), Text("cached"))), Key("try-get"), Null()], Array(Bool(true), Text("cached"))),
         Success("weak-table.try-get.missing-reference-key", "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.TryGetValue(TKey, out TValue)", WeakTableModulePath, [WeakMap(), Key("try-get-missing"), Null()], Array(Bool(false), Null())),
@@ -61,6 +145,8 @@ internal static class ClrRuntimeDictionaryScenarios
         => new(id, member, modulePath, arguments, ExpectedValue: null, ExpectedErrorContains: error);
 
     private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments) => ClrRuntimeValue.Invoke(member, arguments);
+    private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value) => ClrRuntimeValue.Reference(id, value);
+	private static ClrRuntimeValue Sequence(params ClrRuntimeValue[] steps) => ClrRuntimeValue.Sequence(steps);
     private static ClrRuntimeValue Key(string id) => ClrRuntimeValue.Reference(id, Record(("id", Text(id))));
     private static ClrRuntimeValue Text(string value) => ClrRuntimeValue.Text(value);
     private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);

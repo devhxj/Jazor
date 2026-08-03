@@ -5,11 +5,122 @@ internal static class ClrRuntimeCollectionDiscardScenarios
     private const string DictionaryModulePath = "System/Collections/Generic/DictionaryT2Module.js";
     private const string HashSetModulePath = "System/Collections/Generic/HashSetT1Module.js";
     private const string DictionaryInterfaceModulePath = "System/Collections/Generic/IDictionaryT2Module.js";
+    private const string GenericCollectionModulePath = "System/Collections/Generic/ICollectionT1Module.js";
+    private const string GenericListModulePath = "System/Collections/Generic/IListT1Module.js";
+    private const string ListInterfaceModulePath = "System/Collections/IListModule.js";
+    private const string ReadOnlyCollectionModulePath = "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
     private const string WeakTableModulePath = "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js";
     private const string EqualityDefaultMember = "static System.Collections.Generic.EqualityComparer<T>.Default.get";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
+        Success(
+            "generic-collection.is-read-only.recognizes-list-carrier",
+            "System.Collections.Generic.ICollection<T>.IsReadOnly.get",
+            GenericCollectionModulePath,
+            [List(Number(1))],
+            Bool(false)),
+        Success(
+            "generic-collection.is-read-only.treats-array-as-fixed-size",
+            "System.Collections.Generic.ICollection<T>.IsReadOnly.get",
+            GenericCollectionModulePath,
+            [Array(Number(1))],
+            Bool(true)),
+        Mutation(
+            "generic-collection.add.appends-to-list-carrier",
+            "System.Collections.Generic.ICollection<T>.Add(T)",
+            GenericCollectionModulePath,
+            [List(Number(1)), Number(2)],
+            [Array(Number(1), Number(2)), Number(2)]),
+        Failure(
+            "generic-collection.add.rejects-fixed-array",
+            "System.Collections.Generic.ICollection<T>.Add(T)",
+            GenericCollectionModulePath,
+            [Array(Number(1)), Number(2)],
+            "NotSupportedException: Collection has a fixed size."),
+        Failure(
+            "generic-collection.add.rejects-read-only-view",
+            "System.Collections.Generic.ICollection<T>.Add(T)",
+            GenericCollectionModulePath,
+            [Invoke("System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", Array(Number(1))), Number(2)],
+            "NotSupportedException: Collection is read-only."),
+        Mutation(
+            "generic-collection.clear.clears-list-carrier",
+            "System.Collections.Generic.ICollection<T>.Clear()",
+            GenericCollectionModulePath,
+            [List(Number(1), Number(2))],
+            [Array()]),
+        SuccessMutation(
+            "generic-collection.remove.removes-first-list-item",
+            "System.Collections.Generic.ICollection<T>.Remove(T)",
+            GenericCollectionModulePath,
+            [List(Number(1), Number(2), Number(1)), Number(1)],
+            Bool(true),
+            [Array(Number(2), Number(1)), Number(1)]),
+
+        Mutation(
+            "generic-list.insert.inserts-into-list-carrier",
+            "System.Collections.Generic.IList<T>.Insert(int, T)",
+            GenericListModulePath,
+            [List(Number(1), Number(3)), Number(1), Number(2)],
+            [Array(Number(1), Number(2), Number(3)), Number(1), Number(2)]),
+        Mutation(
+            "generic-list.remove-at.removes-from-list-carrier",
+            "System.Collections.Generic.IList<T>.RemoveAt(int)",
+            GenericListModulePath,
+            [List(Number(1), Number(2), Number(3)), Number(1)],
+            [Array(Number(1), Number(3)), Number(1)]),
+
+        Mutation(
+            "list-interface.indexer-set.replaces-fixed-array-item",
+            "System.Collections.IList.this[int].set",
+            ListInterfaceModulePath,
+            [Array(Number(1), Number(2)), Number(1), Number(3)],
+            [Array(Number(1), Number(3)), Number(1), Number(3)]),
+        SuccessMutation(
+            "list-interface.add.appends-to-list-carrier",
+            "System.Collections.IList.Add(object)",
+            ListInterfaceModulePath,
+            [List(Number(1)), Number(2)],
+            Number(1),
+            [Array(Number(1), Number(2)), Number(2)]),
+        Mutation(
+            "list-interface.clear.clears-list-carrier",
+            "System.Collections.IList.Clear()",
+            ListInterfaceModulePath,
+            [List(Number(1), Number(2))],
+            [Array()]),
+        Success(
+            "list-interface.is-read-only.recognizes-fixed-array",
+            "System.Collections.IList.IsReadOnly.get",
+            ListInterfaceModulePath,
+            [Array(Number(1))],
+            Bool(true)),
+        Success(
+            "list-interface.is-fixed-size.distinguishes-list-carrier",
+            "System.Collections.IList.IsFixedSize.get",
+            ListInterfaceModulePath,
+            [List(Number(1))],
+            Bool(false)),
+        Mutation(
+            "list-interface.insert.inserts-into-list-carrier",
+            "System.Collections.IList.Insert(int, object)",
+            ListInterfaceModulePath,
+            [List(Number(1), Number(3)), Number(1), Number(2)],
+            [Array(Number(1), Number(2), Number(3)), Number(1), Number(2)]),
+        Mutation(
+            "list-interface.remove.removes-first-list-item",
+            "System.Collections.IList.Remove(object)",
+            ListInterfaceModulePath,
+            [List(Number(1), Number(2), Number(1)), Number(1)],
+            [Array(Number(2), Number(1)), Number(1)]),
+        Mutation(
+            "list-interface.remove-at.removes-from-list-carrier",
+            "System.Collections.IList.RemoveAt(int)",
+            ListInterfaceModulePath,
+            [List(Number(1), Number(2), Number(3)), Number(1)],
+            [Array(Number(1), Number(3)), Number(1)]),
+
         Success(
             "dictionary.constructor.capacity.creates-empty-map",
             "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(int)",
@@ -255,6 +366,8 @@ internal static class ClrRuntimeCollectionDiscardScenarios
         ("equals", Callable(ClrRuntimeCallableKind.SameParity)),
         ("getHashCode", Callable(ClrRuntimeCallableKind.ParityHash)));
     private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments) => ClrRuntimeValue.Invoke(member, arguments);
+    private static ClrRuntimeValue List(params ClrRuntimeValue[] values)
+        => Invoke("System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", Array(values));
     private static ClrRuntimeValue Key(string id) => ClrRuntimeValue.Reference(id, Record(("id", Text(id))));
     private static ClrRuntimeValue Null() => ClrRuntimeValue.Null();
     private static ClrRuntimeValue Text(string value) => ClrRuntimeValue.Text(value);

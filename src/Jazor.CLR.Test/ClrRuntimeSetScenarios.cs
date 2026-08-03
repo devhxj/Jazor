@@ -2,10 +2,49 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeSetScenarios
 {
-    public static IReadOnlyList<ClrRuntimeScenario> HashSet { get; } = Create(
-        "hash-set",
-        "HashSet",
-        "System/Collections/Generic/HashSetT1Module.js");
+    public static IReadOnlyList<ClrRuntimeScenario> HashSet { get; } =
+    [
+        .. Create(
+            "hash-set",
+            "HashSet",
+            "System/Collections/Generic/HashSetT1Module.js"),
+        Success(
+            "hash-set.capacity.default-constructor",
+            "System.Collections.Generic.HashSet<T>.Capacity.get",
+            "System/Collections/Generic/HashSetT1Module.js",
+            [Invoke("System.Collections.Generic.HashSet<T>.HashSet()")],
+            Number(0)),
+        Success(
+            "hash-set.constructor.collection-removes-duplicates",
+            "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)",
+            "System/Collections/Generic/HashSetT1Module.js",
+            [Array(Text("a"), Text("b"), Text("a"))],
+            Set(Text("a"), Text("b"))),
+        Success(
+            "hash-set.capacity.add-grows-prime-storage",
+            "System.Collections.Generic.HashSet<T>.Capacity.get",
+            "System/Collections/Generic/HashSetT1Module.js",
+            [
+                Reference("growing-set", Invoke("System.Collections.Generic.HashSet<T>.HashSet()")),
+                Invoke(
+                    "System.Collections.Generic.HashSet<T>.Add(T)",
+                    Reference("growing-set", Set()),
+                    Text("a"))
+            ],
+            Number(3)),
+        Success(
+            "hash-set.ensure-capacity.rounds-to-clr-prime",
+            "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
+            "System/Collections/Generic/HashSetT1Module.js",
+            [Invoke("System.Collections.Generic.HashSet<T>.HashSet()"), Number(4)],
+            Number(7)),
+        Failure(
+            "hash-set.ensure-capacity.rejects-negative-capacity",
+            "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
+            "System/Collections/Generic/HashSetT1Module.js",
+            [Set(), Number(-1)],
+            "ArgumentOutOfRangeException")
+    ];
 
     public static IReadOnlyList<ClrRuntimeScenario> InterfaceSet { get; } = Create(
         "iset",
@@ -58,8 +97,20 @@ internal static class ClrRuntimeSetScenarios
         IReadOnlyList<ClrRuntimeValue> expectedArguments)
         => new(id, member, modulePath, arguments, ClrRuntimeValue.Undefined(), ExpectedArguments: expectedArguments);
 
+    private static ClrRuntimeScenario Failure(
+        string id,
+        string member,
+        string modulePath,
+        IReadOnlyList<ClrRuntimeValue> arguments,
+        string error)
+        => new(id, member, modulePath, arguments, ExpectedValue: null, ExpectedErrorContains: error);
+
     private static ClrRuntimeValue Text(string value) => ClrRuntimeValue.Text(value);
+    private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
     private static ClrRuntimeValue Set(params ClrRuntimeValue[] values) => ClrRuntimeValue.Set(values);
+    private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value) => ClrRuntimeValue.Reference(id, value);
+    private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
+        => ClrRuntimeValue.Invoke(member, arguments);
 }

@@ -1,5 +1,16 @@
 # Release Notes
 
+## 2026-08-04
+
+- `DateTime` and `DateTimeOffset` now support their Gregorian-calendar constructor families, preserving calendar-null argument precedence, `DateTimeKind`, microseconds, and offset validation through the shared date carrier.
+- `StringBuilder` now supports capacity-aware construction, `Capacity`, `MaxCapacity`, `EnsureCapacity`, string append and append-line paths, and content-based builder equality. Capacity growth preserves the .NET behavior where an allocation may briefly exceed `MaxCapacity` while already allocated space remains usable.
+- `string.Intern` now runs through the string carrier contract, including null argument behavior; intern-table inspection remains an explicit boundary.
+- Expression-tree and `IQueryable` lambda conversions now fail explicitly instead of being lowered as executable delegates, preserving the distinction from supported `Enumerable` callbacks.
+- Generated runtime catalog assertions now track the shared char code-unit, comparer NaN ordering, and BigInt rotation helper contracts.
+- Native `ECMAScript.Array`, `Set`, and `Map` now accept standard C# collection initializers; `Map` indexer and two-argument entries retain its typed `set` runtime behavior.
+- Read-only collection, dictionary, and set construction now preserve their live-view and write-guard contracts instead of falling back to writable or snapshot carriers.
+- The compiler quality gate now verifies 8,283 scenarios at 96.28% line coverage and 90.01% branch coverage.
+
 ## 2026-08-03
 
 - LINQ mappings now cover `Cast`, `OfType`, `TryGetNonEnumeratedCount`, comparer-aware `ToDictionary` and `ToHashSet`, and a broader set of selector, grouping, ordering, aggregation, and set operations through shared runtime helpers.

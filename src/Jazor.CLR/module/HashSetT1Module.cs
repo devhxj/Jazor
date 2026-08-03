@@ -20,11 +20,38 @@ public static class HashSetT1Module<T>
 	// Keep comparer state out of the native Set carrier. This preserves normal Set iteration and
 	// size while allowing CLR equality to choose one physical representative per equivalence class.
 	private static readonly WeakMap<Set<T>, (System.Collections.Generic.IEqualityComparer<T>? Comparer, Map<Number, Array<T>> ValuesByHash)> States = new();
+	private static readonly WeakMap<Set<T>, Number> Capacities = new();
 
 	private static void EnsureInstance(Set<T> instance)
 	{
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static Number GetCapacity(Set<T> instance)
+	{
+		EnsureInstance(instance);
+		if (!Capacities.Has(instance))
+			Capacities.Set(instance, RuntimeModule.GetHashCollectionCapacity(instance.Size));
+		return Capacities.Get(instance)!;
+	}
+
+	private static void EnsureEntryCapacity(Set<T> instance, Number requiredCount)
+	{
+		var capacity = GetCapacity(instance);
+		if (requiredCount > capacity)
+			Capacities.Set(instance, RuntimeModule.ExpandHashCollectionCapacity(capacity));
+	}
+
+	private static Number EnsureCapacityCore(Set<T> instance, Number capacity)
+	{
+		var requested = RuntimeModule.GetHashCollectionCapacity(capacity);
+		var current = GetCapacity(instance);
+		if (requested <= current)
+			return current;
+
+		Capacities.Set(instance, requested);
+		return requested;
 	}
 
 	private static void EnsureOther(IEnumerable<T> other)
@@ -113,6 +140,7 @@ public static class HashSetT1Module<T>
 		if (FindEquivalentIndex(bucket, item, state) >= 0)
 			return instance;
 
+		EnsureEntryCapacity(instance, instance.Size + 1);
 		bucket.Push(item);
 		NativeAdd(instance, item);
 		return instance;
@@ -161,8 +189,16 @@ public static class HashSetT1Module<T>
 	}
 
 	internal static Set<T> Create(System.Collections.Generic.IEqualityComparer<T>? comparer)
+		=> Create(comparer, capacity: 0);
+
+	private static Set<T> Create(System.Collections.Generic.IEqualityComparer<T>? comparer, Number capacity)
 	{
+		var normalizedCapacity = RuntimeModule.GetHashCollectionCapacity(capacity);
 		var instance = new Set<T>();
+		Capacities.Set(instance, normalizedCapacity);
+		if (comparer is null)
+			return instance;
+
 		var state = (Comparer: comparer, ValuesByHash: new Map<Number, Array<T>>());
 		States.Set(instance, state);
 		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptor
@@ -200,12 +236,7 @@ public static class HashSetT1Module<T>
 		Number capacity,
 		System.Collections.Generic.IEqualityComparer<T>? comparer)
 	{
-		if (capacity < 0)
-			throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-
-		// JavaScript Set deliberately has no observable capacity. Since Capacity/EnsureCapacity
-		// remain outside this mapping, preserving construction and comparer semantics is sufficient.
-		return Create(comparer);
+		return Create(comparer, capacity);
 	}
 
 	internal static Set<T> CreateFrom(
@@ -214,9 +245,14 @@ public static class HashSetT1Module<T>
 	{
 		EnsureOther(values);
 
-		var lookup = Create(comparer);
+		var initialCapacity = values is Array<T> array
+			? array.Length
+			: values is Set<T> set
+				? set.Size
+				: 0;
+		var lookup = Create(comparer, initialCapacity);
 		foreach (var value in values)
-			lookup.Add(value);
+			AddCore(lookup, value);
 		return lookup;
 	}
 
@@ -226,9 +262,9 @@ public static class HashSetT1Module<T>
 	{
 		EnsureInstance(values);
 
-		var lookup = Create(comparer);
+		var lookup = Create(comparer, values.Size);
 		foreach (var value in values)
-			lookup.Add((T)value);
+			AddCore(lookup, (T)value);
 		return lookup;
 	}
 
@@ -238,6 +274,8 @@ public static class HashSetT1Module<T>
 
 		var size = instance.Size;
 		instance.Add(item);
+		if (!States.Has(instance) && instance.Size > size)
+			EnsureEntryCapacity(instance, instance.Size);
 		return instance.Size > size;
 	}
 
@@ -312,7 +350,7 @@ public static class HashSetT1Module<T>
 		EnsureOther(other);
 
 		foreach (var item in other)
-			instance.Add(item);
+			AddCore(instance, item);
 	}
 
 	internal static void IntersectWithCore(Set<T> instance, IEnumerable<T> other)
@@ -346,7 +384,7 @@ public static class HashSetT1Module<T>
 			if (instance.Has(current))
 				instance.Delete(current);
 			else
-				instance.Add(current);
+				AddCore(instance, current);
 		}
 	}
 
@@ -489,8 +527,9 @@ public static class HashSetT1Module<T>
 	/// C#: new HashSet<T>()
 	/// JS: new Set()
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet()", "new Set()")]
-	public extern static Set<T> _55c044d94c5b0ca8();
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.HashSet()", "createDefault")]
+	public static Set<T> CreateDefault()
+		=> Create(comparer: null);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that is empty and uses the specified equality comparer for the set type.</summary>
 	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEqualityComparer<T>)", "createWithComparer")]
@@ -506,8 +545,9 @@ public static class HashSetT1Module<T>
 	/// C#: new HashSet<T>(collection)
 	/// JS: new Set(collection)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "new Set(__arg1)")]
-	public extern static Set<T> _1bd2e054852d9d5f(IEnumerable<T> collection);
+	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)", "createFromCollection")]
+	public static Set<T> CreateFromCollection(IEnumerable<T> collection)
+		=> CreateFrom(collection, comparer: null);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.Generic.HashSet`1" /> class that uses the specified equality comparer for the set type, contains elements copied from the specified collection, and has sufficient capacity to accommodate the number of elements copied.</summary>
 	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>)", "createFromWithComparer")]
@@ -551,8 +591,9 @@ public static class HashSetT1Module<T>
 	[Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>.Count.get", "size")]
 	public extern static Number _4bec0b4d27073edb(Set<T> instance);
 
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.Capacity.get")]
-	public extern static Number _97c019008a0c8260(Set<T> instance);
+	[Jazor(Op.Import ,"System.Collections.Generic.HashSet<T>.Capacity.get", "getCapacityMember")]
+	public static Number GetCapacityMember(Set<T> instance)
+		=> GetCapacity(instance);
 
 	///<summary>Gets an instance of a type that can be used to perform operations on the current <see cref="T:System.Collections.Generic.HashSet`1" /> using a <typeparamref name="TAlternate" /> instead of a <typeparamref name="T" />.</summary>
 	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.GetAlternateLookup<TAlternate>()")]
@@ -698,25 +739,30 @@ public static class HashSetT1Module<T>
 		=> GetComparer(instance) ?? (System.Collections.Generic.IEqualityComparer<T>)EqualityComparerT1Module<T>.GetDefault();
 
 	///<summary>Ensures that this hash set can hold the specified number of elements without any further expansion of its backing storage.</summary>
-	[Jazor(Op.Discard ,"System.Collections.Generic.HashSet<T>.EnsureCapacity(int)")]
-	public extern static Number _b53dcd5d4f0c57d7(Set<T> instance, Number capacity);
+	[Jazor(Op.Import ,"System.Collections.Generic.HashSet<T>.EnsureCapacity(int)", "ensureCapacity")]
+	public static Number EnsureCapacity(Set<T> instance, Number capacity)
+		=> EnsureCapacityCore(instance, capacity);
 
 	///<summary>Sets the capacity of a <see cref="T:System.Collections.Generic.HashSet`1" /> object to the actual number of elements it contains, rounded up to a nearby, implementation-specific value.</summary>
 	[Jazor(Op.Import ,"System.Collections.Generic.HashSet<T>.TrimExcess()")]
 	public static void _09f9b6aba126decb(Set<T> instance)
 	{
-		// Set has no observable capacity. Preserve the receiver check and erase only the
-		// backing-storage optimization that the supported CLR surface cannot observe.
-		EnsureInstance(instance);
+		var capacity = GetCapacity(instance);
+		var trimmed = RuntimeModule.GetHashCollectionCapacity(instance.Size);
+		if (trimmed < capacity)
+			Capacities.Set(instance, trimmed);
 	}
 
 	///<summary>Sets the capacity of a <see cref="T:System.Collections.Generic.HashSet`1" /> object to the specified number of entries, rounded up to a nearby, implementation-specific value.</summary>
 	[Jazor(Op.Import ,"System.Collections.Generic.HashSet<T>.TrimExcess(int)")]
 	public static void _e4dd8faf507013ad(Set<T> instance, Number capacity)
 	{
-		EnsureInstance(instance);
+		var current = GetCapacity(instance);
 		if (capacity < instance.Size)
 			throw new Error("ArgumentOutOfRangeException: capacity cannot be less than Count.");
+		var trimmed = RuntimeModule.GetHashCollectionCapacity(capacity);
+		if (trimmed < current)
+			Capacities.Set(instance, trimmed);
 	}
 
 	///<summary>Returns an <see cref="T:System.Collections.IEqualityComparer" /> object that can be used for equality testing of a <see cref="T:System.Collections.Generic.HashSet`1" /> object.</summary>

@@ -32,15 +32,24 @@ public sealed class SemanticWalkerImplicitIndexerStableReceiverScenarioTests
 
         const string expected = """
             {
-              let values = [1, 2, 3];
+              let values = (() => {
+                let v$0 = createDefault();
+                add(v$0, 1);
+                add(v$0, 2);
+                add(v$0, 3);
+                return v$0;
+              })();
               _c16a7960302ea054(values, 0, 9);
               _c16a7960302ea054(values, values.length - 1, 4);
             }
             """;
         Assert.AreEqual(expected, script?.ReplaceLineEndings("\n"));
-        Assert.IsFalse(script!.Contains("let v$", StringComparison.Ordinal));
-        _ = new Parser().ParseScript(script);
+        Assert.AreEqual(1, CountOccurrences(script!, "let v$"));
+        _ = new Parser().ParseScript(script!);
     }
+
+    private static int CountOccurrences(string value, string fragment)
+        => (value.Length - value.Replace(fragment, string.Empty, StringComparison.Ordinal).Length) / fragment.Length;
 
     private static IBlockOperation CompileBlock(string source)
     {

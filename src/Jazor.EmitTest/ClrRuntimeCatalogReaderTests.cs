@@ -66,7 +66,8 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var runtimeModule = modules.Single(module => string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(runtimeModule.Content.Contains("from \"System/RuntimeModule.js\"", StringComparison.Ordinal), runtimeModule.Content);
-        Assert.IsFalse(runtimeModule.Content.Contains("import {", StringComparison.Ordinal), runtimeModule.Content);
+        StringAssert.Contains(runtimeModule.Content, "import { _5ad63706a889c294 } from \"System/StringModule.js\";");
+        Assert.IsFalse(runtimeModule.Content.Contains("import { RuntimeModule", StringComparison.Ordinal), runtimeModule.Content);
         Assert.IsFalse(runtimeModule.Content.Contains("export const RuntimeModule = {", StringComparison.Ordinal), runtimeModule.Content);
         var queueStart = runtimeModule.Content.IndexOf("export class JQueue {", StringComparison.Ordinal);
         var queueEnd = runtimeModule.Content.IndexOf("export class JStack {", queueStart, StringComparison.Ordinal);
@@ -188,8 +189,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(listModule.Content.Contains("subArray.sort();", StringComparison.Ordinal), listModule.Content);
 
         var comparerModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ComparerT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(comparerModule.Content, "return isNaN(rightNumber) ? 0 : 1;");
-        StringAssert.Contains(comparerModule.Content, "if (isNaN(rightNumber))\n      return -1;");
+        StringAssert.Contains(comparerModule.Content, "return isNaN(rightNumber) ? 0 : -1;");
+        StringAssert.Contains(comparerModule.Content, "if (isNaN(rightNumber))\n      return 1;");
         StringAssert.Contains(comparerModule.Content, "throw new Error(\"ArgumentException: At least one object must implement IComparable.\");");
         Assert.IsFalse(comparerModule.Content.Contains("let leftText = x.toString();", StringComparison.Ordinal), comparerModule.Content);
         Assert.IsFalse(comparerModule.Content.Contains("let rightText = y.toString();", StringComparison.Ordinal), comparerModule.Content);
@@ -200,8 +201,11 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(doubleModule.Content.Contains("export const DoubleModule = {", StringComparison.Ordinal), doubleModule.Content);
 
         var int64Module = modules.Single(module => string.Equals(module.RelativePath, "System/Int64Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(int64Module.Content, "function normalizeRotateBits(value)");
-        StringAssert.Contains(int64Module.Content, "function normalizeSignedRotateResult(value)");
+        StringAssert.Contains(int64Module.Content, "from \"System/Numerics/BigIntIntegerRuntime.js\";");
+        StringAssert.Contains(int64Module.Content, "return rotateLeft(value, rotateAmount, 64,");
+        StringAssert.Contains(int64Module.Content, "return rotateRight(value, rotateAmount, 64,");
+        Assert.IsFalse(int64Module.Content.Contains("function normalizeRotateBits(value)", StringComparison.Ordinal), int64Module.Content);
+        Assert.IsFalse(int64Module.Content.Contains("function normalizeSignedRotateResult(value)", StringComparison.Ordinal), int64Module.Content);
         Assert.IsFalse(int64Module.Content.Contains("return value << amount | value >> BigInt(64) - amount;", StringComparison.Ordinal), int64Module.Content);
         Assert.IsFalse(int64Module.Content.Contains("return value >> amount | value << BigInt(64) - amount;", StringComparison.Ordinal), int64Module.Content);
 
@@ -263,7 +267,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(charModule.Content, "code === 8287");
         StringAssert.Contains(charModule.Content, "code === 12288");
         StringAssert.Contains(charModule.Content, "return isControlCode(c);");
-        StringAssert.Contains(charModule.Content, "return c.charCodeAt(0) >= \"A\".charCodeAt(0) && c.charCodeAt(0) <= \"Z\".charCodeAt(0) || c.charCodeAt(0) >= \"a\".charCodeAt(0) && c.charCodeAt(0) <= \"z\".charCodeAt(0);");
+        StringAssert.Contains(charModule.Content, "function getCodeUnit(value) {\n  return value.charCodeAt(0);\n}");
+        StringAssert.Contains(charModule.Content, "function getCodeUnitFromChar(value) {\n  return value.charCodeAt(0);\n}");
         StringAssert.Contains(charModule.Content, "getCodeUnitFromChar(_5ad63706a889c294(s, index))");
         Assert.IsFalse(charModule.Content.Contains("typeof value !== \"number\"", StringComparison.Ordinal), charModule.Content);
         Assert.IsFalse(charModule.Content.Contains("return [false, 0];", StringComparison.Ordinal), charModule.Content);
@@ -306,6 +311,18 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(dictionaryModule.Content, "import { isReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(dictionaryModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), dictionaryModule.Content);
 
+        var genericCollectionModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ICollectionT1Module.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(genericCollectionModule.Content, "import { isMutableListCarrier, requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+
+        var genericListModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/IListT1Module.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(genericListModule.Content, "import { requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+
+        var listInterfaceModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/IListModule.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(listInterfaceModule.Content, "import { isMutableListCarrier, requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+
+        var listModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ListT1Module.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(listModule.Content, "import { createReadOnlyArrayView, markAsMutableListCarrier } from \"System/RuntimeModule.js\";");
+
         var readOnlyDictionaryModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(readOnlyDictionaryModule.Content, "import { markAsReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(readOnlyDictionaryModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), readOnlyDictionaryModule.Content);
@@ -326,9 +343,14 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlySetCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function isReadOnlyDictionaryCarrier");
         StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlyDictionaryCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function markAsMutableListCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function isMutableListCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function requireMutableListCarrier");
         StringAssert.Contains(runtimeModule.Content, "let readOnlyCarriers = new WeakSet;");
+        StringAssert.Contains(runtimeModule.Content, "let mutableListCarriers = new WeakSet;");
         StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.has(instance)");
-        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.add(instance)");
+        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.add(view)");
+        StringAssert.Contains(runtimeModule.Content, "mutableListCarriers.add(instance)");
         Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly", StringComparison.Ordinal), runtimeModule.Content);
     }
 

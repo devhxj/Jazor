@@ -1575,12 +1575,20 @@ public static class DateTimeModule
 	public static RuntimeModule.JDateTime _4cb33a818161a3e1(Number year, Number month, Number day) => new(CreateLocalDate(year, month, day), DateTimeKindUnspecified);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, and day for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, System.Globalization.Calendar)")]
-	public extern static RuntimeModule.JDateTime _a515b8bb82ad96b7(Number year, Number month, Number day, GregorianCalendar calendar);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, System.Globalization.Calendar)")]
+	public static RuntimeModule.JDateTime _a515b8bb82ad96b7(Number year, Number month, Number day, RuntimeModule.JGregorianCalendar? calendar)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _4cb33a818161a3e1(year, month, day);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
-	public extern static RuntimeModule.JDateTime _bd2c430e6327a2cc(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar, System.DateTimeKind kind);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
+	public static RuntimeModule.JDateTime _bd2c430e6327a2cc(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, RuntimeModule.JGregorianCalendar? calendar, System.DateTimeKind kind)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _c52eec5e681a0b8b(year, month, day, hour, minute, second, millisecond, kind);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, and second.</summary>
 	[Jazor(Op.Import, "System.DateTime.DateTime(int, int, int, int, int, int)")]
@@ -1593,8 +1601,12 @@ public static class DateTimeModule
 		=> new(CreateLocalDateTime(year, month, day, hour, minute, second, 0), GetKind(kind));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, and second for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, System.Globalization.Calendar)")]
-	public extern static RuntimeModule.JDateTime _29bb943b21806bd9(Number year, Number month, Number day, Number hour, Number minute, Number second, GregorianCalendar calendar);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, System.Globalization.Calendar)")]
+	public static RuntimeModule.JDateTime _29bb943b21806bd9(Number year, Number month, Number day, Number hour, Number minute, Number second, RuntimeModule.JGregorianCalendar? calendar)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _4903723bbf8a0a2f(year, month, day, hour, minute, second);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and millisecond.</summary>
 	[Jazor(Op.Import, "System.DateTime.DateTime(int, int, int, int, int, int, int)")]
@@ -1607,8 +1619,12 @@ public static class DateTimeModule
 		=> new(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), GetKind(kind));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, and millisecond for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar)")]
-	public extern static RuntimeModule.JDateTime _8a4d2d51b716bb36(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, GregorianCalendar calendar);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar)")]
+	public static RuntimeModule.JDateTime _8a4d2d51b716bb36(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, RuntimeModule.JGregorianCalendar? calendar)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _5822b271bb635d64(year, month, day, hour, minute, second, millisecond);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
 	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int)")]
@@ -1621,12 +1637,20 @@ public static class DateTimeModule
 		=> CreateDateTime(CreateLocalDateTime(year, month, day, hour, minute, second, millisecond), GetKind(kind), GetMicrosecondTicks(microsecond));
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar)")]
-	public extern static RuntimeModule.JDateTime _bd13792ce57e1964(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar)")]
+	public static RuntimeModule.JDateTime _bd13792ce57e1964(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, RuntimeModule.JGregorianCalendar? calendar)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _9117d26d23769ad1(year, month, day, hour, minute, second, millisecond, microsecond);
+	}
 
 	///<summary>Initializes a new instance of the <see cref="T:System.DateTime" /> structure to the specified year, month, day, hour, minute, second, millisecond, and Coordinated Universal Time (UTC) or local time for the specified calendar.</summary>
-	[Jazor(Op.Discard ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
-	public extern static RuntimeModule.JDateTime _cd0b8f2bce1e09ed(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, GregorianCalendar calendar, System.DateTimeKind kind);
+	[Jazor(Op.Import ,"System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)")]
+	public static RuntimeModule.JDateTime _cd0b8f2bce1e09ed(Number year, Number month, Number day, Number hour, Number minute, Number second, Number millisecond, Number microsecond, RuntimeModule.JGregorianCalendar? calendar, System.DateTimeKind kind)
+	{
+		_ = RuntimeModule.RequireGregorianCalendar(calendar);
+		return _e84671346e2b9972(year, month, day, hour, minute, second, millisecond, microsecond, kind);
+	}
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the value of the specified <see cref="T:System.TimeSpan" /> to the value of this instance.</summary>
 	[Jazor(Op.Import ,"System.DateTime.Add(System.TimeSpan)")]

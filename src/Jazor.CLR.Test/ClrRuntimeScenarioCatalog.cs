@@ -8,11 +8,12 @@ internal enum ClrRuntimeValueKind
     Boolean,
     BigInt,
     Array,
-    ArrayElement,
-    Set,
-    Map,
-    WeakMap,
-    Reference,
+	ArrayElement,
+	Set,
+	Map,
+	WeakMap,
+	Reference,
+	Sequence,
     Record,
     Callable,
     Disposable,
@@ -40,6 +41,7 @@ internal enum ClrRuntimeCallableKind
     ToDecimalText,
     ReturnFactoryText,
     ReturnFactoryArgument,
+	ReturnHashCode,
     Identity,
     SameParity,
     ParityHash
@@ -89,11 +91,14 @@ internal sealed record ClrRuntimeValue(
     public static ClrRuntimeValue Map(params (ClrRuntimeValue Key, ClrRuntimeValue Value)[] entries)
         => new(ClrRuntimeValueKind.Map, Items: FlattenEntries(entries));
 
-    public static ClrRuntimeValue WeakMap(params (ClrRuntimeValue Key, ClrRuntimeValue Value)[] entries)
-        => new(ClrRuntimeValueKind.WeakMap, Items: FlattenEntries(entries));
+	public static ClrRuntimeValue WeakMap(params (ClrRuntimeValue Key, ClrRuntimeValue Value)[] entries)
+		=> new(ClrRuntimeValueKind.WeakMap, Items: FlattenEntries(entries));
 
-    public static ClrRuntimeValue Reference(string id, ClrRuntimeValue value)
-        => new(ClrRuntimeValueKind.Reference, id, [value]);
+	public static ClrRuntimeValue Reference(string id, ClrRuntimeValue value)
+		=> new(ClrRuntimeValueKind.Reference, id, [value]);
+
+	public static ClrRuntimeValue Sequence(params ClrRuntimeValue[] steps)
+		=> new(ClrRuntimeValueKind.Sequence, Items: steps);
 
     public static ClrRuntimeValue Record(params (string Name, ClrRuntimeValue Value)[] properties)
         => new(
@@ -206,8 +211,10 @@ internal static class ClrRuntimeScenarioCatalog
 		.. ClrRuntimeNumericWidthScenarios.All,
 		.. ClrRuntimeUtf8NumericParsingScenarios.All,
         .. ClrRuntimeNullableScenarios.All,
-        .. ClrRuntimeMathScenarios.All,
-        .. ClrRuntimeBigIntegerScenarios.All,
+		.. ClrRuntimeMathScenarios.All,
+		.. ClrRuntimeWeakReferenceScenarios.All,
+		.. ClrRuntimeReadOnlyArrayViewScenarios.All,
+		.. ClrRuntimeBigIntegerScenarios.All,
         .. ClrRuntimeBigIntegerBinaryScenarios.All,
         .. ClrRuntimeDecimalScenarios.All,
         .. ClrRuntimeDecimalExtendedScenarios.All,

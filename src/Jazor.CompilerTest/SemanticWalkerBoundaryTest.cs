@@ -967,7 +967,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let empty = [];
+  let empty = createDefault();
   for (let item of empty) {
     console.log(item);
   }

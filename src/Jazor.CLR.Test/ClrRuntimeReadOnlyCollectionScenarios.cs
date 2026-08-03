@@ -15,6 +15,43 @@ internal static class ClrRuntimeReadOnlyCollectionScenarios
         Success("read-only-set.superset", "System.Collections.ObjectModel.ReadOnlySet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)", ReadOnlySetModulePath, [Set(Number(1), Number(2)), Set(Number(1))], Bool(true)),
         Success("read-only-set.overlaps", "System.Collections.ObjectModel.ReadOnlySet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)", ReadOnlySetModulePath, [Set(Number(1), Number(2)), Set(Number(2), Number(3))], Bool(true)),
         Success("read-only-set.set-equals.ignores-order", "System.Collections.ObjectModel.ReadOnlySet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", ReadOnlySetModulePath, [Set(Number(1), Number(2)), Array(Number(2), Number(1))], Bool(true)),
+        Success(
+            "read-only-set.constructor-live-view",
+            "System.Collections.ObjectModel.ReadOnlySet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>)",
+            ReadOnlySetModulePath,
+            [
+                Sequence(
+                    Reference("read-only-set.source", Set(Number(1))),
+                    Reference(
+                        "read-only-set.view",
+                        Invoke(
+                            "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)",
+                            Reference("read-only-set.source", Set()))),
+                    Invoke(
+                        "System.Collections.Generic.ISet<T>.Add(T)",
+                        Reference("read-only-set.source", Set()),
+                        Number(2)),
+                    Reference("read-only-set.view", Set())),
+                Array(Number(1), Number(2))
+            ],
+            Bool(true)),
+        Failure(
+            "read-only-set.constructor-rejects-view-mutation",
+            "System.Collections.Generic.ISet<T>.Add(T)",
+            "System/Collections/Generic/ISetT1Module.js",
+            [
+                Invoke(
+                    "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)",
+                    Set(Number(1))),
+                Number(2)
+            ],
+            "NotSupportedException: Collection is read-only."),
+        Failure(
+            "read-only-set.constructor-rejects-null",
+            "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)",
+            ReadOnlySetModulePath,
+            [Null()],
+            "ArgumentNullException"),
 
         Success("read-only-collection.empty", "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get", ReadOnlyCollectionModulePath, [], Array()),
         Success("read-only-collection.create-collection.snapshots-order", "static System.Collections.ObjectModel.ReadOnlyCollection.CreateCollection<T>(params System.ReadOnlySpan<T>)", ReadOnlyCollectionModulePath, [Array(Number(1), Number(2), Number(1))], Array(Number(1), Number(2), Number(1))),
@@ -73,4 +110,8 @@ internal static class ClrRuntimeReadOnlyCollectionScenarios
     private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);
     private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
         => ClrRuntimeValue.Invoke(member, arguments);
+    private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value)
+        => ClrRuntimeValue.Reference(id, value);
+    private static ClrRuntimeValue Sequence(params ClrRuntimeValue[] steps)
+        => ClrRuntimeValue.Sequence(steps);
 }

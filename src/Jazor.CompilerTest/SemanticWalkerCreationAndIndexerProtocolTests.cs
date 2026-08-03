@@ -113,7 +113,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             """
             {
               let values = (() => {
-                let v$0 = Array.from([new Nested]);
+                let v$0 = createFromCollection([new Nested]);
                 _c16a7960302ea054(v$0, TestClass.nextIndex(), (() => {
                   let v$1 = new Nested;
                   v$1.value = 9;
@@ -169,8 +169,8 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             {
               let map = (() => {
                 let v$1;
-                let v$0 = new Map;
-                v$0.set("primary", new Nested);
+                let v$0 = createDefault();
+                setItem(v$0, "primary", new Nested);
                 v$1 = _e73dbdff85c46ddc(v$0, "primary");
                 v$1.value = 8;
                 return v$0;
@@ -391,10 +391,66 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         Assert.AreEqual(
             """
             {
-              let rows = [{ id: 1, name: "one" }];
-              let ids = new Set([2, 3]);
-              let indexLookup = new Map([["first", { count: 4, label: "four" }]]);
-              let addLookup = new Map([["second", { count: 5, label: "five" }]]);
+              let rows = (() => {
+                let v$0 = createDefault();
+                add(v$0, { id: 1, name: "one" });
+                return v$0;
+              })();
+              let ids = (() => {
+                let v$0 = createDefault();
+                _e1d2ba750a2788cb(v$0, 2);
+                _e1d2ba750a2788cb(v$0, 3);
+                return v$0;
+              })();
+              let indexLookup = (() => {
+                let v$0 = createDefault();
+                setItem(v$0, "first", { count: 4, label: "four" });
+                return v$0;
+              })();
+              let addLookup = (() => {
+                let v$0 = createDefault();
+                _39d6e632c4c102f9(v$0, "second", { count: 5, label: "five" });
+                return v$0;
+              })();
+            }
+            """.ReplaceLineEndings(),
+            script.ReplaceLineEndings());
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_NativeCollectionInitializers_UseLiteralFastPathAndRemapTupleElements()
+    {
+        var block = GetBlockOperation(
+            """
+            var rows = new ECMAScript.Array<(int Id, string Label)>
+            {
+                (1, "one"),
+                (2, "two")
+            };
+            var ids = new ECMAScript.Set<(int Id, string Label)>
+            {
+                (3, "three")
+            };
+            var lookup = new ECMAScript.Map<string, (int Count, string Label)>
+            {
+                ["primary"] = (4, "four")
+            };
+            var entries = new ECMAScript.Map<string, (int Count, string Label)>
+            {
+                { "secondary", (5, "five") }
+            };
+            """);
+
+        var script = VisitBlock(block);
+
+        Assert.AreEqual(
+            """
+            {
+              let rows = [{ id: 1, label: "one" }, { id: 2, label: "two" }];
+              let ids = new Set([{ id: 3, label: "three" }]);
+              let lookup = new Map([["primary", { count: 4, label: "four" }]]);
+              let entries = new Map([["secondary", { count: 5, label: "five" }]]);
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());

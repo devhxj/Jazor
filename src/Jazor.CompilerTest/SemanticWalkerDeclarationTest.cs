@@ -316,7 +316,7 @@ public sealed class SemanticWalkerDeclarationTest
 @"{
   let value, v$0, v$1, result, v$2;
   let input = ""123"";
-  let dict = new Map;
+  let dict = createDefault();
   if (v$0 = _7db4d9112b4ba3c4(dict, ""key"", value), value = v$0[1], v$0[0]) {
     console.log(value);
   }
@@ -915,7 +915,7 @@ public sealed class SemanticWalkerDeclarationTest
         Assert.AreEqual(
 @"{
   let obj = new Object;
-  let list = [];
+  let list = createDefault();
 }", script);
     }
 
@@ -1371,7 +1371,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let a, v$0, b, v$1;
-  let dict = new Map;
+  let dict = createDefault();
   v$0 = _7db4d9112b4ba3c4(dict, ""a"", a), a = v$0[1], v$0[0];
   v$1 = _7db4d9112b4ba3c4(dict, ""b"", b), b = v$1[1], v$1[0];
   console.log(a + b);
@@ -1923,7 +1923,9 @@ public sealed class SemanticWalkerDeclarationTest
         var script = node?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "let list = [1, 2, 3];");
+        StringAssert.Contains(script, "let v$0 = createDefault();");
+        StringAssert.Contains(script, "add(v$0, 1);");
+        StringAssert.Contains(script, "add(v$0, 3);");
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");

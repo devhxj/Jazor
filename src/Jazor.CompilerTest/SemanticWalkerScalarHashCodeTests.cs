@@ -83,6 +83,36 @@ public sealed class SemanticWalkerScalarHashCodeTests
         _ = new Parser().ParseScript("function verify() " + body);
     }
 
+	[TestMethod]
+	public void Visit_ObjectHashCode_UsesRuntimeImportAndPreservesVirtualDispatchBoundary()
+	{
+		var block = GetBlockOperation(
+			"""
+			public sealed class CustomHash
+			{
+				public override int GetHashCode() => 713;
+			}
+
+			public static class ObjectHashCodeScenarios
+			{
+				public static int Evaluate(object value)
+				{
+					return value.GetHashCode();
+				}
+			}
+			""");
+
+		var argument = new SenseArgument(UseImportAliases: true);
+		var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+		Assert.IsNotNull(body);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		AssertImport(imports, "System/ObjectModule.js", "_97891de43f43ceb4");
+		Assert.HasCount(1, imports);
+		StringAssert.Contains(body, "return _97891de43f43ceb4(value);", StringComparison.Ordinal);
+		_ = new Parser().ParseScript("function verify(value) " + body);
+	}
+
     private static void AssertImport(
         IReadOnlyDictionary<string, Acornima.Ast.NodeList<Acornima.Ast.ImportDeclarationSpecifier>> imports,
         string modulePath,

@@ -131,7 +131,12 @@ public sealed class SemanticWalkerLoopTest
     var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let stages = new Map([[""Queued"", 2], [""Complete"", 4]]);
+  let stages = (() => {
+    let v$0 = createDefault();
+    setItem(v$0, ""Queued"", 2);
+    setItem(v$0, ""Complete"", 4);
+    return v$0;
+  })();
   for (let [stage, count] of stages) {
     console.log(stage + "":"" + count);
   }

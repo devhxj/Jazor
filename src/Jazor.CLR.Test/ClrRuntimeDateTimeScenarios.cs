@@ -21,9 +21,16 @@ internal static class ClrRuntimeDateTimeScenarios
         Failure("datetime.ctor.ticks-negative", "System.DateTime.DateTime(long)", [Big(-1)], "ArgumentOutOfRangeException"),
         Failure("datetime.ctor.ticks-above-maximum", "System.DateTime.DateTime(long)", [Big("3155378976000000000")], "ArgumentOutOfRangeException"),
         Success("datetime.ctor.ymd-leap-day", "System.DateTime.DateTime(int, int, int)", [Number(2024), Number(2), Number(29)], Text("2024-02-29T00:00:00.0000000")),
+        Success("datetime.ctor.calendar.ymd", "System.DateTime.DateTime(int, int, int, System.Globalization.Calendar)", [Number(2024), Number(2), Number(29), Gregorian()], Text("2024-02-29T00:00:00.0000000")),
         Failure("datetime.ctor.ymd-invalid-day", "System.DateTime.DateTime(int, int, int)", [Number(2023), Number(2), Number(29)], "ArgumentOutOfRangeException"),
         Failure("datetime.ctor.ymd-fractional-year", "System.DateTime.DateTime(int, int, int)", [Number(2024.5), Number(1), Number(1)], "ArgumentOutOfRangeException"),
         Success("datetime.ctor.components", "System.DateTime.DateTime(int, int, int, int, int, int)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5)], Text("2024-01-02T03:04:05.0000000")),
+        Success("datetime.ctor.calendar.components", "System.DateTime.DateTime(int, int, int, int, int, int, System.Globalization.Calendar)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Gregorian()], Text("2024-01-02T03:04:05.0000000")),
+        Success("datetime.ctor.calendar.millisecond", "System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Gregorian()], Text("2024-01-02T03:04:05.0060000")),
+        Success("datetime.ctor.calendar.microsecond", "System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(7), Gregorian()], Text("2024-01-02T03:04:05.0060070")),
+        Success("datetime.ctor.calendar.kind", "System.DateTime.Kind.get", [Invoke("System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)", Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Gregorian(), Number(1))], Number(1)),
+        Success("datetime.ctor.calendar.microsecond-kind", "System.DateTime.Kind.get", [Invoke("System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)", Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(7), Gregorian(), Number(2))], Number(2)),
+        Failure("datetime.ctor.calendar.null-precedes-date-validation", "System.DateTime.DateTime(int, int, int, System.Globalization.Calendar)", [Number(2024), Number(2), Number(29), Null()], "ArgumentNullException"),
         Success("datetime.ctor.components-kind", "System.DateTime.Kind.get", [Date(2024, 1, 2, 3, 4, 5, 6, 2)], Number(2)),
         Failure("datetime.ctor.components-invalid-hour", "System.DateTime.DateTime(int, int, int, int, int, int)", [Number(2024), Number(1), Number(2), Number(24), Number(0), Number(0)], "ArgumentOutOfRangeException"),
         Failure("datetime.ctor.components-invalid-kind", "System.DateTime.DateTime(int, int, int, int, int, int, System.DateTimeKind)", [Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(3)], "ArgumentException"),
@@ -177,6 +184,9 @@ internal static class ClrRuntimeDateTimeScenarios
                 "System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.DateTimeKind)",
                 Number(2024), Number(1), Number(2), Number(3), Number(4), Number(5), Number(6), Number(7), Number(1)),
             Big(9));
+
+    private static ClrRuntimeValue Gregorian()
+        => Invoke("System.Globalization.GregorianCalendar.GregorianCalendar()");
 
     private static ClrRuntimeValue DateOnly(int year, int month, int day)
         => Invoke("System.DateOnly.DateOnly(int, int, int)", Number(year), Number(month), Number(day));

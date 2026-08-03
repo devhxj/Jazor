@@ -6,6 +6,77 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class RecoveredDiscardWhitelistTests
 {
+	[TestMethod]
+	public void ObjectStringMembers_UseSharedImportRuntime()
+	{
+		var stringMappings = GetMappings(typeof(Jazor.CLR.StringModule));
+		foreach (var member in new[]
+		{
+			"static string.Copy(string)",
+			"static string.Concat(object)",
+			"static string.Concat(object, object)",
+			"static string.Concat(object, object, object)",
+			"static string.Concat(params object[])",
+			"static string.Concat(params System.ReadOnlySpan<object>)",
+			"static string.Concat<T>(System.Collections.Generic.IEnumerable<T>)",
+			"static string.Join(string, params object[])",
+			"static string.Join(string, params System.ReadOnlySpan<object>)",
+			"static string.Join<T>(string, System.Collections.Generic.IEnumerable<T>)",
+			"static string.Join(char, params object[])",
+			"static string.Join(char, params System.ReadOnlySpan<object>)",
+			"static string.Join<T>(char, System.Collections.Generic.IEnumerable<T>)"
+		})
+		{
+			Assert.AreEqual(Op.Import, stringMappings[member]?.Op, member);
+		}
+
+		var builderMappings = GetMappings(typeof(Jazor.CLR.StringBuilderModule));
+		foreach (var member in new[]
+		{
+			"System.Text.StringBuilder.Append(object)",
+			"System.Text.StringBuilder.AppendJoin(string, params object[])",
+			"System.Text.StringBuilder.AppendJoin(string, params System.ReadOnlySpan<object>)",
+			"System.Text.StringBuilder.AppendJoin<T>(string, System.Collections.Generic.IEnumerable<T>)",
+			"System.Text.StringBuilder.AppendJoin(char, params object[])",
+			"System.Text.StringBuilder.AppendJoin(char, params System.ReadOnlySpan<object>)",
+			"System.Text.StringBuilder.AppendJoin<T>(char, System.Collections.Generic.IEnumerable<T>)",
+			"System.Text.StringBuilder.Insert(int, object)"
+		})
+		{
+			Assert.AreEqual(Op.Import, builderMappings[member]?.Op, member);
+		}
+	}
+
+	[TestMethod]
+	public void LiveReadOnlyArrayViews_UseSharedRuntimeImports()
+	{
+		var cases = new (Type Module, string Member)[]
+		{
+			(typeof(Jazor.CLR.ArrayModule<>), "static System.Array.AsReadOnly<T>(T[])"),
+			(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.AsReadOnly()"),
+			(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)"),
+			(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)"),
+			(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)")
+		};
+
+		foreach (var (module, member) in cases)
+			Assert.AreEqual(Op.Import, GetMappings(module)[member]?.Op, member);
+	}
+
+	[TestMethod]
+	public void ReadOnlyDictionaryKeyAndValueViews_UseRuntimeProjections()
+	{
+		var mappings = GetMappings(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>));
+		foreach (var member in new[]
+		{
+			"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get",
+			"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Values.get"
+		})
+		{
+			Assert.AreEqual(Op.Import, mappings[member]?.Op, member);
+		}
+	}
+
     [TestMethod]
     public void EnumerableArrayLikeMembers_UseCompilerOwnedProtocol()
     {
@@ -56,7 +127,12 @@ public sealed class RecoveredDiscardWhitelistTests
             (typeof(Jazor.CLR.StringModule), "static string.Equals(string, string)", Op.Inline),
             (typeof(Jazor.CLR.StringModule), "string.Clone()", Op.Inline),
             (typeof(Jazor.CLR.StringModule), "string.ToString(System.IFormatProvider)", Op.Inline),
-            (typeof(Jazor.CLR.WeakReferenceModule), "virtual System.WeakReference.TrackResurrection.get", Op.Inline),
+			(typeof(Jazor.CLR.WeakReferenceModule), "virtual System.WeakReference.TrackResurrection.get", Op.Inline),
+			(typeof(Jazor.CLR.WeakReferenceModule), "System.WeakReference.WeakReference(object)", Op.Import),
+			(typeof(Jazor.CLR.WeakReferenceModule), "System.WeakReference.WeakReference(object, bool)", Op.Import),
+			(typeof(Jazor.CLR.WeakReferenceModule), "virtual System.WeakReference.IsAlive.get", Op.Import),
+			(typeof(Jazor.CLR.WeakReferenceModule), "virtual System.WeakReference.Target.get", Op.Import),
+			(typeof(Jazor.CLR.WeakReferenceModule), "virtual System.WeakReference.Target.set", Op.Import),
             (typeof(Jazor.CLR.StringModule), "string.String(char[])", Op.Import),
             (typeof(Jazor.CLR.StringModule), "string.String(char[], int, int)", Op.Import),
             (typeof(Jazor.CLR.StringModule), "string.String(char, int)", Op.Import),
@@ -83,7 +159,11 @@ public sealed class RecoveredDiscardWhitelistTests
             (typeof(Jazor.CLR.StringModule), "string.Trim(params System.ReadOnlySpan<char>)", Op.Import),
             (typeof(Jazor.CLR.StringModule), "string.TrimStart(params System.ReadOnlySpan<char>)", Op.Import),
             (typeof(Jazor.CLR.StringModule), "string.TrimEnd(params System.ReadOnlySpan<char>)", Op.Import),
-            (typeof(Jazor.CLR.ConditionalWeakTableT2Module<,>), "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Clear()", Op.Import),
+			(typeof(Jazor.CLR.StringModule), "static string.Intern(string)", Op.Import),
+			(typeof(Jazor.CLR.StringModule), "string.GetHashCode(System.StringComparison)", Op.Import),
+			(typeof(Jazor.CLR.StringModule), "static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)", Op.Import),
+			(typeof(Jazor.CLR.ObjectModule), "virtual object.GetHashCode()", Op.Import),
+			(typeof(Jazor.CLR.ConditionalWeakTableT2Module<,>), "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Clear()", Op.Import),
             (typeof(Jazor.CLR.NullableT1Module<>), "static System.Nullable.Compare<T>(T?, T?)", Op.Import),
             (typeof(Jazor.CLR.NullableT1Module<>), "static System.Nullable.Equals<T>(T?, T?)", Op.Import)
         };
@@ -176,6 +256,70 @@ public sealed class RecoveredDiscardWhitelistTests
             (typeof(Jazor.CLR.HashSetT1Module<>), "System.Collections.Generic.HashSet<T>.TrimExcess(int)"),
             (typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "static System.Collections.ObjectModel.ReadOnlyCollection.CreateCollection<T>(params System.ReadOnlySpan<T>)"),
             (typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "static System.Collections.ObjectModel.ReadOnlyCollection.CreateSet<T>(params System.ReadOnlySpan<T>)")
+        };
+
+        foreach (var testCase in cases)
+        {
+            var mapping = testCase.Module
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Select(static method => method.GetCustomAttribute<JazorAttribute>())
+                .Single(attribute => string.Equals(attribute?.Member, testCase.Member, StringComparison.Ordinal));
+
+            Assert.IsNotNull(mapping, testCase.Member);
+            Assert.AreEqual(Op.Import, mapping.Op, testCase.Member);
+        }
+    }
+
+    [TestMethod]
+    public void CollectionCapacityMembers_UseRuntimeImports()
+    {
+        var cases = new (Type Module, string Member)[]
+        {
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.List()"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.List(int)"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Capacity.get"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Capacity.set"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Add(T)"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.EnsureCapacity(int)"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)"),
+            (typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Slice(int, int)"),
+            (typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary()"),
+            (typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.Dictionary(System.Collections.Generic.IDictionary<TKey, TValue>)"),
+            (typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.Capacity.get"),
+            (typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set"),
+            (typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.EnsureCapacity(int)"),
+            (typeof(Jazor.CLR.HashSetT1Module<>), "System.Collections.Generic.HashSet<T>.HashSet()"),
+            (typeof(Jazor.CLR.HashSetT1Module<>), "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)"),
+            (typeof(Jazor.CLR.HashSetT1Module<>), "System.Collections.Generic.HashSet<T>.Capacity.get"),
+            (typeof(Jazor.CLR.HashSetT1Module<>), "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)")
+        };
+
+        foreach (var testCase in cases)
+        {
+            var mapping = testCase.Module
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Select(static method => method.GetCustomAttribute<JazorAttribute>())
+                .Single(attribute => string.Equals(attribute?.Member, testCase.Member, StringComparison.Ordinal));
+
+            Assert.IsNotNull(mapping, testCase.Member);
+            Assert.AreEqual(Op.Import, mapping.Op, testCase.Member);
+        }
+    }
+
+    [TestMethod]
+    public void GregorianCalendarConstructorMembers_UseSharedDateRuntimeImports()
+    {
+        var cases = new (Type Module, string Member)[]
+        {
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, System.Globalization.Calendar)"),
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)"),
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, int, int, int, System.Globalization.Calendar)"),
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, int, int, int, int, System.Globalization.Calendar)"),
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar)"),
+            (typeof(Jazor.CLR.DateTimeModule), "System.DateTime.DateTime(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.DateTimeKind)"),
+            (typeof(Jazor.CLR.DateTimeOffsetModule), "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)"),
+            (typeof(Jazor.CLR.DateTimeOffsetModule), "System.DateTimeOffset.DateTimeOffset(int, int, int, int, int, int, int, int, System.Globalization.Calendar, System.TimeSpan)")
         };
 
         foreach (var testCase in cases)
@@ -305,18 +449,28 @@ public sealed class RecoveredDiscardWhitelistTests
     {
         var members = new[]
         {
+            "System.Text.StringBuilder.StringBuilder()",
             "System.Text.StringBuilder.StringBuilder(int)",
+            "System.Text.StringBuilder.StringBuilder(string)",
             "System.Text.StringBuilder.StringBuilder(string, int)",
             "System.Text.StringBuilder.StringBuilder(string, int, int, int)",
+            "System.Text.StringBuilder.StringBuilder(int, int)",
+            "System.Text.StringBuilder.Capacity.get",
+            "System.Text.StringBuilder.Capacity.set",
+            "System.Text.StringBuilder.MaxCapacity.get",
+            "System.Text.StringBuilder.EnsureCapacity(int)",
             "System.Text.StringBuilder.ToString(int, int)",
             "System.Text.StringBuilder.Length.set",
             "System.Text.StringBuilder.this[int].get",
             "System.Text.StringBuilder.this[int].set",
             "System.Text.StringBuilder.Append(char, int)",
             "System.Text.StringBuilder.Append(char[], int, int)",
+            "System.Text.StringBuilder.Append(string)",
             "System.Text.StringBuilder.Append(string, int, int)",
             "System.Text.StringBuilder.Append(System.Text.StringBuilder)",
             "System.Text.StringBuilder.Append(System.Text.StringBuilder, int, int)",
+            "System.Text.StringBuilder.AppendLine()",
+            "System.Text.StringBuilder.AppendLine(string)",
             "System.Text.StringBuilder.CopyTo(int, char[], int, int)",
             "System.Text.StringBuilder.Insert(int, string, int)",
             "System.Text.StringBuilder.Remove(int, int)",
@@ -358,6 +512,7 @@ public sealed class RecoveredDiscardWhitelistTests
             "System.Text.StringBuilder.Insert(int, System.ReadOnlySpan<char>)",
             "System.Text.StringBuilder.Replace(string, string)",
             "System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)",
+            "System.Text.StringBuilder.Equals(System.Text.StringBuilder)",
             "System.Text.StringBuilder.Equals(System.ReadOnlySpan<char>)",
             "System.Text.StringBuilder.Replace(string, string, int, int)",
             "System.Text.StringBuilder.Replace(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, int, int)",
@@ -376,17 +531,10 @@ public sealed class RecoveredDiscardWhitelistTests
             Assert.IsNotNull(mapping, member);
             Assert.AreEqual(Op.Import, mapping.Op, member);
         }
-
-        var capacity = mappings["System.Text.StringBuilder.Capacity.get"]
-            ?? throw new AssertFailedException("Missing Capacity.get mapping.");
-        var maxCapacity = mappings["System.Text.StringBuilder.MaxCapacity.get"]
-            ?? throw new AssertFailedException("Missing MaxCapacity.get mapping.");
-        Assert.AreEqual(Op.Discard, capacity.Op);
-        Assert.AreEqual(Op.Discard, maxCapacity.Op);
     }
 
     [TestMethod]
-    public void StringRangeAndReadOnlyCharacterSpanMembers_UseImportsWhileIdentityCopyRemainsDiscarded()
+    public void StringRangeReadOnlySpanAndCopyMembers_UseImports()
     {
         var mappings = typeof(Jazor.CLR.StringModule)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -413,7 +561,7 @@ public sealed class RecoveredDiscardWhitelistTests
             Assert.AreEqual(Op.Import, mappings[member]?.Op, member);
         }
         Assert.AreEqual(
-            Op.Discard,
+            Op.Import,
             mappings["static string.Copy(string)"]?.Op);
 
 		var spanMappings = typeof(Jazor.CLR.MemoryExtensionsModule<>)

@@ -3060,7 +3060,8 @@ export function method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let numbers = [];
+@"import { createDefault } from ""System/Collections/Generic/ListT1Module.js"";
+export let numbers = createDefault();
 ", script);
 
     }
@@ -3224,7 +3225,8 @@ export function method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let listField = [];
+@"import { createDefault } from ""System/Collections/Generic/ListT1Module.js"";
+export let listField = createDefault();
 ", script);
 
     }
@@ -3249,7 +3251,8 @@ export function method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let dictField = new Map;
+@"import { createDefault } from ""System/Collections/Generic/DictionaryT2Module.js"";
+export let dictField = createDefault();
 ", script);
 
     }
@@ -4407,7 +4410,8 @@ export function increment() {
 
         // Assert
         Assert.AreEqual(
-@"export let nestedGenerics = new Map;
+@"import { createDefault } from ""System/Collections/Generic/DictionaryT2Module.js"";
+export let nestedGenerics = createDefault();
 ", script);
 
     }
@@ -14836,7 +14840,12 @@ export function create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("import {", StringComparison.Ordinal), script);
+        StringAssert.Contains(
+            script,
+            "import { add, createDefault } from \"System/Collections/Generic/ListT1Module.js\";");
+        Assert.IsFalse(
+            script.Contains("from \"System/RuntimeModule.js\"", StringComparison.Ordinal),
+            script);
         Assert.IsFalse(script.Contains("export const RuntimeModule = {", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "get items() {");
         StringAssert.Contains(script, "= materializeArray(collection);");
@@ -15058,6 +15067,77 @@ export function create() {{
         Assert.IsFalse(script.Contains("value.kind", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("value.items", StringComparison.Ordinal), script);
         _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_CollectionCapacityCalls_EmitRuntimeModuleImports()
+    {
+        var code = """
+            using System.Collections.Generic;
+
+            public static class TestClass
+            {
+                public static int Measure()
+                {
+                    var list = new List<int>(2) { 1 };
+                    list.Capacity = 8;
+                    var listCapacity = list.EnsureCapacity(9);
+
+                    var dictionary = new Dictionary<string, int>();
+                    dictionary["one"] = 1;
+                    var dictionaryCapacity = dictionary.EnsureCapacity(4);
+
+                    var set = new HashSet<int> { 1 };
+                    var setCapacity = set.EnsureCapacity(4);
+
+                    return listCapacity + dictionaryCapacity + setCapacity +
+                        dictionary.Capacity + set.Capacity;
+                }
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(module);
+        Assert.IsNotNull(script);
+        var imports = module.Body
+            .OfType<ImportDeclaration>()
+            .ToDictionary(
+                static declaration => ((StringLiteral)declaration.Source).Value,
+                static declaration => declaration.Specifiers
+                    .OfType<ImportSpecifier>()
+                    .Select(static specifier => ((Identifier)specifier.Imported).Name)
+                    .ToHashSet(StringComparer.Ordinal),
+                StringComparer.Ordinal);
+
+        AssertImportedNames(
+            "System/Collections/Generic/ListT1Module.js",
+            "add",
+            "createWithInitialCapacity",
+            "ensureCapacity",
+            "setCapacity");
+        AssertImportedNames(
+            "System/Collections/Generic/DictionaryT2Module.js",
+            "createDefault",
+            "ensureCapacity",
+            "getCapacityMember",
+            "setItem");
+        AssertImportedNames(
+            "System/Collections/Generic/HashSetT1Module.js",
+            "createDefault",
+            "ensureCapacity",
+            "getCapacityMember");
+        _ = new Acornima.Parser().ParseModule(script);
+
+        void AssertImportedNames(string modulePath, params string[] expectedNames)
+        {
+            Assert.IsTrue(imports.TryGetValue(modulePath, out var importedNames), modulePath);
+            foreach (var expectedName in expectedNames)
+                Assert.IsTrue(importedNames.Contains(expectedName), $"{modulePath}: {expectedName}");
+        }
     }
 
     [TestMethod]

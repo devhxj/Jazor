@@ -106,10 +106,14 @@ public static class ArrayModule<T>
 	#region 静态工厂方法
 
 	/// <summary>
-	/// C# 返回的是跟踪原数组变化的实时只读视图；当前 Array carrier 尚无只读 view 协议。
+	/// C# 返回跟踪源数组变化的实时只读视图。RuntimeModule 统一用 Array Proxy 保留
+	/// 索引/迭代 carrier，并阻止擦除后的 view 写入。
 	/// </summary>
-	[Jazor(Op.Discard, "static System.Array.AsReadOnly<T>(T[])")]
-	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _abd52ebcdb6fefcb(T[] array);
+	[Jazor(Op.Import, "static System.Array.AsReadOnly<T>(T[])")]
+	public static System.Collections.ObjectModel.ReadOnlyCollection<T> _abd52ebcdb6fefcb(Array<T>? array)
+		=> (System.Collections.ObjectModel.ReadOnlyCollection<T>)(object)RuntimeModule.CreateReadOnlyArrayView(
+			array,
+			"ArgumentNullException: array is null.");
 
 	/// <summary>
 	/// C#: Array.Resize&lt;T&gt;(ref T[], int)

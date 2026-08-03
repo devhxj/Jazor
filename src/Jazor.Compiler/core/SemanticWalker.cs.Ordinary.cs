@@ -560,6 +560,14 @@ public partial class SemanticWalker
 		if (Host?.RewriteConversionPreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
 
+		// Expression<TDelegate> captures a symbolic expression tree, not an executable delegate.
+		// Emitting the anonymous function would make Queryable calls look runnable while silently
+		// changing their provider-facing semantics. Enumerable keeps the normal delegate path.
+		if (IsExpressionTreeLambdaConversion(operation))
+			return HandleTransformationFailure<Node>(
+				operation,
+				"Expression tree lambda conversions are not supported. Use an executable delegate/Enumerable API instead of System.Linq.Expressions.Expression<TDelegate> or IQueryable<T>.");
+
 		// tuple 在这里做“边界重映射”：
 		// 语义仍按位置对应，但一旦目标静态视图名字不同，就显式生成新的对象协议。
 		// 这里只处理 Roslyn 明确表示出来的 conversion；其他边界（参数、赋值、初始化器）
@@ -641,6 +649,19 @@ public partial class SemanticWalker
 		// 其他情况：直接返回操作数（JavaScript 是动态类型）
 		// 包括：装箱/拆箱、引用类型强制转换等
 		return expr;
+	}
+
+	private static bool IsExpressionTreeLambdaConversion(IConversionOperation operation)
+	{
+		if (operation.Operand is not IAnonymousFunctionOperation)
+			return false;
+
+		// A bound anonymous-function conversion always has a target type and semantic model.
+		// Resolve the framework definition through Roslyn so aliases and display formatting cannot
+		// affect the classification, and avoid branches for invalid shapes C# never binds here.
+		var expressionTreeType = operation.SemanticModel!.Compilation
+			.GetTypeByMetadataName("System.Linq.Expressions.Expression`1");
+		return SymbolEqualityComparer.Default.Equals(operation.Type!.OriginalDefinition, expressionTreeType);
 	}
 
 	private Expression TranslateTryCast(

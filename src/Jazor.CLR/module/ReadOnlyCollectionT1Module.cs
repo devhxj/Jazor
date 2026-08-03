@@ -48,10 +48,14 @@ public static class ReadOnlyCollectionT1Module<T>
 	}
 
 	/// <summary>
-	/// C# 包装器必须实时反映原 IList 的变化，不能用冻结快照近似。
+	/// C# wrapper must observe source-list changes. The shared Array Proxy protocol provides
+	/// liveness without freezing or copying the source carrier.
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)")]
-	public extern static System.Collections.ObjectModel.ReadOnlyCollection<T> _d4e5f6a7b8c9d0e1(System.Collections.Generic.IList<T> list);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)")]
+	public static System.Collections.ObjectModel.ReadOnlyCollection<T> _d4e5f6a7b8c9d0e1(Array<T>? list)
+		=> (System.Collections.ObjectModel.ReadOnlyCollection<T>)(object)RuntimeModule.CreateReadOnlyArrayView(
+			list,
+			"ArgumentNullException: list is null.");
 
 	/// <summary>
 	/// C#: ReadOnlyCollection.Empty

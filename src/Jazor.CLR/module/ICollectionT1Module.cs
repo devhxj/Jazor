@@ -7,8 +7,8 @@ namespace Jazor.CLR;
 ///
 /// Op 类型选择原则：
 /// - Alias: 可直接投影到 Array carrier 的稳定成员
-/// - Import: 需要显式保留 CLR 语义的查询/复制成员
-/// - Discard: 读写能力或可变性依赖具体 carrier，不能在接口层静默假设
+/// - Import: 通过 List carrier marker 保留接口可变性和固定数组边界
+/// - Discard: 仅保留尚无完整运行时协议的成员
 /// </summary>
 [ECMAScriptModule("System/Collections/Generic/ICollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.ICollection<T>", "Array")]
@@ -27,22 +27,36 @@ public static class ICollectionT1Module<T>
 	[Jazor(Op.Alias, "System.Collections.Generic.ICollection<T>.Count.get", "length")]
 	public extern static Number _c325d97a583f4b86(Array<T> instance);
 
-	[Jazor(Op.Discard, "System.Collections.Generic.ICollection<T>.IsReadOnly.get")]
-	public extern static bool _1257c5832793c86d(Array<T> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.ICollection<T>.IsReadOnly.get")]
+	public static bool _1257c5832793c86d(Array<T> instance)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		return !RuntimeModule.IsMutableListCarrier(instance);
+	}
 
 	/// <summary>
 	/// C#: collection.Add(item)
 	/// JS: array.push(item)
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.Generic.ICollection<T>.Add(T)")]
-	public extern static void _c0023f4a7a67220a(Array<T> instance, T item);
+	[Jazor(Op.Import, "System.Collections.Generic.ICollection<T>.Add(T)")]
+	public static void _c0023f4a7a67220a(Array<T> instance, T item)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		ListT1Module<T>.Add(instance, item);
+	}
 
 	/// <summary>
 	/// C#: collection.Clear()
 	/// JS: array.length = 0
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.Generic.ICollection<T>.Clear()")]
-	public extern static void _d067c092ac624f6a(Array<T> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.ICollection<T>.Clear()")]
+	public static void _d067c092ac624f6a(Array<T> instance)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		instance.Splice(0, instance.Length);
+	}
 
 	/// <summary>
 	/// C#: collection.Contains(item)
@@ -76,6 +90,10 @@ public static class ICollectionT1Module<T>
 	/// C#: collection.Remove(item)
 	/// JS: 找到并删除第一个匹配项
 	/// </summary>
-	[Jazor(Op.Discard, "System.Collections.Generic.ICollection<T>.Remove(T)")]
-	public extern static bool _0a859d3497130ea7(Array<T> instance, T item);
+	[Jazor(Op.Import, "System.Collections.Generic.ICollection<T>.Remove(T)")]
+	public static bool _0a859d3497130ea7(Array<T> instance, T item)
+	{
+		RuntimeModule.RequireMutableListCarrier(instance);
+		return ListT1Module<T>._562f832fd220e768(instance, item);
+	}
 }

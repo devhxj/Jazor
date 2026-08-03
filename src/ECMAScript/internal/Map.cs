@@ -39,6 +39,15 @@ public sealed class Map<TKey, TValue> : IEnumerable
 	public extern Map<TKey, TValue> Set(TKey key, TValue value);
 
 	/// <summary>
+	/// Adds an entry through the C# collection-initializer protocol.
+	/// JavaScript exposes this operation as <c>Map.prototype.set</c>; the alternate C# name only
+	/// makes <c>new Map&lt;TKey, TValue&gt; { { key, value } }</c> bind without changing runtime shape.
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Description("@#set")]
+	public extern void Add(TKey key, TValue value);
+
+	/// <summary>
 	/// Returns the value associated with <paramref name="key" />.
 	/// JavaScript uses <c>undefined</c> when the key is missing,
 	/// and the C# projection maps that absence to <see langword="null" />.

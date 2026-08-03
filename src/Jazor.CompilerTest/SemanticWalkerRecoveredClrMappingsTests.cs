@@ -75,6 +75,271 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
     }
 
     [TestMethod]
+    public void Visit_WeakReferenceTargetLifecycle_UsesSharedRuntimeImports()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+
+            public static class RecoveredClrScenarios
+            {
+                public static object? Evaluate(object initial, object? replacement)
+                {
+                    var reference = new WeakReference(initial);
+                    var before = reference.Target;
+                    var initiallyAlive = reference.IsAlive;
+                    reference.Target = replacement;
+                    return reference.Target;
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(1, imports, body);
+        Assert.HasCount(4, imports["System/WeakReferenceModule.js"], body);
+        StringAssert.Contains(body, "let reference = _9a41b3fc95053633(initial);", StringComparison.Ordinal);
+        StringAssert.Contains(body, "let before = _ba77d80a1e80efa6(reference);", StringComparison.Ordinal);
+        StringAssert.Contains(body, "let initiallyAlive = _c3d16f7de644412a(reference);", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_6576d2b2ae762786(reference, replacement);", StringComparison.Ordinal);
+        StringAssert.Contains(body, "return _ba77d80a1e80efa6(reference);", StringComparison.Ordinal);
+
+        _ = new Parser().ParseScript("function verify(initial, replacement) " + body);
+    }
+
+	[TestMethod]
+	public void Visit_WeakReferenceConstructorWithoutResurrectionTracking_UsesRuntimeImport()
+	{
+		var block = GetBlockOperation(
+			"""
+			using System;
+
+			public static class RecoveredClrScenarios
+			{
+				public static object? Evaluate(object initial)
+				{
+					return new WeakReference(initial, false).Target;
+				}
+			}
+			""");
+
+		var argument = new SenseArgument(UseImportAliases: true);
+		var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+		Assert.IsNotNull(body);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(1, imports, body);
+		Assert.HasCount(2, imports["System/WeakReferenceModule.js"], body);
+		StringAssert.Contains(body, "_bb3cf7219c9626be(initial, false)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "return _ba77d80a1e80efa6(", StringComparison.Ordinal);
+		_ = new Parser().ParseScript("function verify(initial) " + body);
+	}
+
+    [TestMethod]
+    public void Visit_LiveReadOnlyArrayViews_UseSharedRuntimeImports()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Collections.ObjectModel;
+
+            public static class RecoveredClrScenarios
+            {
+                public static int Evaluate(List<int> source, int[] values)
+                {
+                    var fromList = source.AsReadOnly();
+                    var fromArray = Array.AsReadOnly(values);
+                    var fromConstructor = new ReadOnlyCollection<int>(source);
+                    source.Add(42);
+                    return fromList[0] + fromArray[0] + fromConstructor[0];
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(3, imports, body);
+        Assert.HasCount(2, imports["System/Collections/Generic/ListT1Module.js"], body);
+        Assert.HasCount(1, imports["System/ArrayModule.js"], body);
+        Assert.HasCount(2, imports["System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], body);
+        foreach (var exportName in new[]
+        {
+            "_f7981b5a4cd02bdb", "_abd52ebcdb6fefcb", "_d4e5f6a7b8c9d0e1", "_b8c9d0e1f2a3b4c5"
+        })
+        {
+            StringAssert.Contains(body, exportName + "(", StringComparison.Ordinal);
+        }
+
+        _ = new Parser().ParseScript("function verify(source, values) " + body);
+    }
+
+    [TestMethod]
+    public void Visit_GenericIListIndexerSet_UsesValidatedRuntimeImport()
+    {
+        var block = GetBlockOperation(
+            """
+            using System.Collections.Generic;
+
+            public static class RecoveredClrScenarios
+            {
+                public static void Evaluate(IList<int> values, int replacement)
+                {
+                    values[1] = replacement;
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(1, imports, body);
+        Assert.HasCount(1, imports["System/Collections/Generic/IListT1Module.js"], body);
+        StringAssert.Contains(body, "_72c3ada14c4b312e(values, 1, replacement);", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values, replacement) " + body);
+    }
+
+    [TestMethod]
+    public void Visit_ListInterfaces_UseMarkerBoundMutationImports()
+    {
+        var block = GetBlockOperation(
+            """
+            using System.Collections;
+            using System.Collections.Generic;
+
+            public static class RecoveredClrScenarios
+            {
+                public static void Evaluate(List<int> source, int value)
+                {
+                    IList<int> genericList = source;
+                    ICollection<int> genericCollection = source;
+                    IList list = source;
+
+                    genericList.Insert(0, value);
+                    genericList.RemoveAt(0);
+                    genericCollection.Add(value);
+                    genericCollection.Remove(value);
+                    genericCollection.Clear();
+                    _ = genericCollection.IsReadOnly;
+                    list[0] = value;
+                    _ = list.Add(value);
+                    list.Clear();
+                    _ = list.IsReadOnly;
+                    _ = list.IsFixedSize;
+                    list.Insert(0, value);
+                    list.Remove(value);
+                    list.RemoveAt(0);
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(3, imports, body);
+        Assert.HasCount(2, imports["System/Collections/Generic/IListT1Module.js"], body);
+        Assert.HasCount(4, imports["System/Collections/Generic/ICollectionT1Module.js"], body);
+        Assert.HasCount(8, imports["System/Collections/IListModule.js"], body);
+        foreach (var exportName in new[]
+        {
+            "_ad668b5fd142c4f4", "_d5f628d4cac6dafb", "_1257c5832793c86d", "_c0023f4a7a67220a",
+            "_d067c092ac624f6a", "_0a859d3497130ea7", "_d1d1f177e5b9f8db", "_436bcdacebfc9159",
+            "_00d8476a94b1a75c", "_2ce407a9d9be8186", "_b17a6c1583e0a5af", "_9e2711121aad1093",
+            "_305c8313418aa043", "_72d07d6eb16afece"
+        })
+        {
+            StringAssert.Contains(body, exportName + "(", StringComparison.Ordinal);
+        }
+
+        _ = new Parser().ParseScript("function verify(source, value) " + body);
+    }
+
+    [TestMethod]
+    public void Visit_EnumerableToList_TransfersFreshArrayToMutableListCarrier()
+    {
+        var block = GetBlockOperation(
+            """
+            using System.Collections.Generic;
+            using System.Linq;
+
+            public static class RecoveredClrScenarios
+            {
+                public static List<int> Evaluate(IEnumerable<int> source)
+                {
+                    return source.ToList();
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(1, imports, body);
+        Assert.HasCount(1, imports["System/RuntimeModule.js"], body);
+        StringAssert.Contains(body, "return markAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(source) " + body);
+    }
+
+    [TestMethod]
+    public void Visit_LiveReadOnlyMapAndSetViews_UseSharedRuntimeImports()
+    {
+        var block = GetBlockOperation(
+            """
+            using System.Collections.Generic;
+            using System.Collections.ObjectModel;
+
+            public static class RecoveredClrScenarios
+            {
+                public static int Evaluate(Dictionary<string, int> dictionary, HashSet<int> set)
+                {
+                    var readOnlyDictionary = new ReadOnlyDictionary<string, int>(dictionary);
+                    var readOnlySet = new ReadOnlySet<int>(set);
+                    dictionary["release"] = 2;
+                    set.Add(2);
+                    var total = 0;
+                    foreach (var key in readOnlyDictionary.Keys)
+                        total += key.Length;
+                    foreach (var value in readOnlyDictionary.Values)
+                        total += value;
+                    return total + readOnlyDictionary["release"] + (readOnlySet.Contains(2) ? 1 : 0);
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(4, imports, body);
+        Assert.HasCount(1, imports["System/Collections/Generic/DictionaryT2Module.js"], body);
+        Assert.HasCount(1, imports["System/Collections/Generic/HashSetT1Module.js"], body);
+        Assert.HasCount(4, imports["System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], body);
+        Assert.HasCount(1, imports["System/Collections/ObjectModel/ReadOnlySetT1Module.js"], body);
+        foreach (var exportName in new[]
+        {
+            "_b22e987e1be225aa", "_aede400efbd05842", "_4044dececdd2d744", "_b39da265738457a5", "_ed4a7913b74bfd87"
+        })
+        {
+            StringAssert.Contains(body, exportName + "(", StringComparison.Ordinal);
+        }
+
+        _ = new Parser().ParseScript("function verify(dictionary, set) " + body);
+    }
+
+    [TestMethod]
     public void Visit_CapacityErasedTrimAndReadOnlyFactories_UseRuntimeImports()
     {
         var block = GetBlockOperation(

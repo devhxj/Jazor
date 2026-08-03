@@ -8,6 +8,8 @@ internal static class ClrRuntimeStringExtendedScenarios
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
+        Success("string.intern.returns-canonical-carrier", "static string.Intern(string)", [Text("Jazor")], Text("Jazor")),
+        Failure("string.intern.rejects-null", "static string.Intern(string)", [Null()], "ArgumentNullException"),
         Success("string.compare.ordinal-ignore-case", "static string.Compare(string, string, System.StringComparison)", [Text("Alpha"), Text("alpha"), Number(OrdinalIgnoreCase)], Number(0)),
         Success("string.compare-ordinal.range-code-unit-difference", "static string.CompareOrdinal(string, int, string, int, int)", [Text("az"), Number(1), Text("aa"), Number(1), Number(1)], Number(25)),
         Success("string.compare-ordinal.range-null-precedes-validation", "static string.CompareOrdinal(string, int, string, int, int)", [Null(), Number(99), Text("a"), Number(0), Number(1)], Number(-1)),
@@ -30,12 +32,19 @@ internal static class ClrRuntimeStringExtendedScenarios
         Success("string.hash-code.read-only-character-span", "static string.GetHashCode(System.ReadOnlySpan<char>)", [Text("Jazor")], Number(558046645)),
         Success("string.hash-code.array-backed-read-only-character-span", "static string.GetHashCode(System.ReadOnlySpan<char>)", [Array(Text("J"), Text("a"), Text("z"), Text("o"), Text("r"))], Number(558046645)),
         Success("string.hash-code.default-read-only-character-span", "static string.GetHashCode(System.ReadOnlySpan<char>)", [Null()], Number(17)),
+        Success("string.hash-code.ordinal-comparison", "string.GetHashCode(System.StringComparison)", [Text("Jazor"), Number(Ordinal)], Number(558046645)),
+        Success("string.hash-code.read-only-character-span.ordinal-comparison", "static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)", [Array(Text("J"), Text("a"), Text("z"), Text("o"), Text("r")), Number(Ordinal)], Number(558046645)),
+        Failure("string.hash-code.comparison.rejects-culture-mode", "string.GetHashCode(System.StringComparison)", [Text("Jazor"), Number(0)], "NotSupportedException"),
+        Failure("string.hash-code.read-only-character-span.comparison.rejects-ordinal-ignore-case", "static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)", [Text("Jazor"), Number(OrdinalIgnoreCase)], "NotSupportedException"),
+        Failure("string.hash-code.comparison.rejects-invalid-mode", "string.GetHashCode(System.StringComparison)", [Text("Jazor"), Number(99)], "ArgumentException"),
         Mutation(
             "string.copy-to.character-array",
             "string.CopyTo(int, char[], int, int)",
             [Text("abcd"), Number(1), Array(Text("-"), Text("-"), Text("-"), Text("-")), Number(1), Number(2)],
             [Text("abcd"), Number(1), Array(Text("-"), Text("b"), Text("c"), Text("-")), Number(1), Number(2)]),
         Failure("string.copy-to.rejects-small-destination", "string.CopyTo(int, char[], int, int)", [Text("abcd"), Number(0), Array(Text("-")), Number(0), Number(2)], "ArgumentException"),
+		Success("string.copy.preserves-immutable-value", "static string.Copy(string)", [Text("Jazor")], Text("Jazor")),
+		Failure("string.copy.rejects-null", "static string.Copy(string)", [Null()], "ArgumentNullException"),
 
         Success("string.normalize.default-composes", "string.Normalize()", [Text("e\u0301")], Text("\u00E9")),
         Success("string.normalize.form-d-decomposes", "string.Normalize(System.Text.NormalizationForm)", [Text("\u00E9"), Number(2)], Text("e\u0301")),
@@ -51,6 +60,13 @@ internal static class ClrRuntimeStringExtendedScenarios
         Success("string.concat.three-character-spans-with-default", "static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)", [Text("Jazor"), Null(), Text(".CLR")], Text("Jazor.CLR")),
         Success("string.concat.four-character-spans", "static string.Concat(System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>, System.ReadOnlySpan<char>)", [Text("A"), Text("B"), Text("C"), Text("D")], Text("ABCD")),
         Failure("string.concat.string-array.rejects-null", "static string.Concat(params string[])", [Null()], "ArgumentNullException"),
+		Success("string.concat.object.boolean", "static string.Concat(object)", [Bool(true)], Text("True")),
+		Success("string.concat.two-objects", "static string.Concat(object, object)", [Bool(true), Number(2)], Text("True2")),
+		Success("string.concat.three-objects.normalizes-null", "static string.Concat(object, object, object)", [Text("A"), Null(), Number(2)], Text("A2")),
+		Success("string.concat.object-array", "static string.Concat(params object[])", [Array(Text("A"), Bool(false), Null(), Number(2))], Text("AFalse2")),
+		Success("string.concat.object-span", "static string.Concat(params System.ReadOnlySpan<object>)", [Array(Text("A"), Bool(false), Null(), Number(2))], Text("AFalse2")),
+		Failure("string.concat.object-array.rejects-null", "static string.Concat(params object[])", [Null()], "ArgumentNullException"),
+		Success("string.concat.generic-enumerable", "static string.Concat<T>(System.Collections.Generic.IEnumerable<T>)", [Array(Number(1), Number(2), Number(3))], Text("123")),
 
         Success("string.join.character-array", "static string.Join(char, params string[])", [Text("|"), Array(Text("a"), Null(), Text("b"))], Text("a||b")),
         Success("string.join.string-array-null-separator", "static string.Join(string, params string[])", [Null(), Array(Text("a"), Text("b"))], Text("ab")),
@@ -60,6 +76,13 @@ internal static class ClrRuntimeStringExtendedScenarios
         Success("string.join.string-range", "static string.Join(string, string[], int, int)", [Text("--"), Array(Text("a"), Text("b"), Text("c")), Number(0), Number(2)], Text("a--b")),
         Failure("string.join.range.rejects-overflow", "static string.Join(string, string[], int, int)", [Text("-"), Array(Text("a")), Number(1), Number(1)], "ArgumentOutOfRangeException"),
         Success("string.join.string-enumerable", "static string.Join(string, System.Collections.Generic.IEnumerable<string>)", [Text(","), Array(Text("a"), Text("b"))], Text("a,b")),
+		Success("string.join.object-array", "static string.Join(string, params object[])", [Text("|"), Array(Text("A"), Bool(true), Null(), Number(2))], Text("A|True||2")),
+		Failure("string.join.object-array.rejects-null", "static string.Join(string, params object[])", [Text("|"), Null()], "ArgumentNullException"),
+		Success("string.join.generic-enumerable", "static string.Join<T>(string, System.Collections.Generic.IEnumerable<T>)", [Text("-"), Array(Number(1), Number(2), Number(3))], Text("1-2-3")),
+		Success("string.join.character-object-array", "static string.Join(char, params object[])", [Text("/"), Array(Text("A"), Bool(true), Null(), Number(2))], Text("A/True//2")),
+		Success("string.join.character-object-span", "static string.Join(char, params System.ReadOnlySpan<object>)", [Text("/"), Array(Text("A"), Bool(true), Null(), Number(2))], Text("A/True//2")),
+		Success("string.join.object-span", "static string.Join(string, params System.ReadOnlySpan<object>)", [Text("|"), Array(Text("A"), Bool(true), Null(), Number(2))], Text("A|True||2")),
+		Success("string.join.character-generic-enumerable", "static string.Join<T>(char, System.Collections.Generic.IEnumerable<T>)", [Text("/"), Array(Number(1), Number(2), Number(3))], Text("1/2/3")),
 
         Success("string.pad-left.spaces", "string.PadLeft(int)", [Text("x"), Number(3)], Text("  x")),
         Success("string.pad-left.character", "string.PadLeft(int, char)", [Text("x"), Number(3), Text("0")], Text("00x")),

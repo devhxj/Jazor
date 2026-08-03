@@ -7,6 +7,68 @@ internal static class ClrRuntimeListScenarios
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
         Success(
+            "list.capacity.default-constructor",
+            "System.Collections.Generic.List<T>.Capacity.get",
+            [Invoke("System.Collections.Generic.List<T>.List()")],
+            Number(0)),
+        Success(
+            "list.capacity.initial-capacity-constructor",
+            "System.Collections.Generic.List<T>.Capacity.get",
+            [Invoke("System.Collections.Generic.List<T>.List(int)", Number(5))],
+            Number(5)),
+        Success(
+            "list.capacity.collection-constructor",
+            "System.Collections.Generic.List<T>.Capacity.get",
+            [Invoke("System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)", Array(Number(1), Number(2), Number(3)))],
+            Number(3)),
+        Success(
+            "list.capacity.add-grows-default-storage",
+            "System.Collections.Generic.List<T>.Capacity.get",
+            [
+                Reference("growing-list", Invoke("System.Collections.Generic.List<T>.List()")),
+                Invoke(
+                    "System.Collections.Generic.List<T>.Add(T)",
+                    Reference("growing-list", Array()),
+                    Number(1))
+            ],
+            Number(4)),
+        Success(
+            "list.capacity.setter-persists",
+            "System.Collections.Generic.List<T>.Capacity.get",
+            [
+                Reference("capacity-list", Invoke("System.Collections.Generic.List<T>.List()")),
+                Invoke(
+                    "System.Collections.Generic.List<T>.Capacity.set",
+                    Reference("capacity-list", Array()),
+                    Number(7))
+            ],
+            Number(7)),
+        Failure(
+            "list.capacity.setter-rejects-less-than-count",
+            "System.Collections.Generic.List<T>.Capacity.set",
+            [Array(Number(1), Number(2)), Number(1)],
+            "ArgumentOutOfRangeException"),
+        Success(
+            "list.ensure-capacity.returns-expanded-capacity",
+            "System.Collections.Generic.List<T>.EnsureCapacity(int)",
+            [Invoke("System.Collections.Generic.List<T>.List()"), Number(5)],
+            Number(5)),
+        Failure(
+            "list.ensure-capacity.rejects-negative-capacity",
+            "System.Collections.Generic.List<T>.EnsureCapacity(int)",
+            [Array(), Number(-1)],
+            "ArgumentOutOfRangeException"),
+        Success(
+            "list.find-all.materializes-matches",
+            "System.Collections.Generic.List<T>.FindAll(System.Predicate<T>)",
+            [Array(Number(1), Number(2), Number(3), Number(4)), Callable(ClrRuntimeCallableKind.IsEven)],
+            Array(Number(2), Number(4))),
+        Success(
+            "list.slice.materializes-requested-range",
+            "System.Collections.Generic.List<T>.Slice(int, int)",
+            [Array(Number(1), Number(2), Number(3), Number(4)), Number(1), Number(2)],
+            Array(Number(2), Number(3))),
+        Success(
             "list.indexer.get.valid-index",
             "System.Collections.Generic.List<T>.this[int].get",
             [Array(Text("a"), Text("b")), Number(1)],
@@ -281,6 +343,9 @@ internal static class ClrRuntimeListScenarios
     private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
+    private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value) => ClrRuntimeValue.Reference(id, value);
+    private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
+        => ClrRuntimeValue.Invoke(member, arguments);
     private static ClrRuntimeValue DescendingComparer() => ClrRuntimeValue.Record(
         ("compare", Callable(ClrRuntimeCallableKind.CompareDescending)));
     private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);

@@ -124,6 +124,38 @@ public static class StringModule
 		return result;
 	}
 
+	private static string ConcatValues<T>(IEnumerable<T> values, string separator, string parameterName)
+	{
+		if (values == null)
+			throw new Error($"ArgumentNullException: {parameterName} is null.");
+
+		var result = "";
+		var first = true;
+		foreach (var value in values)
+		{
+			if (!first)
+				result += separator;
+			result += RuntimeModule.GetStringRepresentation(value);
+			first = false;
+		}
+		return result;
+	}
+
+	private static string ConcatValues<T>(Array<T> values, string separator, string parameterName)
+	{
+		if (values == null)
+			throw new Error($"ArgumentNullException: {parameterName} is null.");
+
+		var result = "";
+		for (var index = 0; index < values.Length; index++)
+		{
+			if (index != 0)
+				result += separator;
+			result += RuntimeModule.GetStringRepresentation(values[index]);
+		}
+		return result;
+	}
+
 	private static string JoinRange(string separator, Array<string?> value, Number startIndex, Number count)
 	{
 		if (value == null)
@@ -201,13 +233,25 @@ public static class StringModule
 		return TrimCharacterSet(instance, NormalizeCharSet(characters), trimStart, trimEnd);
 	}
 
+	private static string GetInternedString(string? value)
+	{
+		if (value == null)
+			throw new Error("ArgumentNullException: str is null.");
+
+		// String carriers are immutable JS primitives. Their CLR reference identity is intentionally
+		// erased, so Intern cannot add an observable behavior to the supported carrier.
+		// IsInterned remains unsupported because its null result exposes the intern-table state.
+		return value;
+	}
+
 	///<summary>Represents the empty string. This field is read-only.</summary>
 	[Jazor(Op.Inline, "static readonly string.Empty", "\"\"")]
 	public extern static string _b16f79dc7b155be3();
 
 	///<summary>Retrieves the system's reference to the specified <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"static string.Intern(string)")]
-	public extern static string _1234444e218b96c3(string str);
+	[Jazor(Op.Import ,"static string.Intern(string)")]
+	public static string _1234444e218b96c3(string? str)
+		=> GetInternedString(str);
 
 	///<summary>Retrieves a reference to a specified <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Discard ,"static string.IsInterned(string)")]
@@ -387,8 +431,12 @@ public static class StringModule
 		=> EqualityComparerT1Module<string>.GetHashCodeCore(instance);
 
 	///<summary>Returns the hash code for this string using the specified rules.</summary>
-	[Jazor(Op.Discard ,"string.GetHashCode(System.StringComparison)")]
-	public extern static Number _04edfc3090710ca7(string instance, object comparisonType);
+	[Jazor(Op.Import ,"string.GetHashCode(System.StringComparison)")]
+	public static Number _04edfc3090710ca7(string instance, Number comparisonType)
+	{
+		EnsureOrdinalHashComparison(comparisonType);
+		return EqualityComparerT1Module<string>.GetHashCodeCore(instance);
+	}
 
 	///<summary>Returns the hash code for the provided read-only character span.</summary>
 	[Jazor(Op.Import, "static string.GetHashCode(System.ReadOnlySpan<char>)")]
@@ -396,11 +444,26 @@ public static class StringModule
 		=> EqualityComparerT1Module<string>.GetHashCodeCore(RuntimeModule.MaterializeReadOnlyCharSpan(value));
 
 	///<summary>Returns the hash code for the provided read-only character span using the specified rules.</summary>
-	[Jazor(Op.Discard ,"static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)")]
-	public extern static Number _d123047f69d911f5(Uint32Array value, object comparisonType);
+	[Jazor(Op.Import ,"static string.GetHashCode(System.ReadOnlySpan<char>, System.StringComparison)")]
+	public static Number _d123047f69d911f5(RuntimeModule.JReadOnlyCharSpan value, Number comparisonType)
+	{
+		EnsureOrdinalHashComparison(comparisonType);
+		return EqualityComparerT1Module<string>.GetHashCodeCore(RuntimeModule.MaterializeReadOnlyCharSpan(value));
+	}
 
 	private static bool IsOrdinalIgnoreCase(object comparisonType)
 		=> comparisonType is Number value && value == 5;
+
+	private static void EnsureOrdinalHashComparison(Number comparisonType)
+	{
+		if (comparisonType == 4)
+			return;
+
+		if (comparisonType >= 0 && comparisonType <= 5)
+			throw new Error("NotSupportedException: string hash comparison currently supports only StringComparison.Ordinal.");
+
+		throw new Error("ArgumentException: comparisonType is not a valid StringComparison value.");
+	}
 
 	private static string SliceOrEmpty(string? value, Number start, Number length)
 	{
@@ -497,8 +560,16 @@ public static class StringModule
 	public extern static object _488d7e5ec582c6fb(string instance);
 
 	///<summary>Creates a new instance of <see cref="T:System.String" /> with the same value as a specified <see cref="T:System.String" />.</summary>
-	[Jazor(Op.Discard ,"static string.Copy(string)")]
-	public extern static string _0dc0a16fd99401f8(string str);
+	[Jazor(Op.Import ,"static string.Copy(string)")]
+	public static string _0dc0a16fd99401f8(string str)
+	{
+		if (str == null)
+			throw new Error("ArgumentNullException: str is null.");
+
+		// Strings are immutable value carriers in the JavaScript target, so a distinct allocation
+		// cannot be observed through the supported runtime surface.
+		return str;
+	}
 
 	///<summary>Copies a specified number of characters from a specified position in this instance to a specified position in an array of Unicode characters.</summary>
 	[Jazor(Op.Import ,"string.CopyTo(int, char[], int, int)")]
@@ -615,28 +686,36 @@ public static class StringModule
 	public extern static Number _1b0d64005dc28838(string instance);
 
 	///<summary>Creates the string  representation of a specified object.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(object)")]
-	public extern static string _db938b9c2eb90d32(object? arg0);
+	[Jazor(Op.Import ,"static string.Concat(object)")]
+	public static string _db938b9c2eb90d32(object? arg0)
+		=> RuntimeModule.GetStringRepresentation(arg0);
 
 	///<summary>Concatenates the string representations of two specified objects.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(object, object)")]
-	public extern static string _d330ca25546acf36(object? arg0, object? arg1);
+	[Jazor(Op.Import ,"static string.Concat(object, object)")]
+	public static string _d330ca25546acf36(object? arg0, object? arg1)
+		=> RuntimeModule.GetStringRepresentation(arg0) + RuntimeModule.GetStringRepresentation(arg1);
 
 	///<summary>Concatenates the string representations of three specified objects.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(object, object, object)")]
-	public extern static string _dab9155adbef8f67(object? arg0, object? arg1, object? arg2);
+	[Jazor(Op.Import ,"static string.Concat(object, object, object)")]
+	public static string _dab9155adbef8f67(object? arg0, object? arg1, object? arg2)
+		=> RuntimeModule.GetStringRepresentation(arg0)
+			+ RuntimeModule.GetStringRepresentation(arg1)
+			+ RuntimeModule.GetStringRepresentation(arg2);
 
 	///<summary>Concatenates the string representations of the elements in a specified <see cref="T:System.Object" /> array.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(params object[])")]
-	public extern static string _e102498b82e5b869( object args);
+	[Jazor(Op.Import ,"static string.Concat(params object[])")]
+	public static string _e102498b82e5b869(Array<object?> args)
+		=> ConcatValues(args, "", "args");
 
 	///<summary>Concatenates the string representations of the elements in a specified span of objects.</summary>
-	[Jazor(Op.Discard ,"static string.Concat(params System.ReadOnlySpan<object>)")]
-	public extern static string _2d6a291b64a11ba3( object args);
+	[Jazor(Op.Import, "static string.Concat(params System.ReadOnlySpan<object>)")]
+	public static string _2d6a291b64a11ba3(Array<object?> args)
+		=> ConcatValues(args, "", "args");
 
 	///<summary>Concatenates the members of an <see cref="T:System.Collections.Generic.IEnumerable`1" /> implementation.</summary>
-	[Jazor(Op.Discard ,"static string.Concat<T>(System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _68574aee669f440f<T>(Array<T> values);
+	[Jazor(Op.Import ,"static string.Concat<T>(System.Collections.Generic.IEnumerable<T>)")]
+	public static string _68574aee669f440f<T>(IEnumerable<T> values)
+		=> ConcatValues(values, "", "values");
 
 	///<summary>Concatenates the members of a constructed <see cref="T:System.Collections.Generic.IEnumerable`1" /> collection of type <see cref="T:System.String" />.</summary>
 	[Jazor(Op.Import ,"static string.Concat(System.Collections.Generic.IEnumerable<string>)")]
@@ -846,28 +925,34 @@ public static class StringModule
 		=> ConcatStrings(values, separator ?? "", "values");
 
 	///<summary>Concatenates the string representations of an array of objects, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(char, params object[])")]
-	public extern static string _5ac0762c6816a423(Number separator,  object values);
+	[Jazor(Op.Import ,"static string.Join(char, params object[])")]
+	public static string _5ac0762c6816a423(string separator, Array<object?> values)
+		=> ConcatValues(values, separator, "values");
 
 	///<summary>Concatenates the string representations of a span of objects, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(char, params System.ReadOnlySpan<object>)")]
-	public extern static string _477a1f45d63f93c2(Number separator,  object values);
+	[Jazor(Op.Import, "static string.Join(char, params System.ReadOnlySpan<object>)")]
+	public static string _477a1f45d63f93c2(string separator, Array<object?> values)
+		=> ConcatValues(values, separator, "values");
 
 	///<summary>Concatenates the elements of an object array, using the specified separator between each element.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, params object[])")]
-	public extern static string _c69ae51b8f3b72f0(string? separator,  object values);
+	[Jazor(Op.Import ,"static string.Join(string, params object[])")]
+	public static string _c69ae51b8f3b72f0(string? separator, Array<object?> values)
+		=> ConcatValues(values, separator ?? "", "values");
 
 	///<summary>Concatenates the string representations of a span of objects, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join(string, params System.ReadOnlySpan<object>)")]
-	public extern static string _f8903c473c9e5f05(string? separator,  object values);
+	[Jazor(Op.Import, "static string.Join(string, params System.ReadOnlySpan<object>)")]
+	public static string _f8903c473c9e5f05(string? separator, Array<object?> values)
+		=> ConcatValues(values, separator ?? "", "values");
 
 	///<summary>Concatenates the members of a collection, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join<T>(char, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _1c599eccbbc8f2b8<T>(Number separator, Array<T> values);
+	[Jazor(Op.Import ,"static string.Join<T>(char, System.Collections.Generic.IEnumerable<T>)")]
+	public static string _1c599eccbbc8f2b8<T>(string separator, IEnumerable<T> values)
+		=> ConcatValues(values, separator, "values");
 
 	///<summary>Concatenates the members of a collection, using the specified separator between each member.</summary>
-	[Jazor(Op.Discard ,"static string.Join<T>(string, System.Collections.Generic.IEnumerable<T>)")]
-	public extern static string _c78854b22e947a4f<T>(string? separator, Array<T> values);
+	[Jazor(Op.Import ,"static string.Join<T>(string, System.Collections.Generic.IEnumerable<T>)")]
+	public static string _c78854b22e947a4f<T>(string? separator, IEnumerable<T> values)
+		=> ConcatValues(values, separator ?? "", "values");
 
 	///<summary>Returns a new string that right-aligns the characters in this instance by padding them with spaces on the left, for a specified total length.</summary>
 	[Jazor(Op.Import ,"string.PadLeft(int)")]

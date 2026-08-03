@@ -62,7 +62,7 @@ public sealed class SemanticWalkerStringBuilderTests
     }
 
     [TestMethod]
-    public void Visit_NonContentCapacitySurface_RemainsExplicitlyUnsupported()
+    public void Visit_CapacitySurface_UsesStatefulImportContract()
     {
         var block = GetBlockOperation(
             """
@@ -70,14 +70,63 @@ public sealed class SemanticWalkerStringBuilderTests
 
             public static class StringBuilderScenarios
             {
-                public static int Evaluate(StringBuilder builder)
+                public static int Evaluate(string text)
                 {
-                    return builder.Capacity;
+                    var builder = new StringBuilder(2, 8);
+                    builder.Append(text);
+                    builder.AppendLine();
+                    var expanded = builder.Capacity;
+                    builder.Capacity = 7;
+                    var ensured = builder.EnsureCapacity(8);
+                    return builder.MaxCapacity + expanded + ensured;
                 }
             }
             """);
 
-        Assert.Throws<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new()));
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(1, imports, body);
+        Assert.HasCount(7, imports["System/Text/StringBuilderModule.js"], body);
+        StringAssert.Contains(body, "_f69cee28dea8bcdc(2, 8)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_2879b76db56f25fb(builder, text)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_35fe8bcf463e879b(builder)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_20274b0eadfc0539(builder)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_d58ab6215b243f4f(builder, 7)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_e957bcfaa166161c(builder, 8)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_32a883f2233e3134(builder)", StringComparison.Ordinal);
+
+        _ = new Parser().ParseScript("function verify(text) " + body);
+    }
+
+    [TestMethod]
+    public void Visit_BuilderEquals_UsesTheContentComparisonImportContract()
+    {
+        var block = GetBlockOperation(
+            """
+            using System.Text;
+
+            public static class StringBuilderScenarios
+            {
+                public static bool Evaluate(StringBuilder left, StringBuilder? right)
+                {
+                    return left.Equals(right);
+                }
+            }
+            """);
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        Assert.HasCount(1, imports, body);
+        Assert.HasCount(1, imports["System/Text/StringBuilderModule.js"], body);
+        StringAssert.Contains(body, "return _843038bb92e97c63(left, right);", StringComparison.Ordinal);
+
+        _ = new Parser().ParseScript("function verify(left, right) " + body);
     }
 
     [TestMethod]
@@ -93,12 +142,15 @@ public sealed class SemanticWalkerStringBuilderTests
                 public static string Evaluate(
                     StringBuilder builder,
                     string?[] array,
-                    ReadOnlySpan<string?> span)
+                    ReadOnlySpan<string?> span,
+                    ReadOnlySpan<object?> objectSpan)
                 {
                     builder.AppendJoin(",", array);
                     builder.AppendJoin('|', array);
                     builder.AppendJoin("/", span);
                     builder.AppendJoin(':', span);
+                    builder.AppendJoin(";", objectSpan);
+                    builder.AppendJoin('!', objectSpan);
                     return builder.ToString();
                 }
             }
@@ -110,13 +162,15 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(4, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(6, imports["System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "_6ceea7a4bfd233b6(builder, \",\", array)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_02a3ec9f0e91877f(builder, \"|\", array)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_035c615b56218700(builder, \"/\", span)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_08c4f86d45c8b851(builder, \":\", span)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_f4377679fddd51ad(builder, \";\", objectSpan)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_f9ca702aaa0e6322(builder, \"!\", objectSpan)", StringComparison.Ordinal);
 
-        _ = new Parser().ParseScript("function verify(builder, array, span) " + body);
+        _ = new Parser().ParseScript("function verify(builder, array, span, objectSpan) " + body);
     }
 
     [TestMethod]
@@ -183,6 +237,49 @@ public sealed class SemanticWalkerStringBuilderTests
 		StringAssert.Contains(body, "_7e09aba586586854(builder, 2, floating)", StringComparison.Ordinal);
 
 		_ = new Parser().ParseScript("function verify(builder, single, floating) " + body);
+	}
+
+	[TestMethod]
+	public void Visit_ObjectCompositionOverloads_UseSharedRuntimeImports()
+	{
+		var block = GetBlockOperation(
+			"""
+			using System.Collections.Generic;
+			using System.Text;
+
+			public static class StringBuilderScenarios
+			{
+				public static string Evaluate(
+					StringBuilder builder,
+					object? value,
+					object?[] values,
+					IEnumerable<int> numbers)
+				{
+					builder.Append(value);
+					builder.AppendJoin("|", values);
+					builder.AppendJoin("-", numbers);
+					builder.AppendJoin('/', values);
+					builder.AppendJoin(':', numbers);
+					builder.Insert(0, value);
+					return builder.ToString();
+				}
+			}
+			""");
+
+		var argument = new SenseArgument(UseImportAliases: true);
+		var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+		Assert.IsNotNull(body);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(1, imports, body);
+		Assert.HasCount(6, imports["System/Text/StringBuilderModule.js"], body);
+		StringAssert.Contains(body, "_06379efa8addb10d(builder, value)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "_8bc8cc43c6d93195(builder, \"|\", values)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "_8d04089684a00c7b(builder, \"-\", numbers)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "_a5aab658026ac255(builder, \"/\", values)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "_3510fcab582042e0(builder, \":\", numbers)", StringComparison.Ordinal);
+		StringAssert.Contains(body, "_463fe06f693b73f1(builder, 0, value)", StringComparison.Ordinal);
+		_ = new Parser().ParseScript("function verify(builder, value, values, numbers) " + body);
 	}
 
     private static IBlockOperation GetBlockOperation(string source)

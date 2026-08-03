@@ -19,9 +19,18 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 
 	// Keep TryGetValue in an import so the out-value contract is expressed directly in Jazor
 	// rather than hidden in a conditional JS expression.
-	///<summary>The wrapper must remain live over the source dictionary; the current Map carrier has no view protocol.</summary>
-	[Jazor(Op.Discard, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)")]
-	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _b22e987e1be225aa(System.Collections.Generic.IDictionary<TKey, TValue> dictionary);
+	/// <summary>
+	/// Creates a live read-only proxy over the source dictionary. Source mutations remain visible,
+	/// while Map mutators invoked through the view are rejected.
+	/// </summary>
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)")]
+	public static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _b22e987e1be225aa(Map<TKey, TValue>? dictionary)
+	{
+		if (dictionary == null)
+			throw new Error("ArgumentNullException: dictionary is null.");
+
+		return (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)RuntimeModule.MarkAsReadOnlyDictionaryCarrier(dictionary);
+	}
 
 	/// <summary>
 	/// C#: ReadOnlyDictionary.Empty
@@ -31,11 +40,28 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 	public static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _43b396f1b8e0a68f()
 		=> (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)RuntimeModule.MarkAsReadOnlyDictionaryCarrier(DictionaryT2Module<TKey, TValue>.Create(null));
 
-	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get")]
-	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.KeyCollection _4044dececdd2d744(Map<TKey,TValue> instance);
+	/// <summary>
+	/// Projects the current dictionary keys into the compiler's enumerable array carrier.
+	/// The projection has no mutation entry point, so it preserves the read-only boundary while
+	/// allowing ordinary foreach and LINQ consumption without exposing Map internals.
+	/// </summary>
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get")]
+	public static Array<TKey> _4044dececdd2d744(Map<TKey, TValue> instance)
+	{
+		EnsureInstance(instance);
+		return Array<TKey>.From(instance.Keys());
+	}
 
-	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Values.get")]
-	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ValueCollection _b39da265738457a5(Map<TKey,TValue> instance);
+	/// <summary>
+	/// Projects the current dictionary values into the compiler's enumerable array carrier.
+	/// See <see cref="_4044dececdd2d744"/> for the projection boundary.
+	/// </summary>
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Values.get")]
+	public static Array<TValue> _b39da265738457a5(Map<TKey, TValue> instance)
+	{
+		EnsureInstance(instance);
+		return Array<TValue>.From(instance.Values());
+	}
 
 	/// <summary>
 	/// C#: instance.ContainsKey(key)

@@ -1724,7 +1724,7 @@ public sealed class SemanticWalkerPatternTest
     StringAssert.Contains(script, "let first, rest, last;", StringComparison.Ordinal);
     StringAssert.Contains(script, "if (Array.isArray(list) && list.length >= 2 &&", StringComparison.Ordinal);
     StringAssert.Contains(script, "(first = _d389c31d59037b42(list, 0), true)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "(rest = list.slice(1, 1 + (list.length - 2)), true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(rest = slice(list, 1, list.length - 2), true)", StringComparison.Ordinal);
     StringAssert.Contains(script, "(last = _d389c31d59037b42(list, list.length - 1), true)", StringComparison.Ordinal);
     AssertContainsCount(script, "list.slice(1, -1)", 0);
   }
@@ -2787,7 +2787,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Map;
+  let obj = createDefault();
   let result = obj instanceof Map;
 }", script);
   }
@@ -3488,7 +3488,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let obj = [];
+  let obj = createDefault();
   let result = Array.isArray(obj);
 }", script);
 
@@ -4249,7 +4249,7 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let obj = [];
+  let obj = createDefault();
   let result = Array.isArray(obj);
 }", script);
 
@@ -4277,7 +4277,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Map;
+  let obj = createDefault();
   let result = obj instanceof Map;
 }", script);
   }
@@ -4304,7 +4304,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = [];
+  let obj = createDefault();
   let result = Array.isArray(obj) || Array.isArray(obj);
 }", script);
   }
@@ -5481,7 +5481,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let obj = new Map;
+  let obj = createDefault();
   let result = obj instanceof Map;
 }", script);
   }
@@ -8095,10 +8095,10 @@ line2"";
   }
 
   /// <summary>
-  /// 测试白名单运行时类型上未进入支持表的属性模式不会静默回退
+  /// List.Capacity 属性模式必须走 CLR 映射，不能读取不存在的 Array.capacity。
   /// </summary>
   [TestMethod]
-  public void Visit_PropertyPattern_UnmappedRuntimeProperty_Throws()
+  public void Visit_PropertyPattern_ListCapacity_UsesRuntimeGetter()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -8114,11 +8114,14 @@ line2"";
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(() =>
-    {
-      _ = walker.Visit(block, new());
-    });
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+    AssertScriptEqual(@"{
+  let list = createDefault();
+  if (Array.isArray(list) && list != null && getCapacityMember(list) === 0) {
+    console.log(""match"");
+  }
+}", script);
+    _ = new Acornima.Parser().ParseScript(script!);
   }
 
   #endregion

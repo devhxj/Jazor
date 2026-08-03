@@ -188,7 +188,7 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
-	public void ICollectionInterfaceMappings_OnlyKeepSafeQueryMembers()
+	public void ICollectionInterfaceMappings_PreserveListMutationAndFixedArrayBoundaries()
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.ICollectionModule), "System.Collections.ICollection", "Array");
 		AssertTypeAlias(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>", "Array");
@@ -201,14 +201,14 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Count.get", Op.Alias);
 		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Contains(T)", Op.Alias);
 		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.CopyTo(T[], int)", Op.Import);
-		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.IsReadOnly.get", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Add(T)", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Clear()", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Remove(T)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.IsReadOnly.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Add(T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Clear()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ICollectionT1Module<>), "System.Collections.Generic.ICollection<T>.Remove(T)", Op.Import);
 	}
 
 	[TestMethod]
-	public void IListInterfaceMappings_RejectAmbiguousMutationMembers()
+	public void IListInterfaceMappings_PreserveListMutationAndFixedArrayBoundaries()
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.IListModule), "System.Collections.IList", "Array");
 		AssertTypeAlias(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>", "Array");
@@ -216,19 +216,20 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.this[int].get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Contains(object)", Op.Alias);
 		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.IndexOf(object)", Op.Alias);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.this[int].set", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Clear()", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.IsReadOnly.get", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.IsFixedSize.get", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Insert(int, object)", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Remove(object)", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.RemoveAt(int)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.this[int].set", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Add(object)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Clear()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.IsReadOnly.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.IsFixedSize.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Insert(int, object)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.Remove(object)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListModule), "System.Collections.IList.RemoveAt(int)", Op.Import);
 
 		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.this[int].get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.IndexOf(T)", Op.Alias);
-		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.this[int].set", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.Insert(int, T)", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.RemoveAt(int)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.this[int].set", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.Insert(int, T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IListT1Module<>), "System.Collections.Generic.IList<T>.RemoveAt(int)", Op.Import);
 	}
 
 	[TestMethod]
@@ -383,7 +384,7 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
-	public void ReadOnlySetMappings_KeepLiveWrapperConstructorDiscarded()
+	public void ReadOnlySetMappings_UseLiveViewConstructor()
 	{
 		var typeAttribute = typeof(Jazor.CLR.ReadOnlySetT1Module<>).GetCustomAttribute<JazorAttribute>();
 		Assert.IsNotNull(typeAttribute);
@@ -391,7 +392,7 @@ public sealed class CollectionInterfaceWhitelistTests
 		Assert.AreEqual("System.Collections.ObjectModel.ReadOnlySet<T>", typeAttribute.Member);
 		Assert.AreEqual("Set", typeAttribute.Value);
 
-		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.Contains(T)", Op.Inline);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", Op.Import);
@@ -403,7 +404,7 @@ public sealed class CollectionInterfaceWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>", "Array");
 
-		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[])", Op.Import);
@@ -412,10 +413,18 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
-	public void LiveReadOnlyWrapperFactories_RemainDiscardedWithoutAViewCarrier()
+	public void LiveReadOnlyWrapperFactories_UseSharedViewCarriers()
 	{
-		AssertMemberOp(typeof(Jazor.CLR.ArrayModule<>), "static System.Array.AsReadOnly<T>(T[])", Op.Discard);
-		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.ArrayModule<>), "static System.Array.AsReadOnly<T>(T[])", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)", Op.Import);
+	}
+
+	[TestMethod]
+	public void ReadOnlyDictionaryMappings_ProjectEnumerableKeyAndValueSequences()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>", "Map");
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyDictionaryT2Module<,>), "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Values.get", Op.Import);
 	}
 
 	[TestMethod]
@@ -423,7 +432,7 @@ public sealed class CollectionInterfaceWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>", "Array");
 
-		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.AsReadOnly()", Op.Discard);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.AsReadOnly()", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.BinarySearch(int, int, T, System.Collections.Generic.IComparer<T>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.BinarySearch(T)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.BinarySearch(T, System.Collections.Generic.IComparer<T>)", Op.Import);

@@ -54,10 +54,12 @@ jobs:
 
           $publishEnabled = $dryRun -ne 'true'
           $createRelease = $publishEnabled -and $releaseRef.StartsWith('v', [System.StringComparison]::Ordinal)
+          $packageVersion = if ($releaseRef.StartsWith('v', [System.StringComparison]::Ordinal)) { $releaseRef.Substring(1) } else { '' }
           $safeRef = $releaseRef -replace '[^A-Za-z0-9._-]', '-'
 
           "release_ref=$releaseRef" >> $env:GITHUB_OUTPUT
           "safe_ref=$safeRef" >> $env:GITHUB_OUTPUT
+          "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
           "publish_enabled=$($publishEnabled.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "create_release=$($createRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
@@ -78,6 +80,7 @@ jobs:
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
             --output-directory 'artifacts/packages' `
+            --package-version '${{ steps.release_ref.outputs.package_version }}' `
             --package jazor `
             --package jazor-vue `
             --package style `

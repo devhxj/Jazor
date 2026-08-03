@@ -177,7 +177,7 @@ internal static class NativeMapSetEqualityScenarioCatalog
                 }
             }
             """,
-            "new Map"),
+            "createDefault()"),
         new(
             "native-map-set-equality.array-set-element",
             "array-preserves-reference-identity-element",
@@ -191,7 +191,7 @@ internal static class NativeMapSetEqualityScenarioCatalog
                 }
             }
             """,
-            "new Set"),
+            "createDefault()"),
         new(
             "native-map-set-equality.reference-identity-dictionary-key",
             "ordinary-reference-key-preserves-identity-equality",
@@ -211,7 +211,7 @@ internal static class NativeMapSetEqualityScenarioCatalog
                 }
             }
             """,
-            "new Map"),
+            "createDefault()"),
         new(
             "native-map-set-equality.non-self-equatable-set-element",
             "non-self-equatable-interface-does-not-change-default-reference-equality",
@@ -230,7 +230,7 @@ internal static class NativeMapSetEqualityScenarioCatalog
                 }
             }
             """,
-            "new Set")
+            "createDefault()")
     ];
 
     public static IReadOnlyList<NativeMapSetEqualityFailureScenario> Failures { get; } =

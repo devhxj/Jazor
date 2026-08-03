@@ -29,6 +29,20 @@ internal static class ClrRuntimeTailScenarios
 
         Mutation("generic-collection.copy-to-with-index", "System.Collections.Generic.ICollection<T>.CopyTo(T[], int)", GenericCollectionModulePath, [Array(Text("release"), Text("owner")), Array(Text("before"), Null(), Null(), Text("after")), Number(1)], [Array(Text("release"), Text("owner")), Array(Text("before"), Text("release"), Text("owner"), Text("after")), Number(1)]),
         Success("generic-list.indexer.get", "System.Collections.Generic.IList<T>.this[int].get", GenericListModulePath, [Array(Text("release"), Text("owner")), Number(1)], Text("owner")),
+        Mutation("generic-list.indexer.set.replaces-existing-item", "System.Collections.Generic.IList<T>.this[int].set", GenericListModulePath, [Array(Text("release"), Text("owner")), Number(1), Text("stage")], [Array(Text("release"), Text("stage")), Number(1), Text("stage")]),
+        Failure("generic-list.indexer.set.rejects-out-of-range-index", "System.Collections.Generic.IList<T>.this[int].set", GenericListModulePath, [Array(Text("release")), Number(1), Text("stage")], "ArgumentOutOfRangeException"),
+        Failure(
+            "generic-list.indexer.set.rejects-read-only-view",
+            "System.Collections.Generic.IList<T>.this[int].set",
+            GenericListModulePath,
+            [
+                Invoke(
+                    "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)",
+                    Array(Text("release"))),
+                Number(0),
+                Text("stage")
+            ],
+            "NotSupportedException: Collection is read-only."),
         Success("read-only-list.indexer.get", "System.Collections.Generic.IReadOnlyList<T>.this[int].get", ReadOnlyListModulePath, [Array(Text("release"), Text("owner")), Number(0)], Text("release")),
         Failure("read-only-list.indexer.rejects-fractional-index", "System.Collections.Generic.IReadOnlyList<T>.this[int].get", ReadOnlyListModulePath, [Array(Text("release")), Number(0.5)], "ArgumentOutOfRangeException"),
         Failure("read-only-list.indexer.rejects-null-instance", "System.Collections.Generic.IReadOnlyList<T>.this[int].get", ReadOnlyListModulePath, [Null(), Number(0)], "NullReferenceException"),
@@ -58,6 +72,8 @@ internal static class ClrRuntimeTailScenarios
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
     private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);
+    private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
+        => ClrRuntimeValue.Invoke(member, arguments);
     private static ClrRuntimeValue Disposable(int count = 0) => ClrRuntimeValue.Disposable(count);
     private static ClrRuntimeValue AsyncDisposable(int count = 0) => ClrRuntimeValue.AsyncDisposable(count);
 }
