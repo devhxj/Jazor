@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8297 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8297%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.32%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.32%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.08%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.08%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8305 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8305%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.34%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.34%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.12%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.12%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8297 / 8297 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 15983 / 16593（96.32%） | 95% |
-| 分支覆盖率 | 6332 / 7029（90.08%） | 90% |
+| 编译器回归测试 | 8305 / 8305 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 16008 / 16617（96.34%） | 95% |
+| 分支覆盖率 | 6342 / 7037（90.12%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -97,14 +97,17 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - `Enumerable.Zip` 现支持三源 tuple 组合，并保留 source 顺序的 iterator 推进与反向关闭；原有二源和 result-selector 形式继续可用。
 - `Enumerable.CountBy` 与两种 `AggregateBy` seed 形式现在保留 comparer-aware 分组、首次 key representative、插入顺序、Int32 count 边界和两槽 `KeyValuePair<TKey, TValue>` entry。
 - 生成 non-record runtime member class 的非静态、非 virtual/override 字段式 event 现保留 C# multicast 的订阅/移除语义、调用列表快照、方法组 receiver 身份和条件 `Invoke` 参数短路。静态 event、custom accessor、virtual/override、带 by-ref 参数或返回的 delegate、delegate equality/combination 仍是明确边界。
-- Compiler 门禁已验证 8,297 个场景，行覆盖率 96.32%、分支覆盖率 90.08%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- 使用 `yield` 的模块方法、runtime member method 和 local function 现生成 JavaScript generator；`async IAsyncEnumerable<T>` 生成 `async function*`。
+- UTF-8 string literal 现通过既有只读 span carrier 生成精确的解码后 UTF-8 bytes，覆盖转义、raw literal、BMP 与补充平面文本。
+- 带 C# optional default 的 lambda 参数现在会在 JavaScript 函数边界保留省略实参行为；by-reference lambda return 仍是明确的运行时边界。
+- Compiler 门禁已验证 8,305 个场景，行覆盖率 96.34%、分支覆盖率 90.12%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.41
+dotnet add package Jazor --version 0.1.42
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -113,8 +116,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.40" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.40" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.42" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.42" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -122,11 +125,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.40" />
+  <PackageReference Include="Jazor" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.42" />
 </ItemGroup>
 ```
 

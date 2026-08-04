@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8297 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8297%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.32 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.32%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.08 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.08%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8305 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8305%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.34 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.34%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.12 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.12%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8297 / 8297 passed | 8000 passed |
-| Line coverage | 15983 / 16593 (96.32%) | 95% |
-| Branch coverage | 6332 / 7029 (90.08%) | 90% |
+| Compiler regression tests | 8305 / 8305 passed | 8000 passed |
+| Line coverage | 16008 / 16617 (96.34%) | 95% |
+| Branch coverage | 6342 / 7037 (90.12%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -97,14 +97,17 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - `Enumerable.Zip` now supports three-source tuple composition with source-ordered iterator traversal and reverse iterator closure, alongside existing two-source and result-selector forms.
 - `Enumerable.CountBy` and both `AggregateBy` seed forms now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
 - Field-like instance events on generated non-record runtime member classes now preserve C# multicast subscription and removal semantics, invocation-list snapshots, method-group receiver identity, and conditional `Invoke` argument short-circuiting. Static, custom-accessor, virtual/override, by-reference, delegate-equality, and delegate-combination event forms remain explicit boundaries.
-- The compiler gate verifies 8,297 scenarios at 96.32% line and 90.08% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- Module methods, runtime member methods, and local functions using `yield` now emit JavaScript generators, including `async IAsyncEnumerable<T>` methods as `async function*`.
+- UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
+- Lambda parameters with C# optional defaults now preserve omitted-call behavior at the JavaScript function boundary; by-reference lambda returns remain an explicit runtime boundary.
+- The compiler gate verifies 8,305 scenarios at 96.34% line and 90.12% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.41
+dotnet add package Jazor --version 0.1.42
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -113,8 +116,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.40" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.40" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.42" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.42" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -122,11 +125,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.40" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.40" />
+  <PackageReference Include="Jazor" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.42" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.42" />
 </ItemGroup>
 ```
 

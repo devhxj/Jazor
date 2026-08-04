@@ -14,7 +14,10 @@
 - `Enumerable.Zip` now supports its three-source tuple overload alongside the existing two-source and result-selector forms, preserving source-order iterator creation and advancement, shortest-source termination, and reverse iterator closure.
 - `Enumerable.CountBy` and both `AggregateBy` seed overloads now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
 - Field-like instance events on generated non-record runtime member classes now preserve C# multicast subscription and removal semantics, invocation-list snapshots, method-group receiver identity, and conditional `Invoke` argument short-circuiting. Static, custom-accessor, virtual/override, by-reference, delegate-equality, and delegate-combination event forms remain explicit boundaries.
-- The compiler quality gate now verifies 8,297 scenarios at 96.32% line coverage and 90.08% branch coverage.
+- Module methods, runtime member methods, and local functions using `yield` now generate JavaScript iterators; `async IAsyncEnumerable<T>` methods generate `async function*` while nested callback bodies remain isolated from the outer iterator shape.
+- UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
+- Lambda parameters with C# optional defaults now preserve omitted-call behavior at the generated JavaScript function boundary. By-reference lambda returns remain an explicit runtime boundary.
+- The compiler quality gate now verifies 8,305 scenarios at 96.34% line coverage and 90.12% branch coverage.
 
 ## 2026-08-03
 
