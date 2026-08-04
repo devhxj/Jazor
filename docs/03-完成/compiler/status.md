@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8297 / 8297 通过
-- `Jazor.Compiler` 行覆盖：15983 / 16593（96.32%）
-- `Jazor.Compiler` 分支覆盖：6332 / 7029（90.08%）
+- `Jazor.CompilerTest`：8305 / 8305 通过
+- `Jazor.Compiler` 行覆盖：16008 / 16617（96.34%）
+- `Jazor.Compiler` 分支覆盖：6342 / 7037（90.12%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -55,7 +55,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
 - iterator：module method、runtime member method 与 local function 都从实际 Roslyn operation tree 判定 generator；`yield return` / `yield break` 输出 `function*`，`async IAsyncEnumerable<T>` 输出 `async function*`。共享遍历会在 nested lambda/local function 处停止，避免子函数的 yield 错误改变外层函数形态
 - `System.Index` / `System.Range`：允许作为真实 carrier 跨 local/argument 边界；数组及具备 `Length`、`this[int]` 和 `Slice(int, int)` 的隐式索引器可消费该 carrier。materialized `Index` 保留读写及复合赋值的单次 getter/setter 求值，materialized `Range` 将 `(offset, length)` 明确转换为 JavaScript `slice(start, endExclusive)` 或等价的 `(start, length)` 调用，并保留 carrier projection 单次求值与越界异常语义
-- lambda / delegate：普通、async 和捕获 lambda 均通过匿名函数/委托创建 lowering 进入箭头函数；函数边界隔离局部声明，同时共享模块 import 收集
+- lambda / delegate：普通、async、捕获和 optional-parameter lambda 均通过匿名函数/委托创建 lowering 进入箭头函数；optional 默认值由 Roslyn 绑定参数的 `AssignmentExpression` 承载，函数边界隔离局部声明，同时共享模块 import 收集；by-ref return lambda 因 JavaScript 无 CLR reference-return carrier 而明确失败
 - field-like event：当前模块 non-record runtime member class 的非静态、非 virtual/override 字段式事件由私有调用列表、受控 add/remove helper 和 snapshot delegate 组成；直接实例方法组以未绑定 method 加 receiver 作为等价键，避免 JS `bind` 临时函数破坏 `-=`。snapshot 在 invoke 前复制当前调用列表，因此重复订阅、最后匹配移除、空事件 `?.Invoke(...)` 的参数短路，以及 handler 内增删订阅的当前/下一轮可见性均有 AST 与 Deno.host 回归。模块静态事件、custom accessor、virtual/override、带 by-ref 参数或返回的 delegate、delegate equality/combination 和 `IRaiseEventOperation` 仍明确拒绝。
 - UTF-8 literal：`IUtf8StringOperation` 取 Roslyn 已解码的 C# 字符串并构造精确 UTF-8 byte `ArrayExpression`，通过既有 `ReadOnlySpan<byte> -> Array` carrier 传递；不发射 JavaScript 字符串、`TextEncoder`、BOM、隐式结束符或新的 typed-array identity。普通、转义、BMP、补充平面与 raw literal 均有 AST/text 回归。
 - LINQ query：`ITranslatedQueryOperation` 只移除 Roslyn wrapper，复用绑定后的 `Enumerable.Where`、`Select`、`ToList`、`ToArray` AST intrinsic；`Skip` / `Take` 提供物化分页链路（非正 `Skip` 保留全部元素，非正 `Take` 为空）；`Any` / `All` 通过迭代立即短路，每个已观察元素只调用一次 predicate；`OrderBy` / `OrderByDescending` 走 CLR `Import` 的稳定物化排序，selector 每个元素只求值一次，并通过 `Comparer<T>` 默认比较；`ThenBy` / `ThenByDescending` 仅支持直接衔接当前 module 生成的 materialized order state，未知外部 `IOrderedEnumerable<T>` 明确失败；当前仍是受控 Array/IEnumerable 物化子集，不承诺延迟枚举、自定义 `IComparer<T>`、`Queryable` 或完整 LINQ provider 语义
