@@ -92,8 +92,8 @@
 
 ### `for` 控制变量闭包捕获
 
-- C# `for` 声明的控制变量在整个循环内是单一 lexical binding；JavaScript 的 `for (let ...)` 则为每轮迭代建立新的 binding。仅当 Roslyn `IForLoopOperation.Locals` 表明该声明变量被嵌套 anonymous function 或 local function 捕获时，lowering 才将声明置于等价外层 block，并生成空初始化器的 `for`；未捕获循环仍保持普通 `for (let ...)` 产物。
-- `AstConverterRuntimeClassScenarioTests.ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost` 断言该 AST/text 结构，并由 Deno.host 验证 lambda 与 local function 回调均观察到循环结束后的最终控制变量值。`SemanticWalkerLoopTest` 保留普通 loop initializer 的精确文本回归。
+- C# `for` 声明的每个控制局部变量在整个循环内都是单一 lexical binding；JavaScript 的 `for (let ...)` 则为每轮迭代建立新的 binding。仅当 Roslyn `IForLoopOperation.Locals` 表明声明变量被嵌套 anonymous function 或 local function 捕获时，lowering 才将整个声明置于等价外层 block，并生成空初始化器的 `for`；未捕获循环仍保持普通 `for (let ...)` 产物。
+- `AstConverterRuntimeClassScenarioTests.ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost` 断言该 AST/text 结构，并由 Deno.host 验证 lambda、local function 与多控制变量回调均观察到循环结束后的最终控制变量值。`SemanticWalkerLoopTest` 保留普通 loop initializer 的精确文本回归。
 
 ### `Nullable<T>.Value`
 

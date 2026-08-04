@@ -1304,6 +1304,17 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                         return first() * 10 + second();
                     }
+
+                    public int ReadCapturedMultipleControlValues()
+                    {
+                        Func<int> captured = null!;
+                        for (int index = 0, offset = 10; index < 2; index++, offset++)
+                        {
+                            captured = () => index + offset;
+                        }
+
+                        return captured();
+                    }
                 }
             }
             """,
@@ -1341,8 +1352,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   const reader = new CallbackReader();
                   const lambda = reader.readCapturedValues();
                   const localFunction = reader.readCapturedLocalFunctionValues();
-                  if (lambda !== 22 || localFunction !== 22)
-                    throw new Error(`expected both callback forms to observe final i = 2, got lambda=${lambda}, localFunction=${localFunction}`);
+                  const multipleControls = reader.readCapturedMultipleControlValues();
+                  if (lambda !== 22 || localFunction !== 22 || multipleControls !== 14)
+                    throw new Error(`expected callbacks to observe final control values, got lambda=${lambda}, localFunction=${localFunction}, multipleControls=${multipleControls}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
