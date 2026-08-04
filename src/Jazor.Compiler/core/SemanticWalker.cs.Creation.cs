@@ -40,17 +40,34 @@ public partial class SemanticWalker
 		RejectUnsupportedTypeFallback(operation, type, "object creation");
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, type, "object creation");
 
-		var arguments = new List<Expression>();
+		var loweredArguments = new List<LoweredBoundArgument>(operation.Arguments.Length);
+		var lastSuppliedParameterOrdinal = GetLastSuppliedParameterOrdinal(operation.Arguments);
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
 			var arg = operation.Arguments[index];
 			if (arg.ArgumentKind == ArgumentKind.DefaultValue &&
-				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue))
+				arg.Parameter!.Ordinal > lastSuppliedParameterOrdinal)
 				continue;
 			// 构造器参数同样属于 tuple 边界。
-			// 具名参数可以改变实参顺序，因此必须使用 Roslyn 已绑定的 Parameter，不能按索引猜测。
-			arguments.Add(TranslateTupleForTarget(arg.Value, arg.Parameter!.Type, argument));
+			// 具名参数的最终位置由 Parameter 指定；CanonicalizeBoundArguments 会在需要时
+			// 先按源码顺序缓存，再按该绑定位置重组 JavaScript 实参。
+			var argContext = arg.Parameter!.RefKind is RefKind.Out
+				? argument.With(Sense.OutParameter)
+				: argument;
+			var value = TranslateTupleForTarget(arg.Value, arg.Parameter.Type, argContext);
+			loweredArguments.Add(new LoweredBoundArgument(
+				arg,
+				value,
+				(arg.Parameter.RefKind is RefKind.Out or RefKind.Ref) && arg.Value is not IDiscardOperation
+					? value
+					: null));
 		}
+		var orderedArguments = CanonicalizeBoundArguments(operation, loweredArguments, argument);
+		var arguments = orderedArguments.Select(static item => item.Value).ToList();
+		var refParameters = orderedArguments
+			.Where(static item => item.Operation.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
+			.Select(static item => item.WriteBackTarget)
+			.ToList();
 
 		if (IsObjectLiteralHostType(type))
 		{
@@ -71,6 +88,17 @@ public partial class SemanticWalker
 			!IsIntrinsicObjectCreationFallbackAllowed(constructor, type))
 			RejectUnsupportedRuntimeFallback(operation, constructor, "object creation", type);
 
+		var usesMemberConstructorRefOutSink =
+			refParameters.Count > 0 &&
+			mappedConstructor is null &&
+			TryGetCurrentModuleDeclaredName(type, out _);
+		if (refParameters.Count > 0 && !usesMemberConstructorRefOutSink)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Constructor '{constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)}' has ref/out parameters but does not participate in the current-module constructor sink protocol.");
+		}
+
 		// 普通对象创建
 		var (mapper, typeName) = GetMapperType(type);
 		// 类型引用统一走 BuildFullTypeName：
@@ -83,7 +111,9 @@ public partial class SemanticWalker
 			arguments.Insert(0, CreateStringLiteral(helperName));
 		}
 
-		Expression expr = new NewExpression(callee, NodeList.From(arguments));
+		Expression expr = usesMemberConstructorRefOutSink
+			? BuildMemberConstructorRefOutCreation(operation, callee, arguments, refParameters, argument)
+			: new NewExpression(callee, NodeList.From(arguments));
 		if (mapper == TypeMapper.BigInt)
 			expr = new CallExpression(callee, NodeList.From(arguments), false);
 
@@ -111,6 +141,50 @@ public partial class SemanticWalker
 		}
 
 		return expr;
+	}
+
+	private Expression BuildMemberConstructorRefOutCreation(
+		IObjectCreationOperation operation,
+		Expression callee,
+		List<Expression> arguments,
+		IReadOnlyList<Expression?> refParameters,
+		SenseArgument argument)
+	{
+		var sink = new Identifier(AllocateUniqueName(operation, argument, new LoweringSite(LoweringSiteKind.CreationTemp, "refout-sink")));
+		var instance = new Identifier(AllocateUniqueName(operation, argument, new LoweringSite(LoweringSiteKind.CreationTemp, "refout-instance")));
+		argument.AddVarDeclarator(new VariableDeclarator(sink, null), _recursionDepth);
+		argument.AddVarDeclarator(new VariableDeclarator(instance, null), _recursionDepth);
+
+		var sinkInitialization = new AssignmentExpression(
+			Operator.Assignment,
+			sink,
+			new ArrayExpression(NodeList.Empty<Expression?>()));
+		arguments.Add(sinkInitialization);
+
+		var expressions = new List<Expression>
+		{
+			new AssignmentExpression(
+				Operator.Assignment,
+				instance,
+				new NewExpression(callee, NodeList.From(arguments)))
+		};
+		for (var index = 0; index < refParameters.Count; index++)
+		{
+			if (refParameters[index] is null)
+				continue;
+
+			expressions.Add(new AssignmentExpression(
+				Operator.Assignment,
+				refParameters[index]!,
+				new MemberExpression(
+					sink,
+					new NumericLiteral(index, index.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+					computed: true,
+					optional: false)));
+		}
+
+		expressions.Add(instance);
+		return new SequenceExpression(NodeList.From(expressions));
 	}
 
 	private bool ShouldEmitMemberConstructorSelector(IMethodSymbol constructor)

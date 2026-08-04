@@ -36,7 +36,8 @@ RazorVue 的 current-component、RenderTreeBuilder、children-to-slot 和 Compon
 下面这些路线已经不应再按“探索态”理解：
 
 - `tuple`：走表达式组合 lowering，保投影、解构、比较与 remap 行为，不保 `System.ValueTuple` runtime identity。
-- `ref/out`：走 caller/callee 协议模拟，优先保证求值顺序、回写顺序和最终结果。
+- `ref/out`：走 caller/callee 协议模拟，优先保证求值顺序、回写顺序和最终结果；同模块成员类的单一显式构造函数以隐藏 sink 回传 writable 参数，构造函数 overload dispatch 仍不接受 `ref/out/in/params`。
+- 具名实参：调用与构造都以 Roslyn 已绑定的 `IArgumentOperation.Parameter` 作为目标槽位；参数顺序被重排时，先在首个 JavaScript 实参位置按 C# 源码顺序缓存，再按形参顺序传递，保留 receiver 先求值、默认参数占位与 `ref/out` 回写目标。
 - `enum`：走“声明擦除 + 使用点常量化”，运行时按底层标量处理。
 - `interface`：只作为契约参与分析、宿主查找和投影，不发射 runtime declaration。
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式、解构都按结构属性键处理，不保 nominal runtime identity；若需要普通 runtime class 语义，必须显式写 `class`。

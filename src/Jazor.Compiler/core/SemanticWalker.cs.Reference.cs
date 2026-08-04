@@ -1255,6 +1255,24 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		return true;
 	}
 
+	private static bool TryExpandEcmascriptParamsArgument(
+		IMethodSymbol method,
+		IParameterSymbol? parameter,
+		Expression value,
+		List<Expression> destination)
+	{
+		if (!Util.IsECMAScriptRuntimeSymbol(method) ||
+			parameter?.IsParams != true ||
+			HasPreserveParamsArrayAttribute(parameter))
+			return false;
+
+		// Bound-argument canonicalization has already evaluated the source params value into a
+		// stable cache. Spreading that cache preserves the same call contract without re-reading
+		// or reconstructing the original collection expression.
+		destination.Add(new SpreadElement(value));
+		return true;
+	}
+
 	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, SenseArgument argument, out Expression? expression)
 	{
 		expression = null;
@@ -2620,37 +2638,78 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		// 处理方法调用的参数
 		var arguments = new List<Expression>();
-		for (var index = 0; index < operation.Arguments.Length; index++)
+		if (RequiresBoundArgumentCanonicalization(operation.Arguments))
 		{
-			var arg = operation.Arguments[index];
-			// 为 out 参数传递 OutParameter 上下文
-			var argContext = arg.Parameter?.RefKind is RefKind.Out
-				? argument.With(Sense.OutParameter)
-				: argument;
-
-			var isTrailingEcmascriptDefaultArgument =
-				Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod) &&
-				arg.ArgumentKind == ArgumentKind.DefaultValue &&
-				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue);
-			if (isTrailingEcmascriptDefaultArgument)
-				continue;
-
-			if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
+			var loweredArguments = new List<LoweredBoundArgument>(operation.Arguments.Length);
+			var lastSuppliedParameterOrdinal = GetLastSuppliedParameterOrdinal(operation.Arguments);
+			for (var index = 0; index < operation.Arguments.Length; index++)
 			{
-				arguments.Add(hostArgument);
-				continue;
+				var arg = operation.Arguments[index];
+				if (Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod) &&
+					arg.ArgumentKind == ArgumentKind.DefaultValue &&
+					arg.Parameter!.Ordinal > lastSuppliedParameterOrdinal)
+					continue;
+				var argContext = arg.Parameter!.RefKind is RefKind.Out
+					? argument.With(Sense.OutParameter)
+					: argument;
+				var value = Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument
+					? hostArgument
+					: TranslateTupleForTarget(arg.Value, arg.Parameter.Type, argContext);
+				loweredArguments.Add(new LoweredBoundArgument(
+					arg,
+					value,
+					(arg.Parameter.RefKind is RefKind.Out or RefKind.Ref) && arg.Value is not IDiscardOperation
+						? value
+						: null));
 			}
 
-			if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
-				continue;
+			var orderedArguments = CanonicalizeBoundArguments(operation, loweredArguments, argument);
+			for (var index = 0; index < orderedArguments.Count; index++)
+			{
+				var arg = orderedArguments[index];
+				if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg.Operation.Parameter, arg.Value, arguments))
+					continue;
 
-			var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
-			// ref 引用 或 out 变量引用，记住顺序
-			if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-				refParas.Add(arg.Value is IDiscardOperation ? null : right);
+				if (arg.Operation.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
+					refParas.Add(arg.WriteBackTarget);
 
-			// 当作普通参数传入
-			arguments.Add(right);
+				arguments.Add(arg.Value);
+			}
+		}
+		else
+		{
+			for (var index = 0; index < operation.Arguments.Length; index++)
+			{
+				var arg = operation.Arguments[index];
+				// 为 out 参数传递 OutParameter 上下文
+				var argContext = arg.Parameter?.RefKind is RefKind.Out
+					? argument.With(Sense.OutParameter)
+					: argument;
+
+				var isTrailingEcmascriptDefaultArgument =
+					Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod) &&
+					arg.ArgumentKind == ArgumentKind.DefaultValue &&
+					operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue);
+				if (isTrailingEcmascriptDefaultArgument)
+					continue;
+
+				if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
+				{
+					arguments.Add(hostArgument);
+					continue;
+				}
+
+				if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
+					continue;
+
+				var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
+				// ref 引用 或 out 变量引用，记住顺序
+				if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
+					refParas.Add(arg.Value is IDiscardOperation ? null : right);
+
+				// 当作普通参数传入
+				arguments.Add(right);
+			}
 		}
 
 		if (Host?.RewriteInvocation(operation, argument, instance, arguments) is Expression hostExpression)

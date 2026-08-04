@@ -1041,6 +1041,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             ? lowering.Body
             : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax, lowering.BaseConstructorSymbol, cancellationToken);
 
+        var writableParameters = lowering.Symbol.Parameters
+            .Where(static parameter => parameter.RefKind is RefKind.Ref or RefKind.Out)
+            .Select(static parameter => (Expression)new Identifier(parameter.Name))
+            .ToArray();
+        if (writableParameters.Length > 0)
+        {
+            // A JS constructor must retain its instance result. Do not reuse RefOutReturnProtocol
+            // here: returning its array would replace `this` when the array is an object.
+            var sink = CreateConstructorRefOutSinkIdentifier(lowering.Symbol);
+            parameters.Add(sink);
+            body = ConstructorRefOutSinkProtocol.Apply(body, writableParameters, sink);
+        }
+
         return new MethodDefinition(
             PropertyKind.Method,
             key: new Identifier("constructor"),
@@ -1053,6 +1066,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             computed: false,
             isStatic: false,
             decorators: NodeList.Empty<Decorator>());
+    }
+
+    private static Identifier CreateConstructorRefOutSinkIdentifier(IMethodSymbol constructor)
+    {
+        const string baseName = "$jazorRefOut";
+        var usedNames = new HashSet<string>(
+            constructor.Parameters.Select(static parameter => parameter.Name),
+            StringComparer.Ordinal);
+        var name = baseName;
+        while (!usedNames.Add(name))
+            name += "$";
+
+        return new Identifier(name);
     }
 
     private MethodDefinition ConvertMemberConstructorDispatcher(

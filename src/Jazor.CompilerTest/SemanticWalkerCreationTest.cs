@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -287,7 +288,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
-    public void VisitObjectCreation_ReorderedNamedTupleArguments_UseBoundParameterShapes()
+    public void VisitObjectCreation_ReorderedNamedTupleArguments_PreserveSourceEvaluationAndBoundParameterShapes()
     {
         var block = GetBlockOperation("""
             [ECMAScript]
@@ -316,9 +317,22 @@ public sealed class SemanticWalkerCreationTest
         var node = new SemanticWalker(true).VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual(
-            @"new NamedTupleTarget({Label:""secondary"",Count:2},{Number:1,Text:""primary""})",
-            script);
+        var creation = Assert.IsInstanceOfType<NewExpression>(node);
+        Assert.HasCount(2, creation.Arguments);
+        var sourceOrderCache = Assert.IsInstanceOfType<SequenceExpression>(creation.Arguments[0]);
+        Assert.HasCount(3, sourceOrderCache.Expressions);
+
+        var secondaryAssignment = Assert.IsInstanceOfType<AssignmentExpression>(sourceOrderCache.Expressions[0]);
+        var primaryAssignment = Assert.IsInstanceOfType<AssignmentExpression>(sourceOrderCache.Expressions[1]);
+        var primaryValue = Assert.IsInstanceOfType<Identifier>(sourceOrderCache.Expressions[2]);
+        var secondaryValue = Assert.IsInstanceOfType<Identifier>(creation.Arguments[1]);
+
+        Assert.IsInstanceOfType<ObjectExpression>(secondaryAssignment.Right);
+        Assert.IsInstanceOfType<ObjectExpression>(primaryAssignment.Right);
+        Assert.AreEqual(((Identifier)primaryAssignment.Left).Name, primaryValue.Name);
+        Assert.AreEqual(((Identifier)secondaryAssignment.Left).Name, secondaryValue.Name);
+        StringAssert.Contains(script, "secondary", StringComparison.Ordinal);
+        StringAssert.Contains(script, "primary", StringComparison.Ordinal);
     }
 
     [TestMethod]

@@ -28,7 +28,8 @@ internal enum LoweringSiteKind
     TupleFieldCache,
     TupleNestedArgument,
     DeconstructResult,
-    TupleBinaryOperandCache
+    TupleBinaryOperandCache,
+    BoundArgumentTemp
 }
 
 /// <summary>
@@ -63,6 +64,7 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
             LoweringSiteKind.TupleNestedArgument => "tnest",
             LoweringSiteKind.DeconstructResult => "decon",
             LoweringSiteKind.TupleBinaryOperandCache => "tbin",
+            LoweringSiteKind.BoundArgumentTemp => "arg",
             _ => "temp"
         };
 
@@ -131,4 +133,10 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
 
     public static LoweringSite TupleBinaryOperandCache()
         => new(LoweringSiteKind.TupleBinaryOperandCache);
+
+    public static LoweringSite BoundArgumentTemp(int parameterOrdinal, int sourceIndex)
+        => new(
+            LoweringSiteKind.BoundArgumentTemp,
+            parameterOrdinal.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" +
+            sourceIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
 }

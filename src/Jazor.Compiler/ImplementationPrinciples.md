@@ -485,6 +485,12 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 - 默认值补齐、`super(...)` 调用、body 执行顺序保持稳定；
 - helper 名称和 class element 顺序保持确定性，不受遍历偶然性影响。
 
+单一显式成员类构造函数的 `ref/out` 不属于上述 overload-dispatch 边界。JavaScript
+constructor 不能返回普通方法使用的 `[return, ref/out...]` 协议数组，否则对象会替换
+`this`；因此这一个可组合子集在 constructor 末尾接收 compiler-owned sink array，并在每个
+`return` 与正常落点将 writable 参数写入 sink。调用点先保存实例、再把 sink 槽位写回原始
+目标，最后产生实例值。外部或 mapped 构造函数没有该双端协议，仍必须明确失败。
+
 ## 9. `ref/out` 的路线定义
 
 `ref/out` 在 `Jazor.Compiler` 中不应被定义为“地址语义复刻”，而应被定义为“调用协议模拟”。
@@ -507,6 +513,11 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 
 - CLR 地址语义本体
 - 引用存储模型本体
+
+具名实参不是 JavaScript 的直接语法对位。Roslyn 已在每个 `IArgumentOperation.Parameter`
+上给出目标形参；当源码顺序与参数序不一致时，lowering 必须先按源码顺序缓存所有实参，
+再按参数序把缓存传给调用或构造。缓存必须嵌在首个 JavaScript 实参位置，以保持 instance
+receiver 先求值；省略的尾部默认参数不应被物化，位于已提供后续实参之前的默认值则必须占位。
 
 ## 10. tuple 的路线定义
 
