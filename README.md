@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8287 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8287%20passed-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8288 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8288%20passed-2ea44f" /></a>
   <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.28 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.01 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.01%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.03 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.03%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8287 / 8287 passed | 8000 passed |
-| Line coverage | 15554 / 16155 (96.28%) | 95% |
-| Branch coverage | 6219 / 6909 (90.01%) | 90% |
+| Compiler regression tests | 8288 / 8288 passed | 8000 passed |
+| Line coverage | 15568 / 16169 (96.28%) | 95% |
+| Branch coverage | 6233 / 6923 (90.03%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -94,7 +94,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Native `ECMAScript.Array`, `Set`, and `Map` accept standard C# collection initializers; `Map` indexer and two-argument entries lower through its existing `set` contract.
 - Closures created within a C# `for` loop retain the control variable's C# lifetime instead of receiving JavaScript `let`'s per-iteration binding behavior.
 - `Nullable<T>.GetValueOrDefault(defaultValue)` preserves eager receiver-first argument evaluation, including fallback side effects when the nullable already contains a value.
-- The compiler gate verifies 8,287 scenarios at 96.28% line and 90.01% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- `Enumerable.Zip` now supports three-source tuple composition with source-ordered iterator traversal and reverse iterator closure, alongside existing two-source and result-selector forms.
+- The compiler gate verifies 8,288 scenarios at 96.28% line and 90.03% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

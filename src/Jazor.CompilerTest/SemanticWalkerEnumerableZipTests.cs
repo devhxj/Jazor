@@ -14,6 +14,165 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerEnumerableZipTests
 {
     [TestMethod]
+    public async Task Visit_EnumerableZipThreeSources_PreservesTripleIteratorProtocolOnDenoHost()
+    {
+        var block = GetBlockOperation(
+            """
+			using System.Linq;
+
+			public static class EnumerableZipThreeSourceScenarios
+			{
+				public static (int First, string Second, bool Third)[] Evaluate(
+					int[] ids,
+					string[] names,
+					bool[] enabled,
+					bool useMethodGroup)
+				{
+					if (useMethodGroup)
+					{
+						System.Func<
+							System.Collections.Generic.IEnumerable<int>,
+							System.Collections.Generic.IEnumerable<string>,
+							System.Collections.Generic.IEnumerable<bool>,
+							System.Collections.Generic.IEnumerable<(int First, string Second, bool Third)>> zipper = Enumerable.Zip;
+						return zipper(ids, names, enabled).ToArray();
+					}
+
+					return ids.Zip(names, enabled).ToArray();
+				}
+			}
+			""");
+
+        var staticKeys = block.Descendants()
+            .OfType<IInvocationOperation>()
+            .Select(static invocation => (invocation.TargetMethod.ReducedFrom ?? invocation.TargetMethod)
+                .OriginalDefinition
+                .ToDisplayString(Format.StaticExtensionNameFormat))
+            .Where(static key => key.Contains("Enumerable.Zip", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "static System.Linq.Enumerable.Zip<TFirst, TSecond, TThird>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Collections.Generic.IEnumerable<TThird>)"
+            },
+            staticKeys,
+            string.Join(Environment.NewLine, staticKeys));
+
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(body);
+        Assert.IsEmpty(argument.FlushImportSpecifiers(), body);
+        StringAssert.Contains(body, "__enumerableZipFirstIterator.next()", StringComparison.Ordinal);
+        StringAssert.Contains(body, "__enumerableZipSecondIterator.next()", StringComparison.Ordinal);
+        StringAssert.Contains(body, "__enumerableZipThirdIterator.next()", StringComparison.Ordinal);
+        StringAssert.Contains(body, "__enumerableZipThirdIterator.return", StringComparison.Ordinal);
+        StringAssert.Contains(body, "__enumerableZipSecondIterator.return", StringComparison.Ordinal);
+        StringAssert.Contains(body, "__enumerableZipFirstIterator.return", StringComparison.Ordinal);
+        StringAssert.Contains(body, "first: __enumerableZipFirstStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "second: __enumerableZipSecondStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "third: __enumerableZipThirdStep.value", StringComparison.Ordinal);
+
+        StringAssert.Contains(body, "zipper = (v$0$0, v$0$1, v$0$2) =>", StringComparison.Ordinal);
+
+        var module = "export function evaluate(ids, names, enabled, useMethodGroup) " + body;
+        _ = new Parser().ParseModule(module);
+
+        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-zip-three-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var modulePath = Path.Combine(root, "zip-three.mjs");
+            var testPath = Path.Combine(root, "zip-three.test.mjs");
+            await System.IO.File.WriteAllTextAsync(modulePath, module, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await System.IO.File.WriteAllTextAsync(
+                testPath,
+                """
+				import { evaluate } from "./zip-three.mjs";
+
+				function tracked(label, values, trace) {
+				  return {
+				    [Symbol.iterator]() {
+				      trace.push(`${label}:iterator`);
+				      let index = 0;
+				      return {
+				        next() {
+				          if (index === values.length) {
+				            trace.push(`${label}:done`);
+				            return { done: true };
+				          }
+				          const value = values[index++];
+				          trace.push(`${label}:next:${value}`);
+				          return { value, done: false };
+				        },
+				        return() {
+				          trace.push(`${label}:return`);
+				          return { done: true };
+				        }
+				      };
+				    }
+				  };
+				}
+
+				function assertNullSource(first, second, third, expected) {
+				  let threw = false;
+				  try {
+				    evaluate(first, second, third, false);
+				  } catch (error) {
+				    threw = error instanceof TypeError && error.message === expected;
+				  }
+				  if (!threw)
+				    throw new Error(`Zip must reject null ${expected} source before iterator creation`);
+				}
+
+				Deno.test("Zip of three sources preserves iterator protocol", () => {
+				  const trace = [];
+				  const triples = evaluate(
+				    tracked("first", [2, 7, 9], trace),
+				    tracked("second", ["ab", "x"], trace),
+				    tracked("third", [true], trace),
+				    false);
+				  const expected = [
+				    { first: 2, second: "ab", third: true }
+				  ];
+				  if (JSON.stringify(triples) !== JSON.stringify(expected))
+				    throw new Error(`three-source Zip result was ${JSON.stringify(triples)}`);
+				  if (trace.join(",") !== "first:iterator,second:iterator,third:iterator,first:next:2,second:next:ab,third:next:true,first:next:7,second:next:x,third:done,third:return,second:return,first:return")
+				    throw new Error(`three-source Zip traversal was ${trace.join(",")}`);
+
+				  trace.length = 0;
+				  const methodGroupTriples = evaluate(
+				    tracked("first", [2, 7, 9], trace),
+				    tracked("second", ["ab", "x"], trace),
+				    tracked("third", [true], trace),
+				    true);
+				  if (JSON.stringify(methodGroupTriples) !== JSON.stringify(expected))
+				    throw new Error(`three-source Zip method-group result was ${JSON.stringify(methodGroupTriples)}`);
+				  if (trace.join(",") !== "first:iterator,second:iterator,third:iterator,first:next:2,second:next:ab,third:next:true,first:next:7,second:next:x,third:done,third:return,second:return,first:return")
+				    throw new Error(`three-source Zip method-group traversal was ${trace.join(",")}`);
+
+				  assertNullSource(null, [], [], "first");
+				  assertNullSource([], null, [], "second");
+				  assertNullSource([], [], null, "third");
+				});
+				""",
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task Visit_EnumerableZip_UsesCompilerOwnedDualIteratorProtocolOnDenoHost()
     {
         var block = GetBlockOperation(

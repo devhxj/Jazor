@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8287 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8287%20passed-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8288 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8288%20passed-2ea44f" /></a>
   <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.28%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.01%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.01%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.03%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.03%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8287 / 8287 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 15554 / 16155（96.28%） | 95% |
-| 分支覆盖率 | 6219 / 6909（90.01%） | 90% |
+| 编译器回归测试 | 8288 / 8288 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 15568 / 16169（96.28%） | 95% |
+| 分支覆盖率 | 6233 / 6923（90.03%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -94,7 +94,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - 原生 `ECMAScript.Array`、`Set` 与 `Map` 支持标准 C# 集合初始化；`Map` 的索引器和双参数元素会复用既有 `set` 契约。
 - C# `for` 循环内创建的闭包现保留控制变量的 C# 生命周期，不再继承 JavaScript `let` 每轮创建绑定的行为。
 - `Nullable<T>.GetValueOrDefault(defaultValue)` 现保留 receiver-first 的 eager 参数求值；即使 nullable 已有值，也不会跳过 fallback 的副作用。
-- Compiler 门禁已验证 8,287 个场景，行覆盖率 96.28%、分支覆盖率 90.01%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- `Enumerable.Zip` 现支持三源 tuple 组合，并保留 source 顺序的 iterator 推进与反向关闭；原有二源和 result-selector 形式继续可用。
+- Compiler 门禁已验证 8,288 个场景，行覆盖率 96.28%、分支覆盖率 90.03%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

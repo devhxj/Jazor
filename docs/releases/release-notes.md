@@ -11,7 +11,8 @@
 - Read-only collection, dictionary, and set construction now preserve their live-view and write-guard contracts instead of falling back to writable or snapshot carriers.
 - Closures created inside a C# `for` loop now retain the loop control variable's single C# lifetime instead of inheriting JavaScript's per-iteration `let` binding behavior.
 - `Nullable<T>.GetValueOrDefault(defaultValue)` now evaluates its receiver and explicit default argument eagerly from left to right before selecting the result, preserving fallback side effects even when the nullable contains a value.
-- The compiler quality gate now verifies 8,287 scenarios at 96.28% line coverage and 90.01% branch coverage.
+- `Enumerable.Zip` now supports its three-source tuple overload alongside the existing two-source and result-selector forms, preserving source-order iterator creation and advancement, shortest-source termination, and reverse iterator closure.
+- The compiler quality gate now verifies 8,288 scenarios at 96.28% line coverage and 90.03% branch coverage.
 
 ## 2026-08-03
 

@@ -208,10 +208,10 @@
 
 ### Compiler-owned materialized `Zip`
 
-- `Enumerable.Zip<TFirst, TSecond>` 与带 `Func<TFirst, TSecond, TResult>` selector 的 overload 均通过 exact Roslyn-bound `Op.Compile` 进入 compiler-owned ESTree protocol。它不暴露或白名单化 `IEnumerator<T>`，也不预物化为 Array index loop。
-- IIFE 先按 first、second 顺序创建 `[Symbol.iterator]()`，每轮先 `first.next()` 再 `second.next()`；任一 iterator 完成后立即返回当前 Array。`finally` 按 second、first 逆序调用可用 `return()`，因此 generator 的提前终止、异常和资源关闭顺序不会被 Array shortcut 擦除。
-- 无 selector overload 用 Roslyn tuple element 的当前运行时名字构造 pair object；带 selector overload 直接调用已 lower 的 callback。静态方法组复用 `VisitMethodReference` 已创建的 delegate proxy，而不是再返回一层函数。
-- `SemanticWalkerEnumerableZipTests` 验证两条 bound signature、双 iterator AST、tuple shape、selector 与静态方法组；Deno.host 观察 iterator 创建、推进、empty-first、early termination、reverse close、selector 次数和 null guard。
+- `Enumerable.Zip<TFirst, TSecond>`、带 `Func<TFirst, TSecond, TResult>` selector 的 overload，以及 `Zip<TFirst, TSecond, TThird>` 均通过 exact Roslyn-bound `Op.Compile` 进入 compiler-owned ESTree protocol。它不暴露或白名单化 `IEnumerator<T>`，也不预物化为 Array index loop。
+- IIFE 按已绑定 source 参数顺序创建 `[Symbol.iterator]()`，每轮也按该顺序推进；任一 iterator 完成后立即返回当前 Array。`finally` 以相反顺序调用可用 `return()`，因此二源和三源 Zip 的 generator 提前终止、异常和资源关闭顺序都不会被 Array shortcut 擦除。
+- 无 selector overload 用 Roslyn tuple element 的当前运行时名字构造二元或三元 object；带 selector overload 直接调用已 lower 的 callback。静态方法组复用 `VisitMethodReference` 已创建的 delegate proxy，而不是再返回一层函数。
+- `SemanticWalkerEnumerableZipTests` 验证三条 bound signature、二源/三源 iterator AST、tuple shape、selector 与静态方法组；Deno.host 观察 iterator 创建、推进、empty-first、最短三源截断、reverse close、selector 次数和各 source 的 null guard。
 
 ### Materialized `Order` / `OrderDescending`
 
@@ -259,12 +259,12 @@
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs -- --no-build --no-restore
 ```
 
-2026-08-03 当前结果：
+2026-08-04 当前结果：
 
-- `Jazor.CompilerTest`: 8265 / 8265 passed
-- `Jazor.CLR.Test`: 4493 / 4493 passed
-- line coverage: 96.26% (15423 / 16022)
-- branch coverage: 90.02% (6194 / 6881)
+- `Jazor.CompilerTest`: 8288 / 8288 passed
+- `Jazor.CLR.Test`: 4733 / 4733 passed
+- line coverage: 96.28% (15568 / 16169)
+- branch coverage: 90.03% (6233 / 6923)
 
 覆盖率门禁是最低保证，不替代上述场景证据。新增 operation、CLR mapping、RazorVue host protocol 或 emit 行为时，必须补充到相应行，并先运行其聚焦回归。
 

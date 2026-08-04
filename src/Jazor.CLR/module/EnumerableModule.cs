@@ -3147,6 +3147,15 @@ public static class EnumerableModule<TSource>
 		throw new Error("Enumerable.Zip is lowered by the compiler iterator protocol.");
 	}
 
+	[Jazor(Op.Compile, "static System.Linq.Enumerable.Zip<TFirst, TSecond, TThird>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Collections.Generic.IEnumerable<TThird>)", "EnumerableZip")]
+	public static IEnumerable<(TSource First, TSecond Second, TThird Third)> Zip<TSecond, TThird>(
+		IEnumerable<TSource> first,
+		IEnumerable<TSecond> second,
+		IEnumerable<TThird> third)
+	{
+		throw new Error("Enumerable.Zip is lowered by the compiler iterator protocol.");
+	}
+
 	[Jazor(Op.Compile, "static System.Linq.Enumerable.Cast<TResult>(System.Collections.IEnumerable)", "EnumerableCast")]
 	public static IEnumerable<TResult> Cast<TResult>(System.Collections.IEnumerable source)
 	{

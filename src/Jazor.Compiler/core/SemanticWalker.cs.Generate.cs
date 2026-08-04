@@ -32,6 +32,7 @@ public partial class SemanticWalker
 		funcs["static System.Linq.Enumerable.ElementAtOrDefault<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)"] = CompileEnumerableElementAtOrDefault;
 		funcs["static System.Linq.Enumerable.Zip<TFirst, TSecond>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>)"] = CompileEnumerableZip;
 		funcs["static System.Linq.Enumerable.Zip<TFirst, TSecond, TResult>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Func<TFirst, TSecond, TResult>)"] = CompileEnumerableZip;
+		funcs["static System.Linq.Enumerable.Zip<TFirst, TSecond, TThird>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Collections.Generic.IEnumerable<TThird>)"] = CompileEnumerableZip;
 		funcs["static System.Linq.Enumerable.Cast<TResult>(System.Collections.IEnumerable)"] = CompileEnumerableCast;
 		funcs["static System.Linq.Enumerable.OfType<TResult>(System.Collections.IEnumerable)"] = CompileEnumerableOfType;
 		funcs["static System.Linq.Enumerable.ToList<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableArrayLike;

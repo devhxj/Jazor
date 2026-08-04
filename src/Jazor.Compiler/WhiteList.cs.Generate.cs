@@ -1227,6 +1227,7 @@ internal static partial class WhiteList
 		members["static System.Linq.Enumerable.IntersectBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TKey>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)"] = new(Op.Import, "intersectByWithComparer", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.Zip<TFirst, TSecond>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>)"] = new(Op.Compile, "EnumerableZip");
 		members["static System.Linq.Enumerable.Zip<TFirst, TSecond, TResult>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Func<TFirst, TSecond, TResult>)"] = new(Op.Compile, "EnumerableZip");
+		members["static System.Linq.Enumerable.Zip<TFirst, TSecond, TThird>(System.Collections.Generic.IEnumerable<TFirst>, System.Collections.Generic.IEnumerable<TSecond>, System.Collections.Generic.IEnumerable<TThird>)"] = new(Op.Compile, "EnumerableZip");
 		members["static System.Linq.Enumerable.Cast<TResult>(System.Collections.IEnumerable)"] = new(Op.Compile, "EnumerableCast");
 		members["static System.Linq.Enumerable.OfType<TResult>(System.Collections.IEnumerable)"] = new(Op.Compile, "EnumerableOfType");
 		members["static System.Linq.Enumerable.Contains<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)"] = new(Op.Import, "_e94a7db8306f4e71", "System/Linq/EnumerableModule.js");

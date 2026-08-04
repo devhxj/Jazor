@@ -109,12 +109,12 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// Lowers the two <c>Enumerable.Zip</c> overloads through the JavaScript iterator protocol.
+	/// Lowers the mapped <c>Enumerable.Zip</c> overloads through the JavaScript iterator protocol.
 	/// </summary>
 	/// <remarks>
 	/// Explicit <c>IEnumerator&lt;T&gt;</c> calls deliberately remain outside the public CLR mapping
-	/// surface. Zip is nevertheless expressible as a self-contained protocol: create first then
-	/// second iterator, advance first before second, and close both in reverse construction order.
+	/// surface. Zip is nevertheless expressible as a self-contained protocol: create iterators in
+	/// source order, advance them in that same order, and close them in reverse construction order.
 	/// Keeping that protocol in this compiler-owned ESTree hook prevents an Array-only shortcut
 	/// from changing generator order, early termination, or disposal visibility.
 	/// </remarks>
@@ -305,28 +305,47 @@ public partial class SemanticWalker
 
 	private static Expression BuildEnumerableZipInvocation(IMethodSymbol method, Expression?[] args)
 	{
-		var first = new Identifier("__enumerableZipFirst");
-		var second = new Identifier("__enumerableZipSecond");
-		var selector = method.Parameters.Length == 3
+		var sources = new[]
+		{
+			new Identifier("__enumerableZipFirst"),
+			new Identifier("__enumerableZipSecond"),
+			new Identifier("__enumerableZipThird")
+		};
+		var sourceNames = new[] { "first", "second", "third" };
+		var iterators = new[]
+		{
+			new Identifier("__enumerableZipFirstIterator"),
+			new Identifier("__enumerableZipSecondIterator"),
+			new Identifier("__enumerableZipThirdIterator")
+		};
+		var steps = new[]
+		{
+			new Identifier("__enumerableZipFirstStep"),
+			new Identifier("__enumerableZipSecondStep"),
+			new Identifier("__enumerableZipThirdStep")
+		};
+		var closeNames = new[]
+		{
+			"__enumerableZipFirstClose",
+			"__enumerableZipSecondClose",
+			"__enumerableZipThirdClose"
+		};
+		var hasSelector = method.Parameters.Length == 3 &&
+			method.Parameters[2].Type.TypeKind == TypeKind.Delegate;
+		var sourceCount = hasSelector ? method.Parameters.Length - 1 : method.Parameters.Length;
+		var selector = hasSelector
 			? new Identifier("__enumerableZipSelector")
 			: null;
 		var result = new Identifier("__enumerableZipResult");
-		var firstIterator = new Identifier("__enumerableZipFirstIterator");
-		var secondIterator = new Identifier("__enumerableZipSecondIterator");
-		var firstStep = new Identifier("__enumerableZipFirstStep");
-		var secondStep = new Identifier("__enumerableZipSecondStep");
 
-		var statements = new List<Statement>
+		var statements = new List<Statement>();
+		for (var index = 0; index < sourceCount; index++)
 		{
-			new IfStatement(
-				new NonLogicalBinaryExpression(Operator.Equality, first, Null),
-				BuildArgumentNullThrowStatement("first"),
-				null),
-			new IfStatement(
-				new NonLogicalBinaryExpression(Operator.Equality, second, Null),
-				BuildArgumentNullThrowStatement("second"),
-				null)
-		};
+			statements.Add(new IfStatement(
+				new NonLogicalBinaryExpression(Operator.Equality, sources[index], Null),
+				BuildArgumentNullThrowStatement(sourceNames[index]),
+				null));
+		}
 		if (selector is not null)
 		{
 			statements.Add(new IfStatement(
@@ -340,37 +359,33 @@ public partial class SemanticWalker
 			NodeList.From(new VariableDeclarator(
 				result,
 				new ArrayExpression(NodeList.Empty<Expression?>())))));
-		statements.Add(new VariableDeclaration(
-			VariableDeclarationKind.Const,
-			NodeList.From(new VariableDeclarator(firstIterator, BuildEnumerableIterator(first)))));
-		statements.Add(new VariableDeclaration(
-			VariableDeclarationKind.Const,
-			NodeList.From(new VariableDeclarator(secondIterator, BuildEnumerableIterator(second)))));
-
-		var loopStatements = new List<Statement>
+		for (var index = 0; index < sourceCount; index++)
 		{
-			new VariableDeclaration(
+			statements.Add(new VariableDeclaration(
 				VariableDeclarationKind.Const,
-				NodeList.From(new VariableDeclarator(firstStep, BuildEnumerableIteratorNext(firstIterator)))),
-			new IfStatement(
-				BuildEnumerableIteratorDone(firstStep),
-				new ReturnStatement(result),
-				null),
-			new VariableDeclaration(
+				NodeList.From(new VariableDeclarator(iterators[index], BuildEnumerableIterator(sources[index])))));
+		}
+
+		var loopStatements = new List<Statement>();
+		for (var index = 0; index < sourceCount; index++)
+		{
+			loopStatements.Add(new VariableDeclaration(
 				VariableDeclarationKind.Const,
-				NodeList.From(new VariableDeclarator(secondStep, BuildEnumerableIteratorNext(secondIterator)))),
-			new IfStatement(
-				BuildEnumerableIteratorDone(secondStep),
+				NodeList.From(new VariableDeclarator(steps[index], BuildEnumerableIteratorNext(iterators[index])))));
+			loopStatements.Add(new IfStatement(
+				BuildEnumerableIteratorDone(steps[index]),
 				new ReturnStatement(result),
-				null),
-			new NonSpecialExpressionStatement(BuildEnumerableZipResultAppend(method, result, firstStep, secondStep, selector))
-		};
+				null));
+		}
+		loopStatements.Add(new NonSpecialExpressionStatement(
+			BuildEnumerableZipResultAppend(method, result, steps.Take(sourceCount).ToArray(), selector)));
 		var loop = new WhileStatement(
 			new BooleanLiteral(true, "true"),
 			new NestedBlockStatement(NodeList.From(loopStatements)));
-		var finalizer = new NestedBlockStatement(NodeList.From<Statement>(
-			BuildEnumerableIteratorClose(secondIterator, "__enumerableZipSecondClose"),
-			BuildEnumerableIteratorClose(firstIterator, "__enumerableZipFirstClose")));
+		var finalizerStatements = new List<Statement>();
+		for (var index = sourceCount - 1; index >= 0; index--)
+			finalizerStatements.Add(BuildEnumerableIteratorClose(iterators[index], closeNames[index]));
+		var finalizer = new NestedBlockStatement(NodeList.From(finalizerStatements));
 		statements.Add(new TryStatement(
 			new NestedBlockStatement(NodeList.From<Statement>(loop)),
 			handler: null,
@@ -379,7 +394,7 @@ public partial class SemanticWalker
 		// future iterator protocol extension adds a non-returning loop exit.
 		statements.Add(new ReturnStatement(result));
 
-		var parameters = new List<Node> { first, second };
+		var parameters = sources.Take(sourceCount).Cast<Node>().ToList();
 		if (selector is not null)
 			parameters.Add(selector);
 		var iife = new ArrowFunctionExpression(
@@ -434,36 +449,32 @@ public partial class SemanticWalker
 	private static Expression BuildEnumerableZipResultAppend(
 		IMethodSymbol method,
 		Identifier result,
-		Identifier firstStep,
-		Identifier secondStep,
+		Identifier[] steps,
 		Identifier? selector)
 	{
-		var firstValue = new MemberExpression(firstStep, new Identifier("value"), computed: false, optional: false);
-		var secondValue = new MemberExpression(secondStep, new Identifier("value"), computed: false, optional: false);
+		var values = steps.Select(static step =>
+			(Expression)new MemberExpression(step, new Identifier("value"), computed: false, optional: false)).ToArray();
 		Expression item;
 		if (selector is not null)
 		{
-			item = new CallExpression(selector, NodeList.From<Expression>(firstValue, secondValue), optional: false);
+			item = new CallExpression(selector, NodeList.From(values), optional: false);
 		}
 		else
 		{
 			var enumerableReturn = (INamedTypeSymbol)method.ReturnType;
 			var tupleType = (INamedTypeSymbol)enumerableReturn.TypeArguments[0];
-			item = new ObjectExpression(NodeList.From<Node>(
-				new ObjectProperty(
+			var properties = new List<Node>();
+			for (var index = 0; index < values.Length; index++)
+			{
+				properties.Add(new ObjectProperty(
 					PropertyKind.Init,
-					new Identifier(GetTupleRuntimeFieldName(tupleType.TupleElements[0])),
-					firstValue,
+					new Identifier(GetTupleRuntimeFieldName(tupleType.TupleElements[index])),
+					values[index],
 					computed: false,
 					shorthand: false,
-					method: false),
-				new ObjectProperty(
-					PropertyKind.Init,
-					new Identifier(GetTupleRuntimeFieldName(tupleType.TupleElements[1])),
-					secondValue,
-					computed: false,
-					shorthand: false,
-					method: false)));
+					method: false));
+			}
+			item = new ObjectExpression(NodeList.From(properties));
 		}
 
 		return new CallExpression(
