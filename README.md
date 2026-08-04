@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="10101 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-10101%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="98.42 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98.42%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="94.00 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-94.00%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="10192 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-10192%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="98.73 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98.73%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="95.06 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-95.06%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -35,13 +35,13 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Verified Compiler Baseline
 
-`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-04, is:
+`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-05, is:
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 10101 / 10101 passed | 10000 passed |
-| Line coverage | 16354 / 16617 (98.42%) | 98% |
-| Branch coverage | 6394 / 6802 (94.00%) | 94% |
+| Compiler regression tests | 10192 / 10192 passed | 10000 passed |
+| Line coverage | 16366 / 16576 (98.73%) | 98% |
+| Branch coverage | 6354 / 6684 (95.06%) | 94% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -49,7 +49,7 @@ Run the authoritative coverage gate from the repository root:
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
 
-The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
+The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. This release meets the 10,000 / 98% / 94% gate with a measured 95.06% branch rate. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
 
 ## RazorVue Verification Baseline
 
@@ -86,32 +86,19 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-04
+### 2026-08-05
 
-- Standard interpolated strings now preserve C# null-to-empty conversion, boolean casing, numeric formatting, constant alignment, source-defined `ToString` dispatch, and single evaluation through compiler-owned ESTree lowering; runtime types without a stable text contract fail explicitly.
-- Source maps now preserve an absolute source when it exactly equals the configured source root, instead of emitting a relative path that escapes the root.
-- Whitelist generation now replaces the process-local type/member catalog as one complete snapshot before CLR runtime generation, preventing partially refreshed mappings from reaching the compiler.
-- Gregorian-calendar constructor families for `DateTime` and `DateTimeOffset` now preserve null precedence, kind, microseconds, and offset validation through the shared date runtime.
-- `StringBuilder` now includes capacity-aware construction and growth, capacity APIs, string append/append-line operations, and content equality through one stateful carrier contract.
-- `string.Intern` now executes through the string carrier; expression-tree and `IQueryable` lambda conversions fail explicitly instead of being treated as executable delegates.
-- Native `ECMAScript.Array`, `Set`, and `Map` accept standard C# collection initializers; `Map` indexer and two-argument entries lower through its existing `set` contract.
-- Closures created within a C# `for` loop retain the control variable's C# lifetime instead of receiving JavaScript `let`'s per-iteration binding behavior.
-- `Nullable<T>.GetValueOrDefault(defaultValue)` preserves eager receiver-first argument evaluation, including fallback side effects when the nullable already contains a value.
-- `Enumerable.Zip` now supports three-source tuple composition with source-ordered iterator traversal and reverse iterator closure, alongside existing two-source and result-selector forms.
-- `Enumerable.CountBy` and both `AggregateBy` seed forms now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
-- Field-like instance events on generated non-record runtime member classes now preserve C# multicast subscription and removal semantics, invocation-list snapshots, method-group receiver identity, and conditional `Invoke` argument short-circuiting. Static, custom-accessor, virtual/override, by-reference, delegate-equality, and delegate-combination event forms remain explicit boundaries.
-- Module methods, runtime member methods, and local functions using `yield` now emit JavaScript generators, including `async IAsyncEnumerable<T>` methods as `async function*`.
-- UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
-- Lambda parameters with C# optional defaults now preserve omitted-call behavior at the JavaScript function boundary; by-reference lambda returns remain an explicit runtime boundary.
-- Named arguments now preserve source evaluation order while invoking Roslyn-bound parameter slots; `ref` and `out` array or member locations are evaluated once and receive write-back through the shared protocol.
-- The compiler gate verifies 10,101 scenarios at 98.42% line and 94.00% branch coverage; the RazorVue gate verifies 4,484 official SG scenarios at 93.44% line and 83.66% branch coverage.
+- Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
+- Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
+- Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
+- The compiler gate verifies 10,192 genuine scenarios at 98.73% line and 95.06% branch coverage, exceeding the 10,000 / 98% / 94% release gate.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.43
+dotnet add package Jazor --version 0.1.44
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -120,8 +107,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.43" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.43" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.44" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.44" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -129,11 +116,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.43" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.43" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.43" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.43" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.43" />
+  <PackageReference Include="Jazor" Version="0.1.44" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.44" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.44" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.44" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.44" />
 </ItemGroup>
 ```
 

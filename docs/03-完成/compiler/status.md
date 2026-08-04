@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-08-04）
+# Jazor Compiler 主线状态（2026-08-05）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -9,12 +9,12 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：10101 / 10101 通过
-- `Jazor.Compiler` 行覆盖：16354 / 16617（98.42%）
-- `Jazor.Compiler` 分支覆盖：6394 / 6802（94.00%）
+- `Jazor.CompilerTest`：10192 / 10192 通过
+- `Jazor.Compiler` 行覆盖：16366 / 16576（98.73%）
+- `Jazor.Compiler` 分支覆盖：6354 / 6684（95.06%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
-coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 94% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-04 正式门禁报告，当前发布门槛已达成。
+coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 94% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-05 的 `v0.1.44` 正式门禁报告，当前发布门槛已达成。
 
 更具体而言：
 

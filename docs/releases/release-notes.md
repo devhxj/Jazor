@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2026-08-05
+
+- Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
+- Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
+- Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
+- The compiler quality gate now verifies 10,192 genuine Roslyn `IOperation` scenarios at 98.73% line coverage and 95.06% branch coverage, exceeding its 10,000 / 98% / 94% release gate.
+
 ## 2026-08-04
 
 - Standard interpolated strings now preserve C# null-to-empty conversion, `Boolean` text casing, numeric formatting, constant alignment, source-defined `ToString` dispatch, and single evaluation through compiler-owned ESTree lowering. Values without a stable runtime text contract now fail explicitly instead of inheriting JavaScript stringification.
