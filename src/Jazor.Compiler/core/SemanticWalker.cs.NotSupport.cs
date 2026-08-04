@@ -350,20 +350,6 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Function pointer invocation operations are not supported in JavaScript conversion.");
 
 	/// <summary>
-	/// 处理 UTF-8 字符串操作
-	/// C# 示例：
-	/// ReadOnlySpan<byte> utf8 = "Hello"u8; // UTF-8 字符串字面量
-	/// 转换结果：不支持
-	/// 原因：UTF-8 字节序列与 JavaScript UTF-16 字符串模型语义不兼容，无法保持字节级等价
-	/// 替代方案：在 JavaScript 中使用 TextEncoder/TextDecoder 处理 UTF-8 数据
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitUtf8String(IUtf8StringOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "UTF-8 string operations are not supported in JavaScript conversion.");
-
-	/// <summary>
 	/// 处理内联数组访问操作
 	/// C# 示例：
 	/// Span<int> span = stackalloc int[10]; // 内联数组创建

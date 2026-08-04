@@ -468,6 +468,25 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
+	/// 将 C# UTF-8 字符串字面量转换为 ReadOnlySpan&lt;byte&gt; 的既有 Array carrier。
+	/// </summary>
+	public override Node? VisitUtf8String(IUtf8StringOperation operation, SenseArgument argument)
+	{
+		// Roslyn supplies the decoded C# string. GetBytes adds neither BOM nor terminator, so this
+		// preserves escaped/raw literal semantics without a JS string or typed-array identity.
+		var bytes = System.Text.Encoding.UTF8.GetBytes(operation.Value);
+		var elements = new List<Expression?>(bytes.Length);
+		foreach (var value in bytes)
+		{
+			elements.Add(new NumericLiteral(
+				value,
+				value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+		}
+
+		return WithOrigin(new ArrayExpression(NodeList.From<Expression?>(elements)), operation);
+	}
+
+	/// <summary>
 	/// 处理 C# 类型转换操作，将其转换为 JavaScript 表达式。
 	///
 	/// 转换策略说明：
