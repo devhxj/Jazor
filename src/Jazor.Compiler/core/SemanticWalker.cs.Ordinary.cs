@@ -965,14 +965,22 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitAnonymousFunction(IAnonymousFunctionOperation operation, SenseArgument argument)
 	{
+		if (operation.Symbol.ReturnsByRef || operation.Symbol.ReturnsByRefReadonly)
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"Anonymous functions with by-reference returns are not supported because JavaScript has no CLR reference-return carrier.");
+		}
+
 		var parameters = new List<Node>();
 		var refParameters = new List<Expression>();
 		foreach (var param in operation.Symbol.Parameters)
 		{
-			var parameter = new Identifier(GetJavaScriptBindingName(param));
+			var identifier = new Identifier(GetJavaScriptBindingName(param));
+			var parameter = CreateAnonymousFunctionParameter(param, identifier);
 			parameters.Add(parameter);
 			if (param.RefKind is RefKind.Out or RefKind.Ref)
-				refParameters.Add(parameter);
+				refParameters.Add(identifier);
 		}
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
@@ -994,6 +1002,19 @@ public partial class SemanticWalker
 			NodeList.From(parameters), body,
 			@async: operation.Symbol.IsAsync,
 			expression: false);
+	}
+
+	private Expression CreateAnonymousFunctionParameter(IParameterSymbol parameter, Identifier identifier)
+	{
+		if (!parameter.HasExplicitDefaultValue)
+			return identifier;
+
+		// Optional lambda defaults belong to the callable's binding boundary. Roslyn retains the
+		// declared constant on the synthesized delegate symbol even when the call omits it.
+		return new AssignmentExpression(
+			Operator.Assignment,
+			identifier,
+			BuildValueLiteral(parameter.Type, parameter.ExplicitDefaultValue));
 	}
 
 	/// <summary>
