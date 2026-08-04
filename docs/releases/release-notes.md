@@ -9,7 +9,8 @@
 - Generated runtime catalog assertions now track the shared char code-unit, comparer NaN ordering, and BigInt rotation helper contracts.
 - Native `ECMAScript.Array`, `Set`, and `Map` now accept standard C# collection initializers; `Map` indexer and two-argument entries retain its typed `set` runtime behavior.
 - Read-only collection, dictionary, and set construction now preserve their live-view and write-guard contracts instead of falling back to writable or snapshot carriers.
-- The compiler quality gate now verifies 8,283 scenarios at 96.28% line coverage and 90.01% branch coverage.
+- Closures created inside a C# `for` loop now retain the loop control variable's single C# lifetime instead of inheriting JavaScript's per-iteration `let` binding behavior.
+- The compiler quality gate now verifies 8,285 scenarios at 96.28% line coverage and 90.01% branch coverage.
 
 ## 2026-08-03
 

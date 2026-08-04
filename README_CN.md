@@ -15,7 +15,7 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8283 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8283%20passed-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8285 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8285%20passed-2ea44f" /></a>
   <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.28%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
   <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.01%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.01%25-2ea44f" /></a>
 </p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8283 / 8283 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 15515 / 16115（96.28%） | 95% |
-| 分支覆盖率 | 6201 / 6889（90.01%） | 90% |
+| 编译器回归测试 | 8285 / 8285 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 15536 / 16137（96.28%） | 95% |
+| 分支覆盖率 | 6219 / 6909（90.01%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -92,14 +92,15 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - `StringBuilder` 现包含容量感知的构造与扩容、容量 API、字符串追加/换行追加和内容相等比较，并统一遵循同一状态载体契约。
 - `string.Intern` 现通过字符串载体执行；表达式树和 `IQueryable` lambda 转换会明确失败，不再被误作可执行 delegate。
 - 原生 `ECMAScript.Array`、`Set` 与 `Map` 支持标准 C# 集合初始化；`Map` 的索引器和双参数元素会复用既有 `set` 契约。
-- Compiler 门禁已验证 8,283 个场景，行覆盖率 96.28%、分支覆盖率 90.01%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- C# `for` 循环内创建的闭包现保留控制变量的 C# 生命周期，不再继承 JavaScript `let` 每轮创建绑定的行为。
+- Compiler 门禁已验证 8,285 个场景，行覆盖率 96.28%、分支覆盖率 90.01%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.40
+dotnet add package Jazor --version 0.1.41
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
