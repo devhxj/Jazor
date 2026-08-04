@@ -27,9 +27,9 @@ public static class NullableT1Module<T> where T : struct
 
 	/// <summary>
 	/// C#: nullable.GetValueOrDefault(defaultValue)
-	/// JS: value ?? defaultValue
+	/// JS: compiler-owned eager default evaluation followed by nullish fallback.
 	/// </summary>
-	[Jazor(Op.Inline, "System.Nullable<T>.GetValueOrDefault(T)", "(__arg1 ?? __arg2)")]
+	[Jazor(Op.Compile, "System.Nullable<T>.GetValueOrDefault(T)", "NullableGetValueOrDefaultWithDefault")]
 	public extern static T _getValueOrDefaultWithDefault(T? instance, T defaultValue);
 
 	///<summary>Compares the relative values of two <see cref="T:System.Nullable`1" /> objects.</summary>

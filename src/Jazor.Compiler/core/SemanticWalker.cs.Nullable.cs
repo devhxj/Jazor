@@ -68,4 +68,31 @@ public partial class SemanticWalker
         var defaultValue = BuildDefaultValueExpression(invocation, underlyingType, context);
         return new LogicalExpression(Operator.NullishCoalescing, handler, defaultValue);
     }
+
+    public Expression? CompileNullableGetValueOrDefaultWithDefault(
+        ISymbol symbol,
+        SenseArgument context,
+        Expression? handler,
+        Expression?[] args,
+        IOperation? originOperation)
+    {
+        // C# evaluates the receiver and default argument before the invocation. Passing both as
+        // IIFE arguments preserves left-to-right eager evaluation before `??` chooses its result.
+        // The generated Compile mapping guarantees the instance handler and the one bound argument.
+        var nullableParameter = new Identifier("nullable");
+        var defaultValueParameter = new Identifier("defaultValue");
+        var coalesce = new LogicalExpression(
+            Operator.NullishCoalescing,
+            nullableParameter,
+            defaultValueParameter);
+        var eagerCoalesce = new ArrowFunctionExpression(
+            NodeList.From<Node>(nullableParameter, defaultValueParameter),
+            coalesce,
+            expression: true,
+            async: false);
+        return new CallExpression(
+            eagerCoalesce,
+            NodeList.From<Expression>(handler!, args[0]!),
+            optional: false);
+    }
 }

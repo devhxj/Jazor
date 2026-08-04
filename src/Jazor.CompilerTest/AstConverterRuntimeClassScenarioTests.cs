@@ -1656,6 +1656,108 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_NullableGetValueOrDefaultWithDefault_EvaluatesFallbackBeforeCoalescingOnDenoHost()
+    {
+        const string scenarioId = "ast-converter-runtime-class.nullable-get-value-or-default-with-default";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class DefaultReader
+                {
+                    private int? next;
+                    private int receiverProbes;
+                    private int defaultProbes;
+
+                    public int ReceiverProbes => receiverProbes;
+
+                    public int DefaultProbes => defaultProbes;
+
+                    public void SetNext(int? value)
+                    {
+                        next = value;
+                    }
+
+                    private int? Probe()
+                    {
+                        receiverProbes++;
+                        return next;
+                    }
+
+                    private int Fallback()
+                    {
+                        defaultProbes++;
+                        return receiverProbes * 100 + defaultProbes;
+                    }
+
+                    public int Read()
+                    {
+                        return Probe().GetValueOrDefault(Fallback());
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "(nullable, defaultValue) => nullable ?? defaultValue", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "(this.probe(), this.fallback())", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-nullable-get-value-or-default-with-default-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "nullable-get-value-or-default-with-default.mjs");
+            var testPath = Path.Combine(root, "nullable-get-value-or-default-with-default.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { DefaultReader } from "./nullable-get-value-or-default-with-default.mjs";
+
+                Deno.test("Nullable GetValueOrDefault(defaultValue) evaluates receiver then fallback exactly once", () => {
+                  const reader = new DefaultReader();
+
+                  reader.setNext(23);
+                  if (reader.read() !== 23 || reader.receiverProbes !== 1 || reader.defaultProbes !== 1)
+                    throw new Error(`expected populated carrier to keep 23 while eagerly probing fallback, got receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+
+                  reader.setNext(null);
+                  if (reader.read() !== 202 || reader.receiverProbes !== 2 || reader.defaultProbes !== 2)
+                    throw new Error(`expected null carrier fallback 202 after receiver-first evaluation, got value=${reader.read()} receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+
+                  reader.setNext(undefined);
+                  if (reader.read() !== 303 || reader.receiverProbes !== 3 || reader.defaultProbes !== 3)
+                    throw new Error(`expected undefined carrier fallback 303 after receiver-first evaluation, got value=${reader.read()} receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnDenoHost()
     {
         const string scenarioId = "ast-converter-runtime-class.nullable-value";

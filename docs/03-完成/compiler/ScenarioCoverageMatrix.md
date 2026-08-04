@@ -1,7 +1,7 @@
 # Jazor Compiler 真实场景覆盖矩阵
 
 > Status: 当前验收矩阵
-> Updated: 2026-08-03
+> Updated: 2026-08-04
 > Scope: `Jazor.Compiler`、RazorVue lowering 与 `compiler -> catalog -> emit -> Deno.host` 闭环
 
 ## 使用原则
@@ -99,6 +99,11 @@
 
 - `Nullable<T>.Value` 通过 compiler-owned `Op.Compile` lowering 为 nullish guard：receiver 只求值一次，有值时直接返回其 erased carrier；`null` 或 JS 边界传入的 `undefined` 通过 AST 构造的 throw expression 抛出稳定 `InvalidOperationException` 消息，不以默认值或弱类型 sentinel 近似。
 - `AstConverterRuntimeClassScenarioTests.ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnDenoHost` 同时断言生成文本和 Deno.host 的有值、`null`、`undefined` 与 probe 计数行为。
+
+### `Nullable<T>.GetValueOrDefault(defaultValue)`
+
+- 带默认参数的 overload 使用 compiler-owned `Op.Compile` lowering，而不是 inline `??` 模板。它以 AST 构造参数化 IIFE，使 receiver 与 `defaultValue` 先按 C# 从左到右顺序各求值一次，再在 IIFE 内执行 nullish coalescing；因此 nullable 有值时也不会错误跳过 fallback 的副作用。
+- `SemanticWalkerOrdinaryTest.Visit_Nullable_GetValueOrDefault_WithArg` 断言 IIFE 的 ESTree/text shape；`AstConverterRuntimeClassScenarioTests.ConvertModule_NullableGetValueOrDefaultWithDefault_EvaluatesFallbackBeforeCoalescingOnDenoHost` 通过有值、`null` 和 JS 边界 `undefined` carrier 验证 fallback eager、receiver-first 与单次求值。
 
 ### LINQ `let`
 

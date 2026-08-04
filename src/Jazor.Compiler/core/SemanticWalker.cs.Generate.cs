@@ -38,5 +38,6 @@ public partial class SemanticWalker
 		funcs["static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = CompileEnumerableArrayLike;
 		funcs["System.Nullable<T>.Value.get"] = CompileNullableValue;
 		funcs["System.Nullable<T>.GetValueOrDefault()"] = CompileNullableGetValueOrDefault;
+		funcs["System.Nullable<T>.GetValueOrDefault(T)"] = CompileNullableGetValueOrDefaultWithDefault;
 	}
 }

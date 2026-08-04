@@ -142,4 +142,15 @@ partial interface IWhiteList
 	/// <returns></returns>
 	Expression? CompileNullableGetValueOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
+	/// <summary>
+	/// System.Nullable<T>.GetValueOrDefault(T)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileNullableGetValueOrDefaultWithDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
 }

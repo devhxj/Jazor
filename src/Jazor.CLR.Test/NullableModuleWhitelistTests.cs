@@ -33,15 +33,15 @@ public sealed class NullableModuleWhitelistTests
     }
 
     [TestMethod]
-    public void GetValueOrDefault_WithExplicitDefault_RemainsInlineNullishCoalescing()
+    public void GetValueOrDefault_WithExplicitDefault_UsesCompilerOwnedEagerEvaluation()
     {
         var attribute = typeof(Jazor.CLR.NullableT1Module<>)
             .GetMethod("_getValueOrDefaultWithDefault", BindingFlags.Public | BindingFlags.Static)!
             .GetCustomAttribute<JazorAttribute>();
 
         Assert.IsNotNull(attribute);
-        Assert.AreEqual(Op.Inline, attribute.Op);
+        Assert.AreEqual(Op.Compile, attribute.Op);
         Assert.AreEqual("System.Nullable<T>.GetValueOrDefault(T)", attribute.Member);
-        Assert.AreEqual("(__arg1 ?? __arg2)", attribute.Value);
+        Assert.AreEqual("NullableGetValueOrDefaultWithDefault", attribute.Value);
     }
 }

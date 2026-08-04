@@ -9,8 +9,8 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8285 / 8285 通过
-- `Jazor.Compiler` 行覆盖：15536 / 16137（96.28%）
+- `Jazor.CompilerTest`：8287 / 8287 通过
+- `Jazor.Compiler` 行覆盖：15554 / 16155（96.28%）
 - `Jazor.Compiler` 分支覆盖：6219 / 6909（90.01%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
@@ -100,6 +100,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 
 **具体行动**：
 - `Nullable<T>.Value` 作为 compiler-owned `Op.Compile` lowering：通过 AST 构造短路 nullish guard，保证 receiver 单次求值，并在 `null` / `undefined` carrier 上抛出稳定的 `InvalidOperationException` 语义。
+- `Nullable<T>.GetValueOrDefault(defaultValue)` 同样通过 compiler-owned `Op.Compile` lowering：参数化 AST IIFE 先完成 receiver 与默认参数的从左到右 eager evaluation，再执行 nullish fallback，避免 inline `??` 错误跳过默认参数副作用。
 - ECMAScript runtime `params` 默认映射为 JavaScript rest arguments；显式 `[PreserveParamsArray]` 则保留为单个数组实参，保护 Vue `withModifiers` 等 runtime array contract。
 - C# 14 `field` 属性在成员运行时类中使用合法的 JavaScript private slot；回归同时校验 Acornima AST 可解析与 Deno.host 的 setter/getter 读写语义。
 - 避免宿主语义扩张又跑回来破坏 compiler 主线边界

@@ -2001,7 +2001,7 @@ internal static partial class WhiteList
 		members["System.Nullable<T>.HasValue.get"] = new(Op.Inline, "(__arg1 !== null && __arg1 !== undefined)");
 		members["System.Nullable<T>.Value.get"] = new(Op.Compile, "NullableValue");
 		members["System.Nullable<T>.GetValueOrDefault()"] = new(Op.Compile, "NullableGetValueOrDefault");
-		members["System.Nullable<T>.GetValueOrDefault(T)"] = new(Op.Inline, "(__arg1 ?? __arg2)");
+		members["System.Nullable<T>.GetValueOrDefault(T)"] = new(Op.Compile, "NullableGetValueOrDefaultWithDefault");
 		members["static System.Nullable.Compare<T>(T?, T?)"] = new(Op.Import, "_fcbe94e0f2cfc6f4", "System/NullableT1Module.js");
 		members["static System.Nullable.Equals<T>(T?, T?)"] = new(Op.Import, "_55d5a6397d48a134", "System/NullableT1Module.js");
 		members["object.GetType()"] = new(Op.Inline, "typeof __arg1");

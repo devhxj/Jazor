@@ -14,6 +14,7 @@ public sealed class WhiteListLookupTests
 	[TestMethod]
 	[DataRow("System.Nullable<T>.Value.get", "NullableValue")]
 	[DataRow("System.Nullable<T>.GetValueOrDefault()", "NullableGetValueOrDefault")]
+	[DataRow("System.Nullable<T>.GetValueOrDefault(T)", "NullableGetValueOrDefaultWithDefault")]
 	public void WhiteListMembers_CompileMappings_ArePublishedToSharedCatalog(
 		string memberName,
 		string expectedCompiler)

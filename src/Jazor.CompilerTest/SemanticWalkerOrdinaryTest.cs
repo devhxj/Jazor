@@ -5654,7 +5654,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "value ?? 42");
+    StringAssert.Contains(script, "(nullable, defaultValue) => nullable ?? defaultValue");
+    StringAssert.Contains(script, "(value, 42)");
   }
 
   #endregion
