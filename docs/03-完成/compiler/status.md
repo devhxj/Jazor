@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8289 / 8289 通过
-- `Jazor.Compiler` 行覆盖：15575 / 16176（96.28%）
-- `Jazor.Compiler` 分支覆盖：6233 / 6923（90.03%）
+- `Jazor.CompilerTest`：8290 / 8290 通过
+- `Jazor.Compiler` 行覆盖：15580 / 16181（96.29%）
+- `Jazor.Compiler` 分支覆盖：6237 / 6927（90.04%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -53,6 +53,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
 - `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact；erased interface `is` 仅在 Roslyn 可证明时折叠，`T : IContract` 保留非空判断，`T : struct, IContract` 折叠为 `true`
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
+- iterator：module method、runtime member method 与 local function 都从实际 Roslyn operation tree 判定 generator；`yield return` / `yield break` 输出 `function*`，`async IAsyncEnumerable<T>` 输出 `async function*`。共享遍历会在 nested lambda/local function 处停止，避免子函数的 yield 错误改变外层函数形态
 - `System.Index` / `System.Range`：允许作为真实 carrier 跨 local/argument 边界；数组及具备 `Length`、`this[int]` 和 `Slice(int, int)` 的隐式索引器可消费该 carrier。materialized `Index` 保留读写及复合赋值的单次 getter/setter 求值，materialized `Range` 将 `(offset, length)` 明确转换为 JavaScript `slice(start, endExclusive)` 或等价的 `(start, length)` 调用，并保留 carrier projection 单次求值与越界异常语义
 - lambda / delegate：普通、async 和捕获 lambda 均通过匿名函数/委托创建 lowering 进入箭头函数；函数边界隔离局部声明，同时共享模块 import 收集
 - LINQ query：`ITranslatedQueryOperation` 只移除 Roslyn wrapper，复用绑定后的 `Enumerable.Where`、`Select`、`ToList`、`ToArray` AST intrinsic；`Skip` / `Take` 提供物化分页链路（非正 `Skip` 保留全部元素，非正 `Take` 为空）；`Any` / `All` 通过迭代立即短路，每个已观察元素只调用一次 predicate；`OrderBy` / `OrderByDescending` 走 CLR `Import` 的稳定物化排序，selector 每个元素只求值一次，并通过 `Comparer<T>` 默认比较；`ThenBy` / `ThenByDescending` 仅支持直接衔接当前 module 生成的 materialized order state，未知外部 `IOrderedEnumerable<T>` 明确失败；当前仍是受控 Array/IEnumerable 物化子集，不承诺延迟枚举、自定义 `IComparer<T>`、`Queryable` 或完整 LINQ provider 语义

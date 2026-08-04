@@ -368,6 +368,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         FunctionBody? body = null;
+        IOperation? functionOperation = null;
         if (blockSyntax is null && expressionSyntax is null &&
             (symbol.MethodKind == MethodKind.PropertyGet || symbol.MethodKind == MethodKind.PropertySet))
         {
@@ -392,6 +393,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = GetSemanticModel(blockSyntax).GetOperation(blockSyntax);
             if (operation is not null)
             {
+                functionOperation = operation;
                 var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
                 body = MaterializeFunctionBody(walker.Visit(operation, argument)!, argument, symbol.ReturnsVoid);
@@ -407,6 +409,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax);
             if (operation is not null)
             {
+                functionOperation = operation;
                 var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.Any);
                 var visited = walker.Visit(operation, argument)!;
@@ -431,7 +434,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             id: identifier,
             parameters: NodeList.From(parameters),
             body: body,
-            generator: false,
+            generator: functionOperation is not null && OperationTree.ContainsYieldOperation(functionOperation),
             async: symbol.IsAsync);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
@@ -684,6 +687,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         var isProperty = symbol.AssociatedSymbol?.Kind == SymbolKind.Property;
+        var isGenerator = operation is not null && OperationTree.ContainsYieldOperation(operation);
         FunctionBody body;
         if (operation is not null)
         {
@@ -748,7 +752,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 id: null,
                 parameters: NodeList.From(parameters),
                 body: body,
-                generator: false,
+                generator: isGenerator,
                 async: symbol.IsAsync),
             computed: false,
             isStatic: symbol.IsStatic,

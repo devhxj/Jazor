@@ -62,6 +62,129 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_IteratorMethods_DeclareSyncAndAsyncGeneratorArtifacts()
+    {
+        const string scenarioId = "ast-converter.iterator-method-generator-artifact";
+        var fixture = CompileModule(
+            """
+            using System.Collections.Generic;
+
+            public static class TestModule
+            {
+                public static IEnumerable<int> ModuleValues(int start)
+                {
+                    yield return start;
+                    yield return start + 1;
+                }
+
+                public static async IAsyncEnumerable<int> AsyncModuleValues(int start)
+                {
+                    yield return start;
+                    yield return start + 1;
+                }
+
+                public static int DoesNotLeakNestedIterator()
+                {
+                    IEnumerable<int> Nested()
+                    {
+                        yield return 1;
+                    }
+
+                    return 7;
+                }
+
+                public sealed class Stream
+                {
+                    public IEnumerable<int> Values(int start)
+                    {
+                        yield return start;
+                        yield return start + 1;
+                    }
+
+                    public async IAsyncEnumerable<int> AsyncValues(int start)
+                    {
+                        yield return start;
+                        yield return start + 1;
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "function* moduleValues(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "async function* asyncModuleValues(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "function doesNotLeakNestedIterator()", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains("function* doesNotLeakNestedIterator()", StringComparison.Ordinal), scenarioId);
+        StringAssert.Contains(script, "*values(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "async *asyncValues(start)", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-iterator-artifact-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "iterators.mjs");
+            var testPath = Path.Combine(root, "iterators.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import {
+                  Stream,
+                  asyncModuleValues,
+                  doesNotLeakNestedIterator,
+                  moduleValues
+                } from "./iterators.mjs";
+
+                async function collectAsync(values) {
+                  const result = [];
+                  for await (const value of values)
+                    result.push(value);
+                  return result;
+                }
+
+                Deno.test("generated iterator methods retain JavaScript generator protocols", async () => {
+                  const stream = new Stream();
+                  const syncValues = Array.from(moduleValues(3));
+                  const memberValues = Array.from(stream.values(5));
+                  const asyncValues = await collectAsync(asyncModuleValues(7));
+                  const asyncMemberValues = await collectAsync(stream.asyncValues(9));
+
+                  if (syncValues.join(",") !== "3,4" || memberValues.join(",") !== "5,6")
+                    throw new Error("synchronous iterator result did not preserve yield order");
+                  if (asyncValues.join(",") !== "7,8" || asyncMemberValues.join(",") !== "9,10")
+                    throw new Error("asynchronous iterator result did not preserve yield order");
+                  if (doesNotLeakNestedIterator() !== 7)
+                    throw new Error("nested iterator incorrectly changed its containing method into a generator");
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertRuntimeClass_FieldBackedProperty_DeclaresParseablePrivateStorage()
     {
         const string scenarioId = "ast-converter-runtime-class.field-backed-property-private-storage";

@@ -284,7 +284,7 @@ public partial class SemanticWalker
 
 		// 检查函数是否为async或generator
 		var isAsync = operation.Symbol.IsAsync;
-		var isGenerator = ContainsYieldOperation(operationBody);
+		var isGenerator = OperationTree.ContainsYieldOperation(operationBody);
 
 		return new FunctionDeclaration(id,
 			NodeList.From(parameters),
@@ -294,67 +294,11 @@ public partial class SemanticWalker
 	}
 
 	private static bool ContainsAwaitOperation(IOperation operation)
-		=> ContainsOperation(operation, static op =>
+		=> OperationTree.ContainsOperation(operation, static op =>
 				op.Kind == OperationKind.Await ||
 				op is IUsingOperation { IsAsynchronous: true } ||
 				op is IUsingDeclarationOperation { IsAsynchronous: true }) ||
 		   ContainsAwaitSyntax(operation.Syntax);
-
-	private static bool ContainsYieldOperation(IOperation operation)
-		=> ContainsOperation(operation, static op => op.Kind is OperationKind.YieldReturn or OperationKind.YieldBreak);
-
-	private static bool ContainsOperation(IOperation operation, Func<IOperation, bool> predicate)
-	{
-		if (predicate(operation))
-			return true;
-
-		foreach (var child in EnumerateContainedOperations(operation))
-		{
-			// 嵌套函数边界内的 yield 不应影响当前函数的 generator 语义。
-			if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
-				continue;
-
-			if (ContainsOperation(child, predicate))
-				return true;
-		}
-
-		return false;
-	}
-
-	private static IEnumerable<IOperation> EnumerateContainedOperations(IOperation operation)
-	{
-		foreach (var child in operation.ChildOperations)
-			yield return child;
-
-		switch (operation)
-		{
-			case ISwitchExpressionOperation switchExpression:
-				foreach (var arm in switchExpression.Arms)
-					yield return arm;
-				break;
-
-			case ISwitchExpressionArmOperation arm:
-				yield return arm.Pattern;
-				if (arm.Guard is not null)
-					yield return arm.Guard;
-				yield return arm.Value;
-				break;
-
-			case ISwitchOperation switchOperation:
-				if (switchOperation.Value is not null)
-					yield return switchOperation.Value;
-				foreach (var @case in switchOperation.Cases)
-					yield return @case;
-				break;
-
-			case ISwitchCaseOperation switchCase:
-				foreach (var clause in switchCase.Clauses)
-					yield return clause;
-				foreach (var body in switchCase.Body)
-					yield return body;
-				break;
-		}
-	}
 
 	private static bool ContainsAwaitSyntax(SyntaxNode syntax)
 	{

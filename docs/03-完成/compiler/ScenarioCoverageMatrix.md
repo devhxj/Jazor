@@ -22,6 +22,7 @@
 | `SemanticWalker.Loop` | `for` 初始化/更新、await update、`foreach` 解构、`while`/`do` | loop AST 与输出顺序 | await update、record/Map `foreach` 的 Deno 行为 | `SemanticWalkerLoopTest`、`AstConverterRuntimeClassScenarioTests` |
 | `SemanticWalker.Using` | using declaration、表达式资源、return/throw、reverse disposal、`await using` | `try/finally` AST、接口/泛型选择与拒绝诊断 | 同步/异步 disposal 的退出和等待顺序 | `SemanticWalkerUsingLifetimeScenarioTests`、`AstConverterRuntimeClassScenarioTests` |
 | Lambda / local binding | expression/block/anonymous delegate、`ref/out` callback、captured values、Roslyn transparent identifier、escaped keyword；`Expression<TDelegate>` 显式拒绝 | executable delegate 生成 function-body、shared ref/out return layout、合法且稳定的 binding AST/text；symbolic expression tree 不降级为箭头函数 | `ref/out` 写回、`let` query 的 transparent projection、escaped keyword lexical binding；expression-tree conversion failure | `AstConverterRefOutProtocolScenarioTests`、`SemanticWalkerBindingIdentifierTests`、`SemanticWalkerTranslatedQueryTests`、`SemanticWalkerExpressionTreeBoundaryTests` |
+| Iterator artifact | module/runtime member/local `yield return`、`yield break`、`async IAsyncEnumerable<T>` | Roslyn operation tree 决定 `FunctionDeclaration` / `FunctionExpression` 的 generator/async 标志；不从返回类型或文本猜测 | 同步/异步迭代顺序与 nested function boundary | `SemanticWalkerDeclarationTest`、`AstConverterRuntimeClassScenarioTests` |
 | LINQ query desugaring | `Enumerable` 的 `from`、`let`、`where`、`select`、multiple `from`、join/group continuation、left outer join、ordering、default-return terminals；`IQueryable` 明确拒绝 | `ITranslatedQueryOperation` wrapper 移除后的 bound Enumerable invocation/lambda AST 与 imports；Query provider 所需 expression tree 不模拟 | 仅在 projection/callback 链难以由文本证明时执行 Deno.host；Queryable 在 callback conversion 处失败 | `SemanticWalkerTranslatedQueryTests`、`SemanticWalkerTranslatedQuerySelectManyTests`、`SemanticWalkerTranslatedQueryJoinTests`、`SemanticWalkerTranslatedQueryGroupByTests`、`SemanticWalkerTranslatedQueryOrderingTests`、`SemanticWalkerEnumerableDefaultIfEmptyTests`、`SemanticWalkerExpressionTreeBoundaryTests` |
 | 主分派与类型边界 | whitelist 命中、外部类型使用点拒绝、source origin、scope/import 合并 | boundary、whitelist、origin 与 import AST | 无需运行时的诊断以文本/异常为准 | `SemanticWalkerBoundaryTest`、`WhiteListLookupTests`、`SemanticWalkerSourceOriginTest` |
 | `AstConverter` | 模块 export/import、字段初始值、runtime class、继承和构造函数选择 | module AST、导出名与 source map 文本 | class 属性、nullable/default、delegate、loop、using 等真实模块 | `AstConverterTests`、`AstConverterBoundaryScenarioTests`、`AstConverterRuntimeClassScenarioTests` |
@@ -89,6 +90,12 @@
 - 匿名方法和 lambda 的 `ref` / `out` 参数与 local/module method 共用 `RefOutReturnProtocol`：非 void 按 `[result, ref1, ...]` 返回，void 按 `[ref1, ...]` 返回；delegate invoke 继续由既有 caller 端按同一索引写回。不会为 delegate 另建 JavaScript runtime 类型或数组以外的协议。
 - Roslyn 为 query `let` 生成的 transparent identifier 以及 C# escaped keyword（例如 `@class`、`@await`）会通过 symbol + source span 的稳定 hash 投影成合法 JS binding；普通合法作者名称不改写，产物不依赖 checkout path。
 - `AstConverterRefOutProtocolScenarioTests` 分别检查 AST return/caller write-back layout，并由 Deno.host 验证 anonymous `ref` return 与 lambda `out` 的最终结果。`SemanticWalkerBindingIdentifierTests` 跨两个不同 source path 比较输出，并由 Deno.host 验证 escaped keyword 的 lexical binding。
+
+### Module / runtime class iterator artifacts
+
+- `yield return` 和 `yield break` 先在 `SemanticWalker` 形成 ESTree `YieldExpression` / `ReturnStatement`，再由共享 Roslyn operation traversal 向 module `FunctionDeclaration`、runtime member `FunctionExpression` 与 local function 传播 generator flag；因此同步 iterator 输出真实 `function*`，不再留下普通函数中的非法 `yield`。
+- `async IAsyncEnumerable<T>` 同时保留 symbol 的 async flag，输出 `async function*`；同步和异步 iterator 都不依赖返回类型名称、注释或 JavaScript 文本后处理。
+- traversal 在 anonymous/local function 边界停止，即子 iterator 的 `yield` 不会让包含它的普通 module/member method 变成 generator。`AstConverterRuntimeClassScenarioTests.ConvertModule_IteratorMethods_DeclareSyncAndAsyncGeneratorArtifacts` 断言 module/member AST/text 可解析，并通过 Deno.host 验证同步/异步序列顺序和该边界。
 
 ### `for` 控制变量闭包捕获
 
