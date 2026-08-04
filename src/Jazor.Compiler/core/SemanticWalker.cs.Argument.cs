@@ -20,6 +20,105 @@ public partial class SemanticWalker
         Expression Value,
         Expression? WriteBackTarget);
 
+    private LoweredBoundArgument LowerBoundArgument(
+        IOperation ownerOperation,
+        IArgumentOperation operation,
+        SenseArgument argument,
+        Expression? rewrittenValue = null)
+    {
+        var parameter = operation.Parameter!;
+        var refKind = parameter.RefKind;
+        var argumentContext = refKind is RefKind.Out
+            ? argument.With(Sense.OutParameter)
+            : argument;
+
+        if (refKind is not (RefKind.Ref or RefKind.Out))
+        {
+            return new LoweredBoundArgument(
+                operation,
+                rewrittenValue ?? TranslateTupleForTarget(operation.Value, parameter.Type, argumentContext),
+                null);
+        }
+
+        if (operation.Value is IDiscardOperation)
+        {
+            // `out _` has no caller-visible storage. Its callee slot still exists, but C# does
+            // not read an incoming value before the callee assigns it.
+            return new LoweredBoundArgument(operation, CreateUndefined(), null);
+        }
+
+        List<Expression> initializations;
+        Expression writeBackTarget;
+        if (rewrittenValue is null && UnwrapImplicitConversions(operation.Value) is IArrayElementReferenceOperation arrayElement)
+        {
+            // Array locations may contain a side-effecting receiver, index, from-end offset, or
+            // intermediate dimension. Reuse the mutation-target lowering so the call read and
+            // protocol write-back share one materialized JavaScript location.
+            initializations = [];
+            writeBackTarget = BuildArrayElementMutationTarget(
+                arrayElement,
+                argument,
+                initializations,
+                cacheForRepeatedReadWrite: true);
+        }
+        else
+        {
+            var translatedValue = rewrittenValue ?? TranslateTupleForTarget(
+                operation.Value,
+                parameter.Type,
+                argumentContext);
+            initializations = [];
+            writeBackTarget = PrepareRepeatedReadWriteTarget(
+                translatedValue,
+                ownerOperation,
+                argument,
+                initializations);
+        }
+
+        if (!IsRefOutWriteBackTarget(writeBackTarget))
+        {
+            return HandleTransformationFailure<LoweredBoundArgument>(
+                operation.Value,
+                $"ref/out argument for '{parameter.Name}' requires an assignable JavaScript location after lowering. " +
+                "Expose a writable field, array element, or ref-return member with a direct JavaScript location.");
+        }
+
+        var callValue = refKind == RefKind.Out
+            ? CreateOutArgumentValue(initializations)
+            : CreateRefArgumentValue(initializations, writeBackTarget);
+        return new LoweredBoundArgument(operation, callValue, writeBackTarget);
+    }
+
+    private static bool IsRefOutWriteBackTarget(Expression expression)
+        => expression is Identifier or MemberExpression { Optional: false };
+
+    private static Expression CreateRefArgumentValue(
+        IReadOnlyList<Expression> initializations,
+        Expression writeBackTarget)
+    {
+        if (initializations.Count == 0)
+            return writeBackTarget;
+
+        var expressions = new List<Expression>(initializations.Count + 1);
+        expressions.AddRange(initializations);
+        expressions.Add(writeBackTarget);
+        return new SequenceExpression(NodeList.From(expressions));
+    }
+
+    private static Expression CreateOutArgumentValue(IReadOnlyList<Expression> initializations)
+    {
+        if (initializations.Count == 0)
+            return CreateUndefined();
+
+        var expressions = new List<Expression>(initializations.Count + 1);
+        expressions.AddRange(initializations);
+        expressions.Add(CreateUndefined());
+        return new SequenceExpression(NodeList.From(expressions));
+    }
+
+    private static Expression CreateUndefined()
+        => new Identifier("undefined");
+
     private static bool RequiresBoundArgumentCanonicalization(IReadOnlyList<IArgumentOperation> arguments)
     {
         var lastOrdinal = -1;

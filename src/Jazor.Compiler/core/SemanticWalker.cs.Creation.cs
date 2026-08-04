@@ -48,19 +48,9 @@ public partial class SemanticWalker
 			if (arg.ArgumentKind == ArgumentKind.DefaultValue &&
 				arg.Parameter!.Ordinal > lastSuppliedParameterOrdinal)
 				continue;
-			// 构造器参数同样属于 tuple 边界。
-			// 具名参数的最终位置由 Parameter 指定；CanonicalizeBoundArguments 会在需要时
-			// 先按源码顺序缓存，再按该绑定位置重组 JavaScript 实参。
-			var argContext = arg.Parameter!.RefKind is RefKind.Out
-				? argument.With(Sense.OutParameter)
-				: argument;
-			var value = TranslateTupleForTarget(arg.Value, arg.Parameter.Type, argContext);
-			loweredArguments.Add(new LoweredBoundArgument(
-				arg,
-				value,
-				(arg.Parameter.RefKind is RefKind.Out or RefKind.Ref) && arg.Value is not IDiscardOperation
-					? value
-					: null));
+			// 构造器参数同样属于 tuple 边界。具名参数和 ref/out 位置都通过同一条
+			// bound-argument lowering；前者保持源码求值顺序，后者保证回写目标不重算。
+			loweredArguments.Add(LowerBoundArgument(operation, arg, argument));
 		}
 		var orderedArguments = CanonicalizeBoundArguments(operation, loweredArguments, argument);
 		var arguments = orderedArguments.Select(static item => item.Value).ToList();

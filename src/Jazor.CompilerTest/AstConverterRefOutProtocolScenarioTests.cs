@@ -157,6 +157,148 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 	}
 
 	[TestMethod]
+	public async Task ConvertModule_RefOutComplexTargets_EvaluateEachLocationOnceAcrossInvocationAndConstructor()
+	{
+		const string scenarioId = "ast-converter-ref-out.complex-target-single-evaluation";
+		var fixture = CompileModule(
+			"""
+			public static class TestModule
+			{
+				public static int Invoke()
+				{
+					var trace = 0;
+					var values = new[] { 5 };
+					var holder = new Holder();
+
+					int Mark(int value)
+					{
+						trace = trace * 10 + value;
+						return value;
+					}
+
+					int[] GetValues()
+					{
+						trace = trace * 10 + 5;
+						return values;
+					}
+
+					Holder GetHolder()
+					{
+						trace = trace * 10 + 4;
+						return holder;
+					}
+
+					int NextIndex()
+					{
+						trace = trace * 10 + 6;
+						return 0;
+					}
+
+					var result = Update(marker: Mark(3), observed: out GetHolder().Observed, value: ref GetValues()[NextIndex()]);
+					return trace * 10000 + result * 100 + values[0] * 10 + holder.Observed;
+				}
+
+				public static int Construct()
+				{
+					var trace = 0;
+					var values = new[] { 5 };
+					var holder = new Holder();
+
+					int[] GetValues()
+					{
+						trace = trace * 10 + 2;
+						return values;
+					}
+
+					Holder GetHolder()
+					{
+						trace = trace * 10 + 1;
+						return holder;
+					}
+
+					int NextIndex()
+					{
+						trace = trace * 10 + 3;
+						return 0;
+					}
+
+					var probe = new Probe(observed: out GetHolder().Observed, value: ref GetValues()[NextIndex()]);
+					return trace * 10000 + probe.Marker * 100 + values[0] * 10 + holder.Observed;
+				}
+
+				private static int Update(ref int value, out int observed, int marker)
+				{
+					value += marker;
+					observed = value + marker;
+					return value;
+				}
+
+				public sealed class Holder
+				{
+					public int Observed;
+				}
+
+				public sealed class Probe
+				{
+					public int Marker;
+
+					public Probe(ref int value, out int observed)
+					{
+						value += 4;
+						observed = value + 4;
+						Marker = 7;
+					}
+				}
+			}
+			""",
+			scenarioId);
+		var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+		var script = module?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script, scenarioId);
+		_ = new Parser().ParseModule(script);
+
+		var root = Path.Combine(
+			Path.GetTempPath(),
+			"jazor-ref-out-complex-targets-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(root);
+
+		try
+		{
+			var modulePath = Path.Combine(root, "ref-out-complex-targets.mjs");
+			var testPath = Path.Combine(root, "ref-out-complex-targets.test.mjs");
+			await File.WriteAllTextAsync(
+				modulePath,
+				script,
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+			await File.WriteAllTextAsync(
+				testPath,
+				"""
+				import { invoke, construct } from "./ref-out-complex-targets.mjs";
+
+				Deno.test("ref and out locations are evaluated once before the protocol call", () => {
+				  if (invoke() !== 34560891)
+				    throw new Error(`invocation result: ${invoke()}`);
+				  if (construct() !== 1230803)
+				    throw new Error(`constructor result: ${construct()}`);
+				});
+				""",
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+			await Deno.Execute(
+				new DenoExecuteBaseOptions { WorkingDirectory = root },
+				["test", "--quiet", "--allow-read", testPath],
+				timeout.Token);
+		}
+		finally
+		{
+			if (Directory.Exists(root))
+				Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[TestMethod]
 	public async Task Convert_LocalFunctionWithRefParameter_UsesSharedCalleeAndCallerProtocol()
     {
         const string scenarioId = "ast-converter-ref-out.local-function-ref-round-trip";

@@ -168,7 +168,7 @@ public sealed class SemanticWalkerHostRewriteTest
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "let __alias", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "(\"42\", __alias)", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "(\"42\", undefined)", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("let props", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("\"42\", props", StringComparison.Ordinal), script);
     }

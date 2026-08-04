@@ -2803,7 +2803,7 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   for (let i = 0; i < 5; i++) {
     let result, v$0;
-    if (v$0 = _16e2a901535b765e(""123"", result), result = v$0[1], v$0[0]) {
+    if (v$0 = _16e2a901535b765e(""123"", undefined), result = v$0[1], v$0[0]) {
       console.log(result);
     }
   }

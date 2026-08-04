@@ -1065,7 +1065,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let remainder;
-  let quotient = (v$0 = _598611fb2b8a064a(left, right, remainder), remainder = v$0[1], v$0[0]);
+  let quotient = (v$0 = _598611fb2b8a064a(left, right, undefined), remainder = v$0[1], v$0[0]);
 }", script);
 	}
 
@@ -1308,7 +1308,7 @@ public sealed class SemanticWalkerReferenceTest
   let abs = Math.abs(left);
   let compare = isNaN(left) ? isNaN(right) ? 0 : -1 : isNaN(right) ? 1 : left < right ? -1 : left > right ? 1 : 0;
   let result;
-  let success = (v$0 = _83de0b9fe4433805(text, result), result = v$0[1], v$0[0]);
+  let success = (v$0 = _83de0b9fe4433805(text, undefined), result = v$0[1], v$0[0]);
 }", script);
 	}
 
@@ -1357,7 +1357,7 @@ public sealed class SemanticWalkerReferenceTest
   let copiedSign = _2f2f3fb10237971f(left, right);
   let clamped = _587401c79d5e216e(parsed, left, right);
   let result;
-  let success = (v$0 = _14ac4f353ddae82c(text, result), result = v$0[1], v$0[0]);
+  let success = (v$0 = _14ac4f353ddae82c(text, undefined), result = v$0[1], v$0[0]);
 }", script);
 	}
 
@@ -1396,7 +1396,7 @@ public sealed class SemanticWalkerReferenceTest
   let value = _a545c5c1dd9b956a(parsed, left, right);
   let rotated = _a2bab5c9eaffb253(value, 7);
   let result;
-  let success = (v$0 = _8845ce18c94ffbb4(text, result), result = v$0[1], v$0[0]);
+  let success = (v$0 = _8845ce18c94ffbb4(text, undefined), result = v$0[1], v$0[0]);
 }", script);
 	}
 
@@ -10176,6 +10176,43 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
+	/// Named arguments can arrive in a different source order from the formal parameter order.
+	/// Runtime params still need their JavaScript rest contract after the compiler-owned cache
+	/// restores the bound slots.
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_ReorderedRuntimeNamedParams_UsesSourceOrderCacheAndRestSpread()
+	{
+		var block = GetBlockOperation("""
+            [ECMAScript]
+            static class RuntimeProbe
+            {
+                public static extern Number Combine(Number seed, params Number[] values);
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var values = new Number[] { 2, 3 };
+                    var result = RuntimeProbe.Combine(values: values, seed: 1);
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let v$0, v$1;
+              let values = [2, 3];
+              let result = RuntimeProbe.combine((v$0 = values, v$1 = 1, v$1), ...v$0);
+            }
+            """, script);
+		_ = new Acornima.Parser().ParseScript(script!);
+	}
+
+	/// <summary>
 	/// Vue event modifiers are a runtime array contract rather than JavaScript rest arguments.
 	/// The authored params syntax remains ergonomic, while PreserveParamsArray keeps the
 	/// runtime call shape expected by Vue's withModifiers helper.
@@ -10208,6 +10245,40 @@ public sealed class SemanticWalkerReferenceTest
             }
             """, script);
 		Assert.IsFalse(script!.Contains("withModifiers(handler, \"stop\", \"prevent\")", StringComparison.Ordinal));
+		_ = new Acornima.Parser().ParseScript(script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ReorderedVueModifierArguments_PreserveParamsArrayAfterBinding()
+	{
+		var block = GetBlockOperation("""
+            using static ECMAScript.Vue3;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Action handler = () => { };
+                    var modifiers = new[] { "stop", "prevent" };
+                    var wrapped = WithModifiers(modifiers: modifiers, handler: handler);
+                }
+            }
+            """,
+			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let v$0, v$1;
+              let handler = () => {
+                return;
+              };
+              let modifiers = ["stop", "prevent"];
+              let wrapped = withModifiers((v$0 = modifiers, v$1 = handler, v$1), v$0);
+            }
+            """, script);
+		Assert.IsFalse(script!.Contains("...v$0", StringComparison.Ordinal));
 		_ = new Acornima.Parser().ParseScript(script);
 	}
 

@@ -317,14 +317,14 @@ public sealed class SemanticWalkerDeclarationTest
   let value, v$0, v$1, result, v$2;
   let input = ""123"";
   let dict = createDefault();
-  if (v$0 = _7db4d9112b4ba3c4(dict, ""key"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _7db4d9112b4ba3c4(dict, ""key"", undefined), value = v$0[1], v$0[0]) {
     console.log(value);
   }
   let a;
-  if (v$1 = _16e2a901535b765e(input, a), a = v$1[1], v$1[0]) {
+  if (v$1 = _16e2a901535b765e(input, undefined), a = v$1[1], v$1[0]) {
     console.log(a);
   }
-  if (v$2 = _16e2a901535b765e(input, result), result = v$2[1], v$2[0]) {
+  if (v$2 = _16e2a901535b765e(input, undefined), result = v$2[1], v$2[0]) {
     console.log(result);
   }
 }", script);
@@ -439,11 +439,11 @@ public sealed class SemanticWalkerDeclarationTest
   let a = 1, b = 2, c;
   let numbers = [1, 2, 3];
   let input = ""123"";
-  if (v$0 = _16e2a901535b765e(input, result), result = v$0[1], v$0[0]) {
+  if (v$0 = _16e2a901535b765e(input, undefined), result = v$0[1], v$0[0]) {
     console.log(result);
   }
   let cc;
-  if (v$1 = _16e2a901535b765e(input, cc), cc = v$1[1], v$1[0]) {
+  if (v$1 = _16e2a901535b765e(input, undefined), cc = v$1[1], v$1[0]) {
     console.log(cc);
   }
 }", script);
@@ -652,9 +652,9 @@ public sealed class SemanticWalkerDeclarationTest
   let bb, v$1, dd, v$3;
   let a = this.test.bind(this);
   a(1, ""2"");
-  let ab = (v$1 = _16e2a901535b765e(""1"", bb), bb = v$1[1], v$1[0]);
+  let ab = (v$1 = _16e2a901535b765e(""1"", undefined), bb = v$1[1], v$1[0]);
   let cc = (v$2$0, v$2$1) => _16e2a901535b765e(v$2$0, v$2$1);
-  v$3 = cc(""1"", dd), dd = v$3[1], v$3[0];
+  v$3 = cc(""1"", undefined), dd = v$3[1], v$3[0];
 }", script);
 
     }
@@ -1147,7 +1147,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let number, v$0;
-  if (v$0 = _16e2a901535b765e(""123"", number), number = v$0[1], v$0[0]) {
+  if (v$0 = _16e2a901535b765e(""123"", undefined), number = v$0[1], v$0[0]) {
     console.log(number);
   }
 }", script);
@@ -1175,7 +1175,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _a29d389185c5e37d(""3.14"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _a29d389185c5e37d(""3.14"", undefined), value = v$0[1], v$0[0]) {
     console.log(value);
   }
 }", script);
@@ -1231,7 +1231,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _b14e4d5a572477d0(""2024-01-02"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _b14e4d5a572477d0(""2024-01-02"", undefined), value = v$0[1], v$0[0]) {
     console.log(value.toString());
   }
 }", script);
@@ -1259,7 +1259,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _ee7de3e005ab6751(""12:30:00"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _ee7de3e005ab6751(""12:30:00"", undefined), value = v$0[1], v$0[0]) {
     console.log(value.toString());
   }
 }", script);
@@ -1287,7 +1287,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _6fb85ef4d11b9143(""01:02:03"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _6fb85ef4d11b9143(""01:02:03"", undefined), value = v$0[1], v$0[0]) {
     console.log(value.toString());
   }
 }", script);
@@ -1315,7 +1315,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _2fd90dc37b274014(""2024-01-02T03:04:05+08:00"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _2fd90dc37b274014(""2024-01-02T03:04:05+08:00"", undefined), value = v$0[1], v$0[0]) {
     console.log(_2aaccc10061a3bb0(value));
   }
 }", script);
@@ -1343,7 +1343,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let value, v$0;
-  if (v$0 = _e96278809bb50e35(""123.45"", value), value = v$0[1], v$0[0]) {
+  if (v$0 = _e96278809bb50e35(""123.45"", undefined), value = v$0[1], v$0[0]) {
     console.log(_65a0e4fe8ccdd829(value));
   }
 }", script);
@@ -1372,8 +1372,8 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(@"{
   let a, v$0, b, v$1;
   let dict = createDefault();
-  v$0 = _7db4d9112b4ba3c4(dict, ""a"", a), a = v$0[1], v$0[0];
-  v$1 = _7db4d9112b4ba3c4(dict, ""b"", b), b = v$1[1], v$1[0];
+  v$0 = _7db4d9112b4ba3c4(dict, ""a"", undefined), a = v$0[1], v$0[0];
+  v$1 = _7db4d9112b4ba3c4(dict, ""b"", undefined), b = v$1[1], v$1[0];
   console.log(a + b);
 }", script);
     }
@@ -2309,7 +2309,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(@"{
   let a, v$0, b, v$1;
-  if ((v$0 = _16e2a901535b765e(""1"", a), a = v$0[1], v$0[0]) && (v$1 = _16e2a901535b765e(""2"", b), b = v$1[1], v$1[0])) {
+  if ((v$0 = _16e2a901535b765e(""1"", undefined), a = v$0[1], v$0[0]) && (v$1 = _16e2a901535b765e(""2"", undefined), b = v$1[1], v$1[0])) {
     console.log(a + b);
   }
 }", script);

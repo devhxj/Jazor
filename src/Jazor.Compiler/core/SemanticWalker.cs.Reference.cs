@@ -2652,15 +2652,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				var argContext = arg.Parameter!.RefKind is RefKind.Out
 					? argument.With(Sense.OutParameter)
 					: argument;
-				var value = Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument
-					? hostArgument
-					: TranslateTupleForTarget(arg.Value, arg.Parameter.Type, argContext);
-				loweredArguments.Add(new LoweredBoundArgument(
-					arg,
-					value,
-					(arg.Parameter.RefKind is RefKind.Out or RefKind.Ref) && arg.Value is not IDiscardOperation
-						? value
-						: null));
+				var hostArgument = Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext);
+				loweredArguments.Add(LowerBoundArgument(operation, arg, argument, hostArgument));
 			}
 
 			var orderedArguments = CanonicalizeBoundArguments(operation, loweredArguments, argument);
@@ -2695,20 +2688,23 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 				if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
 				{
-					arguments.Add(hostArgument);
+					var hostLoweredArgument = LowerBoundArgument(operation, arg, argument, hostArgument);
+					if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
+						refParas.Add(hostLoweredArgument.WriteBackTarget);
+					arguments.Add(hostLoweredArgument.Value);
 					continue;
 				}
 
 				if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
 					continue;
 
-				var right = TranslateTupleForTarget(arg.Value, arg.Parameter?.Type, argContext);
-				// ref 引用 或 out 变量引用，记住顺序
+				var loweredArgument = LowerBoundArgument(operation, arg, argument);
+				// ref 引用 或 out 变量引用，记住回写位置。
 				if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
-					refParas.Add(arg.Value is IDiscardOperation ? null : right);
+					refParas.Add(loweredArgument.WriteBackTarget);
 
 				// 当作普通参数传入
-				arguments.Add(right);
+				arguments.Add(loweredArgument.Value);
 			}
 		}
 

@@ -54,7 +54,7 @@ public sealed class SemanticWalkerEnumerableTryGetNonEnumeratedCountTests
         Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "tryGetNonEnumeratedCount" }, importNames);
-        StringAssert.Contains(body, "tryGetNonEnumeratedCount(releaseIds, count)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "tryGetNonEnumeratedCount(releaseIds, undefined)", StringComparison.Ordinal);
         StringAssert.Contains(body, "count = v$0[1]", StringComparison.Ordinal);
         StringAssert.Contains(body, "v$0[0]", StringComparison.Ordinal);
         StringAssert.Contains(body, "return count;", StringComparison.Ordinal);
