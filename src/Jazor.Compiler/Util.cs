@@ -203,15 +203,17 @@ public static class Util
                 continue;
 
             //ECMAScriptNameAttribute 优先级最高，找到后直接返回
-            if (attr.AttributeClass?.Name == "ECMAScriptNameAttribute")
+            // This path runs only after a successful C# compilation. Roslyn therefore binds
+            // every AttributeData entry to its attribute class and its declared string argument.
+            if (attr.AttributeClass!.Name == "ECMAScriptNameAttribute")
             {
                 useDescription = false;
-                configName = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
+                configName = ((string?)attr.ConstructorArguments[0].Value)?.Trim();
                 break;
             }
-            else if (attr.AttributeClass?.Name == "DescriptionAttribute")
+            else if (attr.AttributeClass.Name == "DescriptionAttribute")
             {
-                var desc = attr.ConstructorArguments[0].Value?.ToString()?.Trim();
+                var desc = ((string?)attr.ConstructorArguments[0].Value)?.Trim();
                 if (desc?.StartsWith("@#") == true)
                 {
                     var name = desc.Substring(2);

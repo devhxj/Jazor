@@ -122,6 +122,9 @@ public partial class SemanticWalker
 		RejectUnsupportedInterpolationRuntimeType(operation, valueType);
 		if (operation.FormatString is not null)
 		{
+			if (TryBuildNumericHexInterpolation(operation, valueType, value, argument, out var numericHex))
+				return numericHex;
+
 			var formattableMethod = FindFormattableToStringMethod(valueType);
 			if (formattableMethod is not null)
 			{
@@ -153,6 +156,41 @@ public partial class SemanticWalker
 			[],
 			argument,
 			hostType: valueType);
+	}
+
+	private bool TryBuildNumericHexInterpolation(
+		IInterpolationOperation operation,
+		ITypeSymbol valueType,
+		Expression value,
+		SenseArgument argument,
+		out Expression expression)
+	{
+		expression = null!;
+		if (valueType.SpecialType is not (SpecialType.System_Int32 or SpecialType.System_UInt32))
+		{
+			return false;
+		}
+
+		// The caller enters this helper only for a bound format specifier. C# interpolation format
+		// text is syntax-owned and Roslyn exposes it as a non-null string constant.
+		var format = (string)operation.FormatString!.ConstantValue.Value!;
+		if (format is not ("X" or "x"))
+			return false;
+
+		// Integer X/x formatting is already compiler-owned by the one-argument ToString
+		// intrinsic. Interpolation binds the IFormattable overload, so route the same format
+		// through that intrinsic instead of requiring a duplicate CLR helper.
+		var method = ((INamedTypeSymbol)valueType).GetMembers(nameof(ToString))
+			.OfType<IMethodSymbol>()
+			.Single(static candidate =>
+				candidate.Parameters.Length == 1 &&
+				candidate.Parameters[0].Type.SpecialType == SpecialType.System_String);
+		var formatExpression = Translate<Expression>(operation.FormatString, argument);
+		return TryBuildIntegerHexToStringIntrinsic(
+			method,
+			value,
+			[formatExpression],
+			out expression);
 	}
 
 	private static bool UsesDirectInterpolationValue(IInterpolationOperation operation, ITypeSymbol type)
@@ -254,12 +292,8 @@ public partial class SemanticWalker
 
 		var interfaceMethod = formattable.GetMembers(nameof(ToString))
 			.OfType<IMethodSymbol>()
-			.SingleOrDefault(static candidate => candidate.Parameters.Length == 2 &&
-				candidate.Parameters[0].Type.SpecialType == SpecialType.System_String &&
-				IsSystemInterface(candidate.Parameters[1].Type, "IFormatProvider"));
-		return interfaceMethod is null
-			? null
-			: namedType.FindImplementationForInterfaceMember(interfaceMethod) as IMethodSymbol;
+			.Single();
+		return namedType.FindImplementationForInterfaceMember(interfaceMethod) as IMethodSymbol;
 	}
 
 	private void EnsureInterpolationFormatContract(IInterpolationOperation operation, IMethodSymbol method)

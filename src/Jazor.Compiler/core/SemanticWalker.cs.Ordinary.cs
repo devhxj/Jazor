@@ -173,13 +173,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitBranch(IBranchOperation operation, SenseArgument argument)
 	{
-		return operation.BranchKind switch
-		{
-			BranchKind.Break => new BreakStatement(null),
-			BranchKind.Continue => new ContinueStatement(null),
-			BranchKind.GoTo => HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript."),
-			_ => HandleTransformationFailure<Node>(operation, $"Unsupported branch kind: {operation.BranchKind}.")
-		};
+		if (operation.BranchKind == BranchKind.Break)
+			return new BreakStatement(null);
+
+		if (operation.BranchKind == BranchKind.Continue)
+			return new ContinueStatement(null);
+
+		// Roslyn only models break, continue and goto through IBranchOperation. Goto remains an
+		// explicit product boundary because JavaScript has no equivalent structured target.
+		return HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript.");
 	}
 
 	/// <summary>
@@ -301,22 +303,7 @@ public partial class SemanticWalker
 		=> OperationTree.ContainsOperation(operation, static op =>
 				op.Kind == OperationKind.Await ||
 				op is IUsingOperation { IsAsynchronous: true } ||
-				op is IUsingDeclarationOperation { IsAsynchronous: true }) ||
-		   ContainsAwaitSyntax(operation.Syntax);
-
-	private static bool ContainsAwaitSyntax(SyntaxNode syntax)
-	{
-		if (syntax is AwaitExpressionSyntax)
-			return true;
-
-		return syntax.DescendantNodes(descendIntoChildren: static node =>
-				node is not AnonymousFunctionExpressionSyntax
-				and not AnonymousMethodExpressionSyntax
-				and not SimpleLambdaExpressionSyntax
-				and not ParenthesizedLambdaExpressionSyntax
-				and not LocalFunctionStatementSyntax)
-			.Any(static node => node is AwaitExpressionSyntax);
-	}
+				op is IUsingDeclarationOperation { IsAsynchronous: true });
 
 	private Expression BuildValueLiteral(ITypeSymbol? type, object? value)
 	{
@@ -636,14 +623,11 @@ public partial class SemanticWalker
 		SenseArgument argument,
 		Expression operand)
 	{
-		if (operation.Type is null)
-			return HandleTransformationFailure<Expression>(operation, "Try-cast conversion is missing its target type.");
-
 		// Roslyn has already proven implicit and identity conversions cannot fail.
 		if (operation.Conversion.IsImplicit)
 			return operand;
 
-		var targetType = UnwrapNullableValueType(operation.Type);
+		var targetType = UnwrapNullableValueType(operation.Type!);
 		Expression input = operand;
 		Expression? initialization = null;
 		if (NeedsSingleEvaluationCaching(operand))
@@ -783,11 +767,9 @@ public partial class SemanticWalker
 	/// </summary>
 	public override Node? VisitConditionalAccessInstance(IConditionalAccessInstanceOperation operation, SenseArgument argument)
 	{
-		// 从 PatternInput 获取（由 VisitConditionalAccess 传递）
-		if (argument.PatternInput is not null)
-			return argument.PatternInput;
-
-		return HandleTransformationFailure<Node>(operation, "ConditionalAccessInstance requires PatternInput context from VisitConditionalAccess.");
+		// Roslyn only exposes this placeholder below IConditionalAccessOperation; its parent
+		// visitor owns the short-circuit and always supplies the translated receiver.
+		return argument.PatternInput!;
 	}
 
 	/// <summary>
@@ -1043,10 +1025,9 @@ public partial class SemanticWalker
 		// Valid range syntax is bound by Roslyn to System.Range and its System.Index members.
 		var rangeType = (INamedTypeSymbol)operation.Type!;
 
-		var constructor = rangeType.InstanceConstructors.Single(static candidate =>
-			candidate.Parameters.Length == 2 &&
-			IsSystemIndexType(candidate.Parameters[0].Type) &&
-			IsSystemIndexType(candidate.Parameters[1].Type));
+		// System.Range also carries the implicit parameterless value-type constructor; the bound
+		// range expression selects the single two-Index constructor from the framework surface.
+		var constructor = rangeType.InstanceConstructors.Single(static candidate => candidate.Parameters.Length == 2);
 
 		var indexType = (INamedTypeSymbol)constructor.Parameters[0].Type;
 		var start = operation.LeftOperand is null
@@ -1072,7 +1053,7 @@ public partial class SemanticWalker
 	{
 		var property = indexType.GetMembers(propertyName)
 			.OfType<IPropertySymbol>()
-			.Single(static candidate => candidate.IsStatic && candidate.GetMethod is not null);
+			.Single();
 
 		return GetWhiteListExpression(property.GetMethod!, argument, [], out _, operation)
 			?? HandleTransformationFailure<Expression>(
@@ -1094,10 +1075,7 @@ public partial class SemanticWalker
 
 		var factory = indexType.GetMembers("FromEnd")
 			.OfType<IMethodSymbol>()
-			.Single(static candidate =>
-				candidate.IsStatic &&
-				candidate.Parameters.Length == 1 &&
-				candidate.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
+			.Single();
 
 		var value = Translate<Expression>(operation.Operand, argument);
 		return GetWhiteListExpression(factory, argument, [value], out _, operation)
@@ -1586,9 +1564,12 @@ public partial class SemanticWalker
 
 	internal Expression BuildImplicitMemberFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
 	{
-		var origin = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() ??
-			field.AssociatedSymbol?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax()
-			?? throw new NotSupportedException($"Jazor member field '{field.Name}' requires source syntax to lower its implicit C# default value.");
+		// AstConverter only requests defaults for source fields and compiler-generated auto-property
+		// backing fields. The latter is always associated with its source property, so both routes
+		// have a stable syntax reference after the source compilation succeeds.
+		var syntaxReference = field.DeclaringSyntaxReferences.FirstOrDefault() ??
+			field.AssociatedSymbol!.DeclaringSyntaxReferences[0];
+		var origin = syntaxReference.GetSyntax();
 
 		return BuildDefaultValueExpression(
 			field.Type,
@@ -1991,8 +1972,10 @@ public partial class SemanticWalker
 					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
 		}
 
-		var targetType = operation.Target.Type ?? operation.Type;
-		Expression one = targetType is not null && GetMapperType(targetType).Mapper == TypeMapper.BigInt
+		// Increment/decrement binds to a writable typed target; neither side can be typeless in
+		// a successful Roslyn operation tree.
+		var targetType = operation.Target.Type!;
+		Expression one = GetMapperType(targetType).Mapper == TypeMapper.BigInt
 			? new BigIntLiteral(System.Numerics.BigInteger.One, "1n")
 			: new NumericLiteral(1, "1");
 		return new NonLogicalBinaryExpression(
@@ -2003,9 +1986,8 @@ public partial class SemanticWalker
 
 	private static bool CanPassThroughIntrinsicIncrementOrDecrement(IIncrementOrDecrementOperation operation)
 	{
-		var targetType = operation.Target.Type ?? operation.Type;
-		return targetType is not null &&
-			GetMapperType(targetType).Mapper is TypeMapper.Number or TypeMapper.BigInt;
+		var targetType = operation.Target.Type!;
+		return GetMapperType(targetType).Mapper is TypeMapper.Number or TypeMapper.BigInt;
 	}
 
 	private bool TryPreparePropertyMutationAccess(
@@ -2102,8 +2084,10 @@ public partial class SemanticWalker
 		=> expression switch
 		{
 			Identifier or ThisExpression or Super => true,
-			MemberExpression member when !member.Optional &&
-				CanDuplicateReadWriteTarget((Expression)member.Object) &&
+			// This helper only receives a property-mutation left hand side. C# does not permit
+			// conditional access as an assignment target, so a lowered writable member is never
+			// optional at this point.
+			MemberExpression member when CanDuplicateReadWriteTarget((Expression)member.Object) &&
 				((!member.Computed && member.Property is Identifier) ||
 				 (member.Computed && member.Property is Identifier or Literal)) => true,
 			_ => false
@@ -2255,17 +2239,13 @@ public partial class SemanticWalker
 		if (!TryGetCurrentModuleDeclaredName(propertyReference.Property.ContainingType, out _))
 			return false;
 
-		var backingField = propertyReference.Property.ContainingType
+		// A bodyless init accessor is an auto-property by Roslyn's symbol contract. Inside the
+		// declaring constructor C# permits assignment only to the containing instance, which is
+		// exactly the private-field shape emitted for current-module member classes.
+		_ = propertyReference.Property.ContainingType
 			.GetMembers($"<{propertyReference.Property.Name}>k__BackingField")
 			.OfType<IFieldSymbol>()
-			.SingleOrDefault();
-
-		if (backingField is null)
-			return false;
-
-		if (propertyReference.Instance is not IInstanceReferenceOperation instanceReference ||
-			instanceReference.ReferenceKind != InstanceReferenceKind.ContainingTypeInstance)
-			return false;
+			.Single();
 
 		var backingFieldName = Format.HashName(propertyReference.Property.OriginalDefinition.ToDisplayString(Format.NameFormat));
 		assignment = new AssignmentExpression(
@@ -2277,22 +2257,6 @@ public partial class SemanticWalker
 				optional: false),
 			value);
 		return true;
-	}
-
-	/// <summary>
-	/// 处理省略参数操作
-	/// C# 示例：
-	/// SomeMethod(arg1, , arg3);           // 省略中间参数
-	/// Optional(a: 1, c: 3);               // 命名参数中省略了 b
-	/// 转换结果：undefined
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitOmittedArgument(IOmittedArgumentOperation operation, SenseArgument argument)
-	{
-		// 省略的参数返回 undefined
-		return new Identifier("undefined");
 	}
 
 	/// <summary>

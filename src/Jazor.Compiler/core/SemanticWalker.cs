@@ -85,8 +85,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         mapped = default;
         var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         if (!TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) ||
-            entry.Op != ECMAScript.Contract.Op.Alias ||
-            string.IsNullOrWhiteSpace(entry.Value))
+            entry.Op != ECMAScript.Contract.Op.Alias)
             return false;
 
         return TryMapKnownRuntimeTypeName(entry.Value!, out mapped);
@@ -213,7 +212,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry))
                         {
                             // 白名单中的类型
-                            if (entry.Op == ECMAScript.Contract.Op.Alias && !string.IsNullOrEmpty(entry.Value))
+                            if (entry.Op == ECMAScript.Contract.Op.Alias)
                                 return (TypeMapper.Class, entry.Value!);
                             // Op.Allowed 等其他情况，使用原始名称
                             // 例如：System.Nullable<T>, void 等
@@ -516,8 +515,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     {
         var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
-            entry.Op == Op.Alias &&
-            !string.IsNullOrWhiteSpace(entry.Value))
+            entry.Op == Op.Alias)
         {
             runtimeAlias = entry.Value!;
             return true;
@@ -640,9 +638,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         if (IsNonStructuralRuntimeMember(symbol, hostType))
             return false;
-
-        if (TryGetWhiteListValue(_whiteListCompiles, symbol, out _, out _))
-            return true;
 
         if (TryGetWhiteListValue(WhiteList.Members, symbol, out _, out _))
             return true;
@@ -1548,6 +1543,14 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         exception.Data["location.endColumn"] = lineSpan.EndLinePosition.Character + 1;
     }
 
+    private void ReportTransformationFailure(Location location, string? message)
+        => _report?.Invoke(location, message);
+
+    private void ReportTranslationTypeMismatch<T>(IOperation operation) where T : INode
+        => ReportTransformationFailure(
+            operation.Syntax.GetLocation(),
+            $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ");
+
     /// <summary>
     /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
     /// </summary>
@@ -1557,8 +1560,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// <exception cref="OperationTransformationException">当操作无法转换时抛出</exception>
     private T HandleTransformationFailure<T>(IOperation operation, string? message)
     {
-        var location = operation.Syntax.GetLocation();
-        _report?.Invoke(location, message);
+        ReportTransformationFailure(operation.Syntax.GetLocation(), message);
         throw CreateOperationTransformationException(operation, message);
     }
 
@@ -1571,8 +1573,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// <exception cref="SyntaxNodeTransformationException"></exception>
     private Node HandleTransformationFailure(SyntaxNode node, string? message)
     {
-        var location = node.GetLocation();
-        _report?.Invoke(location, message);
+        ReportTransformationFailure(node.GetLocation(), message);
         throw CreateSyntaxNodeTransformationException(node, message);
     }
 
@@ -1594,11 +1595,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (node is T result)
             return result;
 
-        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
-        var location = operation.Syntax.GetLocation();
-        _report?.Invoke(location, message);
-
-        throw CreateOperationTransformationException(operation, message);
+        ReportTranslationTypeMismatch<T>(operation);
+        throw CreateOperationTransformationException(
+            operation,
+            $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ");
     }
 
     /// <summary>
@@ -1625,10 +1625,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (node is T result)
             return result;
 
-        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
-        var location = operation.Syntax.GetLocation();
-        _report?.Invoke(location, message);
-
+        ReportTranslationTypeMismatch<T>(operation);
         return defaultValue;
     }
 
@@ -1656,11 +1653,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (node is T item)
             target.Add(item);
         else
-        {
-            var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
-            var location = operation.Syntax.GetLocation();
-            _report?.Invoke(location, message);
-        }
+            ReportTranslationTypeMismatch<T>(operation);
     }
 
     /// <summary>
@@ -1688,10 +1681,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (node is T item)
             target.Add(item);
         else
-        {
-            var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(T).Name}'. This indicates missing support for this operation type or a type mismatch. ";
-            var location = operation.Syntax.GetLocation();
-            _report?.Invoke(location, message);
-        }
+            ReportTranslationTypeMismatch<T>(operation);
     }
 }

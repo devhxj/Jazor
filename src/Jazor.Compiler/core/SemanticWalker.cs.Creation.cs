@@ -973,8 +973,9 @@ public partial class SemanticWalker
 				continue;
 			}
 
-			if (init is not IInvocationOperation invocation)
-				return false;
+			// A bound C# collection initializer item is an Add invocation. Map indexer
+			// initializers are handled above before this framework-owned collection path.
+			var invocation = (IInvocationOperation)init;
 
 			if (mapper is TypeMapper.Array or TypeMapper.Set)
 			{
@@ -1136,9 +1137,8 @@ public partial class SemanticWalker
 			_ => symbol
 		};
 
-		if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+        if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
+            entry.Op == Op.Alias)
 			return entry.Value!;
 
 		if (!IsStructuralMember(symbol))
@@ -1155,9 +1155,8 @@ public partial class SemanticWalker
 			_ => symbol
 		};
 
-		if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+        if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
+            entry.Op == Op.Alias)
 			return entry.Value!;
 
 		if (!IsStructuralMember(symbol))

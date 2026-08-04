@@ -390,36 +390,26 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
         else if (blockSyntax is not null)
         {
-            var operation = GetSemanticModel(blockSyntax).GetOperation(blockSyntax);
-            if (operation is not null)
-            {
-                functionOperation = operation;
-                var walker = CreateSemanticWalker(cancellationToken);
-                var argument = CreateImportAwareArgument(Sense.FunctionBody);
-                body = MaterializeFunctionBody(walker.Visit(operation, argument)!, argument, symbol.ReturnsVoid);
-                MergeImports(argument);
-            }
-            else
-            {
-                throw CreateMissingOperationException(symbol, blockSyntax);
-            }
+            // The source compilation has succeeded, and Roslyn always binds a method/accessor
+            // block to IBlockOperation. This is an SDK semantic contract, not a best-effort probe.
+            var operation = GetSemanticModel(blockSyntax).GetOperation(blockSyntax)!;
+            functionOperation = operation;
+            var walker = CreateSemanticWalker(cancellationToken);
+            var argument = CreateImportAwareArgument(Sense.FunctionBody);
+            body = MaterializeFunctionBody(walker.Visit(operation, argument)!, argument, symbol.ReturnsVoid);
+            MergeImports(argument);
         }
         else if (expressionSyntax is not null)
         {
-            var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax);
-            if (operation is not null)
-            {
-                functionOperation = operation;
-                var walker = CreateSemanticWalker(cancellationToken);
-                var argument = CreateImportAwareArgument(Sense.Any);
-                var visited = walker.Visit(operation, argument)!;
-                MergeImports(argument);
-                body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
-            }
-            else
-            {
-                throw CreateMissingOperationException(symbol, expressionSyntax);
-            }
+            // Expression-bodied members are equally guaranteed to have a semantic operation once
+            // the owning source tree passed C# compilation.
+            var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax)!;
+            functionOperation = operation;
+            var walker = CreateSemanticWalker(cancellationToken);
+            var argument = CreateImportAwareArgument(Sense.Any);
+            var visited = walker.Visit(operation, argument)!;
+            MergeImports(argument);
+            body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
         }
         if (body is null)
             throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
@@ -493,16 +483,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => argument.Value is not null &&
            System.Convert.ToInt32(argument.Value, CultureInfo.InvariantCulture) == (int)Op.Import;
 
-    private static NotSupportedException CreateMissingOperationException(ISymbol symbol, SyntaxNode syntax)
-    {
-        var lineSpan = syntax.GetLocation().GetLineSpan();
-        var path = string.IsNullOrWhiteSpace(lineSpan.Path) ? "<unknown>" : lineSpan.Path;
-        var start = lineSpan.StartLinePosition;
-        var kind = syntax.Kind().ToString();
-        var snippet = syntax.ToString().Replace("\r", string.Empty).Replace("\n", "\\n");
-        return new NotSupportedException(
-            $"Jazor 不支持转换方法 {symbol.Name}，Roslyn 未返回操作树。Kind={kind} Location={path}:{start.Line + 1}:{start.Character + 1} Syntax={snippet}");
-    }
     private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -513,8 +493,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         else
             foreach (var item in symbol.DeclaringSyntaxReferences)
             {
-                var syntax = await item.GetSyntaxAsync(cancellationToken) as VariableDeclaratorSyntax;
-                if (syntax is not null && syntax.Initializer is not null)
+                // Source fields bind directly to VariableDeclaratorSyntax. Implicit property
+                // backing fields have no declaration here and continue to the property route.
+                var syntax = (VariableDeclaratorSyntax)await item.GetSyntaxAsync(cancellationToken);
+                if (syntax.Initializer is not null)
                 {
                     init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer, cancellationToken);
                     break;
@@ -540,8 +522,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 foreach (var item in property.DeclaringSyntaxReferences)
                 {
-                    var syntax = await item.GetSyntaxAsync(cancellationToken) as PropertyDeclarationSyntax;
-                    if (syntax is not null && syntax.Initializer is not null)
+                    var syntax = (PropertyDeclarationSyntax)await item.GetSyntaxAsync(cancellationToken);
+                    if (syntax.Initializer is not null)
                     {
                         init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer, cancellationToken);
                         break;
@@ -599,15 +581,22 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         foreach (var item in symbol.DeclaringSyntaxReferences)
         {
-            if (item.GetSyntax() is VariableDeclaratorSyntax syntax && syntax.Initializer is not null)
+            // Explicit source fields bind directly to VariableDeclaratorSyntax. Implicit backing
+            // fields have no declaration here and are handled through their associated property.
+            var syntax = (VariableDeclaratorSyntax)item.GetSyntax();
+            if (syntax.Initializer is not null)
                 return CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
         }
 
+        // Auto-properties materialize their private storage through the property conversion path.
+        // Their implicit backing field has no declaration syntax of its own, so its initializer
+        // remains owned by the associated source property.
         if (symbol.AssociatedSymbol is IPropertySymbol property)
         {
             foreach (var item in property.DeclaringSyntaxReferences)
             {
-                if (item.GetSyntax() is PropertyDeclarationSyntax syntax && syntax.Initializer is not null)
+                var syntax = (PropertyDeclarationSyntax)item.GetSyntax();
+                if (syntax.Initializer is not null)
                     return CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
             }
         }
@@ -641,7 +630,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (symbol.IsAbstract)
             throw new NotSupportedException($"Jazor member class does not support abstract method {symbol.Name}.");
 
-        IOperation? operation = null;
+        IOperation operation = null!;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
             var syntax = reference.GetSyntax();
@@ -649,12 +638,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 if (methodDecl.Body is not null)
                 {
-                    operation = GetSemanticModel(methodDecl.Body).GetOperation(methodDecl.Body);
+                    operation = GetSemanticModel(methodDecl.Body).GetOperation(methodDecl.Body)!;
                     break;
                 }
                 else if (methodDecl.ExpressionBody is not null)
                 {
-                    operation = GetSemanticModel(methodDecl.ExpressionBody).GetOperation(methodDecl.ExpressionBody);
+                    operation = GetSemanticModel(methodDecl.ExpressionBody).GetOperation(methodDecl.ExpressionBody)!;
                     break;
                 }
             }
@@ -662,18 +651,18 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 if (accessorDecl.Body is not null)
                 {
-                    operation = GetSemanticModel(accessorDecl.Body).GetOperation(accessorDecl.Body);
+                    operation = GetSemanticModel(accessorDecl.Body).GetOperation(accessorDecl.Body)!;
                     break;
                 }
                 else if (accessorDecl.ExpressionBody is not null)
                 {
-                    operation = GetSemanticModel(accessorDecl.ExpressionBody).GetOperation(accessorDecl.ExpressionBody);
+                    operation = GetSemanticModel(accessorDecl.ExpressionBody).GetOperation(accessorDecl.ExpressionBody)!;
                     break;
                 }
             }
             else if (syntax is ArrowExpressionClauseSyntax arrowExpr)
             {
-                operation = GetSemanticModel(arrowExpr.Expression).GetOperation(arrowExpr.Expression);
+                operation = GetSemanticModel(arrowExpr.Expression).GetOperation(arrowExpr.Expression)!;
                 break;
             }
         }
@@ -1302,7 +1291,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        IOperation? operation = null;
+        ConstructorDeclarationSyntax? constructorSyntax = null;
         ConstructorInitializerSyntax? initializerSyntax = null;
         IMethodSymbol? baseConstructorSymbol = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
@@ -1310,6 +1299,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (reference.GetSyntax() is not ConstructorDeclarationSyntax ctorDecl)
                 continue;
 
+            constructorSyntax = ctorDecl;
             initializerSyntax = ctorDecl.Initializer;
             if (ctorDecl.Initializer is not null &&
                 (baseType is null || !ctorDecl.Initializer.ThisOrBaseKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.BaseKeyword)))
@@ -1318,22 +1308,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (ctorDecl.Initializer is not null)
                 baseConstructorSymbol = GetSemanticModel(ctorDecl.Initializer).GetSymbolInfo(ctorDecl.Initializer).Symbol as IMethodSymbol;
 
-            if (ctorDecl.Body is not null)
-            {
-                operation = GetSemanticModel(ctorDecl.Body).GetOperation(ctorDecl.Body);
-                break;
-            }
-
-            if (ctorDecl.ExpressionBody is not null)
-            {
-                operation = GetSemanticModel(ctorDecl.ExpressionBody).GetOperation(ctorDecl.ExpressionBody);
-                break;
-            }
+            break;
         }
 
-        if (operation is null)
-            throw new NotSupportedException($"Jazor member class constructor {symbol.Name} requires a body.");
-
+        var declaredConstructor = constructorSyntax!;
+        var operation = declaredConstructor.Body is { } bodySyntax
+            ? GetSemanticModel(bodySyntax).GetOperation(bodySyntax)!
+            : GetSemanticModel(declaredConstructor.ExpressionBody!).GetOperation(declaredConstructor.ExpressionBody!)!;
         var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true, cancellationToken);
 
         return new MemberConstructorLowering(
@@ -1531,7 +1512,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
     {
-        var arguments = initializerSyntax?.ArgumentList is null
+        var arguments = initializerSyntax is null
             ? []
             : initializerSyntax.ArgumentList.Arguments
                 .Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken))
@@ -1624,18 +1605,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             suppressNullableWarning.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression))
             return ConvertExpressionSyntax(suppressNullableWarning.Operand, cancellationToken);
 
-        var operation = GetSemanticModel(value).GetOperation(value);
-        if (operation is not null)
-        {
-            var walker = CreateSemanticWalker(cancellationToken);
-            var argument = CreateImportAwareArgument(Sense.Any);
-            var expr = walker.Visit(operation, argument) as Expression;
-            MergeImports(argument);
-            if (expr is not null)
-                return MaterializeExpression(expr, argument);
-        }
-
-        throw new NotSupportedException($"Only literal expressions are supported, got: {value.Kind()}");
+        // This helper receives successful C# expression syntax only. Apart from the two syntax
+        // forms handled above, Roslyn always supplies an expression operation for that input.
+        var operation = GetSemanticModel(value).GetOperation(value)!;
+        var walker = CreateSemanticWalker(cancellationToken);
+        var argument = CreateImportAwareArgument(Sense.Any);
+        var expr = (Expression)walker.Visit(operation, argument)!;
+        MergeImports(argument);
+        return MaterializeExpression(expr, argument);
     }
 
     private static FunctionBody MaterializeFunctionBody(Node visited, SenseArgument argument, bool returnsVoid)

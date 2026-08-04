@@ -448,57 +448,66 @@ public partial class SemanticWalker
 			return new MemberExpression(value.AstExpression!, new Identifier(fieldName), false, false);
 		}
 
-		static void CollectTargetVariables(IOperation target, HashSet<ISymbol> variables)
+		static void CollectDeconstructionTargetSymbols(IOperation target, HashSet<ISymbol> symbols)
 		{
 			switch (target)
 			{
 				case ILocalReferenceOperation localRef:
-					variables.Add(localRef.Local);
+					symbols.Add(localRef.Local);
 					break;
 				case IParameterReferenceOperation parameterRef:
-					variables.Add(parameterRef.Parameter);
+					symbols.Add(parameterRef.Parameter);
+					break;
+				case IFieldReferenceOperation fieldRef:
+					symbols.Add(fieldRef.Field);
+					break;
+				case IPropertyReferenceOperation propertyRef:
+					symbols.Add(propertyRef.Property);
 					break;
 				case IDeclarationExpressionOperation declarationExpr:
-					CollectTargetVariables(declarationExpr.Expression, variables);
+					CollectDeconstructionTargetSymbols(declarationExpr.Expression, symbols);
 					break;
 				case ITupleOperation tupleTarget:
 					foreach (var tupleElement in tupleTarget.Elements)
-						CollectTargetVariables(tupleElement, variables);
+						CollectDeconstructionTargetSymbols(tupleElement, symbols);
 					break;
 			}
 		}
 
-		static bool ReferencesTargetVariable(IOperation operation, HashSet<ISymbol> variables)
+		static bool ReferencesDeconstructionTarget(IOperation operation, HashSet<ISymbol> targetSymbols)
 		{
 			var symbol = operation switch
 			{
 				ILocalReferenceOperation localRef => (ISymbol)localRef.Local,
 				IParameterReferenceOperation parameterRef => parameterRef.Parameter,
+				IFieldReferenceOperation fieldRef => fieldRef.Field,
+				IPropertyReferenceOperation propertyRef => propertyRef.Property,
 				_ => null
 			};
-			if (symbol is not null && variables.Contains(symbol))
+			if (symbol is not null && targetSymbols.Contains(symbol))
 				return true;
 
 			foreach (var child in operation.ChildOperations)
 			{
-				if (ReferencesTargetVariable(child, variables))
+				if (ReferencesDeconstructionTarget(child, targetSymbols))
 					return true;
 			}
 
 			return false;
 		}
 
-		static bool ShouldCacheTupleField(TupleValueSource value, int index, HashSet<ISymbol> targetVariables)
+		static bool ShouldCacheTupleField(TupleValueSource value, int index, HashSet<ISymbol> targetSymbols)
 		{
-			if (targetVariables.Count == 0)
+			if (targetSymbols.Count == 0)
 				return false;
 
 			return value.Operation switch
 			{
-				// 只有右侧某个元素会读取左侧目标变量时，才需要把“槽位值”单独缓存。
-				// 这样既能保证 swap / 自引用解构正确，又不会对所有元素都无差别引入临时变量。
-				ITupleOperation tupleOp => ReferencesTargetVariable(tupleOp.Elements[index], targetVariables),
-				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesTargetVariable(conversionTuple.Elements[index], targetVariables),
+				// 局部变量、参数、字段和属性都可以是合法的解构写目标。
+				// 对成员使用 Roslyn 符号做保守依赖判定：即使接收者不同，提前缓存仍保持语义，
+				// 并避免错过 setter/indexer 改变后续 getter 结果的情况。
+				ITupleOperation tupleOp => ReferencesDeconstructionTarget(tupleOp.Elements[index], targetSymbols),
+				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesDeconstructionTarget(conversionTuple.Elements[index], targetSymbols),
 				_ => false
 			};
 		}
@@ -629,8 +638,8 @@ public partial class SemanticWalker
 					tupleTarget = (ITupleOperation)target;
 				}
 
-				var targetVariables = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
-				CollectTargetVariables(tupleTarget, targetVariables);
+				var targetSymbols = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+				CollectDeconstructionTargetSymbols(tupleTarget, targetSymbols);
 
 				Identifier? tempVar = null;
 				if (value.Operation is { } valueOperation && ShouldCacheTupleSource(valueOperation))
@@ -655,9 +664,9 @@ public partial class SemanticWalker
 
 					var fieldValue = GetTupleFieldValue(value, field, index, tempVar, argument);
 
-					if (ShouldCacheTupleField(value, index, targetVariables))
+					if (ShouldCacheTupleField(value, index, targetSymbols))
 					{
-						// 右侧这个槽位会引用左侧目标局部变量。
+						// 右侧这个槽位会引用左侧的某个写目标。
 						// 必须先把槽位值缓存下来，再进行后续赋值，否则会被前面已执行的回写污染。
 						var slotSite = ComposeTupleSlot(tupleSlot, index);
 						var cacheId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.TupleFieldCache(slotSite)));

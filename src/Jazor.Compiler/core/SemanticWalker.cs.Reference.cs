@@ -71,20 +71,15 @@ public partial class SemanticWalker
 	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
 	/// 对于字段：检查字段本身的白名单别名
 	/// </summary>
-	private static string GetInitializerMemberName(ISymbol symbol)
+	private static string GetInitializerMemberName(IPropertySymbol property)
 	{
-		// 1. 先检查白名单别名
-		ISymbol? whiteListSymbol = symbol;
-		if (symbol is IPropertySymbol property && property.SetMethod is not null)
-			whiteListSymbol = property.SetMethod;
-
-		if (TryGetWhiteListValue(WhiteList.Members, whiteListSymbol, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+		// BuildPropertyWriteTarget is reached after the bound setter was validated. A property
+		// assignment therefore always has a concrete setter symbol for whitelist lookup.
+		if (TryGetWhiteListValue(WhiteList.Members, property.SetMethod!, out _, out var entry) &&
+			entry.Op == Op.Alias)
 			return entry.Value!;
 
-		// 2. 再检查特性配置
-		return Util.GetConfigOrSymbolName(symbol);
+		return Util.GetConfigOrSymbolName(property);
 	}
 
 	/// <summary>
@@ -93,9 +88,8 @@ public partial class SemanticWalker
 	private static string GetMethodConfigOrWhiteListName(IMethodSymbol method)
 	{
 		// 1. 先检查白名单别名
-		if (TryGetWhiteListValue(WhiteList.Members, method, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+        if (TryGetWhiteListValue(WhiteList.Members, method, out _, out var entry) &&
+            entry.Op == Op.Alias)
 			return entry.Value!;
 
 		// 2. 再检查特性配置
@@ -124,9 +118,8 @@ public partial class SemanticWalker
 
 		// 先查询白名单
 		var displayName = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+        if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
+            entry.Op == Op.Alias)
 			name = entry.Value!;
 
 		// 再取特性配置
@@ -410,7 +403,7 @@ public partial class SemanticWalker
 
 		// For a bound static member access the receiver syntax denotes a type. Roslyn resolves
 		// type aliases to that target in SymbolInfo, so no syntax-name or alias registry is needed.
-		return (INamedTypeSymbol)semanticModel.GetSymbolInfo(targetSyntax).Symbol!;
+		return semanticModel.GetSymbolInfo(targetSyntax).Symbol as INamedTypeSymbol;
 	}
 
 	/// <summary>
@@ -455,9 +448,8 @@ public partial class SemanticWalker
 
 	private static string? TryGetTypeAliasFromWhiteList(string displayName)
 	{
-		if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
-			entry.Op == Op.Alias &&
-			!string.IsNullOrEmpty(entry.Value))
+        if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
+            entry.Op == Op.Alias)
 			return entry.Value;
 
 		return null;
@@ -1114,14 +1106,15 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	{
 	foreach (var attribute in method.GetAttributes())
 	{
-		if (attribute.AttributeClass?.ToDisplayString() != ECMAScriptInlineAttributeFullName)
+		if (attribute.AttributeClass!.ToDisplayString() != ECMAScriptInlineAttributeFullName)
 			continue;
 
-		if (attribute.ConstructorArguments.Length == 1 &&
-			attribute.ConstructorArguments[0].Value is string value &&
-			!string.IsNullOrWhiteSpace(value))
+		// ECMAScriptInlineAttribute has one declared string argument. The attribute may receive
+		// null or whitespace, which deliberately disables the template and falls through.
+		var value = (string?)attribute.ConstructorArguments[0].Value;
+		if (!string.IsNullOrWhiteSpace(value))
 		{
-			template = value;
+			template = value!;
 			return true;
 		}
 	}
@@ -1217,31 +1210,37 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			out expression))
 			return true;
 
-		if (instance is null)
-			return false;
+		return TryBuildIntegerHexToStringIntrinsic(method, instance, arguments, out expression);
+	}
 
-		if (arguments.Count == 1 &&
-			method.Name == nameof(object.ToString) &&
-			arguments[0] is StringLiteral formatLiteral)
+	private static bool TryBuildIntegerHexToStringIntrinsic(
+		IMethodSymbol method,
+		Expression? instance,
+		IReadOnlyList<Expression> arguments,
+		out Expression expression)
+	{
+		expression = null!;
+		if (instance is null ||
+			arguments.Count != 1 ||
+			method.Name != nameof(object.ToString) ||
+			arguments[0] is not StringLiteral formatLiteral ||
+			method.ContainingType.SpecialType is not (SpecialType.System_Int32 or SpecialType.System_UInt32))
 		{
-			var format = formatLiteral.Value;
-			if (method.ContainingType.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32)
-			{
-				var isUpperHex = format == "X";
-				var isLowerHex = format == "x";
-				if (isUpperHex || isLowerHex)
-				{
-					var numericSource = method.ContainingType.SpecialType == SpecialType.System_Int32
-						? new NonLogicalBinaryExpression(Operator.UnsignedRightShift, instance, new NumericLiteral(0, "0"))
-						: instance;
-					var hexText = BuildInstanceMethodCall(numericSource, "toString", new NumericLiteral(16, "16"));
-					expression = BuildInstanceMethodCall(hexText, isUpperHex ? "toUpperCase" : "toLowerCase");
-					return true;
-				}
-			}
+			return false;
 		}
 
-		return false;
+		var format = formatLiteral.Value;
+		var isUpperHex = format == "X";
+		var isLowerHex = format == "x";
+		if (!isUpperHex && !isLowerHex)
+			return false;
+
+		var numericSource = method.ContainingType.SpecialType == SpecialType.System_Int32
+			? new NonLogicalBinaryExpression(Operator.UnsignedRightShift, instance, new NumericLiteral(0, "0"))
+			: instance;
+		var hexText = BuildInstanceMethodCall(numericSource, "toString", new NumericLiteral(16, "16"));
+		expression = BuildInstanceMethodCall(hexText, isUpperHex ? "toUpperCase" : "toLowerCase");
+		return true;
 	}
 
 	/// <summary>
@@ -2225,14 +2224,12 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (operation.Method.MethodKind == MethodKind.LocalFunction)
 		{
 			var localFunction = new Identifier(GetJavaScriptBindingName(operation.Method));
-			if (operation.Method.IsStatic || operation.Instance is null)
+			if (operation.Method.IsStatic || IsLexicallyStaticLocalFunction(operation.Method) || operation.Instance is null)
 				return WithOriginIfMissing(localFunction, operation);
 
 			// Roslyn exposes the captured containing instance on a non-static local-function method group.
 			// The function is still a lexical declaration, so bind that declaration instead of probing this.LocalFunction.
-			var capturedInstance = Translate<Expression>(operation.Instance, argument, null);
-			if (capturedInstance is null)
-				return WithOriginIfMissing(localFunction, operation);
+			var capturedInstance = Translate<Expression>(operation.Instance, argument);
 
 			var boundLocalFunction = new CallExpression(
 				new MemberExpression(localFunction, new Identifier("bind"), computed: false, optional: false),
@@ -2244,7 +2241,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		// 如果是白名单方法调用，需要生成本地代理方法
 		// 生成代理方法参数
 		var name = AllocateUniqueName(operation, argument, LoweringSite.MethodReferenceProxy());
-		var count = operation.Method.Parameters.Length + (operation.Method.IsStatic ? 0 : 1);
+		var boundExtensionReceiverOperation = GetBoundExtensionMethodReferenceReceiver(operation);
+		var hasBoundExtensionReceiver = boundExtensionReceiverOperation is not null;
+		var count = hasBoundExtensionReceiver
+			? GetMethodReferenceDelegateParameterCount(operation)
+			: operation.Method.Parameters.Length + (operation.Method.IsStatic ? 0 : 1);
 		var args = Enumerable.Range(0, count)
 			.Select(i => new Identifier($"{name}${i}") as Expression)
 			.ToList();
@@ -2252,7 +2253,24 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		// Method-reference proxies model the receiver as their first JavaScript parameter. Split it
 		// before dispatch so Compile, Inline, and Import all observe the normal invocation contract.
 		var proxyInstance = operation.Method.IsStatic ? null : args[0];
-		var explicitArgs = operation.Method.IsStatic ? args : args.Skip(1).ToList();
+		// Keep delegate parameters independent from invocation arguments. A bound extension receiver
+		// is inserted only into the static call; mutating args would incorrectly expose it as a
+		// caller-supplied delegate parameter.
+		var explicitArgs = operation.Method.IsStatic ? [.. args] : args.Skip(1).ToList();
+		var boundExtensionInitializations = new List<Expression>();
+		Expression? boundExtensionReceiver = null;
+		if (hasBoundExtensionReceiver)
+		{
+			// A reduced extension method group evaluates its receiver when the delegate is created,
+			// not when the delegate is invoked. Preserve that timing and pass it through the same
+			// static CLR/host dispatch shape as an ordinary extension invocation.
+			boundExtensionReceiver = MaterializeMethodReferenceReceiver(
+				Translate<Expression>(boundExtensionReceiverOperation!, argument),
+				operation,
+				argument,
+				boundExtensionInitializations);
+			explicitArgs.Insert(0, boundExtensionReceiver);
+		}
 		var valueExpr = GetWhiteListExpression(operation.Method, argument, explicitArgs, proxyInstance, out var alias, operation);
 		if (valueExpr is not null)
 		{
@@ -2265,16 +2283,46 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			);
 
 			// 方法内不含this访问，直接返回箭头函数；否则需要绑定this
-			return func;
+			if (boundExtensionInitializations.Count == 0)
+				return func;
+
+			boundExtensionInitializations.Add(func);
+			return new SequenceExpression(NodeList.From(boundExtensionInitializations));
 		}
 
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(operation, operation.Method, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
 
-		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var instance = hasBoundExtensionReceiver
+			? boundExtensionReceiver
+			: Translate<Expression>(operation.Instance, argument, null);
 		if (Host?.RewriteMethodReference(operation, argument, instance) is Expression hostExpression)
-			return WithOriginIfMissing(hostExpression, operation);
+		{
+			if (boundExtensionInitializations.Count == 0)
+				return WithOriginIfMissing(hostExpression, operation);
+
+			boundExtensionInitializations.Add(hostExpression);
+			return WithOriginIfMissing(new SequenceExpression(NodeList.From(boundExtensionInitializations)), operation);
+		}
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(operation.Method) : alias;
+		if (hasBoundExtensionReceiver)
+		{
+			var call = new CallExpression(
+				BuildStaticMethodReferenceCallee(operation, methodName!, argument),
+				NodeList.From(explicitArgs),
+				optional: false);
+			var func = new ArrowFunctionExpression(
+				NodeList.From<Node>(args),
+				call,
+				expression: true,
+				async: false);
+			if (boundExtensionInitializations.Count == 0)
+				return WithOriginIfMissing(func, operation);
+
+			boundExtensionInitializations.Add(func);
+			return WithOriginIfMissing(new SequenceExpression(NodeList.From(boundExtensionInitializations)), operation);
+		}
+
 		var initializations = new List<Expression>();
 		if (instance is not null)
 		{
@@ -2298,38 +2346,24 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				instance = MaterializeMethodReferenceReceiver(instance, operation, argument, initializations);
 		}
 		Expression callee = new Identifier(methodName!);
-		var extensionHost = TryBuildExtensionHostTarget(operation.Method, argument);
 		if (instance is null)
 		{
 			if (operation.Method.IsStatic)
-			{
-				if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
-					importedMethod is not null)
-					callee = importedMethod;
-				else if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel!, methodName!, out var preferredStaticCallee) &&
-					preferredStaticCallee is not null)
-					callee = preferredStaticCallee;
-				else if (extensionHost is not null)
-					callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
-				else
-				{
-					var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
-					if (containing is not null)
-						callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
-				}
-			}
+				callee = BuildStaticMethodReferenceCallee(operation, methodName!, argument);
 		}
 		else
 		{
-			callee = operation.Method.IsStatic && extensionHost is not null
-				? BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false)
-				: operation.Method.MethodKind != MethodKind.DelegateInvoke
-				? BuildAliasedPropertyAccess(instance, methodName!, optional: false)
-				: instance;
-
-			// 实例方法组必须绑定到实际接收者，而不是当前 lexical this。
-			if (!operation.Method.IsStatic)
+			// A static method can only have an instance here as a reduced extension method, and
+			// that shape returned through hasBoundExtensionReceiver above. The remaining instance
+			// path is therefore either an instance method group or a delegate invocation target.
+			if (operation.Method.MethodKind == MethodKind.DelegateInvoke)
 			{
+				callee = instance;
+			}
+			else
+			{
+				callee = BuildAliasedPropertyAccess(instance, methodName!, optional: false);
+				// 实例方法组必须绑定到实际接收者，而不是当前 lexical this。
 				callee = new CallExpression(
 					callee: new MemberExpression(callee, new Identifier("bind"), computed: false, optional: false),
 					args: NodeList.From<Expression>(instance),
@@ -2348,6 +2382,56 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		return callee;
 	}
+
+	private static IOperation? GetBoundExtensionMethodReferenceReceiver(IMethodReferenceOperation operation)
+	{
+		if (!operation.Method.IsExtensionMethod && operation.Method.ReducedFrom is null)
+			return null;
+
+		// Roslyn's bound method-reference operation is authoritative: a reduced extension method
+		// carries its captured receiver in Instance, whereas an explicit static method group does not.
+		return operation.Instance;
+	}
+
+	private Expression BuildStaticMethodReferenceCallee(
+		IMethodReferenceOperation operation,
+		string methodName,
+		SenseArgument argument)
+	{
+		if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName, argument, out var importedMethod) &&
+			importedMethod is not null)
+		{
+			return importedMethod;
+		}
+
+		if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel!, methodName, out var preferredStaticCallee) &&
+			preferredStaticCallee is not null)
+		{
+			return preferredStaticCallee;
+		}
+
+		var extensionHost = TryBuildExtensionHostTarget(operation.Method, argument);
+		if (extensionHost is not null)
+			return BuildAliasedPropertyAccess(extensionHost, methodName, optional: false);
+
+		var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
+		return containing is not null
+			? BuildAliasedPropertyAccess(containing, methodName, optional: false)
+			: new Identifier(methodName);
+	}
+
+	private static int GetMethodReferenceDelegateParameterCount(IMethodReferenceOperation operation)
+	{
+		// C# method groups have no standalone value: Roslyn only binds this operation under
+		// a delegate conversion/creation, so either the operation or its parent owns the type.
+		var delegateType = (INamedTypeSymbol)(operation.Type ?? operation.Parent!.Type!);
+		return delegateType.DelegateInvokeMethod!.Parameters.Length;
+	}
+
+	private static bool IsLexicallyStaticLocalFunction(IMethodSymbol localFunction)
+		// Roslyn binds every local function directly to its declaring method symbol. The
+		// containing method's static modifier is therefore the authoritative lexical-this contract.
+		=> ((IMethodSymbol)localFunction.ContainingSymbol!).IsStatic;
 
 	private Expression MaterializeMethodReferenceReceiver(
 		Expression receiver,
@@ -2554,13 +2638,13 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		Expression? instance,
 		List<Expression> arguments,
 		SenseArgument argument,
-		ITypeSymbol? hostType = null,
+		ITypeSymbol hostType,
 		bool allowIntrinsic = false,
 		IInvocationOperation? invocationOperation = null)
 	{
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
 			ownerOperation,
-			hostType ?? targetMethod.ContainingType,
+			hostType,
 			"method invocation");
 
 		// Host extensions are an explicit override boundary and must see the already-lowered
@@ -2592,7 +2676,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			return intrinsicExpr;
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType ?? targetMethod.ContainingType);
+			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType);
 
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		var property = new Identifier(methodName!);

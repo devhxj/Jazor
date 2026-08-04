@@ -151,25 +151,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 处理 null 检查操作
-	/// C# 示例：
-	/// obj is null             // 检查是否为 null
-	/// value == null           // 直接 null 比较
-	/// 转换结果：obj == null
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitIsNull(IIsNullOperation operation, SenseArgument argument)
-	{
-		// 在 JS host 语义里，null-pattern 需要把 undefined 也视为缺失值，
-		// 否则可空 prop / erased union 缺失分支会在 not-null guard 后继续解引用。
-		var operand = Translate<Expression>(operation.Operand, argument);
-
-		return new NonLogicalBinaryExpression(Operator.Equality, operand, Null);
-	}
-
-	/// <summary>
 	/// 处理 is 模式匹配操作
 	/// C# 示例：
 	/// obj is int value                    // 模式匹配并声明变量
@@ -364,34 +345,30 @@ public partial class SemanticWalker
 
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 			{
-				if (propertySubpattern.Member is IMemberReferenceOperation m)
+				// A successfully-bound property subpattern always carries its selected member.
+				// Missing members are C# binding errors and never reach lowering.
+				var m = (IMemberReferenceOperation)propertySubpattern.Member!;
+				var propertyAccess = BuildPatternMemberAccess(m, targetExpr, patternArgument, out var existencePropertyName);
+				var propertyArg = patternArgument.WithPatternInput(propertyAccess);
+				var right = Translate<Expression>(propertySubpattern.Pattern, propertyArg);
+				if (canCheckPropertyExistence && !string.IsNullOrEmpty(existencePropertyName))
 				{
-					var propertyAccess = BuildPatternMemberAccess(m, targetExpr, patternArgument, out var existencePropertyName);
-					var propertyArg = patternArgument.WithPatternInput(propertyAccess);
-					var right = Translate<Expression>(propertySubpattern.Pattern, propertyArg);
-					if (canCheckPropertyExistence && !string.IsNullOrEmpty(existencePropertyName))
-					{
-						var exists = new NonLogicalBinaryExpression(
-							Operator.In,
-							CreateStringLiteral(existencePropertyName!),
-							targetExpr);
-						conditions.Add(exists);
-					}
-
-					conditions.Add(right);
+					var exists = new NonLogicalBinaryExpression(
+						Operator.In,
+						CreateStringLiteral(existencePropertyName!),
+						targetExpr);
+					conditions.Add(exists);
 				}
-				else
-					conditions.Add(Translate<Expression>(propertySubpattern, patternArgument.WithPatternInput(targetExpr)));
+
+				conditions.Add(right);
 			}
 		}
 
 		// 位置式解构子模式（如 (int x, string y) 或 Person("John", 18)）
 		if (operation.DeconstructionSubpatterns.Length > 0)
 		{
-			if (operation.InputType is not INamedTypeSymbol namedType)
-				return HandleTransformationFailure<Node>(operation, $"Input type '{operation.InputType}' is not a named type for deconstruction pattern.");
-
-			ProcessPositionalSubpatterns(operation, namedType, targetExpr, conditions, patternArgument);
+			// Valid positional patterns are bound to an explicit tuple/record shape.
+			ProcessPositionalSubpatterns(operation, (INamedTypeSymbol)operation.InputType!, targetExpr, conditions, patternArgument);
 		}
 
 		if (conditions.Count == 0)
@@ -812,11 +789,8 @@ public partial class SemanticWalker
 		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
 	}
 
-	private static bool CanUseInOperatorForPropertyExistenceCheck(ITypeSymbol? inputType)
+	private static bool CanUseInOperatorForPropertyExistenceCheck(ITypeSymbol inputType)
 	{
-		if (inputType is null)
-			return true;
-
 		// JavaScript's `in` accepts only objects. Scalar CLR carriers already have a
 		// preceding type check, and their mapped member read is the C# property contract.
 		return GetMapperType(inputType).Mapper is not (

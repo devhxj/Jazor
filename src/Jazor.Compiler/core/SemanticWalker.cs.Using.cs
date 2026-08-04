@@ -169,7 +169,7 @@ public partial class SemanticWalker
 				var prefixStatements = new List<Statement>();
 				var resourceExpression = MaterializeUsingResourceExpression(resourcesOperation, context, prefixStatements);
 				var disposeMethod = ResolveUsingDisposeMethod(resourcesOperation, resourcesOperation.Type!, requireInterfaceFallback: true, disposalKind);
-				var hostType = GetUsingDisposeHostType(resourcesOperation.Type, disposeMethod);
+				var hostType = resourcesOperation.Type!;
 				return [new UsingResourceBinding(resourceExpression, disposeMethod, hostType, disposalKind, resourcesOperation, PrefixStatements: prefixStatements)];
 			}
 		}
@@ -183,7 +183,7 @@ public partial class SemanticWalker
 		var variableDeclarator = Translate<VariableDeclarator>(declaratorOperation, context);
 		var identifier = (Identifier)variableDeclarator.Id;
 		var disposeMethod = ResolveUsingDisposeMethod(declaratorOperation, declaratorOperation.Symbol.Type, requireInterfaceFallback: false, disposalKind);
-		var hostType = GetUsingDisposeHostType(declaratorOperation.Symbol.Type, disposeMethod);
+		var hostType = declaratorOperation.Symbol.Type;
 		return new UsingResourceBinding(
 			identifier,
 			disposeMethod,
@@ -294,23 +294,16 @@ public partial class SemanticWalker
 				@interface.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat) == interfaceDisplayName);
 			if (interfaceType is not null)
 			{
-				var candidate = interfaceType.GetMembers(methodName)
+				disposeMethod = interfaceType.GetMembers(methodName)
 					.OfType<IMethodSymbol>()
-					.FirstOrDefault(static method => !method.IsStatic && method.Parameters.Length == 0);
-				if (candidate is not null)
-				{
-					disposeMethod = candidate;
-					return true;
-				}
+					.Single();
+				return true;
 			}
 		}
 
 		disposeMethod = null!;
 		return false;
 	}
-
-	private static ITypeSymbol GetUsingDisposeHostType(ITypeSymbol? resourceType, IMethodSymbol disposeMethod)
-		=> resourceType ?? disposeMethod.ContainingType;
 
 	private Expression MaterializeUsingResourceExpression(
 		IOperation resourceOperation,
@@ -429,20 +422,10 @@ public partial class SemanticWalker
 		=> isAsynchronous ? UsingDisposalKind.Asynchronous : UsingDisposalKind.Synchronous;
 
 	private static string GetUsingDisposeMethodName(UsingDisposalKind disposalKind)
-		=> disposalKind switch
-		{
-			UsingDisposalKind.Synchronous => "Dispose",
-			UsingDisposalKind.Asynchronous => "DisposeAsync",
-			_ => throw new System.ArgumentOutOfRangeException(nameof(disposalKind))
-		};
+		=> disposalKind == UsingDisposalKind.Asynchronous ? "DisposeAsync" : "Dispose";
 
 	private static string GetUsingDisposeInterfaceDisplayName(UsingDisposalKind disposalKind)
-		=> disposalKind switch
-		{
-			UsingDisposalKind.Synchronous => "System.IDisposable",
-			UsingDisposalKind.Asynchronous => "System.IAsyncDisposable",
-			_ => throw new System.ArgumentOutOfRangeException(nameof(disposalKind))
-		};
+		=> disposalKind == UsingDisposalKind.Asynchronous ? "System.IAsyncDisposable" : "System.IDisposable";
 
 	private static bool TryResolveUsingDisposeInterfaceImplementation(
 		ITypeSymbol resourceType,

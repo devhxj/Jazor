@@ -68,6 +68,11 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
             if (typeOp == nameof(Op.Discard))
                 continue;
 
+            // Alias is a complete producer-side contract: compiler consumers must never need to
+            // reinterpret an Alias record as an unconfigured declaration.
+            if (typeOp == nameof(Op.Alias) && string.IsNullOrWhiteSpace(typeValue))
+                throw new InvalidOperationException($"Whitelist type alias '{typeDeclaration.Identifier.ValueText}' requires a non-empty runtime alias value.");
+
             var typeName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
             var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
             var mappedTypeName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
@@ -100,6 +105,9 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
 
                 if (member.Kind == SymbolKind.Method && memberName is not null && value is null)
                     value = member.Name;
+
+                if (op == nameof(Op.Alias) && string.IsNullOrWhiteSpace(value))
+                    throw new InvalidOperationException($"Whitelist member alias '{member.Name}' requires a non-empty runtime alias value.");
 
                 if (member is IMethodSymbol implementationMethod &&
                     memberName is not null &&

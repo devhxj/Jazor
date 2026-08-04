@@ -73,15 +73,14 @@ public partial class SemanticWalker
 		if (targetTuple is null)
 			return CreateForEachLoopBinding(Translate<Node>(operation.LoopControlVariable, argument));
 
-		var elementType = GetForEachElementType(operation);
-		if (elementType is INamedTypeSymbol namedElementType &&
-			CanLowerForEachDeconstructionSource(namedElementType))
+		var elementType = (INamedTypeSymbol)GetForEachElementType(operation);
+		if (CanLowerForEachDeconstructionSource(elementType))
 		{
-			var pattern = BuildForEachDeconstructionPattern(targetTuple, namedElementType, argument);
+			var pattern = BuildForEachDeconstructionPattern(targetTuple, elementType, argument);
 			return CreateForEachLoopBinding(pattern);
 		}
 
-		var elementDisplayName = elementType?.ToDisplayString(Jazor.Common.Format.NameFormat) ?? "<unknown>";
+		var elementDisplayName = elementType.ToDisplayString(Jazor.Common.Format.NameFormat);
 		return HandleTransformationFailure<Node>(
 			operation,
 			$"For-each deconstruction source type '{elementDisplayName}' does not have a compiler-known structural runtime shape. " +
@@ -96,10 +95,10 @@ public partial class SemanticWalker
 			_ => null
 		};
 
-	private static ITypeSymbol? GetForEachElementType(IForEachLoopOperation operation)
+	private static ITypeSymbol GetForEachElementType(IForEachLoopOperation operation)
 		=> operation.SemanticModel!
 			.GetForEachStatementInfo((CommonForEachStatementSyntax)operation.Syntax)
-			.ElementType;
+			.ElementType!;
 
 	private Node BuildForEachDeconstructionPattern(
 		ITupleOperation targetTuple,
@@ -123,7 +122,7 @@ public partial class SemanticWalker
 
 			// Roslyn binds the deconstruction arity before this structural record path is selected.
 			// Every target slot therefore has a corresponding tuple/record runtime property.
-			TryGetForEachSourceSlot(sourceType, index, out var propertyName, out var propertyType);
+			GetForEachSourceSlot(sourceType, index, out var propertyName, out var propertyType);
 
 			var value = BuildForEachDeconstructionValue(
 				targetElement,
@@ -200,29 +199,23 @@ public partial class SemanticWalker
 		=> sourceType.OriginalDefinition.MetadataName == "KeyValuePair`2" &&
 		   sourceType.OriginalDefinition.ContainingNamespace.ToDisplayString() == "System.Collections.Generic";
 
-	private bool TryGetForEachSourceSlot(
+	private void GetForEachSourceSlot(
 		INamedTypeSymbol sourceType,
 		int index,
 		out string propertyName,
 		out ITypeSymbol propertyType)
 	{
-		if (sourceType.IsTupleType && index < sourceType.TupleElements.Length)
+		if (sourceType.IsTupleType)
 		{
 			var field = sourceType.TupleElements[index];
 			propertyName = GetTupleRuntimeFieldName(field);
 			propertyType = field.Type;
-			return true;
+			return;
 		}
 
-		if (ShouldLowerStructurally(sourceType) &&
-			TryGetStructuralRuntimeProperty(sourceType, index, out propertyName, out propertyType))
-		{
-			return true;
-		}
-
-		propertyName = null!;
-		propertyType = null!;
-		return false;
+		// The caller admits this route only after CanLowerForEachDeconstructionSource() has
+		// established a structural source. Roslyn has already validated the deconstruction arity.
+		_ = TryGetStructuralRuntimeProperty(sourceType, index, out propertyName, out propertyType);
 	}
 
 	private static Node CreateForEachLoopBinding(Node loopControl)
