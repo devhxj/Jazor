@@ -37,11 +37,11 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 `Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-05, is:
 
-| Metric | Verified result | Enforced minimum |
-|--------|-----------------|------------------|
+| Metric | Verified result | Active enforced minimum |
+|--------|-----------------|-------------------------|
 | Compiler regression tests | 10192 / 10192 passed | 10000 passed |
 | Line coverage | 16366 / 16576 (98.73%) | 98% |
-| Branch coverage | 6354 / 6684 (95.06%) | 94% |
+| Branch coverage | 6354 / 6684 (95.06%) | 96% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -49,7 +49,7 @@ Run the authoritative coverage gate from the repository root:
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
 
-The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. This release meets the 10,000 / 98% / 94% gate with a measured 95.06% branch rate. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
+The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. The 95.06% result is the verified `v0.1.44` release baseline; the active branch target and enforced gate are now 96%. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
 
 ## RazorVue Verification Baseline
 

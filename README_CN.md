@@ -37,11 +37,11 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 `Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-08-05：
 
-| 指标 | 验证结果 | 强制阈值 |
-|------|----------|----------|
+| 指标 | 验证结果 | 当前强制阈值 |
+|------|----------|--------------|
 | 编译器回归测试 | 10192 / 10192 通过 | 至少通过 10000 项 |
 | 行覆盖率 | 16366 / 16576（98.73%） | 98% |
-| 分支覆盖率 | 6354 / 6684（95.06%） | 94% |
+| 分支覆盖率 | 6354 / 6684（95.06%） | 96% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -49,7 +49,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
 
-该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。本次发布以 95.06% 的实测分支覆盖率达到 10,000 / 98% / 94% 门槛。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
+该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。95.06% 是已验证的 `v0.1.44` 发布基线，当前分支目标和强制门槛均已上调为 96%。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
 
 ## RazorVue 验证基线
 

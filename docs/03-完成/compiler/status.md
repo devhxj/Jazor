@@ -14,7 +14,7 @@
 - `Jazor.Compiler` 分支覆盖：6354 / 6684（95.06%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
-coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 94% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-05 的 `v0.1.44` 正式门禁报告，当前发布门槛已达成。
+coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 96% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-05 的 `v0.1.44` 正式门禁报告，是 95.06% 的已验证发布基线；当前 96% 分支门槛是尚待达成的活动目标。
 
 更具体而言：
 
