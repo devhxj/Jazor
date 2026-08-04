@@ -95,6 +95,11 @@
 - C# `for` 声明的控制变量在整个循环内是单一 lexical binding；JavaScript 的 `for (let ...)` 则为每轮迭代建立新的 binding。仅当 Roslyn `IForLoopOperation.Locals` 表明该声明变量被嵌套 anonymous function 或 local function 捕获时，lowering 才将声明置于等价外层 block，并生成空初始化器的 `for`；未捕获循环仍保持普通 `for (let ...)` 产物。
 - `AstConverterRuntimeClassScenarioTests.ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost` 断言该 AST/text 结构，并由 Deno.host 验证 lambda 与 local function 回调均观察到循环结束后的最终控制变量值。`SemanticWalkerLoopTest` 保留普通 loop initializer 的精确文本回归。
 
+### `Nullable<T>.Value`
+
+- `Nullable<T>.Value` 通过 compiler-owned `Op.Compile` lowering 为 nullish guard：receiver 只求值一次，有值时直接返回其 erased carrier；`null` 或 JS 边界传入的 `undefined` 通过 AST 构造的 throw expression 抛出稳定 `InvalidOperationException` 消息，不以默认值或弱类型 sentinel 近似。
+- `AstConverterRuntimeClassScenarioTests.ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnDenoHost` 同时断言生成文本和 Deno.host 的有值、`null`、`undefined` 与 probe 计数行为。
+
 ### LINQ `let`
 
 - `let` 由 Roslyn 展开为匿名结构投影、过滤与最终选择；`ITranslatedQueryOperation` 只移除 wrapper，后续仍复用 `Select` / `Where` / `ToArray` intrinsic 和匿名函数 lowering，不拼 query 文本或引入 query 特例 runtime。

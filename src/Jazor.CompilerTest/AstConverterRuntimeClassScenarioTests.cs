@@ -1644,6 +1644,116 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnDenoHost()
+    {
+        const string scenarioId = "ast-converter-runtime-class.nullable-value";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class RequiredReader
+                {
+                    private int? next;
+                    private int probes;
+
+                    public int Probes => probes;
+
+                    public void SetNext(int? value)
+                    {
+                        next = value;
+                    }
+
+                    private int? Probe()
+                    {
+                        probes++;
+                        return next;
+                    }
+
+                    public int Read()
+                    {
+                        return Probe().Value;
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "return this.probe() ??", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(
+            script,
+            "InvalidOperationException: Nullable object must have a value.",
+            StringComparison.Ordinal,
+            scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-nullable-value-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "nullable-value.mjs");
+            var testPath = Path.Combine(root, "nullable-value.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { RequiredReader } from "./nullable-value.mjs";
+
+                Deno.test("Nullable Value preserves one receiver evaluation and its empty-carrier failure", () => {
+                  const reader = new RequiredReader();
+                  const expectedError = "InvalidOperationException: Nullable object must have a value.";
+
+                  reader.setNext(23);
+                  if (reader.read() !== 23 || reader.probes !== 1)
+                    throw new Error(`expected populated nullable to return 23 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+
+                  reader.setNext(null);
+                  let nullMessage = "";
+                  try {
+                    reader.read();
+                  } catch (error) {
+                    nullMessage = error.message;
+                  }
+                  if (nullMessage !== expectedError || reader.probes !== 2)
+                    throw new Error(`expected null to fail after one probe, got message=${nullMessage} probes=${reader.probes}`);
+
+                  reader.setNext(undefined);
+                  let undefinedMessage = "";
+                  try {
+                    reader.read();
+                  } catch (error) {
+                    undefinedMessage = error.message;
+                  }
+                  if (undefinedMessage !== expectedError || reader.probes !== 3)
+                    throw new Error(`expected undefined to fail after one probe, got message=${undefinedMessage} probes=${reader.probes}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_StringFormattingIntrinsics_PreserveComposedValue()
     {
         const string scenarioId = "ast-converter-runtime-class.string-formatting-intrinsics";
