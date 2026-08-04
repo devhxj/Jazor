@@ -67,36 +67,6 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "For-To loops are not supported in JavaScript conversion.");
 
 	/// <summary>
-	/// 处理事件引用操作
-	/// C# 示例：
-	/// obj.MyEvent += Handler;      // 事件订阅
-	/// obj.MyEvent -= Handler;      // 事件取消订阅
-	/// 转换结果：不支持，JavaScript 事件模型与 C# 多播事件模型根本不同
-	/// 原因：C# 事件支持多播委托、线程安全访问和弱引用，而 JavaScript 事件是简单的回调函数模式
-	/// 替代方案：在 JavaScript 中使用 addEventListener/removeEventListener 或自定义事件系统
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitEventReference(IEventReferenceOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Event references are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理事件赋值操作
-	/// C# 示例：
-	/// event += handler;           // 事件订阅
-	/// event -= handler;           // 事件取消订阅
-	/// 转换结果：不支持，JavaScript 事件模型与 C# 多播事件模型根本不同
-	/// 原因：C# 事件模型（多播、弱引用、线程安全）与 JavaScript 事件模型根本不同，无法保证语义等价
-	/// 替代方案：在 JavaScript 中使用事件发射器模式或观察者模式
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitEventAssignment(IEventAssignmentOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Event assignments are not supported in JavaScript conversion.");
-
-	/// <summary>
 	/// 处理动态对象创建操作
 	/// C# 示例：
 	/// dynamic obj = new ExpandoObject();  // 动态对象创建

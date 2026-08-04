@@ -41,6 +41,7 @@ RazorVue 的 current-component、RenderTreeBuilder、children-to-slot 和 Compon
 - `interface`：只作为契约参与分析、宿主查找和投影，不发射 runtime declaration。
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式、解构都按结构属性键处理，不保 nominal runtime identity；若需要普通 runtime class 语义，必须显式写 `class`。
 - iterator：module method、runtime member method 和 local function 依据实际 Roslyn operation tree 声明 generator；`yield` 输出 `function*`，async iterator 输出 `async function*`，nested lambda/local function 的 yield 不影响外层函数。
+- field-like event：当前模块 non-record runtime member class 的非静态、非 virtual/override 字段式事件使用私有调用列表与 add/remove/snapshot helper；直接实例方法组按 `(method, receiver)` 等价而非 JS `bind` 临时函数身份比较，raise 前固定快照以保留 C# 的多播顺序和订阅变更语义。模块静态事件、custom accessor、virtual/override、by-ref 参数或返回、delegate equality/combination 与 `IRaiseEventOperation` 保持显式失败。
 - 成员类继承：当前支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`。
 - 普通方法重载：仅在确有同名 overload 时追加稳定签名 hash；ECMAScript runtime host API 默认跳过该后缀。
 - 成员类构造函数重载：固定为单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher。

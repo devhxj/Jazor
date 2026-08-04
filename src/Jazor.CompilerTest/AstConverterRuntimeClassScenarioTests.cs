@@ -2653,9 +2653,209 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public void ConvertRuntimeClass_Event_RejectsUnimplementedSubscriptionProtocol()
+    public async Task ConvertModule_FieldLikeEvent_PreservesMulticastSnapshotProtocol()
     {
-        const string scenarioId = "ast-converter-runtime-class.event-rejected";
+        const string scenarioId = "ast-converter-runtime-class.field-like-event-multicast-protocol";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public static void Subscribe(Emitter emitter, Action<int> handler)
+                    => emitter.Changed += handler;
+
+                public static void Unsubscribe(Emitter emitter, Action<int> handler)
+                    => emitter.Changed -= handler;
+
+                public sealed class Emitter
+                {
+                    public event Action<int>? Changed;
+
+                    public event Func<int>? ValueRequested;
+
+                    public string Trace { get; private set; } = "";
+
+                    public int ArgumentReads { get; private set; }
+
+                    public int HandlerReceiverReads { get; private set; }
+
+                    public int EventReceiverReads { get; private set; }
+
+                    public bool HasHandlers() => Changed is not null;
+
+                    public bool IsEmptyByEquality() => Changed == null;
+
+                    public bool IsNonEmptyByInequality() => Changed != null;
+
+                    public bool IsEmptyByReversedEquality() => null == Changed;
+
+                    public bool IsEmptyByConvertedEquality() => ((Action<int>?)Changed) == null;
+
+                    public void Raise(int value) => Changed?.Invoke(Read(value));
+
+                    public void SubscribeOwn() => Changed += GetHandlerReceiver().Record;
+
+                    public void UnsubscribeOwn() => Changed -= GetHandlerReceiver().Record;
+
+                    public void SubscribeThroughEventReceiver(Action<int> handler) => GetEventReceiver().Changed += handler;
+
+                    public void UnsubscribeThroughEventReceiver(Action<int> handler) => GetEventReceiver().Changed -= handler;
+
+                    public void SubscribeValue(Func<int> handler) => ValueRequested += handler;
+
+                    public int? ReadValue() => ValueRequested?.Invoke();
+
+                    private int Read(int value)
+                    {
+                        ArgumentReads++;
+                        return value;
+                    }
+
+                    private Emitter GetHandlerReceiver()
+                    {
+                        HandlerReceiverReads++;
+                        return this;
+                    }
+
+                    private Emitter GetEventReceiver()
+                    {
+                        EventReceiverReads++;
+                        return this;
+                    }
+
+                    private void Record(int value) => Trace += $"own:{value};";
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "#$event_store_", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "$event_add_", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "$event_remove_", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "$event_snapshot_", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, ".slice()", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-event-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "events.mjs");
+            var testPath = Path.Combine(root, "events.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { Emitter, subscribe, unsubscribe } from "./events.mjs";
+
+                function assert(condition, message) {
+                  if (!condition)
+                    throw new Error(message);
+                }
+
+                Deno.test("field-like events retain multicast and snapshot semantics", () => {
+                  const empty = new Emitter();
+                  assert(!empty.hasHandlers(), "new event should compare equal to null");
+                  assert(empty.isEmptyByEquality(), "binary event null comparison did not preserve empty state");
+                  assert(!empty.isNonEmptyByInequality(), "binary event inequality did not preserve empty state");
+                  assert(empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not preserve empty state");
+                  assert(empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not preserve empty state");
+                  empty.raise(1);
+                  assert(empty.argumentReads === 0, "conditional raise evaluated arguments without subscribers");
+
+                  assert(empty.readValue() == null, "empty value-returning event should preserve conditional missing value");
+                  empty.subscribeValue(() => 2);
+                  empty.subscribeValue(() => 7);
+                  assert(empty.readValue() === 7, "value-returning event did not return the final handler result");
+
+                  const receiverHandler = () => {};
+                  empty.subscribeThroughEventReceiver(receiverHandler);
+                  assert(empty.eventReceiverReads === 1, "event receiver was not evaluated exactly once during subscription");
+                  empty.unsubscribeThroughEventReceiver(receiverHandler);
+                  assert(empty.eventReceiverReads === 2, "event receiver was not evaluated exactly once during removal");
+
+                  empty.subscribeOwn();
+                  empty.subscribeOwn();
+                  assert(empty.handlerReceiverReads === 2, "method-group receiver was not evaluated exactly once per subscription");
+                  assert(empty.hasHandlers(), "subscribed event should compare non-null");
+                  assert(!empty.isEmptyByEquality(), "binary event null comparison did not preserve non-empty state");
+                  assert(empty.isNonEmptyByInequality(), "binary event inequality did not preserve non-empty state");
+                  assert(!empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not preserve non-empty state");
+                  assert(!empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not preserve non-empty state");
+                  empty.raise(3);
+                  assert(empty.trace === "own:3;own:3;", "duplicate subscriptions did not retain order");
+
+                  empty.unsubscribeOwn();
+                  assert(empty.handlerReceiverReads === 3, "method-group receiver was not evaluated exactly once during removal");
+                  empty.raise(4);
+                  assert(empty.trace === "own:3;own:3;own:4;", "removal did not remove the last matching method group");
+
+                  empty.unsubscribeOwn();
+                  const readsBeforeEmptyRaise = empty.argumentReads;
+                  empty.raise(5);
+                  assert(empty.argumentReads === readsBeforeEmptyRaise, "last removal did not restore conditional argument short-circuiting");
+                  assert(!empty.hasHandlers(), "event should compare null after its final subscriber is removed");
+                  assert(empty.isEmptyByEquality(), "binary event null comparison did not restore empty state");
+                  assert(!empty.isNonEmptyByInequality(), "binary event inequality did not restore empty state");
+                  assert(empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not restore empty state");
+                  assert(empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not restore empty state");
+
+                  const duplicate = new Emitter();
+                  const duplicateTrace = [];
+                  const duplicateHandler = value => duplicateTrace.push(value);
+                  subscribe(duplicate, duplicateHandler);
+                  subscribe(duplicate, duplicateHandler);
+                  unsubscribe(duplicate, duplicateHandler);
+                  duplicate.raise(6);
+                  assert(duplicateTrace.join(",") === "6", "delegate-variable removal did not remove only the last matching subscription");
+
+                  const mutating = new Emitter();
+                  const order = [];
+                  const second = value => order.push(`second:${value}`);
+                  const first = value => {
+                    order.push(`first:${value}`);
+                    unsubscribe(mutating, second);
+                  };
+                  subscribe(mutating, first);
+                  subscribe(mutating, second);
+                  mutating.raise(8);
+                  assert(order.join(",") === "first:8,second:8", "subscription mutation changed the active invocation snapshot");
+                  mutating.raise(9);
+                  assert(order.join(",") === "first:8,second:8,first:9", "removal was not visible to the next invocation snapshot");
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_CustomEvent_RejectsUnmodeledAccessorStorage()
+    {
+        const string scenarioId = "ast-converter-runtime-class.custom-event-rejected";
         var fixture = CompileModule(
             """
             using System;
@@ -2664,9 +2864,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
             {
                 public sealed class Widget
                 {
-                    public event Action? Changed;
+                    private Action? _changed;
 
-                    public void Raise() => Changed?.Invoke();
+                    public event Action? Changed
+                    {
+                        add => _changed += value;
+                        remove => _changed -= value;
+                    }
                 }
             }
             """,
@@ -2677,7 +2881,365 @@ public sealed class AstConverterRuntimeClassScenarioTests
             () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
             scenarioId);
 
-        StringAssert.Contains(exception.Message, "does not support Event:Changed", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "custom event accessors", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_FieldLikeEventDelegateEquality_RejectsUnsoundFunctionIdentityFallback()
+    {
+        const string scenarioId = "ast-converter-runtime-class.field-like-event-delegate-equality-rejected";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public event Action? Changed;
+
+                    public bool Matches(Action handler) => Changed == handler;
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "Event delegate equality", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void EventLowering_RejectsStaticAbstractCustomAndWritableDelegateSignatures()
+    {
+        var cases = new[]
+        {
+            (
+                Id: "event-lowering.static",
+                Source: """
+                    using System;
+                    public static class TestModule { public sealed class Widget { public static event Action? Changed; } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "static events"),
+            (
+                Id: "event-lowering.abstract",
+                Source: """
+                    using System;
+                    public static class TestModule { public abstract class Widget { public abstract event Action? Changed; } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "abstract events"),
+            (
+                Id: "event-lowering.custom",
+                Source: """
+                    using System;
+                    public static class TestModule { public sealed class Widget { private Action? _changed; public event Action? Changed { add => _changed += value; remove => _changed -= value; } } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "custom event accessors"),
+            (
+                Id: "event-lowering.ref-delegate",
+                Source: """
+                    public delegate void RefHandler(ref int value);
+                    public static class TestModule { public sealed class Widget { public event RefHandler? Changed; } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "by-reference parameters"),
+            (
+                Id: "event-lowering.virtual",
+                Source: """
+                    using System;
+                    public static class TestModule { public class Widget { public virtual event Action? Changed; } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "virtual and override events"),
+            (
+                Id: "event-lowering.ref-return-delegate",
+                Source: """
+                    public delegate ref int RefReturnHandler();
+                    public static class TestModule { public sealed class Widget { public event RefReturnHandler? Changed; } }
+                    """,
+                TypeName: "Widget",
+                EventName: "Changed",
+                Fragment: "by-reference returns")
+        };
+
+        foreach (var testCase in cases)
+        {
+            var fixture = CompileModule(testCase.Source, testCase.Id);
+            var type = fixture.GetType(testCase.TypeName);
+            var @event = type.GetMembers(testCase.EventName).OfType<IEventSymbol>().Single();
+            var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+            Assert.IsFalse(EventLowering.IsSupportedFieldLikeInstanceEvent(@event, out var reason), testCase.Id);
+            StringAssert.Contains(reason, testCase.Fragment, StringComparison.Ordinal, testCase.Id);
+            var exception = Assert.ThrowsExactly<NotSupportedException>(
+                () => converter.ConvertRuntimeClass(type),
+                testCase.Id);
+            StringAssert.Contains(exception.Message, testCase.Fragment, StringComparison.Ordinal, testCase.Id);
+            var invokeException = Assert.ThrowsExactly<NotSupportedException>(
+                () => EventLowering.GetInvokeMethod(@event),
+                testCase.Id);
+            StringAssert.Contains(invokeException.Message, testCase.Fragment, StringComparison.Ordinal, testCase.Id);
+        }
+    }
+
+    [TestMethod]
+    public void EventLowering_RejectsValueTypeEventStorage()
+    {
+        const string scenarioId = "event-lowering.value-type";
+        var fixture = CompileModule(
+            """
+            using System;
+            public static class TestModule { public struct ValueEmitter { public event Action? Changed; } }
+            """,
+            scenarioId);
+        var type = fixture.GetType("ValueEmitter");
+        var @event = type.GetMembers("Changed").OfType<IEventSymbol>().Single();
+
+        Assert.IsFalse(EventLowering.IsSupportedFieldLikeInstanceEvent(@event, out var reason), scenarioId);
+        StringAssert.Contains(reason, "runtime member classes", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public async Task ConvertModule_FieldLikeEvent_StaticAndLocalMethodGroupsUseSourceBoundCallbacks()
+    {
+        const string scenarioId = "ast-converter-runtime-class.event-static-and-local-method-groups";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public static void RecordStatic(int value)
+                {
+                }
+
+                public sealed class Emitter
+                {
+                    public event Action<int>? Changed;
+
+                    public string Trace { get; private set; } = "";
+
+                    public void Raise(int value) => Changed?.Invoke(value);
+
+                    public void SubscribeStatic() => Changed += TestModule.RecordStatic;
+
+                    public void UnsubscribeStatic() => Changed -= TestModule.RecordStatic;
+
+                    public void ExerciseCapturedLocal()
+                    {
+                        void RecordLocal(int value) => Trace += value + ";";
+
+                        Changed += RecordLocal;
+                        Raise(3);
+                        Changed -= RecordLocal;
+                        Raise(4);
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "recordStatic", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "RecordLocal", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-event-local-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "local-events.mjs");
+            var testPath = Path.Combine(root, "local-events.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { Emitter } from "./local-events.mjs";
+
+                Deno.test("capturing local event handlers retain their receiver and removal identity", () => {
+                  const emitter = new Emitter();
+                  emitter.exerciseCapturedLocal();
+                  if (emitter.trace !== "3;")
+                    throw new Error(`capturing local event handler trace was ${emitter.trace}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ConvertModule_FieldLikeEvent_BaseMethodGroupRetainsBaseReceiver()
+    {
+        const string scenarioId = "ast-converter-runtime-class.event-base-method-group";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public class BaseEmitter
+                {
+                    public event Action<int>? Changed;
+
+                    public string Trace { get; private set; } = "";
+
+                    public void Raise(int value) => Changed?.Invoke(value);
+
+                    protected void Record(int value) => Trace += value + ";";
+                }
+
+                public sealed class DerivedEmitter : BaseEmitter
+                {
+                    public void SubscribeBase() => Changed += base.Record;
+
+                    public void UnsubscribeBase() => Changed -= base.Record;
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "super.record", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-event-base-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "base-events.mjs");
+            var testPath = Path.Combine(root, "base-events.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { DerivedEmitter } from "./base-events.mjs";
+
+                Deno.test("base method groups preserve their original receiver", () => {
+                  const emitter = new DerivedEmitter();
+                  emitter.subscribeBase();
+                  emitter.raise(7);
+                  if (emitter.trace !== "7;")
+                    throw new Error("base method group did not run against the derived instance");
+                  emitter.unsubscribeBase();
+                  emitter.raise(8);
+                  if (emitter.trace !== "7;")
+                    throw new Error("base method group removal did not use the same receiver identity");
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_FieldLikeEvent_RejectsExternalMethodGroupsAndDelegateCombination()
+    {
+        var cases = new[]
+        {
+            (
+                Id: "ast-converter-runtime-class.event-external-method-group-rejected",
+                Source: """
+                    using System;
+                    public static class TestModule { public sealed class Widget { public event Action<int>? Changed; public void Subscribe() => Changed += Console.WriteLine; } }
+                    """,
+                Fragment: "Static method-group handler"),
+            (
+                Id: "ast-converter-runtime-class.event-external-instance-method-group-rejected",
+                Source: """
+                    using System;
+                    public sealed class ExternalHandler { public void Record(int value) { } }
+                    public static class TestModule { public sealed class Widget { public event Action<int>? Changed; public void Subscribe(ExternalHandler handler) => Changed += handler.Record; } }
+                    """,
+                Fragment: "Instance method-group handler"),
+            (
+                Id: "ast-converter-runtime-class.event-delegate-combination-rejected",
+                Source: """
+                    using System;
+                    public static class TestModule { public sealed class Widget { public event Action<int>? Changed; public void Subscribe(Action<int> first, Action<int> second) => Changed += first + second; } }
+                    """,
+                Fragment: "Delegate combination")
+        };
+
+        foreach (var testCase in cases)
+        {
+            var fixture = CompileModule(testCase.Source, testCase.Id);
+            var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+            var exception = Assert.ThrowsExactly<OperationTransformationException>(
+                () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+                testCase.Id);
+            StringAssert.Contains(exception.Message, testCase.Fragment, StringComparison.Ordinal, testCase.Id);
+        }
+    }
+
+    [TestMethod]
+    public void ConvertModule_FieldLikeEvent_RejectsDelegateCombinationExpression()
+    {
+        const string scenarioId = "ast-converter-runtime-class.event-delegate-combination-expression-rejected";
+        var fixture = CompileModule(
+            """
+            using System;
+            public static class TestModule { public sealed class Widget { public event Action? Changed; public Action Combine(Action handler) => Changed + handler; } }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+        StringAssert.Contains(exception.Message, "Event delegate equality and delegate combination", StringComparison.Ordinal, scenarioId);
     }
 
     [TestMethod]

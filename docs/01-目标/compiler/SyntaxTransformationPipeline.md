@@ -190,7 +190,7 @@ Roslyn IOperation
 - ES 特性只能落在最外层类型；嵌套 ES 类型直接报错
 - 白名单中的类型和成员允许使用
 - 其他类型必须是带 `[ECMAScript]` / `[ECMAScriptModule]` 的类型
-- 事件、事件赋值、析构等会直接报错
+- 字段式非静态事件仅在当前模块的 non-record runtime 成员类中放行；模块静态事件、custom accessor、virtual/override、delegate equality/combination、by-ref delegate 参数或返回和析构仍会直接报错
 - 数组、元组、泛型参数会递归检查元素/类型参数
 
 Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer 放行的代码，转换器仍可能因为“能力未实现”而失败，但不应出现大面积无约束输入。

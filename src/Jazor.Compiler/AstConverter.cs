@@ -801,6 +801,228 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return properties;
     }
 
+    private IEnumerable<Node> ConvertMemberEvent(IEventSymbol symbol)
+    {
+        if (!EventLowering.IsSupportedFieldLikeInstanceEvent(symbol, out var reason))
+        {
+            throw new NotSupportedException(
+                $"Jazor member class event '{symbol.Name}' cannot lower: {reason}");
+        }
+
+        var invokeMethod = EventLowering.GetInvokeMethod(symbol);
+        yield return new PropertyDefinition(
+            key: new PrivateIdentifier(EventLowering.GetStorageName(symbol)),
+            value: new ArrayExpression(NodeList.Empty<Expression?>()),
+            computed: false,
+            isStatic: false,
+            decorators: NodeList.Empty<Decorator>());
+        yield return CreateEventAddMethod(symbol);
+        yield return CreateEventRemoveMethod(symbol);
+        yield return CreateEventSnapshotMethod(symbol, invokeMethod);
+    }
+
+    private static MethodDefinition CreateEventAddMethod(IEventSymbol symbol)
+    {
+        var handler = new Identifier("$eventHandler");
+        var receiver = new Identifier("$eventReceiver");
+        var append = new CallExpression(
+            new MemberExpression(
+                CreateEventStorageAccess(symbol),
+                new Identifier("push"),
+                computed: false,
+                optional: false),
+            NodeList.From<Expression>(
+                new ArrayExpression(NodeList.From<Expression?>(handler, receiver))),
+            optional: false);
+        var body = new FunctionBody(
+            NodeList.From<Statement>(
+                new IfStatement(
+                    new NonLogicalBinaryExpression(Operator.Inequality, handler, new NullLiteral("null")),
+                    new NestedBlockStatement(NodeList.From<Statement>(
+                        new NonSpecialExpressionStatement(append))),
+                    null)),
+            strict: true);
+
+        return CreateEventProtocolMethod(
+            EventLowering.GetAddMethodName(symbol),
+            [handler, receiver],
+            body);
+    }
+
+    private static MethodDefinition CreateEventRemoveMethod(IEventSymbol symbol)
+    {
+        var handler = new Identifier("$eventHandler");
+        var receiver = new Identifier("$eventReceiver");
+        var index = new Identifier("$eventIndex");
+        var entry = new Identifier("$eventEntry");
+        var entryCallback = CreateEventEntryAccess(entry, 0);
+        var entryReceiver = CreateEventEntryAccess(entry, 1);
+        var matches = new LogicalExpression(
+            Operator.LogicalAnd,
+            new NonLogicalBinaryExpression(Operator.StrictEquality, entryCallback, handler),
+            new NonLogicalBinaryExpression(Operator.StrictEquality, entryReceiver, receiver));
+        var remove = new CallExpression(
+            new MemberExpression(
+                CreateEventStorageAccess(symbol),
+                new Identifier("splice"),
+                computed: false,
+                optional: false),
+            NodeList.From<Expression>(index, new NumericLiteral(1, "1")),
+            optional: false);
+        var loopBody = new NestedBlockStatement(NodeList.From<Statement>(
+            new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(entry, CreateEventStorageIndexAccess(symbol, index)))),
+            new IfStatement(
+                matches,
+                new NestedBlockStatement(NodeList.From<Statement>(
+                    new NonSpecialExpressionStatement(remove),
+                    new ReturnStatement(null))),
+                null),
+            new NonSpecialExpressionStatement(
+                new UpdateExpression(Operator.Decrement, index, prefix: false))));
+        var storageLength = new MemberExpression(
+            CreateEventStorageAccess(symbol),
+            new Identifier("length"),
+            computed: false,
+            optional: false);
+        var body = new FunctionBody(
+            NodeList.From<Statement>(
+                new IfStatement(
+                    new NonLogicalBinaryExpression(Operator.Equality, handler, new NullLiteral("null")),
+                    new ReturnStatement(null),
+                    null),
+                new VariableDeclaration(
+                    VariableDeclarationKind.Let,
+                    NodeList.From(new VariableDeclarator(
+                        index,
+                        new NonLogicalBinaryExpression(
+                            Operator.Subtraction,
+                            storageLength,
+                            new NumericLiteral(1, "1"))))),
+                new WhileStatement(
+                    new NonLogicalBinaryExpression(
+                        Operator.GreaterThanOrEqual,
+                        index,
+                        new NumericLiteral(0, "0")),
+                    loopBody)),
+            strict: true);
+
+        return CreateEventProtocolMethod(
+            EventLowering.GetRemoveMethodName(symbol),
+            [handler, receiver],
+            body);
+    }
+
+    private static MethodDefinition CreateEventSnapshotMethod(IEventSymbol symbol, IMethodSymbol invokeMethod)
+    {
+        var snapshot = new Identifier("$eventSnapshot");
+        var entry = new Identifier("$eventEntry");
+        var result = new Identifier("$eventResult");
+        var arguments = invokeMethod.Parameters
+            .Select((_, index) => new Identifier("$eventArg" + index))
+            .ToArray();
+        var callback = CreateEventEntryAccess(entry, 0);
+        var receiver = CreateEventEntryAccess(entry, 1);
+        var call = new CallExpression(
+            new MemberExpression(callback, new Identifier("apply"), computed: false, optional: false),
+            NodeList.From<Expression>(
+                receiver,
+                new ArrayExpression(NodeList.From<Expression?>(arguments.Cast<Expression?>()))),
+            optional: false);
+        var delegateBody = new FunctionBody(
+            NodeList.From<Statement>(
+                new VariableDeclaration(
+                    VariableDeclarationKind.Let,
+                    NodeList.From(new VariableDeclarator(result, null))),
+                new ForOfStatement(
+                    new VariableDeclaration(
+                        VariableDeclarationKind.Const,
+                        NodeList.From(new VariableDeclarator(entry, null))),
+                    snapshot,
+                    new NestedBlockStatement(NodeList.From<Statement>(
+                        new NonSpecialExpressionStatement(
+                            new AssignmentExpression(Operator.Assignment, result, call)))),
+                    @await: false),
+                new ReturnStatement(result)),
+            strict: true);
+        var snapshotDelegate = new ArrowFunctionExpression(
+            NodeList.From<Node>(arguments),
+            delegateBody,
+            expression: false,
+            async: false);
+        var storageLength = new MemberExpression(
+            CreateEventStorageAccess(symbol),
+            new Identifier("length"),
+            computed: false,
+            optional: false);
+        var copy = new CallExpression(
+            new MemberExpression(
+                CreateEventStorageAccess(symbol),
+                new Identifier("slice"),
+                computed: false,
+                optional: false),
+            NodeList.Empty<Expression>(),
+            optional: false);
+        var body = new FunctionBody(
+            NodeList.From<Statement>(
+                new IfStatement(
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictEquality,
+                        storageLength,
+                        new NumericLiteral(0, "0")),
+                    new ReturnStatement(new NullLiteral("null")),
+                    null),
+                new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(snapshot, copy))),
+                new ReturnStatement(snapshotDelegate)),
+            strict: true);
+
+        return CreateEventProtocolMethod(
+            EventLowering.GetSnapshotMethodName(symbol),
+            [],
+            body);
+    }
+
+    private static MethodDefinition CreateEventProtocolMethod(
+        string name,
+        IReadOnlyList<Identifier> parameters,
+        FunctionBody body)
+        => new(
+            PropertyKind.Method,
+            key: new Identifier(name),
+            value: new FunctionExpression(
+                id: null,
+                parameters: NodeList.From<Node>(parameters),
+                body: body,
+                generator: false,
+                async: false),
+            computed: false,
+            isStatic: false,
+            decorators: NodeList.Empty<Decorator>());
+
+    private static MemberExpression CreateEventStorageAccess(IEventSymbol symbol)
+        => new(
+            new ThisExpression(),
+            new PrivateIdentifier(EventLowering.GetStorageName(symbol)),
+            computed: false,
+            optional: false);
+
+    private static MemberExpression CreateEventStorageIndexAccess(IEventSymbol symbol, Expression index)
+        => new(
+            CreateEventStorageAccess(symbol),
+            index,
+            computed: true,
+            optional: false);
+
+    private static MemberExpression CreateEventEntryAccess(Identifier entry, int index)
+        => new(
+            entry,
+            new NumericLiteral(index, index.ToString(CultureInfo.InvariantCulture)),
+            computed: true,
+            optional: false);
+
     private MethodDefinition ConvertMemberConstructor(
         MemberConstructorLowering lowering,
         INamedTypeSymbol? baseType,
@@ -960,6 +1182,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol && field.IsImplicitlyDeclared:
+                case IFieldSymbol eventBackingField when eventBackingField.AssociatedSymbol is IEventSymbol && eventBackingField.IsImplicitlyDeclared:
                     break;
                 case IFieldSymbol field:
                     nodes.Add(ConvertMemberField(field));
@@ -990,8 +1213,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     if (!ctor.IsImplicitlyDeclared)
                         throw new NotSupportedException($"Jazor member class does not support static constructor {ctor.Name}.");
                     break;
-                case IMethodSymbol accessor when accessor.AssociatedSymbol is IEventSymbol eventSymbol:
-                    throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
+                case IMethodSymbol accessor when accessor.AssociatedSymbol is IEventSymbol:
+                    break;
                 case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
                     nodes.Add(ConvertMemberMethod(func, cancellationToken));
                     break;
@@ -1011,7 +1234,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     // shared declared-name plan keeps references stable across both declarations.
                     break;
                 case IEventSymbol eventSymbol:
-                    throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
+                    nodes.AddRange(ConvertMemberEvent(eventSymbol));
+                    break;
                 default:
                     throw new NotSupportedException($"Jazor member class does not support {member.Kind}:{member.Name}.");
             }

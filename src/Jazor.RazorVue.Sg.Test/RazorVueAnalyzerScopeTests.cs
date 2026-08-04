@@ -112,6 +112,72 @@ public sealed class RazorVueAnalyzerScopeTests
             string.Join(Environment.NewLine, diagnostics));
     }
 
+    [TestMethod]
+    public async Task RuntimeMemberFieldLikeEvent_IsAcceptedByTheSharedCompilerProtocol()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System;
+            using ECMAScript;
+
+            [ECMAScriptModule("./events")]
+            public static class EventsModule
+            {
+                public sealed class Emitter
+                {
+                    public event Action? Changed;
+
+                    public void Subscribe(Action handler) => Changed += handler;
+
+                    public void Raise() => Changed?.Invoke();
+                }
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task UnsupportedFieldLikeEventShapes_RemainRejectedByTheSharedCompilerProtocol()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System;
+            using ECMAScript;
+
+            [ECMAScriptModule("./events")]
+            public static class EventsModule
+            {
+                public sealed class Emitter
+                {
+                    private Action? _changed;
+
+                    public static event Action? GlobalChanged;
+
+                    public event Action? Changed
+                    {
+                        add => _changed += value;
+                        remove => _changed -= value;
+                    }
+                }
+
+                public class VirtualEmitter
+                {
+                    public virtual event Action? Changed;
+                }
+
+                public struct ValueEmitter
+                {
+                    public event Action? Changed;
+                }
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Count(static diagnostic => diagnostic.Id == "JAZOR001") >= 4,
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(string source)
     {
         var compilation = CSharpCompilation.Create(

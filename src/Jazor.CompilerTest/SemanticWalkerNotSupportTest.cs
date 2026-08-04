@@ -235,6 +235,41 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
+    public void VisitEventOperations_RejectsEventsOutsideEmittedRuntimeClasses()
+    {
+        const string code = """
+            using System;
+
+            class TestClass
+            {
+                public event Action? Changed;
+
+                void Handler()
+                {
+                }
+
+                void TestMethod()
+                {
+                    var missing = Changed is null;
+                    Changed += Handler;
+                }
+            }
+            """;
+
+        var block = GetBlockOperation(code);
+        var walker = new SemanticWalker(true);
+        var reference = FindFirstOperation<IEventReferenceOperation>(block);
+        var referenceException = Assert.Throws<OperationTransformationException>(
+            () => walker.VisitEventReference(reference, new SenseArgument()));
+        StringAssert.Contains(referenceException.Message, "not declared by a runtime class emitted in the current module");
+
+        var assignment = FindFirstOperation<IEventAssignmentOperation>(block);
+        var assignmentException = Assert.Throws<OperationTransformationException>(
+            () => walker.VisitEventAssignment(assignment, new SenseArgument()));
+        StringAssert.Contains(assignmentException.Message, "not declared by a runtime class emitted in the current module");
+    }
+
+    [TestMethod]
     public void VisitDynamicMemberReference_NotSupported()
     {
         const string code = """
@@ -512,7 +547,7 @@ public sealed class SemanticWalkerNotSupportTest
     public void UnsupportedHandlerCatalog_HasUniqueIdsMethodsAndOperationTypes()
     {
         var handlers = LoadNotSupportHandlers();
-        Assert.HasCount(29, handlers);
+        Assert.HasCount(27, handlers);
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.Id).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.MethodName).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.OperationType).Distinct());

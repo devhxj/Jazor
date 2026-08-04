@@ -784,7 +784,7 @@ Assert.AreEqual(
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClassEvent_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedFieldLikeEvent_GeneratesRuntimeProtocol()
     {
         var code = """
             public static class TestClass
@@ -799,9 +799,15 @@ Assert.AreEqual(
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual("Jazor member class does not support Event:Changed.", exception.Message);
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "#$event_store_");
+        StringAssert.Contains(script, "$event_add_");
+        StringAssert.Contains(script, "$event_remove_");
+        StringAssert.Contains(script, "$event_snapshot_");
+        _ = new Acornima.Parser().ParseModule(script);
     }
 
     [TestMethod]

@@ -21,7 +21,7 @@ namespace Jazor.Analyzer;
 /// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
 /// <para>4、支持成员：被ES特性标注的类型的成员都可以使用，其余需要匹配白名单中的构造函数、字段、属性、方法、索引器</para>
 /// <para>4、“ES特性”只能标记最外层的类、接口、枚举、委托等</para>
-/// <para>5、“ES特性”标记的类中不能使用事件</para>
+/// <para>5、仅允许模块 runtime 成员类中的非静态字段式事件；custom/static 事件仍在分析期拒绝</para>
 /// <para>6、“ES特性”标记的类中不能使用析构函数</para>
 /// <para>7、“ES特性”标记的类中默认支持Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数</para>
 /// <para>8、“ES特性”标记的类可支持其他特性，但不需要对特性的类型参数进行检查</para>
@@ -124,6 +124,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
 		context.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
+		context.RegisterSymbolAction(AnalyzeEventSymbol, SymbolKind.Event);
         context.RegisterSymbolStartAction(startContext =>
 		{
 			var symbol = (INamedTypeSymbol)startContext.Symbol;
@@ -152,6 +153,21 @@ public partial class Analyzer : DiagnosticAnalyzer
 			// 检查类成员定义中使用的类型
 			startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
 		}, SymbolKind.NamedType);
+	}
+
+	private static void AnalyzeEventSymbol(SymbolAnalysisContext ctx)
+	{
+		var eventSymbol = (IEventSymbol)ctx.Symbol;
+		if (!InECMAScriptAttribute(eventSymbol.ContainingType) ||
+			IsSupportedRuntimeMemberEvent(eventSymbol))
+		{
+			return;
+		}
+
+		ctx.ReportDiagnostic(Diagnostic.Create(
+			Rule,
+			GetLocation(eventSymbol.Locations),
+			$"Event '{eventSymbol.Name}'"));
 	}
 
 	private static bool InECMAScriptAttribute(ITypeSymbol typeSymbol)
@@ -803,13 +819,23 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.EventReference:
 				{
 					var operation = (IEventReferenceOperation)ctx.Operation;
-					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
-						operation.Syntax.GetLocation(),
-						$"Event '{operation.Event.Name}'"));
+					if (!IsSupportedRuntimeMemberEvent(operation.Event))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							operation.Syntax.GetLocation(),
+							$"Event '{operation.Event.Name}'"));
+					}
 				}
 				break;
 			case OperationKind.EventAssignment:
-				ctx.ReportDiagnostic(Diagnostic.Create(Rule, ctx.Operation.Syntax.GetLocation(), $"Event"));
+				if (ctx.Operation is not IEventAssignmentOperation
+					{
+						EventReference: IEventReferenceOperation eventReference
+					} ||
+					!IsSupportedRuntimeMemberEvent(eventReference.Event))
+				{
+					ctx.ReportDiagnostic(Diagnostic.Create(Rule, ctx.Operation.Syntax.GetLocation(), $"Event"));
+				}
 				break;
 			case OperationKind.AnonymousFunction:
 				{
@@ -859,9 +885,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 			else if (member is IPropertySymbol property)
 				CheckType(ctx.ReportDiagnostic, property.Type, GetLocation(property.Locations));
 
-			else if (member is IEventSymbol evt)
-				ctx.ReportDiagnostic(Diagnostic.Create(Rule, GetLocation(evt.Locations), $"Event '{evt.Name}'"));
-
 			else if (member is IMethodSymbol method)
 			{
 				// 不支持析构函数
@@ -877,6 +900,17 @@ public partial class Analyzer : DiagnosticAnalyzer
 			//	ctx.ReportDiagnostic(Diagnostic.Create(Rule, GetLocation(nestedType.Locations), $"Nested '{nestedType.TypeKind}'"));
 			//}
 		}
+	}
+
+	private static bool IsSupportedRuntimeMemberEvent(IEventSymbol eventSymbol)
+	{
+		if (!EventLowering.IsSupportedFieldLikeInstanceEvent(eventSymbol, out _))
+			return false;
+
+		var runtimeType = eventSymbol.ContainingType;
+		return runtimeType.ContainingType is INamedTypeSymbol moduleType &&
+			moduleType.ContainingType is null &&
+			HasECMAScriptAttribute(moduleType);
 	}
 
 	private static Location GetLocation(ImmutableArray<Location> locations)

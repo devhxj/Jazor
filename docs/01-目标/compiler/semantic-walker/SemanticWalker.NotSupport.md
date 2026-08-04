@@ -37,7 +37,7 @@
 主要包括：
 
 - 资源管理：当前未承接 `await using` 之外的更复杂 async render/resource-runtime 语义边界
-- 事件系统：raise / event reference / event assignment
+- 事件系统：仅 `IRaiseEventOperation` 保持拒绝；字段式 runtime member event 的 reference / assignment 已转入正式 lowering
 - dynamic：动态创建、动态成员访问、动态调用、动态索引
 - CLR / unsafe：取地址、函数指针
 - 查询 / 高级运行时：插值字符串处理器、UTF-8 字符串
@@ -53,25 +53,26 @@
 - `ITranslatedQueryOperation`：仅移除 Roslyn query wrapper，复用已绑定的 invocation/lambda lowering
 - `System.Index` / `System.Range` 值：通过 CLR `JIndex` / `JRange` carrier 和白名单成员映射传递
 - 窄语义 `sizeof(T)`：仅编译期 primitive scalar 或 enum underlying size，输出数值常量
+- `IEventReferenceOperation` / `IEventAssignmentOperation`：当前模块 non-record runtime member class 的非静态、非 virtual/override 字段式事件通过 private invocation list、add/remove 和 snapshot delegate lowering；custom/static accessor、delegate equality/combination 与 by-ref delegate 参数或返回明确失败
 
 `Enumerable` query 继续走普通 delegate callback；`System.Linq.Expressions.Expression<TDelegate>`
 和 `IQueryable<T>` query 的 lambda 则在 conversion 使用点明确拒绝。它们要求保留供 provider
 检查和改写的表达式树，而箭头函数只能表示可执行 delegate，不能作为近似替代。
 
-### 29 个剩余 visitor 的分类决策
+### 27 个剩余 visitor 的分类决策
 
-当前文件实际保留 29 个不支持 visitor。这个数字是当前代码结果，不是早期“约 31 个”的估算值。
+当前文件实际保留 27 个不支持 visitor。这个数字是当前代码结果，不是早期“约 31 个”的估算值。
 
 | 分类 | visitor 数 | 代表节点 | 决策 |
 | --- | ---: | --- | --- |
 | Roslyn / FlowAnalysis 内部节点 | 8 | `Stop` 、`End` 、`FlowCapture` 、`CaughtException` 、collection placeholder | 不是稳定源语言输入，不建立 lowering |
-| VB 专有语法 | 5 | `ForToLoop` 、`RangeCaseClause` 、`ReDim` | Razor/C# 产品输入面不需要 |
-| C# dynamic 与事件 | 7 | dynamic create/member/invoke/indexer，event raise/reference/assignment | 需要 DLR 和多播委托运行时模型，不以 JS 属性访问冒充 |
+| VB 专有语法 | 6 | `ForToLoop` 、`RangeCaseClause` 、`ReDim` 、`RaiseEvent` | Razor/C# 产品输入面不需要 |
+| C# dynamic | 4 | dynamic create/member/invoke/indexer | 需要 DLR，不以 JS 属性访问冒充 |
 | unsafe 语义 | 2 | `AddressOf` 、function pointer invoke | JavaScript 无 CLR 地址模型，明确拒绝 |
 | custom interpolated-string handler | 4 | handler creation/addition/append/placeholder | 需要完整 handler 协议与参数传递模型，不以模板字符串降级 |
 | 其他明确边界 | 3 | UTF-8 literal，inline-array access，`IInvalidOperation` | 分别缺少字节 / 栈布局语义，或表示 Roslyn 已无法绑定 |
 
-结论：当前 29 个条目中没有可以只补一个 ESTree 节点就获得正确 C# 语义的候选。后续如果要开放 dynamic、event 或 handler，必须先提出独立的宿主运行时协议、类型/求值顺序合约与 Deno.host 端到端测试；不属于普通 compiler visitor 补全。
+结论：当前 27 个条目中没有可以只补一个 ESTree 节点就获得正确 C# 语义的候选。字段式 event 已证明：开放这类边界需要完整的调用列表、委托等价、求值顺序和 Deno.host 协议验证；剩余 dynamic 或 handler 同样不属于普通 visitor 补全。
 
 ### 3. 文档化当前设计边界
 
@@ -90,7 +91,7 @@
 例如：
 
 - dynamic
-- 事件系统
+- `IRaiseEventOperation` 与未进入字段式 runtime member event 协议的事件形态
 - 函数指针
 
 这些都不只是“以后补个 AST 节点”就能解决的问题，而是涉及 C# / JS 运行时模型差异。

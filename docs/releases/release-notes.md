@@ -13,7 +13,8 @@
 - `Nullable<T>.GetValueOrDefault(defaultValue)` now evaluates its receiver and explicit default argument eagerly from left to right before selecting the result, preserving fallback side effects even when the nullable contains a value.
 - `Enumerable.Zip` now supports its three-source tuple overload alongside the existing two-source and result-selector forms, preserving source-order iterator creation and advancement, shortest-source termination, and reverse iterator closure.
 - `Enumerable.CountBy` and both `AggregateBy` seed overloads now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
-- The compiler quality gate now verifies 8,289 scenarios at 96.28% line coverage and 90.03% branch coverage.
+- Field-like instance events on generated non-record runtime member classes now preserve C# multicast subscription and removal semantics, invocation-list snapshots, method-group receiver identity, and conditional `Invoke` argument short-circuiting. Static, custom-accessor, virtual/override, by-reference, delegate-equality, and delegate-combination event forms remain explicit boundaries.
+- The compiler quality gate now verifies 8,297 scenarios at 96.32% line coverage and 90.08% branch coverage.
 
 ## 2026-08-03
 

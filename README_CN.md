@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8288 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8288%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.28%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.03%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.03%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8297 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8297%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.32%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.32%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.08%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.08%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8288 / 8288 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 15568 / 16169（96.28%） | 95% |
-| 分支覆盖率 | 6233 / 6923（90.03%） | 90% |
+| 编译器回归测试 | 8297 / 8297 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 15983 / 16593（96.32%） | 95% |
+| 分支覆盖率 | 6332 / 7029（90.08%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -96,7 +96,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - `Nullable<T>.GetValueOrDefault(defaultValue)` 现保留 receiver-first 的 eager 参数求值；即使 nullable 已有值，也不会跳过 fallback 的副作用。
 - `Enumerable.Zip` 现支持三源 tuple 组合，并保留 source 顺序的 iterator 推进与反向关闭；原有二源和 result-selector 形式继续可用。
 - `Enumerable.CountBy` 与两种 `AggregateBy` seed 形式现在保留 comparer-aware 分组、首次 key representative、插入顺序、Int32 count 边界和两槽 `KeyValuePair<TKey, TValue>` entry。
-- Compiler 门禁已验证 8,289 个场景，行覆盖率 96.28%、分支覆盖率 90.03%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- 生成 non-record runtime member class 的非静态、非 virtual/override 字段式 event 现保留 C# multicast 的订阅/移除语义、调用列表快照、方法组 receiver 身份和条件 `Invoke` 参数短路。静态 event、custom accessor、virtual/override、带 by-ref 参数或返回的 delegate、delegate equality/combination 仍是明确边界。
+- Compiler 门禁已验证 8,297 个场景，行覆盖率 96.32%、分支覆盖率 90.08%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

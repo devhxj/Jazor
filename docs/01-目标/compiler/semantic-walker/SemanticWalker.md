@@ -169,6 +169,7 @@ C# IOperation
 | `SemanticWalker.cs.Tuple.cs` | tuple、解构、projection、比较 |
 | `SemanticWalker.cs.Declaration.cs` | 变量与局部函数相关声明 |
 | `SemanticWalker.cs.Ordinary.cs` | 常规表达式、一元/二元/赋值 |
+| `SemanticWalker.cs.Event.cs` | 字段式成员事件的订阅、移除、引用与 multicast snapshot 协议 |
 | `SemanticWalker.cs.Invalid.cs` | `IInvalidOperation` 回退处理 |
 | `SemanticWalker.cs.NotSupport.cs` | 明确拒绝或报错的语义节点 |
 | `SemanticWalker.cs.WhiteList.cs` | 白名单消费与模板映射 |

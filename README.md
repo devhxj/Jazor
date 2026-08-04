@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8288 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8288%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.28 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.03 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.03%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8297 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8297%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.32 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.32%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.08 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.08%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8288 / 8288 passed | 8000 passed |
-| Line coverage | 15568 / 16169 (96.28%) | 95% |
-| Branch coverage | 6233 / 6923 (90.03%) | 90% |
+| Compiler regression tests | 8297 / 8297 passed | 8000 passed |
+| Line coverage | 15983 / 16593 (96.32%) | 95% |
+| Branch coverage | 6332 / 7029 (90.08%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -96,7 +96,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - `Nullable<T>.GetValueOrDefault(defaultValue)` preserves eager receiver-first argument evaluation, including fallback side effects when the nullable already contains a value.
 - `Enumerable.Zip` now supports three-source tuple composition with source-ordered iterator traversal and reverse iterator closure, alongside existing two-source and result-selector forms.
 - `Enumerable.CountBy` and both `AggregateBy` seed forms now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
-- The compiler gate verifies 8,289 scenarios at 96.28% line and 90.03% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- Field-like instance events on generated non-record runtime member classes now preserve C# multicast subscription and removal semantics, invocation-list snapshots, method-group receiver identity, and conditional `Invoke` argument short-circuiting. Static, custom-accessor, virtual/override, by-reference, delegate-equality, and delegate-combination event forms remain explicit boundaries.
+- The compiler gate verifies 8,297 scenarios at 96.32% line and 90.08% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

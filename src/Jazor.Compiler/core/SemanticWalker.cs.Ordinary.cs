@@ -856,6 +856,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitBinaryOperator(IBinaryOperation operation, SenseArgument argument)
 	{
+		if (GetUnsupportedEventBinaryOperationReason(operation) is { } eventFailure)
+			return HandleTransformationFailure<Node>(operation, eventFailure);
+
 		var left = Translate<Expression>(operation.LeftOperand, argument);
 		var right = Translate<Expression>(operation.RightOperand, argument);
 
