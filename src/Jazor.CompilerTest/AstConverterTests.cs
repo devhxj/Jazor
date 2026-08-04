@@ -1720,6 +1720,27 @@ export class NestedClass extends BaseClass {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedSetterOnlyAbstractProperty_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public abstract class NestedClass
+                {
+                    public abstract int Value { set; }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support abstract property Value.", exception.Message);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithNestedClassNestedEnum_ErasesDeclaration()
     {
         var code = """
@@ -4121,9 +4142,9 @@ export let value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+		Assert.AreEqual(
 @"export function greet(name = ""World"", age = 0) {
-  return `Hello ${name}, age ${age}`;
+  return `Hello ${name ?? """"}, age ${age}`;
 }
 ", script);
 

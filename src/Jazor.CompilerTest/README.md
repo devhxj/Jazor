@@ -133,7 +133,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQuali
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings src/Jazor.CompilerTest/coverlet.runsettings --collect:"XPlat Code Coverage"
 ```
 
-执行正式 coverage gate（至少 8,000 个通过测试、95% 行覆盖、90% 分支覆盖）：
+执行正式 coverage gate（至少 10,000 个通过测试、98% 行覆盖、94% 分支覆盖）：
 
 ```powershell
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs

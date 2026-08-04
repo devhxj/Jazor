@@ -304,14 +304,14 @@ internal static class ImplicitIndexerProtocolCatalog
             []),
         Success(
             "range.from-end-bounds",
-            "form=range;bounds=from-end/from-end;slice=Slice(int,int);receiver=local",
+            "form=range;bounds=from-end/from-end;slice=Slice(int,int);receiver=local;evaluation=single",
             """
                         var buffer = new SliceBuffer();
                         var middle = buffer[^3..^1];
                 """,
-            ["buffer.slice(buffer.length - 3, buffer.length - 1 - (buffer.length - 3))"],
-            [],
-            []),
+            ["v$0 = buffer.length - 3", "buffer.slice(v$0, buffer.length - 1 - v$0)"],
+            ["buffer.length - 3"],
+            ["v$0 = buffer.length - 3", "buffer.slice(v$0, buffer.length - 1 - v$0)"]),
         Success(
             "index.standalone-from-start-value",
             "form=index;operand=System.Index.FromStart;access=read;offset=mapped-carrier",

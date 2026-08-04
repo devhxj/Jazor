@@ -8024,10 +8024,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_BooleanGetTypeCode_UsesInlineRule()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("bool.GetTypeCode()"));
@@ -8112,10 +8109,7 @@ public sealed class SemanticWalkerReferenceTest
 			["System.DateTime.GetTypeCode()"] = "16",
 		};
 
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 
@@ -8138,10 +8132,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_EqualityComparerDefaultAndEquals_AreMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("static System.Collections.Generic.EqualityComparer<T>.Default.get"));
@@ -8180,10 +8171,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IEqualityComparerEquals_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"));
@@ -8203,10 +8191,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IEqualityComparerGetHashCode_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)"));
@@ -8226,10 +8211,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IEqualityComparerNonGeneric_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.Collections.IEqualityComparer.Equals(object, object)"));
@@ -8259,10 +8241,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_ComparerDefaultAndCompare_AreMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("static System.Collections.Generic.Comparer<T>.Default.get"));
@@ -8290,10 +8269,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IComparerCompare_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.Collections.Generic.IComparer<T>.Compare(T, T)"));
@@ -8313,10 +8289,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IComparerNonGenericCompare_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.Collections.IComparer.Compare(object, object)"));
@@ -8336,10 +8309,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IDisposableDispose_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.IDisposable.Dispose()"));
@@ -8359,10 +8329,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_IAsyncDisposableDisposeAsync_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("System.IAsyncDisposable.DisposeAsync()"));
@@ -8382,10 +8349,7 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_StringCompareTo_IsMapped()
 	{
-		var membersField = typeof(SemanticWalker).Assembly
-			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
-			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
-		var members = (IDictionary?)membersField?.GetValue(null);
+		IDictionary members = WhiteList.Members;
 
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("string.CompareTo(object)"));

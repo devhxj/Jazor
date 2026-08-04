@@ -68,18 +68,12 @@ public partial class SemanticWalker
 
 			if (node is Statement statement)
 				pendingStatements.Add(statement);
-			else if (node is Expression expr)
-			{
-				if (expr is SequenceExpression seqExpr)
-				{
-					if (seqExpr.Expressions.Count == 1)
-						pendingStatements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
-					else if (seqExpr.Expressions.Count > 1)
-						pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-				}
-				else
-					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-			}
+			else if (node is SequenceExpression { Expressions.Count: 0 })
+				// Empty sequences are compiler-owned "no runtime statement" markers.
+				continue;
+			else if (node is Expression expression)
+				// Pattern-switch statements intentionally lower to an IIFE call expression.
+				pendingStatements.Add(new NonSpecialExpressionStatement(expression));
 			else if (IsHostSkippedVariableDeclaration(operation, context))
 				continue;
 			else
@@ -137,11 +131,8 @@ public partial class SemanticWalker
 		SenseArgument context,
 		UsingDisposalKind disposalKind)
 	{
-		if (operation.DeclarationGroup is null)
-			return HandleTransformationFailure<List<UsingResourceBinding>>(operation, "Using declaration is missing its declaration group.");
-
 		var resources = new List<UsingResourceBinding>();
-		foreach (var declaration in operation.DeclarationGroup.Declarations)
+		foreach (var declaration in operation.DeclarationGroup!.Declarations)
 		{
 			foreach (var declaratorOperation in declaration.Declarators)
 			{
@@ -149,9 +140,6 @@ public partial class SemanticWalker
 				resources.Add(binding);
 			}
 		}
-
-		if (resources.Count == 0)
-			return HandleTransformationFailure<List<UsingResourceBinding>>(operation, "Using declaration did not contain any disposable resource declarators.");
 
 		return resources;
 	}
@@ -173,9 +161,6 @@ public partial class SemanticWalker
 						resources.Add(BindUsingDeclarator(declaratorOperation, context, disposalKind));
 				}
 
-				if (resources.Count == 0)
-					return HandleTransformationFailure<List<UsingResourceBinding>>(resourcesOperation, "Using statement declaration did not contain any disposable resource declarators.");
-
 				return resources;
 			}
 
@@ -183,7 +168,7 @@ public partial class SemanticWalker
 			{
 				var prefixStatements = new List<Statement>();
 				var resourceExpression = MaterializeUsingResourceExpression(resourcesOperation, context, prefixStatements);
-				var disposeMethod = ResolveUsingDisposeMethod(resourcesOperation, resourcesOperation.Type, requireInterfaceFallback: true, disposalKind);
+				var disposeMethod = ResolveUsingDisposeMethod(resourcesOperation, resourcesOperation.Type!, requireInterfaceFallback: true, disposalKind);
 				var hostType = GetUsingDisposeHostType(resourcesOperation.Type, disposeMethod);
 				return [new UsingResourceBinding(resourceExpression, disposeMethod, hostType, disposalKind, resourcesOperation, PrefixStatements: prefixStatements)];
 			}
@@ -196,8 +181,7 @@ public partial class SemanticWalker
 		UsingDisposalKind disposalKind)
 	{
 		var variableDeclarator = Translate<VariableDeclarator>(declaratorOperation, context);
-		var identifier = variableDeclarator.Id as Identifier
-			?? HandleTransformationFailure<Identifier>(declaratorOperation, "Using declaration resource must lower to an identifier-bound variable.");
+		var identifier = (Identifier)variableDeclarator.Id;
 		var disposeMethod = ResolveUsingDisposeMethod(declaratorOperation, declaratorOperation.Symbol.Type, requireInterfaceFallback: false, disposalKind);
 		var hostType = GetUsingDisposeHostType(declaratorOperation.Symbol.Type, disposeMethod);
 		return new UsingResourceBinding(
@@ -224,9 +208,6 @@ public partial class SemanticWalker
 		List<Statement> bodyStatements,
 		SenseArgument context)
 	{
-		if (resources.Count == 0)
-			return bodyStatements;
-
 		List<Statement> currentStatements = bodyStatements;
 
 		for (var index = resources.Count - 1; index >= 0; index--)
@@ -356,13 +337,10 @@ public partial class SemanticWalker
 
 	private IMethodSymbol ResolveUsingDisposeMethod(
 		IOperation originOperation,
-		ITypeSymbol? resourceType,
+		ITypeSymbol resourceType,
 		bool requireInterfaceFallback,
 		UsingDisposalKind disposalKind)
 	{
-		if (resourceType is null)
-			return HandleTransformationFailure<IMethodSymbol>(originOperation, "Using resource type could not be resolved.");
-
 		var methodName = GetUsingDisposeMethodName(disposalKind);
 		var interfaceDisplayName = GetUsingDisposeInterfaceDisplayName(disposalKind);
 

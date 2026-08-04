@@ -10,8 +10,10 @@ namespace Jazor.Compiler;
 /// 处理 lock operation 的宿主协议转换。
 /// </summary>
 /// <remarks>
-/// JavaScript 没有 CLR monitor 的直接对应物，因此这里实现的是项目定义的 lock/runtime seam。
-/// 不能把 lock 直接擦除为普通代码块，否则会静默丢失并发或互斥协议的可观察约束。
+/// Jazor 的 supported host executes synchronous JavaScript on one event-loop turn. C# forbids
+/// <c>await</c> in a lock body, so retaining a lexical block after the null check preserves the
+/// non-interleaving execution contract without inventing a Monitor runtime object. Do not emit a
+/// bare <c>try</c>: JavaScript requires a catch or finally clause and lock has neither here.
 /// </remarks>
 public partial class SemanticWalker
 {
@@ -46,10 +48,7 @@ public partial class SemanticWalker
             statements.AddRange(prefixStatements);
 
         statements.Add(nullGuard);
-        statements.Add(new TryStatement(
-            new NestedBlockStatement(NodeList.From(bodyStatements)),
-            handler: null,
-            finalizer: null));
+        statements.Add(new NestedBlockStatement(NodeList.From(bodyStatements)));
         return statements;
     }
 

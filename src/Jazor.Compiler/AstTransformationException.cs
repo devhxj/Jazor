@@ -52,14 +52,8 @@ public sealed class OperationTransformationException : Exception
         AttachLocationMetadata(this, operation.Syntax.GetLocation());
     }
 
-    private static void AttachLocationMetadata(Exception exception, Location? location)
+    private static void AttachLocationMetadata(Exception exception, Location location)
     {
-        if (location is null)
-        {
-            exception.Data["location.path"] = "<unknown>";
-            return;
-        }
-
         var lineSpan = location.GetLineSpan();
         var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
             ? lineSpan.Path

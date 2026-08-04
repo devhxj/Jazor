@@ -371,6 +371,30 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 全 discard 解构没有运行时写入，但标签仍然是合法的跳转目标。
+  /// </summary>
+  [TestMethod]
+  public void Visit_LabeledStatement_AllDiscardDeconstruction_PreservesEmptyTarget()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod((int Left, int Right) pair)
+                {
+                    label1:
+                    (_, _) = pair;
+                }
+            }
+            ");
+
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  label1: ;
+}", script);
+  }
+
+  /// <summary>
   /// 测试 VisitBranch - Break 操作
   /// </summary>
   [TestMethod]

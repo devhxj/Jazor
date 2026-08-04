@@ -205,7 +205,7 @@ public partial class SemanticWalker
 			var modulePath = GetEffectiveModuleImportPath(symbol);
 			if (!string.IsNullOrEmpty(modulePath))
 			{
-				if (context is SenseArgument importContext)
+				if (context is { } importContext)
 					return importContext.BindImportSpecifier(modulePath!, flatName!);
 			}
 
@@ -227,11 +227,10 @@ public partial class SemanticWalker
 			var modulePath = GetModuleImportPath(type);
 			if (!string.IsNullOrEmpty(modulePath))
 			{
-				if (_moduleRootType is null || !SymbolEqualityComparer.Default.Equals(type, _moduleRootType))
-				{
-					if (context is SenseArgument importContext)
-						return importContext.BindImportSpecifier(modulePath!, name!);
-				}
+				// The loop exits before processing _moduleRootType, so every module path here
+				// belongs to an external runtime type and can be imported when a context exists.
+				if (context is { } importContext)
+					return importContext.BindImportSpecifier(modulePath!, name!);
 
 				queue.Push(name!);
 				break;
@@ -302,12 +301,9 @@ public partial class SemanticWalker
 		}
 	}
 
-	private bool TryBuildImportedModuleMember(ITypeSymbol? containingType, string memberName, SenseArgument? context, out Expression? expression)
+	private bool TryBuildImportedModuleMember(ITypeSymbol containingType, string memberName, SenseArgument context, out Expression? expression)
 	{
 		expression = null;
-		if (containingType is null)
-			return false;
-
 		if (string.Equals(memberName, "default", StringComparison.Ordinal))
 		{
 			throw new NotSupportedException(
@@ -321,8 +317,7 @@ public partial class SemanticWalker
 		if (IsCurrentModuleType(containingType))
 			return false;
 
-		var importId = context?.BindImportSpecifier(modulePath!, memberName) ?? new Identifier(memberName);
-		expression = importId;
+		expression = context.BindImportSpecifier(modulePath!, memberName);
 		return true;
 	}
 
@@ -358,7 +353,7 @@ public partial class SemanticWalker
 	/// 3. 只有当调用点宿主与声明宿主在继承/接口/泛型原型定义上兼容时，才允许覆盖。
 	/// 4. 语义宿主无法恢复时不猜测源码标识符，交给后续 symbol-based 路径处理。
 	/// </summary>
-	private bool TryBuildPreferredRuntimeStaticMemberAccess(ISymbol symbol, SyntaxNode syntax, SemanticModel? semanticModel, string memberName, out Expression? expression)
+	private bool TryBuildPreferredRuntimeStaticMemberAccess(ISymbol symbol, SyntaxNode syntax, SemanticModel semanticModel, string memberName, out Expression? expression)
 	{
 		expression = null;
 		var isRuntime = Util.IsECMAScriptRuntimeSymbol(symbol);
@@ -368,10 +363,8 @@ public partial class SemanticWalker
 		var hostType = symbol switch
 		{
 			IMethodSymbol { IsStatic: true } method => method.ReceiverType ?? method.ContainingType,
-			_ => symbol.ContainingType
+			_ => symbol.ContainingType!
 		};
-		if (hostType is null)
-			return false;
 
 		var runtimeHost = TryBuildRuntimeHostExpression(hostType);
 		if (runtimeHost is null)
@@ -386,18 +379,13 @@ public partial class SemanticWalker
 			var sourceRuntimeHost = TryBuildRuntimeHostExpression(sourceHostType);
 			if (sourceRuntimeHost is not null)
 			{
-				expression = new MemberExpression(sourceRuntimeHost, new Identifier(memberName), computed: false, optional: false);
+				expression = BuildAliasedPropertyAccess(sourceRuntimeHost, memberName, optional: false);
 				return true;
 			}
 		}
 
-		var specializedRuntimeHostType = TryGetSpecializedRuntimeHostType(hostType);
-		if (specializedRuntimeHostType is not null)
-		{
-			expression = new MemberExpression(runtimeHost, new Identifier(memberName), computed: false, optional: false);
-			return true;
-		}
-
+		// The normal runtime-host path immediately following this preference probe already
+		// resolves self-typed generic hosts. This method only claims a source-host override.
 		return false;
 	}
 
@@ -409,44 +397,20 @@ public partial class SemanticWalker
 	/// - <c>Namespace.Type.Member</c> / <c>Outer.Inner.Member</c> 需要拿到最终绑定后的类型；
 	/// - Roslyn 在属性、方法组、调用三种静态访问上给出的 syntax 颗粒度并不一致。
 	/// </summary>
-	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
-		=> syntax.Parent switch
-		{
-			MemberAccessExpressionSyntax memberAccess => ReferenceEquals(memberAccess.Name, syntax),
-			QualifiedNameSyntax qualifiedName => ReferenceEquals(qualifiedName.Right, syntax),
-			_ => false
-		};
-
-	private static ITypeSymbol? TryGetStaticSourceHostTypeFromSyntax(SyntaxNode syntax, SemanticModel? semanticModel)
+	private static INamedTypeSymbol? TryGetStaticSourceHostTypeFromSyntax(SyntaxNode syntax, SemanticModel semanticModel)
 	{
-		if (semanticModel is null)
-			return null;
-
-		var effectiveSyntax = syntax switch
-		{
-			IdentifierNameSyntax or GenericNameSyntax when IsMemberAccessNameSyntax(syntax)
-				=> syntax.Parent,
-			_ => syntax
-		};
-
-		var targetSyntax = effectiveSyntax switch
+		var targetSyntax = syntax switch
 		{
 			InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
 			MemberAccessExpressionSyntax memberAccess => memberAccess.Expression,
-			QualifiedNameSyntax qualifiedName => qualifiedName.Left,
 			_ => null
 		};
 		if (targetSyntax is null)
 			return null;
 
-		var symbol = semanticModel.GetSymbolInfo(targetSyntax).Symbol;
-		if (symbol is IAliasSymbol alias && alias.Target is ITypeSymbol aliasType)
-			return aliasType;
-
-		if (symbol is ITypeSymbol typeSymbol)
-			return typeSymbol;
-
-		return semanticModel.GetTypeInfo(targetSyntax).Type;
+		// For a bound static member access the receiver syntax denotes a type. Roslyn resolves
+		// type aliases to that target in SymbolInfo, so no syntax-name or alias registry is needed.
+		return (INamedTypeSymbol)semanticModel.GetSymbolInfo(targetSyntax).Symbol!;
 	}
 
 	/// <summary>
@@ -456,32 +420,25 @@ public partial class SemanticWalker
 	/// “继承链 / 接口实现 / 泛型原型定义一致”证明两者属于同一套运行时 API。
 	/// 这样既能支持基类声明、子类复用的静态成员，也能避免把无关类型错误改写到一起。
 	/// </summary>
-	private static bool IsStaticHostOverrideCompatible(ITypeSymbol sourceHostType, ITypeSymbol declaredHostType)
+	private static bool IsStaticHostOverrideCompatible(INamedTypeSymbol sourceHostType, ITypeSymbol declaredHostType)
 	{
 		if (SymbolEqualityComparer.Default.Equals(sourceHostType, declaredHostType) ||
 			SymbolEqualityComparer.Default.Equals(sourceHostType.OriginalDefinition, declaredHostType.OriginalDefinition))
 			return true;
 
-		if (sourceHostType is not INamedTypeSymbol sourceNamed)
-			return false;
-
-		for (var current = sourceNamed.BaseType; current is not null; current = current.BaseType)
+		for (var current = sourceHostType.BaseType; current is not null; current = current.BaseType)
 		{
 			if (SymbolEqualityComparer.Default.Equals(current, declaredHostType) ||
 				SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, declaredHostType.OriginalDefinition))
 				return true;
 		}
 
-		return sourceNamed.AllInterfaces.Any(@interface =>
-			SymbolEqualityComparer.Default.Equals(@interface, declaredHostType) ||
+		return sourceHostType.AllInterfaces.Any(@interface =>
 			SymbolEqualityComparer.Default.Equals(@interface.OriginalDefinition, declaredHostType.OriginalDefinition));
 	}
 
-	private static string? TryExtractExtensionReceiverDisplayName(ITypeSymbol? type)
+	private static string? TryExtractExtensionReceiverDisplayName(ITypeSymbol type)
 	{
-		if (type is null)
-			return null;
-
 		var display = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
 		const string marker = ".extension(";
 		var start = display.IndexOf(marker, System.StringComparison.Ordinal);
@@ -517,7 +474,7 @@ public partial class SemanticWalker
 	/// 一旦命中这种 self-typed 约束，并且对应类型实参本身也是 ECMAScript 运行时类型，
 	/// 就把它视为更具体的最终宿主。
 	/// </summary>
-	private static ITypeSymbol? TryGetSpecializedRuntimeHostType(ITypeSymbol? type)
+	private static ITypeSymbol? TryGetSpecializedRuntimeHostType(ITypeSymbol type)
 	{
 		if (type is not INamedTypeSymbol namedType || !namedType.IsGenericType)
 			return null;
@@ -537,7 +494,9 @@ public partial class SemanticWalker
 			if (!matchesSelfTypedConstraint)
 				continue;
 
-			if (Util.IsECMAScriptRuntimeSymbol(typeArgument))
+			// A concrete self type is necessarily named and inherits the protocol from this generic
+			// definition. Uint8Array therefore carries TypedArray's marker through its base chain.
+			if (Util.HasECMAScriptSupportMarkerBaseType((INamedTypeSymbol)typeArgument))
 				return typeArgument;
 		}
 
@@ -551,11 +510,8 @@ public partial class SemanticWalker
 	/// - 类型别名白名单，例如 <c>System.Console -> console</c>
 	/// - ECMAScript 扩展宿主上的接收者类型
 	/// </summary>
-	private Expression? TryBuildRuntimeHostExpression(ITypeSymbol? type, SenseArgument? context = null)
+	private Expression? TryBuildRuntimeHostExpression(ITypeSymbol type, SenseArgument? context = null)
 	{
-		if (type is null)
-			return null;
-
 		// 先尝试恢复“语义上更具体”的运行时宿主。
 		// 这能避开 C# using 类型别名等纯语法名字，把 TypedArray<T, TArray> 正确落到 Uint8Array 之类的真实 JS host。
 		var specializedRuntimeHostType = TryGetSpecializedRuntimeHostType(type);
@@ -582,24 +538,9 @@ public partial class SemanticWalker
 		return string.IsNullOrEmpty(alias) ? null : new Identifier(alias!);
 	}
 
-	private static string? TryGetRuntimeHostSourceName(ITypeSymbol? type)
-	{
-		if (type is null)
-			return null;
-
-		// 这里取“源码里最可能出现的宿主名”，用于识别 Console.Log / Array.Of 这类
-		// 尚未归一化的接收端写法，然后再替换成真实运行时 host。
-		if (!string.IsNullOrEmpty(type.Name))
-			return type.Name;
-
-		var receiverDisplayName = TryExtractExtensionReceiverDisplayName(type);
-		if (string.IsNullOrEmpty(receiverDisplayName))
-			return null;
-
-		var simpleName = receiverDisplayName!.Split('.').Last();
-		var genericIndex = simpleName.IndexOf('<');
-		return genericIndex >= 0 ? simpleName.Substring(0, genericIndex) : simpleName;
-	}
+	private static string GetRuntimeHostSourceName(ITypeSymbol type)
+		// Bound runtime methods always have a named receiver or containing type.
+		=> type.Name;
 
 	private Expression? TryBuildExtensionHostTarget(IMethodSymbol method, SenseArgument? context)
 	{
@@ -613,17 +554,14 @@ public partial class SemanticWalker
 		return TryBuildRuntimeHostExpression(method.ReceiverType, context);
 	}
 
-	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument? context, out Expression? expression)
+	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument context, out Expression? expression)
 	{
 		expression = null;
-		if (!property.IsStatic || property.GetMethod is null)
-			return false;
-
-		var explicitImportName = Util.GetSymbolConfigName(property.GetMethod) ?? Util.GetSymbolConfigName(property);
+		var explicitImportName = Util.GetSymbolConfigName(property.GetMethod!) ?? Util.GetSymbolConfigName(property);
 		if (!string.IsNullOrEmpty(explicitImportName))
 			return TryBuildImportedModuleMember(property.ContainingType, explicitImportName!, context, out expression);
 
-		var getterName = GetMethodConfigOrWhiteListName(property.GetMethod);
+		var getterName = GetMethodConfigOrWhiteListName(property.GetMethod!);
 		if (!TryBuildImportedModuleMember(property.ContainingType, getterName, context, out var getter) ||
 			getter is null)
 			return false;
@@ -635,10 +573,7 @@ public partial class SemanticWalker
 	private bool TryBuildCurrentModulePropertyGetterCall(IPropertySymbol property, out Expression? expression)
 	{
 		expression = null;
-		if (!property.IsStatic || property.GetMethod is null)
-			return false;
-
-		if (!TryGetCurrentModuleDeclaredName(property.GetMethod, out var getterName))
+		if (!TryGetCurrentModuleDeclaredName(property.GetMethod!, out var getterName))
 			return false;
 
 		expression = new CallExpression(new Identifier(getterName), NodeList.Empty<Expression>(), optional: false);
@@ -713,7 +648,7 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private bool TryBuildImportedModulePropertySetterCall(IPropertySymbol property, SenseArgument? context, Expression value, out Expression? expression)
+	private bool TryBuildImportedModulePropertySetterCall(IPropertySymbol property, SenseArgument context, Expression value, out Expression? expression)
 	{
 		expression = null;
 		if (!property.IsStatic || property.SetMethod is null)
@@ -729,47 +664,20 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 当调用点把运行时宿主写成 CLR 名称时，统一替换成真实 JavaScript 宿主。
-	/// 例如 <c>Console.Log</c> 的实例部分会先表现为 <c>Console</c>，
-	/// 这里再归一化为 <c>console</c>。
-	/// </summary>
-	private Expression NormalizeRuntimeReceiverHostInstance(Expression instance, IMethodSymbol method)
-	{
-		var hostType = method.ReceiverType ?? method.ContainingType;
-		if (hostType is null || instance is not Identifier identifier)
-			return instance;
-
-		var sourceName = TryGetRuntimeHostSourceName(hostType);
-		if (string.IsNullOrEmpty(sourceName) ||
-			!string.Equals(identifier.Name, sourceName, System.StringComparison.Ordinal))
-			return instance;
-
-		// 只改写“裸宿主标识符”场景，避免误伤更复杂的用户表达式。
-		return TryBuildRuntimeHostExpression(hostType) ?? instance;
-	}
-
-	/// <summary>
-	/// 与 <see cref="NormalizeRuntimeReceiverHostInstance"/> 类似，但作用于已经拼好的成员访问表达式。
-	/// 这样方法组引用和普通调用都能共用同一套宿主归一化逻辑。
+	/// 归一化已经拼好的成员访问表达式，让方法组引用和普通调用共用同一套宿主规则。
 	/// </summary>
 	private Expression NormalizeRuntimeReceiverHostCallee(Expression callee, IMethodSymbol method)
 	{
 		var hostType = method.ReceiverType ?? method.ContainingType;
-		if (hostType is null ||
-			callee is not MemberExpression { Object: Identifier identifier, Property: var property, Computed: var computed, Optional: var optional })
+		if (callee is not MemberExpression { Object: Identifier identifier, Property: var property, Computed: var computed, Optional: var optional })
 			return callee;
 
-		var sourceName = TryGetRuntimeHostSourceName(hostType);
-		if (string.IsNullOrEmpty(sourceName) ||
-			!string.Equals(identifier.Name, sourceName, System.StringComparison.Ordinal))
-			return callee;
-
-		var runtimeHost = TryBuildRuntimeHostExpression(hostType);
-		if (runtimeHost is null)
+		var sourceName = GetRuntimeHostSourceName(hostType);
+		if (!string.Equals(identifier.Name, sourceName, System.StringComparison.Ordinal))
 			return callee;
 
 		// 保留原成员名与可选/计算属性形态，只替换宿主部分。
-		return new MemberExpression(runtimeHost, property, computed, optional);
+		return new MemberExpression(TryBuildRuntimeHostExpression(hostType)!, property, computed, optional);
 	}
 
 	private Expression GetFieldName(IFieldSymbol symbol)
@@ -836,15 +744,15 @@ public partial class SemanticWalker
 			if (attribute.ConstructorArguments.Length == 0)
 				continue;
 
-			if (attribute.AttributeClass?.Name == "ECMAScriptNameAttribute")
+			if (attribute.AttributeClass!.Name == "ECMAScriptNameAttribute")
 			{
 				return attribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
 			}
 
-			if (attribute.AttributeClass?.Name != "DescriptionAttribute")
+			if (attribute.AttributeClass!.Name != "DescriptionAttribute")
 				continue;
 
-			var description = attribute.ConstructorArguments[0].Value?.ToString()?.Trim();
+			var description = attribute.ConstructorArguments[0].Value?.ToString().Trim();
 			if (description?.StartsWith("@#", System.StringComparison.Ordinal) != true)
 				continue;
 
@@ -1229,7 +1137,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		List<Expression> destination)
 {
 	if (!Util.IsECMAScriptRuntimeSymbol(method) ||
-		arg.Parameter?.IsParams != true ||
+		!arg.Parameter!.IsParams ||
 		arg.Parameter.Type is not IArrayTypeSymbol arrayType)
 		return false;
 
@@ -1276,9 +1184,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, SenseArgument argument, out Expression? expression)
 	{
 		expression = null;
-		if (method.ContainingType is null)
-			return false;
-
 		if (TryGetEcmascriptInlineTemplate(method, out var inlineTemplate))
 		{
 			var signature = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -1302,8 +1207,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			return true;
 		}
 
-		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
-
 		if (TryBuildEnumerableArrayLikeIntrinsic(
 			method,
 			arguments,
@@ -1313,44 +1216,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			argument,
 			out expression))
 			return true;
-
-		if (method.ContainingType.SpecialType == SpecialType.System_String || containingType == "string")
-		{
-			if (method.IsStatic)
-			{
-				expression = method.Name switch
-				{
-					"Join" when arguments.Count == 2 =>
-						BuildInstanceMethodCall(BuildArrayFrom(arguments[1]), "join", arguments[0]),
-					_ => null
-				};
-
-				if (expression is not null)
-					return true;
-			}
-			else if (instance is not null)
-			{
-				expression = method.Name switch
-				{
-					"PadLeft" when arguments.Count == 1 =>
-						BuildInstanceMethodCall(instance, "padStart", arguments[0]),
-					"PadLeft" when arguments.Count == 2 =>
-						BuildInstanceMethodCall(instance, "padStart", arguments[0], arguments[1]),
-					"PadRight" when arguments.Count == 1 =>
-						BuildInstanceMethodCall(instance, "padEnd", arguments[0]),
-					"PadRight" when arguments.Count == 2 =>
-						BuildInstanceMethodCall(instance, "padEnd", arguments[0], arguments[1]),
-					"ToLowerInvariant" when arguments.Count == 0 =>
-						BuildInstanceMethodCall(instance, "toLowerCase"),
-					"ToUpperInvariant" when arguments.Count == 0 =>
-						BuildInstanceMethodCall(instance, "toUpperCase"),
-					_ => null
-				};
-
-				if (expression is not null)
-					return true;
-			}
-		}
 
 		if (instance is null)
 			return false;
@@ -1393,9 +1258,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArrayElementReference(IArrayElementReferenceOperation operation, SenseArgument argument)
 	{
-		if (operation.Indices.Length == 0)
-			return HandleTransformationFailure<Node>(operation, "Array access requires at least one index.");
-
 		var initializations = new List<Expression>();
 		var expr = BuildArrayElementReadAccess(operation, argument, initializations);
 		if (initializations.Count == 0)
@@ -1416,13 +1278,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		for (var i = 0; i < operation.Indices.Length; i++)
 		{
 			var indexOperation = operation.Indices[i];
-			if (indexOperation is IRangeOperation && i != operation.Indices.Length - 1)
-			{
-				return HandleTransformationFailure<Expression>(
-					operation,
-					"Range indexing is only supported on the final array dimension.");
-			}
-
 			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations);
 		}
 
@@ -1504,8 +1359,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		if (indexOperation is IRangeOperation range)
 		{
-			var start = BuildArrayRangeBoundary(target, range.LeftOperand, argument);
-			var end = BuildArrayRangeBoundary(target, range.RightOperand, argument);
+			var start = BuildArrayRangeBoundary(ownerOperation, target, range.LeftOperand, argument);
+			var end = BuildArrayRangeBoundary(ownerOperation, target, range.RightOperand, argument);
 
 			var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
 			var args = NodeList.Empty<Expression>();
@@ -1519,8 +1374,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			return new CallExpression(slice, args, optional: false);
 		}
 
-		if (indexOperation.Type is INamedTypeSymbol rangeType && IsSystemRangeType(rangeType))
+		if (IsSystemRangeType(indexOperation.Type))
 		{
+			var rangeType = (INamedTypeSymbol)indexOperation.Type!;
 			var (offset, length) = BuildMaterializedRangeOffsetAndLength(
 				ownerOperation,
 				indexOperation,
@@ -1537,8 +1393,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			return new CallExpression(slice, NodeList.From(offset, endExclusive), optional: false);
 		}
 
-		if (indexOperation.Type is INamedTypeSymbol indexType && IsSystemIndexType(indexType))
+		if (IsSystemIndexType(indexOperation.Type))
 		{
+			var indexType = (INamedTypeSymbol)indexOperation.Type!;
 			var length = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
 			var offset = BuildMaterializedIndexOffset(ownerOperation, indexOperation, indexType, length, argument);
 			return new MemberExpression(target, offset, computed: true, optional: false);
@@ -1558,6 +1415,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	}
 
 	private Expression? BuildArrayRangeBoundary(
+		IOperation ownerOperation,
 		Expression target,
 		IOperation? boundaryOperation,
 		SenseArgument argument)
@@ -1573,7 +1431,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryUnwrapFromStartIndexArgument(boundaryOperation, out var fromStart))
 			return Translate<Expression>(fromStart, argument);
 
-		return Translate<Expression>(boundaryOperation, argument);
+		// The only remaining valid range-boundary shape is a materialized System.Index.
+		// Convert its carrier to the numeric offset expected by Array.prototype.slice.
+		var indexType = (INamedTypeSymbol)boundaryOperation.Type!;
+		var length = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
+		return BuildMaterializedIndexOffset(ownerOperation, boundaryOperation, indexType, length, argument);
 	}
 
 	private static bool RequiresArrayReceiverCaching(IOperation indexOperation)
@@ -1581,12 +1443,27 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryUnwrapArrayFromEndIndex(indexOperation, out _))
 			return true;
 
-		if (IsSystemIndexType(indexOperation.Type) || IsSystemRangeType(indexOperation.Type))
+		if (indexOperation is IRangeOperation range)
+		{
+			return RequiresArrayRangeBoundaryLength(range.LeftOperand) ||
+				RequiresArrayRangeBoundaryLength(range.RightOperand);
+		}
+
+		// Stored Index/Range carriers call a mapper with receiver.length and therefore need a
+		// stable receiver. Language-level ranges above only need caching when a boundary reads it.
+		return IsSystemIndexType(indexOperation.Type) || IsSystemRangeType(indexOperation.Type);
+	}
+
+	private static bool RequiresArrayRangeBoundaryLength(IOperation? boundaryOperation)
+	{
+		if (boundaryOperation is null)
+			return false;
+
+		if (TryUnwrapArrayFromEndIndex(boundaryOperation, out _))
 			return true;
 
-		return indexOperation is IRangeOperation range &&
-			(TryUnwrapArrayFromEndIndex(range.LeftOperand, out _) ||
-			 TryUnwrapArrayFromEndIndex(range.RightOperand, out _));
+		return IsSystemIndexType(boundaryOperation.Type) &&
+			!TryUnwrapFromStartIndexArgument(boundaryOperation, out _);
 	}
 
 	private static bool TryUnwrapArrayFromEndIndex(IOperation? operation, out IUnaryOperation unary)
@@ -1653,10 +1530,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		out List<Expression> initializations,
 		out Expression instance,
 		out List<Expression> arguments,
-		out ITypeSymbol? hostType)
+		out ITypeSymbol hostType)
 	{
 		initializations = [];
-		var resolvedHostType = operation.Instance.Type ?? operation.IndexerSymbol.ContainingType ?? operation.LengthSymbol.ContainingType;
+		// A valid bound implicit indexer always has a typed receiver.
+		var resolvedHostType = operation.Instance.Type!;
 		var translatedInstance = Translate<Expression>(operation.Instance, argument);
 
 		if (cacheForRepeatedReadWrite || RequiresImplicitIndexerLengthAccess(operation.Argument))
@@ -1674,11 +1552,19 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		if (TryGetRangeArgument(operation.Argument, out var rangeArgument))
 		{
-			var startExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.LeftOperand, GetLengthExpr, argument)
+			var startExpr = BuildImplicitRangeBoundaryExpression(operation, rangeArgument.LeftOperand, GetLengthExpr, argument)
 				?? new NumericLiteral(0, "0");
-			var endExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.RightOperand, GetLengthExpr, argument)
+			var endExpr = BuildImplicitRangeBoundaryExpression(operation, rangeArgument.RightOperand, GetLengthExpr, argument)
 				?? GetLengthExpr();
-			arguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr);
+			// Slice(start, length) consumes start twice: once as its first argument and once in
+			// end - start. Materialize calls and other unstable boundaries before composing it.
+			startExpr = MaterializePropertyMutationOperand(
+				startExpr,
+				ownerOperation,
+				argument,
+				initializations,
+				"irange-start");
+			arguments = BuildImplicitRangeArguments(startExpr, endExpr);
 		}
 		else if (IsSystemRangeType(operation.Argument.Type))
 		{
@@ -1720,7 +1606,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		Expression instance,
 		List<Expression> arguments,
 		SenseArgument argument,
-		ITypeSymbol? hostType)
+		ITypeSymbol hostType)
 	{
 		var usage = TryGetRangeArgument(operation.Argument, out _) || IsSystemRangeType(operation.Argument.Type)
 			? "implicit range access"
@@ -1732,7 +1618,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			arguments,
 			argument,
 			usage,
-			hostType ?? operation.IndexerSymbol.ContainingType);
+			hostType);
 	}
 
 	private void PrepareImplicitIndexerSetterAccess(
@@ -1744,7 +1630,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		out Expression instance,
 		out List<Expression> arguments,
 		out IPropertySymbol property,
-		out ITypeSymbol? hostType)
+		out ITypeSymbol hostType)
 	{
 		PrepareImplicitIndexerAccess(
 			operation,
@@ -1759,12 +1645,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		// Assignable implicit indexer operations are bound by Roslyn to a property symbol.
 		// Array element assignments use IArrayElementReferenceOperation instead.
 		property = (IPropertySymbol)operation.IndexerSymbol;
-		if (property.SetMethod is null)
-		{
-			property = HandleTransformationFailure<IPropertySymbol>(
-				operation,
-				$"Implicit indexer target '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not assignable because it has no setter.");
-		}
 	}
 
 	private void PrepareImplicitIndexerMutationAccess(
@@ -1788,13 +1668,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			out property,
 			out var hostType);
 
-		if (property.GetMethod is null)
-		{
-			property = HandleTransformationFailure<IPropertySymbol>(
-				operation,
-				$"Implicit indexer target '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not readable because it has no getter.");
-		}
-
 		readExpression = BuildImplicitIndexerReadExpression(operation, instance, arguments, argument, hostType);
 	}
 
@@ -1803,23 +1676,13 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (IsSystemRangeType(argumentOperation.Type))
 			return true;
 
-		if (TryGetRangeArgument(argumentOperation, out var rangeArgument))
-		{
-			return rangeArgument.RightOperand is null ||
-				IsFromEndIndexArgument(rangeArgument.LeftOperand) ||
-				IsFromEndIndexArgument(rangeArgument.RightOperand);
-		}
-
 		return IsFromEndIndexArgument(argumentOperation) ||
 			(IsSystemIndexType(argumentOperation.Type) &&
 			 !TryUnwrapFromStartIndexArgument(argumentOperation, out _));
 	}
 
-	private static bool IsFromEndIndexArgument(IOperation? operation)
+	private static bool IsFromEndIndexArgument(IOperation operation)
 	{
-		if (operation is null)
-			return false;
-
 		if (operation is IUnaryOperation { OperatorKind: UnaryOperatorKind.Hat })
 			return true;
 
@@ -1835,25 +1698,23 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		List<Expression> arguments,
 		Expression value)
 	{
-		if (property.SetMethod is not null)
+		var setter = property.SetMethod!;
+		var setterArguments = new List<Expression>(arguments.Count + 1);
+		setterArguments.AddRange(arguments);
+		setterArguments.Add(value);
+
+		var mapperExpr = GetWhiteListExpression(setter, argument, setterArguments, instance, out var setterAlias);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
+		if (TryBuildCurrentModuleIndexerSetterCall(property, instance, arguments, value, out var indexerSetterCall) &&
+			indexerSetterCall is not null)
 		{
-			var setterArguments = new List<Expression>(arguments.Count + 1);
-			setterArguments.AddRange(arguments);
-			setterArguments.Add(value);
-
-			var mapperExpr = GetWhiteListExpression(property.SetMethod, argument, setterArguments, instance, out var setterAlias);
-			if (mapperExpr is not null)
-				return mapperExpr;
-
-			if (TryBuildCurrentModuleIndexerSetterCall(property, instance, arguments, value, out var indexerSetterCall) &&
-				indexerSetterCall is not null)
-			{
-				return indexerSetterCall;
-			}
-
-			if (string.IsNullOrEmpty(setterAlias))
-				RejectUnsupportedRuntimeFallback(operation, property.SetMethod, "implicit indexer assignment", operation.Instance.Type ?? property.ContainingType);
+			return indexerSetterCall;
 		}
+
+		if (string.IsNullOrEmpty(setterAlias))
+			RejectUnsupportedRuntimeFallback(operation, setter, "implicit indexer assignment", operation.Instance.Type!);
 
 		var target = BuildImplicitIndexerWriteTarget(operation, instance, arguments, property);
 		return new AssignmentExpression(Operator.Assignment, target, value);
@@ -1865,13 +1726,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		List<Expression> arguments,
 		IPropertySymbol property)
 	{
-		if (arguments.Count != 1)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				$"JavaScript fallback for implicit indexer assignment requires a single translated index argument, but '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' produced {arguments.Count} arguments.");
-		}
-
 		return new MemberExpression(instance, arguments[0], computed: true, optional: false);
 	}
 
@@ -1880,7 +1734,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		ISymbol lengthSymbol,
 		Expression instance,
 		SenseArgument argument,
-		ITypeSymbol? hostType)
+		ITypeSymbol hostType)
 	{
 		return BuildListPatternBoundAccess(
 			ownerOperation,
@@ -1889,7 +1743,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			[],
 			argument,
 			"implicit indexer length access",
-			hostType ?? lengthSymbol.ContainingType);
+			hostType);
 	}
 
 	private Expression BuildImplicitIndexArgumentExpression(
@@ -1904,12 +1758,10 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryUnwrapFromStartIndexArgument(argumentOperation, out var fromStartOperand))
 			return Translate<Expression>(fromStartOperand, argument);
 
-		if (argumentOperation.Type is INamedTypeSymbol indexType && IsSystemIndexType(indexType))
-			return BuildMaterializedIndexOffset(ownerOperation, argumentOperation, indexType, lengthExpr, argument);
-
-		return HandleTransformationFailure<Expression>(
-			ownerOperation,
-			"Implicit indexing requires a direct numeric index, '^', range expression, or mapped System.Index value.");
+		// Direct numeric and '^' forms returned above. The remaining valid implicit-indexer
+		// argument is a materialized System.Index, and length was requested before this call.
+		var indexType = (INamedTypeSymbol)argumentOperation.Type!;
+		return BuildMaterializedIndexOffset(ownerOperation, argumentOperation, indexType, lengthExpr!, argument);
 	}
 
 	private static bool TryGetRangeArgument(IOperation operation, out IRangeOperation rangeOperation)
@@ -1940,17 +1792,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	{
 		if (operation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
 		{
-			if (lengthExpr is null)
-			{
-				expr = HandleTransformationFailure<Expression>(
-					operation,
-					"From-end index '^' requires a supported Length/Count symbol.");
-				return true;
-			}
-
 			expr = new NonLogicalBinaryExpression(
 				Operator.Subtraction,
-				lengthExpr,
+				lengthExpr!,
 				Translate<Expression>(unary.Operand, argument));
 			return true;
 		}
@@ -1967,14 +1811,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 	private static bool TryUnwrapFromStartIndexArgument(IOperation operation, out IOperation operand)
 	{
-		// A standalone Range carrier is not a numeric from-start index. Direct range syntax is
-		// handled earlier from IRangeOperation; letting this fall through misroutes it as Slice(range).
-		if (IsSystemRangeType(operation.Type))
-		{
-			operand = null!;
-			return false;
-		}
-
 		if (operation is IConversionOperation conversion &&
 			IsSystemIndexType(conversion.Type) &&
 			!IsSystemIndexType(conversion.Operand.Type))
@@ -1983,17 +1819,12 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			return true;
 		}
 
-		if (!IsSystemIndexType(operation.Type))
-		{
-			operand = operation;
-			return true;
-		}
-
 		operand = null!;
 		return false;
 	}
 
 	private Expression? BuildImplicitRangeBoundaryExpression(
+		IOperation ownerOperation,
 		IOperation? boundaryOperation,
 		Func<Expression> getLengthExpr,
 		SenseArgument argument)
@@ -2009,34 +1840,22 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (TryUnwrapFromStartIndexArgument(boundaryOperation, out var fromStartOperand))
 			return Translate<Expression>(fromStartOperand, argument);
 
-		return Translate<Expression>(boundaryOperation, argument);
+		// Range operands are either implicit int -> Index conversions, '^' expressions, or
+		// materialized Index values. The first two returned above; normalize the carrier here.
+		var indexType = (INamedTypeSymbol)boundaryOperation.Type!;
+		return BuildMaterializedIndexOffset(ownerOperation, boundaryOperation, indexType, getLengthExpr(), argument);
 	}
 
 	private List<Expression> BuildImplicitRangeArguments(
-		IOperation ownerOperation,
-		ISymbol indexerSymbol,
 		Expression startExpr,
 		Expression endExpr)
-	{
-		if (!IsImplicitRangeIndexer(indexerSymbol))
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Implicit range symbol '{indexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must be a Slice/Substring-style method with two int parameters.");
-		}
-
-		return
+		// Roslyn only creates IImplicitIndexerReferenceOperation when the bound Slice/Substring
+		// member exposes the language-required (int start, int length) contract.
+		=>
 		[
 			startExpr,
 			BuildImplicitRangeLengthExpression(startExpr, endExpr)
 		];
-	}
-
-	private static bool IsImplicitRangeIndexer(ISymbol indexerSymbol)
-		=> indexerSymbol is IMethodSymbol method &&
-			method.Parameters.Length == 2 &&
-			method.Parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Int32 &&
-			method.Parameters[1].Type.OriginalDefinition.SpecialType == SpecialType.System_Int32;
 
 	/// <summary>
 	/// Converts a stored System.Range value to the bound Slice/Substring integer pair.
@@ -2062,13 +1881,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			argument,
 			initializations,
 			ownerOperation);
-
-		if (!IsImplicitRangeIndexer(operation.IndexerSymbol))
-		{
-			return HandleUnsupportedSliceArguments(
-				operation,
-				$"Implicit range symbol '{operation.IndexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must be a Slice/Substring-style method with two int parameters.");
-		}
 
 		// GetOffsetAndLength already returns the exact (start, length) pair. Reusing the
 		// literal-range end-minus-start helper here would subtract the offset a second time.
@@ -2100,15 +1912,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			range,
 			out _,
 			operation);
-		if (projection is null)
-		{
-			return HandleTransformationFailure<(Expression Offset, Expression Length)>(
-				operation,
-				"System.Range.GetOffsetAndLength(int) requires the generated System.Range mapping.");
-		}
-
 		var offsets = MaterializePropertyMutationOperand(
-			projection,
+			projection!,
 			materializationOwner,
 			argument,
 			initializations,
@@ -2130,16 +1935,9 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		IOperation ownerOperation,
 		IOperation indexOperation,
 		INamedTypeSymbol indexType,
-		Expression? lengthExpr,
+		Expression lengthExpr,
 		SenseArgument argument)
 	{
-		if (lengthExpr is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				ownerOperation,
-				"A materialized System.Index value requires a supported Length/Count symbol.");
-		}
-
 		// This helper is reached only after the bound System.Index path requested Length/Count.
 		// System.Index has one public GetOffset(int) member; probing alternatives here cannot alter
 		// lowering and only obscures the fixed BCL contract.
@@ -2282,10 +2080,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			if (runtimeHost is not null)
 				return WithOriginIfMissing(BuildFieldAccess(runtimeHost, operation.Field, fieldName!, optional: false), operation);
 
-			var containing = BuildFullTypeName(operation.Field.ContainingType, argument);
-			if (containing is not null)
-				return WithOriginIfMissing(BuildFieldAccess(containing, operation.Field, fieldName!, optional: false), operation);
-
 		}
 
 		var fallback = operation.Instance is null
@@ -2333,12 +2127,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		var arguments = new List<Expression>(operation.Arguments.Length);
 		foreach (var propertyArgument in operation.Arguments)
-		{
-			var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
-				? argument.With(Sense.OutParameter)
-				: argument;
-			arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
-		}
+			arguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 
 		if (Host?.RewritePropertyReference(operation, argument, instance, arguments) is Expression hostExpression)
 			return WithOriginIfMissing(hostExpression, operation);
@@ -2401,7 +2190,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				importedProperty is not null)
 				return WithOriginIfMissing(importedProperty, operation);
 
-			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel, propertyName!, out var preferredStaticProperty) &&
+			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel!, propertyName!, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return WithOriginIfMissing(preferredStaticProperty, operation);
 
@@ -2409,10 +2198,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			if (runtimeHost is not null)
 				return WithOriginIfMissing(new MemberExpression(runtimeHost, property, computed: false, optional: false), operation);
 
-			// 生成类型标识符作为对象
-			var containing = BuildFullTypeName(operation.Property.ContainingType, argument);
-			if (containing is not null)
-				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
 		}
 
 		return WithOriginIfMissing(property, operation);
@@ -2464,7 +2249,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			.Select(i => new Identifier($"{name}${i}") as Expression)
 			.ToList();
 
-		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, out var alias, operation);
+		// Method-reference proxies model the receiver as their first JavaScript parameter. Split it
+		// before dispatch so Compile, Inline, and Import all observe the normal invocation contract.
+		var proxyInstance = operation.Method.IsStatic ? null : args[0];
+		var explicitArgs = operation.Method.IsStatic ? args : args.Skip(1).ToList();
+		var valueExpr = GetWhiteListExpression(operation.Method, argument, explicitArgs, proxyInstance, out var alias, operation);
 		if (valueExpr is not null)
 		{
 			// 生成箭头函数表达式作为代理方法
@@ -2505,13 +2294,10 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 					async: false);
 			}
 
-			instance = NormalizeRuntimeReceiverHostInstance(instance, operation.Method);
 			if (!operation.Method.IsStatic)
 				instance = MaterializeMethodReferenceReceiver(instance, operation, argument, initializations);
 		}
-		var property = new Identifier(methodName!);
-		
-		Expression callee = property;
+		Expression callee = new Identifier(methodName!);
 		var extensionHost = TryBuildExtensionHostTarget(operation.Method, argument);
 		if (instance is null)
 		{
@@ -2520,25 +2306,25 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
-				else if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
+				else if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel!, methodName!, out var preferredStaticCallee) &&
 					preferredStaticCallee is not null)
 					callee = preferredStaticCallee;
 				else if (extensionHost is not null)
-					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+					callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
 				else
 				{
 					var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
 					if (containing is not null)
-						callee = new MemberExpression(containing, property, computed: false, optional: false);
+						callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
 				}
 			}
 		}
 		else
 		{
 			callee = operation.Method.IsStatic && extensionHost is not null
-				? new MemberExpression(extensionHost, property, computed: false, optional: false)
+				? BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false)
 				: operation.Method.MethodKind != MethodKind.DelegateInvoke
-				? new MemberExpression(instance, property, computed: false, optional: false)
+				? BuildAliasedPropertyAccess(instance, methodName!, optional: false)
 				: instance;
 
 			// 实例方法组必须绑定到实际接收者，而不是当前 lexical this。
@@ -2675,7 +2461,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			{
 				var arg = operation.Arguments[index];
 				// 为 out 参数传递 OutParameter 上下文
-				var argContext = arg.Parameter?.RefKind is RefKind.Out
+				var argContext = arg.Parameter!.RefKind is RefKind.Out
 					? argument.With(Sense.OutParameter)
 					: argument;
 
@@ -2689,7 +2475,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
 				{
 					var hostLoweredArgument = LowerBoundArgument(operation, arg, argument, hostArgument);
-					if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
+					if (arg.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
 						refParas.Add(hostLoweredArgument.WriteBackTarget);
 					arguments.Add(hostLoweredArgument.Value);
 					continue;
@@ -2700,7 +2486,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 				var loweredArgument = LowerBoundArgument(operation, arg, argument);
 				// ref 引用 或 out 变量引用，记住回写位置。
-				if (arg.Parameter?.RefKind is RefKind.Out or RefKind.Ref)
+				if (arg.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
 					refParas.Add(loweredArgument.WriteBackTarget);
 
 				// 当作普通参数传入
@@ -2800,6 +2586,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		if (allowIntrinsic &&
 			invocationOperation is not null &&
+			string.IsNullOrEmpty(alias) &&
 			TryBuildIntrinsicMethodInvocation(invocationOperation, targetMethod, instance, arguments, argument, out var intrinsicExpr) &&
 			intrinsicExpr is not null)
 			return intrinsicExpr;
@@ -2808,9 +2595,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType ?? targetMethod.ContainingType);
 
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
-		if (instance is not null)
-			instance = NormalizeRuntimeReceiverHostInstance(instance, targetMethod);
-
 		var property = new Identifier(methodName!);
 		Expression callee = property;
 		var extensionHost = TryBuildExtensionHostTarget(targetMethod, argument);
@@ -2821,25 +2605,25 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				if (TryBuildImportedModuleMember(targetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
-				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel, methodName!, out var preferredStaticCallee) &&
+				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel!, methodName!, out var preferredStaticCallee) &&
 					preferredStaticCallee is not null)
 					callee = preferredStaticCallee;
 				else if (extensionHost is not null)
-					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+					callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
 				else
 				{
 					var containing = BuildFullTypeName(targetMethod.ContainingType, argument);
 					if (containing is not null)
-						callee = new MemberExpression(containing, property, computed: false, optional: false);
+						callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
 				}
 			}
 		}
 		else
 		{
 			callee = targetMethod.IsStatic && extensionHost is not null
-				? new MemberExpression(extensionHost, property, computed: false, optional: false)
+				? BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false)
 				: targetMethod.MethodKind != MethodKind.DelegateInvoke
-				? new MemberExpression(instance, property, computed: false, optional: false)
+				? BuildAliasedPropertyAccess(instance, methodName!, optional: false)
 				: instance;
 		}
 

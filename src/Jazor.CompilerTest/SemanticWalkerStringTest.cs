@@ -1,3 +1,5 @@
+using Acornima;
+using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -191,7 +193,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let name = ""World"";
-  let message = `Hello ${name}!`;
+  let message = `Hello ${name ?? """"}!`;
 }", script);
 	}
 
@@ -311,7 +313,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let name = ""John"";
   let age = 30;
-  let message = `Name: ${name}, Age: ${age}`;
+  let message = `Name: ${name ?? """"}, Age: ${age}`;
 }", script);
 	}
 
@@ -435,7 +437,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let x = 5;
-  let message = `Result: ${x > 0 ? ""positive"" : ""negative""}`;
+  let message = `Result: ${(x > 0 ? ""positive"" : ""negative"") ?? """"}`;
 }", script);
 	}
 
@@ -555,7 +557,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let value = ""Test"";
-  let message = `Path${value}File`;
+  let message = `Path${value ?? """"}File`;
 }", script);
 	}
 
@@ -592,7 +594,7 @@ public sealed class SemanticWalkerStringTest
   let name = ""John"";
   let id = 123;
   let count = 5;
-  let message = `User ${name} (ID: ${id}) has ${count} messages`;
+  let message = `User ${name ?? """"} (ID: ${id}) has ${count} messages`;
 }", script);
 	}
 
@@ -623,7 +625,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let value = 42;
   let inner = ""test"";
-  let message = `Outer ${value} and ${inner}`;
+  let message = `Outer ${value} and ${inner ?? """"}`;
 }", script);
 	}
 
@@ -755,8 +757,8 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let name = ""Alice"";
   let age = 25;
-  let greeting = `Hello, ${name}!`;
-  let info = `Name: ${name}, Age: ${age}`;
+  let greeting = `Hello, ${name ?? """"}!`;
+  let info = `Name: ${name ?? """"}, Age: ${age}`;
   let nextYear = `Next year: ${age + 1}`;
   console.log(greeting);
   console.log(info);
@@ -789,7 +791,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let name = ""John"";
-  let message = `Name:	${name}`;
+  let message = `Name:	${name ?? """"}`;
 }", script);
 	}
 
@@ -818,7 +820,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let path = ""folder/file.txt"";
-  let message = `Path:\${path}`;
+  let message = `Path:\${path ?? """"}`;
 }", script);
 	}
 
@@ -899,7 +901,7 @@ public sealed class SemanticWalkerStringTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToECMAScript();
 
-		Assert.AreEqual("{let name=\"Apple\";let price=100;let message=`Item:	${name}\nPrice:	${price}`}", script);
+		Assert.AreEqual("{let name=\"Apple\";let price=100;let message=`Item:	${name??\"\"}\nPrice:	${price}`}", script);
 
 	}
 
@@ -1077,7 +1079,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let name = ""hello world"";
-  let result = `Upper: ${name.toUpperCase()}`;
+  let result = `Upper: ${name.toUpperCase() ?? """"}`;
 }", script);
 	}
 
@@ -1104,7 +1106,7 @@ public sealed class SemanticWalkerStringTest
 
 		Assert.AreEqual(@"{
   let value = 5;
-  let result = `Value is ${value > 0 ? ""positive"" : ""non-positive""}`;
+  let result = `Value is ${(value > 0 ? ""positive"" : ""non-positive"") ?? """"}`;
 }", script);
 	}
 
@@ -1160,7 +1162,7 @@ public sealed class SemanticWalkerStringTest
 		AssertScriptEqual(@"{
   let name = ""World"";
   let result = `Hello,
-${name}!`;
+${name ?? """"}!`;
 }", script);
 	}
 
@@ -1538,7 +1540,7 @@ ${name}!`;
 
 		Assert.AreEqual(@"{
   let x = 5;
-  let result = `Value is ${x > 0 ? ""positive"" : ""non-positive""}`;
+  let result = `Value is ${(x > 0 ? ""positive"" : ""non-positive"") ?? """"}`;
 }", script);
 	}
 
@@ -1565,7 +1567,7 @@ ${name}!`;
 
 		Assert.AreEqual(@"{
   let name = ""Hello World"";
-  let result = `Upper: ${name.toUpperCase()}`;
+  let result = `Upper: ${name.toUpperCase() ?? """"}`;
 }", script);
 	}
 
@@ -1592,7 +1594,7 @@ ${name}!`;
 
 		Assert.AreEqual(@"{
   let s = null;
-  let result = `Value: ${s}`;
+  let result = `Value: ${s ?? """"}`;
 }", script);
 	}
 
@@ -1978,10 +1980,10 @@ ${name}!`;
 	}
 
 	/// <summary>
-	/// 测试字符串插值带格式
+	/// 缺少 CLR format contract 时，标准插值不能静默丢弃格式说明符。
 	/// </summary>
 	[TestMethod]
-	public void Visit_InterpolatedString_Format()
+	public void Visit_InterpolatedString_UnsupportedNumericFormat_Rejects()
 	{
 		var block = GetBlockOperation(@"
 			class TestClass
@@ -1994,14 +1996,477 @@ ${name}!`;
 			}
 		");
 
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new()));
+		Assert.AreEqual(OperationKind.Interpolation, exception.Kind);
+		StringAssert.Contains(exception.Message, "double.ToString(string, System.IFormatProvider)");
+	}
+
+	/// <summary>
+	/// 标准插值必须经 Roslyn 静态类型选择 C# 字符串化路径；可空值、bool、format 与
+	/// alignment 不能退回模板字符串的 null/lowercase/忽略-format 语义。
+	/// </summary>
+	[TestMethod]
+	public void Visit_InterpolatedString_UsesBoundStringificationAndAlignmentContracts()
+	{
+		var block = GetBlockOperation("""
+            #nullable enable
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string? missing = null;
+                    bool ready = true;
+                    decimal amount = 12.5m;
+                    string formatted = $"[{missing}]|[{ready}]|[{amount:F2}]|[{NextValue(),-5}]|[{NextValue(),5}]";
+                }
+
+                private static string NextValue() => "ok";
+            }
+            """);
+
+		var argument = new SenseArgument();
+		var node = new SemanticWalker(true).Visit(block, argument);
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
-  let pi = 3.14159;
-  let formatted = `Pi: ${pi}`;
-}", script);
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "missing ?? \"\"", StringComparison.Ordinal);
+		StringAssert.Contains(script, "ready ? \"True\" : \"False\"", StringComparison.Ordinal);
+		StringAssert.Contains(script, "_b1e6a06111674f0c", StringComparison.Ordinal);
+		StringAssert.Contains(script, "_0e8f0a28fc1de8c2", StringComparison.Ordinal);
+		StringAssert.Contains(script, "_26620c4bafb4f435", StringComparison.Ordinal);
+
+		Assert.AreEqual(2, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_NullableScalar_UsesEmptyTextWithoutDuplicateEvaluation()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? count = null;
+                    string message = $"[{count}]";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "count ?? \"\"", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_ZeroAlignment_UsesFormattedValueWithoutPadding()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    decimal amount = 12.5m;
+                    string formatted = $"[{amount,0:F2}]";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "_b1e6a06111674f0c", StringComparison.Ordinal);
+		Assert.IsFalse(script.Contains("_26620c4bafb4f435", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("_0e8f0a28fc1de8c2", StringComparison.Ordinal), script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_Object_RejectsWithoutRuntimeStringificationContract()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object value = 42;
+                    string message = $"[{value}]";
+                }
+            }
+            """);
+
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new()));
+		Assert.AreEqual(OperationKind.Interpolation, exception.Kind);
+		StringAssert.Contains(exception.Message, "object", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_Enum_RejectsWithoutEnumTextRuntimeContract()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                private enum State
+                {
+                    Ready
+                }
+
+                void TestMethod()
+                {
+                    State value = State.Ready;
+                    string message = $"[{value}]";
+                }
+            }
+            """);
+
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new()));
+		Assert.AreEqual(OperationKind.Interpolation, exception.Kind);
+		StringAssert.Contains(exception.Message, "enum text runtime contract", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_ConstantNull_EmitsEmptyText()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string message = $"[{(string?)null}]";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "let message = `[${\"\"}]`;", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_HalfAndChar_UseDirectScalarText()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(Half amount, char suffix)
+                {
+                    string message = $"{amount}:{suffix}";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let message = `${amount}:${suffix}`;
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_BooleanFormat_UsesBoundToStringFallback()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    bool ready = true;
+                    string message = $"[{ready:X}]";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "ready ? \"True\" : \"False\"", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_SourceFormattable_UsesSingleCachedReceiver()
+	{
+		var block = GetBlockOperation("""
+            #nullable enable
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string message = $"[{NextValue():X}]";
+                }
+
+                private static FormattedValue NextValue() => new();
+
+                private sealed class FormattedValue : IFormattable
+                {
+                    public string ToString(string? format, IFormatProvider? formatProvider)
+                        => format ?? "default";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, ".toString(\"X\", null)", StringComparison.Ordinal);
+		Assert.AreEqual(1, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_StringEnum_UsesMappedTextValue()
+	{
+		var block = GetBlockOperation("""
+            using ECMAScript;
+
+            [String]
+            enum DisplayState
+            {
+                Ready
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DisplayState state = DisplayState.Ready;
+                    string message = $"[{state}]";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let state = "Ready";
+              let message = `[${state}]`;
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_SourceToString_UsesSingleCachedReceiver()
+	{
+		var block = GetBlockOperation("""
+            #nullable enable
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string message = $"[{NextValue()}]";
+                }
+
+                private static DisplayValue NextValue() => new();
+
+                private sealed class DisplayValue
+                {
+                    public override string ToString() => "ready";
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, ".toString()", StringComparison.Ordinal);
+		Assert.AreEqual(1, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_SourceBaseToString_UsesInheritedTextContract()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DisplayValue value = new();
+                    string message = $"[{value}]";
+                }
+
+                private class DisplayBase
+                {
+                    public override string ToString() => "base";
+                }
+
+                private sealed class DisplayValue : DisplayBase
+                {
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "v$0 = value", StringComparison.Ordinal);
+		StringAssert.Contains(script, "v$0.toString()", StringComparison.Ordinal);
+		Assert.AreEqual(1, script.Split("v$0 = value", StringSplitOptions.None).Length - 1, script);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_SourceClassWithoutToString_RejectsNativeObjectFallback()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DisplayValue value = new();
+                    string message = $"[{value}]";
+                }
+
+                private sealed class DisplayValue
+                {
+                }
+            }
+            """);
+
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+			new SemanticWalker(true).Visit(block, new()));
+		Assert.AreEqual(OperationKind.Interpolation, exception.Kind);
+		StringAssert.Contains(exception.Message, "Override ToString()", StringComparison.Ordinal);
+	}
+
+	[TestMethod]
+	public void Visit_InterpolatedString_AmbiguousRuntimeShapes_RejectWithoutStringificationContract()
+	{
+		var sources = new[]
+		{
+			"""
+            class TestClass
+            {
+                void TestMethod<T>(T value)
+                {
+                    string message = $"[{value}]";
+                }
+            }
+            """,
+			"""
+            class TestClass
+            {
+                private interface IValue { }
+
+                void TestMethod(IValue value)
+                {
+                    string message = $"[{value}]";
+                }
+            }
+            """,
+			"""
+            class TestClass
+            {
+                void TestMethod(Func<int> value)
+                {
+                    string message = $"[{value}]";
+                }
+            }
+            """,
+			"""
+            class TestClass
+            {
+                void TestMethod((int Left, int Right) value)
+                {
+                    string message = $"[{value}]";
+                }
+            }
+            """,
+			"""
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new { Id = 1 };
+                    string message = $"[{value}]";
+                }
+            }
+            """,
+			"""
+            class TestClass
+            {
+                void TestMethod(int[] value)
+                {
+                    string message = $"[{value}]";
+                }
+            }
+            """
+		};
+
+		foreach (var source in sources)
+		{
+			var block = GetBlockOperation(source);
+			var exception = Assert.Throws<OperationTransformationException>(() =>
+				new SemanticWalker(true).Visit(block, new()));
+			Assert.AreEqual(OperationKind.Interpolation, exception.Kind);
+			StringAssert.Contains(exception.Message, "stable string conversion contract", StringComparison.Ordinal);
+		}
+	}
+
+	/// <summary>
+	/// 标准插值的 null 与 bool 文本语义不能沿用 JavaScript 模板字符串的 null/lowercase 行为。
+	/// </summary>
+	[TestMethod]
+	public async Task Visit_InterpolatedString_NullAndBoolean_UseCSharpTextSemanticsOnDenoHost()
+	{
+		var block = GetBlockOperation("""
+            #nullable enable
+            public static class TestModule
+            {
+                public static string Run()
+                {
+                    string? missing = null;
+                    bool ready = true;
+                    return $"[{missing}]|[{ready}]";
+                }
+            }
+            """);
+
+		var body = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+		Assert.IsNotNull(body);
+
+		var module = "export function run() " + body;
+		_ = new Parser().ParseModule(module);
+
+		var root = Path.Combine(
+			Path.GetTempPath(),
+			"jazor-interpolation-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(root);
+
+		try
+		{
+			var modulePath = Path.Combine(root, "interpolation.mjs");
+			var testPath = Path.Combine(root, "interpolation.test.mjs");
+			await System.IO.File.WriteAllTextAsync(
+				modulePath,
+				module,
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+			await System.IO.File.WriteAllTextAsync(
+				testPath,
+				"""
+                import { run } from "./interpolation.mjs";
+
+                Deno.test("standard interpolation preserves C# null and bool text", () => {
+                  const result = run();
+                  if (result !== "[]|[True]")
+                    throw new Error(`expected []|[True], got ${result}`);
+                });
+                """,
+				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+			await Deno.Execute(
+				new DenoExecuteBaseOptions { WorkingDirectory = root },
+				["test", "--quiet", "--allow-read", testPath],
+				timeout.Token);
+		}
+		finally
+		{
+			if (Directory.Exists(root))
+				Directory.Delete(root, recursive: true);
+		}
 	}
 
 	/// <summary>

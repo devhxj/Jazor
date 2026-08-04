@@ -202,12 +202,9 @@ public partial class SemanticWalker
 		var (mapper, typeName) = GetMapperType(constructedType);
 		return mapper switch
 		{
-			TypeMapper.BigInt => constructor.Parameters.Length <= 1 &&
-				constructor.Parameters.All(parameter =>
-				{
-					var mapper = GetMapperType(parameter.Type).Mapper;
-					return mapper is TypeMapper.Number or TypeMapper.BigInt;
-				}),
+			// Parameterized BigInteger/Int128 constructors are owned by explicit CLR mappings.
+			// The only intrinsic gap is the legal parameterless BigInteger default constructor.
+			TypeMapper.BigInt => constructor.Parameters.Length == 0,
 			TypeMapper.Class => IsNativeErrorConstructorFallbackAllowed(constructedType, typeName),
 			_ => false
 		};

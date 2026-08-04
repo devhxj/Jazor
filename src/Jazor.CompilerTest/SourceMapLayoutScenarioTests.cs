@@ -67,6 +67,15 @@ public sealed class SourceMapLayoutScenarioTests
             case SourceMapLayoutScenarioKind.RelativeSourcePath:
                 AssertRelativeSourcePathIsNormalized(testCase.Id);
                 break;
+            case SourceMapLayoutScenarioKind.InvalidAbsoluteSourcePath:
+                AssertInvalidAbsoluteSourcePathIsPreserved(testCase.Id);
+                break;
+            case SourceMapLayoutScenarioKind.SourcePathEqualsRoot:
+                AssertSourcePathEqualToRootIsStable(testCase.Id);
+                break;
+            case SourceMapLayoutScenarioKind.CarriageReturnComment:
+                AssertCarriageReturnCommentTracksFollowingNode(testCase.Id);
+                break;
             default:
                 Assert.Fail($"{testCase.Id}: unsupported scenario kind '{testCase.Kind}'.");
                 break;
@@ -259,6 +268,55 @@ public sealed class SourceMapLayoutScenarioTests
         Assert.AreEqual("Demo/Relative.cs", parsed.RootElement.GetProperty("sources")[0].GetString(), scenarioId);
     }
 
+    private static void AssertInvalidAbsoluteSourcePathIsPreserved(string scenarioId)
+    {
+        const string sourcePath = "C:\\invalid\0source.cs";
+        var expression = new Identifier("value")
+        {
+            UserData = new SourceOrigin(sourcePath, 1, 0, 1, 5)
+        };
+
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "invalid-path.mjs",
+            includeSourcesContent: false,
+            sourceRootPath: "C:\\source");
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        Assert.AreEqual("C:/invalid\0source.cs", parsed.RootElement.GetProperty("sources")[0].GetString(), scenarioId);
+        Assert.IsNotEmpty(DecodeSegments(parsed.RootElement), scenarioId);
+    }
+
+    private static void AssertSourcePathEqualToRootIsStable(string scenarioId)
+    {
+        var sourceRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "jazor-source-root"));
+        var expression = new Identifier("value")
+        {
+            UserData = new SourceOrigin(sourceRoot, 1, 0, 1, 5)
+        };
+
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "root-source.mjs",
+            includeSourcesContent: false,
+            sourceRootPath: sourceRoot);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        Assert.AreEqual(sourceRoot.Replace('\\', '/'), parsed.RootElement.GetProperty("sources")[0].GetString(), scenarioId);
+    }
+
+    private static void AssertCarriageReturnCommentTracksFollowingNode(string scenarioId)
+    {
+        var value = new Identifier("value");
+        var block = new NestedBlockStatement(NodeList.From<Statement>(
+            new BlockComment("first\rsecond"),
+            new NonSpecialExpressionStatement(value)));
+
+        var layout = block.ToKnRECMAScriptWithNodePositions();
+        var valuePosition = GetLineColumnContaining(layout.Content, "value");
+
+        AssertPosition(layout, value, valuePosition.Line, valuePosition.Column, scenarioId);
+        Assert.IsGreaterThanOrEqualTo(2, valuePosition.Line, scenarioId);
+    }
+
     private static void AssertPosition(
         GeneratedJavaScriptNodeLayout layout,
         Node node,
@@ -292,7 +350,10 @@ public enum SourceMapLayoutScenarioKind
     CombinedArtifact,
     SyntheticRoot,
     ThrowingSourceReader,
-    RelativeSourcePath
+    RelativeSourcePath,
+    InvalidAbsoluteSourcePath,
+    SourcePathEqualsRoot,
+    CarriageReturnComment
 }
 
 public sealed record SourceMapLayoutCase(
@@ -310,7 +371,10 @@ internal static class SourceMapLayoutCaseCatalog
         Case("source-map-layout.combined-artifact", "source-map-and-node-entry-consistency", SourceMapLayoutScenarioKind.CombinedArtifact),
         Case("source-map-layout.synthetic-root", "synthetic-origin-suppression", SourceMapLayoutScenarioKind.SyntheticRoot),
         Case("source-map-layout.throwing-source-reader", "source-content-error-isolation", SourceMapLayoutScenarioKind.ThrowingSourceReader),
-        Case("source-map-layout.relative-source-path", "relative-source-normalization", SourceMapLayoutScenarioKind.RelativeSourcePath)
+        Case("source-map-layout.relative-source-path", "relative-source-normalization", SourceMapLayoutScenarioKind.RelativeSourcePath),
+        Case("source-map-layout.invalid-absolute-source-path", "invalid-absolute-path-error-isolation", SourceMapLayoutScenarioKind.InvalidAbsoluteSourcePath),
+        Case("source-map-layout.source-equals-root", "root-equality-normalization", SourceMapLayoutScenarioKind.SourcePathEqualsRoot),
+        Case("source-map-layout.carriage-return-comment", "carriage-return-coordinate-tracking", SourceMapLayoutScenarioKind.CarriageReturnComment)
     ];
 
     private static SourceMapLayoutCase Case(

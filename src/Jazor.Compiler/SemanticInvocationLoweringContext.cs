@@ -39,7 +39,7 @@ public sealed class SemanticInvocationLoweringContext
     public SenseArgument Argument { get; }
 
     public bool TryBuildImportedModuleMember(
-        ITypeSymbol? containingType,
+        ITypeSymbol containingType,
         string memberName,
         out Expression? expression)
         => _importedModuleMemberBuilder(containingType, memberName, Argument, out expression);
@@ -60,9 +60,9 @@ public sealed class SemanticInvocationLoweringContext
         => _exceptionFactory(operation, message);
 
     internal delegate bool ImportedModuleMemberBuilder(
-        ITypeSymbol? containingType,
+        ITypeSymbol containingType,
         string memberName,
-        SenseArgument? context,
+        SenseArgument context,
         out Expression? expression);
 
     internal delegate string? ModuleImportPathResolver(ITypeSymbol symbol);

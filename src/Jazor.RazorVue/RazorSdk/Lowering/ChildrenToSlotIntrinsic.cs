@@ -51,7 +51,8 @@ internal static class ChildrenToSlotIntrinsic
 		out Expression? expression)
 	{
 		expression = null;
-		if (!IsRenderFactoryMethod(method, context))
+		if (method.ContainingType is not { } containingType ||
+			!IsRenderFactoryMethod(method, containingType, context))
 			return false;
 
 		if (!TryClassifyDefaultSlotInvocation(method, context, out var defaultSlotKind, out var hostContracts))
@@ -63,7 +64,7 @@ internal static class ChildrenToSlotIntrinsic
 		if (defaultSlotKind is DefaultSlotInvocationKind.TypedNoProps or DefaultSlotInvocationKind.TypedWithProps)
 			ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, context);
 
-		if (!context.TryBuildImportedModuleMember(method.ContainingType, Util.GetConfigOrSymbolName(method), out var importedRenderFactory) ||
+		if (!context.TryBuildImportedModuleMember(containingType, Util.GetConfigOrSymbolName(method), out var importedRenderFactory) ||
 			importedRenderFactory is not Expression renderFactory)
 		{
 			throw context.CreateException(
@@ -82,15 +83,17 @@ internal static class ChildrenToSlotIntrinsic
 		return expression is not null;
 	}
 
-	private static bool IsRenderFactoryMethod(IMethodSymbol method, IContext context)
+	private static bool IsRenderFactoryMethod(
+		IMethodSymbol method,
+		INamedTypeSymbol containingType,
+		IContext context)
 		=> method is
 		{
 			MethodKind: MethodKind.Ordinary,
-			IsStatic: true,
-			ContainingType: { }
+			IsStatic: true
 		} &&
 		string.Equals(Util.GetConfigOrSymbolName(method), "h", StringComparison.Ordinal) &&
-		!string.IsNullOrWhiteSpace(context.GetModuleImportPath(method.ContainingType));
+		!string.IsNullOrWhiteSpace(context.GetModuleImportPath(containingType));
 
 	private static bool TryClassifyDefaultSlotInvocation(
 		IMethodSymbol method,
@@ -480,7 +483,7 @@ internal static class ChildrenToSlotIntrinsic
 	private interface IContext
 	{
 		bool TryBuildImportedModuleMember(
-			ITypeSymbol? containingType,
+			ITypeSymbol containingType,
 			string memberName,
 			out Expression? expression);
 
@@ -503,7 +506,7 @@ internal static class ChildrenToSlotIntrinsic
 		}
 
 		public bool TryBuildImportedModuleMember(
-			ITypeSymbol? containingType,
+			ITypeSymbol containingType,
 			string memberName,
 			out Expression? expression)
 			=> _context.TryBuildImportedModuleMember(containingType, memberName, out expression);
@@ -552,7 +555,7 @@ internal static class ChildrenToSlotIntrinsic
 		public ExceptionFactory CreateException { get; }
 
 		bool IContext.TryBuildImportedModuleMember(
-			ITypeSymbol? containingType,
+			ITypeSymbol containingType,
 			string memberName,
 			out Expression? expression)
 			=> TryBuildImportedModuleMember(containingType, memberName, Argument, out expression);
@@ -574,9 +577,9 @@ internal static class ChildrenToSlotIntrinsic
 	}
 
 	internal delegate bool ImportedModuleMemberBuilder(
-		ITypeSymbol? containingType,
+		ITypeSymbol containingType,
 		string memberName,
-		SenseArgument? context,
+		SenseArgument context,
 		out Expression? expression);
 
 	internal delegate string? ModuleImportPathResolver(ITypeSymbol symbol);

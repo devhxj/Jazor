@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Xml.Linq;
 
-const int minimumPassedTests = 8_000;
-const double minimumLineRate = 0.95;
-const double minimumBranchRate = 0.90;
+const int minimumPassedTests = 10_000;
+const double minimumLineRate = 0.98;
+const double minimumBranchRate = 0.94;
 
 try
 {
@@ -52,7 +52,9 @@ try
         failures.Add($"passed tests {tests.Passed} are below {minimumPassedTests}");
     if (tests.Total != tests.Passed || tests.Failed != 0)
         failures.Add($"test counters are not clean: total={tests.Total}, passed={tests.Passed}, failed={tests.Failed}");
-    if (coverage.LinesCovered < RequiredHits(coverage.LinesValid, minimumLineRate))
+    if (coverage.LinesValid == 0 || coverage.BranchesValid == 0)
+        failures.Add("coverage report contains no instrumented lines or branches");
+    else if (coverage.LinesCovered < RequiredHits(coverage.LinesValid, minimumLineRate))
         failures.Add($"line coverage {FormatRate(coverage.LinesCovered, coverage.LinesValid)} is below {minimumLineRate:P0}");
     if (coverage.BranchesCovered < RequiredHits(coverage.BranchesValid, minimumBranchRate))
         failures.Add($"branch coverage {FormatRate(coverage.BranchesCovered, coverage.BranchesValid)} is below {minimumBranchRate:P0}");

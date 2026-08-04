@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8310 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8310%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.28 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.11 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.11%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="10101 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-10101%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="98.42 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98.42%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="94.00 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-94.00%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8310 / 8310 passed | 8000 passed |
-| Line coverage | 16272 / 16900 (96.28%) | 95% |
-| Branch coverage | 6439 / 7146 (90.11%) | 90% |
+| Compiler regression tests | 10101 / 10101 passed | 10000 passed |
+| Line coverage | 16354 / 16617 (98.42%) | 98% |
+| Branch coverage | 6394 / 6802 (94.00%) | 94% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -57,9 +57,9 @@ Official Razor SG output is tested through Roslyn binding, direct Vue render-fun
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| RazorVue SG scenarios | 4482 / 4482 passed | 4000 passed |
+| RazorVue SG scenarios | 4484 / 4484 passed | 4000 passed |
 | Line coverage | 8147 / 8719 (93.44%) | 90% |
-| Branch coverage | 3569 / 4265 (83.68%) | 80% |
+| Branch coverage | 3568 / 4265 (83.66%) | 80% |
 
 Run the RazorVue coverage gate from the repository root:
 
@@ -88,6 +88,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-04
 
+- Standard interpolated strings now preserve C# null-to-empty conversion, boolean casing, numeric formatting, constant alignment, source-defined `ToString` dispatch, and single evaluation through compiler-owned ESTree lowering; runtime types without a stable text contract fail explicitly.
+- Source maps now preserve an absolute source when it exactly equals the configured source root, instead of emitting a relative path that escapes the root.
+- Whitelist generation now replaces the process-local type/member catalog as one complete snapshot before CLR runtime generation, preventing partially refreshed mappings from reaching the compiler.
 - Gregorian-calendar constructor families for `DateTime` and `DateTimeOffset` now preserve null precedence, kind, microseconds, and offset validation through the shared date runtime.
 - `StringBuilder` now includes capacity-aware construction and growth, capacity APIs, string append/append-line operations, and content equality through one stateful carrier contract.
 - `string.Intern` now executes through the string carrier; expression-tree and `IQueryable` lambda conversions fail explicitly instead of being treated as executable delegates.
@@ -101,14 +104,14 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
 - Lambda parameters with C# optional defaults now preserve omitted-call behavior at the JavaScript function boundary; by-reference lambda returns remain an explicit runtime boundary.
 - Named arguments now preserve source evaluation order while invoking Roslyn-bound parameter slots; `ref` and `out` array or member locations are evaluated once and receive write-back through the shared protocol.
-- The compiler gate verifies 8,310 scenarios at 96.28% line and 90.11% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- The compiler gate verifies 10,101 scenarios at 98.42% line and 94.00% branch coverage; the RazorVue gate verifies 4,484 official SG scenarios at 93.44% line and 83.66% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.42
+dotnet add package Jazor --version 0.1.43
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -117,8 +120,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.42" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.42" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.43" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.43" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -126,11 +129,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.42" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.42" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.42" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.42" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.42" />
+  <PackageReference Include="Jazor" Version="0.1.43" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.43" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.43" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.43" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.43" />
 </ItemGroup>
 ```
 

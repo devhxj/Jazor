@@ -2,6 +2,10 @@
 
 ## 2026-08-04
 
+- Standard interpolated strings now preserve C# null-to-empty conversion, `Boolean` text casing, numeric formatting, constant alignment, source-defined `ToString` dispatch, and single evaluation through compiler-owned ESTree lowering. Values without a stable runtime text contract now fail explicitly instead of inheriting JavaScript stringification.
+- Source maps now keep an absolute source path when that source exactly equals the configured source root, avoiding a relative path that escapes the root directory.
+- Compiler whitelist generation now publishes refreshed type and member mappings as one complete process-local catalog snapshot before CLR runtime modules are generated.
+- The compiler quality gate now verifies 10,101 genuine Roslyn `IOperation` scenarios at 98.42% line coverage and 94.00% branch coverage. The RazorVue gate verifies 4,484 official Razor SG scenarios at 93.44% line coverage and 83.66% branch coverage.
 - `DateTime` and `DateTimeOffset` now support their Gregorian-calendar constructor families, preserving calendar-null argument precedence, `DateTimeKind`, microseconds, and offset validation through the shared date carrier.
 - `StringBuilder` now supports capacity-aware construction, `Capacity`, `MaxCapacity`, `EnsureCapacity`, string append and append-line paths, and content-based builder equality. Capacity growth preserves the .NET behavior where an allocation may briefly exceed `MaxCapacity` while already allocated space remains usable.
 - `string.Intern` now runs through the string carrier contract, including null argument behavior; intern-table inspection remains an explicit boundary.
@@ -18,7 +22,6 @@
 - UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
 - Lambda parameters with C# optional defaults now preserve omitted-call behavior at the generated JavaScript function boundary. By-reference lambda returns remain an explicit runtime boundary.
 - Named arguments now retain C# source evaluation order while invoking Roslyn-bound parameter slots. `ref` and `out` array or member locations evaluate once and use the shared write-back protocol without reading an `out` location's prior value.
-- The compiler quality gate now verifies 8,310 scenarios at 96.28% line coverage and 90.11% branch coverage.
 
 ## 2026-08-03
 

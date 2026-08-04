@@ -6,6 +6,10 @@ partial interface IWhiteList { }
 
 internal sealed record RuntimeValueCarrierReference(string Name, string Path);
 
+internal sealed record WhiteListCatalog(
+	Dictionary<string, WhiteListValue> Types,
+	Dictionary<string, WhiteListValue> Members);
+
 /// <summary>
 /// 表示一条编译器消费侧白名单记录。
 /// </summary>
@@ -42,39 +46,33 @@ internal sealed class WhiteListValue
 /// 保存由生成器产生并由 SemanticWalker 消费的类型、成员和 Compile 分发表。
 /// </summary>
 /// <remarks>
-/// 生成的 partial 文件负责填充静态映射；Gate 保护运行时初始化过程。不要手工修改生成文件，
-/// 也不要在这里加入 lookup 侧的 key 改写规则。
+/// 生成的 partial 文件负责填充初始映射；generator 刷新源码后会整体替换进程内快照。
+/// 不要手工修改生成文件，也不要在这里加入 lookup 侧的 key 改写规则。
 /// </remarks>
 internal static partial class WhiteList
 {
-	private static readonly object Gate = new();
+	private static WhiteListCatalog _catalog;
 
-	public static readonly Dictionary<string, WhiteListValue> Types;
+	public static Dictionary<string, WhiteListValue> Types => _catalog.Types;
 
-	public static readonly Dictionary<string, WhiteListValue> Members;
+	public static Dictionary<string, WhiteListValue> Members => _catalog.Members;
 
 	static WhiteList()
 	{
-		Types = [];
-		Members = [];
-		Generate(ref Types, ref Members);
+		Dictionary<string, WhiteListValue> types = [];
+		Dictionary<string, WhiteListValue> members = [];
+		Generate(ref types, ref members);
+		_catalog = new(types, members);
 	}
 
+	// Generator 先刷新白名单源码，再在同一进程生成 CLR runtime catalog。
+	// 整体替换快照可避免读者观察到 Types/Members 只更新一半的中间状态。
 	internal static void ReplaceForCurrentProcess(
 		IEnumerable<KeyValuePair<string, WhiteListValue>> types,
 		IEnumerable<KeyValuePair<string, WhiteListValue>> members)
-	{
-		lock (Gate)
-		{
-			Types.Clear();
-			foreach (var pair in types)
-				Types[pair.Key] = pair.Value;
-
-			Members.Clear();
-			foreach (var pair in members)
-				Members[pair.Key] = pair.Value;
-		}
-	}
+		=> _catalog = new(
+			types.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal),
+			members.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal));
 
 	static partial void Generate(ref Dictionary<string, WhiteListValue> types, ref Dictionary<string, WhiteListValue> members);
 }

@@ -281,11 +281,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private void RejectUnsupportedRuntimeFallback(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
     {
-        if (IsSupportedExternalMember(operation, symbol, hostType))
+        var effectiveHost = hostType ?? symbol.ContainingType!;
+        if (IsSupportedExternalMember(operation, symbol, effectiveHost))
             return;
 
-        var unsupportedType = FindFirstUnsupportedExternalType(operation, hostType) ??
-            FindFirstUnsupportedExternalType(operation, symbol.ContainingType);
+        var unsupportedType = FindFirstUnsupportedExternalType(operation, effectiveHost);
         if (unsupportedType is not null)
         {
             HandleTransformationFailure<Node>(
@@ -301,13 +301,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private bool IsSupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
         => FindFirstUnsupportedExternalType(operation, typeSymbol) is null;
 
-    private ITypeSymbol? FindFirstUnsupportedExternalType(IOperation operation, ITypeSymbol? typeSymbol)
-    {
-        if (typeSymbol is null)
-            return null;
-
-        return IsDirectlySupportedExternalType(operation, typeSymbol) ? null : typeSymbol;
-    }
+    private ITypeSymbol? FindFirstUnsupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
+        => IsDirectlySupportedExternalType(operation, typeSymbol) ? null : typeSymbol;
 
     private void RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(IOperation operation, ITypeSymbol? hostType, string usage)
     {
@@ -553,7 +548,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var conflicts = new List<string>();
         var targetDisplayName = targetType.OriginalDefinition.ToDisplayString(Format.NameFormat);
         var targetErasedDisplayName = EraseGenericDisplayArguments(targetDisplayName);
-        var compilation = operation.SemanticModel?.Compilation;
+        // Production lowering only receives bound Roslyn operations from a semantic model.
+        var compilation = operation.SemanticModel!.Compilation;
 
         foreach (var pair in WhiteList.Types)
         {
@@ -567,8 +563,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             if (string.Equals(EraseGenericDisplayArguments(candidateDisplayName), targetErasedDisplayName, StringComparison.Ordinal))
                 continue;
 
-            if (compilation is not null &&
-                TryResolveWhiteListAliasType(compilation, candidateDisplayName) is ITypeSymbol candidateType &&
+            if (TryResolveWhiteListAliasType(compilation, candidateDisplayName) is ITypeSymbol candidateType &&
                 IsRuntimeAliasAssignableToTarget(candidateType, targetType))
                 continue;
 
@@ -613,11 +608,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private static bool IsRuntimeAliasAssignableToTarget(ITypeSymbol candidateType, ITypeSymbol targetType)
     {
-        if (SymbolEqualityComparer.Default.Equals(candidateType.OriginalDefinition, targetType.OriginalDefinition))
-            return true;
-
-        if (candidateType is not INamedTypeSymbol namedCandidate)
-            return false;
+        // Candidate and target identity was already excluded by canonical whitelist key above;
+        // Compilation.GetTypeByMetadataName also guarantees a named candidate here.
+        var namedCandidate = (INamedTypeSymbol)candidateType;
 
         for (var current = namedCandidate.BaseType; current is not null; current = current.BaseType)
         {
@@ -668,10 +661,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (HasEcmascriptSupportMarker(symbol))
             return true;
 
-        if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType))
+        if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType ?? field.ContainingType!))
             return true;
 
-        if ((symbol is IMethodSymbol or IPropertySymbol) && IsIntrinsicCallableOrPropertyFallbackAllowed(hostType))
+        if ((symbol is IMethodSymbol or IPropertySymbol) &&
+            IsIntrinsicCallableOrPropertyFallbackAllowed(hostType ?? symbol.ContainingType!))
             return true;
 
         return !RequiresExplicitExternalMemberSupport(operation, symbol, hostType);
@@ -730,10 +724,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private static INamedTypeSymbol? TryGetCurrentSourceBoundaryType(IOperation operation)
     {
-        var semanticModel = operation.SemanticModel;
-        if (semanticModel is null)
-            return null;
-
+        var semanticModel = operation.SemanticModel!;
         var enclosingSymbol = semanticModel.GetEnclosingSymbol(operation.Syntax.SpanStart);
         return GetTopMostContainingType(enclosingSymbol);
     }
@@ -767,18 +758,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         // always has either an explicit receiver type or a containing type.
         var effectiveHost = hostType ?? symbol.ContainingType!;
 
-        if (_moduleDeclaredNames is not null &&
-            _moduleDeclaredNames.ContainsKey(effectiveHost.OriginalDefinition))
-        {
-            return false;
-        }
-
-        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, effectiveHost))
-            return false;
-
-        if (HasEcmascriptSupportMarker(effectiveHost))
-            return false;
-
+        // IsSupportedExternalMember has already accepted current-module, current-source and
+        // directly marked hosts before this final external-support test.
         if (effectiveHost is INamedTypeSymbol namedEffectiveHost &&
             HasEcmascriptSupportMarkerBaseType(namedEffectiveHost))
             return false;
@@ -789,23 +770,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return true;
     }
 
-    private static bool IsIntrinsicFieldFallbackAllowed(IFieldSymbol field, ITypeSymbol? hostType)
+    private static bool IsIntrinsicFieldFallbackAllowed(IFieldSymbol field, ITypeSymbol effectiveHost)
     {
-        var effectiveHost = hostType ?? field.ContainingType;
-        if (effectiveHost is null)
-            return false;
-
         if (field.IsConst && !IsConcreteMetadataInteropHost(effectiveHost))
             return true;
 
         return IsTupleLikeHost(effectiveHost);
     }
 
-    private static bool IsIntrinsicCallableOrPropertyFallbackAllowed(ITypeSymbol? hostType)
+    private static bool IsIntrinsicCallableOrPropertyFallbackAllowed(ITypeSymbol hostType)
     {
-        if (hostType is null)
-            return false;
-
         var original = hostType.OriginalDefinition;
         return original.TypeKind == TypeKind.TypeParameter ||
             original.TypeKind == TypeKind.Delegate;
@@ -981,19 +955,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (symbol.IsStatic)
             return (null, ToNullableExpressionArray(arguments));
 
-        // 普通调用路径会显式传入 instance；
-        // 方法组等路径可能还保留“宿主在参数前缀”的旧布局，这里顺手拆开。
-        if (instance is not null)
-            return (instance, ToNullableExpressionArray(arguments));
-
-        if (arguments.Count == 0)
-            throw new InvalidOperationException($"Jazor 无法为实例成员 {symbol.Name} 绑定 Compile handler。");
-
-        var compileArgs = new Expression?[arguments.Count - 1];
-        for (var i = 1; i < arguments.Count; i++)
-            compileArgs[i - 1] = arguments[i];
-
-        return (arguments[0], compileArgs);
+        return (instance ?? throw new InvalidOperationException(
+            $"Jazor 无法为实例成员 {symbol.Name} 绑定 Compile handler。"),
+            ToNullableExpressionArray(arguments));
     }
 
     private static Expression?[] ToNullableExpressionArray(List<Expression> arguments)
@@ -1064,17 +1028,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
 	private static SourceOrigin CreateOrigin(IOperation operation, bool isSynthetic = false, string? name = null)
 	{
-		if (operation is null)
-			throw new ArgumentNullException(nameof(operation));
-
 		return CreateOrigin(operation.Syntax.GetLocation(), isSynthetic, name);
 	}
 
 	private static SourceOrigin CreateOrigin(Location location, bool isSynthetic = false, string? name = null)
 	{
-		if (location is null)
-			throw new ArgumentNullException(nameof(location));
-
 		var lineSpan = location.GetMappedLineSpan();
 		var sourcePath = !string.IsNullOrWhiteSpace(lineSpan.Path)
 			? lineSpan.Path
@@ -1093,9 +1051,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 	private static T WithOrigin<T>(T node, IOperation operation)
 		where T : Node
 	{
-		if (node is null)
-			throw new ArgumentNullException(nameof(node));
-
 		node.UserData = CreateOrigin(operation);
 		return node;
 	}
@@ -1103,22 +1058,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 	private static T WithOriginIfMissing<T>(T node, IOperation operation)
 		where T : Node
 	{
-		if (node is null)
-			throw new ArgumentNullException(nameof(node));
-
 		if (node.UserData is not SourceOrigin)
 			node.UserData = CreateOrigin(operation);
 
-		return node;
-	}
-
-	private static T WithSyntheticOrigin<T>(T node, IOperation operation, string? name = null)
-		where T : Node
-	{
-		if (node is null)
-			throw new ArgumentNullException(nameof(node));
-
-		node.UserData = CreateOrigin(operation, isSynthetic: true, name);
 		return node;
 	}
 
@@ -1270,17 +1212,13 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 break;
 
             case LoweringSiteKind.SwitchExpressionInput:
-                if (operation is ISwitchExpressionOperation switchExpression)
-                    builder.Append(BuildSemanticNameKey(switchExpression.Value));
-                else
-                    builder.Append(BuildSemanticNameKey(operation));
+                // Callers pass the already-bound switch value so the owner remains stable when
+                // the surrounding switch operation is reconstructed by Razor/source generation.
+                builder.Append(BuildSemanticNameKey(operation));
                 break;
 
             case LoweringSiteKind.SwitchPatternInput:
-                if (operation is ISwitchOperation @switch)
-                    builder.Append(BuildSemanticNameKey(@switch.Value));
-                else
-                    builder.Append(BuildSemanticNameKey(operation));
+                builder.Append(BuildSemanticNameKey(operation));
                 break;
 
             case LoweringSiteKind.PatternInputCache:
@@ -1289,15 +1227,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 break;
 
             case LoweringSiteKind.MethodReferenceProxy:
-                if (operation is IMethodReferenceOperation methodReference)
-                {
-                    builder.Append(DescribeStableSymbol(methodReference.Method)).Append('|');
-                    builder.Append(methodReference.Instance is null
-                        ? "<null>"
-                        : BuildSemanticNameKey(methodReference.Instance));
-                }
-                else
-                    builder.Append(BuildSemanticNameKey(operation));
+                var methodReference = (IMethodReferenceOperation)operation;
+                builder.Append(DescribeStableSymbol(methodReference.Method)).Append('|');
+                builder.Append(methodReference.Instance is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(methodReference.Instance));
                 break;
 
             case LoweringSiteKind.MultiCatchParameter:
@@ -1598,14 +1532,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return exception;
     }
 
-    private static void AttachLocationMetadata(Exception exception, Location? location)
+    private static void AttachLocationMetadata(Exception exception, Location location)
     {
-        if (location is null)
-        {
-            exception.Data["location.path"] = "<unknown>";
-            return;
-        }
-
         var lineSpan = location.GetLineSpan();
         var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
             ? lineSpan.Path
@@ -1646,27 +1574,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var location = node.GetLocation();
         _report?.Invoke(location, message);
         throw CreateSyntaxNodeTransformationException(node, message);
-    }
-
-    /// <summary>
-    /// 安全访问可能为null的操作并转换为Expression
-    /// <para>
-    /// </summary>
-    /// <param name="operation">要访问和转换的操作，可能为null</param>
-    /// <param name="argument">用于存放变量声明的队列</param>
-    /// <returns>转换后的Expression节点，如果操作为null或转换结果为null则抛出异常</returns>
-    /// <exception cref="OperationTransformationException"></exception>
-    private Expression TranslateExpression(IOperation operation, SenseArgument argument)
-    {
-        var node = Visit(operation, argument);
-        if (node is Expression result)
-            return result;
-
-        var message = $"Cannot convert operation '{operation.Kind}' to AST node type '{typeof(Expression).Name}'. This indicates missing support for this operation type or a type mismatch. ";
-        var location = operation.Syntax.GetLocation();
-        _report?.Invoke(location, message);
-
-        throw CreateOperationTransformationException(operation, message);
     }
 
     /// <summary>

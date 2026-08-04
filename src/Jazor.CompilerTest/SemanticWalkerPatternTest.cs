@@ -2507,6 +2507,60 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"obj===""hello""", script);
   }
 
+  [TestMethod]
+  public void Visit_ConstantPattern_WithoutPatternInput_ReturnsTranslatedConstant()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    bool result = obj is 42;
+                }
+            }
+            ");
+
+    var declarationGroup = GetOperationAt<IVariableDeclarationGroupOperation>(block, 1);
+    var isPattern = (IIsPatternOperation)declarationGroup.Declarations[0].Declarators[0].Initializer!.Value;
+    var constantPattern = (IConstantPatternOperation)isPattern.Pattern;
+
+    var node = new SemanticWalker(true).VisitConstantPattern(constantPattern, new SenseArgument());
+
+    Assert.AreEqual("42", node?.ToECMAScript());
+  }
+
+  [TestMethod]
+  public void Visit_PatternSwitch_ContinueAcrossIifeBoundary_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value, bool repeat)
+                {
+                    while (repeat)
+                    {
+                        switch (value)
+                        {
+                            case string:
+                                continue;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(
+      () => new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(
+      exception.Message,
+      "Continue statements inside pattern-matching switch are not supported",
+      StringComparison.Ordinal);
+  }
+
   /// <summary>
   /// 测试 VisitPatternCaseClause - 模式 case 子句（直接调用）
   /// </summary>
@@ -6240,7 +6294,7 @@ line2"";
                             Console.WriteLine(s);
                             break;
                         case var x:
-                            Console.WriteLine($""Default: {x}"");
+                            Console.WriteLine(x);
                             break;
                     }
                 }
@@ -6261,7 +6315,7 @@ line2"";
       return;
     }
     if (x = v$0, true) {
-      console.log(`Default: ${x}`);
+      console.log(x);
       return;
     }
   })();
@@ -7572,7 +7626,7 @@ line2"";
     let s, i;
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true))
-      return `string: ${s}`;
+      return `string: ${s ?? """"}`;
     if (typeof v$0 === ""number"" && (i = v$0, true))
       return `int: ${i}`;
     return ""other"";

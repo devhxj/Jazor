@@ -146,11 +146,15 @@ public partial class SemanticWalker
 		// Valid C# labels always own a statement operation; `label: ;` is IEmptyOperation.
 		var labeledOperation = operation.Operation!;
 		var node = Visit(labeledOperation, argument);
+		// An all-discard deconstruction is represented by an empty sequence marker. The label
+		// must still survive as a valid jump target even though the assignment has no runtime work.
 		var statement = node switch
 		{
-			Statement stmt => stmt,
-			Expression expr => new NonSpecialExpressionStatement(expr),
-			_ => HandleTransformationFailure<Statement>(labeledOperation, "Labeled statement target could not be translated to JavaScript.")
+			Statement translatedStatement => translatedStatement,
+			SequenceExpression { Expressions.Count: 0 } => new EmptyStatement(),
+			_ => HandleTransformationFailure<Statement>(
+				labeledOperation,
+				"Labeled statement target could not be translated to JavaScript.")
 		};
 
 		return new LabeledStatement(label, statement);
@@ -755,12 +759,9 @@ public partial class SemanticWalker
 
 	private bool RequiresConditionalAccessNullishGuard(IPropertyReferenceOperation operation)
 	{
-		if (operation.Instance is not IConditionalAccessInstanceOperation)
-			return false;
-
-		var getter = operation.Property.GetMethod;
-		if (getter is null)
-			return false;
+		// Roslyn only places a readable property reference with a conditional-access instance
+		// in IConditionalAccessOperation.WhenNotNull.
+		var getter = operation.Property.GetMethod!;
 
 		if (TryGetWhiteListValue(_whiteListCompiles, getter, out _, out _))
 			return true;
@@ -1039,23 +1040,13 @@ public partial class SemanticWalker
 	/// </remarks>
 	public override Node? VisitRangeOperation(IRangeOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is not INamedTypeSymbol rangeType || !IsSystemRangeType(rangeType))
-		{
-			return HandleTransformationFailure<Node>(
-				operation,
-				"Range operation requires the bound System.Range runtime contract.");
-		}
+		// Valid range syntax is bound by Roslyn to System.Range and its System.Index members.
+		var rangeType = (INamedTypeSymbol)operation.Type!;
 
-		var constructor = rangeType.InstanceConstructors.SingleOrDefault(static candidate =>
+		var constructor = rangeType.InstanceConstructors.Single(static candidate =>
 			candidate.Parameters.Length == 2 &&
 			IsSystemIndexType(candidate.Parameters[0].Type) &&
 			IsSystemIndexType(candidate.Parameters[1].Type));
-		if (constructor is null)
-		{
-			return HandleTransformationFailure<Node>(
-				operation,
-				"System.Range(Index, Index) is required to lower a range expression.");
-		}
 
 		var indexType = (INamedTypeSymbol)constructor.Parameters[0].Type;
 		var start = operation.LeftOperand is null
@@ -1081,15 +1072,9 @@ public partial class SemanticWalker
 	{
 		var property = indexType.GetMembers(propertyName)
 			.OfType<IPropertySymbol>()
-			.SingleOrDefault(static candidate => candidate.IsStatic && candidate.GetMethod is not null);
-		if (property?.GetMethod is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				$"System.Index.{propertyName} is required to lower an open range boundary.");
-		}
+			.Single(static candidate => candidate.IsStatic && candidate.GetMethod is not null);
 
-		return GetWhiteListExpression(property.GetMethod, argument, [], out _, operation)
+		return GetWhiteListExpression(property.GetMethod!, argument, [], out _, operation)
 			?? HandleTransformationFailure<Expression>(
 				operation,
 				$"System.Index.{propertyName} requires the generated System.Index mapping.");
@@ -1105,25 +1090,14 @@ public partial class SemanticWalker
 	/// </remarks>
 	private Expression BuildStandaloneFromEndIndex(IUnaryOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is not INamedTypeSymbol indexType || !IsSystemIndexType(indexType))
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				"From-end indexing requires the bound System.Index runtime contract.");
-		}
+		var indexType = (INamedTypeSymbol)operation.Type!;
 
 		var factory = indexType.GetMembers("FromEnd")
 			.OfType<IMethodSymbol>()
-			.SingleOrDefault(static candidate =>
+			.Single(static candidate =>
 				candidate.IsStatic &&
 				candidate.Parameters.Length == 1 &&
 				candidate.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
-		if (factory is null)
-		{
-			return HandleTransformationFailure<Expression>(
-				operation,
-				"System.Index.FromEnd(int) is required to lower a standalone from-end index.");
-		}
 
 		var value = Translate<Expression>(operation.Operand, argument);
 		return GetWhiteListExpression(factory, argument, [value], out _, operation)
@@ -1251,12 +1225,7 @@ public partial class SemanticWalker
 			var instance = Translate<Expression>(propertyReference.Instance, argument, null);
 			var propertyArguments = new List<Expression>(propertyReference.Arguments.Length);
 			foreach (var propertyArgument in propertyReference.Arguments)
-			{
-				var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
-					? argument.With(Sense.OutParameter)
-					: argument;
-				propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
-			}
+				propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 
 			return WithOriginIfMissing(
 				BuildPropertySetterAssignment(propertyReference, argument, instance, propertyArguments, value),
@@ -1343,8 +1312,7 @@ public partial class SemanticWalker
 			TryPreparePropertyMutationAccess(propertyReference, operation, argument, out var initializations, out var readExpression, out var propertyInstance, out var propertyArguments))
 		{
 			var rhsExpression = Translate<Expression>(operation.Value, argument);
-			if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out _))
-				return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+			_ = GetCompoundAssignmentOperators(operation.OperatorKind);
 
 			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
 			var expressions = new List<Expression>(initializations.Count + 3);
@@ -1371,8 +1339,7 @@ public partial class SemanticWalker
 				out var indexerProperty);
 
 			var rhsExpression = Translate<Expression>(operation.Value, argument);
-			if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out _))
-				return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+			_ = GetCompoundAssignmentOperators(operation.OperatorKind);
 
 			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
 			var implicitExpressions = new List<Expression>(implicitInitializations.Count + 3);
@@ -1431,16 +1398,9 @@ public partial class SemanticWalker
 
 		if (operation.OperatorMethod is not null)
 		{
-			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _, operation);
-			if (mapped is not null)
-			{
-				if (!CanDuplicateReadWriteTarget(left))
-					return HandleTransformationFailure<Node>(
-						operation,
-						"Compound assignment with a custom operator requires a stable assignable target. Use a local/field/property target without side-effecting receiver/index expressions.");
-
-				return WithOrigin(WrapTarget(new AssignmentExpression(Operator.Assignment, left, mapped)), operation);
-			}
+            var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _, operation);
+            if (mapped is not null)
+                return WithOrigin(WrapTarget(new AssignmentExpression(Operator.Assignment, left, mapped)), operation);
 
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Node>(
@@ -1448,66 +1408,27 @@ public partial class SemanticWalker
 					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript compound semantics.");
 		}
 
-		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out var @operator, out _))
-			return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+		var (@operator, _) = GetCompoundAssignmentOperators(operation.OperatorKind);
 
 		return WithOrigin(WrapTarget(new AssignmentExpression(@operator, left, right)), operation);
 	}
 
-	private static bool TryGetCompoundAssignmentOperators(BinaryOperatorKind operatorKind, out Operator assignmentOperator, out Operator binaryOperator)
-	{
-		switch (operatorKind)
+	private static (Operator Assignment, Operator Binary) GetCompoundAssignmentOperators(BinaryOperatorKind operatorKind)
+		=> operatorKind switch
 		{
-			case BinaryOperatorKind.Add:
-				assignmentOperator = Operator.AdditionAssignment;
-				binaryOperator = Operator.Addition;
-				return true;
-			case BinaryOperatorKind.Subtract:
-				assignmentOperator = Operator.SubtractionAssignment;
-				binaryOperator = Operator.Subtraction;
-				return true;
-			case BinaryOperatorKind.Multiply:
-				assignmentOperator = Operator.MultiplicationAssignment;
-				binaryOperator = Operator.Multiplication;
-				return true;
-			case BinaryOperatorKind.Divide:
-				assignmentOperator = Operator.DivisionAssignment;
-				binaryOperator = Operator.Division;
-				return true;
-			case BinaryOperatorKind.Remainder:
-				assignmentOperator = Operator.RemainderAssignment;
-				binaryOperator = Operator.Remainder;
-				return true;
-			case BinaryOperatorKind.And:
-				assignmentOperator = Operator.BitwiseAndAssignment;
-				binaryOperator = Operator.BitwiseAnd;
-				return true;
-			case BinaryOperatorKind.Or:
-				assignmentOperator = Operator.BitwiseOrAssignment;
-				binaryOperator = Operator.BitwiseOr;
-				return true;
-			case BinaryOperatorKind.ExclusiveOr:
-				assignmentOperator = Operator.BitwiseXorAssignment;
-				binaryOperator = Operator.BitwiseXor;
-				return true;
-			case BinaryOperatorKind.LeftShift:
-				assignmentOperator = Operator.LeftShiftAssignment;
-				binaryOperator = Operator.LeftShift;
-				return true;
-			case BinaryOperatorKind.RightShift:
-				assignmentOperator = Operator.RightShiftAssignment;
-				binaryOperator = Operator.RightShift;
-				return true;
-			case BinaryOperatorKind.UnsignedRightShift:
-				assignmentOperator = Operator.UnsignedRightShiftAssignment;
-				binaryOperator = Operator.UnsignedRightShift;
-				return true;
-			default:
-				assignmentOperator = Operator.Unknown;
-				binaryOperator = Operator.Unknown;
-				return false;
-		}
-	}
+			BinaryOperatorKind.Add => (Operator.AdditionAssignment, Operator.Addition),
+			BinaryOperatorKind.Subtract => (Operator.SubtractionAssignment, Operator.Subtraction),
+			BinaryOperatorKind.Multiply => (Operator.MultiplicationAssignment, Operator.Multiplication),
+			BinaryOperatorKind.Divide => (Operator.DivisionAssignment, Operator.Division),
+			BinaryOperatorKind.Remainder => (Operator.RemainderAssignment, Operator.Remainder),
+			BinaryOperatorKind.And => (Operator.BitwiseAndAssignment, Operator.BitwiseAnd),
+			BinaryOperatorKind.Or => (Operator.BitwiseOrAssignment, Operator.BitwiseOr),
+			BinaryOperatorKind.ExclusiveOr => (Operator.BitwiseXorAssignment, Operator.BitwiseXor),
+			BinaryOperatorKind.LeftShift => (Operator.LeftShiftAssignment, Operator.LeftShift),
+			BinaryOperatorKind.RightShift => (Operator.RightShiftAssignment, Operator.RightShift),
+			BinaryOperatorKind.UnsignedRightShift => (Operator.UnsignedRightShiftAssignment, Operator.UnsignedRightShift),
+			_ => throw new InvalidOperationException($"Unsupported bound compound-assignment operator: {operatorKind}.")
+		};
 
 	/// <summary>
 	/// 处理空合并赋值操作
@@ -1992,16 +1913,11 @@ public partial class SemanticWalker
 
 		if (operation.OperatorMethod is not null)
 		{
-			var assignmentTarget = preparedTarget;
-			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [assignmentTarget], out _);
-			if (mapped is not null)
-			{
-				if (!CanDuplicateReadWriteTarget(assignmentTarget))
-					return HandleTransformationFailure<Node>(
-						operation,
-						"Increment/decrement with a custom operator requires a stable assignable target. Use a local/field/property target without side-effecting receiver/index expressions.");
-
-				var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+            var assignmentTarget = preparedTarget;
+            var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [assignmentTarget], out _);
+            if (mapped is not null)
+            {
+                var currentId = CreatePropertyMutationTemp(operation, argument, "current");
 				var expressions = new List<Expression>(3);
 				if (operation.IsPostfix)
 				{
@@ -2052,8 +1968,7 @@ public partial class SemanticWalker
 					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript compound semantics.");
 		}
 
-		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out var binaryOperator))
-			return HandleTransformationFailure<Expression>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+		var (_, binaryOperator) = GetCompoundAssignmentOperators(operation.OperatorKind);
 
 		return new NonLogicalBinaryExpression(binaryOperator, left, right);
 	}
@@ -2107,8 +2022,7 @@ public partial class SemanticWalker
 		instance = null;
 		arguments = [];
 
-		if (!RequiresPropertyMutationBridge(propertyReference) ||
-			propertyReference.Property.GetMethod is null)
+		if (!RequiresPropertyMutationBridge(propertyReference))
 			return false;
 
 		instance = MaterializePropertyMutationOperand(
@@ -2121,14 +2035,11 @@ public partial class SemanticWalker
 		for (var i = 0; i < propertyReference.Arguments.Length; i++)
 		{
 			var propertyArgument = propertyReference.Arguments[i];
-			var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
-				? argument.With(Sense.OutParameter)
-				: argument;
-			var rawArgument = Translate<Expression>(propertyArgument.Value, argContext);
+			var rawArgument = Translate<Expression>(propertyArgument.Value, argument);
 			arguments.Add(MaterializePropertyMutationOperand(rawArgument, ownerOperation, argument, initializations, $"arg{i}"));
 		}
 
-		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out _, propertyReference);
+		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod!, argument, arguments, instance, out _, propertyReference);
 		if (getterExpression is not null)
 		{
 			readExpression = getterExpression;
@@ -2147,17 +2058,14 @@ public partial class SemanticWalker
 
 	private bool RequiresPropertyMutationBridge(IPropertyReferenceOperation propertyReference)
 	{
-		if (propertyReference.Property.SetMethod is null ||
-			propertyReference.Property.GetMethod is null)
-			return false;
-
-		if (TryGetWhiteListValue(_whiteListCompiles, propertyReference.Property.GetMethod, out _, out _))
+		// A bound read-modify-write property target necessarily has both accessors.
+		if (TryGetWhiteListValue(_whiteListCompiles, propertyReference.Property.GetMethod!, out _, out _))
 			return true;
 
 		if (IsCurrentModuleRuntimeIndexer(propertyReference.Property))
 			return true;
 
-		if (!TryGetWhiteListValue(WhiteList.Members, propertyReference.Property.GetMethod, out _, out var entry))
+		if (!TryGetWhiteListValue(WhiteList.Members, propertyReference.Property.GetMethod!, out _, out var entry))
 			return false;
 
 		if (entry.Op != Op.Alias)
@@ -2264,33 +2172,31 @@ public partial class SemanticWalker
 			propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType,
 			"property assignment");
 
-		if (propertyReference.Property.SetMethod is not null)
+		var setter = propertyReference.Property.SetMethod!;
+		var setterArguments = new List<Expression>(arguments.Count + 1);
+		setterArguments.AddRange(arguments);
+		setterArguments.Add(value);
+
+		var mapperExpr = GetWhiteListExpression(setter, argument, setterArguments, instance, out var setterAlias, propertyReference);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
+		if (TryBuildCurrentModuleIndexerSetterCall(propertyReference.Property, instance, arguments, value, out var indexerSetterCall) &&
+			indexerSetterCall is not null)
 		{
-			var setterArguments = new List<Expression>(arguments.Count + 1);
-			setterArguments.AddRange(arguments);
-			setterArguments.Add(value);
-
-			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out var setterAlias, propertyReference);
-			if (mapperExpr is not null)
-				return mapperExpr;
-
-			if (TryBuildCurrentModuleIndexerSetterCall(propertyReference.Property, instance, arguments, value, out var indexerSetterCall) &&
-				indexerSetterCall is not null)
-			{
-				return indexerSetterCall;
-			}
-
-			if (TryBuildCurrentModulePropertySetterCall(propertyReference.Property, value, out var currentModuleSetterCall) &&
-				currentModuleSetterCall is not null)
-				return currentModuleSetterCall;
-
-			if (TryBuildImportedModulePropertySetterCall(propertyReference.Property, argument, value, out var importedSetterCall) &&
-				importedSetterCall is not null)
-				return importedSetterCall;
-
-			if (string.IsNullOrEmpty(setterAlias))
-				RejectUnsupportedRuntimeFallback(propertyReference, propertyReference.Property.SetMethod, "property assignment", propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
+			return indexerSetterCall;
 		}
+
+		if (TryBuildCurrentModulePropertySetterCall(propertyReference.Property, value, out var currentModuleSetterCall) &&
+			currentModuleSetterCall is not null)
+			return currentModuleSetterCall;
+
+		if (TryBuildImportedModulePropertySetterCall(propertyReference.Property, argument, value, out var importedSetterCall) &&
+			importedSetterCall is not null)
+			return importedSetterCall;
+
+		if (string.IsNullOrEmpty(setterAlias))
+			RejectUnsupportedRuntimeFallback(propertyReference, setter, "property assignment", propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
 
 		var target = BuildPropertyWriteTarget(propertyReference, argument, instance, arguments);
 		return new AssignmentExpression(Operator.Assignment, target, value);
@@ -2313,22 +2219,21 @@ public partial class SemanticWalker
 		}
 
 		var propertyName = GetInitializerMemberName(propertyReference.Property);
-		var property = new Identifier(propertyName!);
 		if (instance is not null)
-			return new MemberExpression(instance, property, computed: false, optional: false);
+			return BuildAliasedPropertyAccess(instance, propertyName!, optional: false);
 
 		if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
 		{
-			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel, propertyName!, out var preferredStaticProperty) &&
+			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel!, propertyName!, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return preferredStaticProperty;
 
 			var containing = BuildFullTypeName(propertyReference.Property.ContainingType, argument);
 			if (containing is not null)
-				return new MemberExpression(containing, property, computed: false, optional: false);
+				return BuildAliasedPropertyAccess(containing, propertyName!, optional: false);
 		}
 
-		return property;
+		return new Identifier(propertyName!);
 	}
 
 	private bool TryBuildCurrentModuleAutoPropertyBackingFieldAssignment(
@@ -2403,7 +2308,7 @@ public partial class SemanticWalker
 	public override Node? VisitArgument(IArgumentOperation operation, SenseArgument argument)
 	{
 		// 如果是 out 参数，传递 OutParameter 上下文
-		if (operation.Parameter?.RefKind == RefKind.Out)
+		if (operation.Parameter!.RefKind == RefKind.Out)
 		{
 			var outArg = argument.With(Sense.OutParameter);
 			return Visit(operation.Value, outArg);

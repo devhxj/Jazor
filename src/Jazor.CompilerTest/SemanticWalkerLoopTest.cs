@@ -1616,7 +1616,7 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let text = ""hello"";
-  for (let c of text) {
+  for (let c of text.split("""")) {
     console.log(c);
   }
 }", script);
@@ -2622,7 +2622,7 @@ AssertScriptEqual(@"{
 
     AssertScriptEqual(@"{
   let text = ""Hello"";
-  for (let c of text) {
+  for (let c of text.split("""")) {
     console.log(c);
   }
 }", script);

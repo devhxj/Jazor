@@ -74,6 +74,33 @@ public sealed class SemanticWalkerTryCatchTest
 
     #region Try-Catch 基础测试
 
+    [TestMethod]
+    public void VisitThrow_BareRethrowWithoutCatchContext_RejectsDirectLowering()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        Console.WriteLine(""active"");
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+        ");
+        var rethrow = block.Descendants().OfType<IThrowOperation>().Single();
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitThrow(rethrow, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "not within a try block", StringComparison.Ordinal);
+    }
+
     /// <summary>
     /// 测试 try-catch 语句转换
     /// C# 示例：

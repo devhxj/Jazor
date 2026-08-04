@@ -94,7 +94,7 @@ public sealed class SemanticWalkerLockTest
             {
               if (gate == null)
                 throw new TypeError("obj");
-              try {
+              {
                 console.log("ready");
               }
             }
@@ -132,7 +132,7 @@ public sealed class SemanticWalkerLockTest
               const v$0 = this.GetGate();
               if (v$0 == null)
                 throw new TypeError("obj");
-              try {
+              {
                 console.log("ready");
               }
             }
@@ -167,7 +167,7 @@ public sealed class SemanticWalkerLockTest
               {
                 if (gate == null)
                   throw new TypeError("obj");
-                try {
+                {
                   console.log("ready");
                 }
               }
@@ -211,7 +211,7 @@ public sealed class SemanticWalkerLockTest
               {
                 if (gate == null)
                   throw new TypeError("obj");
-                try {
+                {
                   console.log("ready");
                 }
               }

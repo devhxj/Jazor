@@ -326,6 +326,113 @@ public sealed class WhiteListLookupCompatibilityTests
         Assert.AreEqual("measure", matchedValue);
     }
 
+    [TestMethod]
+    public void WhiteListLookup_FallbackSymbols_FollowRoslynDefinitionRelationships()
+    {
+        const string source = """
+            using System;
+
+            namespace LookupTests;
+
+            public static class TextExtensions
+            {
+                public static int Measure(this string value) => value.Length;
+            }
+
+            public partial class PartialHost
+            {
+                partial void Apply(int value);
+                public partial int Value { get; }
+            }
+
+            public partial class PartialHost
+            {
+                partial void Apply(int value) { }
+                public partial int Value => 1;
+            }
+
+            public static class ReadOnlyArguments
+            {
+                public static int Read(in int value) => value;
+            }
+
+            public class BaseHost
+            {
+                public virtual int Value { get; }
+                public virtual void Apply() { }
+                public virtual event Action? Changed { add { } remove { } }
+            }
+
+            public sealed class DerivedHost : BaseHost
+            {
+                public override int Value => 1;
+                public override void Apply() { }
+                public override event Action? Changed { add { } remove { } }
+            }
+
+            public sealed class Consumer
+            {
+                public int Read(string value) => value.Measure();
+                public void Plain() { }
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.FallbackSymbols");
+        var syntaxTree = compilation.SyntaxTrees.Single();
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var reducedInvocation = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single();
+        var reducedMethod = Assert.IsInstanceOfType<IMethodSymbol>(semanticModel.GetSymbolInfo(reducedInvocation).Symbol);
+        var partialImplementationSyntax = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(static method =>
+                method.Identifier.ValueText == "Apply" &&
+                method.Body is not null &&
+                method.Parent is ClassDeclarationSyntax { Identifier.ValueText: "PartialHost" });
+        var partialImplementation = Assert.IsInstanceOfType<IMethodSymbol>(
+            semanticModel.GetDeclaredSymbol(partialImplementationSyntax));
+        var derivedType = compilation.GetTypeByMetadataName("LookupTests.DerivedHost")!;
+        var consumer = compilation.GetTypeByMetadataName("LookupTests.Consumer")!;
+
+        Assert.AreEqual(
+            reducedMethod.ReducedFrom!.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(reducedMethod));
+        Assert.AreEqual(
+            partialImplementation.PartialDefinitionPart!.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(partialImplementation));
+        var partialPropertyDefinition = Assert.IsInstanceOfType<IPropertySymbol>(
+            compilation.GetTypeByMetadataName("LookupTests.PartialHost")!
+                .GetMembers("Value")
+                .Single());
+        var partialProperty = partialPropertyDefinition.PartialImplementationPart!;
+        Assert.AreEqual(
+            partialPropertyDefinition.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(partialProperty));
+        Assert.AreEqual(
+            ((IMethodSymbol)derivedType.GetMembers("Apply").Single()).OverriddenMethod!.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(derivedType.GetMembers("Apply").Single()));
+        Assert.AreEqual(
+            ((IPropertySymbol)derivedType.GetMembers("Value").Single()).OverriddenProperty!.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(derivedType.GetMembers("Value").Single()));
+        Assert.AreEqual(
+            ((IEventSymbol)derivedType.GetMembers("Changed").Single()).OverriddenEvent!.OriginalDefinition,
+            WhiteListLookup.GetFallbackSymbol(derivedType.GetMembers("Changed").Single()));
+        Assert.IsNull(WhiteListLookup.GetFallbackSymbol(consumer.GetMembers("Plain").Single()));
+
+        var inParameterMethod = compilation.GetTypeByMetadataName("LookupTests.ReadOnlyArguments")!
+            .GetMembers("Read")
+            .OfType<IMethodSymbol>()
+            .Single();
+        Assert.IsFalse(WhiteListLookup.TryGetValue(
+            new Dictionary<string, string>(),
+            inParameterMethod,
+            out var missingDisplay,
+            out _));
+        StringAssert.Contains(missingDisplay, "in int", StringComparison.Ordinal);
+    }
+
     private static CSharpCompilation CreateCompilation(string source, string assemblyName)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(

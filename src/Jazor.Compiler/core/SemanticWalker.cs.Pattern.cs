@@ -145,11 +145,9 @@ public partial class SemanticWalker
 	public override Node? VisitIsType(IIsTypeOperation operation, SenseArgument argument)
 	{
 		var value = Translate<Expression>(operation.ValueOperand, argument);
-		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value, context: argument);
-		if (operation.IsNegated)
-			return new NonUpdateUnaryExpression(Operator.LogicalNot, result);
-
-		return result;
+		// C# represents `is not T` as INegatedPatternOperation. IIsTypeOperation therefore
+		// carries only the positive type test in the compiler's official C# input domain.
+		return CreateTypeMatchExpr(operation, operation.TypeOperand, value, context: argument);
 	}
 
 	/// <summary>
@@ -957,8 +955,6 @@ public partial class SemanticWalker
 		var sliceMethod = (IMethodSymbol)sliceSymbol;
 
 		var sliceArguments = BuildListPatternSliceMethodArguments(
-			slicePattern,
-			sliceMethod,
 			startExpr,
 			lengthExpr,
 			sliceIndex,
@@ -993,28 +989,16 @@ public partial class SemanticWalker
 	}
 
 	private List<Expression> BuildListPatternSliceMethodArguments(
-		IOperation ownerOperation,
-		IMethodSymbol method,
 		Expression startExpr,
 		Expression lengthExpr,
 		int sliceIndex,
 		int elementsAfterSlice)
-	{
-		if (method.Parameters.Length != 2 ||
-			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
-			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose Slice(int, int) semantics for list pattern lowering.");
-		}
-
-		return
+		// A valid C# list pattern binds Slice(int, int); Roslyn rejects every other signature.
+		=>
 		[
 			startExpr,
 			BuildListPatternSliceLengthExpression(lengthExpr, sliceIndex, elementsAfterSlice)
 		];
-	}
 
 	private Expression BuildListPatternSliceLengthExpression(Expression lengthExpr, int sliceIndex, int elementsAfterSlice)
 	{
@@ -1042,11 +1026,14 @@ public partial class SemanticWalker
 		if (mapperExpr is not null)
 			return mapperExpr;
 
-		if (lookupSymbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol associatedProperty } accessorMethod)
+		// Valid list-pattern Length/indexer symbols are property accessors; Slice is a method.
+		// Roslyn has already rejected every other symbol kind before lowering reaches this point.
+		var method = (IMethodSymbol)lookupSymbol;
+		if (method.AssociatedSymbol is IPropertySymbol associatedProperty)
 		{
 			return BuildListPatternPropertyAccess(
 				ownerOperation,
-				accessorMethod,
+				method,
 				associatedProperty,
 				targetExpr,
 				arguments,
@@ -1055,24 +1042,15 @@ public partial class SemanticWalker
 				hostType ?? associatedProperty.ContainingType);
 		}
 
-		// 有效 list pattern 的 Length/Count 与 indexer 都是属性；上面已把它们归一化为 getter。
-		// 这里剩余的 method 形态由 Roslyn 的绑定结果直接提供，不接受 field/raw-property 猜测。
-		if (symbol is IMethodSymbol method)
-		{
-			return BuildMethodCallExpression(
-				ownerOperation,
-				method,
-				ownerOperation.Syntax,
-				ownerOperation.SemanticModel,
-				targetExpr,
-				arguments,
-				argument,
-				hostType ?? method.ContainingType);
-		}
-
-		return HandleTransformationFailure<Expression>(
+		return BuildMethodCallExpression(
 			ownerOperation,
-			$"Unsupported symbol kind '{symbol.Kind}' for {usage}.");
+			method,
+			ownerOperation.Syntax,
+			ownerOperation.SemanticModel,
+			targetExpr,
+			arguments,
+			argument,
+			hostType ?? method.ContainingType);
 	}
 
 	private Expression BuildListPatternPropertyAccess(
@@ -1085,19 +1063,12 @@ public partial class SemanticWalker
 		string usage,
 		ITypeSymbol? hostType)
 	{
-		if (property.IsIndexer || property.Parameters.Length > 0)
+		if (arguments.Count == 1)
 		{
 			if (TryBuildCurrentModuleIndexerGetterCall(property, targetExpr, arguments, out var indexerGetterCall) &&
 				indexerGetterCall is not null)
 			{
 				return indexerGetterCall;
-			}
-
-			if (arguments.Count != 1)
-			{
-				return HandleTransformationFailure<Expression>(
-					ownerOperation,
-					$"{usage} cannot fall back to raw JavaScript member access because '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' requires {arguments.Count} translated arguments.");
 			}
 
 			if (string.IsNullOrEmpty(alias))
@@ -1113,12 +1084,6 @@ public partial class SemanticWalker
 			? Util.GetConfigOrSymbolName(property)
 			: alias;
 		return new MemberExpression(targetExpr, new Identifier(propertyName!), computed: false, optional: false);
-	}
-
-	private List<Expression> HandleUnsupportedSliceArguments(IOperation operation, string message)
-	{
-		HandleTransformationFailure<Node>(operation, message);
-		return [];
 	}
 
 	/// <summary>
@@ -1305,10 +1270,6 @@ public partial class SemanticWalker
 					TypeMapper.String => TypeOfExpr(value, CreateStringLiteral("string")),
 					TypeMapper.Number => TypeOfExpr(value, CreateStringLiteral("number")),
 					TypeMapper.BigInt => TypeOfExpr(value, CreateStringLiteral("bigint")),
-					TypeMapper.Object => new LogicalExpression(
-						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
-						TypeOfExpr(value, CreateStringLiteral("object"))),
 					TypeMapper.Boolean => TypeOfExpr(value, CreateStringLiteral("boolean")),
 					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
 					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
@@ -1478,15 +1439,10 @@ public partial class SemanticWalker
 			// switch-expression arms and switch statement case-clauses also have a single
 			// discriminant source that can be used for compile-time provability.
 			if (current is ISwitchExpressionArmOperation switchExpressionArm)
-				return switchExpressionArm.Parent is ISwitchExpressionOperation switchExpression
-					? switchExpression.Value
-					: null;
+				return ((ISwitchExpressionOperation)switchExpressionArm.Parent!).Value;
 
 			if (current is IPatternCaseClauseOperation patternCaseClause)
-				return patternCaseClause.Parent is ISwitchCaseOperation switchCase &&
-					   switchCase.Parent is ISwitchOperation switchOperation
-					? switchOperation.Value
-					: null;
+				return ((ISwitchOperation)((ISwitchCaseOperation)patternCaseClause.Parent!).Parent!).Value;
 
 			return null;
 		}
@@ -1499,7 +1455,6 @@ public partial class SemanticWalker
 		return operation switch
 		{
 			IPatternOperation patternOperation => patternOperation.InputType,
-			IIsTypeOperation isTypeOperation => isTypeOperation.ValueOperand.Type,
 			_ => operation.Type
 		};
 	}
@@ -1581,17 +1536,15 @@ public partial class SemanticWalker
 		initializerValue = null!;
 
 		var local = localReference.Local;
-		var semanticModel = localReference.SemanticModel;
-		if (local is null ||
-			semanticModel is null ||
-			local.DeclaringSyntaxReferences.Length != 1)
+		if (local.DeclaringSyntaxReferences.Length != 1)
 			return false;
 
 		if (IsLocalReassignedBeforeUse(local, useSiteOperation))
 			return false;
 
 		var declarationSyntax = local.DeclaringSyntaxReferences[0].GetSyntax();
-		if (semanticModel.GetOperation(declarationSyntax) is not IVariableDeclaratorOperation { Initializer.Value: IOperation initializer } declarator)
+		if (localReference.SemanticModel!.GetOperation(declarationSyntax) is not
+			IVariableDeclaratorOperation { Initializer.Value: IOperation initializer } declarator)
 			return false;
 
 		initializerValue = declarator.Initializer.Value;
@@ -1629,7 +1582,7 @@ public partial class SemanticWalker
 			ICompoundAssignmentOperation compoundAssignment => IsSameLocal(compoundAssignment.Target, local),
 			IIncrementOrDecrementOperation incrementOrDecrement => IsSameLocal(incrementOrDecrement.Target, local),
 			IDeconstructionAssignmentOperation deconstructionAssignment => IsSameLocal(deconstructionAssignment.Target, local),
-			IArgumentOperation argument when argument.Parameter?.RefKind is RefKind.Out or RefKind.Ref => IsSameLocal(argument.Value, local),
+			IArgumentOperation argument when argument.Parameter!.RefKind is RefKind.Out or RefKind.Ref => IsSameLocal(argument.Value, local),
 			_ => false
 		};
 	}
@@ -1870,13 +1823,7 @@ public partial class SemanticWalker
 				}
 			}
 
-			var node = Visit(operation, context);
-			if (node is Statement statement)
-				pendingStatements.Add(statement);
-			else if (node is Expression expr)
-				pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-			else
-				HandleTransformationFailure<Node>(operation, $"{operation.Kind} could not be translated to JavaScript.");
+			pendingStatements.Add(Translate<Statement>(operation, context));
 		}
 
 		return pendingStatements;

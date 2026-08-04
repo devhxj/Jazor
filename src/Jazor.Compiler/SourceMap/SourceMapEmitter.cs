@@ -278,6 +278,14 @@ internal static class SourceMapEmitter
         }
 
         if (!string.IsNullOrWhiteSpace(sourceRootPath) &&
+            string.Equals(fullPath, sourceRootPath, StringComparison.OrdinalIgnoreCase))
+        {
+            // A source that equals the configured root cannot be represented as a child-relative
+            // file path. URI relativization would produce ../<root-name>, escaping the root.
+            return NormalizeAbsolutePath(fullPath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(sourceRootPath) &&
             IsPathWithinRoot(fullPath, sourceRootPath!))
         {
             var relativePath = MakeRelativePath(sourceRootPath!, fullPath);
@@ -291,9 +299,6 @@ internal static class SourceMapEmitter
     private static string? NormalizeRelativePath(string path)
     {
         var normalized = path.Replace('\\', '/').Trim();
-        if (normalized.Length == 0)
-            return null;
-
         if (normalized.StartsWith("./", StringComparison.Ordinal))
             normalized = normalized.Substring(2);
 
@@ -308,9 +313,6 @@ internal static class SourceMapEmitter
     {
         var normalizedPath = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         var normalizedRoot = rootPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-
-        if (string.Equals(normalizedPath, normalizedRoot, StringComparison.OrdinalIgnoreCase))
-            return true;
 
         if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             normalizedRoot += Path.DirectorySeparatorChar;

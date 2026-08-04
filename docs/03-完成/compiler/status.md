@@ -9,12 +9,12 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8310 / 8310 通过
-- `Jazor.Compiler` 行覆盖：16272 / 16900（96.28%）
-- `Jazor.Compiler` 分支覆盖：6439 / 7146（90.11%）
+- `Jazor.CompilerTest`：10101 / 10101 通过
+- `Jazor.Compiler` 行覆盖：16354 / 16617（98.42%）
+- `Jazor.Compiler` 分支覆盖：6394 / 6802（94.00%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
-coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
+coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 94% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-04 正式门禁报告，当前发布门槛已达成。
 
 更具体而言：
 
@@ -58,6 +58,8 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `System.Index` / `System.Range`：允许作为真实 carrier 跨 local/argument 边界；数组及具备 `Length`、`this[int]` 和 `Slice(int, int)` 的隐式索引器可消费该 carrier。materialized `Index` 保留读写及复合赋值的单次 getter/setter 求值，materialized `Range` 将 `(offset, length)` 明确转换为 JavaScript `slice(start, endExclusive)` 或等价的 `(start, length)` 调用，并保留 carrier projection 单次求值与越界异常语义
 - lambda / delegate：普通、async、捕获和 optional-parameter lambda 均通过匿名函数/委托创建 lowering 进入箭头函数；optional 默认值由 Roslyn 绑定参数的 `AssignmentExpression` 承载，函数边界隔离局部声明，同时共享模块 import 收集；by-ref return lambda 因 JavaScript 无 CLR reference-return carrier 而明确失败
 - field-like event：当前模块 non-record runtime member class 的非静态、非 virtual/override 字段式事件由私有调用列表、受控 add/remove helper 和 snapshot delegate 组成；直接实例方法组以未绑定 method 加 receiver 作为等价键，避免 JS `bind` 临时函数破坏 `-=`。snapshot 在 invoke 前复制当前调用列表，因此重复订阅、最后匹配移除、空事件 `?.Invoke(...)` 的参数短路，以及 handler 内增删订阅的当前/下一轮可见性均有 AST 与 Deno.host 回归。模块静态事件、custom accessor、virtual/override、带 by-ref 参数或返回的 delegate、delegate equality/combination 和 `IRaiseEventOperation` 仍明确拒绝。
+- interpolated string：普通插值按 Roslyn 已绑定类型转换为 template literal。`string`、`char`、标量和 `[ECMAScript.String]` enum 直接输出；可能为 null 的 direct value 用 `?? ""` 保持 null-to-empty 且只求值一次。格式、常量对齐和 source/CLR `ToString` 均走已绑定调用与白名单；source type 的文本必须来自自身或 source base class 的 `ToString`，不把 JavaScript `Object.prototype.toString()` 误当作 CLR 默认类型文本。无稳定转换契约的 `object`、type parameter、interface、delegate、tuple、anonymous type、array 及普通 enum 明确失败。custom interpolated-string handler 仍为显式产品边界，不能以普通 template literal 伪造其 append/short-circuit 协议。
+- `foreach (char in string)`：当 Roslyn 静态集合类型为 `string`，先通过已绑定的 `string.ToCharArray()` CLR mapping 取得 UTF-16 code-unit Array，再发射 `for...of`；这样补齐 JavaScript 字符串按 Unicode code point 迭代与 C# `char` 枚举不一致的语义差异。`IEnumerable<char>` 保持其既有 iterable contract，不作 runtime string 形状判断。
 - UTF-8 literal：`IUtf8StringOperation` 取 Roslyn 已解码的 C# 字符串并构造精确 UTF-8 byte `ArrayExpression`，通过既有 `ReadOnlySpan<byte> -> Array` carrier 传递；不发射 JavaScript 字符串、`TextEncoder`、BOM、隐式结束符或新的 typed-array identity。普通、转义、BMP、补充平面与 raw literal 均有 AST/text 回归。
 - LINQ query：`ITranslatedQueryOperation` 只移除 Roslyn wrapper，复用绑定后的 `Enumerable.Where`、`Select`、`ToList`、`ToArray` AST intrinsic；`Skip` / `Take` 提供物化分页链路（非正 `Skip` 保留全部元素，非正 `Take` 为空）；`Any` / `All` 通过迭代立即短路，每个已观察元素只调用一次 predicate；`OrderBy` / `OrderByDescending` 走 CLR `Import` 的稳定物化排序，selector 每个元素只求值一次，并通过 `Comparer<T>` 默认比较；`ThenBy` / `ThenByDescending` 仅支持直接衔接当前 module 生成的 materialized order state，未知外部 `IOrderedEnumerable<T>` 明确失败；当前仍是受控 Array/IEnumerable 物化子集，不承诺延迟枚举、自定义 `IComparer<T>`、`Queryable` 或完整 LINQ provider 语义
 - LINQ materialized equality slice：`SelectMany`、`Count`、`Contains`、`SequenceEqual`、`Concat`、`Append`、`Prepend`、`Chunk`、`Distinct`、`DistinctBy`、`Union`、`Except`、`Intersect`、`GroupBy`、`Join`、`GroupJoin`、`Order`、`OrderDescending`、`Reverse`、`ElementAt(int)`、`First`、`Last`、`Single`、`MinBy`、`MaxBy` 与 `Aggregate` 已进入绑定映射；集合与联接先以 `EqualityComparer<T>.GetHashCode` 收窄 bucket，再以 `Equals` 确认，保留源序、首次值和 `NaN`/有符号零规则，不退回 JavaScript `Set`/`Map` 键语义。`Reverse` 返回新的逆序 Array，不改变输入 source，并分别覆盖 `IEnumerable<T>` 和数组 overload；`SequenceEqual` 的显式 LINQ 调用绑定 `Enumerable.SequenceEqual`，SDK 默认 imports 下的数组实例调用则绑定 `ReadOnlySpan<T>.SequenceEqual(ReadOnlySpan<T>)`。两条路径均使用同一 Array carrier 的长度预判与同步默认相等比较，在首个不等项短路且不修改输入；`Concat` 先完整枚举 first 再枚举 second；`Append` 先枚举 source 再追加 element，`Prepend` 先写入 element 再枚举 source。三者均返回新的 Array carrier，不使用 JavaScript 数组原生 mutation 或 `Array.concat` 退化为数组专用协议；`Chunk` 顺序物化为独立 nested Array carriers，保留 tail chunk；`DistinctBy` 对每个枚举项调用 key selector 一次，并通过同一 comparer 合约保留每个 key 的首项；`Order` / `OrderDescending` 复用 default `Comparer<T>`、稳定排序与 existing `ThenBy` order-state，不开放 custom comparer；`MinBy` / `MaxBy` 对每项 selector 一次、default `Comparer<TKey>` 选值且保留首个并列 source 项；`ElementAt(int)` 对负 index 直接失败、对非负 index 在命中时立即停止枚举，越界明确失败；`ReadOnlySpan<T>` 仅是这个受控 Array view 的静态 alias，不引入地址、切片 identity 或生命周期模型。`First` / `Last` / `Single` 及 predicate overload 保留短路或完整遍历、空序列、无匹配和多项异常；`Aggregate` 覆盖无 seed、带 seed、带 result selector 的 accumulator 顺序与空 source 行为。`ElementAtOrDefault`、`FirstOrDefault` / `LastOrDefault` / `SingleOrDefault` 通过 compiler-owned closed-default protocol 在使用点发射 `default(T)`；无法安全发射未约束泛型默认值时明确失败，而不以 `null` 近似。该子集不承诺延迟枚举、自定义 `IEqualityComparer<T>`、自定义 `IComparer<T>`、`Queryable` 或 provider identity。SDK Razor 默认 imports 下的 array `Contains` 也会绑定 `System.MemoryExtensions.Contains(ReadOnlySpan<T>, T)`，其 Array carrier 同样使用默认 comparer。

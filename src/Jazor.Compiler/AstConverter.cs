@@ -638,16 +638,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
-            throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
-
         if (symbol.IsAbstract)
-        {
-            if (symbol.AssociatedSymbol is IPropertySymbol propertySymbol)
-                throw new NotSupportedException($"Jazor member class does not support abstract property {propertySymbol.Name}.");
-
             throw new NotSupportedException($"Jazor member class does not support abstract method {symbol.Name}.");
-        }
 
         IOperation? operation = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
@@ -1070,15 +1062,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static Identifier CreateConstructorRefOutSinkIdentifier(IMethodSymbol constructor)
     {
-        const string baseName = "$jazorRefOut";
-        var usedNames = new HashSet<string>(
-            constructor.Parameters.Select(static parameter => parameter.Name),
-            StringComparer.Ordinal);
-        var name = baseName;
-        while (!usedNames.Add(name))
-            name += "$";
-
-        return new Identifier(name);
+        // `$jazorRefOut` is outside the C# identifier grammar, so a source parameter cannot
+        // collide with this compiler-owned constructor protocol slot.
+        return new Identifier("$jazorRefOut");
     }
 
     private MethodDefinition ConvertMemberConstructorDispatcher(
@@ -1187,11 +1173,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        if (baseType is null &&
-            symbol.BaseType is INamedTypeSymbol unresolvedBaseType &&
-            unresolvedBaseType.SpecialType != SpecialType.System_Object)
-            throw new NotSupportedException($"Jazor member class does not support inheritance {symbol.Name} : {unresolvedBaseType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.");
 
         var nodes = new List<Node>();
         var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType, cancellationToken);
@@ -1562,8 +1543,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return NodeList.From(arguments);
     }
 
-    private static bool HasMultipleExplicitConstructors(INamedTypeSymbol? typeSymbol)
-        => typeSymbol?.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) > 1;
+    private static bool HasMultipleExplicitConstructors(INamedTypeSymbol typeSymbol)
+        => typeSymbol.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) > 1;
 
     private static IMethodSymbol? ResolveImplicitBaseConstructor(INamedTypeSymbol baseType)
     {
@@ -1601,13 +1582,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private Expression CreateParameterDefaultValue(IParameterSymbol parameter)
     {
-        foreach (var reference in parameter.DeclaringSyntaxReferences)
-        {
-            if (reference.GetSyntax() is ParameterSyntax syntax && syntax.Default is not null)
-                return CreateEqualsValueClauseSyntaxLiteral(syntax.Default);
-        }
-
-        return CreateEqualsValueClauseSyntaxLiteral(parameter.Type.SpecialType, parameter.ExplicitDefaultValue);
+        // AstConverter only emits source-declared member methods. A parameter with an explicit
+        // default therefore owns exactly one ParameterSyntax carrying the authored expression.
+        var syntax = (ParameterSyntax)parameter.DeclaringSyntaxReferences.Single().GetSyntax();
+        return CreateEqualsValueClauseSyntaxLiteral(syntax.Default!);
     }
 
     private static Expression CreateEqualsValueClauseSyntaxLiteral(SpecialType type, object? value)
@@ -1663,14 +1641,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static FunctionBody MaterializeFunctionBody(Node visited, SenseArgument argument, bool returnsVoid)
     {
         if (visited is FunctionBody body)
-        {
-            var statements = MaterializeTemporaryDeclarationPrefix(argument);
-            if (statements.Count == 0)
-                return body;
-
-            statements.AddRange(body.Body);
-            return new FunctionBody(NodeList.From(statements), body.Strict);
-        }
+            // VisitBlock(Sense.FunctionBody) materializes the scope-owned temp prefix before
+            // constructing FunctionBody. Expression-bodied members take the branch below.
+            return body;
 
         var bodyStatements = MaterializeTemporaryDeclarationPrefix(argument);
         switch (visited)
@@ -1933,7 +1906,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static string? GetSourceDeclaredNameCandidate(ISymbol symbol)
         => symbol switch
         {
-            IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol property && !field.IsImplicitlyDeclared => property.Name,
             IFieldSymbol field when field.IsImplicitlyDeclared => null,
             IFieldSymbol field => field.Name,
             IMethodSymbol method when method.AssociatedSymbol is IPropertySymbol property => property.Name,

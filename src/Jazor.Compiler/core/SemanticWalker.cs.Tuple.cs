@@ -374,11 +374,10 @@ public partial class SemanticWalker
 		// const temp = func(2,5);
 		// let zzz = temp.aaa;
 		// let yyy = temp.Item2;
-		DeconstructionInfo? deconstructionInfo =
-			operation.SemanticModel is { } semanticModel &&
-			operation.Syntax is AssignmentExpressionSyntax assignmentSyntax
-				? semanticModel.GetDeconstructionInfo(assignmentSyntax)
-				: null;
+		// A source-bound deconstruction assignment always carries its semantic model and the
+		// AssignmentExpressionSyntax Roslyn used to compute DeconstructionInfo.
+		var deconstructionInfo = operation.SemanticModel!
+			.GetDeconstructionInfo((AssignmentExpressionSyntax)operation.Syntax);
 		var preparations = new List<Expression>();
 		var writes = new List<Expression>();
 		Deconstruct(
@@ -394,8 +393,7 @@ public partial class SemanticWalker
 		static DeconstructionInfo? GetNestedDeconstructionInfo(DeconstructionInfo? current, int index)
 		{
 			if (current is not { } info ||
-				info.Nested.IsDefaultOrEmpty ||
-				index >= info.Nested.Length)
+				info.Nested.IsDefaultOrEmpty)
 			{
 				return null;
 			}
@@ -450,49 +448,57 @@ public partial class SemanticWalker
 			return new MemberExpression(value.AstExpression!, new Identifier(fieldName), false, false);
 		}
 
-		static void CollectTargetLocals(IOperation target, HashSet<ILocalSymbol> locals)
+		static void CollectTargetVariables(IOperation target, HashSet<ISymbol> variables)
 		{
 			switch (target)
 			{
 				case ILocalReferenceOperation localRef:
-					locals.Add(localRef.Local);
+					variables.Add(localRef.Local);
+					break;
+				case IParameterReferenceOperation parameterRef:
+					variables.Add(parameterRef.Parameter);
 					break;
 				case IDeclarationExpressionOperation declarationExpr:
-					CollectTargetLocals(declarationExpr.Expression, locals);
+					CollectTargetVariables(declarationExpr.Expression, variables);
 					break;
 				case ITupleOperation tupleTarget:
 					foreach (var tupleElement in tupleTarget.Elements)
-						CollectTargetLocals(tupleElement, locals);
+						CollectTargetVariables(tupleElement, variables);
 					break;
 			}
 		}
 
-		static bool ReferencesTargetLocal(IOperation operation, HashSet<ILocalSymbol> locals)
+		static bool ReferencesTargetVariable(IOperation operation, HashSet<ISymbol> variables)
 		{
-			if (operation is ILocalReferenceOperation localRef &&
-				locals.Contains(localRef.Local))
+			var symbol = operation switch
+			{
+				ILocalReferenceOperation localRef => (ISymbol)localRef.Local,
+				IParameterReferenceOperation parameterRef => parameterRef.Parameter,
+				_ => null
+			};
+			if (symbol is not null && variables.Contains(symbol))
 				return true;
 
 			foreach (var child in operation.ChildOperations)
 			{
-				if (ReferencesTargetLocal(child, locals))
+				if (ReferencesTargetVariable(child, variables))
 					return true;
 			}
 
 			return false;
 		}
 
-		static bool ShouldCacheTupleField(TupleValueSource value, int index, HashSet<ILocalSymbol> targetLocals)
+		static bool ShouldCacheTupleField(TupleValueSource value, int index, HashSet<ISymbol> targetVariables)
 		{
-			if (targetLocals.Count == 0)
+			if (targetVariables.Count == 0)
 				return false;
 
 			return value.Operation switch
 			{
-				// 只有右侧某个元素会读取左侧目标局部变量时，才需要把“槽位值”单独缓存。
+				// 只有右侧某个元素会读取左侧目标变量时，才需要把“槽位值”单独缓存。
 				// 这样既能保证 swap / 自引用解构正确，又不会对所有元素都无差别引入临时变量。
-				ITupleOperation tupleOp => ReferencesTargetLocal(tupleOp.Elements[index], targetLocals),
-				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesTargetLocal(conversionTuple.Elements[index], targetLocals),
+				ITupleOperation tupleOp => ReferencesTargetVariable(tupleOp.Elements[index], targetVariables),
+				IConversionOperation { Operand: ITupleOperation conversionTuple } => ReferencesTargetVariable(conversionTuple.Elements[index], targetVariables),
 				_ => false
 			};
 		}
@@ -557,15 +563,24 @@ public partial class SemanticWalker
 					return;
 				}
 
-				case ILocalReferenceOperation localReference:
-				{
-					var left = Translate<Expression>(localReference, argument);
-					if (declareTarget)
-						argument.AddVarDeclarator(new VariableDeclarator(left, null), _recursionDepth);
+			case ILocalReferenceOperation localReference:
+			{
+				var left = Translate<Expression>(localReference, argument);
+				if (declareTarget)
+					argument.AddVarDeclarator(new VariableDeclarator(left, null), _recursionDepth);
 
-					exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
-					return;
-				}
+				exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
+				return;
+			}
+
+			case IParameterReferenceOperation parameterReference:
+			{
+				// Parameters are already declared by the containing function. Deconstruction writes
+				// follow the same ordered assignment protocol as locals, without a new declarator.
+				var left = Translate<Expression>(parameterReference, argument);
+				exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
+				return;
+			}
 
 				case IFieldReferenceOperation fieldReference:
 				{
@@ -579,12 +594,7 @@ public partial class SemanticWalker
 					var instance = Translate<Expression>(propertyReference.Instance, argument, null);
 					var propertyArguments = new List<Expression>(propertyReference.Arguments.Length);
 					foreach (var propertyArgument in propertyReference.Arguments)
-					{
-						var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
-							? argument.With(Sense.OutParameter)
-							: argument;
-						propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
-					}
+						propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 
 					exprs.Add(BuildPropertySetterAssignment(propertyReference, argument, instance, propertyArguments, right));
 					return;
@@ -606,7 +616,7 @@ public partial class SemanticWalker
 			bool declareTargets = false,
 			string tupleSlot = "")
 		{
-			if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
+			if (valueType.IsTupleType)
 			{
 				ITupleOperation tupleTarget;
 				if (target is IDeclarationExpressionOperation declarationExpressionOp)
@@ -615,10 +625,12 @@ public partial class SemanticWalker
 					tupleTarget = (ITupleOperation)declarationExpressionOp.Expression;
 				}
 				else
+				{
 					tupleTarget = (ITupleOperation)target;
+				}
 
-				var targetLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-				CollectTargetLocals(tupleTarget, targetLocals);
+				var targetVariables = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+				CollectTargetVariables(tupleTarget, targetVariables);
 
 				Identifier? tempVar = null;
 				if (value.Operation is { } valueOperation && ShouldCacheTupleSource(valueOperation))
@@ -643,7 +655,7 @@ public partial class SemanticWalker
 
 					var fieldValue = GetTupleFieldValue(value, field, index, tempVar, argument);
 
-					if (ShouldCacheTupleField(value, index, targetLocals))
+					if (ShouldCacheTupleField(value, index, targetVariables))
 					{
 						// 右侧这个槽位会引用左侧目标局部变量。
 						// 必须先把槽位值缓存下来，再进行后续赋值，否则会被前面已执行的回写污染。
@@ -691,20 +703,10 @@ public partial class SemanticWalker
 					 ShouldLowerStructurally(recordType) &&
 					 bindingInfo?.Method is IMethodSymbol structuralDeconstructMethod)
 			{
-				ITupleOperation tupleResult;
-				bool isDeclarationExpressionTarget = false;
-				if (target is IDeclarationExpressionOperation declarationExpr && declarationExpr.Expression is ITupleOperation t1)
-				{
-					tupleResult = t1;
-					isDeclarationExpressionTarget = true;
-				}
-				else if (target is ITupleOperation t2)
-					tupleResult = t2;
-				else
-				{
-					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-					return;
-				}
+				var isDeclarationExpressionTarget = target is IDeclarationExpressionOperation;
+				var tupleResult = isDeclarationExpressionTarget
+					? (ITupleOperation)((IDeclarationExpressionOperation)target).Expression
+					: (ITupleOperation)target;
 				var declareStructuralTargets = declareTargets || isDeclarationExpressionTarget;
 
 				Expression recordExprValue;
@@ -759,8 +761,7 @@ public partial class SemanticWalker
 						AppendDeconstructionWrite(element, right, writes, declareStructuralTargets || element is IDeclarationExpressionOperation);
 				}
 			}
-			else if (bindingInfo?.Method is IMethodSymbol method &&
-				(value.Operation is not null || value.AstExpression is not null))
+			else if (bindingInfo?.Method is IMethodSymbol method)
 			{
 				if (method.IsExtensionMethod)
 				{
@@ -782,20 +783,10 @@ public partial class SemanticWalker
 				// 1. tuple 解构：按对象字段直接展开；
 				// 2. 自定义 Deconstruct：先调用实例 Deconstruct(...)，
 				//    再按当前编译器约定从返回数组中取出各 out 值。
-				ITupleOperation tupleResult;
-				bool isDeclarationExpressionTarget = false;
-				if (target is IDeclarationExpressionOperation declarationExpr && declarationExpr.Expression is ITupleOperation t1)
-				{
-					tupleResult = t1;
-					isDeclarationExpressionTarget = true;
-				}
-				else if (target is ITupleOperation t2)
-					tupleResult = t2;
-				else
-				{
-					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
-					return;
-				}
+				var isDeclarationExpressionTarget = target is IDeclarationExpressionOperation;
+				var tupleResult = isDeclarationExpressionTarget
+					? (ITupleOperation)((IDeclarationExpressionOperation)target).Expression
+					: (ITupleOperation)target;
 
 				List<Expression> args = [];
 				var assignmentTargets = new IOperation?[tupleResult.Elements.Length];

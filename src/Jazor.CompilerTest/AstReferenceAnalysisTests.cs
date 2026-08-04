@@ -115,6 +115,35 @@ public sealed class AstReferenceAnalysisTests
         Assert.AreEqual("name", nameException.ParamName);
         Assert.AreEqual("nodes", nodesException.ParamName);
     }
+
+    [TestMethod]
+    public void IdentifierCollection_ObjectPatternProperties_OnlyReadComputedKeysAndBindingDefaults()
+    {
+        var staticProperty = new ObjectProperty(
+            PropertyKind.Init,
+            new Identifier("label"),
+            new AssignmentPattern(new Identifier("value"), new Identifier("fallback")),
+            computed: false,
+            shorthand: false,
+            method: false);
+        var computedProperty = new ObjectProperty(
+            PropertyKind.Init,
+            new Identifier("key"),
+            new AssignmentPattern(new Identifier("other"), new Identifier("otherFallback")),
+            computed: true,
+            shorthand: false,
+            method: false);
+        var pattern = new ObjectPattern(NodeList.From<Node>(staticProperty, computedProperty));
+        var declaration = new VariableDeclaration(
+            VariableDeclarationKind.Const,
+            NodeList.From(new VariableDeclarator(pattern, new Identifier("source"))));
+
+        var names = AstReferenceAnalysis.CollectIdentifiers([declaration]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "fallback", "key", "otherFallback", "source" },
+            names.ToArray());
+    }
 }
 
 public sealed record ReferenceEquivalenceCase(

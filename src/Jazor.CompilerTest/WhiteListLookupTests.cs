@@ -149,24 +149,11 @@ public sealed class WhiteListLookupTests
 	}
 
 	private static System.Collections.IDictionary GetWhiteListMembers()
-	{
-		var whiteListType = typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!;
-		var membersField = whiteListType.GetField("Members", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-
-		Assert.IsNotNull(membersField);
-		var members = membersField.GetValue(null) as System.Collections.IDictionary;
-		Assert.IsNotNull(members);
-		return members;
-	}
+		=> WhiteList.Members;
 
 	private static object? GetRuntimeValueCarrier(string clrType)
 	{
-		var whiteListType = typeof(SemanticWalker).Assembly.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!;
-		var typesField = whiteListType.GetField("Types", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-
-		Assert.IsNotNull(typesField);
-		var types = typesField.GetValue(null) as System.Collections.IDictionary;
-		Assert.IsNotNull(types);
+		System.Collections.IDictionary types = WhiteList.Types;
 		Assert.IsTrue(types.Contains(clrType), $"Whitelist type '{clrType}' was not generated.");
 
 		var entry = types[clrType];

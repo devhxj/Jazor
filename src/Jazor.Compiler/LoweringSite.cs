@@ -29,7 +29,8 @@ internal enum LoweringSiteKind
     TupleNestedArgument,
     DeconstructResult,
     TupleBinaryOperandCache,
-    BoundArgumentTemp
+    BoundArgumentTemp,
+    InterpolationValue
 }
 
 /// <summary>
@@ -65,6 +66,7 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
             LoweringSiteKind.DeconstructResult => "decon",
             LoweringSiteKind.TupleBinaryOperandCache => "tbin",
             LoweringSiteKind.BoundArgumentTemp => "arg",
+            LoweringSiteKind.InterpolationValue => "interp",
             _ => "temp"
         };
 
@@ -139,4 +141,7 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
             LoweringSiteKind.BoundArgumentTemp,
             parameterOrdinal.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" +
             sourceIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    public static LoweringSite InterpolationValue()
+        => new(LoweringSiteKind.InterpolationValue);
 }

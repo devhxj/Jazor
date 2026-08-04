@@ -93,6 +93,63 @@ public sealed class OptimizerTest
     }
 
     [TestMethod]
+    public void OptimizeLogical_NullOnLeftAndStrictNonNullGuard_ElidesImpliedGuard()
+    {
+        var value = new Identifier("value");
+        var nullBranch = new NonLogicalBinaryExpression(Operator.Equality, new NullLiteral("null"), value);
+        var nonNullGuard = new NonLogicalBinaryExpression(Operator.StrictInequality, new NullLiteral("null"), value);
+        var expression = new LogicalExpression(
+            Operator.LogicalOr,
+            nullBranch,
+            new LogicalExpression(Operator.LogicalAnd, nonNullGuard, new Identifier("matches")));
+
+        var result = Optimizer.OptimizeLogical(expression);
+
+        Assert.AreEqual("null == value || matches", result.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void OptimizeLogical_EqualityWithoutNull_PreservesOriginalShortCircuitTree()
+    {
+        var comparison = new NonLogicalBinaryExpression(
+            Operator.Equality,
+            new Identifier("left"),
+            new Identifier("right"));
+        var guardedBranch = new LogicalExpression(
+            Operator.LogicalAnd,
+            new NonLogicalBinaryExpression(
+                Operator.Inequality,
+                new Identifier("value"),
+                new NullLiteral("null")),
+            new Identifier("matches"));
+        var expression = new LogicalExpression(Operator.LogicalOr, comparison, guardedBranch);
+
+        var result = Optimizer.OptimizeLogical(expression);
+
+        Assert.AreEqual("left == right || value != null && matches", result.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void OptimizeLogical_UnrelatedComparisonGuard_PreservesGuardedBranch()
+    {
+        var value = new Identifier("value");
+        var expression = new LogicalExpression(
+            Operator.LogicalOr,
+            new NonLogicalBinaryExpression(Operator.Equality, value, new NullLiteral("null")),
+            new LogicalExpression(
+                Operator.LogicalAnd,
+                new NonLogicalBinaryExpression(
+                    Operator.StrictInequality,
+                    new Identifier("left"),
+                    new Identifier("right")),
+                new Identifier("matches")));
+
+        var result = Optimizer.OptimizeLogical(expression);
+
+        Assert.AreEqual("value == null || left !== right && matches", result.ToKnRECMAScript());
+    }
+
+    [TestMethod]
     public void OptimizeLogical_NullishDisjunctionWithMemberRead_PreservesNonNullGuard()
     {
         var value = new MemberExpression(

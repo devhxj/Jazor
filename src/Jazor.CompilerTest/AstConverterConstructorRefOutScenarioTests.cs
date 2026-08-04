@@ -105,6 +105,59 @@ public sealed class AstConverterConstructorRefOutScenarioTests
         }
     }
 
+    [TestMethod]
+    public async Task ConvertModule_ConstructorRefOut_DoesNotRewriteNestedLocalFunctionReturns()
+    {
+        const string scenarioId = "ast-converter.constructor-ref-out.nested-callable";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public static int Run(int start)
+                {
+                    var value = start;
+                    var probe = new Probe(ref value, out var observed);
+                    return probe.Marker * 100 + value * 10 + observed;
+                }
+
+                public sealed class Probe
+                {
+                    public int Marker;
+
+                    public Probe(ref int value, out int observed)
+                    {
+                        static int Normalize(int candidate)
+                        {
+                            if (candidate < 0)
+                                return -candidate;
+                            return candidate;
+                        }
+
+                        if (value < 0)
+                        {
+                            observed = Normalize(value);
+                            return;
+                        }
+
+                        value = Normalize(value) + 2;
+                        Marker = 1;
+                        observed = value;
+                    }
+                }
+            }
+            """,
+            scenarioId);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "function Normalize(candidate)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "return -candidate", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "$jazorRefOut[0] = value", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+    }
+
     private static ConstructorFixture CompileModule(string source, string scenarioId)
     {
         var sourceTree = CSharpSyntaxTree.ParseText(

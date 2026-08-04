@@ -330,16 +330,6 @@ internal static class WhiteListLookup
 			!string.Equals(normalizedConstFieldDisplay, displayString, StringComparison.Ordinal))
 			yield return normalizedConstFieldDisplay;
 
-		var normalizedExtensionDisplay = NormalizeExtensionThisParameterDisplay(displayString);
-		if (normalizedExtensionDisplay is { Length: > 0 } &&
-			!string.Equals(normalizedExtensionDisplay, displayString, StringComparison.Ordinal))
-			yield return normalizedExtensionDisplay;
-
-		var normalizedStaticDisplay = NormalizeStaticAbstractLikeDisplay(displayString);
-		if (normalizedStaticDisplay is { Length: > 0 } &&
-			!string.Equals(normalizedStaticDisplay, displayString, StringComparison.Ordinal))
-			yield return normalizedStaticDisplay;
-
 		foreach (var normalizedExternDisplay in EnumerateExternDisplayVariants(displayString))
 		{
 			if (!string.Equals(normalizedExternDisplay, displayString, StringComparison.Ordinal))
@@ -381,15 +371,6 @@ internal static class WhiteListLookup
 		yield return overridePrefix + displayString;
 		yield return abstractPrefix + displayString;
 
-		static string? NormalizeExtensionThisParameterDisplay(string text)
-		{
-			var normalized = text
-				.Replace("(this ", "(")
-				.Replace(", this ", ", ");
-
-			return string.Equals(normalized, text, StringComparison.Ordinal) ? null : normalized;
-		}
-
 		static string? NormalizeConstFieldDisplay(string text)
 		{
 			const string constPrefix = "const ";
@@ -399,25 +380,6 @@ internal static class WhiteListLookup
 			var end = text.IndexOf(" = ", StringComparison.Ordinal);
 			var withoutInitializer = end >= 0 ? text.Substring(0, end) : text;
 			return "static " + withoutInitializer.Substring(constPrefix.Length);
-		}
-
-		static string? NormalizeStaticAbstractLikeDisplay(string text)
-		{
-			const string staticAbstractPrefix = "static abstract ";
-			const string staticVirtualPrefix = "static virtual ";
-			const string staticOverridePrefix = "static override ";
-			const string staticSealedPrefix = "static sealed ";
-
-			if (text.StartsWith(staticAbstractPrefix, StringComparison.Ordinal))
-				return "static " + text.Substring(staticAbstractPrefix.Length);
-			if (text.StartsWith(staticVirtualPrefix, StringComparison.Ordinal))
-				return "static " + text.Substring(staticVirtualPrefix.Length);
-			if (text.StartsWith(staticOverridePrefix, StringComparison.Ordinal))
-				return "static " + text.Substring(staticOverridePrefix.Length);
-			if (text.StartsWith(staticSealedPrefix, StringComparison.Ordinal))
-				return "static " + text.Substring(staticSealedPrefix.Length);
-
-			return null;
 		}
 
 		static IEnumerable<string> EnumerateExternDisplayVariants(string text)

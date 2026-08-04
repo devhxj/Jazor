@@ -173,12 +173,6 @@ public sealed partial class SemanticWalker
                 case IDelegateCreationOperation delegateCreation:
                     operation = delegateCreation.Target;
                     continue;
-                case IConversionOperation conversion:
-                    operation = conversion.Operand;
-                    continue;
-                case IParenthesizedOperation parenthesized:
-                    operation = parenthesized.Operand;
-                    continue;
                 default:
                     return operation;
             }
@@ -213,9 +207,6 @@ public sealed partial class SemanticWalker
                     return true;
                 case IConversionOperation conversion:
                     operation = conversion.Operand;
-                    continue;
-                case IParenthesizedOperation parenthesized:
-                    operation = parenthesized.Operand;
                     continue;
                 default:
                     eventReference = null!;
@@ -253,10 +244,9 @@ public sealed partial class SemanticWalker
 
     private bool IsModuleDeclaredEventHandlerMethod(IMethodSymbol method)
     {
-        if (_moduleDeclaredNames is null)
-            return false;
-
-        return _moduleDeclaredNames.ContainsKey(method.OriginalDefinition) ||
+        // Event validation has already established the current-module protocol before handlers
+        // are classified, so this map is always available here.
+        return _moduleDeclaredNames!.ContainsKey(method.OriginalDefinition) ||
             _moduleDeclaredNames.ContainsKey(method.ContainingType.OriginalDefinition);
     }
 

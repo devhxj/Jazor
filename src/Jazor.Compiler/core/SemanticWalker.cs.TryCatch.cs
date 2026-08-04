@@ -47,12 +47,9 @@ public partial class SemanticWalker
         CatchClause? handler = null;
         if (operation.Catches.Length == 1)
         {
-            var @catch = operation.Catches[0];
-            RejectUnsupportedSingleCatchTypeIfNeeded(@catch);
-            if (Visit(@catch, argument) is not CatchClause node)
-                return HandleTransformationFailure<Node>(@catch, "Try statement catch clause could not be translated to JavaScript.");
-
-            handler = node;
+			var @catch = operation.Catches[0];
+			RejectUnsupportedSingleCatchTypeIfNeeded(@catch);
+			handler = (CatchClause)Visit(@catch, argument)!;
         }
         else if (operation.Catches.Length > 1)
         {
@@ -102,7 +99,7 @@ public partial class SemanticWalker
                 var handlerStatements = ExtractCatchHandlerStatements(@catch, mergedCatchArg, tryParam);
                 if (@catch.Filter is not null)
                 {
-                    var filterExpr = TranslateExpression(@catch.Filter, filterArgument);
+                    var filterExpr = Translate<Expression>(@catch.Filter, filterArgument);
                     var consequent = new NestedBlockStatement(NodeList.From(handlerStatements));
                     var alternate = BuildGroupChain(clauses, index + 1, sharedParam, fallback);
                     branchStatements.Add(new IfStatement(filterExpr, consequent, alternate));
@@ -204,12 +201,7 @@ public partial class SemanticWalker
         if (operation.ExceptionDeclarationOrExpression is null)
             return null;
 
-        if (operation.ExceptionDeclarationOrExpression is not IVariableDeclaratorOperation { Symbol: { } local })
-        {
-            return HandleTransformationFailure<Identifier>(
-                operation.ExceptionDeclarationOrExpression,
-                "Try statement catch clause could not be translated to JavaScript.");
-        }
+		var local = ((IVariableDeclaratorOperation)operation.ExceptionDeclarationOrExpression).Symbol;
 
 		return Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
 			new Identifier(GetJavaScriptBindingName(local));
@@ -284,16 +276,13 @@ public partial class SemanticWalker
         if (!RequiresCatchTypeFilter(operation) || operation.ExceptionType is null)
             return null;
 
-        if (exceptionParam is null)
-            throw new InvalidOperationException("Typed catch filtering requires an exception binding.");
-
-        var test = CreateTypeMatchExpr(
-            operation,
-            operation.ExceptionType,
-            exceptionParam,
-            context: argument);
-        var notMatch = new NonUpdateUnaryExpression(Operator.LogicalNot, test);
-        return new IfStatement(notMatch, new ThrowStatement(exceptionParam), null);
+		var test = CreateTypeMatchExpr(
+			operation,
+			operation.ExceptionType,
+			exceptionParam!,
+			context: argument);
+		var notMatch = new NonUpdateUnaryExpression(Operator.LogicalNot, test);
+		return new IfStatement(notMatch, new ThrowStatement(exceptionParam!), null);
     }
 
     /// <summary>
@@ -321,7 +310,7 @@ public partial class SemanticWalker
         // }
         if (operation.Filter is not null)
         {
-            var filterExpr = TranslateExpression(operation.Filter, argument);
+            var filterExpr = Translate<Expression>(operation.Filter, argument);
 
             // 获取用于重新抛出的异常标识符
             // 如果 catch 有参数名则使用参数名，否则使用 tryParam

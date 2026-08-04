@@ -31,10 +31,35 @@ public partial class SemanticWalker
 	public override Node? VisitForEachLoop(IForEachLoopOperation operation, SenseArgument argument)
 	{
 		var left = BuildForEachLoopBinding(operation, argument);
-		var right = Translate<Expression>(operation.Collection, argument);
+		var right = BuildForEachLoopCollection(operation, argument);
 		var body = Translate<Statement>(operation.Body, argument);
 
 		return new ForOfStatement(left, right, body, @await: operation.IsAsynchronous);
+	}
+
+	private Expression BuildForEachLoopCollection(IForEachLoopOperation operation, SenseArgument argument)
+	{
+		var collection = Translate<Expression>(operation.Collection, argument);
+		if (operation.Collection.Type is not INamedTypeSymbol
+			{ SpecialType: SpecialType.System_String } stringType)
+		{
+			return collection;
+		}
+
+		// JavaScript `for...of` iterates Unicode code points, while C# foreach over string yields
+		// UTF-16 char units. Reuse the CLR ToCharArray mapping instead of encoding split semantics here.
+		var toCharArray = stringType.GetMembers(nameof(string.ToCharArray))
+			.OfType<IMethodSymbol>()
+			.Single(static method => !method.IsStatic && method.Parameters.Length == 0);
+		return BuildMethodCallExpression(
+			operation.Collection,
+			toCharArray,
+			operation.Collection.Syntax,
+			semanticModel: null,
+			collection,
+			[],
+			argument,
+			hostType: stringType);
 	}
 
 	/// <summary>
@@ -72,15 +97,9 @@ public partial class SemanticWalker
 		};
 
 	private static ITypeSymbol? GetForEachElementType(IForEachLoopOperation operation)
-	{
-		if (operation.SemanticModel is null ||
-			operation.Syntax is not CommonForEachStatementSyntax syntax)
-		{
-			return null;
-		}
-
-		return operation.SemanticModel.GetForEachStatementInfo(syntax).ElementType;
-	}
+		=> operation.SemanticModel!
+			.GetForEachStatementInfo((CommonForEachStatementSyntax)operation.Syntax)
+			.ElementType;
 
 	private Node BuildForEachDeconstructionPattern(
 		ITupleOperation targetTuple,
@@ -102,13 +121,9 @@ public partial class SemanticWalker
 			if (targetElement is IDiscardOperation)
 				continue;
 
-			if (!TryGetForEachSourceSlot(sourceType, index, out var propertyName, out var propertyType))
-			{
-				return HandleTransformationFailure<ObjectPattern>(
-					targetTuple,
-					$"For-each deconstruction source type '{sourceType.ToDisplayString(Jazor.Common.Format.NameFormat)}' " +
-					$"does not expose structural slot {index}.");
-			}
+			// Roslyn binds the deconstruction arity before this structural record path is selected.
+			// Every target slot therefore has a corresponding tuple/record runtime property.
+			TryGetForEachSourceSlot(sourceType, index, out var propertyName, out var propertyType);
 
 			var value = BuildForEachDeconstructionValue(
 				targetElement,
@@ -132,14 +147,6 @@ public partial class SemanticWalker
 		INamedTypeSymbol sourceType,
 		SenseArgument argument)
 	{
-		if (targetTuple.Elements.Length != sourceType.TypeArguments.Length)
-		{
-			return HandleTransformationFailure<ArrayPattern>(
-				targetTuple,
-				$"For-each KeyValuePair deconstruction requires {sourceType.TypeArguments.Length} target slots, " +
-				$"but found {targetTuple.Elements.Length}.");
-		}
-
 		var elements = new List<Node?>();
 		for (var index = 0; index < targetTuple.Elements.Length; index++)
 		{
@@ -220,9 +227,6 @@ public partial class SemanticWalker
 
 	private static Node CreateForEachLoopBinding(Node loopControl)
 	{
-		if (loopControl is VariableDeclaration)
-			return loopControl;
-
 		var declarator = loopControl as VariableDeclarator
 			?? new VariableDeclarator(loopControl, null);
 
@@ -249,7 +253,7 @@ public partial class SemanticWalker
 
 		if (operation.Condition is not null)
 		{
-			test = TranslateExpression(operation.Condition, argument);
+			test = Translate<Expression>(operation.Condition, argument);
 		}
 
 		// 处理多个 AtLoopBottom 操作的情况
@@ -278,20 +282,14 @@ public partial class SemanticWalker
 					expressions.Add(expr);
 				}
 
-				// 如果只有一个有效表达式，直接使用
-				if (expressions.Count == 1)
-					updateExpression = expressions[0];
-
-				// 如果有多个有效表达式，使用逗号表达式组合
-				else if (expressions.Count > 1)
+				// This branch starts with more than one AtLoopBottom operation and every bound
+				// operation yields one expression, so the sequence always has at least two items.
+				updateExpression = expressions[0];
+				for (int i = 1; i < expressions.Count; i++)
 				{
-					updateExpression = expressions[0];
-					for (int i = 1; i < expressions.Count; i++)
-					{
-						updateExpression = new SequenceExpression(
-							NodeList.From([updateExpression, expressions[i]])
-						);
-					}
+					updateExpression = new SequenceExpression(
+						NodeList.From([updateExpression, expressions[i]])
+					);
 				}
 			}
 		}
@@ -313,9 +311,6 @@ public partial class SemanticWalker
 
 	private static bool HasCapturedForControlVariable(IForLoopOperation operation)
 	{
-		if (operation.Locals.IsDefaultOrEmpty)
-			return false;
-
 		foreach (var localReference in operation.Descendants().OfType<ILocalReferenceOperation>())
 		{
 			if (!operation.Locals.Any(local => SymbolEqualityComparer.Default.Equals(local, localReference.Local)))
@@ -334,17 +329,8 @@ public partial class SemanticWalker
 	}
 
 	private Expression TranslateForLoopUpdateExpression(IOperation operation, SenseArgument argument)
-	{
-		var node = Visit(operation, argument);
-		return node switch
-		{
-			Expression expression => expression,
-			NonSpecialExpressionStatement statement => statement.Expression,
-			_ => HandleTransformationFailure<Expression>(
-				operation,
-				"For loop update expression could not be translated to JavaScript.")
-		};
-	}
+		// IForLoopOperation.AtLoopBottom contains expression statements in valid C# input.
+		=> Translate<NonSpecialExpressionStatement>(operation, argument).Expression;
 
 	private StatementOrExpression? CreateForLoopInitializer(IEnumerable<IOperation> beforeOperations, SenseArgument argument)
 	{
@@ -395,10 +381,7 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitWhileLoop(IWhileLoopOperation operation, SenseArgument argument)
 	{
-		if (operation.Condition is null)
-			return null;
-
-		var test = Translate<Expression>(operation.Condition, argument);
+		var test = Translate<Expression>(operation.Condition!, argument);
 		var body = Translate<Statement>(operation.Body, argument);
 
 		// ConditionIsTop: true = while (条件在顶部), false = do-while (条件在底部)

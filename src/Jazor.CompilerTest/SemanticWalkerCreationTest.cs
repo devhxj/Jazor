@@ -896,7 +896,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("`Hello, ${name}!`", script);
+		AssertScriptEqual("`Hello, ${name??\"\"}!`", script);
     }
 
     [TestMethod]
@@ -941,7 +941,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("`Name: ${name}, Age: ${age}`", script);
+		AssertScriptEqual("`Name: ${name??\"\"}, Age: ${age}`", script);
     }
 
     [TestMethod]
@@ -1002,7 +1002,7 @@ public sealed class SemanticWalkerCreationTest
   let array1 = [1, 2, 3];
   let array2 = new Array(5);
   let name = ""John"";
-  let message = `Hello, ${name}!`;
+  let message = `Hello, ${name ?? """"}!`;
 }", script);
     }
 

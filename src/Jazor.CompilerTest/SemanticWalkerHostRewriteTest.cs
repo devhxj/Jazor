@@ -460,6 +460,19 @@ public sealed class SemanticWalkerHostRewriteTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "let value = hostValue;", StringComparison.Ordinal);
         Assert.AreEqual(1, host.RewriteCount);
+        Assert.IsNotNull(host.Argument);
+        Assert.AreEqual(TypeMapper.Number, host.TypeMapping.Mapper);
+        Assert.AreEqual("Number", host.TypeMapping.TypeName);
+        Assert.AreEqual(TypeMapper.Boolean, host.BooleanTypeMapping.Mapper);
+        Assert.AreEqual("Boolean", host.BooleanTypeMapping.TypeName);
+        Assert.IsNull(host.ModuleImportPath);
+        Assert.IsFalse(host.ImportedMemberResolved);
+        Assert.IsNull(host.ImportedMember);
+        CollectionAssert.Contains(host.TypeHierarchyNames, "Int32");
+        Assert.IsNotNull(host.Diagnostic);
+        Assert.AreEqual(OperationKind.Invocation, host.Diagnostic.Kind);
+        Assert.AreEqual("host intrinsic probe", host.Diagnostic.Message);
+        Assert.AreEqual("<unknown>", host.Diagnostic.Data["location.path"]);
     }
 
     [TestMethod]
@@ -572,6 +585,40 @@ public sealed class SemanticWalkerHostRewriteTest
         StringAssert.Contains(script!, "this.consume(hostTimestamp);", StringComparison.Ordinal);
         Assert.IsInstanceOfType<IPropertyReferenceOperation>(host.ArgumentValue);
         Assert.AreEqual("UtcNow", ((IPropertyReferenceOperation)host.ArgumentValue!).Property.Name);
+    }
+
+    [TestMethod]
+    public void RewritePreorder_HostClaimsConversionAssignmentAndObjectCreationBeforeCoreLowering()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                private int _value;
+
+                void TestMethod(object source)
+                {
+                    int converted = (int)source;
+                    _value = converted;
+                    var created = new NestedValue();
+                }
+
+                sealed class NestedValue;
+            }
+            """);
+        var host = new PreorderClaimHost();
+        var walker = new SemanticWalker(true) { Host = host };
+
+        var script = walker.Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        _ = new Acornima.Parser().ParseModule($"function test(source) {script}");
+        StringAssert.Contains(script, "let converted = hostConversion;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "hostAssignment;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let created = hostCreation;", StringComparison.Ordinal);
+        Assert.AreEqual(1, host.ConversionCount);
+        Assert.AreEqual(1, host.AssignmentCount);
+        Assert.AreEqual(1, host.CreationCount);
     }
 
     private static IBlockOperation GetBlockOperation(string code)
@@ -748,6 +795,22 @@ public sealed class SemanticWalkerHostRewriteTest
     {
         public int RewriteCount { get; private set; }
 
+        public SenseArgument? Argument { get; private set; }
+
+        public SemanticTypeMapping TypeMapping { get; private set; }
+
+        public SemanticTypeMapping BooleanTypeMapping { get; private set; }
+
+        public string? ModuleImportPath { get; private set; }
+
+        public bool ImportedMemberResolved { get; private set; }
+
+        public Expression? ImportedMember { get; private set; }
+
+        public string[] TypeHierarchyNames { get; private set; } = [];
+
+        public OperationTransformationException? Diagnostic { get; private set; }
+
         public override Expression? RewriteInvocationIntrinsic(
             IInvocationOperation operation,
             Expression? instance,
@@ -758,6 +821,21 @@ public sealed class SemanticWalkerHostRewriteTest
                 return null;
 
             RewriteCount++;
+            Argument = context.Argument;
+            TypeMapping = context.GetTypeMapping(operation.TargetMethod.ContainingType);
+            BooleanTypeMapping = context.GetTypeMapping(
+                operation.SemanticModel!.Compilation.GetSpecialType(SpecialType.System_Boolean));
+            ModuleImportPath = context.GetModuleImportPath(operation.TargetMethod.ContainingType);
+            ImportedMemberResolved = context.TryBuildImportedModuleMember(
+                operation.TargetMethod.ContainingType,
+                operation.TargetMethod.Name,
+                out var importedMember);
+            ImportedMember = importedMember;
+            TypeHierarchyNames = context
+                .EnumerateNamedTypeHierarchyBaseFirst(operation.TargetMethod.ContainingType)
+                .Select(static type => type.Name)
+                .ToArray();
+            Diagnostic = context.CreateException(operation, "host intrinsic probe");
             return new Identifier("hostValue");
         }
     }
@@ -881,6 +959,47 @@ public sealed class SemanticWalkerHostRewriteTest
 
             ArgumentValue = argumentOperation.Value;
             return new Identifier("hostTimestamp");
+        }
+    }
+
+    private sealed class PreorderClaimHost : SemanticWalkerHost
+    {
+        public int ConversionCount { get; private set; }
+
+        public int AssignmentCount { get; private set; }
+
+        public int CreationCount { get; private set; }
+
+        public override Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)
+        {
+            if (operation.Type?.SpecialType != SpecialType.System_Int32 ||
+                operation.Operand.Type?.SpecialType != SpecialType.System_Object)
+            {
+                return null;
+            }
+
+            ConversionCount++;
+            return new Identifier("hostConversion");
+        }
+
+        public override Expression? RewriteSimpleAssignmentPreorder(
+            ISimpleAssignmentOperation operation,
+            SenseArgument argument)
+        {
+            if (operation.Target is not IFieldReferenceOperation { Field.Name: "_value" })
+                return null;
+
+            AssignmentCount++;
+            return new Identifier("hostAssignment");
+        }
+
+        public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+        {
+            if (!string.Equals(operation.Type?.Name, "NestedValue", StringComparison.Ordinal))
+                return null;
+
+            CreationCount++;
+            return new Identifier("hostCreation");
         }
     }
 

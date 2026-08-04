@@ -430,9 +430,9 @@ internal sealed class ChildrenToSlotServiceProbe
             static (operation, message) => new OperationTransformationException(operation, message));
 
     private bool TryBuildImportedModuleMember(
-        ITypeSymbol? containingType,
+        ITypeSymbol containingType,
         string memberName,
-        SenseArgument? context,
+        SenseArgument context,
         out Expression? expression)
     {
         ImportAttempts++;

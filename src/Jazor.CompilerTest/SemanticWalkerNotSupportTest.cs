@@ -270,6 +270,39 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
+    public void VisitEventAssignment_CustomAccessors_RejectUnsupportedRuntimeProtocol()
+    {
+        const string code = """
+            using System;
+
+            class TestClass
+            {
+                private Action? _changed;
+                public event Action? Changed
+                {
+                    add => _changed += value;
+                    remove => _changed -= value;
+                }
+
+                void Handler()
+                {
+                }
+
+                void TestMethod()
+                {
+                    Changed += Handler;
+                }
+            }
+            """;
+        var assignment = FindFirstOperation<IEventAssignmentOperation>(GetBlockOperation(code));
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitEventAssignment(assignment, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "custom event accessors", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void VisitDynamicMemberReference_NotSupported()
     {
         const string code = """
