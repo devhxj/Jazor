@@ -184,6 +184,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeEnumerableTerminalScenarios.All,
 		.. ClrRuntimeEnumerableSequenceEqualScenarios.All,
 		.. ClrRuntimeEnumerableAggregateScenarios.All,
+		.. ClrRuntimeEnumerableAggregateByScenarios.All,
 		.. ClrRuntimeEnumerableSetByScenarios.All,
 		.. ClrRuntimeMemoryExtensionsSequenceEqualScenarios.All,
 		.. ClrRuntimeMemoryExtensionsTrimScenarios.All,

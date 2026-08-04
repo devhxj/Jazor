@@ -966,6 +966,103 @@ public static class EnumerableModule<TSource>
 		return count;
 	}
 
+	private static Array<System.Collections.Generic.KeyValuePair<TKey, Number>> CountByCore<TKey>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (source == null)
+			throw new Error("ArgumentNullException: source is null");
+		if (keySelector == null)
+			throw new Error("ArgumentNullException: keySelector is null");
+
+		var groups = new Array<Array<Number>>();
+		var groupsByHash = new Map<Number, Array<Array<Number>>>();
+		foreach (var item in source)
+		{
+			var key = keySelector(item);
+			var accumulator = GetGrouping(groupsByHash, groups, key, comparer);
+			if (accumulator.Length == 0)
+			{
+				accumulator.Push(1);
+				continue;
+			}
+
+			var count = accumulator[0];
+			if (count == 2147483647)
+				throw new Error("OverflowException: CountBy count exceeds Int32.MaxValue.");
+			accumulator[0] = count + 1;
+		}
+
+		return MaterializeAccumulations<TKey, Number>(groups);
+	}
+
+	private static Array<System.Collections.Generic.KeyValuePair<TKey, TAccumulate>> AggregateByCore<TKey, TAccumulate>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		TAccumulate seed,
+		Func<TAccumulate, TSource, TAccumulate> func,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (source == null)
+			throw new Error("ArgumentNullException: source is null");
+		if (keySelector == null)
+			throw new Error("ArgumentNullException: keySelector is null");
+		if (func == null)
+			throw new Error("ArgumentNullException: func is null");
+
+		var groups = new Array<Array<TAccumulate>>();
+		var groupsByHash = new Map<Number, Array<Array<TAccumulate>>>();
+		foreach (var item in source)
+		{
+			var key = keySelector(item);
+			var accumulator = GetGrouping(groupsByHash, groups, key, comparer);
+			if (accumulator.Length == 0)
+			{
+				accumulator.Push(func(seed, item));
+				continue;
+			}
+
+			accumulator[0] = func(accumulator[0], item);
+		}
+
+		return MaterializeAccumulations<TKey, TAccumulate>(groups);
+	}
+
+	private static Array<System.Collections.Generic.KeyValuePair<TKey, TAccumulate>> AggregateByCore<TKey, TAccumulate>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		Func<TKey, TAccumulate> seedSelector,
+		Func<TAccumulate, TSource, TAccumulate> func,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+	{
+		if (source == null)
+			throw new Error("ArgumentNullException: source is null");
+		if (keySelector == null)
+			throw new Error("ArgumentNullException: keySelector is null");
+		if (seedSelector == null)
+			throw new Error("ArgumentNullException: seedSelector is null");
+		if (func == null)
+			throw new Error("ArgumentNullException: func is null");
+
+		var groups = new Array<Array<TAccumulate>>();
+		var groupsByHash = new Map<Number, Array<Array<TAccumulate>>>();
+		foreach (var item in source)
+		{
+			var key = keySelector(item);
+			var accumulator = GetGrouping(groupsByHash, groups, key, comparer);
+			if (accumulator.Length == 0)
+			{
+				accumulator.Push(func(seedSelector(key), item));
+				continue;
+			}
+
+			accumulator[0] = func(accumulator[0], item);
+		}
+
+		return MaterializeAccumulations<TKey, TAccumulate>(groups);
+	}
+
 	private static BigInt LongCountCore(IEnumerable<TSource> source)
 	{
 		if (source == null)
@@ -2120,6 +2217,21 @@ public static class EnumerableModule<TSource>
 		return created;
 	}
 
+	private static Array<System.Collections.Generic.KeyValuePair<TKey, TValue>> MaterializeAccumulations<TKey, TValue>(
+		Array<Array<TValue>> groups)
+	{
+		var result = new Array<System.Collections.Generic.KeyValuePair<TKey, TValue>>();
+		for (Number index = 0; index < groups.Length; index++)
+		{
+			var group = groups[index];
+			result.Push(new System.Collections.Generic.KeyValuePair<TKey, TValue>(
+				GroupingT2Module<TKey, TValue>.GetKey(group)!,
+				group[0]));
+		}
+
+		return result;
+	}
+
 	private static Array<Array<TSource>> GroupByCore<TKey>(
 		IEnumerable<TSource> source,
 		Func<TSource, TKey> keySelector,
@@ -2661,6 +2773,31 @@ public static class EnumerableModule<TSource>
 	[Jazor(Op.Import, "static System.Linq.Enumerable.Count<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)")]
 	public static Number _e19baea1a0d8c2c6(IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> CountCore(source, predicate);
+
+	[Jazor(Op.Import, "static System.Linq.Enumerable.CountBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)", "countBy")]
+	public static Array<System.Collections.Generic.KeyValuePair<TKey, Number>> CountBy<TKey>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> CountByCore(source, keySelector, comparer);
+
+	[Jazor(Op.Import, "static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)", "aggregateBy")]
+	public static Array<System.Collections.Generic.KeyValuePair<TKey, TAccumulate>> AggregateBy<TKey, TAccumulate>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		TAccumulate seed,
+		Func<TAccumulate, TSource, TAccumulate> func,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> AggregateByCore(source, keySelector, seed, func, comparer);
+
+	[Jazor(Op.Import, "static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Func<TKey, TAccumulate>, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)", "aggregateByWithSeedSelector")]
+	public static Array<System.Collections.Generic.KeyValuePair<TKey, TAccumulate>> AggregateByWithSeedSelector<TKey, TAccumulate>(
+		IEnumerable<TSource> source,
+		Func<TSource, TKey> keySelector,
+		Func<TKey, TAccumulate> seedSelector,
+		Func<TAccumulate, TSource, TAccumulate> func,
+		System.Collections.Generic.IEqualityComparer<TKey>? comparer)
+		=> AggregateByCore(source, keySelector, seedSelector, func, comparer);
 
 	[Jazor(Op.Import, "static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>)", "longCount")]
 	public static BigInt LongCount(IEnumerable<TSource> source)

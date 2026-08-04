@@ -95,7 +95,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Closures created within a C# `for` loop retain the control variable's C# lifetime instead of receiving JavaScript `let`'s per-iteration binding behavior.
 - `Nullable<T>.GetValueOrDefault(defaultValue)` preserves eager receiver-first argument evaluation, including fallback side effects when the nullable already contains a value.
 - `Enumerable.Zip` now supports three-source tuple composition with source-ordered iterator traversal and reverse iterator closure, alongside existing two-source and result-selector forms.
-- The compiler gate verifies 8,288 scenarios at 96.28% line and 90.03% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- `Enumerable.CountBy` and both `AggregateBy` seed forms now preserve comparer-aware grouping, first key representatives, insertion order, Int32 count bounds, and two-slot `KeyValuePair<TKey, TValue>` entries.
+- The compiler gate verifies 8,289 scenarios at 96.28% line and 90.03% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

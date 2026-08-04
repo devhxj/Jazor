@@ -245,6 +245,13 @@
 - 无 seed overload 将第一个 source 项作为 accumulator，空 source 显式失败；带 seed overload 对空 source 直接返回 seed；带 result selector overload 在折叠结束后恰好调用一次 selector，包括空 source。
 - `SemanticWalkerEnumerableAggregateTests` 验证三个 bound signatures、import 与 accumulator/result-selector lambda AST/text；`ClrRuntimeEnumerableAggregateScenarios` 覆盖正常、空 source 和参数错误；`EnumerableAggregateRuntimeTests` 与 SDK integration 在 Deno.host 验证 callback 调用顺序和最终 consumer artifact。
 
+### Materialized `CountBy` / `AggregateBy`
+
+- `Enumerable.CountBy<TSource, TKey>` 和固定 seed / key seed selector 的两条 `AggregateBy<TSource, TKey, TAccumulate>` overload 均通过 Roslyn 已绑定的精确 signature 进入 `EnumerableModule`。它们不构造 `Dictionary<TKey, TValue>`，而是复用 `GroupBy` / `Join` 的 hash bucket 加 `IEqualityComparer<TKey>.Equals` 协议。
+- hash 只缩小候选组，comparer 决定相等性；因此结果保留每个等价类的首次 key representative、首次出现顺序、collision、`NaN` 与有符号零契约。`CountBy` 对每项 selector 恰好一次，并在每组计数超过 Int32 域前失败。固定 seed 的 reducer 在每组首项调用 `func(seed, item)`；key seed selector 只在每个新 key 的首项前调用一次。
+- 输出统一物化为 `KeyValuePair<TKey, TValue>` 的两槽 `[key, value]` Array carrier。普通 `Key` / `Value` 访问和 `foreach (var (key, value) in entries)` 都沿用同一结构投影，不新建 wrapper object。
+- `SemanticWalkerEnumerableAggregateByTests` 验证三条 bound signature、import、entry `Key` / `Value`、显式 `KeyValuePair` 构造及 foreach 解构的 AST/text；`ClrRuntimeEnumerableAggregateByScenarios` / `EnumerableAggregateByRuntimeTests` 通过 generated catalog 和 Deno.host 验证 comparer、selector/reducer 顺序、seed 次数、null 参数、Int32 guard 和输入不变性。
+
 ### RazorVue 产物边界
 
 - 生产输入是官方 Razor Source Generator C#，输出是 Vue render-function `.mjs`。
@@ -261,9 +268,9 @@ dotnet run --file scripts/csharp/verify-compiler-coverage.cs -- --no-build --no-
 
 2026-08-04 当前结果：
 
-- `Jazor.CompilerTest`: 8288 / 8288 passed
-- `Jazor.CLR.Test`: 4733 / 4733 passed
-- line coverage: 96.28% (15568 / 16169)
+- `Jazor.CompilerTest`: 8289 / 8289 passed
+- `Jazor.CLR.Test`: 4744 / 4744 passed
+- line coverage: 96.28% (15575 / 16176)
 - branch coverage: 90.03% (6233 / 6923)
 
 覆盖率门禁是最低保证，不替代上述场景证据。新增 operation、CLR mapping、RazorVue host protocol 或 emit 行为时，必须补充到相应行，并先运行其聚焦回归。

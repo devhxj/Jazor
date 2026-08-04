@@ -32,6 +32,9 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.SelectMany<TSource, TCollection, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, System.Collections.Generic.IEnumerable<TCollection>>, System.Func<TSource, TCollection, TResult>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.Count<TSource>(System.Collections.Generic.IEnumerable<TSource>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.Count<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.CountBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Func<TKey, TAccumulate>, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "static System.Linq.Enumerable.Index<TSource>(System.Collections.Generic.IEnumerable<TSource>)", Op.Import);
@@ -186,6 +189,16 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "System.Linq.ILookup<TKey, TElement>.Count.get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "System.Linq.ILookup<TKey, TElement>.Contains(TKey)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.EnumerableModule<>), "System.Linq.ILookup<TKey, TElement>.this[TKey].get", Op.Import);
+	}
+
+	[TestMethod]
+	public void KeyValuePairMappings_UseTheSharedTwoSlotEntryCarrier()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.KeyValuePairT2Module<,>), "System.Collections.Generic.KeyValuePair<TKey, TValue>", "Array");
+		AssertMemberOp(typeof(Jazor.CLR.KeyValuePairT2Module<,>), "System.Collections.Generic.KeyValuePair<TKey, TValue>.KeyValuePair(TKey, TValue)", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.KeyValuePairT2Module<,>), "System.Collections.Generic.KeyValuePair<TKey, TValue>.Key.get", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.KeyValuePairT2Module<,>), "System.Collections.Generic.KeyValuePair<TKey, TValue>.Value.get", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.KeyValuePairT2Module<,>), "System.Collections.Generic.KeyValuePair<TKey, TValue>.Deconstruct(out TKey, out TValue)", Op.Discard);
 	}
 
 	[TestMethod]

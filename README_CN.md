@@ -95,7 +95,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - C# `for` 循环内创建的闭包现保留控制变量的 C# 生命周期，不再继承 JavaScript `let` 每轮创建绑定的行为。
 - `Nullable<T>.GetValueOrDefault(defaultValue)` 现保留 receiver-first 的 eager 参数求值；即使 nullable 已有值，也不会跳过 fallback 的副作用。
 - `Enumerable.Zip` 现支持三源 tuple 组合，并保留 source 顺序的 iterator 推进与反向关闭；原有二源和 result-selector 形式继续可用。
-- Compiler 门禁已验证 8,288 个场景，行覆盖率 96.28%、分支覆盖率 90.03%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- `Enumerable.CountBy` 与两种 `AggregateBy` seed 形式现在保留 comparer-aware 分组、首次 key representative、插入顺序、Int32 count 边界和两槽 `KeyValuePair<TKey, TValue>` entry。
+- Compiler 门禁已验证 8,289 个场景，行覆盖率 96.28%、分支覆盖率 90.03%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

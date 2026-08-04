@@ -59,6 +59,7 @@ internal static partial class WhiteList
 		types["short"] = new(Op.Alias, "Number");
 		types["int"] = new(Op.Alias, "Number");
 		types["long"] = new(Op.Alias, "BigInt");
+		types["System.Collections.Generic.KeyValuePair<TKey, TValue>"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.List<T>"] = new(Op.Alias, "Array");
 		types["System.Linq.ILookup<TKey, TElement>"] = new(Op.Alias, "Array");
 		types["System.Math"] = new(Op.Alias, "Math");
@@ -1121,6 +1122,9 @@ internal static partial class WhiteList
 		members["static System.Linq.Enumerable.All<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = new(Op.Import, "_7e4a11c411867592", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.Count<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_1cb3ec9a7fb8aaab", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.Count<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = new(Op.Import, "_e19baea1a0d8c2c6", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.CountBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)"] = new(Op.Import, "countBy", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)"] = new(Op.Import, "aggregateBy", "System/Linq/EnumerableModule.js");
+		members["static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Func<TKey, TAccumulate>, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)"] = new(Op.Import, "aggregateByWithSeedSelector", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "longCount", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = new(Op.Import, "longCountWhere", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.Index<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "index", "System/Linq/EnumerableModule.js");
@@ -1820,6 +1824,9 @@ internal static partial class WhiteList
 		members["static long.IsPositive(long)"] = new(Op.Inline, "(__arg1 > 0n)");
 		members["static long.MaxMagnitude(long, long)"] = new(Op.Import, "_9618dc0d855ee729", "System/Int64Module.js");
 		members["static long.MinMagnitude(long, long)"] = new(Op.Import, "_bfad1ee52075b36e", "System/Int64Module.js");
+		members["System.Collections.Generic.KeyValuePair<TKey, TValue>.KeyValuePair(TKey, TValue)"] = new(Op.Inline, "[__arg1, __arg2]");
+		members["System.Collections.Generic.KeyValuePair<TKey, TValue>.Key.get"] = new(Op.Inline, "__arg1[0]");
+		members["System.Collections.Generic.KeyValuePair<TKey, TValue>.Value.get"] = new(Op.Inline, "__arg1[1]");
 		members["System.Collections.Generic.List<T>.List()"] = new(Op.Import, "createDefault", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.List(int)"] = new(Op.Import, "createWithInitialCapacity", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "createFromCollection", "System/Collections/Generic/ListT1Module.js");

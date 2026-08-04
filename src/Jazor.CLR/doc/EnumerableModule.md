@@ -8,9 +8,9 @@
 当前包含：
 
 - 筛选与投影：`Where`、`Select`、`SelectMany`、`Concat`、`Append`、`Prepend`、`DefaultIfEmpty`
-- source factory 与分页：`Empty`、`Range`、`Repeat`、`AsEnumerable`、`Sequence`、`Index`、`Skip`、`Take(int / Range)`、`SkipWhile`、`TakeWhile`、`SkipLast`、`TakeLast`、`Chunk`、`Zip`、`Any`、`All`、`Count`、`LongCount`、`Contains`、`SequenceEqual`
+- source factory 与分页：`Empty`、`Range`、`Repeat`、`AsEnumerable`、`Sequence`、`Index`、`Skip`、`Take(int / Range)`、`SkipWhile`、`TakeWhile`、`SkipLast`、`TakeLast`、`Chunk`、`Zip`、`Any`、`All`、`Count`、`CountBy`、`LongCount`、`Contains`、`SequenceEqual`
 - 终端选择：`ElementAt(int / Index)`、compiler-owned `ElementAtOrDefault(int / Index)`、`First` / `Last` / `Single` 及其 predicate overload、`FirstOrDefault` / `LastOrDefault` / `SingleOrDefault` 及其 predicate overload
-- 聚合：`Aggregate(func)`、`Aggregate(seed, func)`、`Aggregate(seed, func, resultSelector)`
+- 聚合：`Aggregate(func)`、`Aggregate(seed, func)`、`Aggregate(seed, func, resultSelector)`、`AggregateBy`（固定 seed / key seed selector）
 - 集合运算：`Distinct`、`DistinctBy`、`Union`、`Except`、`Intersect`、`UnionBy`、`ExceptBy`、`IntersectBy`
 - 选择器终端：`MinBy`、`MaxBy`（默认 comparer overload）
 - 数值终端：非 nullable `int`、`long`、`float`、`double`、`decimal` 的 `Min`、`Max`、`Sum`、`Average`，以及相同五种 carrier 的 direct nullable numeric terminals
@@ -38,6 +38,7 @@ hash collision、`NaN` 与有符号零在 `Distinct`、集合运算、分组和�
 - `SequenceEqual` 只接受当前 Array carrier，并按相同 index 使用默认 `EqualityComparer<T>` 同步比较；长度不同或首个不等项立即返回 `false`，不会改写输入。
 - `Concat` 先完整枚举 first，再枚举 second，返回新的 Array，不调用 JavaScript `Array.concat` 以避免弱化 `IEnumerable<T>` 的可观察枚举顺序。
 - `Append` 先完整枚举 source，再在新 Array 尾部写入 element；`Prepend` 先写入 element，再完整枚举 source。两者都不改写输入。
+- `CountBy` 与 `AggregateBy` 复用 `GroupBy`/`Join` 的 comparer-aware hash bucket 协议：hash 仅缩小候选桶，`IEqualityComparer<TKey>` 仍决定相等性，因此碰撞、NaN、signed zero、首次 key representative 与插入顺序都遵循同一 CLR 合约。结果统一物化为 `[key, value]` carrier 的标准 `KeyValuePair<TKey, TValue>` entry sequence。`CountBy` 为每个等价 key 维持 Int32 count 并在溢出前失败；固定 seed 的 `AggregateBy` 将同一 seed 值传给每个新 key，key seed selector 只在每个新 key 首次出现时调用一次。当前三条 API 均使用 BCL 的 comparer 参数（省略时由 Roslyn 传入默认 null），不将相等性退化为 JavaScript Map key identity。
 - `DefaultIfEmpty(source, defaultValue)` 先一次物化 source；仅当结果为空时写入 explicit fallback。无参 C# overload 由 compiler 在闭合调用点生成 `default(TSource)` 后进入这条 runtime contract，因此不会在 erased JavaScript generic 中猜测默认值。
 - `FirstOrDefault` / `LastOrDefault` / `SingleOrDefault` 同样由 compiler 将无显式 fallback 的 C# overload 绑定为 explicit fallback runtime export。`First` 在首项或首个 predicate match 即停止；`Last` 按 source order 观察最终项或最终 match；`Single` 在第二项或第二个 match 时失败。
 - `ElementAtOrDefault(source, int)` 由 compiler 在闭合调用点生成 `default(TSource)`，再以单次求值 IIFE 和 `for...of` 完成遍历。负 index、越界和空 source 返回该默认值；命中 index 后立即返回并关闭迭代器，不伪造 BCL 的 explicit-default overload。
