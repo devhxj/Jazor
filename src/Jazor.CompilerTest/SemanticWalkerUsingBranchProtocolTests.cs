@@ -163,6 +163,90 @@ public sealed class SemanticWalkerUsingBranchProtocolTests
         _ = new Parser().ParseScript(script);
     }
 
+    [TestMethod]
+    public void TranslateStatementSequence_HostOwnedMemberOfDeclarationGroup_PreservesUnclaimedNeighbors()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int retained = 1, carrier = 2;
+                    Console.WriteLine(retained);
+                }
+            }
+            """);
+        var walker = new SemanticWalker(true) { Host = new SymbolSkipHost("carrier") };
+
+        var statements = walker.TranslateStatementSequence(block.Operations, new SenseArgument());
+        var script = new FunctionBody(NodeList.From(statements), strict: false).ToKnRECMAScript();
+
+        StringAssert.Contains(script, "let retained = 1", StringComparison.Ordinal);
+        Assert.DoesNotContain("carrier", script, StringComparison.Ordinal);
+        StringAssert.Contains(script, "console.log(retained)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void VisitUsing_ExplicitInterfaceDisposable_RejectsTheMissingRuntimeMemberSlot()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+
+            class TestClass
+            {
+                sealed class Resource : IDisposable
+                {
+                    void IDisposable.Dispose() { }
+                }
+
+                void TestMethod()
+                {
+                    using var resource = new Resource();
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "explicit interface implementation", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "runtime slot", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void VisitUsing_NestedTypeParameterConstraint_ResolvesTheDisposableContractRecursively()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+
+            class TestClass
+            {
+                void TestMethod<TResource, TConstraint>(TResource resource)
+                    where TResource : TConstraint
+                    where TConstraint : IDisposable
+                {
+                    using (resource)
+                    {
+                        Console.WriteLine("active");
+                    }
+                }
+            }
+            """);
+
+        var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "try {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "console.log(\"active\")", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
     private static IBlockOperation GetBlockOperation(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
@@ -198,5 +282,13 @@ public sealed class SemanticWalkerUsingBranchProtocolTests
             ClaimedSymbols.Add(operation.Symbol.Name);
             return true;
         }
+    }
+
+    private sealed class SymbolSkipHost(string symbolName) : SemanticWalkerHost
+    {
+        public override bool ShouldSkipVariableDeclarator(
+            IVariableDeclaratorOperation operation,
+            SenseArgument argument)
+            => operation.Symbol.Name == symbolName;
     }
 }

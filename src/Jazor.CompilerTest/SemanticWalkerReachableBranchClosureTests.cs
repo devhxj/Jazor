@@ -289,6 +289,62 @@ public sealed class SemanticWalkerReachableBranchClosureTests
     }
 
     [TestMethod]
+    public void Visit_MethodGroups_PreserveExtensionInstanceAndDelegateCallTargets()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+            using System.Linq;
+
+            sealed class TestClass
+            {
+                private static int AddOne(int value) => value + 1;
+
+                private int Double(int value) => value * 2;
+
+                static int TestMethod(TestClass receiver, Func<int, int> callback, int[] values)
+                {
+                    Func<int, int> staticMethod = AddOne;
+                    Func<int, int> instanceMethod = receiver.Double;
+                    Func<int, bool> contains = values.Contains;
+                    return staticMethod(callback(1)) + instanceMethod(2) + (contains(3) ? 1 : 0);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "staticMethod(callback(1))", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".bind(receiver)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "contains(3)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(receiver, callback, values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_StringForEachWithCapturedIterationValue_PreservesUtf16IterationAndClosureScope()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static void TestMethod(string value)
+                {
+                    foreach (var character in value)
+                    {
+                        Action report = () => Console.WriteLine(character);
+                        report();
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "value.split(\"\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, "() =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "report()", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(value) " + script);
+    }
+
+    [TestMethod]
     public void Visit_CustomRangeIndexerWithExplicitRangeBoundary_RejectsUnsupportedSliceProtocol()
     {
         var block = GetBlock(

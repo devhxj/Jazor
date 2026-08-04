@@ -15,7 +15,7 @@ public sealed class WhiteListLookupTests
 	[DataRow("System.Nullable<T>.Value.get", "NullableValue")]
 	[DataRow("System.Nullable<T>.GetValueOrDefault()", "NullableGetValueOrDefault")]
 	[DataRow("System.Nullable<T>.GetValueOrDefault(T)", "NullableGetValueOrDefaultWithDefault")]
-	public void WhiteListMembers_CompileMappings_ArePublishedToSharedCatalog(
+    public void WhiteListMembers_CompileMappings_ArePublishedToSharedCatalog(
 		string memberName,
 		string expectedCompiler)
 	{
@@ -23,8 +23,22 @@ public sealed class WhiteListLookupTests
 			WhiteList.Members.TryGetValue(memberName, out var mapping),
 			$"Compile mapping '{memberName}' was missing from the shared whitelist catalog.");
 		Assert.AreEqual(Op.Compile, mapping.Op);
-		Assert.AreEqual(expectedCompiler, mapping.Value);
-	}
+        Assert.AreEqual(expectedCompiler, mapping.Value);
+    }
+
+    [TestMethod]
+    public void WhiteListCatalog_AliasEntriesAlwaysCarryTheGeneratorRequiredRuntimeName()
+    {
+        var aliases = WhiteList.Types.Values
+            .Concat(WhiteList.Members.Values)
+            .Where(static mapping => mapping.Op == Op.Alias)
+            .ToArray();
+
+        Assert.IsNotEmpty(aliases);
+        Assert.IsTrue(
+            aliases.All(static mapping => !string.IsNullOrWhiteSpace(mapping.Value)),
+            "The whitelist generator must reject Alias declarations without a runtime name.");
+    }
 
 	[TestMethod]
 	public void TryGetValue_SourceExternAccessor_UsesExactNameFormatKey()

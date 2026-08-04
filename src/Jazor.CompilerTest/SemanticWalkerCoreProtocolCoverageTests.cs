@@ -154,7 +154,123 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
         _ = new Parser().ParseScript(script);
     }
 
+    [TestMethod]
+    public void Visit_ForEachOverGenericEnumerable_DoesNotRequireAConcreteCollectionCarrier()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+            using System.Collections.Generic;
+
+            class TestClass
+            {
+                void TestMethod<TCollection>(TCollection values) where TCollection : IEnumerable<int>
+                {
+                    foreach (var value in values)
+                        Console.WriteLine(value);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "for (let value of values)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "console.log(value)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_ForEachDeconstructionOverCustomType_RejectsAnUnknownRuntimeShape()
+    {
+        var block = GetBlock(
+            """
+            using System.Collections.Generic;
+
+            class TestClass
+            {
+                sealed class Point
+                {
+                    public void Deconstruct(out int x, out int y)
+                    {
+                        x = 1;
+                        y = 2;
+                    }
+                }
+
+                void TestMethod(IEnumerable<Point> values)
+                {
+                    foreach (var (x, y) in values)
+                    {
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "does not have a compiler-known structural runtime shape", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_DefaultEnumValues_UseTheirRuntimeScalarCarriers()
+    {
+        var script = VisitBlock(
+            """
+            enum ByteState : byte
+            {
+                None
+            }
+
+            enum LongState : long
+            {
+                None
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    ByteState small = default;
+                    LongState large = default;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "let small = 0", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let large = 0n", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_DefaultHalfAndInt128_UseTheNumberAndBigIntCarriers()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Half half = default;
+                    Int128 wide = default;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "let half = 0", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let wide = 0n", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
     private static string VisitBlock(string source)
+    {
+        var block = GetBlock(source);
+        var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+        Assert.IsNotNull(script);
+        return script;
+    }
+
+    private static IBlockOperation GetBlock(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
         var compilation = CSharpCompilation.Create(
@@ -170,10 +286,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
         var method = syntaxTree.GetRoot().DescendantNodes()
             .OfType<MethodDeclarationSyntax>()
             .Single(static candidate => candidate.Identifier.ValueText == "TestMethod");
-        var block = Assert.IsInstanceOfType<IBlockOperation>(
+        return Assert.IsInstanceOfType<IBlockOperation>(
             compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
-        var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
-        Assert.IsNotNull(script);
-        return script;
     }
 }
