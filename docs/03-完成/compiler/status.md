@@ -9,9 +9,9 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：8305 / 8305 通过
-- `Jazor.Compiler` 行覆盖：16008 / 16617（96.34%）
-- `Jazor.Compiler` 分支覆盖：6342 / 7037（90.12%）
+- `Jazor.CompilerTest`：8310 / 8310 通过
+- `Jazor.Compiler` 行覆盖：16272 / 16900（96.28%）
+- `Jazor.Compiler` 分支覆盖：6439 / 7146（90.11%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
 coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 8,000 个通过测试、95% 行覆盖和 90% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。
@@ -49,7 +49,8 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 这一轮明确下来的，不只是“支持了更多测试”，而是几条长期容易反复的路线已经固定：
 
 - `tuple`：走表达式组合 lowering，保使用点行为，不保 `System.ValueTuple` runtime identity
-- `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态
+- `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态；数组 receiver/index 与成员 receiver 会在调用前仅求值一次，`out` 只计算 storage location 而不读取旧值
+- 具名实参：按源码顺序求值，再按 Roslyn 已绑定的 `IArgumentOperation.Parameter` 槽位调用；调用和构造函数共用这条路径
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
 - `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact；erased interface `is` 仅在 Roslyn 可证明时折叠，`T : IContract` 保留非空判断，`T : struct, IContract` 折叠为 `true`
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity

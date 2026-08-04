@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8305 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8305%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.34%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.34%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.12%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.12%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8310 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-8310%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 96.28%" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 90.11%" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.11%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 强制阈值 |
 |------|----------|----------|
-| 编译器回归测试 | 8305 / 8305 通过 | 至少通过 8000 项 |
-| 行覆盖率 | 16008 / 16617（96.34%） | 95% |
-| 分支覆盖率 | 6342 / 7037（90.12%） | 90% |
+| 编译器回归测试 | 8310 / 8310 通过 | 至少通过 8000 项 |
+| 行覆盖率 | 16272 / 16900（96.28%） | 95% |
+| 分支覆盖率 | 6439 / 7146（90.11%） | 90% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -100,7 +100,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - 使用 `yield` 的模块方法、runtime member method 和 local function 现生成 JavaScript generator；`async IAsyncEnumerable<T>` 生成 `async function*`。
 - UTF-8 string literal 现通过既有只读 span carrier 生成精确的解码后 UTF-8 bytes，覆盖转义、raw literal、BMP 与补充平面文本。
 - 带 C# optional default 的 lambda 参数现在会在 JavaScript 函数边界保留省略实参行为；by-reference lambda return 仍是明确的运行时边界。
-- Compiler 门禁已验证 8,305 个场景，行覆盖率 96.34%、分支覆盖率 90.12%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
+- 具名实参现在会按源码顺序求值、按 Roslyn 已绑定的形参槽位调用；`ref` 与 `out` 的数组或成员位置只求值一次，并通过共享协议回写。
+- Compiler 门禁已验证 8,310 个场景，行覆盖率 96.28%、分支覆盖率 90.11%；RazorVue 门禁已验证 4,482 个官方 SG 场景，行覆盖率 93.44%、分支覆盖率 83.68%。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

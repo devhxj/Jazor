@@ -17,7 +17,8 @@
 - Module methods, runtime member methods, and local functions using `yield` now generate JavaScript iterators; `async IAsyncEnumerable<T>` methods generate `async function*` while nested callback bodies remain isolated from the outer iterator shape.
 - UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
 - Lambda parameters with C# optional defaults now preserve omitted-call behavior at the generated JavaScript function boundary. By-reference lambda returns remain an explicit runtime boundary.
-- The compiler quality gate now verifies 8,305 scenarios at 96.34% line coverage and 90.12% branch coverage.
+- Named arguments now retain C# source evaluation order while invoking Roslyn-bound parameter slots. `ref` and `out` array or member locations evaluate once and use the shared write-back protocol without reading an `out` location's prior value.
+- The compiler quality gate now verifies 8,310 scenarios at 96.28% line coverage and 90.11% branch coverage.
 
 ## 2026-08-03
 

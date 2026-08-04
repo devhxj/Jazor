@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="8305 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8305%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.34 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.34%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.12 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.12%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="8310 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-8310%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.28 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-96.28%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="90.11 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-90.11%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Enforced minimum |
 |--------|-----------------|------------------|
-| Compiler regression tests | 8305 / 8305 passed | 8000 passed |
-| Line coverage | 16008 / 16617 (96.34%) | 95% |
-| Branch coverage | 6342 / 7037 (90.12%) | 90% |
+| Compiler regression tests | 8310 / 8310 passed | 8000 passed |
+| Line coverage | 16272 / 16900 (96.28%) | 95% |
+| Branch coverage | 6439 / 7146 (90.11%) | 90% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -100,7 +100,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Module methods, runtime member methods, and local functions using `yield` now emit JavaScript generators, including `async IAsyncEnumerable<T>` methods as `async function*`.
 - UTF-8 string literals now emit exact decoded UTF-8 byte sequences through the existing read-only span carrier, including escaped, raw, BMP, and supplementary-plane text.
 - Lambda parameters with C# optional defaults now preserve omitted-call behavior at the JavaScript function boundary; by-reference lambda returns remain an explicit runtime boundary.
-- The compiler gate verifies 8,305 scenarios at 96.34% line and 90.12% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
+- Named arguments now preserve source evaluation order while invoking Roslyn-bound parameter slots; `ref` and `out` array or member locations are evaluated once and receive write-back through the shared protocol.
+- The compiler gate verifies 8,310 scenarios at 96.28% line and 90.11% branch coverage; the RazorVue gate verifies 4,482 official SG scenarios at 93.44% line and 83.68% branch coverage.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
