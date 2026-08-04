@@ -297,7 +297,40 @@ public partial class SemanticWalker
 		}
 
 		var body = Translate<Statement>(operation.Body, argument);
+		if (init is VariableDeclaration declaration && HasCapturedForControlVariable(operation))
+		{
+			// C# for declares one control-variable binding for the whole loop. JavaScript `let` in a
+			// for initializer instead creates a fresh binding for each iteration, so callbacks would
+			// observe different values. Keep the declaration in an equivalent lexical block and leave
+			// the JS for initializer empty whenever Roslyn proves a nested function captures it.
+			return new NestedBlockStatement(NodeList.From<Statement>(
+				declaration,
+				new ForStatement(null, test, updateExpression, body)));
+		}
+
 		return new ForStatement(init, test, updateExpression, body);
+	}
+
+	private static bool HasCapturedForControlVariable(IForLoopOperation operation)
+	{
+		if (operation.Locals.IsDefaultOrEmpty)
+			return false;
+
+		foreach (var localReference in operation.Descendants().OfType<ILocalReferenceOperation>())
+		{
+			if (!operation.Locals.Any(local => SymbolEqualityComparer.Default.Equals(local, localReference.Local)))
+				continue;
+
+			for (IOperation? ancestor = localReference.Parent;
+				 ancestor is not null && !ReferenceEquals(ancestor, operation);
+				 ancestor = ancestor.Parent)
+			{
+				if (ancestor is IAnonymousFunctionOperation or ILocalFunctionOperation)
+					return true;
+			}
+		}
+
+		return false;
 	}
 
 	private Expression TranslateForLoopUpdateExpression(IOperation operation, SenseArgument argument)

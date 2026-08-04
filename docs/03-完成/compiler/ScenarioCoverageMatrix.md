@@ -90,6 +90,11 @@
 - Roslyn 为 query `let` 生成的 transparent identifier 以及 C# escaped keyword（例如 `@class`、`@await`）会通过 symbol + source span 的稳定 hash 投影成合法 JS binding；普通合法作者名称不改写，产物不依赖 checkout path。
 - `AstConverterRefOutProtocolScenarioTests` 分别检查 AST return/caller write-back layout，并由 Deno.host 验证 anonymous `ref` return 与 lambda `out` 的最终结果。`SemanticWalkerBindingIdentifierTests` 跨两个不同 source path 比较输出，并由 Deno.host 验证 escaped keyword 的 lexical binding。
 
+### `for` 控制变量闭包捕获
+
+- C# `for` 声明的控制变量在整个循环内是单一 lexical binding；JavaScript 的 `for (let ...)` 则为每轮迭代建立新的 binding。仅当 Roslyn `IForLoopOperation.Locals` 表明该声明变量被嵌套 anonymous function 或 local function 捕获时，lowering 才将声明置于等价外层 block，并生成空初始化器的 `for`；未捕获循环仍保持普通 `for (let ...)` 产物。
+- `AstConverterRuntimeClassScenarioTests.ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost` 断言该 AST/text 结构，并由 Deno.host 验证 lambda 与 local function 回调均观察到循环结束后的最终控制变量值。`SemanticWalkerLoopTest` 保留普通 loop initializer 的精确文本回归。
+
 ### LINQ `let`
 
 - `let` 由 Roslyn 展开为匿名结构投影、过滤与最终选择；`ITranslatedQueryOperation` 只移除 wrapper，后续仍复用 `Select` / `Where` / `ToArray` intrinsic 和匿名函数 lowering，不拼 query 文本或引入 query 特例 runtime。

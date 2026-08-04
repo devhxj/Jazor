@@ -1263,6 +1263,104 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost()
+    {
+        const string scenarioId = "ast-converter-runtime-class.for-captured-control-variable";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public sealed class CallbackReader
+                {
+                    public int ReadCapturedValues()
+                    {
+                        Func<int> first = null!;
+                        Func<int> second = null!;
+                        for (var i = 0; i < 2; i++)
+                        {
+                            if (i == 0)
+                                first = () => i;
+                            else
+                                second = () => i;
+                        }
+
+                        return first() * 10 + second();
+                    }
+
+                    public int ReadCapturedLocalFunctionValues()
+                    {
+                        Func<int> first = null!;
+                        Func<int> second = null!;
+                        for (var i = 0; i < 2; i++)
+                        {
+                            int ReadCurrent() => i;
+                            if (i == 0)
+                                first = ReadCurrent;
+                            else
+                                second = ReadCurrent;
+                        }
+
+                        return first() * 10 + second();
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "let i = 0;", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "for (; i < 2; i++)", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains("for (let i", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-for-captured-control-variable-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "callback-reader.mjs");
+            var testPath = Path.Combine(root, "callback-reader.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { CallbackReader } from "./callback-reader.mjs";
+
+                Deno.test("closures over a C# for control variable observe its final value", () => {
+                  const reader = new CallbackReader();
+                  const lambda = reader.readCapturedValues();
+                  const localFunction = reader.readCapturedLocalFunctionValues();
+                  if (lambda !== 22 || localFunction !== 22)
+                    throw new Error(`expected both callback forms to observe final i = 2, got lambda=${lambda}, localFunction=${localFunction}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_ForUpdateSequence_AwaitsAfterIncrementOnDenoHost()
     {
         const string scenarioId = "ast-converter-runtime-class.for-update-await-sequence";
