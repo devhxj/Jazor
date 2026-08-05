@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Xml.Linq;
 
 var options = PublishNuGetOptions.Parse(args);
@@ -124,12 +125,39 @@ static string ResolveApiKey(string? explicitApiKey)
 static FileInfo GetMostRecentPackageFile(string outputDirectory, string packageId)
 {
     return new DirectoryInfo(outputDirectory)
-        .EnumerateFiles($"{packageId}.*.nupkg", SearchOption.TopDirectoryOnly)
+        .EnumerateFiles("*.nupkg", SearchOption.TopDirectoryOnly)
         .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+        .Where(file => file.Name.StartsWith(packageId + ".", StringComparison.OrdinalIgnoreCase))
+        .Where(file => string.Equals(ReadPackageId(file), packageId, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(static file => file.LastWriteTimeUtc)
         .FirstOrDefault()
         ?? throw new InvalidOperationException(
             "Packed package '" + packageId + "' was not found under '" + outputDirectory + "'.");
+}
+
+static string ReadPackageId(FileInfo packageFile)
+{
+    using var archive = ZipFile.OpenRead(packageFile.FullName);
+    var nuspecEntry = archive.Entries.SingleOrDefault(static entry =>
+        entry.FullName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase));
+    if (nuspecEntry is null)
+    {
+        throw new InvalidOperationException(
+            "Package '" + packageFile.FullName + "' does not contain a nuspec manifest.");
+    }
+
+    using var nuspecStream = nuspecEntry.Open();
+    var nuspec = XDocument.Load(nuspecStream);
+    var packageNamespace = nuspec.Root?.Name.Namespace ?? XNamespace.None;
+    var packageId = nuspec.Root?
+        .Element(packageNamespace + "metadata")?
+        .Element(packageNamespace + "id")?
+        .Value;
+
+    return !string.IsNullOrWhiteSpace(packageId)
+        ? packageId
+        : throw new InvalidOperationException(
+            "Package '" + packageFile.FullName + "' does not declare metadata/id in its nuspec manifest.");
 }
 
 static string GetProjectPropertyValue(XDocument project, string name)
