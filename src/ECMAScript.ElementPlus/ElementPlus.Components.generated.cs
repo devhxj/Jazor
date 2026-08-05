@@ -14,17 +14,6 @@ namespace ECMAScript.ElementPlus;
 /// Fix the element to a specific visible area.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAffix")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(Position), Name = "position")]
-[VueProp(nameof(Target), Name = "target")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
 public sealed class ElAffix : ElementPlusContentComponentBase
@@ -59,21 +48,6 @@ public sealed class ElAffix : ElementPlusContentComponentBase
 /// Displays important alert messages.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAlert")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Description), Name = "description")]
-[VueProp(nameof(Closable), Name = "closable")]
-[VueProp(nameof(Center), Name = "center")]
-[VueProp(nameof(CloseText), Name = "closeText")]
-[VueProp(nameof(ShowIcon), Name = "showIcon")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TitleSlot), Name = "title")]
-[VueSlot(nameof(Icon), Name = "icon")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElAlert : ElementPlusContentComponentBase
 {
@@ -102,6 +76,7 @@ public sealed class ElAlert : ElementPlusContentComponentBase
     public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
@@ -116,11 +91,6 @@ public sealed class ElAlert : ElementPlusContentComponentBase
 /// Through the anchor point, you can quickly find the position of the information content on the current page.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAnchor")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElAnchor : ElementPlusContentComponentBase
@@ -137,12 +107,6 @@ public sealed class ElAnchor : ElementPlusContentComponentBase
 /// el-anchor-link
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAnchorLink")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(SubLink), Name = "sub-link")]
 public sealed class ElAnchorLink : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -154,12 +118,6 @@ public sealed class ElAnchorLink : ElementPlusContentComponentBase
 /// el-aside
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAside")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Width), Name = "width")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElAside : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -171,14 +129,6 @@ public sealed class ElAside : ElementPlusContentComponentBase
 /// ElAutoResizer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAutoResizer")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(DisableWidth), Name = "disableWidth")]
-[VueProp(nameof(DisableHeight), Name = "disableHeight")]
-[VueProp(nameof(OnResize), Name = "onResize")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElAutoResizer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -196,41 +146,6 @@ public sealed class ElAutoResizer : ElementPlusContentComponentBase
 /// Get some recommended tips based on the current input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAutocomplete")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValueKey), Name = "valueKey")]
-[VueProp(nameof(Debounce), Name = "debounce")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(FetchSuggestions), Name = "fetchSuggestions")]
-[VueProp(nameof(TriggerOnFocus), Name = "triggerOnFocus")]
-[VueProp(nameof(SelectWhenUnmatched), Name = "selectWhenUnmatched")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(HideLoading), Name = "hideLoading")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(HighlightFirstItem), Name = "highlightFirstItem")]
-[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
-[VueProp(nameof(PopperAppendToBody), Name = "popperAppendToBody")]
-[VueProp(nameof(LoopNavigation), Name = "loopNavigation")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Loading), Name = "loading")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnInput), Name = "input")]
@@ -357,18 +272,6 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
 /// Avatars can be used to represent people or objects. It supports images, Icons, or characters.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAvatar")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Shape), Name = "shape")]
-[VueProp(nameof(Src), Name = "src")]
-[VueProp(nameof(SrcSet), Name = "srcSet")]
-[VueProp(nameof(Alt), Name = "alt")]
-[VueProp(nameof(Fit), Name = "fit")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnError), Name = "error")]
 public sealed class ElAvatar : ElementPlusContentComponentBase
 {
@@ -402,21 +305,6 @@ public sealed class ElAvatar : ElementPlusContentComponentBase
 /// el-avatar-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAvatarGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Shape), Name = "shape")]
-[VueProp(nameof(CollapseAvatars), Name = "collapseAvatars")]
-[VueProp(nameof(CollapseAvatarsTooltip), Name = "collapseAvatarsTooltip")]
-[VueProp(nameof(MaxCollapseAvatars), Name = "maxCollapseAvatars")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(CollapseClass), Name = "collapseClass")]
-[VueProp(nameof(CollapseStyle), Name = "collapseStyle")]
 public sealed class ElAvatarGroup : ElementPlusComponentBase
 {
     [Parameter]
@@ -458,15 +346,6 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
 /// A button to back to top.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBacktop")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Target), Name = "target")]
-[VueProp(nameof(VisibilityHeight), Name = "visibilityHeight")]
-[VueProp(nameof(Right), Name = "right")]
-[VueProp(nameof(Bottom), Name = "bottom")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElBacktop : ElementPlusContentComponentBase
 {
@@ -491,22 +370,6 @@ public sealed class ElBacktop : ElementPlusContentComponentBase
 /// A number or status mark on buttons and icons.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBadge")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(IsDot), Name = "isDot")]
-[VueProp(nameof(Hidden), Name = "hidden")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(ShowZero), Name = "showZero")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(BadgeStyle), Name = "badgeStyle")]
-[VueProp(nameof(BadgeClass), Name = "badgeClass")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Content), Name = "content")]
 public sealed class ElBadge : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -548,13 +411,6 @@ public sealed class ElBadge : ElementPlusContentComponentBase
 /// Displays the location of the current page, making it easier to browser back.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBreadcrumb")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Separator), Name = "separator")]
-[VueProp(nameof(SeparatorIcon), Name = "separatorIcon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElBreadcrumb : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -569,13 +425,6 @@ public sealed class ElBreadcrumb : ElementPlusContentComponentBase
 /// el-breadcrumb-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBreadcrumbItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(To), Name = "to")]
-[VueProp(nameof(Replace), Name = "replace")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElBreadcrumbItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -590,32 +439,6 @@ public sealed class ElBreadcrumbItem : ElementPlusContentComponentBase
 /// Commonly used button.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElButton")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Plain), Name = "plain")]
-[VueProp(nameof(Text), Name = "text")]
-[VueProp(nameof(Bg), Name = "bg")]
-[VueProp(nameof(Link), Name = "link")]
-[VueProp(nameof(Round), Name = "round")]
-[VueProp(nameof(Circle), Name = "circle")]
-[VueProp(nameof(Dashed), Name = "dashed")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(LoadingIcon), Name = "loadingIcon")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Autofocus), Name = "autofocus")]
-[VueProp(nameof(NativeType), Name = "nativeType")]
-[VueProp(nameof(AutoInsertSpace), Name = "autoInsertSpace")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Dark), Name = "dark")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(LoadingSlot), Name = "loading")]
-[VueSlot(nameof(IconSlot), Name = "icon")]
 public sealed class ElButton : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -676,9 +499,11 @@ public sealed class ElButton : ElementPlusContentComponentBase
     public VueStringComponentValue? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
 }
@@ -687,14 +512,6 @@ public sealed class ElButton : ElementPlusContentComponentBase
 /// el-button-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElButtonGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElButtonGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -712,16 +529,6 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
 /// Display date.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCalendar")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Range), Name = "range")]
-[VueProp(nameof(ControllerType), Name = "controllerType")]
-[VueProp(nameof(Formatter), Name = "formatter")]
-[VueSlot(nameof(DateCell), Name = "date-cell")]
-[VueSlot(nameof(Header), Name = "header")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Date")]
 public sealed class ElCalendar : ElementPlusComponentBase
 {
@@ -752,20 +559,6 @@ public sealed class ElCalendar : ElementPlusComponentBase
 /// Integrate information in a card container.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCard")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Header), Name = "header")]
-[VueProp(nameof(Footer), Name = "footer")]
-[VueProp(nameof(BodyStyle), Name = "bodyStyle")]
-[VueProp(nameof(HeaderClass), Name = "headerClass")]
-[VueProp(nameof(BodyClass), Name = "bodyClass")]
-[VueProp(nameof(FooterClass), Name = "footerClass")]
-[VueProp(nameof(Shadow), Name = "shadow")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(HeaderSlot), Name = "header")]
-[VueSlot(nameof(FooterSlot), Name = "footer")]
 public sealed class ElCard : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -790,9 +583,11 @@ public sealed class ElCard : ElementPlusContentComponentBase
     public ElementPlusCardShadow? Shadow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? HeaderSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? FooterSlot { get; set; }
 
 }
@@ -801,24 +596,6 @@ public sealed class ElCard : ElementPlusContentComponentBase
 /// Loop a series of images or texts in a limited space
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCarousel")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(InitialIndex), Name = "initialIndex")]
-[VueProp(nameof(Trigger), Name = "trigger")]
-[VueProp(nameof(Autoplay), Name = "autoplay")]
-[VueProp(nameof(Interval), Name = "interval")]
-[VueProp(nameof(IndicatorPosition), Name = "indicatorPosition")]
-[VueProp(nameof(Arrow), Name = "arrow")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(CardScale), Name = "cardScale")]
-[VueProp(nameof(Loop), Name = "loop")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(PauseOnHover), Name = "pauseOnHover")]
-[VueProp(nameof(MotionBlur), Name = "motionBlur")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElCarousel : ElementPlusContentComponentBase
 {
@@ -870,13 +647,6 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
 /// el-carousel-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCarouselItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Label), Name = "label")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElCarouselItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -891,53 +661,6 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 /// If the options have a clear hierarchical structure, Cascader can be used to view and select them.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascader")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(ShowAllLevels), Name = "showAllLevels")]
-[VueProp(nameof(CollapseTags), Name = "collapseTags")]
-[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
-[VueProp(nameof(MaxCollapseTagsTooltipHeight), Name = "maxCollapseTagsTooltipHeight")]
-[VueProp(nameof(Separator), Name = "separator")]
-[VueProp(nameof(Filterable), Name = "filterable")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(Debounce), Name = "debounce")]
-[VueProp(nameof(BeforeFilter), Name = "beforeFilter")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(TagType), Name = "tagType")]
-[VueProp(nameof(TagEffect), Name = "tagEffect")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(PopperAppendToBody), Name = "popperAppendToBody")]
-[VueProp(nameof(ShowCheckedStrategy), Name = "showCheckedStrategy")]
-[VueProp(nameof(VirtualScroll), Name = "virtualScroll")]
-[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
-[VueProp(nameof(ItemSize), Name = "itemSize")]
-[VueProp(nameof(Height), Name = "height")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(SuggestionItem), Name = "suggestion-item")]
-[VueSlot(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
@@ -1104,18 +827,6 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 /// el-cascader-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascaderPanel")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(VirtualScroll), Name = "virtualScroll")]
-[VueProp(nameof(ItemSize), Name = "itemSize")]
-[VueProp(nameof(Height), Name = "height")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Empty), Name = "empty")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 [VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
@@ -1161,14 +872,6 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 /// el-check-tag
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckTag")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Checked), Name = "checked")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Type), Name = "type")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElCheckTag : ElementPlusContentComponentBase
 {
@@ -1190,30 +893,6 @@ public sealed class ElCheckTag : ElementPlusContentComponentBase
 /// A group of options for multiple choices.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckbox")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(TrueValue), Name = "trueValue")]
-[VueProp(nameof(FalseValue), Name = "falseValue")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Checked), Name = "checked")]
-[VueProp(nameof(Indeterminate), Name = "indeterminate")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(AriaControls), Name = "ariaControls")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(TrueLabel), Name = "trueLabel")]
-[VueProp(nameof(FalseLabel), Name = "falseLabel")]
-[VueProp(nameof(Controls), Name = "controls")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCheckbox : ElementPlusContentComponentBase
@@ -1287,20 +966,6 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
 /// el-checkbox-button
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckboxButton")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(TrueValue), Name = "trueValue")]
-[VueProp(nameof(FalseValue), Name = "falseValue")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Checked), Name = "checked")]
-[VueProp(nameof(TrueLabel), Name = "trueLabel")]
-[VueProp(nameof(FalseLabel), Name = "falseLabel")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1336,25 +1001,6 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 /// el-checkbox-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckboxGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Min), Name = "min")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(TextColor), Name = "textColor")]
-[VueProp(nameof(Fill), Name = "fill")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Type), Name = "type")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueStringNumberValue[]")]
 public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
@@ -1413,21 +1059,6 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 /// el-col
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCol")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Span), Name = "span")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(Push), Name = "push")]
-[VueProp(nameof(Pull), Name = "pull")]
-[VueProp(nameof(Xs), Name = "xs")]
-[VueProp(nameof(Sm), Name = "sm")]
-[VueProp(nameof(Md), Name = "md")]
-[VueProp(nameof(Lg), Name = "lg")]
-[VueProp(nameof(Xl), Name = "xl")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElCol : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1466,15 +1097,6 @@ public sealed class ElCol : ElementPlusContentComponentBase
 /// Use Collapse to store contents.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapse")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Accordion), Name = "accordion")]
-[VueProp(nameof(ExpandIconPosition), Name = "expandIconPosition")]
-[VueProp(nameof(BeforeCollapse), Name = "beforeCollapse")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCollapse : ElementPlusContentComponentBase
@@ -1503,14 +1125,6 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
 /// el-collapse-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapseItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Disabled), Name = "disabled")]
 public sealed class ElCollapseItem : ElementPlusComponentBase
 {
     [Parameter]
@@ -1531,11 +1145,6 @@ public sealed class ElCollapseItem : ElementPlusComponentBase
 /// ElCollapseTransition
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapseTransition")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElCollapseTransition : ElementPlusContentComponentBase
 {
 }
@@ -1544,29 +1153,6 @@ public sealed class ElCollapseTransition : ElementPlusContentComponentBase
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPicker")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(ShowAlpha), Name = "showAlpha")]
-[VueProp(nameof(ColorFormat), Name = "colorFormat")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(Predefine), Name = "predefine")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnActiveChange), Name = "active-change")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -1656,20 +1242,6 @@ public sealed class ElColorPicker : ElementPlusComponentBase
 /// `ColorPickerPanel` is the core component of `ColorPicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPickerPanel")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ShowAlpha), Name = "showAlpha")]
-[VueProp(nameof(ColorFormat), Name = "colorFormat")]
-[VueProp(nameof(Predefine), Name = "predefine")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(HueSliderClass), Name = "hueSliderClass")]
-[VueProp(nameof(HueSliderStyle), Name = "hueSliderStyle")]
-[VueSlot(nameof(Footer), Name = "footer")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElColorPickerPanel : ElementPlusComponentBase
 {
@@ -1712,26 +1284,6 @@ public sealed class ElColorPickerPanel : ElementPlusComponentBase
 /// Config Provider is used for providing global configurations, which enables your entire application to access these configurations everywhere.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElConfigProvider")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Locale), Name = "locale")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(Namespace), Name = "namespace")]
-[VueProp(nameof(Button), Name = "button")]
-[VueProp(nameof(Link), Name = "link")]
-[VueProp(nameof(Dialog), Name = "dialog")]
-[VueProp(nameof(Message), Name = "message")]
-[VueProp(nameof(ExperimentalFeatures), Name = "experimentalFeatures")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(Table), Name = "table")]
-[VueProp(nameof(A11y), Name = "a11y")]
-[VueProp(nameof(Card), Name = "card")]
-[VueProp(nameof(KeyboardNavigation), Name = "keyboardNavigation")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElConfigProvider : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1785,12 +1337,6 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
 /// Container components for scaffolding basic structure of the page:
 /// </summary>
 [VueLibraryComponent("element-plus", "ElContainer")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElContainer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1802,13 +1348,6 @@ public sealed class ElContainer : ElementPlusContentComponentBase
 /// :::demo Countdown component, support to add other components control countdown.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCountdown")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
-[VueSlot(nameof(Title), Name = "title")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnFinish), Name = "finish")]
 public sealed class ElCountdown : ElementPlusComponentBase
@@ -1834,55 +1373,6 @@ public sealed class ElCountdown : ElementPlusComponentBase
 /// Use Date Picker for date input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePicker")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Editable), Name = "editable")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(StartPlaceholder), Name = "startPlaceholder")]
-[VueProp(nameof(EndPlaceholder), Name = "endPlaceholder")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Format), Name = "format")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(RangeSeparator), Name = "rangeSeparator")]
-[VueProp(nameof(DefaultValue), Name = "defaultValue")]
-[VueProp(nameof(DefaultTime), Name = "defaultTime")]
-[VueProp(nameof(ValueFormat), Name = "valueFormat")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(UnlinkPanels), Name = "unlinkPanels")]
-[VueProp(nameof(SinglePanel), Name = "singlePanel")]
-[VueProp(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(DisabledDate), Name = "disabledDate")]
-[VueProp(nameof(Shortcuts), Name = "shortcuts")]
-[VueProp(nameof(CellClassName), Name = "cellClassName")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(ShowFooter), Name = "showFooter")]
-[VueProp(nameof(ShowConfirm), Name = "showConfirm")]
-[VueProp(nameof(ShowWeekNumber), Name = "showWeekNumber")]
-[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
-[VueProp(nameof(DateFormat), Name = "dateFormat")]
-[VueProp(nameof(TimeFormat), Name = "timeFormat")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(RangeSeparatorSlot), Name = "range-separator")]
-[VueSlot(nameof(PrevMonth), Name = "prev-month")]
-[VueSlot(nameof(NextMonth), Name = "next-month")]
-[VueSlot(nameof(PrevYear), Name = "prev-year")]
-[VueSlot(nameof(NextYear), Name = "next-year")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -2011,6 +1501,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public string? TimeFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("range-separator")]
     public RenderFragment? RangeSeparatorSlot { get; set; }
 
     [Parameter]
@@ -2055,34 +1546,6 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePickerPanel")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Editable), Name = "editable")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(DefaultValue), Name = "defaultValue")]
-[VueProp(nameof(DefaultTime), Name = "defaultTime")]
-[VueProp(nameof(ValueFormat), Name = "valueFormat")]
-[VueProp(nameof(DateFormat), Name = "dateFormat")]
-[VueProp(nameof(TimeFormat), Name = "timeFormat")]
-[VueProp(nameof(UnlinkPanels), Name = "unlinkPanels")]
-[VueProp(nameof(SinglePanel), Name = "singlePanel")]
-[VueProp(nameof(DisabledDate), Name = "disabledDate")]
-[VueProp(nameof(Shortcuts), Name = "shortcuts")]
-[VueProp(nameof(CellClassName), Name = "cellClassName")]
-[VueProp(nameof(ShowFooter), Name = "showFooter")]
-[VueProp(nameof(ShowConfirm), Name = "showConfirm")]
-[VueProp(nameof(ShowWeekNumber), Name = "showWeekNumber")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(PrevMonth), Name = "prev-month")]
-[VueSlot(nameof(NextMonth), Name = "next-month")]
-[VueSlot(nameof(PrevYear), Name = "prev-year")]
-[VueSlot(nameof(NextYear), Name = "next-year")]
 [VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
 [VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
@@ -2176,20 +1639,6 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 /// Display multiple fields in list form.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDescriptions")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Column), Name = "column")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Extra), Name = "extra")]
-[VueProp(nameof(LabelWidth), Name = "labelWidth")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TitleSlot), Name = "title")]
-[VueSlot(nameof(ExtraSlot), Name = "extra")]
 public sealed class ElDescriptions : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2214,9 +1663,11 @@ public sealed class ElDescriptions : ElementPlusContentComponentBase
     public VueStringNumberValue? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("extra")]
     public RenderFragment? ExtraSlot { get; set; }
 
 }
@@ -2225,22 +1676,6 @@ public sealed class ElDescriptions : ElementPlusContentComponentBase
 /// el-descriptions-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDescriptionsItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Span), Name = "span")]
-[VueProp(nameof(Rowspan), Name = "rowspan")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(MinWidth), Name = "minWidth")]
-[VueProp(nameof(LabelWidth), Name = "labelWidth")]
-[VueProp(nameof(Align), Name = "align")]
-[VueProp(nameof(LabelAlign), Name = "labelAlign")]
-[VueProp(nameof(ClassName), Name = "className")]
-[VueProp(nameof(LabelClassName), Name = "labelClassName")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(LabelSlot), Name = "label")]
 public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2274,6 +1709,7 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
     public string? LabelClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
 
 }
@@ -2282,44 +1718,6 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 /// Informs users while preserving the current page state.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDialog")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(Fullscreen), Name = "fullscreen")]
-[VueProp(nameof(Top), Name = "top")]
-[VueProp(nameof(Modal), Name = "modal")]
-[VueProp(nameof(ModalPenetrable), Name = "modalPenetrable")]
-[VueProp(nameof(ModalClass), Name = "modalClass")]
-[VueProp(nameof(HeaderClass), Name = "headerClass")]
-[VueProp(nameof(BodyClass), Name = "bodyClass")]
-[VueProp(nameof(FooterClass), Name = "footerClass")]
-[VueProp(nameof(AppendToBody), Name = "appendToBody")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(LockScroll), Name = "lockScroll")]
-[VueProp(nameof(OpenDelay), Name = "openDelay")]
-[VueProp(nameof(CloseDelay), Name = "closeDelay")]
-[VueProp(nameof(CloseOnClickModal), Name = "closeOnClickModal")]
-[VueProp(nameof(CloseOnPressEscape), Name = "closeOnPressEscape")]
-[VueProp(nameof(ShowClose), Name = "showClose")]
-[VueProp(nameof(BeforeClose), Name = "beforeClose")]
-[VueProp(nameof(Draggable), Name = "draggable")]
-[VueProp(nameof(Overflow), Name = "overflow")]
-[VueProp(nameof(Center), Name = "center")]
-[VueProp(nameof(AlignCenter), Name = "alignCenter")]
-[VueProp(nameof(DestroyOnClose), Name = "destroyOnClose")]
-[VueProp(nameof(CloseIcon), Name = "closeIcon")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(HeaderAriaLevel), Name = "headerAriaLevel")]
-[VueProp(nameof(Transition), Name = "transition")]
-[VueProp(nameof(CustomClass), Name = "customClass")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(TitleSlot), Name = "title")]
 [VueLibraryEmit(nameof(OnOpen), Name = "open")]
 [VueLibraryEmit(nameof(OnOpened), Name = "opened")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
@@ -2426,6 +1824,7 @@ public sealed class ElDialog : ElementPlusContentComponentBase
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
@@ -2455,14 +1854,6 @@ public sealed class ElDialog : ElementPlusContentComponentBase
 /// The dividing line that separates the content.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDivider")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(BorderStyle), Name = "borderStyle")]
-[VueProp(nameof(ContentPosition), Name = "contentPosition")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElDivider : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2480,39 +1871,6 @@ public sealed class ElDivider : ElementPlusContentComponentBase
 /// Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDrawer")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(AppendToBody), Name = "appendToBody")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(LockScroll), Name = "lockScroll")]
-[VueProp(nameof(BeforeClose), Name = "beforeClose")]
-[VueProp(nameof(CloseOnClickModal), Name = "closeOnClickModal")]
-[VueProp(nameof(CloseOnPressEscape), Name = "closeOnPressEscape")]
-[VueProp(nameof(OpenDelay), Name = "openDelay")]
-[VueProp(nameof(CloseDelay), Name = "closeDelay")]
-[VueProp(nameof(DestroyOnClose), Name = "destroyOnClose")]
-[VueProp(nameof(Modal), Name = "modal")]
-[VueProp(nameof(ModalPenetrable), Name = "modalPenetrable")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(Resizable), Name = "resizable")]
-[VueProp(nameof(ShowClose), Name = "showClose")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(WithHeader), Name = "withHeader")]
-[VueProp(nameof(ModalClass), Name = "modalClass")]
-[VueProp(nameof(HeaderClass), Name = "headerClass")]
-[VueProp(nameof(BodyClass), Name = "bodyClass")]
-[VueProp(nameof(FooterClass), Name = "footerClass")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(HeaderAriaLevel), Name = "headerAriaLevel")]
-[VueProp(nameof(CustomClass), Name = "customClass")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(TitleSlot), Name = "title")]
 [VueLibraryEmit(nameof(OnOpen), Name = "open")]
 [VueLibraryEmit(nameof(OnOpened), Name = "opened")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
@@ -2607,6 +1965,7 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
@@ -2645,36 +2004,6 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
 /// Toggleable menu for displaying lists of links and actions.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdown")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(ButtonProps), Name = "buttonProps")]
-[VueProp(nameof(MaxHeight), Name = "maxHeight")]
-[VueProp(nameof(SplitButton), Name = "splitButton")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Trigger), Name = "trigger")]
-[VueProp(nameof(TriggerKeys), Name = "triggerKeys")]
-[VueProp(nameof(VirtualTriggering), Name = "virtualTriggering")]
-[VueProp(nameof(VirtualRef), Name = "virtualRef")]
-[VueProp(nameof(HideOnClick), Name = "hideOnClick")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(ShowTimeout), Name = "showTimeout")]
-[VueProp(nameof(HideTimeout), Name = "hideTimeout")]
-[VueProp(nameof(Role), Name = "role")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Dropdown), Name = "dropdown")]
 [VueLibraryEmit(nameof(OnClick), Name = "click")]
 [VueLibraryEmit(nameof(OnCommand), Name = "command")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
@@ -2770,16 +2099,6 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
 /// el-dropdown-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdownItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Command), Name = "command")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Divided), Name = "divided")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(IconSlot), Name = "icon")]
 public sealed class ElDropdownItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2795,6 +2114,7 @@ public sealed class ElDropdownItem : ElementPlusContentComponentBase
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
 }
@@ -2803,11 +2123,6 @@ public sealed class ElDropdownItem : ElementPlusContentComponentBase
 /// el-dropdown-menu
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdownMenu")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElDropdownMenu : ElementPlusContentComponentBase
 {
 }
@@ -2816,16 +2131,6 @@ public sealed class ElDropdownMenu : ElementPlusContentComponentBase
 /// Placeholder hints for empty states.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElEmpty")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Image), Name = "image")]
-[VueProp(nameof(ImageSize), Name = "imageSize")]
-[VueProp(nameof(Description), Name = "description")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(ImageSlot), Name = "image")]
-[VueSlot(nameof(DescriptionSlot), Name = "description")]
 public sealed class ElEmpty : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2838,9 +2143,11 @@ public sealed class ElEmpty : ElementPlusContentComponentBase
     public string? Description { get; set; }
 
     [Parameter]
+    [ECMAScriptName("image")]
     public RenderFragment? ImageSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("description")]
     public RenderFragment? DescriptionSlot { get; set; }
 
 }
@@ -2849,12 +2156,6 @@ public sealed class ElEmpty : ElementPlusContentComponentBase
 /// el-footer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElFooter")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Height), Name = "height")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElFooter : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2866,27 +2167,6 @@ public sealed class ElFooter : ElementPlusContentComponentBase
 /// Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElForm")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Model), Name = "model")]
-[VueProp(nameof(Rules), Name = "rules")]
-[VueProp(nameof(Inline), Name = "inline")]
-[VueProp(nameof(LabelPosition), Name = "labelPosition")]
-[VueProp(nameof(LabelWidth), Name = "labelWidth")]
-[VueProp(nameof(LabelSuffix), Name = "labelSuffix")]
-[VueProp(nameof(HideRequiredAsterisk), Name = "hideRequiredAsterisk")]
-[VueProp(nameof(RequireAsteriskPosition), Name = "requireAsteriskPosition")]
-[VueProp(nameof(ShowMessage), Name = "showMessage")]
-[VueProp(nameof(InlineMessage), Name = "inlineMessage")]
-[VueProp(nameof(StatusIcon), Name = "statusIcon")]
-[VueProp(nameof(ValidateOnRuleChange), Name = "validateOnRuleChange")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ScrollToError), Name = "scrollToError")]
-[VueProp(nameof(ScrollIntoViewOptions), Name = "scrollIntoViewOptions")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnValidate), Name = "validate")]
 public sealed class ElForm : ElementPlusContentComponentBase
 {
@@ -2947,25 +2227,6 @@ public sealed class ElForm : ElementPlusContentComponentBase
 /// el-form-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElFormItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Prop), Name = "prop")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(LabelPosition), Name = "labelPosition")]
-[VueProp(nameof(LabelWidth), Name = "labelWidth")]
-[VueProp(nameof(Required), Name = "required")]
-[VueProp(nameof(Rules), Name = "rules")]
-[VueProp(nameof(Error), Name = "error")]
-[VueProp(nameof(ShowMessage), Name = "showMessage")]
-[VueProp(nameof(InlineMessage), Name = "inlineMessage")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(For), Name = "for")]
-[VueProp(nameof(ValidateStatus), Name = "validateStatus")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(LabelSlot), Name = "label")]
-[VueSlot(nameof(ErrorSlot), Name = "error")]
 public sealed class ElFormItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3005,9 +2266,11 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
     public ElementPlusFormItemValidateStatus? ValidateStatus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("error")]
     public RenderFragment? ErrorSlot { get; set; }
 
 }
@@ -3016,12 +2279,6 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
 /// el-header
 /// </summary>
 [VueLibraryComponent("element-plus", "ElHeader")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Height), Name = "height")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElHeader : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3033,13 +2290,6 @@ public sealed class ElHeader : ElementPlusContentComponentBase
 /// Element Plus provides a set of common icons.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElIcon")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Size), Name = "size")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElIcon : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3054,32 +2304,6 @@ public sealed class ElIcon : ElementPlusContentComponentBase
 /// Besides the native features of img, support lazy load, custom placeholder and load failure, etc.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImage")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Src), Name = "src")]
-[VueProp(nameof(Fit), Name = "fit")]
-[VueProp(nameof(HideOnClickModal), Name = "hideOnClickModal")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(Lazy), Name = "lazy")]
-[VueProp(nameof(ScrollContainer), Name = "scrollContainer")]
-[VueProp(nameof(Alt), Name = "alt")]
-[VueProp(nameof(Referrerpolicy), Name = "referrerpolicy")]
-[VueProp(nameof(Crossorigin), Name = "crossorigin")]
-[VueProp(nameof(PreviewSrcList), Name = "previewSrcList")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(InitialIndex), Name = "initialIndex")]
-[VueProp(nameof(CloseOnPressEscape), Name = "closeOnPressEscape")]
-[VueProp(nameof(PreviewTeleported), Name = "previewTeleported")]
-[VueProp(nameof(Infinite), Name = "infinite")]
-[VueProp(nameof(ZoomRate), Name = "zoomRate")]
-[VueProp(nameof(Scale), Name = "scale")]
-[VueProp(nameof(MinScale), Name = "minScale")]
-[VueProp(nameof(MaxScale), Name = "maxScale")]
-[VueProp(nameof(ShowProgress), Name = "showProgress")]
-[VueSlot(nameof(Placeholder), Name = "placeholder")]
-[VueSlot(nameof(Error), Name = "error")]
 [VueLibraryEmit(nameof(OnLoad), Name = "load")]
 [VueLibraryEmit(nameof(OnError), Name = "error")]
 [VueLibraryEmit(nameof(OnSwitch), Name = "switch")]
@@ -3174,26 +2398,6 @@ public sealed class ElImage : ElementPlusComponentBase
 /// el-image-viewer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImageViewer")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(UrlList), Name = "urlList")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(InitialIndex), Name = "initialIndex")]
-[VueProp(nameof(Infinite), Name = "infinite")]
-[VueProp(nameof(HideOnClickModal), Name = "hideOnClickModal")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(ZoomRate), Name = "zoomRate")]
-[VueProp(nameof(Scale), Name = "scale")]
-[VueProp(nameof(MinScale), Name = "minScale")]
-[VueProp(nameof(MaxScale), Name = "maxScale")]
-[VueProp(nameof(CloseOnPressEscape), Name = "closeOnPressEscape")]
-[VueProp(nameof(ShowProgress), Name = "showProgress")]
-[VueSlot(nameof(Viewer), Name = "viewer")]
-[VueSlot(nameof(Progress), Name = "progress")]
-[VueSlot(nameof(Toolbar), Name = "toolbar")]
-[VueSlot(nameof(ViewerError), Name = "viewer-error")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
 [VueLibraryEmit(nameof(OnError), Name = "error")]
 [VueLibraryEmit(nameof(OnSwitch), Name = "switch")]
@@ -3266,50 +2470,6 @@ public sealed class ElImageViewer : ElementPlusComponentBase
 /// Input data using mouse or keyboard.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInput")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(ModelModifiers), Name = "modelModifiers")]
-[VueProp(nameof(Maxlength), Name = "maxlength")]
-[VueProp(nameof(Minlength), Name = "minlength")]
-[VueProp(nameof(ShowWordLimit), Name = "showWordLimit")]
-[VueProp(nameof(WordLimitPosition), Name = "wordLimitPosition")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(Formatter), Name = "formatter")]
-[VueProp(nameof(Parser), Name = "parser")]
-[VueProp(nameof(ShowPassword), Name = "showPassword")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueProp(nameof(Rows), Name = "rows")]
-[VueProp(nameof(Autosize), Name = "autosize")]
-[VueProp(nameof(Autocomplete), Name = "autocomplete")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(Min), Name = "min")]
-[VueProp(nameof(Step), Name = "step")]
-[VueProp(nameof(Resize), Name = "resize")]
-[VueProp(nameof(Autofocus), Name = "autofocus")]
-[VueProp(nameof(Form), Name = "form")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(InputStyle), Name = "inputStyle")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Inputmode), Name = "inputmode")]
-[VueProp(nameof(CountGraphemes), Name = "countGraphemes")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(PasswordIcon), Name = "password-icon")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
@@ -3486,38 +2646,6 @@ public sealed class ElInput : ElementPlusComponentBase
 /// Input numerical values with a customizable range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputNumber")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Min), Name = "min")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(Step), Name = "step")]
-[VueProp(nameof(StepStrictly), Name = "stepStrictly")]
-[VueProp(nameof(Precision), Name = "precision")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Controls), Name = "controls")]
-[VueProp(nameof(ControlsPosition), Name = "controlsPosition")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Inputmode), Name = "inputmode")]
-[VueProp(nameof(Align), Name = "align")]
-[VueProp(nameof(DisabledScientific), Name = "disabledScientific")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(Formatter), Name = "formatter")]
-[VueProp(nameof(Parser), Name = "parser")]
-[VueSlot(nameof(DecreaseIcon), Name = "decrease-icon")]
-[VueSlot(nameof(IncreaseIcon), Name = "increase-icon")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -3626,24 +2754,6 @@ public sealed class ElInputNumber : ElementPlusComponentBase
 /// Used to enter a one-time password
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputOtp")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Length), Name = "length")]
-[VueProp(nameof(Validator), Name = "validator")]
-[VueProp(nameof(Inputmode), Name = "inputmode")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Mask), Name = "mask")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Separator), Name = "separator")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueSlot(nameof(SeparatorSlot), Name = "separator")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnFinish), Name = "finish")]
@@ -3691,6 +2801,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public RenderFragment? SeparatorSlot { get; set; }
 
     [Parameter]
@@ -3714,39 +2825,6 @@ public sealed class ElInputOtp : ElementPlusComponentBase
 /// The InputTag component allows users to add content as tags.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputTag")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(TagType), Name = "tagType")]
-[VueProp(nameof(TagEffect), Name = "tagEffect")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Trigger), Name = "trigger")]
-[VueProp(nameof(Draggable), Name = "draggable")]
-[VueProp(nameof(Delimiter), Name = "delimiter")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(CollapseTags), Name = "collapseTags")]
-[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
-[VueProp(nameof(SaveOnBlur), Name = "saveOnBlur")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Autofocus), Name = "autofocus")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
-[VueProp(nameof(Maxlength), Name = "maxlength")]
-[VueProp(nameof(Minlength), Name = "minlength")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Autocomplete), Name = "autocomplete")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueSlot(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnInput), Name = "input")]
 [VueLibraryEmit(nameof(OnAddTag), Name = "add-tag")]
@@ -3878,18 +2956,6 @@ public sealed class ElInputTag : ElementPlusComponentBase
 /// Text hyperlink
 /// </summary>
 [VueLibraryComponent("element-plus", "ElLink")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Underline), Name = "underline")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Href), Name = "href")]
-[VueProp(nameof(Target), Name = "target")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(IconSlot), Name = "icon")]
 public sealed class ElLink : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3911,6 +2977,7 @@ public sealed class ElLink : ElementPlusContentComponentBase
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
 }
@@ -3919,11 +2986,6 @@ public sealed class ElLink : ElementPlusContentComponentBase
 /// el-main
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMain")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElMain : ElementPlusContentComponentBase
 {
 }
@@ -3932,29 +2994,6 @@ public sealed class ElMain : ElementPlusContentComponentBase
 /// Used to mention someone or something in an input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMention")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Prefix), Name = "prefix")]
-[VueProp(nameof(Split), Name = "split")]
-[VueProp(nameof(FilterOption), Name = "filterOption")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(Whole), Name = "whole")]
-[VueProp(nameof(CheckIsWhole), Name = "checkIsWhole")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueSlot(nameof(Label), Name = "label")]
-[VueSlot(nameof(LoadingSlot), Name = "loading")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
 [VueLibraryEmit(nameof(OnSearch), Name = "search")]
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnWholeRemove), Name = "whole-remove")]
@@ -4010,6 +3049,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public RenderFragment? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
@@ -4036,32 +3076,6 @@ public sealed class ElMention : ElementPlusComponentBase
 /// Menu that provides navigation for your website.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenu")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Mode), Name = "mode")]
-[VueProp(nameof(Collapse), Name = "collapse")]
-[VueProp(nameof(Ellipsis), Name = "ellipsis")]
-[VueProp(nameof(EllipsisIcon), Name = "ellipsisIcon")]
-[VueProp(nameof(PopperOffset), Name = "popperOffset")]
-[VueProp(nameof(DefaultActive), Name = "defaultActive")]
-[VueProp(nameof(DefaultOpeneds), Name = "defaultOpeneds")]
-[VueProp(nameof(UniqueOpened), Name = "uniqueOpened")]
-[VueProp(nameof(MenuTrigger), Name = "menuTrigger")]
-[VueProp(nameof(Router), Name = "router")]
-[VueProp(nameof(CollapseTransition), Name = "collapseTransition")]
-[VueProp(nameof(PopperEffect), Name = "popperEffect")]
-[VueProp(nameof(CloseOnClickOutside), Name = "closeOnClickOutside")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(ShowTimeout), Name = "showTimeout")]
-[VueProp(nameof(HideTimeout), Name = "hideTimeout")]
-[VueProp(nameof(BackgroundColor), Name = "backgroundColor")]
-[VueProp(nameof(TextColor), Name = "textColor")]
-[VueProp(nameof(ActiveTextColor), Name = "activeTextColor")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnOpen), Name = "open")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
@@ -4145,15 +3159,6 @@ public sealed class ElMenu : ElementPlusContentComponentBase
 /// el-menu-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenuItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Index), Name = "index")]
-[VueProp(nameof(Route), Name = "route")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Title), Name = "title")]
 [VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElMenuItem : ElementPlusContentComponentBase
 {
@@ -4178,19 +3183,13 @@ public sealed class ElMenuItem : ElementPlusContentComponentBase
 /// el-menu-item-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenuItemGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Title), Name = "title")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TitleSlot), Name = "title")]
 public sealed class ElMenuItemGroup : ElementPlusContentComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
 }
@@ -4199,14 +3198,6 @@ public sealed class ElMenuItemGroup : ElementPlusContentComponentBase
 /// el-option
 /// </summary>
 [VueLibraryComponent("element-plus", "ElOption")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElOption : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4224,13 +3215,6 @@ public sealed class ElOption : ElementPlusContentComponentBase
 /// el-option-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElOptionGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElOptionGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4245,19 +3229,6 @@ public sealed class ElOptionGroup : ElementPlusContentComponentBase
 /// If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPageHeader")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Content), Name = "content")]
-[VueSlot(nameof(IconSlot), Name = "icon")]
-[VueSlot(nameof(TitleSlot), Name = "title")]
-[VueSlot(nameof(ContentSlot), Name = "content")]
-[VueSlot(nameof(Extra), Name = "extra")]
-[VueSlot(nameof(Breadcrumb), Name = "breadcrumb")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnBack), Name = "back")]
 public sealed class ElPageHeader : ElementPlusContentComponentBase
 {
@@ -4271,12 +3242,15 @@ public sealed class ElPageHeader : ElementPlusContentComponentBase
     public string? Content { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
@@ -4294,33 +3268,6 @@ public sealed class ElPageHeader : ElementPlusContentComponentBase
 /// If you have too much data to display in one page, use pagination.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPagination")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Background), Name = "background")]
-[VueProp(nameof(PageSize), Name = "pageSize")]
-[VueProp(nameof(DefaultPageSize), Name = "defaultPageSize")]
-[VueProp(nameof(Total), Name = "total")]
-[VueProp(nameof(PageCount), Name = "pageCount")]
-[VueProp(nameof(PagerCount), Name = "pagerCount")]
-[VueProp(nameof(CurrentPage), Name = "currentPage")]
-[VueProp(nameof(DefaultCurrentPage), Name = "defaultCurrentPage")]
-[VueProp(nameof(Layout), Name = "layout")]
-[VueProp(nameof(PageSizes), Name = "pageSizes")]
-[VueProp(nameof(AppendSizeTo), Name = "appendSizeTo")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PrevText), Name = "prevText")]
-[VueProp(nameof(PrevIcon), Name = "prevIcon")]
-[VueProp(nameof(NextText), Name = "nextText")]
-[VueProp(nameof(NextIcon), Name = "nextIcon")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(HideOnSinglePage), Name = "hideOnSinglePage")]
-[VueProp(nameof(Small), Name = "small")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnSizeChange), Name = "size-change")]
 [VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
@@ -4415,25 +3362,6 @@ public sealed class ElPagination : ElementPlusContentComponentBase
 /// A simple confirmation dialog of an element click action.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopconfirm")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(ConfirmButtonText), Name = "confirmButtonText")]
-[VueProp(nameof(CancelButtonText), Name = "cancelButtonText")]
-[VueProp(nameof(ConfirmButtonType), Name = "confirmButtonType")]
-[VueProp(nameof(CancelButtonType), Name = "cancelButtonType")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(IconColor), Name = "iconColor")]
-[VueProp(nameof(HideIcon), Name = "hideIcon")]
-[VueProp(nameof(HideAfter), Name = "hideAfter")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(Width), Name = "width")]
-[VueSlot(nameof(Reference), Name = "reference")]
-[VueSlot(nameof(Actions), Name = "actions")]
 [VueLibraryEmit(nameof(OnConfirm), Name = "confirm")]
 [VueLibraryEmit(nameof(OnCancel), Name = "cancel")]
 public sealed class ElPopconfirm : ElementPlusComponentBase
@@ -4495,36 +3423,6 @@ public sealed class ElPopconfirm : ElementPlusComponentBase
 /// el-popover
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopover")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Trigger), Name = "trigger")]
-[VueProp(nameof(TriggerKeys), Name = "triggerKeys")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Content), Name = "content")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Visible), Name = "visible")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(Transition), Name = "transition")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(ShowAfter), Name = "showAfter")]
-[VueProp(nameof(HideAfter), Name = "hideAfter")]
-[VueProp(nameof(AutoClose), Name = "autoClose")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(VirtualTriggering), Name = "virtualTriggering")]
-[VueProp(nameof(VirtualRef), Name = "virtualRef")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Reference), Name = "reference")]
 [VueLibraryEmit(nameof(OnShow), Name = "show")]
 [VueLibraryEmit(nameof(OnBeforeEnter), Name = "before-enter")]
 [VueLibraryEmit(nameof(OnAfterEnter), Name = "after-enter")]
@@ -4632,12 +3530,6 @@ public sealed class ElPopover : ElementPlusContentComponentBase
 /// ElPopper
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopper")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Role), Name = "role")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElPopper : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4649,25 +3541,6 @@ public sealed class ElPopper : ElementPlusContentComponentBase
 /// Progress is used to show the progress of current operation, and inform the user the current status.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElProgress")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Percentage), Name = "percentage")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(StrokeWidth), Name = "strokeWidth")]
-[VueProp(nameof(TextInside), Name = "textInside")]
-[VueProp(nameof(Status), Name = "status")]
-[VueProp(nameof(Indeterminate), Name = "indeterminate")]
-[VueProp(nameof(Duration), Name = "duration")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(ShowText), Name = "showText")]
-[VueProp(nameof(StrokeLinecap), Name = "strokeLinecap")]
-[VueProp(nameof(Format), Name = "format")]
-[VueProp(nameof(Striped), Name = "striped")]
-[VueProp(nameof(StripedFlow), Name = "stripedFlow")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElProgress : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4718,18 +3591,6 @@ public sealed class ElProgress : ElementPlusContentComponentBase
 /// Single selection among multiple options.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadio")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Name), Name = "name")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadio : ElementPlusContentComponentBase
@@ -4767,15 +3628,6 @@ public sealed class ElRadio : ElementPlusContentComponentBase
 /// el-radio-button
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadioButton")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Value), Name = "value")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Name), Name = "name")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElRadioButton : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4796,24 +3648,6 @@ public sealed class ElRadioButton : ElementPlusContentComponentBase
 /// el-radio-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadioGroup")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(TextColor), Name = "textColor")]
-[VueProp(nameof(Fill), Name = "fill")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Type), Name = "type")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadioGroup : ElementPlusContentComponentBase
@@ -4869,32 +3703,6 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
 /// Used for rating
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRate")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(AllowHalf), Name = "allowHalf")]
-[VueProp(nameof(LowThreshold), Name = "lowThreshold")]
-[VueProp(nameof(HighThreshold), Name = "highThreshold")]
-[VueProp(nameof(Colors), Name = "colors")]
-[VueProp(nameof(VoidColor), Name = "voidColor")]
-[VueProp(nameof(DisabledVoidColor), Name = "disabledVoidColor")]
-[VueProp(nameof(Icons), Name = "icons")]
-[VueProp(nameof(VoidIcon), Name = "voidIcon")]
-[VueProp(nameof(DisabledVoidIcon), Name = "disabledVoidIcon")]
-[VueProp(nameof(ShowText), Name = "showText")]
-[VueProp(nameof(ShowScore), Name = "showScore")]
-[VueProp(nameof(TextColor), Name = "textColor")]
-[VueProp(nameof(Texts), Name = "texts")]
-[VueProp(nameof(ScoreTemplate), Name = "scoreTemplate")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Number, ECMAScript, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRate : ElementPlusComponentBase
@@ -4977,17 +3785,6 @@ public sealed class ElRate : ElementPlusComponentBase
 /// Used to give feedback on the result of user's operation or access exception.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElResult")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(SubTitle), Name = "subTitle")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(IconSlot), Name = "icon")]
-[VueSlot(nameof(TitleSlot), Name = "title")]
-[VueSlot(nameof(SubTitleSlot), Name = "sub-title")]
-[VueSlot(nameof(Extra), Name = "extra")]
 public sealed class ElResult : ElementPlusComponentBase
 {
     [Parameter]
@@ -5000,12 +3797,15 @@ public sealed class ElResult : ElementPlusComponentBase
     public string? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sub-title")]
     public RenderFragment? SubTitleSlot { get; set; }
 
     [Parameter]
@@ -5017,15 +3817,6 @@ public sealed class ElResult : ElementPlusComponentBase
 /// el-row
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRow")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Gutter), Name = "gutter")]
-[VueProp(nameof(Justify), Name = "justify")]
-[VueProp(nameof(Align), Name = "align")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElRow : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5046,28 +3837,6 @@ public sealed class ElRow : ElementPlusContentComponentBase
 /// Used to replace the browser's native scrollbar.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElScrollbar")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(MaxHeight), Name = "maxHeight")]
-[VueProp(nameof(Native), Name = "native")]
-[VueProp(nameof(WrapStyle), Name = "wrapStyle")]
-[VueProp(nameof(WrapClass), Name = "wrapClass")]
-[VueProp(nameof(ViewStyle), Name = "viewStyle")]
-[VueProp(nameof(ViewClass), Name = "viewClass")]
-[VueProp(nameof(Noresize), Name = "noresize")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueProp(nameof(Always), Name = "always")]
-[VueProp(nameof(MinSize), Name = "minSize")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Role), Name = "role")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(AriaOrientation), Name = "ariaOrientation")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(Distance), Name = "distance")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
 public sealed class ElScrollbar : ElementPlusContentComponentBase
@@ -5135,22 +3904,6 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 /// Display multiple options and allow users to select a single option.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSegmented")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Block), Name = "block")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSegmented : ElementPlusContentComponentBase
@@ -5200,71 +3953,6 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 /// When there are plenty of options, use a drop-down menu to display and select desired ones.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelect")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Multiple), Name = "multiple")]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValueKey), Name = "valueKey")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(CollapseTags), Name = "collapseTags")]
-[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
-[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
-[VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Autocomplete), Name = "autocomplete")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Filterable), Name = "filterable")]
-[VueProp(nameof(AllowCreate), Name = "allowCreate")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(Remote), Name = "remote")]
-[VueProp(nameof(Debounce), Name = "debounce")]
-[VueProp(nameof(RemoteMethod), Name = "remoteMethod")]
-[VueProp(nameof(RemoteShowSuffix), Name = "remoteShowSuffix")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(LoadingText), Name = "loadingText")]
-[VueProp(nameof(NoMatchText), Name = "noMatchText")]
-[VueProp(nameof(NoDataText), Name = "noDataText")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(ReserveKeyword), Name = "reserveKeyword")]
-[VueProp(nameof(DefaultFirstOption), Name = "defaultFirstOption")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
-[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueProp(nameof(TagType), Name = "tagType")]
-[VueProp(nameof(TagEffect), Name = "tagEffect")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(SuffixTransition), Name = "suffixTransition")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(LoadingSlot), Name = "loading")]
-[VueSlot(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 [VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
@@ -5451,6 +4139,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
@@ -5489,17 +4178,6 @@ public sealed class ElSelect : ElementPlusContentComponentBase
 /// When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSkeleton")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Animated), Name = "animated")]
-[VueProp(nameof(Count), Name = "count")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(Rows), Name = "rows")]
-[VueProp(nameof(Throttle), Name = "throttle")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Template), Name = "template")]
 public sealed class ElSkeleton : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5526,11 +4204,6 @@ public sealed class ElSkeleton : ElementPlusContentComponentBase
 /// el-skeleton-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSkeletonItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Variant), Name = "variant")]
 public sealed class ElSkeletonItem : ElementPlusComponentBase
 {
     [Parameter]
@@ -5542,35 +4215,6 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 /// Drag the slider within a fixed range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSlider")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Min), Name = "min")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Step), Name = "step")]
-[VueProp(nameof(ShowInput), Name = "showInput")]
-[VueProp(nameof(ShowInputControls), Name = "showInputControls")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(InputSize), Name = "inputSize")]
-[VueProp(nameof(ShowStops), Name = "showStops")]
-[VueProp(nameof(ShowTooltip), Name = "showTooltip")]
-[VueProp(nameof(FormatTooltip), Name = "formatTooltip")]
-[VueProp(nameof(Range), Name = "range")]
-[VueProp(nameof(Vertical), Name = "vertical")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(RangeStartLabel), Name = "rangeStartLabel")]
-[VueProp(nameof(RangeEndLabel), Name = "rangeEndLabel")]
-[VueProp(nameof(FormatValueText), Name = "formatValueText")]
-[VueProp(nameof(TooltipClass), Name = "tooltipClass")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(Marks), Name = "marks")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnInput), Name = "input")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueNumberOrNumbersValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
@@ -5666,18 +4310,6 @@ public sealed class ElSlider : ElementPlusComponentBase
 /// Even though we have [Divider]
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSpace")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Alignment), Name = "alignment")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(PrefixCls), Name = "prefixCls")]
-[VueProp(nameof(Spacer), Name = "spacer")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Wrap), Name = "wrap")]
-[VueProp(nameof(Fill), Name = "fill")]
-[VueProp(nameof(FillRatio), Name = "fillRatio")]
 public sealed class ElSpace : ElementPlusComponentBase
 {
     [Parameter]
@@ -5710,12 +4342,6 @@ public sealed class ElSpace : ElementPlusComponentBase
 /// el-splitter
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitter")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Layout), Name = "layout")]
-[VueProp(nameof(Lazy), Name = "lazy")]
 [VueLibraryEmit(nameof(OnResizeStart), Name = "resize-start")]
 [VueLibraryEmit(nameof(OnResize), Name = "resize")]
 [VueLibraryEmit(nameof(OnResizeEnd), Name = "resize-end")]
@@ -5746,18 +4372,6 @@ public sealed class ElSplitter : ElementPlusComponentBase
 /// el-splitter-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitterPanel")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Size), VuePropKind.Model, Name = "size", AcceptsBinding = true)]
-[VueProp(nameof(Min), Name = "min")]
-[VueProp(nameof(Max), Name = "max")]
-[VueProp(nameof(Resizable), Name = "resizable")]
-[VueProp(nameof(Collapsible), Name = "collapsible")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(StartCollapsible), Name = "start-collapsible")]
-[VueSlot(nameof(EndCollapsible), Name = "end-collapsible")]
 [VueLibraryEmit(nameof(SizeChanged), VueEmitKind.ModelUpdate, Name = "update:size", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSplitterPanel : ElementPlusContentComponentBase
 {
@@ -5791,13 +4405,6 @@ public sealed class ElSplitterPanel : ElementPlusContentComponentBase
 /// Display statistics.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElStatistic")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
-[VueSlot(nameof(Title), Name = "title")]
 public sealed class ElStatistic : ElementPlusComponentBase
 {
     [Parameter]
@@ -5815,17 +4422,6 @@ public sealed class ElStatistic : ElementPlusComponentBase
 /// el-step
 /// </summary>
 [VueLibraryComponent("element-plus", "ElStep")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Title), Name = "title")]
-[VueProp(nameof(Description), Name = "description")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Status), Name = "status")]
-[VueSlot(nameof(IconSlot), Name = "icon")]
-[VueSlot(nameof(TitleSlot), Name = "title")]
-[VueSlot(nameof(DescriptionSlot), Name = "description")]
 public sealed class ElStep : ElementPlusComponentBase
 {
     [Parameter]
@@ -5841,12 +4437,15 @@ public sealed class ElStep : ElementPlusComponentBase
     public ElementPlusStepStatus? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("description")]
     public RenderFragment? DescriptionSlot { get; set; }
 
 }
@@ -5855,18 +4454,6 @@ public sealed class ElStep : ElementPlusComponentBase
 /// Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSteps")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Space), Name = "space")]
-[VueProp(nameof(Direction), Name = "direction")]
-[VueProp(nameof(Active), Name = "active")]
-[VueProp(nameof(ProcessStatus), Name = "processStatus")]
-[VueProp(nameof(FinishStatus), Name = "finishStatus")]
-[VueProp(nameof(AlignCenter), Name = "alignCenter")]
-[VueProp(nameof(Simple), Name = "simple")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElSteps : ElementPlusContentComponentBase
 {
@@ -5900,24 +4487,6 @@ public sealed class ElSteps : ElementPlusContentComponentBase
 /// el-sub-menu
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSubMenu")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Index), Name = "index")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(ShowTimeout), Name = "showTimeout")]
-[VueProp(nameof(HideTimeout), Name = "hideTimeout")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(PopperOffset), Name = "popperOffset")]
-[VueProp(nameof(ExpandCloseIcon), Name = "expandCloseIcon")]
-[VueProp(nameof(ExpandOpenIcon), Name = "expandOpenIcon")]
-[VueProp(nameof(CollapseCloseIcon), Name = "collapseCloseIcon")]
-[VueProp(nameof(CollapseOpenIcon), Name = "collapseOpenIcon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Title), Name = "title")]
 public sealed class ElSubMenu : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5965,38 +4534,6 @@ public sealed class ElSubMenu : ElementPlusContentComponentBase
 /// Switch is used for switching between two opposing states.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSwitch")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(InlinePrompt), Name = "inlinePrompt")]
-[VueProp(nameof(ActiveIcon), Name = "activeIcon")]
-[VueProp(nameof(InactiveIcon), Name = "inactiveIcon")]
-[VueProp(nameof(ActiveActionIcon), Name = "activeActionIcon")]
-[VueProp(nameof(InactiveActionIcon), Name = "inactiveActionIcon")]
-[VueProp(nameof(ActiveText), Name = "activeText")]
-[VueProp(nameof(InactiveText), Name = "inactiveText")]
-[VueProp(nameof(ActiveValue), Name = "activeValue")]
-[VueProp(nameof(InactiveValue), Name = "inactiveValue")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(BeforeChange), Name = "beforeChange")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(ActiveColor), Name = "activeColor")]
-[VueProp(nameof(InactiveColor), Name = "inactiveColor")]
-[VueProp(nameof(BorderColor), Name = "borderColor")]
-[VueProp(nameof(Label), Name = "label")]
-[VueSlot(nameof(ActiveAction), Name = "active-action")]
-[VueSlot(nameof(InactiveAction), Name = "inactive-action")]
-[VueSlot(nameof(Active), Name = "active")]
-[VueSlot(nameof(Inactive), Name = "inactive")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSwitch : ElementPlusComponentBase
@@ -6097,17 +4634,6 @@ public sealed class ElSwitch : ElementPlusComponentBase
 /// el-tab-pane
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTabPane")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Closable), Name = "closable")]
-[VueProp(nameof(Lazy), Name = "lazy")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(LabelSlot), Name = "label")]
 public sealed class ElTabPane : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6126,6 +4652,7 @@ public sealed class ElTabPane : ElementPlusContentComponentBase
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
 
 }
@@ -6134,58 +4661,6 @@ public sealed class ElTabPane : ElementPlusContentComponentBase
 /// Display multiple data with similar format. You can sort, filter, compare your data in a table.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTable")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(MaxHeight), Name = "maxHeight")]
-[VueProp(nameof(Stripe), Name = "stripe")]
-[VueProp(nameof(Border), Name = "border")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Fit), Name = "fit")]
-[VueProp(nameof(ShowHeader), Name = "showHeader")]
-[VueProp(nameof(HighlightCurrentRow), Name = "highlightCurrentRow")]
-[VueProp(nameof(CurrentRowKey), Name = "currentRowKey")]
-[VueProp(nameof(RowClassName), Name = "rowClassName")]
-[VueProp(nameof(RowStyle), Name = "rowStyle")]
-[VueProp(nameof(CellClassName), Name = "cellClassName")]
-[VueProp(nameof(CellStyle), Name = "cellStyle")]
-[VueProp(nameof(HeaderRowClassName), Name = "headerRowClassName")]
-[VueProp(nameof(HeaderRowStyle), Name = "headerRowStyle")]
-[VueProp(nameof(HeaderCellClassName), Name = "headerCellClassName")]
-[VueProp(nameof(HeaderCellStyle), Name = "headerCellStyle")]
-[VueProp(nameof(RowKey), Name = "rowKey")]
-[VueProp(nameof(EmptyText), Name = "emptyText")]
-[VueProp(nameof(DefaultExpandAll), Name = "defaultExpandAll")]
-[VueProp(nameof(ExpandRowKeys), Name = "expandRowKeys")]
-[VueProp(nameof(DefaultSort), Name = "defaultSort")]
-[VueProp(nameof(TooltipEffect), Name = "tooltipEffect")]
-[VueProp(nameof(TooltipOptions), Name = "tooltipOptions")]
-[VueProp(nameof(AppendFilterPanelTo), Name = "appendFilterPanelTo")]
-[VueProp(nameof(ShowSummary), Name = "showSummary")]
-[VueProp(nameof(SumText), Name = "sumText")]
-[VueProp(nameof(SummaryMethod), Name = "summaryMethod")]
-[VueProp(nameof(SpanMethod), Name = "spanMethod")]
-[VueProp(nameof(SelectOnIndeterminate), Name = "selectOnIndeterminate")]
-[VueProp(nameof(Indent), Name = "indent")]
-[VueProp(nameof(Lazy), Name = "lazy")]
-[VueProp(nameof(Load), Name = "load")]
-[VueProp(nameof(TreeProps), Name = "treeProps")]
-[VueProp(nameof(TableLayout), Name = "tableLayout")]
-[VueProp(nameof(ScrollbarAlwaysOn), Name = "scrollbarAlwaysOn")]
-[VueProp(nameof(ShowOverflowTooltip), Name = "showOverflowTooltip")]
-[VueProp(nameof(Flexible), Name = "flexible")]
-[VueProp(nameof(ScrollbarTabindex), Name = "scrollbarTabindex")]
-[VueProp(nameof(AllowDragLastColumn), Name = "allowDragLastColumn")]
-[VueProp(nameof(TooltipFormatter), Name = "tooltipFormatter")]
-[VueProp(nameof(PreserveExpandedContent), Name = "preserveExpandedContent")]
-[VueProp(nameof(NativeScrollbar), Name = "nativeScrollbar")]
-[VueProp(nameof(RowExpandable), Name = "rowExpandable")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Empty), Name = "empty")]
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnSelectAll), Name = "select-all")]
 [VueLibraryEmit(nameof(OnSelectionChange), Name = "selection-change")]
@@ -6411,43 +4886,6 @@ public sealed class ElTable : ElementPlusContentComponentBase
 /// el-table-column
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTableColumn")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Index), Name = "index")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(ColumnKey), Name = "columnKey")]
-[VueProp(nameof(Prop), Name = "prop")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(MinWidth), Name = "minWidth")]
-[VueProp(nameof(Fixed), Name = "fixed")]
-[VueProp(nameof(RenderHeader), Name = "renderHeader")]
-[VueProp(nameof(Sortable), Name = "sortable")]
-[VueProp(nameof(SortMethod), Name = "sortMethod")]
-[VueProp(nameof(SortBy), Name = "sortBy")]
-[VueProp(nameof(SortOrders), Name = "sortOrders")]
-[VueProp(nameof(Resizable), Name = "resizable")]
-[VueProp(nameof(Formatter), Name = "formatter")]
-[VueProp(nameof(ShowOverflowTooltip), Name = "showOverflowTooltip")]
-[VueProp(nameof(Align), Name = "align")]
-[VueProp(nameof(HeaderAlign), Name = "headerAlign")]
-[VueProp(nameof(ClassName), Name = "className")]
-[VueProp(nameof(LabelClassName), Name = "labelClassName")]
-[VueProp(nameof(Selectable), Name = "selectable")]
-[VueProp(nameof(ReserveSelection), Name = "reserveSelection")]
-[VueProp(nameof(Filters), Name = "filters")]
-[VueProp(nameof(FilterPlacement), Name = "filterPlacement")]
-[VueProp(nameof(FilterClassName), Name = "filterClassName")]
-[VueProp(nameof(FilterMultiple), Name = "filterMultiple")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(FilteredValue), Name = "filteredValue")]
-[VueProp(nameof(TooltipFormatter), Name = "tooltipFormatter")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(FilterIcon), Name = "filter-icon")]
-[VueSlot(nameof(Expand), Name = "expand")]
 public sealed class ElTableColumn : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6552,47 +4990,6 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
 /// el-table-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTableV2")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Cache), Name = "cache")]
-[VueProp(nameof(EstimatedRowHeight), Name = "estimatedRowHeight")]
-[VueProp(nameof(HeaderClass), Name = "headerClass")]
-[VueProp(nameof(HeaderProps), Name = "headerProps")]
-[VueProp(nameof(HeaderCellProps), Name = "headerCellProps")]
-[VueProp(nameof(HeaderHeight), Name = "headerHeight")]
-[VueProp(nameof(FooterHeight), Name = "footerHeight")]
-[VueProp(nameof(RowClass), Name = "rowClass")]
-[VueProp(nameof(RowKey), Name = "rowKey")]
-[VueProp(nameof(RowProps), Name = "rowProps")]
-[VueProp(nameof(RowHeight), Name = "rowHeight")]
-[VueProp(nameof(RowEventHandlers), Name = "rowEventHandlers")]
-[VueProp(nameof(CellProps), Name = "cellProps")]
-[VueProp(nameof(Columns), Name = "columns")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(DataGetter), Name = "dataGetter")]
-[VueProp(nameof(FixedData), Name = "fixedData")]
-[VueProp(nameof(ExpandColumnKey), Name = "expandColumnKey")]
-[VueProp(nameof(ExpandedRowKeys), Name = "expandedRowKeys")]
-[VueProp(nameof(DefaultExpandedRowKeys), Name = "defaultExpandedRowKeys")]
-[VueProp(nameof(Fixed), Name = "fixed")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(MaxHeight), Name = "maxHeight")]
-[VueProp(nameof(IndentSize), Name = "indentSize")]
-[VueProp(nameof(HScrollbarSize), Name = "hScrollbarSize")]
-[VueProp(nameof(VScrollbarSize), Name = "vScrollbarSize")]
-[VueProp(nameof(ScrollbarAlwaysOn), Name = "scrollbarAlwaysOn")]
-[VueProp(nameof(SortBy), Name = "sortBy")]
-[VueProp(nameof(SortState), Name = "sortState")]
-[VueSlot(nameof(Cell), Name = "cell")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(HeaderCell), Name = "header-cell")]
-[VueSlot(nameof(Row), Name = "row")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(Overlay), Name = "overlay")]
 [VueLibraryEmit(nameof(OnColumnSort), Name = "column-sort")]
 [VueLibraryEmit(nameof(OnExpandedRowsChange), Name = "expanded-rows-change")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
@@ -6736,22 +5133,6 @@ public sealed class ElTableV2 : ElementPlusComponentBase
 /// Divide data collections which are related yet belong to different types.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTabs")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(DefaultValue), Name = "defaultValue")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Closable), Name = "closable")]
-[VueProp(nameof(Addable), Name = "addable")]
-[VueProp(nameof(Editable), Name = "editable")]
-[VueProp(nameof(TabPosition), Name = "tabPosition")]
-[VueProp(nameof(Stretch), Name = "stretch")]
-[VueProp(nameof(BeforeLeave), Name = "beforeLeave")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(AddIcon), Name = "add-icon")]
 [VueLibraryEmit(nameof(OnTabClick), Name = "tab-click")]
 [VueLibraryEmit(nameof(OnTabChange), Name = "tab-change")]
 [VueLibraryEmit(nameof(OnTabRemove), Name = "tab-remove")]
@@ -6817,19 +5198,6 @@ public sealed class ElTabs : ElementPlusContentComponentBase
 /// Used for marking and selection.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTag")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Closable), Name = "closable")]
-[VueProp(nameof(DisableTransitions), Name = "disableTransitions")]
-[VueProp(nameof(Hit), Name = "hit")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Round), Name = "round")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnClick), Name = "click")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElTag : ElementPlusContentComponentBase
@@ -6870,16 +5238,6 @@ public sealed class ElTag : ElementPlusContentComponentBase
 /// Used for text.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElText")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Truncated), Name = "truncated")]
-[VueProp(nameof(LineClamp), Name = "lineClamp")]
-[VueProp(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElText : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6903,47 +5261,6 @@ public sealed class ElText : ElementPlusContentComponentBase
 /// Use Time Picker for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimePicker")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Readonly), Name = "readonly")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Editable), Name = "editable")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(StartPlaceholder), Name = "startPlaceholder")]
-[VueProp(nameof(EndPlaceholder), Name = "endPlaceholder")]
-[VueProp(nameof(IsRange), Name = "isRange")]
-[VueProp(nameof(ArrowControl), Name = "arrowControl")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(RangeSeparator), Name = "rangeSeparator")]
-[VueProp(nameof(Format), Name = "format")]
-[VueProp(nameof(DefaultValue), Name = "defaultValue")]
-[VueProp(nameof(ValueFormat), Name = "valueFormat")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(DisabledHours), Name = "disabledHours")]
-[VueProp(nameof(DisabledMinutes), Name = "disabledMinutes")]
-[VueProp(nameof(DisabledSeconds), Name = "disabledSeconds")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(SaveOnBlur), Name = "saveOnBlur")]
-[VueProp(nameof(Label), Name = "label")]
-[VueProp(nameof(DefaultTime), Name = "defaultTime")]
-[VueProp(nameof(DateFormat), Name = "dateFormat")]
-[VueProp(nameof(TimeFormat), Name = "timeFormat")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -7087,31 +5404,6 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 /// Use Time Select for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimeSelect")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Editable), Name = "editable")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(IncludeEndTime), Name = "includeEndTime")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(Start), Name = "start")]
-[VueProp(nameof(End), Name = "end")]
-[VueProp(nameof(Step), Name = "step")]
-[VueProp(nameof(MinTime), Name = "minTime")]
-[VueProp(nameof(MaxTime), Name = "maxTime")]
-[VueProp(nameof(Format), Name = "format")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -7203,13 +5495,6 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
 /// Visually display timeline.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimeline")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Reverse), Name = "reverse")]
-[VueProp(nameof(Mode), Name = "mode")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElTimeline : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -7224,21 +5509,6 @@ public sealed class ElTimeline : ElementPlusContentComponentBase
 /// el-timeline-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimelineItem")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Timestamp), Name = "timestamp")]
-[VueProp(nameof(HideTimestamp), Name = "hideTimestamp")]
-[VueProp(nameof(Center), Name = "center")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(Color), Name = "color")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Hollow), Name = "hollow")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Dot), Name = "dot")]
 public sealed class ElTimelineItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -7277,39 +5547,6 @@ public sealed class ElTimelineItem : ElementPlusContentComponentBase
 /// Display prompt information for mouse hover.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTooltip")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Content), Name = "content")]
-[VueProp(nameof(RawContent), Name = "rawContent")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(Visible), Name = "visible")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(Transition), Name = "transition")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(ArrowOffset), Name = "arrowOffset")]
-[VueProp(nameof(ShowAfter), Name = "showAfter")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(HideAfter), Name = "hideAfter")]
-[VueProp(nameof(AutoClose), Name = "autoClose")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(Enterable), Name = "enterable")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(Trigger), Name = "trigger")]
-[VueProp(nameof(VirtualTriggering), Name = "virtualTriggering")]
-[VueProp(nameof(VirtualRef), Name = "virtualRef")]
-[VueProp(nameof(TriggerKeys), Name = "triggerKeys")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(FocusOnTarget), Name = "focusOnTarget")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(ContentSlot), Name = "content")]
 [VueLibraryEmit(nameof(OnBeforeShow), Name = "before-show")]
 [VueLibraryEmit(nameof(OnShow), Name = "show")]
 [VueLibraryEmit(nameof(OnBeforeHide), Name = "before-hide")]
@@ -7398,6 +5635,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public bool? FocusOnTarget { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
@@ -7418,10 +5656,6 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
 /// A popup component for guiding users through a product. Use when you want to guide users through a product.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTour")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class ElTour : ElementPlusComponentBase
 {
 }
@@ -7430,10 +5664,6 @@ public sealed class ElTour : ElementPlusComponentBase
 /// el-tour-step
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTourStep")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class ElTourStep : ElementPlusComponentBase
 {
 }
@@ -7442,29 +5672,6 @@ public sealed class ElTourStep : ElementPlusComponentBase
 /// el-transfer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTransfer")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(Filterable), Name = "filterable")]
-[VueProp(nameof(FilterPlaceholder), Name = "filterPlaceholder")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(TargetOrder), Name = "targetOrder")]
-[VueProp(nameof(Titles), Name = "titles")]
-[VueProp(nameof(ButtonTexts), Name = "buttonTexts")]
-[VueProp(nameof(RenderContent), Name = "renderContent")]
-[VueProp(nameof(Format), Name = "format")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(LeftDefaultChecked), Name = "leftDefaultChecked")]
-[VueProp(nameof(RightDefaultChecked), Name = "rightDefaultChecked")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(LeftFooter), Name = "left-footer")]
-[VueSlot(nameof(RightFooter), Name = "right-footer")]
-[VueSlot(nameof(LeftEmpty), Name = "left-empty")]
-[VueSlot(nameof(RightEmpty), Name = "right-empty")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnLeftCheckChange), Name = "left-check-change")]
 [VueLibraryEmit(nameof(OnRightCheckChange), Name = "right-check-change")]
@@ -7543,38 +5750,6 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
 /// Display a set of data with hierarchies.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTree")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(EmptyText), Name = "emptyText")]
-[VueProp(nameof(NodeKey), Name = "nodeKey")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(RenderAfterExpand), Name = "renderAfterExpand")]
-[VueProp(nameof(Load), Name = "load")]
-[VueProp(nameof(RenderContent), Name = "renderContent")]
-[VueProp(nameof(HighlightCurrent), Name = "highlightCurrent")]
-[VueProp(nameof(DefaultExpandAll), Name = "defaultExpandAll")]
-[VueProp(nameof(ExpandOnClickNode), Name = "expandOnClickNode")]
-[VueProp(nameof(CheckOnClickNode), Name = "checkOnClickNode")]
-[VueProp(nameof(CheckOnClickLeaf), Name = "checkOnClickLeaf")]
-[VueProp(nameof(AutoExpandParent), Name = "autoExpandParent")]
-[VueProp(nameof(DefaultExpandedKeys), Name = "defaultExpandedKeys")]
-[VueProp(nameof(ShowCheckbox), Name = "showCheckbox")]
-[VueProp(nameof(CheckStrictly), Name = "checkStrictly")]
-[VueProp(nameof(DefaultCheckedKeys), Name = "defaultCheckedKeys")]
-[VueProp(nameof(CurrentNodeKey), Name = "currentNodeKey")]
-[VueProp(nameof(FilterNodeMethod), Name = "filterNodeMethod")]
-[VueProp(nameof(Accordion), Name = "accordion")]
-[VueProp(nameof(Indent), Name = "indent")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Lazy), Name = "lazy")]
-[VueProp(nameof(Draggable), Name = "draggable")]
-[VueProp(nameof(AllowDrag), Name = "allowDrag")]
-[VueProp(nameof(AllowDrop), Name = "allowDrop")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Empty), Name = "empty")]
 [VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
 [VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
 [VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
@@ -7716,97 +5891,6 @@ public sealed class ElTree : ElementPlusContentComponentBase
 /// ElTreeSelect
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeSelect")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(CacheData), Name = "cacheData")]
-[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Multiple), Name = "multiple")]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValueKey), Name = "valueKey")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(CollapseTags), Name = "collapseTags")]
-[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
-[VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Autocomplete), Name = "autocomplete")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Filterable), Name = "filterable")]
-[VueProp(nameof(AllowCreate), Name = "allowCreate")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(Remote), Name = "remote")]
-[VueProp(nameof(Debounce), Name = "debounce")]
-[VueProp(nameof(RemoteMethod), Name = "remoteMethod")]
-[VueProp(nameof(RemoteShowSuffix), Name = "remoteShowSuffix")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(LoadingText), Name = "loadingText")]
-[VueProp(nameof(NoMatchText), Name = "noMatchText")]
-[VueProp(nameof(NoDataText), Name = "noDataText")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(ReserveKeyword), Name = "reserveKeyword")]
-[VueProp(nameof(DefaultFirstOption), Name = "defaultFirstOption")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
-[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueProp(nameof(TagType), Name = "tagType")]
-[VueProp(nameof(TagEffect), Name = "tagEffect")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(SuffixTransition), Name = "suffixTransition")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(EmptyText), Name = "emptyText")]
-[VueProp(nameof(NodeKey), Name = "nodeKey")]
-[VueProp(nameof(RenderAfterExpand), Name = "renderAfterExpand")]
-[VueProp(nameof(Load), Name = "load")]
-[VueProp(nameof(RenderContent), Name = "renderContent")]
-[VueProp(nameof(HighlightCurrent), Name = "highlightCurrent")]
-[VueProp(nameof(DefaultExpandAll), Name = "defaultExpandAll")]
-[VueProp(nameof(ExpandOnClickNode), Name = "expandOnClickNode")]
-[VueProp(nameof(CheckOnClickNode), Name = "checkOnClickNode")]
-[VueProp(nameof(CheckOnClickLeaf), Name = "checkOnClickLeaf")]
-[VueProp(nameof(AutoExpandParent), Name = "autoExpandParent")]
-[VueProp(nameof(DefaultExpandedKeys), Name = "defaultExpandedKeys")]
-[VueProp(nameof(ShowCheckbox), Name = "showCheckbox")]
-[VueProp(nameof(CheckStrictly), Name = "checkStrictly")]
-[VueProp(nameof(DefaultCheckedKeys), Name = "defaultCheckedKeys")]
-[VueProp(nameof(CurrentNodeKey), Name = "currentNodeKey")]
-[VueProp(nameof(FilterNodeMethod), Name = "filterNodeMethod")]
-[VueProp(nameof(Accordion), Name = "accordion")]
-[VueProp(nameof(Indent), Name = "indent")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(Lazy), Name = "lazy")]
-[VueProp(nameof(Draggable), Name = "draggable")]
-[VueProp(nameof(AllowDrag), Name = "allowDrag")]
-[VueProp(nameof(AllowDrop), Name = "allowDrop")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(LoadingSlot), Name = "loading")]
-[VueSlot(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 [VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
@@ -8084,6 +6168,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
@@ -8161,30 +6246,6 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
 /// el-tree-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeV2")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(EmptyText), Name = "emptyText")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(HighlightCurrent), Name = "highlightCurrent")]
-[VueProp(nameof(ExpandOnClickNode), Name = "expandOnClickNode")]
-[VueProp(nameof(CheckOnClickNode), Name = "checkOnClickNode")]
-[VueProp(nameof(CheckOnClickLeaf), Name = "checkOnClickLeaf")]
-[VueProp(nameof(DefaultExpandedKeys), Name = "defaultExpandedKeys")]
-[VueProp(nameof(ShowCheckbox), Name = "showCheckbox")]
-[VueProp(nameof(CheckStrictly), Name = "checkStrictly")]
-[VueProp(nameof(DefaultCheckedKeys), Name = "defaultCheckedKeys")]
-[VueProp(nameof(CurrentNodeKey), Name = "currentNodeKey")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(Indent), Name = "indent")]
-[VueProp(nameof(Icon), Name = "icon")]
-[VueProp(nameof(ItemSize), Name = "itemSize")]
-[VueProp(nameof(ScrollbarAlwaysOn), Name = "scrollbarAlwaysOn")]
-[VueProp(nameof(Height), Name = "height")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Empty), Name = "empty")]
 [VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
 [VueLibraryEmit(nameof(OnNodeDrop), Name = "node-drop")]
 [VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
@@ -8282,41 +6343,6 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
 /// Upload files by clicking or drag-and-drop.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElUpload")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Action), Name = "action")]
-[VueProp(nameof(Headers), Name = "headers")]
-[VueProp(nameof(Method), Name = "method")]
-[VueProp(nameof(Multiple), Name = "multiple")]
-[VueProp(nameof(Data), Name = "data")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(WithCredentials), Name = "withCredentials")]
-[VueProp(nameof(ShowFileList), Name = "showFileList")]
-[VueProp(nameof(Drag), Name = "drag")]
-[VueProp(nameof(Accept), Name = "accept")]
-[VueProp(nameof(Crossorigin), Name = "crossorigin")]
-[VueProp(nameof(OnPreview), Name = "onPreview")]
-[VueProp(nameof(OnRemove), Name = "onRemove")]
-[VueProp(nameof(OnSuccess), Name = "onSuccess")]
-[VueProp(nameof(OnError), Name = "onError")]
-[VueProp(nameof(OnProgress), Name = "onProgress")]
-[VueProp(nameof(OnChange), Name = "onChange")]
-[VueProp(nameof(OnExceed), Name = "onExceed")]
-[VueProp(nameof(BeforeUpload), Name = "beforeUpload")]
-[VueProp(nameof(BeforeRemove), Name = "beforeRemove")]
-[VueProp(nameof(FileList), Name = "fileList")]
-[VueProp(nameof(ListType), Name = "listType")]
-[VueProp(nameof(AutoUpload), Name = "autoUpload")]
-[VueProp(nameof(HttpRequest), Name = "httpRequest")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(Limit), Name = "limit")]
-[VueProp(nameof(Directory), Name = "directory")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Trigger), Name = "trigger")]
-[VueSlot(nameof(Tip), Name = "tip")]
-[VueSlot(nameof(File), Name = "file")]
 public sealed class ElUpload : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -8415,75 +6441,6 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 /// :::tip
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelectV2")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueProp(nameof(Options), Name = "options")]
-[VueProp(nameof(Props), Name = "props")]
-[VueProp(nameof(Multiple), Name = "multiple")]
-[VueProp(nameof(Disabled), Name = "disabled")]
-[VueProp(nameof(ValueKey), Name = "valueKey")]
-[VueProp(nameof(Size), Name = "size")]
-[VueProp(nameof(Clearable), Name = "clearable")]
-[VueProp(nameof(ClearIcon), Name = "clearIcon")]
-[VueProp(nameof(CollapseTags), Name = "collapseTags")]
-[VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
-[VueProp(nameof(Id), Name = "id")]
-[VueProp(nameof(Name), Name = "name")]
-[VueProp(nameof(Effect), Name = "effect")]
-[VueProp(nameof(Autocomplete), Name = "autocomplete")]
-[VueProp(nameof(Placeholder), Name = "placeholder")]
-[VueProp(nameof(Filterable), Name = "filterable")]
-[VueProp(nameof(AllowCreate), Name = "allowCreate")]
-[VueProp(nameof(FilterMethod), Name = "filterMethod")]
-[VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(LoadingText), Name = "loadingText")]
-[VueProp(nameof(ReserveKeyword), Name = "reserveKeyword")]
-[VueProp(nameof(DefaultFirstOption), Name = "defaultFirstOption")]
-[VueProp(nameof(NoMatchText), Name = "noMatchText")]
-[VueProp(nameof(NoDataText), Name = "noDataText")]
-[VueProp(nameof(PopperClass), Name = "popperClass")]
-[VueProp(nameof(PopperStyle), Name = "popperStyle")]
-[VueProp(nameof(Teleported), Name = "teleported")]
-[VueProp(nameof(AppendTo), Name = "appendTo")]
-[VueProp(nameof(Persistent), Name = "persistent")]
-[VueProp(nameof(PopperOptions), Name = "popperOptions")]
-[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
-[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
-[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(ItemHeight), Name = "itemHeight")]
-[VueProp(nameof(EstimatedOptionHeight), Name = "estimatedOptionHeight")]
-[VueProp(nameof(ScrollbarAlwaysOn), Name = "scrollbarAlwaysOn")]
-[VueProp(nameof(Remote), Name = "remote")]
-[VueProp(nameof(Debounce), Name = "debounce")]
-[VueProp(nameof(RemoteMethod), Name = "remoteMethod")]
-[VueProp(nameof(RemoteShowSuffix), Name = "remoteShowSuffix")]
-[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueProp(nameof(ShowArrow), Name = "showArrow")]
-[VueProp(nameof(Placement), Name = "placement")]
-[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
-[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
-[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
-[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
-[VueProp(nameof(TagType), Name = "tagType")]
-[VueProp(nameof(TagEffect), Name = "tagEffect")]
-[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
-[VueProp(nameof(EmptyValues), Name = "emptyValues")]
-[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
-[VueProp(nameof(PopperAppendToBody), Name = "popperAppendToBody")]
-[VueProp(nameof(Tabindex), Name = "tabindex")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(Prefix), Name = "prefix")]
-[VueSlot(nameof(Tag), Name = "tag")]
-[VueSlot(nameof(LoadingSlot), Name = "loading")]
-[VueSlot(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 [VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
@@ -8681,6 +6638,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
@@ -8716,20 +6674,6 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
 /// Add specific text or patterns to the page.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElWatermark")]
-[VueLibraryStyle("element-plus/dist/index.css")]
-[VueLibraryPluginRequirement("element-plus")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Width), Name = "width")]
-[VueProp(nameof(Height), Name = "height")]
-[VueProp(nameof(Rotate), Name = "rotate")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueProp(nameof(Image), Name = "image")]
-[VueProp(nameof(Content), Name = "content")]
-[VueProp(nameof(Font), Name = "font")]
-[VueProp(nameof(Gap), Name = "gap")]
-[VueProp(nameof(Offset), Name = "offset")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElWatermark : ElementPlusContentComponentBase
 {
     [Parameter]

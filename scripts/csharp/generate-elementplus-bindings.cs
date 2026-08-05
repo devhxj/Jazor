@@ -599,27 +599,6 @@ internal static class Program
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
             builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
-            builder.AppendLine("[VueLibraryStyle(\"element-plus/dist/index.css\")]");
-            builder.AppendLine("[VueLibraryPluginRequirement(\"element-plus\")]");
-            builder.AppendLine("[VueProp(nameof(CssClass), Name = \"class\")]");
-            builder.AppendLine("[VueProp(nameof(CssStyle), Name = \"style\")]");
-
-            foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
-            {
-                builder.AppendLine(RenderVuePropAttribute(prop));
-            }
-
-            foreach (var slot in component.Slots)
-            {
-                if (slot.IsDefault)
-                {
-                    builder.AppendLine("[VueSlot(nameof(ChildContent), IsDefault = true)]");
-                }
-                else
-                {
-                    builder.AppendLine($"[VueSlot(nameof({slot.PropertyName}), Name = \"{slot.RuntimeName}\")]");
-                }
-            }
 
             foreach (var emit in component.Emits)
             {
@@ -632,6 +611,10 @@ internal static class Program
             foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
                 builder.AppendLine("    [Parameter]");
+                if (prop.Required)
+                    builder.AppendLine("    [EditorRequired]");
+                if (RequiresExplicitPropName(prop))
+                    builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(prop.RuntimeName)}\")]");
                 builder.AppendLine($"    public {prop.Type.SourceText} {prop.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
@@ -639,6 +622,8 @@ internal static class Program
             foreach (var slot in component.Slots.Where(static slot => !slot.IsDefault))
             {
                 builder.AppendLine("    [Parameter]");
+                if (RequiresExplicitSlotName(slot))
+                    builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(slot.RuntimeName)}\")]");
                 builder.AppendLine($"    public RenderFragment? {slot.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
@@ -708,34 +693,47 @@ internal static class Program
         return builder.ToString();
     }
 
-    private static string RenderVuePropAttribute(ElementPlusPropMetadata prop)
+    private static bool RequiresExplicitPropName(ElementPlusPropMetadata prop)
+        => !string.Equals(
+            prop.RuntimeName,
+            ToLowerCamelCase(prop.PropertyName),
+            StringComparison.Ordinal);
+
+    private static bool RequiresExplicitSlotName(ElementPlusSlotMetadata slot)
     {
-        var arguments = new List<string>
-        {
-            $"nameof({prop.PropertyName})"
-        };
+        var conventionalName = slot.PropertyName.EndsWith("Content", StringComparison.Ordinal) &&
+                               slot.PropertyName.Length > "Content".Length
+            ? slot.PropertyName[..^"Content".Length]
+            : slot.PropertyName;
+        return !string.Equals(
+            slot.RuntimeName,
+            ToKebabCase(conventionalName),
+            StringComparison.Ordinal);
+    }
 
-        if (prop.AcceptsBinding)
+    private static string ToKebabCase(string name)
+    {
+        var result = new StringBuilder(name.Length + 4);
+        for (var index = 0; index < name.Length; index++)
         {
-            arguments.Add("VuePropKind.Model");
+            var character = name[index];
+            if (char.IsUpper(character))
+            {
+                var separatesWord = index > 0 &&
+                    (char.IsLower(name[index - 1]) ||
+                     char.IsDigit(name[index - 1]) ||
+                     index + 1 < name.Length && char.IsLower(name[index + 1]));
+                if (separatesWord)
+                    result.Append('-');
+
+                result.Append(char.ToLowerInvariant(character));
+                continue;
+            }
+
+            result.Append(character);
         }
 
-        var namedArguments = new List<string>
-        {
-            $"Name = \"{prop.RuntimeName}\""
-        };
-
-        if (prop.Required)
-        {
-            namedArguments.Add("Required = true");
-        }
-
-        if (prop.AcceptsBinding)
-        {
-            namedArguments.Add("AcceptsBinding = true");
-        }
-
-        return $"[VueProp({string.Join(", ", arguments.Concat(namedArguments))})]";
+        return result.ToString();
     }
 
     private static string RenderVueEmitAttribute(ElementPlusEmitMetadata emit)

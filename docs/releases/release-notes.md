@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- ElementPlus binding generation now emits ordinary Razor parameters, standard `EditorRequired` metadata, and member-level `ECMAScriptName` only when a prop or slot differs from naming conventions. Regenerated components no longer contain `VueProp`, `VueSlot`, style, or plugin descriptor duplication.
 - TDesign bindings now use inherited standard `class` / `style` / default-slot conventions and member-level `ECMAScriptName` for exceptional content, styling, and camelCase slot names. They no longer declare `VueProp` or `VueSlot` metadata.
 - Vuetify authoring bindings no longer declare `VueProp` or `VueSlot` metadata. Exceptional prop names and dot-qualified slots now use the same member-level `ECMAScriptName` contract as ordinary compiler naming, while Razor property names and component usage remain unchanged.
 - RazorVue component names now come from the effective `[Parameter]` symbol: member-level `ECMAScriptName` or `Description("@#...")` mappings override legacy class descriptors, derived `new [Parameter]` members replace hidden base parameters, and duplicate final Vue names fail explicitly. `VueProp` and `VueSlot` remain migration-only compatibility metadata until generated bindings are updated.

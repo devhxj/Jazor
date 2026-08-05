@@ -3318,6 +3318,42 @@ public sealed class EcmaScriptVueProxyTests
         }
     }
 
+    [TestMethod]
+    public void ElementPlus_GeneratedComponentNames_UseMemberLevelGeneralMetadata()
+    {
+        var componentTypes = typeof(ElementPlus).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.ElementPlus" &&
+                typeof(ComponentBase).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VueLibraryStyleAttribute>(inherit: false).Any()));
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VueLibraryPluginRequirementAttribute>(inherit: false).Any()));
+
+        Assert.AreEqual(
+            "class",
+            typeof(ElAffix).GetProperty(nameof(ElAffix.CssClass))!
+                .GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name);
+        Assert.AreEqual(
+            "style",
+            typeof(ElAffix).GetProperty(nameof(ElAffix.CssStyle))!
+                .GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name);
+        Assert.AreEqual(
+            "title",
+            typeof(ElAlert).GetProperty(nameof(ElAlert.TitleSlot))!
+                .GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+        Assert.IsNull(
+            typeof(ElAffix).GetProperty(nameof(ElAffix.Offset))!
+                .GetCustomAttribute<ECMAScriptNameAttribute>());
+    }
+
     private static IEnumerable<string> GetVuetifyRuntimeComponentNames()
         => GetVuetifyRuntimeComponentNames(typeof(VuetifyComponents))
             .Concat(GetVuetifyRuntimeComponentNames(typeof(VuetifyLabsComponents)));

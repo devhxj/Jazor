@@ -5,9 +5,11 @@ namespace ECMAScript.ElementPlus;
 public abstract class ElementPlusComponentBase : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("style")]
     public VueStyleValue? CssStyle { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
