@@ -21,6 +21,7 @@
 
 | 文档 | 用途 |
 | --- | --- |
+| [Jazor 发布路线图](./ReleaseRoadmap.md) | `0.3` 到 `1.0` 的版本门槛、HMR/调试/性能阶段与验收口径 |
 | [Jazor 架构转型开发计划](./Jazor%20架构转型开发计划.md) | 主线计划、阶段目标和依赖关系 |
 | [Razor SG Final-Document G0 决策记录](./RazorSgFinalDocument.G0.DecisionRecord.md) | 最终 Compilation 输入边界的决策与证据 |
 | `razorvue-transition/` | Razor-to-Vue 路线、WBS、验收和状态分片 |
