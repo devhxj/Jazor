@@ -369,7 +369,7 @@ public sealed class AstConverterReachableBranchClosureTests
     }
 
     [TestMethod]
-    public async Task Convert_DefaultExportMemberImport_IsRejectedBeforeAliasAllocation()
+    public async Task Convert_DefaultAndNamedMemberImports_DeduplicateAndFormValidCombinedImport()
     {
         var fixture = CompileModule(
             """
@@ -383,21 +383,35 @@ public sealed class AstConverterReachableBranchClosureTests
                 {
                     [ECMAScriptName("default")]
                     public static int DefaultExport() => 1;
+
+                    public static int NamedExport() => 2;
                 }
 
                 [ECMAScriptModule("consumer")]
                 public static class TestModule
                 {
-                    public static int Read() => Runtime.DefaultExport();
+                    public static int Read()
+                        => Runtime.DefaultExport() + Runtime.NamedExport() + Runtime.DefaultExport();
                 }
             }
             """);
 
-        var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() =>
-            new AstConverter(fixture.Module, fixture.SemanticModel).Convert());
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+        var declaration = module.Body.OfType<ImportDeclaration>().Single();
+        var specifier = declaration.Specifiers.OfType<ImportDefaultSpecifier>().Single();
+        var namedSpecifier = declaration.Specifiers.OfType<ImportSpecifier>().Single();
+        var script = module.ToKnRECMAScript();
 
-        StringAssert.Contains(exception.Message, "does not support default export", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "Demo.RuntimeModule", StringComparison.Ordinal);
+        StringAssert.StartsWith(specifier.Local.Name, "i$", StringComparison.Ordinal);
+        Assert.AreEqual("namedExport", ((Identifier)namedSpecifier.Imported).Name);
+        Assert.AreEqual("namedExport", namedSpecifier.Local.Name);
+        StringAssert.Contains(
+            script,
+            "import " + specifier.Local.Name + ", { namedExport } from \"runtime\";",
+            StringComparison.Ordinal);
+        Assert.AreEqual(2, CountOccurrences(script, specifier.Local.Name + "()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "namedExport()"), script);
+        _ = new Parser().ParseModule(script);
     }
 
     [TestMethod]

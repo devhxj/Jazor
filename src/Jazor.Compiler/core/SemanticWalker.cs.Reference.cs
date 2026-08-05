@@ -328,12 +328,6 @@ public partial class SemanticWalker
 	private bool TryBuildImportedModuleMember(ITypeSymbol containingType, string memberName, SenseArgument context, out Expression? expression)
 	{
 		expression = null;
-		if (string.Equals(memberName, "default", StringComparison.Ordinal))
-		{
-			throw new NotSupportedException(
-				$"Jazor module import does not support default export. Member import from '{containingType.ToDisplayString(Format.NameFormat)}' resolves to export name 'default'. Use a named export instead.");
-		}
-
 		var modulePath = GetModuleImportPath(containingType);
 		if (string.IsNullOrWhiteSpace(modulePath))
 			return false;
@@ -341,6 +335,10 @@ public partial class SemanticWalker
 		if (IsCurrentModuleType(containingType))
 			return false;
 
+		// "default" is valid only on this cross-module import path. AstConverter still rejects a
+		// C# module member that attempts to declare `export default`, so importing an existing ESM
+		// default does not silently broaden Jazor's own module export contract.
+		// 这里只允许跨模块消费既有 default export；Jazor 自身模块仍只声明 named export。
 		expression = context.BindImportSpecifier(modulePath!, memberName);
 		return true;
 	}

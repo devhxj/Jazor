@@ -4457,7 +4457,7 @@ public record NavigationOptions(
 [Description("@#NavigationPreloadState")]
 public record NavigationPreloadState(
     [property: Description("@#enabled")]bool Enabled = false,
-    [property: Description("@#headerValue")]byte[]? HeaderValue = default);
+    [property: Description("@#headerValue")]string? HeaderValue = default);
 
 /// <summary>
 /// NavigationReloadOptions
@@ -6357,7 +6357,7 @@ public record RequestDeviceOptions(
 [Description("@#RequestInit")]
 public record RequestInit(
     [property: Description("@#attributionReporting")]AttributionReportingRequestOptions? AttributionReporting = default,
-    [property: Description("@#method")]byte[]? Method = default,
+    [property: Description("@#method")]string? Method = default,
     [property: Description("@#headers")]HeadersInit? Headers = default,
     [property: Description("@#body")]BodyInit? Body = default,
     [property: Description("@#referrer")]string? Referrer = default,
@@ -6383,7 +6383,7 @@ public record RequestInit(
 
     [Category("optional")]
     public extern static RequestInit OptionalMethodHeadersBody15(
-        [Description("@#method")]byte[]? Method = default,
+        [Description("@#method")]string? Method = default,
         [Description("@#headers")]HeadersInit? Headers = default,
         [Description("@#body")]BodyInit? Body = default,
         [Description("@#referrer")]string? Referrer = default,
@@ -6431,7 +6431,7 @@ public record ResizeObserverOptions(
 [Description("@#ResponseInit")]
 public record ResponseInit(
     [property: Description("@#status")]ushort Status = 200,
-    [property: Description("@#statusText")]byte[]? StatusText = default,
+    [property: Description("@#statusText")]string? StatusText = default,
     [property: Description("@#headers")]HeadersInit? Headers = default);
 
 /// <summary>
@@ -6441,7 +6441,7 @@ public record ResponseInit(
 [Description("@#RouterCondition")]
 public record RouterCondition(
     [property: Description("@#urlPattern")]URLPatternCompatible? UrlPattern = default,
-    [property: Description("@#requestMethod")]byte[]? RequestMethod = default,
+    [property: Description("@#requestMethod")]string? RequestMethod = default,
     [property: Description("@#requestMode")]RequestMode? RequestMode = default,
     [property: Description("@#requestDestination")]RequestDestination? RequestDestination = default,
     [property: Description("@#runningStatus")]RunningStatus? RunningStatus = default,

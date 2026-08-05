@@ -8,7 +8,7 @@
     <Net110AssembliesVersion>1.8.7</Net110AssembliesVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.46</JazorPackageVersion>
+    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.47</JazorPackageVersion>
   </PropertyGroup>
 
   <!--

@@ -71,14 +71,18 @@ internal sealed class WebIdlTypeMapper
 
     private static readonly IReadOnlyDictionary<string, string> PrimitiveTypeMap = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["bigint"] = "BigInteger",
+        // Keep the Web IDL primitive distinct from WebCrypto's `typedef Uint8Array BigInteger`.
+        // 使用全限定名避免同名 typedef alias 截获真实 JavaScript BigInt 的 C# 映射。
+        ["bigint"] = "System.Numerics.BigInteger",
         ["DOMString"] = "string",
         ["USVString"] = "string",
         ["CSSOMString"] = "string",
         ["HTMLString"] = "string",
         ["ScriptString"] = "string",
         ["ScriptURLString"] = "string",
-        ["ByteString"] = "byte[]",
+        // Web IDL ByteString carries HTTP method/header text, not a binary payload.
+        // 映射成 string 才能自然表达 Fetch RequestInit 与 Headers 的作者侧契约。
+        ["ByteString"] = "string",
         ["boolean"] = "bool",
         ["byte"] = "sbyte",
         ["octet"] = "byte",

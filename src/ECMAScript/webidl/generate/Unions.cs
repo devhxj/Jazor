@@ -1624,17 +1624,17 @@ public readonly union CreateObjectURLObj(Blob, MediaSource)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union CryptoKeyID(SmallCryptoKeyID, BigInteger)
+public readonly union CryptoKeyID(SmallCryptoKeyID, System.Numerics.BigInteger)
 {
 
     public SmallCryptoKeyID? AsSmallCryptoKeyID => Value is SmallCryptoKeyID value ? value : default(SmallCryptoKeyID?);
 
-    public BigInteger? AsBigInteger => Value is BigInteger value ? value : default(BigInteger?);
+    public System.Numerics.BigInteger? AsBigInteger => Value is System.Numerics.BigInteger value ? value : default(System.Numerics.BigInteger?);
 
     public static implicit operator CryptoKeyID(SmallCryptoKeyID value)
         => new(value);
 
-    public static implicit operator CryptoKeyID(BigInteger value)
+    public static implicit operator CryptoKeyID(System.Numerics.BigInteger value)
         => new(value);
 }
 
@@ -3153,30 +3153,30 @@ public readonly union HTMLSlotElementAssignNodes(Element, Text)
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(HeadersInitCollectionBuilder), nameof(HeadersInitCollectionBuilder.Create))]
-public readonly union HeadersInit(byte[][][], Dictionary<byte[], byte[]>) : IEnumerable<byte[][]>
+public readonly union HeadersInit(string[][], Dictionary<string, string>) : IEnumerable<string[]>
 {
 
-    public byte[][][]? AsByteArrayArrayArray => Value is byte[][][] value ? value : default(byte[][][]?);
+    public string[][]? AsStringArrayArray => Value is string[][] value ? value : default(string[][]?);
 
-    public Dictionary<byte[], byte[]>? AsDictionaryByteArrayByteArray => Value is Dictionary<byte[], byte[]> value ? value : default(Dictionary<byte[], byte[]>?);
+    public Dictionary<string, string>? AsDictionaryStringString => Value is Dictionary<string, string> value ? value : default(Dictionary<string, string>?);
 
-    public static implicit operator HeadersInit(byte[][][] value)
+    public static implicit operator HeadersInit(string[][] value)
         => new(value);
 
-    public static implicit operator HeadersInit(Dictionary<byte[], byte[]> value)
+    public static implicit operator HeadersInit(Dictionary<string, string> value)
         => new(value);
 
-    IEnumerator<byte[][]> IEnumerable<byte[][]>.GetEnumerator()
-        => ((IEnumerable<byte[][]>)(AsByteArrayArrayArray ?? Array.Empty<byte[][]>())).GetEnumerator();
+    IEnumerator<string[]> IEnumerable<string[]>.GetEnumerator()
+        => ((IEnumerable<string[]>)(AsStringArrayArray ?? Array.Empty<string[]>())).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<byte[][]>)this).GetEnumerator();
+        => ((IEnumerable<string[]>)this).GetEnumerator();
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class HeadersInitCollectionBuilder
 {
-    public static HeadersInit Create(ReadOnlySpan<byte[][]> items)
+    public static HeadersInit Create(ReadOnlySpan<string[]> items)
         => items.ToArray();
 }
 

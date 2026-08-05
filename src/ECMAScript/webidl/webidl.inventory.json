@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-05-11T06:28:34.996+00:00",
+  "generatedAt": "2026-08-05T11:15:13.33+00:00",
   "source": {
     "parser": "webidl2@24.4.1",
     "webrefIdl": "@webref/idl@3.46.1",

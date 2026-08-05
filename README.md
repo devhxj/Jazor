@@ -88,6 +88,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-05
 
+- External ECMAScript host proxies can now consume a module's `default` export while Jazor-authored modules retain their deterministic named-export contract.
+- Generated WebIDL bindings now model `ByteString` browser text as `string` and distinguish WebCrypto's byte-array `BigInteger` typedef from the JavaScript `bigint` primitive.
 - Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
 - Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
 - Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
@@ -100,7 +102,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.46
+dotnet add package Jazor --version 0.1.47
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -109,8 +111,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.46" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.46" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.47" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.47" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -118,11 +120,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.46" />
+  <PackageReference Include="Jazor" Version="0.1.47" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.47" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.47" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.47" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.47" />
 </ItemGroup>
 ```
 

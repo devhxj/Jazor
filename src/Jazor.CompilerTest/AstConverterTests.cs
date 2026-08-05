@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Threading;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.Common;
@@ -13705,7 +13706,7 @@ export function boot() {{
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_Throws()
+    public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_UsesDefaultImport()
     {
         var code = """
             using System;
@@ -13747,14 +13748,25 @@ export function boot() {{
             .OfType<INamedTypeSymbol>()
             .Single();
 
-        var converter = new AstConverter(appModule, semanticModel);
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        StringAssert.Contains(exception.Message, "does not support default export");
-        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
+        var module = await new AstConverter(appModule, semanticModel).Convert();
+        var specifier = module?.Body
+            .OfType<ImportDeclaration>()
+            .Single()
+            .Specifiers
+            .OfType<ImportDefaultSpecifier>()
+            .Single();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(specifier);
+        Assert.IsNotNull(script);
+        StringAssert.StartsWith(specifier.Local.Name, "i$", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import " + specifier.Local.Name + " from \"./components/wiki-home.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return " + specifier.Local.Name + ";", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultAccessorReference_Throws()
+    public async Task Convert_ClassWithCrossModuleDefaultAccessorReference_UsesDefaultImport()
     {
         var code = """
             using System;
@@ -13799,14 +13811,25 @@ export function boot() {{
             .OfType<INamedTypeSymbol>()
             .Single();
 
-        var converter = new AstConverter(appModule, semanticModel);
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        StringAssert.Contains(exception.Message, "does not support default export");
-        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
+        var module = await new AstConverter(appModule, semanticModel).Convert();
+        var specifier = module?.Body
+            .OfType<ImportDeclaration>()
+            .Single()
+            .Specifiers
+            .OfType<ImportDefaultSpecifier>()
+            .Single();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(specifier);
+        Assert.IsNotNull(script);
+        StringAssert.StartsWith(specifier.Local.Name, "i$", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import " + specifier.Local.Name + " from \"./components/wiki-home.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return " + specifier.Local.Name + ";", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultConventionReference_Throws()
+    public async Task Convert_ClassWithCrossModuleDefaultConventionReference_UsesDefaultImport()
     {
         var code = """
             using System;
@@ -13846,10 +13869,21 @@ export function boot() {{
             .OfType<INamedTypeSymbol>()
             .Single();
 
-        var converter = new AstConverter(appModule, semanticModel);
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        StringAssert.Contains(exception.Message, "does not support default export");
-        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
+        var module = await new AstConverter(appModule, semanticModel).Convert();
+        var specifier = module?.Body
+            .OfType<ImportDeclaration>()
+            .Single()
+            .Specifiers
+            .OfType<ImportDefaultSpecifier>()
+            .Single();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(specifier);
+        Assert.IsNotNull(script);
+        StringAssert.StartsWith(specifier.Local.Name, "i$", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import " + specifier.Local.Name + " from \"./components/wiki-home.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return " + specifier.Local.Name + ";", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
     }
 
     [TestMethod]

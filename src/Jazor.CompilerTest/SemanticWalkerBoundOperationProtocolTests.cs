@@ -68,7 +68,7 @@ public sealed class SemanticWalkerBoundOperationProtocolTests
     }
 
     [TestMethod]
-    public void Visit_ExternalModuleDefaultExportMember_RejectsUnnamedImportProtocol()
+    public void Visit_ExternalModuleDefaultExportMember_UsesDefaultImportProtocol()
     {
         var block = GetBlockOperation("""
             using System;
@@ -101,11 +101,17 @@ public sealed class SemanticWalkerBoundOperationProtocolTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<NotSupportedException>(() =>
-            new SemanticWalker(true).Visit(block, new SenseArgument()));
+        var argument = new SenseArgument(UseImportAliases: true);
+        var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
+        var imports = argument.FlushImportSpecifiers();
 
-        StringAssert.Contains(exception.Message, "does not support default export", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "Use a named export", StringComparison.Ordinal);
+        Assert.IsNotNull(script);
+        Assert.HasCount(1, imports);
+        Assert.AreEqual("./remote-default.mjs", imports[0].Key);
+        var specifier = imports[0].Value.OfType<ImportDefaultSpecifier>().Single();
+        StringAssert.StartsWith(specifier.Local.Name, "i$", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let value = " + specifier.Local.Name, StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
     }
 
     [TestMethod]

@@ -10,6 +10,92 @@ namespace ECMAScript.WebIDL.GeneratorTest;
 public sealed class PreviewBindingEmitterTests
 {
     [TestMethod]
+    public async Task EmitAsync_WebCryptoBigIntegerTypedef_DoesNotCapturePrimitiveBigInt()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("BigInteger", """
+                { "idlType": "Uint8Array" }
+                """),
+            Typedef("CryptoKeyID", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "unsigned long long" },
+                    { "idlType": "bigint" }
+                  ]
+                }
+                """));
+
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using BigInteger = ECMAScript.Uint8Array;");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union CryptoKeyID(ulong, System.Numerics.BigInteger)");
+        StringAssert.Contains(files["Unions.cs"], "AsBigInteger => Value is System.Numerics.BigInteger value");
+        Assert.IsFalse(files["Unions.cs"].Contains("AsSystemNumericsBigInteger", StringComparison.Ordinal));
+
+        var diagnostics = CompileGeneratedFiles(
+            files,
+            """
+            namespace ECMAScript;
+
+            public class Uint8Array;
+            """);
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_HttpByteStrings_EmitStringContracts()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("HeadersInit", """
+                {
+                  "union": true,
+                  "idlType": [
+                    {
+                      "generic": "sequence",
+                      "idlType": [
+                        {
+                          "generic": "sequence",
+                          "idlType": [ { "idlType": "ByteString" } ]
+                        }
+                      ]
+                    },
+                    {
+                      "generic": "record",
+                      "idlType": [
+                        { "idlType": "ByteString" },
+                        { "idlType": "ByteString" }
+                      ]
+                    }
+                  ]
+                }
+                """),
+            Dictionary("RequestInit", """
+                [
+                  { "type": "field", "name": "method", "idlType": { "idlType": "ByteString" } },
+                  { "type": "field", "name": "headers", "idlType": { "idlType": "HeadersInit" } }
+                ]
+                """),
+            Interface("Headers", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "append",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      { "name": "name", "idlType": { "idlType": "ByteString" }, "optional": false, "variadic": false },
+                      { "name": "value", "idlType": { "idlType": "ByteString" }, "optional": false, "variadic": false }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#method\")]string? Method = default");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union HeadersInit(string[][], Dictionary<string, string>) : IEnumerable<string[]>");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void Append(string name, string value);");
+    }
+
+    [TestMethod]
     public async Task EmitAsync_TypedefUnionWithSequenceBranch_EmitsNamedWrapper()
     {
         var files = await EmitGeneratedFilesAsync(

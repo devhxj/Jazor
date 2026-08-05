@@ -1883,28 +1883,31 @@ internal sealed class PreviewBindingEmitter
 
     private static string BuildTypeMemberSuffix(string typeName)
     {
+        // The qualification prevents the WebCrypto typedef named BigInteger from capturing
+        // the primitive mapping, but it is an implementation detail in a public union projection.
+        var displayTypeName = typeName.Replace("System.Numerics.", string.Empty, StringComparison.Ordinal);
         var builder = new StringBuilder();
-        for (var index = 0; index < typeName.Length; index++)
+        for (var index = 0; index < displayTypeName.Length; index++)
         {
-            if (index + 1 < typeName.Length && typeName[index] == '[' && typeName[index + 1] == ']')
+            if (index + 1 < displayTypeName.Length && displayTypeName[index] == '[' && displayTypeName[index + 1] == ']')
             {
                 builder.Append("Array");
                 index++;
                 continue;
             }
 
-            if (!char.IsLetterOrDigit(typeName[index]))
+            if (!char.IsLetterOrDigit(displayTypeName[index]))
             {
                 continue;
             }
 
             var start = index;
-            while (index < typeName.Length && char.IsLetterOrDigit(typeName[index]))
+            while (index < displayTypeName.Length && char.IsLetterOrDigit(displayTypeName[index]))
             {
                 index++;
             }
 
-            builder.Append(WebIdlNaming.ToPascalCase(typeName[start..index]));
+            builder.Append(WebIdlNaming.ToPascalCase(displayTypeName[start..index]));
             index--;
         }
 

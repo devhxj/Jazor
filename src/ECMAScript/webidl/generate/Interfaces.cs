@@ -25507,7 +25507,7 @@ public class HashChangeEvent(string type, EventInit eventInitDict) : Event(type,
 /// </summary>
 [ECMAScript]
 [Description("@#Headers")]
-public class Headers : IEnumerable<(byte[], byte[])>
+public class Headers : IEnumerable<(string, string)>
 {
     /// <summary>
     /// Constructor 
@@ -25521,34 +25521,34 @@ public class Headers : IEnumerable<(byte[], byte[])>
     /// <param name="name">name</param>
     /// <param name="value">value</param>
     [Description("@#append")]
-    public extern void Append(byte[] name, byte[] value);
+    public extern void Append(string name, string value);
 
     /// <summary>
     /// delete
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#delete")]
-    public extern void Delete(byte[] name);
+    public extern void Delete(string name);
 
     /// <summary>
     /// get
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#get")]
-    public extern byte[]? Get(byte[] name);
+    public extern string? Get(string name);
 
     /// <summary>
     /// getSetCookie
     /// </summary>
     [Description("@#getSetCookie")]
-    public extern byte[][] GetSetCookie();
+    public extern string[] GetSetCookie();
 
     /// <summary>
     /// has
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#has")]
-    public extern bool Has(byte[] name);
+    public extern bool Has(string name);
 
     /// <summary>
     /// set
@@ -25556,9 +25556,9 @@ public class Headers : IEnumerable<(byte[], byte[])>
     /// <param name="name">name</param>
     /// <param name="value">value</param>
     [Description("@#set")]
-    public extern void Set(byte[] name, byte[] value);
+    public extern void Set(string name, string value);
 
-    extern IEnumerator<(byte[], byte[])> IEnumerable<(byte[], byte[])>.GetEnumerator();
+    extern IEnumerator<(string, string)> IEnumerable<(string, string)>.GetEnumerator();
     extern IEnumerator IEnumerable.GetEnumerator();
 }
 
@@ -31868,7 +31868,7 @@ public class NavigationPreloadManager
     /// </summary>
     /// <param name="value">value</param>
     [Description("@#setHeaderValue")]
-    public extern PromiseResult SetHeaderValue(byte[] value);
+    public extern PromiseResult SetHeaderValue(string value);
 
     /// <summary>
     /// getState
@@ -35661,7 +35661,7 @@ public partial class PerformanceResourceTiming : PerformanceEntry
     /// nextHopProtocol
     /// </summary>
     [Description("@#nextHopProtocol")]
-    public extern byte[] NextHopProtocol { get; }
+    public extern string NextHopProtocol { get; }
 
     /// <summary>
     /// workerStart
@@ -39411,7 +39411,7 @@ public partial class Request
     /// method
     /// </summary>
     [Description("@#method")]
-    public extern byte[] Method { get; }
+    public extern string Method { get; }
 
     /// <summary>
     /// url
@@ -39723,7 +39723,7 @@ public class Response
     /// statusText
     /// </summary>
     [Description("@#statusText")]
-    public extern byte[] StatusText { get; }
+    public extern string StatusText { get; }
 
     /// <summary>
     /// headers
@@ -62990,7 +62990,7 @@ public partial class Window : EventTarget
     /// </summary>
     /// <param name="data">data</param>
     [Description("@#atob")]
-    public extern byte[] Atob(string data);
+    public extern string Atob(string data);
     
     /// <summary>
     /// setTimeout
@@ -63431,7 +63431,7 @@ public class WorkerGlobalScope : EventTarget
     /// </summary>
     /// <param name="data">data</param>
     [Description("@#atob")]
-    public extern byte[] Atob(string data);
+    public extern string Atob(string data);
     
     /// <summary>
     /// setTimeout
@@ -64064,7 +64064,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// <param name="method">method</param>
     /// <param name="url">url</param>
     [Description("@#open")]
-    public extern void Open(byte[] method, string url);
+    public extern void Open(string method, string url);
 
     /// <summary>
     /// open
@@ -64075,7 +64075,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// <param name="username">username</param>
     /// <param name="password">password</param>
     [Description("@#open")]
-    public extern void Open(byte[] method, string url, bool @async, string? username = default, string? password = default);
+    public extern void Open(string method, string url, bool @async, string? username = default, string? password = default);
 
     /// <summary>
     /// setRequestHeader
@@ -64083,7 +64083,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// <param name="name">name</param>
     /// <param name="value">value</param>
     [Description("@#setRequestHeader")]
-    public extern void SetRequestHeader(byte[] name, byte[] value);
+    public extern void SetRequestHeader(string name, string value);
 
     /// <summary>
     /// timeout
@@ -64146,20 +64146,20 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// statusText
     /// </summary>
     [Description("@#statusText")]
-    public extern byte[] StatusText { get; }
+    public extern string StatusText { get; }
 
     /// <summary>
     /// getResponseHeader
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getResponseHeader")]
-    public extern byte[]? GetResponseHeader(byte[] name);
+    public extern string? GetResponseHeader(string name);
 
     /// <summary>
     /// getAllResponseHeaders
     /// </summary>
     [Description("@#getAllResponseHeaders")]
-    public extern byte[] GetAllResponseHeaders();
+    public extern string GetAllResponseHeaders();
 
     /// <summary>
     /// overrideMimeType
