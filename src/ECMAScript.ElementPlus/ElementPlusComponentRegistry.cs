@@ -6,340 +6,340 @@ namespace ECMAScript.ElementPlus;
 /// Registry of generated Element Plus components.
 /// </summary>
 [ECMAScript]
-[Description("@#ElementPlusComponentRegistry")]
-public sealed record ElementPlusComponentRegistry : VueComponentRegistry
+[Description("@#ElComponentRegistry")]
+public sealed record ElComponentRegistry : VueComponentRegistry
 {
     [Description("@#ElAffix")]
-    public IElementPlusComponent? ElAffix { get; init; }
+    public IElComponent? ElAffix { get; init; }
 
     [Description("@#ElAlert")]
-    public IElementPlusComponent? ElAlert { get; init; }
+    public IElComponent? ElAlert { get; init; }
 
     [Description("@#ElAnchor")]
-    public IElementPlusComponent? ElAnchor { get; init; }
+    public IElComponent? ElAnchor { get; init; }
 
     [Description("@#ElAnchorLink")]
-    public IElementPlusComponent? ElAnchorLink { get; init; }
+    public IElComponent? ElAnchorLink { get; init; }
 
     [Description("@#ElAside")]
-    public IElementPlusComponent? ElAside { get; init; }
+    public IElComponent? ElAside { get; init; }
 
     [Description("@#ElAutoResizer")]
-    public IElementPlusComponent? ElAutoResizer { get; init; }
+    public IElComponent? ElAutoResizer { get; init; }
 
     [Description("@#ElAutocomplete")]
-    public IElementPlusComponent? ElAutocomplete { get; init; }
+    public IElComponent? ElAutocomplete { get; init; }
 
     [Description("@#ElAvatar")]
-    public IElementPlusComponent? ElAvatar { get; init; }
+    public IElComponent? ElAvatar { get; init; }
 
     [Description("@#ElAvatarGroup")]
-    public IElementPlusComponent? ElAvatarGroup { get; init; }
+    public IElComponent? ElAvatarGroup { get; init; }
 
     [Description("@#ElBacktop")]
-    public IElementPlusComponent? ElBacktop { get; init; }
+    public IElComponent? ElBacktop { get; init; }
 
     [Description("@#ElBadge")]
-    public IElementPlusComponent? ElBadge { get; init; }
+    public IElComponent? ElBadge { get; init; }
 
     [Description("@#ElBreadcrumb")]
-    public IElementPlusComponent? ElBreadcrumb { get; init; }
+    public IElComponent? ElBreadcrumb { get; init; }
 
     [Description("@#ElBreadcrumbItem")]
-    public IElementPlusComponent? ElBreadcrumbItem { get; init; }
+    public IElComponent? ElBreadcrumbItem { get; init; }
 
     [Description("@#ElButton")]
-    public IElementPlusComponent? ElButton { get; init; }
+    public IElComponent? ElButton { get; init; }
 
     [Description("@#ElButtonGroup")]
-    public IElementPlusComponent? ElButtonGroup { get; init; }
+    public IElComponent? ElButtonGroup { get; init; }
 
     [Description("@#ElCalendar")]
-    public IElementPlusComponent? ElCalendar { get; init; }
+    public IElComponent? ElCalendar { get; init; }
 
     [Description("@#ElCard")]
-    public IElementPlusComponent? ElCard { get; init; }
+    public IElComponent? ElCard { get; init; }
 
     [Description("@#ElCarousel")]
-    public IElementPlusComponent? ElCarousel { get; init; }
+    public IElComponent? ElCarousel { get; init; }
 
     [Description("@#ElCarouselItem")]
-    public IElementPlusComponent? ElCarouselItem { get; init; }
+    public IElComponent? ElCarouselItem { get; init; }
 
     [Description("@#ElCascader")]
-    public IElementPlusComponent? ElCascader { get; init; }
+    public IElComponent? ElCascader { get; init; }
 
     [Description("@#ElCascaderPanel")]
-    public IElementPlusComponent? ElCascaderPanel { get; init; }
+    public IElComponent? ElCascaderPanel { get; init; }
 
     [Description("@#ElCheckTag")]
-    public IElementPlusComponent? ElCheckTag { get; init; }
+    public IElComponent? ElCheckTag { get; init; }
 
     [Description("@#ElCheckbox")]
-    public IElementPlusComponent? ElCheckbox { get; init; }
+    public IElComponent? ElCheckbox { get; init; }
 
     [Description("@#ElCheckboxButton")]
-    public IElementPlusComponent? ElCheckboxButton { get; init; }
+    public IElComponent? ElCheckboxButton { get; init; }
 
     [Description("@#ElCheckboxGroup")]
-    public IElementPlusComponent? ElCheckboxGroup { get; init; }
+    public IElComponent? ElCheckboxGroup { get; init; }
 
     [Description("@#ElCol")]
-    public IElementPlusComponent? ElCol { get; init; }
+    public IElComponent? ElCol { get; init; }
 
     [Description("@#ElCollapse")]
-    public IElementPlusComponent? ElCollapse { get; init; }
+    public IElComponent? ElCollapse { get; init; }
 
     [Description("@#ElCollapseItem")]
-    public IElementPlusComponent? ElCollapseItem { get; init; }
+    public IElComponent? ElCollapseItem { get; init; }
 
     [Description("@#ElCollapseTransition")]
-    public IElementPlusComponent? ElCollapseTransition { get; init; }
+    public IElComponent? ElCollapseTransition { get; init; }
 
     [Description("@#ElColorPicker")]
-    public IElementPlusComponent? ElColorPicker { get; init; }
+    public IElComponent? ElColorPicker { get; init; }
 
     [Description("@#ElColorPickerPanel")]
-    public IElementPlusComponent? ElColorPickerPanel { get; init; }
+    public IElComponent? ElColorPickerPanel { get; init; }
 
     [Description("@#ElConfigProvider")]
-    public IElementPlusComponent? ElConfigProvider { get; init; }
+    public IElComponent? ElConfigProvider { get; init; }
 
     [Description("@#ElContainer")]
-    public IElementPlusComponent? ElContainer { get; init; }
+    public IElComponent? ElContainer { get; init; }
 
     [Description("@#ElCountdown")]
-    public IElementPlusComponent? ElCountdown { get; init; }
+    public IElComponent? ElCountdown { get; init; }
 
     [Description("@#ElDatePicker")]
-    public IElementPlusComponent? ElDatePicker { get; init; }
+    public IElComponent? ElDatePicker { get; init; }
 
     [Description("@#ElDatePickerPanel")]
-    public IElementPlusComponent? ElDatePickerPanel { get; init; }
+    public IElComponent? ElDatePickerPanel { get; init; }
 
     [Description("@#ElDescriptions")]
-    public IElementPlusComponent? ElDescriptions { get; init; }
+    public IElComponent? ElDescriptions { get; init; }
 
     [Description("@#ElDescriptionsItem")]
-    public IElementPlusComponent? ElDescriptionsItem { get; init; }
+    public IElComponent? ElDescriptionsItem { get; init; }
 
     [Description("@#ElDialog")]
-    public IElementPlusComponent? ElDialog { get; init; }
+    public IElComponent? ElDialog { get; init; }
 
     [Description("@#ElDivider")]
-    public IElementPlusComponent? ElDivider { get; init; }
+    public IElComponent? ElDivider { get; init; }
 
     [Description("@#ElDrawer")]
-    public IElementPlusComponent? ElDrawer { get; init; }
+    public IElComponent? ElDrawer { get; init; }
 
     [Description("@#ElDropdown")]
-    public IElementPlusComponent? ElDropdown { get; init; }
+    public IElComponent? ElDropdown { get; init; }
 
     [Description("@#ElDropdownItem")]
-    public IElementPlusComponent? ElDropdownItem { get; init; }
+    public IElComponent? ElDropdownItem { get; init; }
 
     [Description("@#ElDropdownMenu")]
-    public IElementPlusComponent? ElDropdownMenu { get; init; }
+    public IElComponent? ElDropdownMenu { get; init; }
 
     [Description("@#ElEmpty")]
-    public IElementPlusComponent? ElEmpty { get; init; }
+    public IElComponent? ElEmpty { get; init; }
 
     [Description("@#ElFooter")]
-    public IElementPlusComponent? ElFooter { get; init; }
+    public IElComponent? ElFooter { get; init; }
 
     [Description("@#ElForm")]
-    public IElementPlusComponent? ElForm { get; init; }
+    public IElComponent? ElForm { get; init; }
 
     [Description("@#ElFormItem")]
-    public IElementPlusComponent? ElFormItem { get; init; }
+    public IElComponent? ElFormItem { get; init; }
 
     [Description("@#ElHeader")]
-    public IElementPlusComponent? ElHeader { get; init; }
+    public IElComponent? ElHeader { get; init; }
 
     [Description("@#ElIcon")]
-    public IElementPlusComponent? ElIcon { get; init; }
+    public IElComponent? ElIcon { get; init; }
 
     [Description("@#ElImage")]
-    public IElementPlusComponent? ElImage { get; init; }
+    public IElComponent? ElImage { get; init; }
 
     [Description("@#ElImageViewer")]
-    public IElementPlusComponent? ElImageViewer { get; init; }
+    public IElComponent? ElImageViewer { get; init; }
 
     [Description("@#ElInput")]
-    public IElementPlusComponent? ElInput { get; init; }
+    public IElComponent? ElInput { get; init; }
 
     [Description("@#ElInputNumber")]
-    public IElementPlusComponent? ElInputNumber { get; init; }
+    public IElComponent? ElInputNumber { get; init; }
 
     [Description("@#ElInputOtp")]
-    public IElementPlusComponent? ElInputOtp { get; init; }
+    public IElComponent? ElInputOtp { get; init; }
 
     [Description("@#ElInputTag")]
-    public IElementPlusComponent? ElInputTag { get; init; }
+    public IElComponent? ElInputTag { get; init; }
 
     [Description("@#ElLink")]
-    public IElementPlusComponent? ElLink { get; init; }
+    public IElComponent? ElLink { get; init; }
 
     [Description("@#ElMain")]
-    public IElementPlusComponent? ElMain { get; init; }
+    public IElComponent? ElMain { get; init; }
 
     [Description("@#ElMention")]
-    public IElementPlusComponent? ElMention { get; init; }
+    public IElComponent? ElMention { get; init; }
 
     [Description("@#ElMenu")]
-    public IElementPlusComponent? ElMenu { get; init; }
+    public IElComponent? ElMenu { get; init; }
 
     [Description("@#ElMenuItem")]
-    public IElementPlusComponent? ElMenuItem { get; init; }
+    public IElComponent? ElMenuItem { get; init; }
 
     [Description("@#ElMenuItemGroup")]
-    public IElementPlusComponent? ElMenuItemGroup { get; init; }
+    public IElComponent? ElMenuItemGroup { get; init; }
 
     [Description("@#ElOption")]
-    public IElementPlusComponent? ElOption { get; init; }
+    public IElComponent? ElOption { get; init; }
 
     [Description("@#ElOptionGroup")]
-    public IElementPlusComponent? ElOptionGroup { get; init; }
+    public IElComponent? ElOptionGroup { get; init; }
 
     [Description("@#ElPageHeader")]
-    public IElementPlusComponent? ElPageHeader { get; init; }
+    public IElComponent? ElPageHeader { get; init; }
 
     [Description("@#ElPagination")]
-    public IElementPlusComponent? ElPagination { get; init; }
+    public IElComponent? ElPagination { get; init; }
 
     [Description("@#ElPopconfirm")]
-    public IElementPlusComponent? ElPopconfirm { get; init; }
+    public IElComponent? ElPopconfirm { get; init; }
 
     [Description("@#ElPopover")]
-    public IElementPlusComponent? ElPopover { get; init; }
+    public IElComponent? ElPopover { get; init; }
 
     [Description("@#ElPopper")]
-    public IElementPlusComponent? ElPopper { get; init; }
+    public IElComponent? ElPopper { get; init; }
 
     [Description("@#ElProgress")]
-    public IElementPlusComponent? ElProgress { get; init; }
+    public IElComponent? ElProgress { get; init; }
 
     [Description("@#ElRadio")]
-    public IElementPlusComponent? ElRadio { get; init; }
+    public IElComponent? ElRadio { get; init; }
 
     [Description("@#ElRadioButton")]
-    public IElementPlusComponent? ElRadioButton { get; init; }
+    public IElComponent? ElRadioButton { get; init; }
 
     [Description("@#ElRadioGroup")]
-    public IElementPlusComponent? ElRadioGroup { get; init; }
+    public IElComponent? ElRadioGroup { get; init; }
 
     [Description("@#ElRate")]
-    public IElementPlusComponent? ElRate { get; init; }
+    public IElComponent? ElRate { get; init; }
 
     [Description("@#ElResult")]
-    public IElementPlusComponent? ElResult { get; init; }
+    public IElComponent? ElResult { get; init; }
 
     [Description("@#ElRow")]
-    public IElementPlusComponent? ElRow { get; init; }
+    public IElComponent? ElRow { get; init; }
 
     [Description("@#ElScrollbar")]
-    public IElementPlusComponent? ElScrollbar { get; init; }
+    public IElComponent? ElScrollbar { get; init; }
 
     [Description("@#ElSegmented")]
-    public IElementPlusComponent? ElSegmented { get; init; }
+    public IElComponent? ElSegmented { get; init; }
 
     [Description("@#ElSelect")]
-    public IElementPlusComponent? ElSelect { get; init; }
+    public IElComponent? ElSelect { get; init; }
 
     [Description("@#ElSkeleton")]
-    public IElementPlusComponent? ElSkeleton { get; init; }
+    public IElComponent? ElSkeleton { get; init; }
 
     [Description("@#ElSkeletonItem")]
-    public IElementPlusComponent? ElSkeletonItem { get; init; }
+    public IElComponent? ElSkeletonItem { get; init; }
 
     [Description("@#ElSlider")]
-    public IElementPlusComponent? ElSlider { get; init; }
+    public IElComponent? ElSlider { get; init; }
 
     [Description("@#ElSpace")]
-    public IElementPlusComponent? ElSpace { get; init; }
+    public IElComponent? ElSpace { get; init; }
 
     [Description("@#ElSplitter")]
-    public IElementPlusComponent? ElSplitter { get; init; }
+    public IElComponent? ElSplitter { get; init; }
 
     [Description("@#ElSplitterPanel")]
-    public IElementPlusComponent? ElSplitterPanel { get; init; }
+    public IElComponent? ElSplitterPanel { get; init; }
 
     [Description("@#ElStatistic")]
-    public IElementPlusComponent? ElStatistic { get; init; }
+    public IElComponent? ElStatistic { get; init; }
 
     [Description("@#ElStep")]
-    public IElementPlusComponent? ElStep { get; init; }
+    public IElComponent? ElStep { get; init; }
 
     [Description("@#ElSteps")]
-    public IElementPlusComponent? ElSteps { get; init; }
+    public IElComponent? ElSteps { get; init; }
 
     [Description("@#ElSubMenu")]
-    public IElementPlusComponent? ElSubMenu { get; init; }
+    public IElComponent? ElSubMenu { get; init; }
 
     [Description("@#ElSwitch")]
-    public IElementPlusComponent? ElSwitch { get; init; }
+    public IElComponent? ElSwitch { get; init; }
 
     [Description("@#ElTabPane")]
-    public IElementPlusComponent? ElTabPane { get; init; }
+    public IElComponent? ElTabPane { get; init; }
 
     [Description("@#ElTable")]
-    public IElementPlusComponent? ElTable { get; init; }
+    public IElComponent? ElTable { get; init; }
 
     [Description("@#ElTableColumn")]
-    public IElementPlusComponent? ElTableColumn { get; init; }
+    public IElComponent? ElTableColumn { get; init; }
 
     [Description("@#ElTableV2")]
-    public IElementPlusComponent? ElTableV2 { get; init; }
+    public IElComponent? ElTableV2 { get; init; }
 
     [Description("@#ElTabs")]
-    public IElementPlusComponent? ElTabs { get; init; }
+    public IElComponent? ElTabs { get; init; }
 
     [Description("@#ElTag")]
-    public IElementPlusComponent? ElTag { get; init; }
+    public IElComponent? ElTag { get; init; }
 
     [Description("@#ElText")]
-    public IElementPlusComponent? ElText { get; init; }
+    public IElComponent? ElText { get; init; }
 
     [Description("@#ElTimePicker")]
-    public IElementPlusComponent? ElTimePicker { get; init; }
+    public IElComponent? ElTimePicker { get; init; }
 
     [Description("@#ElTimeSelect")]
-    public IElementPlusComponent? ElTimeSelect { get; init; }
+    public IElComponent? ElTimeSelect { get; init; }
 
     [Description("@#ElTimeline")]
-    public IElementPlusComponent? ElTimeline { get; init; }
+    public IElComponent? ElTimeline { get; init; }
 
     [Description("@#ElTimelineItem")]
-    public IElementPlusComponent? ElTimelineItem { get; init; }
+    public IElComponent? ElTimelineItem { get; init; }
 
     [Description("@#ElTooltip")]
-    public IElementPlusComponent? ElTooltip { get; init; }
+    public IElComponent? ElTooltip { get; init; }
 
     [Description("@#ElTour")]
-    public IElementPlusComponent? ElTour { get; init; }
+    public IElComponent? ElTour { get; init; }
 
     [Description("@#ElTourStep")]
-    public IElementPlusComponent? ElTourStep { get; init; }
+    public IElComponent? ElTourStep { get; init; }
 
     [Description("@#ElTransfer")]
-    public IElementPlusComponent? ElTransfer { get; init; }
+    public IElComponent? ElTransfer { get; init; }
 
     [Description("@#ElTree")]
-    public IElementPlusComponent? ElTree { get; init; }
+    public IElComponent? ElTree { get; init; }
 
     [Description("@#ElTreeSelect")]
-    public IElementPlusComponent? ElTreeSelect { get; init; }
+    public IElComponent? ElTreeSelect { get; init; }
 
     [Description("@#ElTreeV2")]
-    public IElementPlusComponent? ElTreeV2 { get; init; }
+    public IElComponent? ElTreeV2 { get; init; }
 
     [Description("@#ElUpload")]
-    public IElementPlusComponent? ElUpload { get; init; }
+    public IElComponent? ElUpload { get; init; }
 
     [Description("@#ElVirtualizedSelect")]
-    public IElementPlusComponent? ElVirtualizedSelect { get; init; }
+    public IElComponent? ElVirtualizedSelect { get; init; }
 
     [Description("@#ElWatermark")]
-    public IElementPlusComponent? ElWatermark { get; init; }
+    public IElComponent? ElWatermark { get; init; }
 
 }

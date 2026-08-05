@@ -16,18 +16,18 @@ internal static class TDesignRouteMapper
         return routeTarget.Value.AsString;
     }
 
-    public static TDesignMenuRouteTarget? MapRoute(RouteLocationRaw? routeTarget)
+    public static TMenuRouteTarget? MapRoute(RouteLocationRaw? routeTarget)
     {
         if (!routeTarget.HasValue)
             return null;
 
         var route = routeTarget.Value;
         if (route.AsString is { } routeString)
-            return (TDesignMenuRouteTarget)routeString;
+            return (TMenuRouteTarget)routeString;
 
         if (route.AsPath is { } pathRoute)
         {
-            return (TDesignMenuRouteTarget)new TDesignMenuRoute
+            return (TMenuRouteTarget)new TMenuRoute
             {
                 Path = pathRoute.Path,
                 Hash = pathRoute.Hash
@@ -36,7 +36,7 @@ internal static class TDesignRouteMapper
 
         if (route.AsRelative is { } relativeRoute)
         {
-            return (TDesignMenuRouteTarget)new TDesignMenuRoute
+            return (TMenuRouteTarget)new TMenuRoute
             {
                 Name = relativeRoute.Name.HasValue ? relativeRoute.Name.Value.AsString : null,
                 Hash = relativeRoute.Hash

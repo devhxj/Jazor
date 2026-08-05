@@ -5,8 +5,11 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.ElementPlus;
 
+// Defines Element Plus value domains, callback payloads, and erased union authoring contracts.
+// 定义 Element Plus 值域、回调载荷与擦除 union；仅分支继承重叠时保留 tagged fallback。
+
 [String]
-public enum ElementPlusComponentSize
+public enum ElComponentSize
 {
     [Description("@#large")]
     Large,
@@ -19,7 +22,7 @@ public enum ElementPlusComponentSize
 }
 
 [String]
-public enum ElementPlusPopperEffect
+public enum ElPopperEffect
 {
     [Description("@#dark")]
     Dark,
@@ -29,7 +32,7 @@ public enum ElementPlusPopperEffect
 }
 
 [String]
-public enum ElementPlusPopperPlacement
+public enum ElPopperPlacement
 {
     [Description("@#top")]
     Top,
@@ -78,7 +81,7 @@ public enum ElementPlusPopperPlacement
 }
 
 [String]
-public enum ElementPlusPopperPlacementSide
+public enum ElPopperPlacementSide
 {
     [Description("@#top")]
     Top,
@@ -94,7 +97,7 @@ public enum ElementPlusPopperPlacementSide
 }
 
 [String]
-public enum ElementPlusCardShadow
+public enum ElCardShadow
 {
     [Description("@#always")]
     Always,
@@ -107,7 +110,7 @@ public enum ElementPlusCardShadow
 }
 
 [String]
-public enum ElementPlusUploadStatus
+public enum ElUploadStatus
 {
     [Description("@#ready")]
     Ready,
@@ -123,7 +126,7 @@ public enum ElementPlusUploadStatus
 }
 
 [String]
-public enum ElementPlusHoverClickTrigger
+public enum ElHoverClickTrigger
 {
     [Description("@#hover")]
     Hover,
@@ -133,7 +136,7 @@ public enum ElementPlusHoverClickTrigger
 }
 
 [String]
-public enum ElementPlusCrossorigin
+public enum ElCrossorigin
 {
     [Description("@#")]
     Empty,
@@ -146,7 +149,7 @@ public enum ElementPlusCrossorigin
 }
 
 [String]
-public enum ElementPlusUploadListType
+public enum ElUploadListType
 {
     [Description("@#text")]
     Text,
@@ -159,7 +162,7 @@ public enum ElementPlusUploadListType
 }
 
 [String]
-public enum ElementPlusImageFitType
+public enum ElImageFitType
 {
     [Description("@#")]
     Empty,
@@ -181,7 +184,7 @@ public enum ElementPlusImageFitType
 }
 
 [String]
-public enum ElementPlusImageLoadingType
+public enum ElImageLoadingType
 {
     [Description("@#eager")]
     Eager,
@@ -191,7 +194,7 @@ public enum ElementPlusImageLoadingType
 }
 
 [String]
-public enum ElementPlusAvatarShape
+public enum ElAvatarShape
 {
     [Description("@#circle")]
     Circle,
@@ -201,7 +204,7 @@ public enum ElementPlusAvatarShape
 }
 
 [String]
-public enum ElementPlusButtonType
+public enum ElButtonType
 {
     [Description("@#")]
     Empty,
@@ -229,7 +232,7 @@ public enum ElementPlusButtonType
 }
 
 [String]
-public enum ElementPlusButtonNativeType
+public enum ElButtonNativeType
 {
     [Description("@#button")]
     Button,
@@ -242,7 +245,7 @@ public enum ElementPlusButtonNativeType
 }
 
 [String]
-public enum ElementPlusDirection
+public enum ElDirection
 {
     [Description("@#horizontal")]
     Horizontal,
@@ -252,7 +255,7 @@ public enum ElementPlusDirection
 }
 
 [String]
-public enum ElementPlusTopBottomPlacement
+public enum ElTopBottomPlacement
 {
     [Description("@#top")]
     Top,
@@ -262,7 +265,7 @@ public enum ElementPlusTopBottomPlacement
 }
 
 [String]
-public enum ElementPlusCarouselType
+public enum ElCarouselType
 {
     [Description("@#")]
     Empty,
@@ -272,7 +275,7 @@ public enum ElementPlusCarouselType
 }
 
 [String]
-public enum ElementPlusSemanticType
+public enum ElSemanticType
 {
     [Description("@#")]
     Empty,
@@ -294,7 +297,7 @@ public enum ElementPlusSemanticType
 }
 
 [String]
-public enum ElementPlusTimelineMode
+public enum ElTimelineMode
 {
     [Description("@#start")]
     Start,
@@ -310,7 +313,7 @@ public enum ElementPlusTimelineMode
 }
 
 [String]
-public enum ElementPlusCalendarControllerType
+public enum ElCalendarControllerType
 {
     [Description("@#button")]
     Button,
@@ -320,7 +323,7 @@ public enum ElementPlusCalendarControllerType
 }
 
 [String]
-public enum ElementPlusCollapseIconPosition
+public enum ElCollapseIconPosition
 {
     [Description("@#left")]
     Left,
@@ -330,7 +333,7 @@ public enum ElementPlusCollapseIconPosition
 }
 
 [String]
-public enum ElementPlusContentPosition
+public enum ElContentPosition
 {
     [Description("@#left")]
     Left,
@@ -343,7 +346,7 @@ public enum ElementPlusContentPosition
 }
 
 [String]
-public enum ElementPlusFormItemValidateStatus
+public enum ElFormItemValidateStatus
 {
     [Description("@#")]
     Empty,
@@ -359,7 +362,7 @@ public enum ElementPlusFormItemValidateStatus
 }
 
 [String]
-public enum ElementPlusProgressType
+public enum ElProgressType
 {
     [Description("@#line")]
     Line,
@@ -372,7 +375,7 @@ public enum ElementPlusProgressType
 }
 
 [String]
-public enum ElementPlusProgressStatus
+public enum ElProgressStatus
 {
     [Description("@#")]
     Empty,
@@ -388,7 +391,7 @@ public enum ElementPlusProgressStatus
 }
 
 [String]
-public enum ElementPlusStepStatus
+public enum ElStepStatus
 {
     [Description("@#")]
     Empty,
@@ -410,7 +413,7 @@ public enum ElementPlusStepStatus
 }
 
 [String]
-public enum ElementPlusTabsType
+public enum ElTabsType
 {
     [Description("@#")]
     Empty,
@@ -423,7 +426,7 @@ public enum ElementPlusTabsType
 }
 
 [String]
-public enum ElementPlusTagType
+public enum ElTagType
 {
     [Description("@#primary")]
     Primary,
@@ -442,7 +445,7 @@ public enum ElementPlusTagType
 }
 
 [String]
-public enum ElementPlusTagEffect
+public enum ElTagEffect
 {
     [Description("@#dark")]
     Dark,
@@ -455,7 +458,7 @@ public enum ElementPlusTagEffect
 }
 
 [String]
-public enum ElementPlusLinkType
+public enum ElLinkType
 {
     [Description("@#default")]
     Default,
@@ -478,24 +481,24 @@ public enum ElementPlusLinkType
 
 [ECMAScript]
 [Description("@#Styles")]
-public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
+public sealed record ElStyles : VueDictionary<VueStringNumberValue>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusDirectiveValue(bool, VueProps)
+public readonly union ElDirectiveValue(bool, VueProps)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
     public VueProps? AsProps => Value as VueProps;
 
-    public static implicit operator ElementPlusDirectiveValue(VueDictionary value) => (VueProps)value;
+    public static implicit operator ElDirectiveValue(VueDictionary value) => (VueProps)value;
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusLoadingOptions : VueProps
+public sealed record ElLoadingOptions : VueProps
 {
     [Description("@#target")]
     public VueTeleportTarget? Target { get; init; }
@@ -530,13 +533,13 @@ public sealed record ElementPlusLoadingOptions : VueProps
 
 [ECMAScript]
 [Description("@#ButtonConfigContext")]
-public sealed record ElementPlusButtonConfig : VueProps
+public sealed record ElButtonConfig : VueProps
 {
     [Description("@#autoInsertSpace")]
     public bool? AutoInsertSpace { get; init; }
 
     [Description("@#type")]
-    public ElementPlusButtonType? Type { get; init; }
+    public ElButtonType? Type { get; init; }
 
     [Description("@#plain")]
     public bool? Plain { get; init; }
@@ -553,15 +556,15 @@ public sealed record ElementPlusButtonConfig : VueProps
 
 [ECMAScript]
 [Description("@#CardConfigContext")]
-public sealed record ElementPlusCardConfig : VueProps
+public sealed record ElCardConfig : VueProps
 {
     [Description("@#shadow")]
-    public ElementPlusCardShadow? Shadow { get; init; }
+    public ElCardShadow? Shadow { get; init; }
 }
 
 [ECMAScript]
 [Description("@#MentionOption")]
-public sealed record ElementPlusMentionOption : VueDictionary
+public sealed record ElMentionOption : VueDictionary
 {
     [Description("@#value")]
     public string? Value { get; init; }
@@ -575,7 +578,7 @@ public sealed record ElementPlusMentionOption : VueDictionary
 
 [ECMAScript]
 [Description("@#DialogConfigContext")]
-public sealed record ElementPlusDialogConfig : VueProps
+public sealed record ElDialogConfig : VueProps
 {
     [Description("@#alignCenter")]
     public bool? AlignCenter { get; init; }
@@ -592,18 +595,18 @@ public sealed record ElementPlusDialogConfig : VueProps
 
 [ECMAScript]
 [Description("@#LinkConfigContext")]
-public sealed record ElementPlusLinkConfig : VueProps
+public sealed record ElLinkConfig : VueProps
 {
     [Description("@#underline")]
     public VueBooleanStringValue? Underline { get; init; }
 
     [Description("@#type")]
-    public ElementPlusLinkType? Type { get; init; }
+    public ElLinkType? Type { get; init; }
 }
 
 [ECMAScript]
 [Description("@#MessageConfigContext")]
-public sealed record ElementPlusMessageConfig : VueProps
+public sealed record ElMessageConfig : VueProps
 {
     [Description("@#max")]
     public Number? Max { get; init; }
@@ -620,52 +623,52 @@ public sealed record ElementPlusMessageConfig : VueProps
 
 [ECMAScript]
 [Description("@#TableConfigContext")]
-public sealed record ElementPlusTableConfig : VueProps
+public sealed record ElTableConfig : VueProps
 {
     [Description("@#showOverflowTooltip")]
-    public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; init; }
+    public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; init; }
 
     [Description("@#tooltipEffect")]
     public string? TooltipEffect { get; init; }
 
     [Description("@#tooltipOptions")]
-    public ElementPlusTableOverflowTooltipOptions? TooltipOptions { get; init; }
+    public ElTableOverflowTooltipOptions? TooltipOptions { get; init; }
 
     [Description("@#tooltipFormatter")]
-    public ElementPlusTableTooltipFormatter? TooltipFormatter { get; init; }
+    public ElTableTooltipFormatter? TooltipFormatter { get; init; }
 }
 
 [ECMAScript]
 [Description("@#TranslatePair")]
-public sealed record ElementPlusTranslatePair : VueDictionary<ElementPlusTranslateValue>
+public sealed record ElTranslatePair : VueDictionary<ElTranslateValue>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTranslateValue(string, string[], ElementPlusTranslatePair)
+public readonly union ElTranslateValue(string, string[], ElTranslatePair)
 {
     public string? AsString => Value as string;
 
     public string[]? AsStrings => Value as string[];
 
-    public ElementPlusTranslatePair? AsPair => Value as ElementPlusTranslatePair;
+    public ElTranslatePair? AsPair => Value as ElTranslatePair;
 }
 
 [ECMAScript]
 [Description("@#Language")]
-public sealed record ElementPlusLanguage : VueProps
+public sealed record ElLanguage : VueProps
 {
     [Description("@#name")]
     public string? Name { get; init; }
 
     [Description("@#el")]
-    public ElementPlusTranslatePair? El { get; init; }
+    public ElTranslatePair? El { get; init; }
 }
 
 [ECMAScript]
 [Description("@#ValueOnClear")]
-public readonly union ElementPlusValueOnClearValue(bool, double, string, ElementPlusValueOnClearCallback)
+public readonly union ElValueOnClearValue(bool, double, string, ElValueOnClearCallback)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -673,36 +676,36 @@ public readonly union ElementPlusValueOnClearValue(bool, double, string, Element
 
     public string? AsString => Value as string;
 
-    public ElementPlusValueOnClearCallback? AsCallback => Value as ElementPlusValueOnClearCallback;
+    public ElValueOnClearCallback? AsCallback => Value as ElValueOnClearCallback;
 
     [ECMAScriptInline("null")]
-    public extern static ElementPlusValueOnClearValue Null();
+    public extern static ElValueOnClearValue Null();
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusStringBooleanMap : VueDictionary<bool>
+public sealed record ElStringBooleanMap : VueDictionary<bool>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusStringBooleanClassValue(string, ElementPlusStringBooleanMap)
+public readonly union ElStringBooleanClassValue(string, ElStringBooleanMap)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusStringBooleanMap? AsMap => Value as ElementPlusStringBooleanMap;
+    public ElStringBooleanMap? AsMap => Value as ElStringBooleanMap;
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusAutocompleteSuggestionItem : VueDictionary
+public sealed record ElAutocompleteSuggestionItem : VueDictionary
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusAutoResizerResizeContext : VueProps
+public sealed record ElAutoResizerResizeContext : VueProps
 {
     [Description("@#height")]
     public Number? Height { get; init; }
@@ -713,39 +716,39 @@ public sealed record ElementPlusAutoResizerResizeContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusAutoResizerResizeCallback(ElementPlusAutoResizerResizeContext context);
+public delegate void ElAutoResizerResizeCallback(ElAutoResizerResizeContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusAutocompleteFetchSuggestionsCallback(ElementPlusAutocompleteSuggestionItem[] data);
+public delegate void ElAutocompleteFetchSuggestionsCallback(ElAutocompleteSuggestionItem[] data);
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<ElementPlusAutocompleteSuggestionItem[]?> ElementPlusAutocompleteFetchSuggestionsAsyncCallback(
+public delegate IPromise<ElAutocompleteSuggestionItem[]?> ElAutocompleteFetchSuggestionsAsyncCallback(
     string queryString,
-    ElementPlusAutocompleteFetchSuggestionsCallback callback);
+    ElAutocompleteFetchSuggestionsCallback callback);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusAutocompleteFetchSuggestionsCallbackOnly(string queryString, ElementPlusAutocompleteFetchSuggestionsCallback callback);
+public delegate void ElAutocompleteFetchSuggestionsCallbackOnly(string queryString, ElAutocompleteFetchSuggestionsCallback callback);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusAutocompleteFetchSuggestionsValue(
-    ElementPlusAutocompleteSuggestionItem[],
-    ElementPlusAutocompleteFetchSuggestionsCallbackOnly,
-    ElementPlusAutocompleteFetchSuggestionsAsyncCallback)
+public readonly union ElAutocompleteFetchSuggestionsValue(
+    ElAutocompleteSuggestionItem[],
+    ElAutocompleteFetchSuggestionsCallbackOnly,
+    ElAutocompleteFetchSuggestionsAsyncCallback)
 {
-    public ElementPlusAutocompleteSuggestionItem[]? AsSuggestions => Value as ElementPlusAutocompleteSuggestionItem[];
+    public ElAutocompleteSuggestionItem[]? AsSuggestions => Value as ElAutocompleteSuggestionItem[];
 
-    public ElementPlusAutocompleteFetchSuggestionsCallbackOnly? AsCallback => Value as ElementPlusAutocompleteFetchSuggestionsCallbackOnly;
+    public ElAutocompleteFetchSuggestionsCallbackOnly? AsCallback => Value as ElAutocompleteFetchSuggestionsCallbackOnly;
 
-    public ElementPlusAutocompleteFetchSuggestionsAsyncCallback? AsAsyncCallback => Value as ElementPlusAutocompleteFetchSuggestionsAsyncCallback;
+    public ElAutocompleteFetchSuggestionsAsyncCallback? AsAsyncCallback => Value as ElAutocompleteFetchSuggestionsAsyncCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusCalendarDateCellContext : VueProps
+public sealed record ElCalendarDateCellContext : VueProps
 {
     [Description("@#date")]
     public Date? Date { get; init; }
@@ -762,19 +765,19 @@ public sealed record ElementPlusCalendarDateCellContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberValue ElementPlusCalendarFormatterCallback(Number value, string type);
+public delegate VueStringNumberValue ElCalendarFormatterCallback(Number value, string type);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusAsyncBooleanCallback();
+public delegate bool ElAsyncBooleanCallback();
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<bool?> ElementPlusAsyncBooleanPromiseCallback();
+public delegate IPromise<bool?> ElAsyncBooleanPromiseCallback();
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusAsyncBooleanResult(bool, IPromise<bool?>)
+public readonly union ElAsyncBooleanResult(bool, IPromise<bool?>)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -783,63 +786,63 @@ public readonly union ElementPlusAsyncBooleanResult(bool, IPromise<bool?>)
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusDialogDoneCallback(bool? cancel = null);
+public delegate void ElDialogDoneCallback(bool? cancel = null);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusDialogBeforeCloseCallback(ElementPlusDialogDoneCallback done);
+public delegate void ElDialogBeforeCloseCallback(ElDialogDoneCallback done);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusInputFormatter(string value);
+public delegate string ElInputFormatter(string value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusInputParser(string value);
+public delegate string ElInputParser(string value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number ElementPlusInputCountGraphemes(string value);
+public delegate Number ElInputCountGraphemes(string value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusInputOtpValidator(string @char, Number index);
+public delegate bool ElInputOtpValidator(string @char, Number index);
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberVNodeValue ElementPlusInputOtpSeparatorRenderer(Number index);
+public delegate VueStringNumberVNodeValue ElInputOtpSeparatorRenderer(Number index);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusInputOtpSeparatorValue(string, IVNode, ElementPlusInputOtpSeparatorRenderer)
+public readonly union ElInputOtpSeparatorValue(string, IVNode, ElInputOtpSeparatorRenderer)
 {
     public string? AsString => Value as string;
 
     public IVNode? AsVNode => Value as IVNode;
 
-    public ElementPlusInputOtpSeparatorRenderer? AsRenderer => Value as ElementPlusInputOtpSeparatorRenderer;
+    public ElInputOtpSeparatorRenderer? AsRenderer => Value as ElInputOtpSeparatorRenderer;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusMentionFilterOption(string pattern, ElementPlusMentionOption option);
+public delegate bool ElMentionFilterOption(string pattern, ElMentionOption option);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusMentionFilterOptionValue(bool, ElementPlusMentionFilterOption)
+public readonly union ElMentionFilterOptionValue(bool, ElMentionFilterOption)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public ElementPlusMentionFilterOption? AsCallback => Value as ElementPlusMentionFilterOption;
+    public ElMentionFilterOption? AsCallback => Value as ElMentionFilterOption;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusMentionCheckIsWhole(string pattern, string prefix);
+public delegate bool ElMentionCheckIsWhole(string pattern, string prefix);
 
 [ECMAScript]
 [Description("@#ProgressColor")]
-public sealed record ElementPlusProgressColorStop : VueProps
+public sealed record ElProgressColorStop : VueProps
 {
     [Description("@#color")]
     public string? Color { get; init; }
@@ -850,41 +853,41 @@ public sealed record ElementPlusProgressColorStop : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusProgressColorCallback(Number percentage);
+public delegate string ElProgressColorCallback(Number percentage);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusProgressColorValue(
+public readonly union ElProgressColorValue(
     string,
-    ElementPlusProgressColorStop[],
-    ElementPlusProgressColorCallback)
+    ElProgressColorStop[],
+    ElProgressColorCallback)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusProgressColorStop[]? AsStops => Value as ElementPlusProgressColorStop[];
+    public ElProgressColorStop[]? AsStops => Value as ElProgressColorStop[];
 
-    public ElementPlusProgressColorCallback? AsCallback => Value as ElementPlusProgressColorCallback;
+    public ElProgressColorCallback? AsCallback => Value as ElProgressColorCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusProgressFormatCallback(Number percentage);
+public delegate string ElProgressFormatCallback(Number percentage);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusCascaderFilterMethod(VueDictionary node, string keyword);
+public delegate bool ElCascaderFilterMethod(VueDictionary node, string keyword);
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<VueValue?> ElementPlusCascaderBeforeFilterAsyncCallback(string value);
+public delegate IPromise<VueValue?> ElCascaderBeforeFilterAsyncCallback(string value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusCascaderBeforeFilterSyncCallback(string value);
+public delegate bool ElCascaderBeforeFilterSyncCallback(string value);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusCascaderBeforeFilterResult(bool, IPromise<VueValue?>)
+public readonly union ElCascaderBeforeFilterResult(bool, IPromise<VueValue?>)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -893,19 +896,19 @@ public readonly union ElementPlusCascaderBeforeFilterResult(bool, IPromise<VueVa
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusCascaderBeforeFilterResult ElementPlusCascaderBeforeFilterCallback(string value);
+public delegate ElCascaderBeforeFilterResult ElCascaderBeforeFilterCallback(string value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<bool?> ElementPlusCollapseBeforeCollapseAsyncCallback(VueStringNumberValue name);
+public delegate IPromise<bool?> ElCollapseBeforeCollapseAsyncCallback(VueStringNumberValue name);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusCollapseBeforeCollapseSyncCallback(VueStringNumberValue name);
+public delegate bool ElCollapseBeforeCollapseSyncCallback(VueStringNumberValue name);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusCollapseBeforeCollapseResult(bool, IPromise<bool?>)
+public readonly union ElCollapseBeforeCollapseResult(bool, IPromise<bool?>)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -914,23 +917,23 @@ public readonly union ElementPlusCollapseBeforeCollapseResult(bool, IPromise<boo
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusCollapseBeforeCollapseResult ElementPlusCollapseBeforeCollapseCallback(VueStringNumberValue name);
+public delegate ElCollapseBeforeCollapseResult ElCollapseBeforeCollapseCallback(VueStringNumberValue name);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusDateLikeCellClassName(Date date);
+public delegate string ElDateLikeCellClassName(Date date);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusDateLikeDisabledDate(Date date);
+public delegate bool ElDateLikeDisabledDate(Date date);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusValueOnClearCallback();
+public delegate void ElValueOnClearCallback();
 
 [ECMAScript]
 [Description("@#TableOverflowTooltipOptions")]
-public sealed record ElementPlusTableOverflowTooltipOptions : VueProps
+public sealed record ElTableOverflowTooltipOptions : VueProps
 {
     [Description("@#appendTo")]
     public VueTeleportTarget? AppendTo { get; init; }
@@ -968,16 +971,16 @@ public sealed record ElementPlusTableOverflowTooltipOptions : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableOverflowTooltipValue(bool, ElementPlusTableOverflowTooltipOptions)
+public readonly union ElTableOverflowTooltipValue(bool, ElTableOverflowTooltipOptions)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public ElementPlusTableOverflowTooltipOptions? AsOptions => Value as ElementPlusTableOverflowTooltipOptions;
+    public ElTableOverflowTooltipOptions? AsOptions => Value as ElTableOverflowTooltipOptions;
 }
 
 [ECMAScript]
 [Description("@#InputAutoSizeOptions")]
-public sealed record ElementPlusInputAutoSizeOptions : VueProps
+public sealed record ElInputAutoSizeOptions : VueProps
 {
     [Description("@#minRows")]
     public Number? MinRows { get; init; }
@@ -988,16 +991,16 @@ public sealed record ElementPlusInputAutoSizeOptions : VueProps
 
 [ECMAScript]
 [Description("@#InputAutoSize")]
-public readonly union ElementPlusInputAutoSize(bool, ElementPlusInputAutoSizeOptions)
+public readonly union ElInputAutoSize(bool, ElInputAutoSizeOptions)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public ElementPlusInputAutoSizeOptions? AsOptions => Value as ElementPlusInputAutoSizeOptions;
+    public ElInputAutoSizeOptions? AsOptions => Value as ElInputAutoSizeOptions;
 }
 
 [ECMAScript]
 [Description("@#ColSizeObject")]
-public sealed record ElementPlusColSizeProps : VueProps
+public sealed record ElColSizeProps : VueProps
 {
     [Description("@#span")]
     public Number? Span { get; init; }
@@ -1014,31 +1017,31 @@ public sealed record ElementPlusColSizeProps : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusColSizeValue(double, ElementPlusColSizeProps)
+public readonly union ElColSizeValue(double, ElColSizeProps)
 {
     public double? AsNumber => Value is double value ? value : default(double?);
 
-    public ElementPlusColSizeProps? AsProps => Value as ElementPlusColSizeProps;
+    public ElColSizeProps? AsProps => Value as ElColSizeProps;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusSpaceSizeValue(ElementPlusComponentSize, Number, VueNumberPair)
+public readonly union ElSpaceSizeValue(ElComponentSize, Number, VueNumberPair)
 {
-    public ElementPlusComponentSize? AsComponentSize
-        => Value is ElementPlusComponentSize value ? value : default(ElementPlusComponentSize?);
+    public ElComponentSize? AsComponentSize
+        => Value is ElComponentSize value ? value : default(ElComponentSize?);
 
     public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     public VueNumberPair? AsPair => Value is VueNumberPair value ? value : default(VueNumberPair?);
 
-    public static implicit operator ElementPlusSpaceSizeValue(double value)
+    public static implicit operator ElSpaceSizeValue(double value)
         => new((Number)value);
 }
 
 [ECMAScript]
 [Description("@#ThrottleRender")]
-public sealed record ElementPlusThrottleRenderOptions : VueProps
+public sealed record ElThrottleRenderOptions : VueProps
 {
     [Description("@#leading")]
     public Number? Leading { get; init; }
@@ -1052,18 +1055,18 @@ public sealed record ElementPlusThrottleRenderOptions : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusThrottleValue(Number, ElementPlusThrottleRenderOptions)
+public readonly union ElThrottleValue(Number, ElThrottleRenderOptions)
 {
     public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public ElementPlusThrottleRenderOptions? AsOptions => Value as ElementPlusThrottleRenderOptions;
+    public ElThrottleRenderOptions? AsOptions => Value as ElThrottleRenderOptions;
 
-    public static implicit operator ElementPlusThrottleValue(double value)
+    public static implicit operator ElThrottleValue(double value)
         => new((Number)value);
 }
 
 [String]
-public enum ElementPlusTableSortOrder
+public enum ElTableSortOrder
 {
     [Description("@#ascending")]
     Ascending,
@@ -1074,13 +1077,13 @@ public enum ElementPlusTableSortOrder
 
 [ECMAScript]
 [Description("@#Sort")]
-public sealed record ElementPlusTableSort : VueProps
+public sealed record ElTableSort : VueProps
 {
     [Description("@#prop")]
     public string? Prop { get; init; }
 
     [Description("@#order")]
-    public ElementPlusTableSortOrder? Order { get; init; }
+    public ElTableSortOrder? Order { get; init; }
 
     [Description("@#init")]
     public VueValue? Init { get; init; }
@@ -1091,7 +1094,7 @@ public sealed record ElementPlusTableSort : VueProps
 
 [ECMAScript]
 [Description("@#TreeProps")]
-public sealed record ElementPlusTableTreeProps : VueProps
+public sealed record ElTableTreeProps : VueProps
 {
     [Description("@#hasChildren")]
     public string? HasChildren { get; init; }
@@ -1105,7 +1108,7 @@ public sealed record ElementPlusTableTreeProps : VueProps
 
 [ECMAScript]
 [Description("@#Filter")]
-public sealed record ElementPlusTableFilterItem : VueProps
+public sealed record ElTableFilterItem : VueProps
 {
     [Description("@#text")]
     public string? Text { get; init; }
@@ -1116,7 +1119,7 @@ public sealed record ElementPlusTableFilterItem : VueProps
 
 [ECMAScript]
 [Description("@#UploadRawFile")]
-public sealed record ElementPlusUploadRawFile : VueProps
+public sealed record ElUploadRawFile : VueProps
 {
     [Description("@#uid")]
     public Number Uid { get; init; } = default!;
@@ -1127,7 +1130,7 @@ public sealed record ElementPlusUploadRawFile : VueProps
 
 [ECMAScript]
 [Description("@#UploadUserFile")]
-public sealed record ElementPlusUploadUserFile : VueProps
+public sealed record ElUploadUserFile : VueProps
 {
     [Description("@#name")]
     public string Name { get; init; } = string.Empty;
@@ -1136,7 +1139,7 @@ public sealed record ElementPlusUploadUserFile : VueProps
     public Number? Percentage { get; init; }
 
     [Description("@#status")]
-    public ElementPlusUploadStatus? Status { get; init; }
+    public ElUploadStatus? Status { get; init; }
 
     [Description("@#size")]
     public Number? Size { get; init; }
@@ -1151,12 +1154,12 @@ public sealed record ElementPlusUploadUserFile : VueProps
     public string? Url { get; init; }
 
     [Description("@#raw")]
-    public ElementPlusUploadRawFile? Raw { get; init; }
+    public ElUploadRawFile? Raw { get; init; }
 }
 
 [ECMAScript]
 [Description("@#UploadFile")]
-public sealed record ElementPlusUploadFile : VueProps
+public sealed record ElUploadFile : VueProps
 {
     [Description("@#name")]
     public string Name { get; init; } = string.Empty;
@@ -1165,7 +1168,7 @@ public sealed record ElementPlusUploadFile : VueProps
     public Number? Percentage { get; init; }
 
     [Description("@#status")]
-    public ElementPlusUploadStatus Status { get; init; } = default!;
+    public ElUploadStatus Status { get; init; } = default!;
 
     [Description("@#size")]
     public Number? Size { get; init; }
@@ -1180,11 +1183,11 @@ public sealed record ElementPlusUploadFile : VueProps
     public string? Url { get; init; }
 
     [Description("@#raw")]
-    public ElementPlusUploadRawFile? Raw { get; init; }
+    public ElUploadRawFile? Raw { get; init; }
 }
 
 [String]
-public enum ElementPlusTooltipTriggerType
+public enum ElTooltipTriggerType
 {
     [Description("@#hover")]
     Hover,
@@ -1200,7 +1203,7 @@ public enum ElementPlusTooltipTriggerType
 }
 
 [String]
-public enum ElementPlusDropdownTriggerType
+public enum ElDropdownTriggerType
 {
     [Description("@#click")]
     Click,
@@ -1214,39 +1217,39 @@ public enum ElementPlusDropdownTriggerType
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusDropdownTriggerValue(ElementPlusDropdownTriggerType, ElementPlusDropdownTriggerType[])
+public readonly union ElDropdownTriggerValue(ElDropdownTriggerType, ElDropdownTriggerType[])
 {
-    public ElementPlusDropdownTriggerType? AsSingle
-        => Value is ElementPlusDropdownTriggerType value ? value : default(ElementPlusDropdownTriggerType?);
+    public ElDropdownTriggerType? AsSingle
+        => Value is ElDropdownTriggerType value ? value : default(ElDropdownTriggerType?);
 
-    public ElementPlusDropdownTriggerType[]? AsMultiple => Value as ElementPlusDropdownTriggerType[];
+    public ElDropdownTriggerType[]? AsMultiple => Value as ElDropdownTriggerType[];
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTooltipTriggerValue(ElementPlusTooltipTriggerType, ElementPlusTooltipTriggerType[])
+public readonly union ElTooltipTriggerValue(ElTooltipTriggerType, ElTooltipTriggerType[])
 {
-    public ElementPlusTooltipTriggerType? AsSingle
-        => Value is ElementPlusTooltipTriggerType value ? value : default(ElementPlusTooltipTriggerType?);
+    public ElTooltipTriggerType? AsSingle
+        => Value is ElTooltipTriggerType value ? value : default(ElTooltipTriggerType?);
 
-    public ElementPlusTooltipTriggerType[]? AsMultiple => Value as ElementPlusTooltipTriggerType[];
+    public ElTooltipTriggerType[]? AsMultiple => Value as ElTooltipTriggerType[];
 }
 
 [ECMAScript]
 [Description("@#TagTooltipProps")]
-public sealed record ElementPlusTagTooltipProps : VueProps
+public sealed record ElTagTooltipProps : VueProps
 {
     [Description("@#appendTo")]
     public VueTeleportTarget? AppendTo { get; init; }
 
     [Description("@#placement")]
-    public ElementPlusPopperPlacement? Placement { get; init; }
+    public ElPopperPlacement? Placement { get; init; }
 
     [Description("@#fallbackPlacements")]
-    public ElementPlusPopperPlacement[]? FallbackPlacements { get; init; }
+    public ElPopperPlacement[]? FallbackPlacements { get; init; }
 
     [Description("@#effect")]
-    public ElementPlusPopperEffect? Effect { get; init; }
+    public ElPopperEffect? Effect { get; init; }
 
     [Description("@#popperClass")]
     public string? PopperClass { get; init; }
@@ -1278,22 +1281,22 @@ public sealed record ElementPlusTagTooltipProps : VueProps
 
 [ECMAScript]
 [Description("@#ButtonProps")]
-public sealed record ElementPlusButtonProps : VueProps
+public sealed record ElButtonProps : VueProps
 {
     [Description("@#size")]
-    public ElementPlusComponentSize? Size { get; init; }
+    public ElComponentSize? Size { get; init; }
 
     [Description("@#disabled")]
     public bool? Disabled { get; init; }
 
     [Description("@#type")]
-    public ElementPlusButtonType? Type { get; init; }
+    public ElButtonType? Type { get; init; }
 
     [Description("@#icon")]
     public VueStringComponentValue? Icon { get; init; }
 
     [Description("@#nativeType")]
-    public ElementPlusButtonNativeType? NativeType { get; init; }
+    public ElButtonNativeType? NativeType { get; init; }
 
     [Description("@#loading")]
     public bool? Loading { get; init; }
@@ -1340,12 +1343,12 @@ public sealed record ElementPlusButtonProps : VueProps
 
 [ECMAScript]
 [Description("@#TransferDataItem")]
-public sealed record ElementPlusTransferDataItem : VueDictionary
+public sealed record ElTransferDataItem : VueDictionary
 {
 }
 
 [String]
-public enum ElementPlusTransferTargetOrder
+public enum ElTransferTargetOrder
 {
     [Description("@#original")]
     Original,
@@ -1359,7 +1362,7 @@ public enum ElementPlusTransferTargetOrder
 
 [ECMAScript]
 [Description("@#TransferFormat")]
-public sealed record ElementPlusTransferFormat : VueProps
+public sealed record ElTransferFormat : VueProps
 {
     [Description("@#noChecked")]
     public string? NoChecked { get; init; }
@@ -1370,7 +1373,7 @@ public sealed record ElementPlusTransferFormat : VueProps
 
 [ECMAScript]
 [Description("@#TransferPropsAlias")]
-public sealed record ElementPlusTransferPropsAlias : VueProps
+public sealed record ElTransferPropsAlias : VueProps
 {
     [Description("@#label")]
     public string? Label { get; init; }
@@ -1384,8 +1387,8 @@ public sealed record ElementPlusTransferPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#")]
-[CollectionBuilder(typeof(ElementPlusTransferTextPairCollectionBuilder), nameof(ElementPlusTransferTextPairCollectionBuilder.Create))]
-public readonly union ElementPlusTransferTextPair(string[]) : IEnumerable<string>
+[CollectionBuilder(typeof(ElTransferTextPairCollectionBuilder), nameof(ElTransferTextPairCollectionBuilder.Create))]
+public readonly union ElTransferTextPair(string[]) : IEnumerable<string>
 {
     public string[]? AsValues => Value as string[];
 
@@ -1397,9 +1400,9 @@ public readonly union ElementPlusTransferTextPair(string[]) : IEnumerable<string
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class ElementPlusTransferTextPairCollectionBuilder
+public static class ElTransferTextPairCollectionBuilder
 {
-    public static ElementPlusTransferTextPair Create(ReadOnlySpan<string> values)
+    public static ElTransferTextPair Create(ReadOnlySpan<string> values)
     {
         if (values.Length != 2)
             throw new ArgumentException("Element Plus transfer text pairs require exactly two items.", nameof(values));
@@ -1410,7 +1413,7 @@ public static class ElementPlusTransferTextPairCollectionBuilder
 
 [ECMAScript]
 [Description("@#SelectPropsAlias")]
-public sealed record ElementPlusSelectPropsAlias : VueProps
+public sealed record ElSelectPropsAlias : VueProps
 {
     [Description("@#label")]
     public string? Label { get; init; }
@@ -1427,7 +1430,7 @@ public sealed record ElementPlusSelectPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#CheckboxOptionProps")]
-public sealed record ElementPlusCheckboxOptionPropsAlias : VueProps
+public sealed record ElCheckboxOptionPropsAlias : VueProps
 {
     [Description("@#value")]
     public string? Value { get; init; }
@@ -1441,7 +1444,7 @@ public sealed record ElementPlusCheckboxOptionPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#MentionOptionProps")]
-public sealed record ElementPlusMentionOptionPropsAlias : VueProps
+public sealed record ElMentionOptionPropsAlias : VueProps
 {
     [Description("@#value")]
     public string? Value { get; init; }
@@ -1455,7 +1458,7 @@ public sealed record ElementPlusMentionOptionPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#radioOptionProp")]
-public sealed record ElementPlusRadioOptionPropsAlias : VueProps
+public sealed record ElRadioOptionPropsAlias : VueProps
 {
     [Description("@#value")]
     public string? Value { get; init; }
@@ -1469,7 +1472,7 @@ public sealed record ElementPlusRadioOptionPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#SegmentedPropsAlias")]
-public sealed record ElementPlusSegmentedPropsAlias : VueProps
+public sealed record ElSegmentedPropsAlias : VueProps
 {
     [Description("@#label")]
     public string? Label { get; init; }
@@ -1483,7 +1486,7 @@ public sealed record ElementPlusSegmentedPropsAlias : VueProps
 
 [ECMAScript]
 [Description("@#TreeOptionProps")]
-public sealed record ElementPlusTreeOptionProps : VueProps
+public sealed record ElTreeOptionProps : VueProps
 {
     [Description("@#children")]
     public string? Children { get; init; }
@@ -1498,12 +1501,12 @@ public sealed record ElementPlusTreeOptionProps : VueProps
     public VueValue? IsLeaf { get; init; }
 
     [Description("@#class")]
-    public ElementPlusTreeOptionClassCallback? CssClass { get; init; }
+    public ElTreeOptionClassCallback? CssClass { get; init; }
 }
 
 [ECMAScript]
 [Description("@#CascaderProps")]
-public sealed record ElementPlusCascaderProps : VueProps
+public sealed record ElCascaderProps : VueProps
 {
     [Description("@#expandTrigger")]
     public string? ExpandTrigger { get; init; }
@@ -1521,7 +1524,7 @@ public sealed record ElementPlusCascaderProps : VueProps
     public bool? Lazy { get; init; }
 
     [Description("@#lazyLoad")]
-    public ElementPlusCascaderLazyLoadCallback? LazyLoad { get; init; }
+    public ElCascaderLazyLoadCallback? LazyLoad { get; init; }
 
     [Description("@#value")]
     public string? Value { get; init; }
@@ -1553,7 +1556,7 @@ public sealed record ElementPlusCascaderProps : VueProps
 
 [ECMAScript]
 [Description("@#FormItemRule")]
-public sealed record ElementPlusFormItemRule : VueDictionary
+public sealed record ElFormItemRule : VueDictionary
 {
     [Description("@#trigger")]
     public VueStringOrStringsValue? Trigger { get; init; }
@@ -1561,53 +1564,53 @@ public sealed record ElementPlusFormItemRule : VueDictionary
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusFormItemRules(
-    ElementPlusFormItemRule,
-    ElementPlusFormItemRule[]) : IEnumerable<ElementPlusFormItemRule>
+public readonly union ElFormItemRules(
+    ElFormItemRule,
+    ElFormItemRule[]) : IEnumerable<ElFormItemRule>
 {
-    public ElementPlusFormItemRule? AsSingle
-        => Value as ElementPlusFormItemRule;
+    public ElFormItemRule? AsSingle
+        => Value as ElFormItemRule;
 
-    public ElementPlusFormItemRule[]? AsMultiple => Value as ElementPlusFormItemRule[];
+    public ElFormItemRule[]? AsMultiple => Value as ElFormItemRule[];
 
-    IEnumerator<ElementPlusFormItemRule> IEnumerable<ElementPlusFormItemRule>.GetEnumerator()
-        => ((IEnumerable<ElementPlusFormItemRule>)(AsMultiple ?? Array.Empty<ElementPlusFormItemRule>())).GetEnumerator();
+    IEnumerator<ElFormItemRule> IEnumerable<ElFormItemRule>.GetEnumerator()
+        => ((IEnumerable<ElFormItemRule>)(AsMultiple ?? Array.Empty<ElFormItemRule>())).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<ElementPlusFormItemRule>)this).GetEnumerator();
+        => ((IEnumerable<ElFormItemRule>)this).GetEnumerator();
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusFormRuleValue(ElementPlusFormItemRules, ElementPlusFormRules)
+public readonly union ElFormRuleValue(ElFormItemRules, ElFormRules)
 {
-    public ElementPlusFormItemRules? AsItemRules
-        => Value is ElementPlusFormItemRules value ? value : default(ElementPlusFormItemRules?);
+    public ElFormItemRules? AsItemRules
+        => Value is ElFormItemRules value ? value : default(ElFormItemRules?);
 
-    public ElementPlusFormRules? AsNestedRules => Value as ElementPlusFormRules;
+    public ElFormRules? AsNestedRules => Value as ElFormRules;
 }
 
 [ECMAScript]
 [Description("@#FormRules")]
-public sealed record ElementPlusFormRules : VueDictionary<ElementPlusFormRuleValue>
+public sealed record ElFormRules : VueDictionary<ElFormRuleValue>
 {
 }
 
 [ECMAScript]
 [Description("@#RateColorMap")]
-public sealed record ElementPlusRateColorMap : VueDictionary<string>
+public sealed record ElRateColorMap : VueDictionary<string>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusRateColorsValue(
+public readonly union ElRateColorsValue(
     string[],
-    ElementPlusRateColorMap) : IEnumerable<string>
+    ElRateColorMap) : IEnumerable<string>
 {
     public string[]? AsArray => Value as string[];
 
-    public ElementPlusRateColorMap? AsMap => Value as ElementPlusRateColorMap;
+    public ElRateColorMap? AsMap => Value as ElRateColorMap;
 
     IEnumerator<string> IEnumerable<string>.GetEnumerator()
         => ((IEnumerable<string>)(AsArray ?? Array.Empty<string>())).GetEnumerator();
@@ -1618,24 +1621,24 @@ public readonly union ElementPlusRateColorsValue(
 
 [ECMAScript]
 [Description("@#RateIconMap")]
-public sealed record ElementPlusRateIconMap : VueDictionary<VueStringComponentValue>
+public sealed record ElRateIconMap : VueDictionary<VueStringComponentValue>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusRateIconsValue(
+public readonly union ElRateIconsValue(
     VueStringComponentValue[],
-    ElementPlusRateIconMap) : IEnumerable<VueStringComponentValue>
+    ElRateIconMap) : IEnumerable<VueStringComponentValue>
 {
     public VueStringComponentValue[]? AsArray => Value as VueStringComponentValue[];
 
-    public ElementPlusRateIconMap? AsMap => Value as ElementPlusRateIconMap;
+    public ElRateIconMap? AsMap => Value as ElRateIconMap;
 
-    public static implicit operator ElementPlusRateIconsValue(string[] values)
+    public static implicit operator ElRateIconsValue(string[] values)
         => new(Array.ConvertAll(values, static value => (VueStringComponentValue)value));
 
-    public static implicit operator ElementPlusRateIconsValue(IVueComponent[] values)
+    public static implicit operator ElRateIconsValue(IVueComponent[] values)
         => new(Array.ConvertAll(values, static value => (VueStringComponentValue)value));
 
     IEnumerator<VueStringComponentValue> IEnumerable<VueStringComponentValue>.GetEnumerator()
@@ -1647,7 +1650,7 @@ public readonly union ElementPlusRateIconsValue(
 
 [ECMAScript]
 [Description("@#SliderMarker")]
-public sealed record ElementPlusSliderMarker : VueProps
+public sealed record ElSliderMarker : VueProps
 {
     [Description("@#style")]
     public VueStyleValue? Style { get; init; }
@@ -1658,21 +1661,21 @@ public sealed record ElementPlusSliderMarker : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusSliderMarkValue(string, ElementPlusSliderMarker)
+public readonly union ElSliderMarkValue(string, ElSliderMarker)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusSliderMarker? AsMarker => Value as ElementPlusSliderMarker;
+    public ElSliderMarker? AsMarker => Value as ElSliderMarker;
 }
 
 [ECMAScript]
 [Description("@#SliderMarks")]
-public sealed record ElementPlusSliderMarks : VueDictionary<ElementPlusSliderMarkValue>
+public sealed record ElSliderMarks : VueDictionary<ElSliderMarkValue>
 {
 }
 
 [String]
-public enum ElementPlusTableV2SortOrder
+public enum ElTableV2SortOrder
 {
     [Description("@#asc")]
     Asc,
@@ -1682,7 +1685,7 @@ public enum ElementPlusTableV2SortOrder
 }
 
 [String]
-public enum ElementPlusTableV2Alignment
+public enum ElTableV2Alignment
 {
     [Description("@#left")]
     Left,
@@ -1695,7 +1698,7 @@ public enum ElementPlusTableV2Alignment
 }
 
 [String]
-public enum ElementPlusTableV2FixedDirection
+public enum ElTableV2FixedDirection
 {
     [Description("@#left")]
     Left,
@@ -1706,13 +1709,13 @@ public enum ElementPlusTableV2FixedDirection
 
 [ECMAScript]
 [Description("@#TableV2ClassContext")]
-public sealed record ElementPlusTableV2ClassContext : VueProps
+public sealed record ElTableV2ClassContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableV2Column[]? Columns { get; init; }
+    public ElTableV2Column[]? Columns { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableV2Column? Column { get; init; }
+    public ElTableV2Column? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -1732,26 +1735,26 @@ public sealed record ElementPlusTableV2ClassContext : VueProps
 
 [ECMAScript]
 [Description("@#ClassGetter")]
-public delegate string ElementPlusTableV2ClassGetter(ElementPlusTableV2ClassContext context);
+public delegate string ElTableV2ClassGetter(ElTableV2ClassContext context);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableV2ClassValue(string, ElementPlusTableV2ClassGetter)
+public readonly union ElTableV2ClassValue(string, ElTableV2ClassGetter)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusTableV2ClassGetter? AsGetter => Value as ElementPlusTableV2ClassGetter;
+    public ElTableV2ClassGetter? AsGetter => Value as ElTableV2ClassGetter;
 }
 
 [ECMAScript]
 [Description("@#TableV2DynamicPropsContext")]
-public sealed record ElementPlusTableV2DynamicPropsContext : VueProps
+public sealed record ElTableV2DynamicPropsContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableV2Column[]? Columns { get; init; }
+    public ElTableV2Column[]? Columns { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableV2Column? Column { get; init; }
+    public ElTableV2Column? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -1771,101 +1774,101 @@ public sealed record ElementPlusTableV2DynamicPropsContext : VueProps
 
 [ECMAScript]
 [Description("@#DynamicPropsGetter")]
-public delegate VueDictionary ElementPlusTableV2DynamicPropsGetter(ElementPlusTableV2DynamicPropsContext context);
+public delegate VueDictionary ElTableV2DynamicPropsGetter(ElTableV2DynamicPropsContext context);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableV2DynamicPropsValue(VueDictionary, ElementPlusTableV2DynamicPropsGetter)
+public readonly union ElTableV2DynamicPropsValue(VueDictionary, ElTableV2DynamicPropsGetter)
 {
     public VueDictionary? AsObject => Value as VueDictionary;
 
-    public ElementPlusTableV2DynamicPropsGetter? AsGetter => Value as ElementPlusTableV2DynamicPropsGetter;
+    public ElTableV2DynamicPropsGetter? AsGetter => Value as ElTableV2DynamicPropsGetter;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableV2KeyValue(VueKey)
+public readonly union ElTableV2KeyValue(VueKey)
 {
     public VueKey? AsKey => Value as VueKey;
 
-    public static implicit operator ElementPlusTableV2KeyValue(string value)
+    public static implicit operator ElTableV2KeyValue(string value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(Symbol value)
+    public static implicit operator ElTableV2KeyValue(Symbol value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(Number value)
+    public static implicit operator ElTableV2KeyValue(Number value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(byte value)
+    public static implicit operator ElTableV2KeyValue(byte value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(sbyte value)
+    public static implicit operator ElTableV2KeyValue(sbyte value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(short value)
+    public static implicit operator ElTableV2KeyValue(short value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(ushort value)
+    public static implicit operator ElTableV2KeyValue(ushort value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(int value)
+    public static implicit operator ElTableV2KeyValue(int value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(uint value)
+    public static implicit operator ElTableV2KeyValue(uint value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(long value)
+    public static implicit operator ElTableV2KeyValue(long value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(ulong value)
+    public static implicit operator ElTableV2KeyValue(ulong value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(float value)
+    public static implicit operator ElTableV2KeyValue(float value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(double value)
+    public static implicit operator ElTableV2KeyValue(double value)
         => new((VueKey)value);
 
-    public static implicit operator ElementPlusTableV2KeyValue(decimal value)
+    public static implicit operator ElTableV2KeyValue(decimal value)
         => new((VueKey)value);
 }
 
 [ECMAScript]
 [Description("@#SortBy")]
-public sealed record ElementPlusTableV2SortBy : VueProps
+public sealed record ElTableV2SortBy : VueProps
 {
     [Description("@#key")]
-    public ElementPlusTableV2KeyValue? Key { get; init; }
+    public ElTableV2KeyValue? Key { get; init; }
 
     [Description("@#order")]
-    public ElementPlusTableV2SortOrder? Order { get; init; }
+    public ElTableV2SortOrder? Order { get; init; }
 }
 
 [ECMAScript]
 [Description("@#SortState")]
-public sealed record ElementPlusTableV2SortState : VueDictionary<ElementPlusTableV2SortOrder>
+public sealed record ElTableV2SortState : VueDictionary<ElTableV2SortOrder>
 {
 }
 
 [ECMAScript]
 [Description("@#Column")]
-public sealed record ElementPlusTableV2Column : VueDictionary
+public sealed record ElTableV2Column : VueDictionary
 {
     [Description("@#align")]
-    public ElementPlusTableV2Alignment? Align { get; init; }
+    public ElTableV2Alignment? Align { get; init; }
 
     [Description("@#class")]
-    public ElementPlusTableV2ClassValue? CssClass { get; init; }
+    public ElTableV2ClassValue? CssClass { get; init; }
 
     [Description("@#key")]
-    public ElementPlusTableV2KeyValue? Key { get; init; }
+    public ElTableV2KeyValue? Key { get; init; }
 
     [Description("@#dataKey")]
-    public ElementPlusTableV2KeyValue? DataKey { get; init; }
+    public ElTableV2KeyValue? DataKey { get; init; }
 
     [Description("@#fixed")]
-    public ElementPlusTableV2FixedValue? Fixed { get; init; }
+    public ElTableV2FixedValue? Fixed { get; init; }
 
     [Description("@#title")]
     public string? Title { get; init; }
@@ -1874,7 +1877,7 @@ public sealed record ElementPlusTableV2Column : VueDictionary
     public bool? Hidden { get; init; }
 
     [Description("@#headerClass")]
-    public ElementPlusTableV2ClassValue? HeaderClass { get; init; }
+    public ElTableV2ClassValue? HeaderClass { get; init; }
 
     [Description("@#maxWidth")]
     public Number? MaxWidth { get; init; }
@@ -1898,37 +1901,37 @@ public sealed record ElementPlusTableV2Column : VueDictionary
     public Number? FlexShrink { get; init; }
 
     [Description("@#cellRenderer")]
-    public ElementPlusTableV2CellRenderer? CellRenderer { get; init; }
+    public ElTableV2CellRenderer? CellRenderer { get; init; }
 
     [Description("@#headerCellRenderer")]
-    public ElementPlusTableV2HeaderCellRenderer? HeaderCellRenderer { get; init; }
+    public ElTableV2HeaderCellRenderer? HeaderCellRenderer { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableV2FixedValue(bool, ElementPlusTableV2FixedDirection)
+public readonly union ElTableV2FixedValue(bool, ElTableV2FixedDirection)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public ElementPlusTableV2FixedDirection? AsDirection
-        => Value is ElementPlusTableV2FixedDirection value ? value : default(ElementPlusTableV2FixedDirection?);
+    public ElTableV2FixedDirection? AsDirection
+        => Value is ElTableV2FixedDirection value ? value : default(ElTableV2FixedDirection?);
 }
 
 [ECMAScript]
 [Description("@#TableData")]
-public sealed record ElementPlusTableV2DataItem : VueDictionary
+public sealed record ElTableV2DataItem : VueDictionary
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableV2HeaderHeightValue(double, Number[]) : IEnumerable<Number>
+public readonly union ElTableV2HeaderHeightValue(double, Number[]) : IEnumerable<Number>
 {
     public double? AsNumber => Value is double value ? value : default(double?);
 
     public Number[]? AsNumbers => Value is Number[] values ? values : default(Number[]?);
 
-    public static implicit operator ElementPlusTableV2HeaderHeightValue(double[] values)
+    public static implicit operator ElTableV2HeaderHeightValue(double[] values)
         => new(Array.ConvertAll(values, static value => (Number)value));
 
     IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
@@ -1940,13 +1943,13 @@ public readonly union ElementPlusTableV2HeaderHeightValue(double, Number[]) : IE
 
 [ECMAScript]
 [Description("@#TableV2DataGetterContext")]
-public sealed record ElementPlusTableV2DataGetterContext : VueProps
+public sealed record ElTableV2DataGetterContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableV2Column[]? Columns { get; init; }
+    public ElTableV2Column[]? Columns { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableV2Column? Column { get; init; }
+    public ElTableV2Column? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -1960,17 +1963,17 @@ public sealed record ElementPlusTableV2DataGetterContext : VueProps
 
 [ECMAScript]
 [Description("@#DataGetter")]
-public delegate VueValue ElementPlusTableV2DataGetter(ElementPlusTableV2DataGetterContext context);
+public delegate VueValue ElTableV2DataGetter(ElTableV2DataGetterContext context);
 
 [ECMAScript]
 [Description("@#TableV2CellRendererContext")]
-public sealed record ElementPlusTableV2CellRendererContext : VueProps
+public sealed record ElTableV2CellRendererContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableV2Column[]? Columns { get; init; }
+    public ElTableV2Column[]? Columns { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableV2Column? Column { get; init; }
+    public ElTableV2Column? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -1987,13 +1990,13 @@ public sealed record ElementPlusTableV2CellRendererContext : VueProps
 
 [ECMAScript]
 [Description("@#TableV2HeaderCellRendererContext")]
-public sealed record ElementPlusTableV2HeaderCellRendererContext : VueProps
+public sealed record ElTableV2HeaderCellRendererContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableV2Column[]? Columns { get; init; }
+    public ElTableV2Column[]? Columns { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableV2Column? Column { get; init; }
+    public ElTableV2Column? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -2004,18 +2007,18 @@ public sealed record ElementPlusTableV2HeaderCellRendererContext : VueProps
 
 [ECMAScript]
 [Description("@#CellRenderer")]
-public delegate IVNode ElementPlusTableV2CellRenderer(ElementPlusTableV2CellRendererContext context);
+public delegate IVNode ElTableV2CellRenderer(ElTableV2CellRendererContext context);
 
 [ECMAScript]
 [Description("@#HeaderCellRenderer")]
-public delegate IVNode ElementPlusTableV2HeaderCellRenderer(ElementPlusTableV2HeaderCellRendererContext context);
+public delegate IVNode ElTableV2HeaderCellRenderer(ElTableV2HeaderCellRendererContext context);
 
 [ECMAScript]
 [Description("@#TableV2RowEventHandlerContext")]
-public sealed record ElementPlusTableV2RowEventHandlerContext : VueProps
+public sealed record ElTableV2RowEventHandlerContext : VueProps
 {
     [Description("@#rowKey")]
-    public ElementPlusTableV2KeyValue? RowKey { get; init; }
+    public ElTableV2KeyValue? RowKey { get; init; }
 
     [Description("@#event")]
     public Event? Event { get; init; }
@@ -2029,31 +2032,31 @@ public sealed record ElementPlusTableV2RowEventHandlerContext : VueProps
 
 [ECMAScript]
 [Description("@#RowEventHandler")]
-public delegate void ElementPlusTableV2RowEventHandler(ElementPlusTableV2RowEventHandlerContext context);
+public delegate void ElTableV2RowEventHandler(ElTableV2RowEventHandlerContext context);
 
 [ECMAScript]
 [Description("@#RowEventHandlers")]
-public sealed record ElementPlusTableV2RowEventHandlers : VueProps
+public sealed record ElTableV2RowEventHandlers : VueProps
 {
     [Description("@#onClick")]
-    public ElementPlusTableV2RowEventHandler? OnClick { get; init; }
+    public ElTableV2RowEventHandler? OnClick { get; init; }
 
     [Description("@#onContextmenu")]
-    public ElementPlusTableV2RowEventHandler? OnContextmenu { get; init; }
+    public ElTableV2RowEventHandler? OnContextmenu { get; init; }
 
     [Description("@#onDblclick")]
-    public ElementPlusTableV2RowEventHandler? OnDblclick { get; init; }
+    public ElTableV2RowEventHandler? OnDblclick { get; init; }
 
     [Description("@#onMouseenter")]
-    public ElementPlusTableV2RowEventHandler? OnMouseenter { get; init; }
+    public ElTableV2RowEventHandler? OnMouseenter { get; init; }
 
     [Description("@#onMouseleave")]
-    public ElementPlusTableV2RowEventHandler? OnMouseleave { get; init; }
+    public ElTableV2RowEventHandler? OnMouseleave { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTransferRenderContentResult(IVNode, IVNode[])
+public readonly union ElTransferRenderContentResult(IVNode, IVNode[])
 {
     public IVNode? AsSingle => Value as IVNode;
 
@@ -2062,33 +2065,33 @@ public readonly union ElementPlusTransferRenderContentResult(IVNode, IVNode[])
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTransferFilterMethod(string query, ElementPlusTransferDataItem item);
+public delegate bool ElTransferFilterMethod(string query, ElTransferDataItem item);
 
 [ECMAScript]
 [Description("@#renderContent")]
-public delegate ElementPlusTransferRenderContentResult ElementPlusTransferRenderContent(VueRenderHost h, ElementPlusTransferDataItem option);
+public delegate ElTransferRenderContentResult ElTransferRenderContent(VueRenderHost h, ElTransferDataItem option);
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusTreeNode : VueDictionary
+public sealed record ElTreeNode : VueDictionary
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusTreeNodeData : VueDictionary
+public sealed record ElTreeNodeData : VueDictionary
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusTreeRenderContentContext : VueProps
+public sealed record ElTreeRenderContentContext : VueProps
 {
     [Description("@#node")]
-    public ElementPlusTreeNode? Node { get; init; }
+    public ElTreeNode? Node { get; init; }
 
     [Description("@#data")]
-    public ElementPlusTreeNodeData? Data { get; init; }
+    public ElTreeNodeData? Data { get; init; }
 
     [Description("@#store")]
     public VueDictionary? Store { get; init; }
@@ -2099,7 +2102,7 @@ public sealed record ElementPlusTreeRenderContentContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusTreeDropIndicator : VueProps
+public sealed record ElTreeDropIndicator : VueProps
 {
     [Description("@#type")]
     public string? Type { get; init; }
@@ -2107,88 +2110,88 @@ public sealed record ElementPlusTreeDropIndicator : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusStringBooleanClassValue ElementPlusTreeOptionClassCallback(ElementPlusTreeNodeData data, ElementPlusTreeNode node);
+public delegate ElStringBooleanClassValue ElTreeOptionClassCallback(ElTreeNodeData data, ElTreeNode node);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusCascaderLazyResolveCallback(VueDictionary[]? dataList = null);
+public delegate void ElCascaderLazyResolveCallback(VueDictionary[]? dataList = null);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusCascaderLazyRejectCallback();
+public delegate void ElCascaderLazyRejectCallback();
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusCascaderLazyLoadCallback(
+public delegate void ElCascaderLazyLoadCallback(
     VueDictionary node,
-    ElementPlusCascaderLazyResolveCallback resolve,
-    ElementPlusCascaderLazyRejectCallback reject);
+    ElCascaderLazyResolveCallback resolve,
+    ElCascaderLazyRejectCallback reject);
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusTransferRenderContentResult ElementPlusTreeRenderContentCallback(VueRenderHost h, ElementPlusTreeRenderContentContext context);
+public delegate ElTransferRenderContentResult ElTreeRenderContentCallback(VueRenderHost h, ElTreeRenderContentContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTreeResolveChildrenCallback(ElementPlusTreeNodeData[] data);
+public delegate void ElTreeResolveChildrenCallback(ElTreeNodeData[] data);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTreeStopLoadingCallback();
+public delegate void ElTreeStopLoadingCallback();
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTreeLoadCallback(
-    ElementPlusTreeNode rootNode,
-    ElementPlusTreeResolveChildrenCallback loadedCallback,
-    ElementPlusTreeStopLoadingCallback stopLoading);
+public delegate void ElTreeLoadCallback(
+    ElTreeNode rootNode,
+    ElTreeResolveChildrenCallback loadedCallback,
+    ElTreeStopLoadingCallback stopLoading);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTreeFilterNodeMethod(VueValue? value, ElementPlusTreeNodeData data, ElementPlusTreeNode child);
+public delegate bool ElTreeFilterNodeMethod(VueValue? value, ElTreeNodeData data, ElTreeNode child);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTreeAllowDragCallback(ElementPlusTreeNode node);
+public delegate bool ElTreeAllowDragCallback(ElTreeNode node);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTreeAllowDropCallback(
-    ElementPlusTreeNode draggingNode,
-    ElementPlusTreeNode dropNode,
+public delegate bool ElTreeAllowDropCallback(
+    ElTreeNode draggingNode,
+    ElTreeNode dropNode,
     string type);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTreeV2FilterMethod(string query, ElementPlusTreeNodeData data, ElementPlusTreeNode node);
+public delegate bool ElTreeV2FilterMethod(string query, ElTreeNodeData data, ElTreeNode node);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusSelectQueryCallback(string query);
+public delegate void ElSelectQueryCallback(string query);
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberValue ElementPlusSliderFormatTooltipCallback(Number value);
+public delegate VueStringNumberValue ElSliderFormatTooltipCallback(Number value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusSliderFormatValueTextCallback(Number value);
+public delegate string ElSliderFormatValueTextCallback(Number value);
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusAsyncBooleanResult ElementPlusSwitchBeforeChangeCallback();
+public delegate ElAsyncBooleanResult ElSwitchBeforeChangeCallback();
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<bool?> ElementPlusTabsBeforeLeaveAsyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
+public delegate IPromise<bool?> ElTabsBeforeLeaveAsyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool? ElementPlusTabsBeforeLeaveSyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
+public delegate bool? ElTabsBeforeLeaveSyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTabsBeforeLeaveResult(bool, IPromise<bool?>)
+public readonly union ElTabsBeforeLeaveResult(bool, IPromise<bool?>)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -2197,13 +2200,13 @@ public readonly union ElementPlusTabsBeforeLeaveResult(bool, IPromise<bool?>)
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusTabsBeforeLeaveResult? ElementPlusTabsBeforeLeaveCallback(
+public delegate ElTabsBeforeLeaveResult? ElTabsBeforeLeaveCallback(
     VueStringNumberValue? newName,
     VueStringNumberValue? oldName);
 
 [ECMAScript]
 [Description("@#UploadProgressEvent")]
-public sealed record ElementPlusUploadProgressEvent : VueProps
+public sealed record ElUploadProgressEvent : VueProps
 {
     [Description("@#percent")]
     public Number? Percent { get; init; }
@@ -2211,7 +2214,7 @@ public sealed record ElementPlusUploadProgressEvent : VueProps
 
 [ECMAScript]
 [Description("@#UploadError")]
-public sealed record ElementPlusUploadAjaxError : VueProps
+public sealed record ElUploadAjaxError : VueProps
 {
     [Description("@#name")]
     public string? Name { get; init; }
@@ -2222,13 +2225,13 @@ public sealed record ElementPlusUploadAjaxError : VueProps
 
 [ECMAScript]
 [Description("@#UploadRequestData")]
-public sealed record ElementPlusUploadRequestData : VueDictionary<VueValue>
+public sealed record ElUploadRequestData : VueDictionary<VueValue>
 {
 }
 
 [ECMAScript]
 [Description("@#UploadRequestHeaders")]
-public readonly union ElementPlusUploadRequestHeaders(Headers, VueDictionary)
+public readonly union ElUploadRequestHeaders(Headers, VueDictionary)
 {
     public Headers? AsHeaders => Value as Headers;
 
@@ -2237,7 +2240,7 @@ public readonly union ElementPlusUploadRequestHeaders(Headers, VueDictionary)
 
 [ECMAScript]
 [Description("@#UploadRequestOptions")]
-public sealed record ElementPlusUploadRequestOptions : VueProps
+public sealed record ElUploadRequestOptions : VueProps
 {
     [Description("@#action")]
     public string Action { get; init; } = string.Empty;
@@ -2246,25 +2249,25 @@ public sealed record ElementPlusUploadRequestOptions : VueProps
     public string Method { get; init; } = string.Empty;
 
     [Description("@#data")]
-    public ElementPlusUploadRequestData Data { get; init; } = new();
+    public ElUploadRequestData Data { get; init; } = new();
 
     [Description("@#filename")]
     public string Filename { get; init; } = string.Empty;
 
     [Description("@#file")]
-    public ElementPlusUploadRawFile File { get; init; } = default!;
+    public ElUploadRawFile File { get; init; } = default!;
 
     [Description("@#headers")]
-    public ElementPlusUploadRequestHeaders? Headers { get; init; }
+    public ElUploadRequestHeaders? Headers { get; init; }
 
     [Description("@#onError")]
-    public ElementPlusUploadRequestOnErrorCallback? OnError { get; init; }
+    public ElUploadRequestOnErrorCallback? OnError { get; init; }
 
     [Description("@#onProgress")]
-    public ElementPlusUploadRequestOnProgressCallback? OnProgress { get; init; }
+    public ElUploadRequestOnProgressCallback? OnProgress { get; init; }
 
     [Description("@#onSuccess")]
-    public ElementPlusUploadRequestOnSuccessCallback? OnSuccess { get; init; }
+    public ElUploadRequestOnSuccessCallback? OnSuccess { get; init; }
 
     [Description("@#withCredentials")]
     public bool? WithCredentials { get; init; }
@@ -2272,19 +2275,19 @@ public sealed record ElementPlusUploadRequestOptions : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadRequestOnErrorCallback(ElementPlusUploadAjaxError error);
+public delegate void ElUploadRequestOnErrorCallback(ElUploadAjaxError error);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadRequestOnProgressCallback(ElementPlusUploadProgressEvent @event);
+public delegate void ElUploadRequestOnProgressCallback(ElUploadProgressEvent @event);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadRequestOnSuccessCallback(VueValue? response);
+public delegate void ElUploadRequestOnSuccessCallback(VueValue? response);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusUploadRequestResult(XMLHttpRequest, IPromise<VueValue?>)
+public readonly union ElUploadRequestResult(XMLHttpRequest, IPromise<VueValue?>)
 {
     public XMLHttpRequest? AsRequest => Value as XMLHttpRequest;
 
@@ -2293,67 +2296,133 @@ public readonly union ElementPlusUploadRequestResult(XMLHttpRequest, IPromise<Vu
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusUploadRequestResult ElementPlusUploadRequestCallback(ElementPlusUploadRequestOptions options);
+public delegate ElUploadRequestResult ElUploadRequestCallback(ElUploadRequestOptions options);
 
 [ECMAScript]
 [Description("@#UploadData")]
-public sealed record ElementPlusUploadData : VueDictionary<VueValue>
+public sealed record ElUploadData : VueDictionary<VueValue>
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<ElementPlusUploadData> ElementPlusUploadDataPromiseFactory(ElementPlusUploadRawFile rawFile);
+public delegate IPromise<ElUploadData> ElUploadDataPromiseFactory(ElUploadRawFile rawFile);
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusUploadData ElementPlusUploadDataFactory(ElementPlusUploadRawFile rawFile);
+public delegate ElUploadData ElUploadDataFactory(ElUploadRawFile rawFile);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusUploadDataValue(
-    ElementPlusUploadData,
-    IPromise<ElementPlusUploadData>,
-    ElementPlusUploadDataFactory,
-    ElementPlusUploadDataPromiseFactory)
+public readonly union ElUploadDataValue(
+    ElUploadData,
+    IPromise<ElUploadData>,
+    ElUploadDataFactory,
+    ElUploadDataPromiseFactory)
 {
-    public ElementPlusUploadData? AsData => Value as ElementPlusUploadData;
+    public ElUploadData? AsData => Value as ElUploadData;
 
-    public IPromise<ElementPlusUploadData>? AsPromise => Value as IPromise<ElementPlusUploadData>;
+    public IPromise<ElUploadData>? AsPromise => Value as IPromise<ElUploadData>;
 
-    public ElementPlusUploadDataFactory? AsFactory => Value as ElementPlusUploadDataFactory;
+    public ElUploadDataFactory? AsFactory => Value as ElUploadDataFactory;
 
-    public ElementPlusUploadDataPromiseFactory? AsAsyncFactory => Value as ElementPlusUploadDataPromiseFactory;
+    public ElUploadDataPromiseFactory? AsAsyncFactory => Value as ElUploadDataPromiseFactory;
+}
+
+[ECMAScript]
+[Union]
+[Description("@#")]
+public readonly struct ElUploadBeforeUploadResult : IUnion
+{
+    // File derives from Blob, so Value-based native-union projections cannot preserve the authored branch.
+    // File 继承 Blob；这里必须保留显式 tag，确保 AsFile 与 AsBlob 不会同时命中。
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly File? _file;
+    private readonly Blob? _blob;
+    private readonly IPromise<VueValue?>? _promise;
+
+    public ElUploadBeforeUploadResult(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _file = default;
+        _blob = default;
+        _promise = default;
+    }
+
+    public ElUploadBeforeUploadResult(File value)
+    {
+        _kind = 2;
+        _bool = default;
+        _file = value;
+        _blob = default;
+        _promise = default;
+    }
+
+    public ElUploadBeforeUploadResult(Blob value)
+    {
+        _kind = 3;
+        _bool = default;
+        _file = default;
+        _blob = value;
+        _promise = default;
+    }
+
+    // C# forbids user-defined conversions with an interface source, so promise authoring uses new(...).
+    // C# 禁止以接口作为用户定义转换源；promise 分支通过 new(...) 显式构造。
+    public ElUploadBeforeUploadResult(IPromise<VueValue?> value)
+    {
+        _kind = 4;
+        _bool = default;
+        _file = default;
+        _blob = default;
+        _promise = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public File? AsFile => _kind == 2 ? _file : default;
+
+    public Blob? AsBlob => _kind == 3 ? _blob : default;
+
+    public IPromise<VueValue?>? AsPromise => _kind == 4 ? _promise : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsFile,
+        3 => AsBlob,
+        4 => AsPromise,
+        _ => default
+    };
+
+    public static implicit operator ElUploadBeforeUploadResult(bool value)
+        => new(value);
+
+    public static implicit operator ElUploadBeforeUploadResult(File value)
+        => new(value);
+
+    public static implicit operator ElUploadBeforeUploadResult(Blob value)
+        => new(value);
+
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusUploadBeforeUploadResult(bool, File, Blob, IPromise<VueValue?>)
-{
-    public bool? AsBool => Value is bool value ? value : default(bool?);
-
-    public File? AsFile => Value as File;
-
-    public Blob? AsBlob => Value as Blob;
-
-    public IPromise<VueValue?>? AsPromise => Value as IPromise<VueValue?>;
-}
+public delegate ElUploadBeforeUploadResult? ElUploadBeforeUploadCallback(ElUploadRawFile rawFile);
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusUploadBeforeUploadResult? ElementPlusUploadBeforeUploadCallback(ElementPlusUploadRawFile rawFile);
+public delegate bool ElUploadBeforeRemoveSyncCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusUploadBeforeRemoveSyncCallback(ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate IPromise<bool?> ElUploadBeforeRemoveAsyncCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate IPromise<bool?> ElementPlusUploadBeforeRemoveAsyncCallback(ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
-
-[ECMAScript]
-[Description("@#")]
-public readonly union ElementPlusUploadBeforeRemoveResult(bool, IPromise<bool?>)
+public readonly union ElUploadBeforeRemoveResult(bool, IPromise<bool?>)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -2362,53 +2431,53 @@ public readonly union ElementPlusUploadBeforeRemoveResult(bool, IPromise<bool?>)
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusUploadBeforeRemoveResult ElementPlusUploadBeforeRemoveCallback(ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate ElUploadBeforeRemoveResult ElUploadBeforeRemoveCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadPreviewCallback(ElementPlusUploadFile uploadFile);
+public delegate void ElUploadPreviewCallback(ElUploadFile uploadFile);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadFileListCallback(ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate void ElUploadFileListCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadSuccessCallback(VueValue? response, ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate void ElUploadSuccessCallback(VueValue? response, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadProgressCallback(ElementPlusUploadProgressEvent @event, ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate void ElUploadProgressCallback(ElUploadProgressEvent @event, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadErrorCallback(Error error, ElementPlusUploadFile uploadFile, ElementPlusUploadFile[] uploadFiles);
+public delegate void ElUploadErrorCallback(Error error, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusUploadExceedCallback(File[] files, ElementPlusUploadUserFile[] uploadFiles);
+public delegate void ElUploadExceedCallback(File[] files, ElUploadUserFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number[] ElementPlusTimePickerDisabledHoursCallback(string role, Dayjs? comparingDate = null);
+public delegate Number[] ElTimePickerDisabledHoursCallback(string role, Dayjs? comparingDate = null);
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number[] ElementPlusTimePickerDisabledMinutesCallback(Number hour, string role, Dayjs? comparingDate = null);
+public delegate Number[] ElTimePickerDisabledMinutesCallback(Number hour, string role, Dayjs? comparingDate = null);
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number[] ElementPlusTimePickerDisabledSecondsCallback(Number hour, Number minute, string role, Dayjs? comparingDate = null);
+public delegate Number[] ElTimePickerDisabledSecondsCallback(Number hour, Number minute, string role, Dayjs? comparingDate = null);
 
 [ECMAScript]
 [Description("@#TableOverflowTooltipData")]
-public sealed record ElementPlusTableTooltipFormatterContext : VueProps
+public sealed record ElTableTooltipFormatterContext : VueProps
 {
     [Description("@#row")]
     public VueDictionary? Row { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableColumnContext? Column { get; init; }
+    public ElTableColumnContext? Column { get; init; }
 
     [Description("@#cellValue")]
     public VueValue? CellValue { get; init; }
@@ -2416,11 +2485,11 @@ public sealed record ElementPlusTableTooltipFormatterContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberVNodeValue ElementPlusTableTooltipFormatter(ElementPlusTableTooltipFormatterContext data);
+public delegate VueStringNumberVNodeValue ElTableTooltipFormatter(ElTableTooltipFormatterContext data);
 
 [ECMAScript]
 [Description("@#TableColumnCtx")]
-public sealed record ElementPlusTableColumnContext : VueProps
+public sealed record ElTableColumnContext : VueProps
 {
     [Description("@#id")]
     public string? Id { get; init; }
@@ -2443,7 +2512,7 @@ public sealed record ElementPlusTableColumnContext : VueProps
 
 [ECMAScript]
 [Description("@#TableRowContext")]
-public sealed record ElementPlusTableRowContext : VueProps
+public sealed record ElTableRowContext : VueProps
 {
     [Description("@#row")]
     public VueDictionary? Row { get; init; }
@@ -2454,7 +2523,7 @@ public sealed record ElementPlusTableRowContext : VueProps
 
 [ECMAScript]
 [Description("@#TableCellContext")]
-public sealed record ElementPlusTableCellContext : VueProps
+public sealed record ElTableCellContext : VueProps
 {
     [Description("@#row")]
     public VueDictionary? Row { get; init; }
@@ -2463,7 +2532,7 @@ public sealed record ElementPlusTableCellContext : VueProps
     public Number? RowIndex { get; init; }
 
     [Description("@#column")]
-    public ElementPlusTableColumnContext? Column { get; init; }
+    public ElTableColumnContext? Column { get; init; }
 
     [Description("@#columnIndex")]
     public Number? ColumnIndex { get; init; }
@@ -2471,10 +2540,10 @@ public sealed record ElementPlusTableCellContext : VueProps
 
 [ECMAScript]
 [Description("@#SummaryMethodContext")]
-public sealed record ElementPlusTableSummaryMethodContext : VueProps
+public sealed record ElTableSummaryMethodContext : VueProps
 {
     [Description("@#columns")]
-    public ElementPlusTableColumnContext[]? Columns { get; init; }
+    public ElTableColumnContext[]? Columns { get; init; }
 
     [Description("@#data")]
     public VueDictionary[]? Data { get; init; }
@@ -2482,16 +2551,16 @@ public sealed record ElementPlusTableSummaryMethodContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableSpanMethodResult(Number[], ElementPlusTableSpanMethodCoordinates)
+public readonly union ElTableSpanMethodResult(Number[], ElTableSpanMethodCoordinates)
 {
     public Number[]? AsPair => Value as Number[];
 
-    public ElementPlusTableSpanMethodCoordinates? AsCoordinates => Value as ElementPlusTableSpanMethodCoordinates;
+    public ElTableSpanMethodCoordinates? AsCoordinates => Value as ElTableSpanMethodCoordinates;
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ElementPlusTableSpanMethodCoordinates : VueProps
+public sealed record ElTableSpanMethodCoordinates : VueProps
 {
     [Description("@#rowspan")]
     public Number? Rowspan { get; init; }
@@ -2502,80 +2571,80 @@ public sealed record ElementPlusTableSpanMethodCoordinates : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusTableRowClassNameCallback(ElementPlusTableRowContext context);
+public delegate string ElTableRowClassNameCallback(ElTableRowContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStyleValue ElementPlusTableRowStyleCallback(ElementPlusTableRowContext context);
+public delegate VueStyleValue ElTableRowStyleCallback(ElTableRowContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusTableCellClassNameCallback(ElementPlusTableCellContext context);
+public delegate string ElTableCellClassNameCallback(ElTableCellContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStyleValue ElementPlusTableCellStyleCallback(ElementPlusTableCellContext context);
+public delegate VueStyleValue ElTableCellStyleCallback(ElTableCellContext context);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableRowClassNameValue(string, ElementPlusTableRowClassNameCallback)
+public readonly union ElTableRowClassNameValue(string, ElTableRowClassNameCallback)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusTableRowClassNameCallback? AsCallback => Value as ElementPlusTableRowClassNameCallback;
+    public ElTableRowClassNameCallback? AsCallback => Value as ElTableRowClassNameCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableRowStyleValue(VueStyleValue, ElementPlusTableRowStyleCallback)
+public readonly union ElTableRowStyleValue(VueStyleValue, ElTableRowStyleCallback)
 {
     public VueStyleValue? AsStyle => Value is VueStyleValue value ? value : default(VueStyleValue?);
 
-    public ElementPlusTableRowStyleCallback? AsCallback => Value as ElementPlusTableRowStyleCallback;
+    public ElTableRowStyleCallback? AsCallback => Value as ElTableRowStyleCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableCellClassNameValue(string, ElementPlusTableCellClassNameCallback)
+public readonly union ElTableCellClassNameValue(string, ElTableCellClassNameCallback)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusTableCellClassNameCallback? AsCallback => Value as ElementPlusTableCellClassNameCallback;
+    public ElTableCellClassNameCallback? AsCallback => Value as ElTableCellClassNameCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableCellStyleValue(VueStyleValue, ElementPlusTableCellStyleCallback)
+public readonly union ElTableCellStyleValue(VueStyleValue, ElTableCellStyleCallback)
 {
     public VueStyleValue? AsStyle => Value is VueStyleValue value ? value : default(VueStyleValue?);
 
-    public ElementPlusTableCellStyleCallback? AsCallback => Value as ElementPlusTableCellStyleCallback;
+    public ElTableCellStyleCallback? AsCallback => Value as ElTableCellStyleCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusTableRowKeyCallback(VueDictionary row);
+public delegate string ElTableRowKeyCallback(VueDictionary row);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableRowKeyValue(string, ElementPlusTableRowKeyCallback)
+public readonly union ElTableRowKeyValue(string, ElTableRowKeyCallback)
 {
     public string? AsString => Value as string;
 
-    public ElementPlusTableRowKeyCallback? AsCallback => Value as ElementPlusTableRowKeyCallback;
+    public ElTableRowKeyCallback? AsCallback => Value as ElTableRowKeyCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberVNodeValue[] ElementPlusTableSummaryMethodCallback(ElementPlusTableSummaryMethodContext context);
+public delegate VueStringNumberVNodeValue[] ElTableSummaryMethodCallback(ElTableSummaryMethodContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate ElementPlusTableSpanMethodResult? ElementPlusTableSpanMethodCallback(ElementPlusTableCellContext context);
+public delegate ElTableSpanMethodResult? ElTableSpanMethodCallback(ElTableCellContext context);
 
 [ECMAScript]
 [Description("@#TableTreeNode")]
-public sealed record ElementPlusTableTreeNode : VueProps
+public sealed record ElTableTreeNode : VueProps
 {
     [Description("@#expanded")]
     public bool? Expanded { get; init; }
@@ -2592,22 +2661,22 @@ public sealed record ElementPlusTableTreeNode : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTableResolveChildrenCallback(VueDictionary[] data);
+public delegate void ElTableResolveChildrenCallback(VueDictionary[] data);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTableLoadCallback(VueDictionary row, ElementPlusTableTreeNode treeNode, ElementPlusTableResolveChildrenCallback resolve);
+public delegate void ElTableLoadCallback(VueDictionary row, ElTableTreeNode treeNode, ElTableResolveChildrenCallback resolve);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTableRowExpandableCallback(VueDictionary row, Number index);
+public delegate bool ElTableRowExpandableCallback(VueDictionary row, Number index);
 
 [ECMAScript]
 [Description("@#TableColumnHeaderContext")]
-public sealed record ElementPlusTableColumnHeaderContext : VueProps
+public sealed record ElTableColumnHeaderContext : VueProps
 {
     [Description("@#column")]
-    public ElementPlusTableColumnContext? Column { get; init; }
+    public ElTableColumnContext? Column { get; init; }
 
     [Description("@#$index")]
     public Number? Index { get; init; }
@@ -2621,62 +2690,62 @@ public sealed record ElementPlusTableColumnHeaderContext : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number ElementPlusTableColumnIndexCallback(Number index);
+public delegate Number ElTableColumnIndexCallback(Number index);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableColumnIndexValue(Number, ElementPlusTableColumnIndexCallback)
+public readonly union ElTableColumnIndexValue(Number, ElTableColumnIndexCallback)
 {
     public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public ElementPlusTableColumnIndexCallback? AsCallback => Value as ElementPlusTableColumnIndexCallback;
+    public ElTableColumnIndexCallback? AsCallback => Value as ElTableColumnIndexCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate IVNode ElementPlusTableColumnRenderHeaderCallback(ElementPlusTableColumnHeaderContext context);
+public delegate IVNode ElTableColumnRenderHeaderCallback(ElTableColumnHeaderContext context);
 
 [ECMAScript]
 [Description("@#")]
-public delegate Number ElementPlusTableColumnSortMethodCallback(VueDictionary left, VueDictionary right);
+public delegate Number ElTableColumnSortMethodCallback(VueDictionary left, VueDictionary right);
 
 [ECMAScript]
 [Description("@#")]
-public delegate string ElementPlusTableColumnSortByCallback(VueDictionary row, Number index, VueDictionary[]? array = null);
+public delegate string ElTableColumnSortByCallback(VueDictionary row, Number index, VueDictionary[]? array = null);
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusTableColumnSortByValue(
+public readonly union ElTableColumnSortByValue(
     string,
     string[],
-    ElementPlusTableColumnSortByCallback)
+    ElTableColumnSortByCallback)
 {
     public string? AsString => Value as string;
 
     public string[]? AsStrings => Value as string[];
 
-    public ElementPlusTableColumnSortByCallback? AsCallback => Value as ElementPlusTableColumnSortByCallback;
+    public ElTableColumnSortByCallback? AsCallback => Value as ElTableColumnSortByCallback;
 }
 
 [ECMAScript]
 [Description("@#")]
-public delegate VueStringNumberVNodeValue ElementPlusTableColumnFormatterCallback(
+public delegate VueStringNumberVNodeValue ElTableColumnFormatterCallback(
     VueDictionary row,
-    ElementPlusTableColumnContext column,
+    ElTableColumnContext column,
     VueValue? cellValue,
     Number index);
 
 [ECMAScript]
 [Description("@#")]
-public delegate bool ElementPlusTableColumnSelectableCallback(VueDictionary row, Number index);
+public delegate bool ElTableColumnSelectableCallback(VueDictionary row, Number index);
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElementPlusTableColumnFilterMethodCallback(string value, VueDictionary row, ElementPlusTableColumnContext column);
+public delegate void ElTableColumnFilterMethodCallback(string value, VueDictionary row, ElTableColumnContext column);
 
 [ECMAScript]
 [Description("@#SelectV2Option")]
-public sealed record ElementPlusSelectV2Option : VueDictionary
+public sealed record ElSelectV2Option : VueDictionary
 {
     [Description("@#created")]
     public bool? Created { get; init; }
@@ -2684,24 +2753,24 @@ public sealed record ElementPlusSelectV2Option : VueDictionary
 
 [ECMAScript]
 [Description("@#OptionGroup")]
-public sealed record ElementPlusSelectV2OptionGroup : VueDictionary
+public sealed record ElSelectV2OptionGroup : VueDictionary
 {
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusSelectV2OptionValue(
-    ElementPlusSelectV2Option,
-    ElementPlusSelectV2OptionGroup)
+public readonly union ElSelectV2OptionValue(
+    ElSelectV2Option,
+    ElSelectV2OptionGroup)
 {
-    public ElementPlusSelectV2Option? AsOption => Value as ElementPlusSelectV2Option;
+    public ElSelectV2Option? AsOption => Value as ElSelectV2Option;
 
-    public ElementPlusSelectV2OptionGroup? AsGroup => Value as ElementPlusSelectV2OptionGroup;
+    public ElSelectV2OptionGroup? AsGroup => Value as ElSelectV2OptionGroup;
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusSelectV2ModelValue(VueValue, VueValue[]) : IEnumerable<VueValue>
+public readonly union ElSelectV2ModelValue(VueValue, VueValue[]) : IEnumerable<VueValue>
 {
     public VueValue? AsSingle => Value as VueValue;
 

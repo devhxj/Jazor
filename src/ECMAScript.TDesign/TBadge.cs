@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Badge")]
-public sealed class TBadge : TDesignContentComponentBase
+public sealed class TBadge : TContentComponentBase
 {
     [Parameter]
     public string? Color { get; set; }
 
     [Parameter]
     [ECMAScriptName("count")]
-    public TDesignBadgeCountValue? CountValue { get; set; }
+    public TBadgeCountValue? CountValue { get; set; }
 
     [Parameter]
     public bool Dot { get; set; }
@@ -19,16 +19,16 @@ public sealed class TBadge : TDesignContentComponentBase
     public int? MaxCount { get; set; }
 
     [Parameter]
-    public TDesignBadgeOffset? Offset { get; set; }
+    public TBadgeOffset? Offset { get; set; }
 
     [Parameter]
-    public TDesignBadgeShape? Shape { get; set; }
+    public TBadgeShape? Shape { get; set; }
 
     [Parameter]
     public bool ShowZero { get; set; }
 
     [Parameter]
-    public TDesignBadgeSize? Size { get; set; }
+    public TBadgeSize? Size { get; set; }
 
     [Parameter]
     [ECMAScriptName("content")]

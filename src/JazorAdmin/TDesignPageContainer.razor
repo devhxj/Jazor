@@ -33,7 +33,7 @@
 
         @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
         {
-            <TSpace Align="@TDesignSpaceAlign.Center">
+            <TSpace Align="@TSpaceAlign.Center">
                 @if (Actions is not null)
                 {
                     @foreach (var action in Actions)

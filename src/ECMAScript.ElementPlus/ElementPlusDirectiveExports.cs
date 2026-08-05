@@ -6,12 +6,12 @@ namespace ECMAScript.ElementPlus;
 /// Export surface for Element Plus directives.
 /// </summary>
 [ECMAScript("element-plus")]
-public static class ElementPlusDirectives
+public static class ElDirectives
 {
     [ECMAScriptName("ElInfiniteScroll")]
-    public extern static ElementPlusDirective InfiniteScroll { get; }
+    public extern static ElDirective InfiniteScroll { get; }
 
     [ECMAScriptName("ElLoadingDirective")]
-    public extern static VueDirective<ElementPlusDirectiveValue> Loading { get; }
+    public extern static VueDirective<ElDirectiveValue> Loading { get; }
 
 }

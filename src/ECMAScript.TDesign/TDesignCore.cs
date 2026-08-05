@@ -8,13 +8,13 @@ namespace ECMAScript.TDesign;
 public static class TDesign
 {
     [ECMAScriptName("default")]
-    public extern static TDesignPlugin Default { get; }
+    public extern static TPlugin Default { get; }
 
     [Description("@#install")]
     public extern static void Install(VueApp app);
 
     [Description("@#install")]
-    public extern static void Install(VueApp app, TDesignInstallOptions options);
+    public extern static void Install(VueApp app, TInstallOptions options);
 
     [Description("@#version")]
     public extern static string Version { get; }
@@ -24,7 +24,7 @@ public static class TDesign
 /// Marker interface for TDesign components.
 /// </summary>
 [ECMAScript]
-public interface ITDesignComponent : IVueComponent
+public interface ITComponent : IVueComponent
 {
 }
 
@@ -32,9 +32,9 @@ public interface ITDesignComponent : IVueComponent
 /// TDesign plugin object.
 /// </summary>
 [ECMAScript]
-public sealed record TDesignPlugin : VuePlugin
+public sealed record TPlugin : VuePlugin
 {
-    private TDesignPlugin()
+    private TPlugin()
     {
     }
 }
@@ -44,8 +44,8 @@ public sealed record TDesignPlugin : VuePlugin
 /// The published package only guarantees a plain config object shape.
 /// </summary>
 [ECMAScript]
-[Description("@#TDesignInstallOptions")]
-public sealed record TDesignInstallOptions : VuePluginOptions
+[Description("@#TInstallOptions")]
+public sealed record TInstallOptions : VuePluginOptions
 {
 }
 
@@ -54,7 +54,7 @@ public sealed record TDesignInstallOptions : VuePluginOptions
 /// </summary>
 [ECMAScript]
 [Description("@#GlobalConfigProvider")]
-public sealed record TDesignGlobalConfig : VueProps
+public sealed record TGlobalConfig : VueProps
 {
     [Description("@#classPrefix")]
     public string? ClassPrefix { get; init; }

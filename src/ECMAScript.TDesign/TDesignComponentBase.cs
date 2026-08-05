@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-public abstract class TDesignComponentBase : ComponentBase
+public abstract class TComponentBase : ComponentBase
 {
     [Parameter]
     [ECMAScriptName("class")]
@@ -16,7 +16,7 @@ public abstract class TDesignComponentBase : ComponentBase
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }
 
-public abstract class TDesignContentComponentBase : TDesignComponentBase
+public abstract class TContentComponentBase : TComponentBase
 {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

@@ -6,339 +6,339 @@ namespace ECMAScript.ElementPlus;
 /// Export surface for generated Element Plus components.
 /// </summary>
 [ECMAScript("element-plus")]
-public static class ElementPlusComponents
+public static class ElComponents
 {
     [ECMAScriptName("ElAffix")]
-    public extern static IElementPlusComponent ElAffix { get; }
+    public extern static IElComponent ElAffix { get; }
 
     [ECMAScriptName("ElAlert")]
-    public extern static IElementPlusComponent ElAlert { get; }
+    public extern static IElComponent ElAlert { get; }
 
     [ECMAScriptName("ElAnchor")]
-    public extern static IElementPlusComponent ElAnchor { get; }
+    public extern static IElComponent ElAnchor { get; }
 
     [ECMAScriptName("ElAnchorLink")]
-    public extern static IElementPlusComponent ElAnchorLink { get; }
+    public extern static IElComponent ElAnchorLink { get; }
 
     [ECMAScriptName("ElAside")]
-    public extern static IElementPlusComponent ElAside { get; }
+    public extern static IElComponent ElAside { get; }
 
     [ECMAScriptName("ElAutoResizer")]
-    public extern static IElementPlusComponent ElAutoResizer { get; }
+    public extern static IElComponent ElAutoResizer { get; }
 
     [ECMAScriptName("ElAutocomplete")]
-    public extern static IElementPlusComponent ElAutocomplete { get; }
+    public extern static IElComponent ElAutocomplete { get; }
 
     [ECMAScriptName("ElAvatar")]
-    public extern static IElementPlusComponent ElAvatar { get; }
+    public extern static IElComponent ElAvatar { get; }
 
     [ECMAScriptName("ElAvatarGroup")]
-    public extern static IElementPlusComponent ElAvatarGroup { get; }
+    public extern static IElComponent ElAvatarGroup { get; }
 
     [ECMAScriptName("ElBacktop")]
-    public extern static IElementPlusComponent ElBacktop { get; }
+    public extern static IElComponent ElBacktop { get; }
 
     [ECMAScriptName("ElBadge")]
-    public extern static IElementPlusComponent ElBadge { get; }
+    public extern static IElComponent ElBadge { get; }
 
     [ECMAScriptName("ElBreadcrumb")]
-    public extern static IElementPlusComponent ElBreadcrumb { get; }
+    public extern static IElComponent ElBreadcrumb { get; }
 
     [ECMAScriptName("ElBreadcrumbItem")]
-    public extern static IElementPlusComponent ElBreadcrumbItem { get; }
+    public extern static IElComponent ElBreadcrumbItem { get; }
 
     [ECMAScriptName("ElButton")]
-    public extern static IElementPlusComponent ElButton { get; }
+    public extern static IElComponent ElButton { get; }
 
     [ECMAScriptName("ElButtonGroup")]
-    public extern static IElementPlusComponent ElButtonGroup { get; }
+    public extern static IElComponent ElButtonGroup { get; }
 
     [ECMAScriptName("ElCalendar")]
-    public extern static IElementPlusComponent ElCalendar { get; }
+    public extern static IElComponent ElCalendar { get; }
 
     [ECMAScriptName("ElCard")]
-    public extern static IElementPlusComponent ElCard { get; }
+    public extern static IElComponent ElCard { get; }
 
     [ECMAScriptName("ElCarousel")]
-    public extern static IElementPlusComponent ElCarousel { get; }
+    public extern static IElComponent ElCarousel { get; }
 
     [ECMAScriptName("ElCarouselItem")]
-    public extern static IElementPlusComponent ElCarouselItem { get; }
+    public extern static IElComponent ElCarouselItem { get; }
 
     [ECMAScriptName("ElCascader")]
-    public extern static IElementPlusComponent ElCascader { get; }
+    public extern static IElComponent ElCascader { get; }
 
     [ECMAScriptName("ElCascaderPanel")]
-    public extern static IElementPlusComponent ElCascaderPanel { get; }
+    public extern static IElComponent ElCascaderPanel { get; }
 
     [ECMAScriptName("ElCheckTag")]
-    public extern static IElementPlusComponent ElCheckTag { get; }
+    public extern static IElComponent ElCheckTag { get; }
 
     [ECMAScriptName("ElCheckbox")]
-    public extern static IElementPlusComponent ElCheckbox { get; }
+    public extern static IElComponent ElCheckbox { get; }
 
     [ECMAScriptName("ElCheckboxButton")]
-    public extern static IElementPlusComponent ElCheckboxButton { get; }
+    public extern static IElComponent ElCheckboxButton { get; }
 
     [ECMAScriptName("ElCheckboxGroup")]
-    public extern static IElementPlusComponent ElCheckboxGroup { get; }
+    public extern static IElComponent ElCheckboxGroup { get; }
 
     [ECMAScriptName("ElCol")]
-    public extern static IElementPlusComponent ElCol { get; }
+    public extern static IElComponent ElCol { get; }
 
     [ECMAScriptName("ElCollapse")]
-    public extern static IElementPlusComponent ElCollapse { get; }
+    public extern static IElComponent ElCollapse { get; }
 
     [ECMAScriptName("ElCollapseItem")]
-    public extern static IElementPlusComponent ElCollapseItem { get; }
+    public extern static IElComponent ElCollapseItem { get; }
 
     [ECMAScriptName("ElCollapseTransition")]
-    public extern static IElementPlusComponent ElCollapseTransition { get; }
+    public extern static IElComponent ElCollapseTransition { get; }
 
     [ECMAScriptName("ElColorPicker")]
-    public extern static IElementPlusComponent ElColorPicker { get; }
+    public extern static IElComponent ElColorPicker { get; }
 
     [ECMAScriptName("ElColorPickerPanel")]
-    public extern static IElementPlusComponent ElColorPickerPanel { get; }
+    public extern static IElComponent ElColorPickerPanel { get; }
 
     [ECMAScriptName("ElConfigProvider")]
-    public extern static IElementPlusComponent ElConfigProvider { get; }
+    public extern static IElComponent ElConfigProvider { get; }
 
     [ECMAScriptName("ElContainer")]
-    public extern static IElementPlusComponent ElContainer { get; }
+    public extern static IElComponent ElContainer { get; }
 
     [ECMAScriptName("ElCountdown")]
-    public extern static IElementPlusComponent ElCountdown { get; }
+    public extern static IElComponent ElCountdown { get; }
 
     [ECMAScriptName("ElDatePicker")]
-    public extern static IElementPlusComponent ElDatePicker { get; }
+    public extern static IElComponent ElDatePicker { get; }
 
     [ECMAScriptName("ElDatePickerPanel")]
-    public extern static IElementPlusComponent ElDatePickerPanel { get; }
+    public extern static IElComponent ElDatePickerPanel { get; }
 
     [ECMAScriptName("ElDescriptions")]
-    public extern static IElementPlusComponent ElDescriptions { get; }
+    public extern static IElComponent ElDescriptions { get; }
 
     [ECMAScriptName("ElDescriptionsItem")]
-    public extern static IElementPlusComponent ElDescriptionsItem { get; }
+    public extern static IElComponent ElDescriptionsItem { get; }
 
     [ECMAScriptName("ElDialog")]
-    public extern static IElementPlusComponent ElDialog { get; }
+    public extern static IElComponent ElDialog { get; }
 
     [ECMAScriptName("ElDivider")]
-    public extern static IElementPlusComponent ElDivider { get; }
+    public extern static IElComponent ElDivider { get; }
 
     [ECMAScriptName("ElDrawer")]
-    public extern static IElementPlusComponent ElDrawer { get; }
+    public extern static IElComponent ElDrawer { get; }
 
     [ECMAScriptName("ElDropdown")]
-    public extern static IElementPlusComponent ElDropdown { get; }
+    public extern static IElComponent ElDropdown { get; }
 
     [ECMAScriptName("ElDropdownItem")]
-    public extern static IElementPlusComponent ElDropdownItem { get; }
+    public extern static IElComponent ElDropdownItem { get; }
 
     [ECMAScriptName("ElDropdownMenu")]
-    public extern static IElementPlusComponent ElDropdownMenu { get; }
+    public extern static IElComponent ElDropdownMenu { get; }
 
     [ECMAScriptName("ElEmpty")]
-    public extern static IElementPlusComponent ElEmpty { get; }
+    public extern static IElComponent ElEmpty { get; }
 
     [ECMAScriptName("ElFooter")]
-    public extern static IElementPlusComponent ElFooter { get; }
+    public extern static IElComponent ElFooter { get; }
 
     [ECMAScriptName("ElForm")]
-    public extern static IElementPlusComponent ElForm { get; }
+    public extern static IElComponent ElForm { get; }
 
     [ECMAScriptName("ElFormItem")]
-    public extern static IElementPlusComponent ElFormItem { get; }
+    public extern static IElComponent ElFormItem { get; }
 
     [ECMAScriptName("ElHeader")]
-    public extern static IElementPlusComponent ElHeader { get; }
+    public extern static IElComponent ElHeader { get; }
 
     [ECMAScriptName("ElIcon")]
-    public extern static IElementPlusComponent ElIcon { get; }
+    public extern static IElComponent ElIcon { get; }
 
     [ECMAScriptName("ElImage")]
-    public extern static IElementPlusComponent ElImage { get; }
+    public extern static IElComponent ElImage { get; }
 
     [ECMAScriptName("ElImageViewer")]
-    public extern static IElementPlusComponent ElImageViewer { get; }
+    public extern static IElComponent ElImageViewer { get; }
 
     [ECMAScriptName("ElInput")]
-    public extern static IElementPlusComponent ElInput { get; }
+    public extern static IElComponent ElInput { get; }
 
     [ECMAScriptName("ElInputNumber")]
-    public extern static IElementPlusComponent ElInputNumber { get; }
+    public extern static IElComponent ElInputNumber { get; }
 
     [ECMAScriptName("ElInputOtp")]
-    public extern static IElementPlusComponent ElInputOtp { get; }
+    public extern static IElComponent ElInputOtp { get; }
 
     [ECMAScriptName("ElInputTag")]
-    public extern static IElementPlusComponent ElInputTag { get; }
+    public extern static IElComponent ElInputTag { get; }
 
     [ECMAScriptName("ElLink")]
-    public extern static IElementPlusComponent ElLink { get; }
+    public extern static IElComponent ElLink { get; }
 
     [ECMAScriptName("ElMain")]
-    public extern static IElementPlusComponent ElMain { get; }
+    public extern static IElComponent ElMain { get; }
 
     [ECMAScriptName("ElMention")]
-    public extern static IElementPlusComponent ElMention { get; }
+    public extern static IElComponent ElMention { get; }
 
     [ECMAScriptName("ElMenu")]
-    public extern static IElementPlusComponent ElMenu { get; }
+    public extern static IElComponent ElMenu { get; }
 
     [ECMAScriptName("ElMenuItem")]
-    public extern static IElementPlusComponent ElMenuItem { get; }
+    public extern static IElComponent ElMenuItem { get; }
 
     [ECMAScriptName("ElMenuItemGroup")]
-    public extern static IElementPlusComponent ElMenuItemGroup { get; }
+    public extern static IElComponent ElMenuItemGroup { get; }
 
     [ECMAScriptName("ElOption")]
-    public extern static IElementPlusComponent ElOption { get; }
+    public extern static IElComponent ElOption { get; }
 
     [ECMAScriptName("ElOptionGroup")]
-    public extern static IElementPlusComponent ElOptionGroup { get; }
+    public extern static IElComponent ElOptionGroup { get; }
 
     [ECMAScriptName("ElPageHeader")]
-    public extern static IElementPlusComponent ElPageHeader { get; }
+    public extern static IElComponent ElPageHeader { get; }
 
     [ECMAScriptName("ElPagination")]
-    public extern static IElementPlusComponent ElPagination { get; }
+    public extern static IElComponent ElPagination { get; }
 
     [ECMAScriptName("ElPopconfirm")]
-    public extern static IElementPlusComponent ElPopconfirm { get; }
+    public extern static IElComponent ElPopconfirm { get; }
 
     [ECMAScriptName("ElPopover")]
-    public extern static IElementPlusComponent ElPopover { get; }
+    public extern static IElComponent ElPopover { get; }
 
     [ECMAScriptName("ElPopper")]
-    public extern static IElementPlusComponent ElPopper { get; }
+    public extern static IElComponent ElPopper { get; }
 
     [ECMAScriptName("ElProgress")]
-    public extern static IElementPlusComponent ElProgress { get; }
+    public extern static IElComponent ElProgress { get; }
 
     [ECMAScriptName("ElRadio")]
-    public extern static IElementPlusComponent ElRadio { get; }
+    public extern static IElComponent ElRadio { get; }
 
     [ECMAScriptName("ElRadioButton")]
-    public extern static IElementPlusComponent ElRadioButton { get; }
+    public extern static IElComponent ElRadioButton { get; }
 
     [ECMAScriptName("ElRadioGroup")]
-    public extern static IElementPlusComponent ElRadioGroup { get; }
+    public extern static IElComponent ElRadioGroup { get; }
 
     [ECMAScriptName("ElRate")]
-    public extern static IElementPlusComponent ElRate { get; }
+    public extern static IElComponent ElRate { get; }
 
     [ECMAScriptName("ElResult")]
-    public extern static IElementPlusComponent ElResult { get; }
+    public extern static IElComponent ElResult { get; }
 
     [ECMAScriptName("ElRow")]
-    public extern static IElementPlusComponent ElRow { get; }
+    public extern static IElComponent ElRow { get; }
 
     [ECMAScriptName("ElScrollbar")]
-    public extern static IElementPlusComponent ElScrollbar { get; }
+    public extern static IElComponent ElScrollbar { get; }
 
     [ECMAScriptName("ElSegmented")]
-    public extern static IElementPlusComponent ElSegmented { get; }
+    public extern static IElComponent ElSegmented { get; }
 
     [ECMAScriptName("ElSelect")]
-    public extern static IElementPlusComponent ElSelect { get; }
+    public extern static IElComponent ElSelect { get; }
 
     [ECMAScriptName("ElSkeleton")]
-    public extern static IElementPlusComponent ElSkeleton { get; }
+    public extern static IElComponent ElSkeleton { get; }
 
     [ECMAScriptName("ElSkeletonItem")]
-    public extern static IElementPlusComponent ElSkeletonItem { get; }
+    public extern static IElComponent ElSkeletonItem { get; }
 
     [ECMAScriptName("ElSlider")]
-    public extern static IElementPlusComponent ElSlider { get; }
+    public extern static IElComponent ElSlider { get; }
 
     [ECMAScriptName("ElSpace")]
-    public extern static IElementPlusComponent ElSpace { get; }
+    public extern static IElComponent ElSpace { get; }
 
     [ECMAScriptName("ElSplitter")]
-    public extern static IElementPlusComponent ElSplitter { get; }
+    public extern static IElComponent ElSplitter { get; }
 
     [ECMAScriptName("ElSplitterPanel")]
-    public extern static IElementPlusComponent ElSplitterPanel { get; }
+    public extern static IElComponent ElSplitterPanel { get; }
 
     [ECMAScriptName("ElStatistic")]
-    public extern static IElementPlusComponent ElStatistic { get; }
+    public extern static IElComponent ElStatistic { get; }
 
     [ECMAScriptName("ElStep")]
-    public extern static IElementPlusComponent ElStep { get; }
+    public extern static IElComponent ElStep { get; }
 
     [ECMAScriptName("ElSteps")]
-    public extern static IElementPlusComponent ElSteps { get; }
+    public extern static IElComponent ElSteps { get; }
 
     [ECMAScriptName("ElSubMenu")]
-    public extern static IElementPlusComponent ElSubMenu { get; }
+    public extern static IElComponent ElSubMenu { get; }
 
     [ECMAScriptName("ElSwitch")]
-    public extern static IElementPlusComponent ElSwitch { get; }
+    public extern static IElComponent ElSwitch { get; }
 
     [ECMAScriptName("ElTabPane")]
-    public extern static IElementPlusComponent ElTabPane { get; }
+    public extern static IElComponent ElTabPane { get; }
 
     [ECMAScriptName("ElTable")]
-    public extern static IElementPlusComponent ElTable { get; }
+    public extern static IElComponent ElTable { get; }
 
     [ECMAScriptName("ElTableColumn")]
-    public extern static IElementPlusComponent ElTableColumn { get; }
+    public extern static IElComponent ElTableColumn { get; }
 
     [ECMAScriptName("ElTableV2")]
-    public extern static IElementPlusComponent ElTableV2 { get; }
+    public extern static IElComponent ElTableV2 { get; }
 
     [ECMAScriptName("ElTabs")]
-    public extern static IElementPlusComponent ElTabs { get; }
+    public extern static IElComponent ElTabs { get; }
 
     [ECMAScriptName("ElTag")]
-    public extern static IElementPlusComponent ElTag { get; }
+    public extern static IElComponent ElTag { get; }
 
     [ECMAScriptName("ElText")]
-    public extern static IElementPlusComponent ElText { get; }
+    public extern static IElComponent ElText { get; }
 
     [ECMAScriptName("ElTimePicker")]
-    public extern static IElementPlusComponent ElTimePicker { get; }
+    public extern static IElComponent ElTimePicker { get; }
 
     [ECMAScriptName("ElTimeSelect")]
-    public extern static IElementPlusComponent ElTimeSelect { get; }
+    public extern static IElComponent ElTimeSelect { get; }
 
     [ECMAScriptName("ElTimeline")]
-    public extern static IElementPlusComponent ElTimeline { get; }
+    public extern static IElComponent ElTimeline { get; }
 
     [ECMAScriptName("ElTimelineItem")]
-    public extern static IElementPlusComponent ElTimelineItem { get; }
+    public extern static IElComponent ElTimelineItem { get; }
 
     [ECMAScriptName("ElTooltip")]
-    public extern static IElementPlusComponent ElTooltip { get; }
+    public extern static IElComponent ElTooltip { get; }
 
     [ECMAScriptName("ElTour")]
-    public extern static IElementPlusComponent ElTour { get; }
+    public extern static IElComponent ElTour { get; }
 
     [ECMAScriptName("ElTourStep")]
-    public extern static IElementPlusComponent ElTourStep { get; }
+    public extern static IElComponent ElTourStep { get; }
 
     [ECMAScriptName("ElTransfer")]
-    public extern static IElementPlusComponent ElTransfer { get; }
+    public extern static IElComponent ElTransfer { get; }
 
     [ECMAScriptName("ElTree")]
-    public extern static IElementPlusComponent ElTree { get; }
+    public extern static IElComponent ElTree { get; }
 
     [ECMAScriptName("ElTreeSelect")]
-    public extern static IElementPlusComponent ElTreeSelect { get; }
+    public extern static IElComponent ElTreeSelect { get; }
 
     [ECMAScriptName("ElTreeV2")]
-    public extern static IElementPlusComponent ElTreeV2 { get; }
+    public extern static IElComponent ElTreeV2 { get; }
 
     [ECMAScriptName("ElUpload")]
-    public extern static IElementPlusComponent ElUpload { get; }
+    public extern static IElComponent ElUpload { get; }
 
     [ECMAScriptName("ElSelectV2")]
-    public extern static IElementPlusComponent ElVirtualizedSelect { get; }
+    public extern static IElComponent ElVirtualizedSelect { get; }
 
     [ECMAScriptName("ElWatermark")]
-    public extern static IElementPlusComponent ElWatermark { get; }
+    public extern static IElComponent ElWatermark { get; }
 
 }

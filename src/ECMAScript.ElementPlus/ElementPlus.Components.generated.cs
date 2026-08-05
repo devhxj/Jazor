@@ -14,13 +14,13 @@ namespace ECMAScript.ElementPlus;
 /// Fix the element to a specific visible area.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAffix")]
-public sealed class ElAffix : ElementPlusContentComponentBase
+public sealed class ElAffix : ElContentComponentBase
 {
     [Parameter]
     public Number? Offset { get; set; }
 
     [Parameter]
-    public ElementPlusTopBottomPlacement? Position { get; set; }
+    public ElTopBottomPlacement? Position { get; set; }
 
     [Parameter]
     public string? Target { get; set; }
@@ -46,7 +46,7 @@ public sealed class ElAffix : ElementPlusContentComponentBase
 /// Displays important alert messages.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAlert")]
-public sealed class ElAlert : ElementPlusContentComponentBase
+public sealed class ElAlert : ElContentComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
@@ -70,7 +70,7 @@ public sealed class ElAlert : ElementPlusContentComponentBase
     public bool? ShowIcon { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     [ECMAScriptName("title")]
@@ -88,7 +88,7 @@ public sealed class ElAlert : ElementPlusContentComponentBase
 /// Through the anchor point, you can quickly find the position of the information content on the current page.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAnchor")]
-public sealed class ElAnchor : ElementPlusContentComponentBase
+public sealed class ElAnchor : ElContentComponentBase
 {
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -102,7 +102,7 @@ public sealed class ElAnchor : ElementPlusContentComponentBase
 /// el-anchor-link
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAnchorLink")]
-public sealed class ElAnchorLink : ElementPlusContentComponentBase
+public sealed class ElAnchorLink : ElContentComponentBase
 {
     [Parameter]
     public RenderFragment? SubLink { get; set; }
@@ -113,7 +113,7 @@ public sealed class ElAnchorLink : ElementPlusContentComponentBase
 /// el-aside
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAside")]
-public sealed class ElAside : ElementPlusContentComponentBase
+public sealed class ElAside : ElContentComponentBase
 {
     [Parameter]
     public string? Width { get; set; }
@@ -124,7 +124,7 @@ public sealed class ElAside : ElementPlusContentComponentBase
 /// ElAutoResizer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAutoResizer")]
-public sealed class ElAutoResizer : ElementPlusContentComponentBase
+public sealed class ElAutoResizer : ElContentComponentBase
 {
     [Parameter]
     public bool? DisableWidth { get; set; }
@@ -133,7 +133,7 @@ public sealed class ElAutoResizer : ElementPlusContentComponentBase
     public bool? DisableHeight { get; set; }
 
     [Parameter]
-    public ElementPlusAutoResizerResizeCallback? OnResize { get; set; }
+    public ElAutoResizerResizeCallback? OnResize { get; set; }
 
 }
 
@@ -141,7 +141,7 @@ public sealed class ElAutoResizer : ElementPlusContentComponentBase
 /// Get some recommended tips based on the current input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAutocomplete")]
-public sealed class ElAutocomplete : ElementPlusContentComponentBase
+public sealed class ElAutocomplete : ElContentComponentBase
 {
     [Parameter]
     public string? ModelValue { get; set; }
@@ -165,7 +165,7 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public ElementPlusAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
+    public ElAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
 
     [Parameter]
     public bool? TriggerOnFocus { get; set; }
@@ -260,7 +260,7 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
 /// Avatars can be used to represent people or objects. It supports images, Icons, or characters.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAvatar")]
-public sealed class ElAvatar : ElementPlusContentComponentBase
+public sealed class ElAvatar : ElContentComponentBase
 {
     [Parameter]
     public VueStringComponentValue? Icon { get; set; }
@@ -269,7 +269,7 @@ public sealed class ElAvatar : ElementPlusContentComponentBase
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
-    public ElementPlusAvatarShape? Shape { get; set; }
+    public ElAvatarShape? Shape { get; set; }
 
     [Parameter]
     public string? Src { get; set; }
@@ -292,13 +292,13 @@ public sealed class ElAvatar : ElementPlusContentComponentBase
 /// el-avatar-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAvatarGroup")]
-public sealed class ElAvatarGroup : ElementPlusComponentBase
+public sealed class ElAvatarGroup : ElComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
-    public ElementPlusAvatarShape? Shape { get; set; }
+    public ElAvatarShape? Shape { get; set; }
 
     [Parameter]
     public bool? CollapseAvatars { get; set; }
@@ -310,10 +310,10 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
     public Number? MaxCollapseAvatars { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -333,7 +333,7 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
 /// A button to back to top.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBacktop")]
-public sealed class ElBacktop : ElementPlusContentComponentBase
+public sealed class ElBacktop : ElContentComponentBase
 {
     [Parameter]
     public string? Target { get; set; }
@@ -356,7 +356,7 @@ public sealed class ElBacktop : ElementPlusContentComponentBase
 /// A number or status mark on buttons and icons.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBadge")]
-public sealed class ElBadge : ElementPlusContentComponentBase
+public sealed class ElBadge : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Value { get; set; }
@@ -397,7 +397,7 @@ public sealed class ElBadge : ElementPlusContentComponentBase
 /// Displays the location of the current page, making it easier to browser back.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBreadcrumb")]
-public sealed class ElBreadcrumb : ElementPlusContentComponentBase
+public sealed class ElBreadcrumb : ElContentComponentBase
 {
     [Parameter]
     public string? Separator { get; set; }
@@ -411,7 +411,7 @@ public sealed class ElBreadcrumb : ElementPlusContentComponentBase
 /// el-breadcrumb-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBreadcrumbItem")]
-public sealed class ElBreadcrumbItem : ElementPlusContentComponentBase
+public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
     [Parameter]
     public RouteLocationRaw? To { get; set; }
@@ -425,13 +425,13 @@ public sealed class ElBreadcrumbItem : ElementPlusContentComponentBase
 /// Commonly used button.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElButton")]
-public sealed class ElButton : ElementPlusContentComponentBase
+public sealed class ElButton : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
-    public ElementPlusButtonType? Type { get; set; }
+    public ElButtonType? Type { get; set; }
 
     [Parameter]
     public bool? Plain { get; set; }
@@ -470,7 +470,7 @@ public sealed class ElButton : ElementPlusContentComponentBase
     public bool? Autofocus { get; set; }
 
     [Parameter]
-    public ElementPlusButtonNativeType? NativeType { get; set; }
+    public ElButtonNativeType? NativeType { get; set; }
 
     [Parameter]
     public bool? AutoInsertSpace { get; set; }
@@ -498,16 +498,16 @@ public sealed class ElButton : ElementPlusContentComponentBase
 /// el-button-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElButtonGroup")]
-public sealed class ElButtonGroup : ElementPlusContentComponentBase
+public sealed class ElButtonGroup : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
-    public ElementPlusButtonType? Type { get; set; }
+    public ElButtonType? Type { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
 }
 
@@ -515,7 +515,7 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
 /// Display date.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCalendar")]
-public sealed class ElCalendar : ElementPlusComponentBase
+public sealed class ElCalendar : ElComponentBase
 {
     [Parameter]
     public Date? ModelValue { get; set; }
@@ -524,10 +524,10 @@ public sealed class ElCalendar : ElementPlusComponentBase
     public VueDatePair? Range { get; set; }
 
     [Parameter]
-    public ElementPlusCalendarControllerType? ControllerType { get; set; }
+    public ElCalendarControllerType? ControllerType { get; set; }
 
     [Parameter]
-    public ElementPlusCalendarFormatterCallback? Formatter { get; set; }
+    public ElCalendarFormatterCallback? Formatter { get; set; }
 
     [Parameter]
     public RenderFragment? DateCell { get; set; }
@@ -544,7 +544,7 @@ public sealed class ElCalendar : ElementPlusComponentBase
 /// Integrate information in a card container.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCard")]
-public sealed class ElCard : ElementPlusContentComponentBase
+public sealed class ElCard : ElContentComponentBase
 {
     [Parameter]
     public string? Header { get; set; }
@@ -565,7 +565,7 @@ public sealed class ElCard : ElementPlusContentComponentBase
     public string? FooterClass { get; set; }
 
     [Parameter]
-    public ElementPlusCardShadow? Shadow { get; set; }
+    public ElCardShadow? Shadow { get; set; }
 
     [Parameter]
     [ECMAScriptName("header")]
@@ -581,7 +581,7 @@ public sealed class ElCard : ElementPlusContentComponentBase
 /// Loop a series of images or texts in a limited space
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCarousel")]
-public sealed class ElCarousel : ElementPlusContentComponentBase
+public sealed class ElCarousel : ElContentComponentBase
 {
     [Parameter]
     public string? Height { get; set; }
@@ -590,7 +590,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public Number? InitialIndex { get; set; }
 
     [Parameter]
-    public ElementPlusHoverClickTrigger? Trigger { get; set; }
+    public ElHoverClickTrigger? Trigger { get; set; }
 
     [Parameter]
     public bool? Autoplay { get; set; }
@@ -605,7 +605,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public string? Arrow { get; set; }
 
     [Parameter]
-    public ElementPlusCarouselType? Type { get; set; }
+    public ElCarouselType? Type { get; set; }
 
     [Parameter]
     public Number? CardScale { get; set; }
@@ -614,7 +614,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public bool? Loop { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public bool? PauseOnHover { get; set; }
@@ -631,7 +631,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
 /// el-carousel-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCarouselItem")]
-public sealed class ElCarouselItem : ElementPlusContentComponentBase
+public sealed class ElCarouselItem : ElContentComponentBase
 {
     [Parameter]
     public string? Name { get; set; }
@@ -645,7 +645,7 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 /// If the options have a clear hierarchical structure, Cascader can be used to view and select them.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascader")]
-public sealed class ElCascader : ElementPlusContentComponentBase
+public sealed class ElCascader : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -654,10 +654,10 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusCascaderProps? Props { get; set; }
+    public ElCascaderProps? Props { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public string? Placeholder { get; set; }
@@ -690,13 +690,13 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public bool? Filterable { get; set; }
 
     [Parameter]
-    public ElementPlusCascaderFilterMethod? FilterMethod { get; set; }
+    public ElCascaderFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public ElementPlusCascaderBeforeFilterCallback? BeforeFilter { get; set; }
+    public ElCascaderBeforeFilterCallback? BeforeFilter { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -726,7 +726,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? Persistent { get; set; }
@@ -803,7 +803,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 /// el-cascader-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascaderPanel")]
-public sealed class ElCascaderPanel : ElementPlusContentComponentBase
+public sealed class ElCascaderPanel : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -812,7 +812,7 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusCascaderProps? Props { get; set; }
+    public ElCascaderProps? Props { get; set; }
 
     [Parameter]
     public bool? VirtualScroll { get; set; }
@@ -844,7 +844,7 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 /// el-check-tag
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckTag")]
-public sealed class ElCheckTag : ElementPlusContentComponentBase
+public sealed class ElCheckTag : ElContentComponentBase
 {
     [Parameter]
     public bool? Checked { get; set; }
@@ -864,7 +864,7 @@ public sealed class ElCheckTag : ElementPlusContentComponentBase
 /// A group of options for multiple choices.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckbox")]
-public sealed class ElCheckbox : ElementPlusContentComponentBase
+public sealed class ElCheckbox : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -888,7 +888,7 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
     public bool? Border { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public string? Name { get; set; }
@@ -935,7 +935,7 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
 /// el-checkbox-button
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckboxButton")]
-public sealed class ElCheckboxButton : ElementPlusContentComponentBase
+public sealed class ElCheckboxButton : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
@@ -970,13 +970,13 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 /// el-checkbox-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckboxGroup")]
-public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
+public sealed class ElCheckboxGroup : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -1009,7 +1009,7 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusCheckboxOptionPropsAlias? Props { get; set; }
+    public ElCheckboxOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public string? Type { get; set; }
@@ -1026,7 +1026,7 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 /// el-col
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCol")]
-public sealed class ElCol : ElementPlusContentComponentBase
+public sealed class ElCol : ElContentComponentBase
 {
     [Parameter]
     public Number? Span { get; set; }
@@ -1041,19 +1041,19 @@ public sealed class ElCol : ElementPlusContentComponentBase
     public Number? Pull { get; set; }
 
     [Parameter]
-    public ElementPlusColSizeValue? Xs { get; set; }
+    public ElColSizeValue? Xs { get; set; }
 
     [Parameter]
-    public ElementPlusColSizeValue? Sm { get; set; }
+    public ElColSizeValue? Sm { get; set; }
 
     [Parameter]
-    public ElementPlusColSizeValue? Md { get; set; }
+    public ElColSizeValue? Md { get; set; }
 
     [Parameter]
-    public ElementPlusColSizeValue? Lg { get; set; }
+    public ElColSizeValue? Lg { get; set; }
 
     [Parameter]
-    public ElementPlusColSizeValue? Xl { get; set; }
+    public ElColSizeValue? Xl { get; set; }
 
     [Parameter]
     public string? Tag { get; set; }
@@ -1064,7 +1064,7 @@ public sealed class ElCol : ElementPlusContentComponentBase
 /// Use Collapse to store contents.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapse")]
-public sealed class ElCollapse : ElementPlusContentComponentBase
+public sealed class ElCollapse : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberArrayableValue? ModelValue { get; set; }
@@ -1073,10 +1073,10 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
     public bool? Accordion { get; set; }
 
     [Parameter]
-    public ElementPlusCollapseIconPosition? ExpandIconPosition { get; set; }
+    public ElCollapseIconPosition? ExpandIconPosition { get; set; }
 
     [Parameter]
-    public ElementPlusCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
+    public ElCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
 
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -1090,7 +1090,7 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
 /// el-collapse-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapseItem")]
-public sealed class ElCollapseItem : ElementPlusComponentBase
+public sealed class ElCollapseItem : ElComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Name { get; set; }
@@ -1110,7 +1110,7 @@ public sealed class ElCollapseItem : ElementPlusComponentBase
 /// ElCollapseTransition
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapseTransition")]
-public sealed class ElCollapseTransition : ElementPlusContentComponentBase
+public sealed class ElCollapseTransition : ElContentComponentBase
 {
 }
 
@@ -1118,7 +1118,7 @@ public sealed class ElCollapseTransition : ElementPlusContentComponentBase
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPicker")]
-public sealed class ElColorPicker : ElementPlusComponentBase
+public sealed class ElColorPicker : ElComponentBase
 {
     [Parameter]
     public string? ModelValue { get; set; }
@@ -1130,7 +1130,7 @@ public sealed class ElColorPicker : ElementPlusComponentBase
     public bool? Clearable { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? ShowAlpha { get; set; }
@@ -1160,7 +1160,7 @@ public sealed class ElColorPicker : ElementPlusComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public string? Id { get; set; }
@@ -1201,7 +1201,7 @@ public sealed class ElColorPicker : ElementPlusComponentBase
 /// `ColorPickerPanel` is the core component of `ColorPicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPickerPanel")]
-public sealed class ElColorPickerPanel : ElementPlusComponentBase
+public sealed class ElColorPickerPanel : ElComponentBase
 {
     [Parameter]
     public string? ModelValue { get; set; }
@@ -1242,13 +1242,13 @@ public sealed class ElColorPickerPanel : ElementPlusComponentBase
 /// Config Provider is used for providing global configurations, which enables your entire application to access these configurations everywhere.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElConfigProvider")]
-public sealed class ElConfigProvider : ElementPlusContentComponentBase
+public sealed class ElConfigProvider : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusLanguage? Locale { get; set; }
+    public ElLanguage? Locale { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public Number? ZIndex { get; set; }
@@ -1257,16 +1257,16 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
     public string? Namespace { get; set; }
 
     [Parameter]
-    public ElementPlusButtonConfig? Button { get; set; }
+    public ElButtonConfig? Button { get; set; }
 
     [Parameter]
-    public ElementPlusLinkConfig? Link { get; set; }
+    public ElLinkConfig? Link { get; set; }
 
     [Parameter]
-    public ElementPlusDialogConfig? Dialog { get; set; }
+    public ElDialogConfig? Dialog { get; set; }
 
     [Parameter]
-    public ElementPlusMessageConfig? Message { get; set; }
+    public ElMessageConfig? Message { get; set; }
 
     [Parameter]
     public VueProps? ExperimentalFeatures { get; set; }
@@ -1275,16 +1275,16 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
-    public ElementPlusTableConfig? Table { get; set; }
+    public ElTableConfig? Table { get; set; }
 
     [Parameter]
     public bool? A11y { get; set; }
 
     [Parameter]
-    public ElementPlusCardConfig? Card { get; set; }
+    public ElCardConfig? Card { get; set; }
 
     [Parameter]
     public bool? KeyboardNavigation { get; set; }
@@ -1295,10 +1295,10 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
 /// Container components for scaffolding basic structure of the page:
 /// </summary>
 [VueLibraryComponent("element-plus", "ElContainer")]
-public sealed class ElContainer : ElementPlusContentComponentBase
+public sealed class ElContainer : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
 }
 
@@ -1306,7 +1306,7 @@ public sealed class ElContainer : ElementPlusContentComponentBase
 /// :::demo Countdown component, support to add other components control countdown.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCountdown")]
-public sealed class ElCountdown : ElementPlusComponentBase
+public sealed class ElCountdown : ElComponentBase
 {
     [Parameter]
     public RenderFragment? Prefix { get; set; }
@@ -1329,7 +1329,7 @@ public sealed class ElCountdown : ElementPlusComponentBase
 /// Use Date Picker for date input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePicker")]
-public sealed class ElDatePicker : ElementPlusContentComponentBase
+public sealed class ElDatePicker : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -1407,13 +1407,13 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public ElementPlusDateLikeDisabledDate? DisabledDate { get; set; }
+    public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
-    public ElementPlusDateLikeCellClassName? CellClassName { get; set; }
+    public ElDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
     public bool? Teleported { get; set; }
@@ -1422,7 +1422,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -1494,7 +1494,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePickerPanel")]
-public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
+public sealed class ElDatePickerPanel : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -1536,13 +1536,13 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
     public bool? SinglePanel { get; set; }
 
     [Parameter]
-    public ElementPlusDateLikeDisabledDate? DisabledDate { get; set; }
+    public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
-    public ElementPlusDateLikeCellClassName? CellClassName { get; set; }
+    public ElDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
     public bool? ShowFooter { get; set; }
@@ -1583,7 +1583,7 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 /// Display multiple fields in list form.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDescriptions")]
-public sealed class ElDescriptions : ElementPlusContentComponentBase
+public sealed class ElDescriptions : ElContentComponentBase
 {
     [Parameter]
     public bool? Border { get; set; }
@@ -1592,7 +1592,7 @@ public sealed class ElDescriptions : ElementPlusContentComponentBase
     public Number? Column { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
@@ -1620,7 +1620,7 @@ public sealed class ElDescriptions : ElementPlusContentComponentBase
 /// el-descriptions-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDescriptionsItem")]
-public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
+public sealed class ElDescriptionsItem : ElContentComponentBase
 {
     [Parameter]
     public string? Label { get; set; }
@@ -1662,7 +1662,7 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 /// Informs users while preserving the current page state.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDialog")]
-public sealed class ElDialog : ElementPlusContentComponentBase
+public sealed class ElDialog : ElContentComponentBase
 {
     [Parameter]
     public bool? ModelValue { get; set; }
@@ -1722,7 +1722,7 @@ public sealed class ElDialog : ElementPlusContentComponentBase
     public bool? ShowClose { get; set; }
 
     [Parameter]
-    public ElementPlusDialogBeforeCloseCallback? BeforeClose { get; set; }
+    public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
     public bool? Draggable { get; set; }
@@ -1791,16 +1791,16 @@ public sealed class ElDialog : ElementPlusContentComponentBase
 /// The dividing line that separates the content.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDivider")]
-public sealed class ElDivider : ElementPlusContentComponentBase
+public sealed class ElDivider : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public string? BorderStyle { get; set; }
 
     [Parameter]
-    public ElementPlusContentPosition? ContentPosition { get; set; }
+    public ElContentPosition? ContentPosition { get; set; }
 
 }
 
@@ -1808,7 +1808,7 @@ public sealed class ElDivider : ElementPlusContentComponentBase
 /// Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDrawer")]
-public sealed class ElDrawer : ElementPlusContentComponentBase
+public sealed class ElDrawer : ElContentComponentBase
 {
     [Parameter]
     public bool? ModelValue { get; set; }
@@ -1823,7 +1823,7 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
     public bool? LockScroll { get; set; }
 
     [Parameter]
-    public ElementPlusDialogBeforeCloseCallback? BeforeClose { get; set; }
+    public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
     public bool? CloseOnClickModal { get; set; }
@@ -1931,16 +1931,16 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
 /// Toggleable menu for displaying lists of links and actions.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdown")]
-public sealed class ElDropdown : ElementPlusContentComponentBase
+public sealed class ElDropdown : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusButtonType? Type { get; set; }
+    public ElButtonType? Type { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
 
     [Parameter]
-    public ElementPlusButtonProps? ButtonProps { get; set; }
+    public ElButtonProps? ButtonProps { get; set; }
 
     [Parameter]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -1952,13 +1952,13 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
-    public ElementPlusDropdownTriggerValue? Trigger { get; set; }
+    public ElDropdownTriggerValue? Trigger { get; set; }
 
     [Parameter]
     public string[]? TriggerKeys { get; set; }
@@ -2023,7 +2023,7 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
 /// el-dropdown-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdownItem")]
-public sealed class ElDropdownItem : ElementPlusContentComponentBase
+public sealed class ElDropdownItem : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberObjectValue? Command { get; set; }
@@ -2047,7 +2047,7 @@ public sealed class ElDropdownItem : ElementPlusContentComponentBase
 /// el-dropdown-menu
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdownMenu")]
-public sealed class ElDropdownMenu : ElementPlusContentComponentBase
+public sealed class ElDropdownMenu : ElContentComponentBase
 {
 }
 
@@ -2055,7 +2055,7 @@ public sealed class ElDropdownMenu : ElementPlusContentComponentBase
 /// Placeholder hints for empty states.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElEmpty")]
-public sealed class ElEmpty : ElementPlusContentComponentBase
+public sealed class ElEmpty : ElContentComponentBase
 {
     [Parameter]
     public string? Image { get; set; }
@@ -2080,7 +2080,7 @@ public sealed class ElEmpty : ElementPlusContentComponentBase
 /// el-footer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElFooter")]
-public sealed class ElFooter : ElementPlusContentComponentBase
+public sealed class ElFooter : ElContentComponentBase
 {
     [Parameter]
     public string? Height { get; set; }
@@ -2091,13 +2091,13 @@ public sealed class ElFooter : ElementPlusContentComponentBase
 /// Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElForm")]
-public sealed class ElForm : ElementPlusContentComponentBase
+public sealed class ElForm : ElContentComponentBase
 {
     [Parameter]
     public VueDictionary? Model { get; set; }
 
     [Parameter]
-    public ElementPlusFormRules? Rules { get; set; }
+    public ElFormRules? Rules { get; set; }
 
     [Parameter]
     public bool? Inline { get; set; }
@@ -2150,7 +2150,7 @@ public sealed class ElForm : ElementPlusContentComponentBase
 /// el-form-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElFormItem")]
-public sealed class ElFormItem : ElementPlusContentComponentBase
+public sealed class ElFormItem : ElContentComponentBase
 {
     [Parameter]
     public VueStringOrStringsValue? Prop { get; set; }
@@ -2168,7 +2168,7 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
     public bool? Required { get; set; }
 
     [Parameter]
-    public ElementPlusFormItemRules? Rules { get; set; }
+    public ElFormItemRules? Rules { get; set; }
 
     [Parameter]
     public string? Error { get; set; }
@@ -2186,7 +2186,7 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
     public string? For { get; set; }
 
     [Parameter]
-    public ElementPlusFormItemValidateStatus? ValidateStatus { get; set; }
+    public ElFormItemValidateStatus? ValidateStatus { get; set; }
 
     [Parameter]
     [ECMAScriptName("label")]
@@ -2202,7 +2202,7 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
 /// el-header
 /// </summary>
 [VueLibraryComponent("element-plus", "ElHeader")]
-public sealed class ElHeader : ElementPlusContentComponentBase
+public sealed class ElHeader : ElContentComponentBase
 {
     [Parameter]
     public string? Height { get; set; }
@@ -2213,7 +2213,7 @@ public sealed class ElHeader : ElementPlusContentComponentBase
 /// Element Plus provides a set of common icons.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElIcon")]
-public sealed class ElIcon : ElementPlusContentComponentBase
+public sealed class ElIcon : ElContentComponentBase
 {
     [Parameter]
     public string? Color { get; set; }
@@ -2227,19 +2227,19 @@ public sealed class ElIcon : ElementPlusContentComponentBase
 /// Besides the native features of img, support lazy load, custom placeholder and load failure, etc.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImage")]
-public sealed class ElImage : ElementPlusComponentBase
+public sealed class ElImage : ElComponentBase
 {
     [Parameter]
     public string? Src { get; set; }
 
     [Parameter]
-    public ElementPlusImageFitType? Fit { get; set; }
+    public ElImageFitType? Fit { get; set; }
 
     [Parameter]
     public bool? HideOnClickModal { get; set; }
 
     [Parameter]
-    public ElementPlusImageLoadingType? Loading { get; set; }
+    public ElImageLoadingType? Loading { get; set; }
 
     [Parameter]
     public bool? Lazy { get; set; }
@@ -2254,7 +2254,7 @@ public sealed class ElImage : ElementPlusComponentBase
     public string? Referrerpolicy { get; set; }
 
     [Parameter]
-    public ElementPlusCrossorigin? Crossorigin { get; set; }
+    public ElCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
     public string[]? PreviewSrcList { get; set; }
@@ -2316,7 +2316,7 @@ public sealed class ElImage : ElementPlusComponentBase
 /// el-image-viewer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImageViewer")]
-public sealed class ElImageViewer : ElementPlusComponentBase
+public sealed class ElImageViewer : ElComponentBase
 {
     [Parameter]
     public string[]? UrlList { get; set; }
@@ -2384,7 +2384,7 @@ public sealed class ElImageViewer : ElementPlusComponentBase
 /// Input data using mouse or keyboard.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInput")]
-public sealed class ElInput : ElementPlusComponentBase
+public sealed class ElInput : ElComponentBase
 {
     [Parameter]
     public string? Type { get; set; }
@@ -2417,10 +2417,10 @@ public sealed class ElInput : ElementPlusComponentBase
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
-    public ElementPlusInputFormatter? Formatter { get; set; }
+    public ElInputFormatter? Formatter { get; set; }
 
     [Parameter]
-    public ElementPlusInputParser? Parser { get; set; }
+    public ElInputParser? Parser { get; set; }
 
     [Parameter]
     public bool? ShowPassword { get; set; }
@@ -2429,7 +2429,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -2441,7 +2441,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public Number? Rows { get; set; }
 
     [Parameter]
-    public ElementPlusInputAutoSize? Autosize { get; set; }
+    public ElInputAutoSize? Autosize { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -2489,7 +2489,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public string? Inputmode { get; set; }
 
     [Parameter]
-    public ElementPlusInputCountGraphemes? CountGraphemes { get; set; }
+    public ElInputCountGraphemes? CountGraphemes { get; set; }
 
     [Parameter]
     public RenderFragment? Prefix { get; set; }
@@ -2548,7 +2548,7 @@ public sealed class ElInput : ElementPlusComponentBase
 /// Input numerical values with a customizable range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputNumber")]
-public sealed class ElInputNumber : ElementPlusComponentBase
+public sealed class ElInputNumber : ElComponentBase
 {
     [Parameter]
     public Number? ModelValue { get; set; }
@@ -2569,7 +2569,7 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public Number? Precision { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Readonly { get; set; }
@@ -2596,7 +2596,7 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public string? Id { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -2617,10 +2617,10 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
-    public ElementPlusInputFormatter? Formatter { get; set; }
+    public ElInputFormatter? Formatter { get; set; }
 
     [Parameter]
-    public ElementPlusInputParser? Parser { get; set; }
+    public ElInputParser? Parser { get; set; }
 
     [Parameter]
     public RenderFragment? DecreaseIcon { get; set; }
@@ -2652,7 +2652,7 @@ public sealed class ElInputNumber : ElementPlusComponentBase
 /// Used to enter a one-time password
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputOtp")]
-public sealed class ElInputOtp : ElementPlusComponentBase
+public sealed class ElInputOtp : ElComponentBase
 {
     [Parameter]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -2661,7 +2661,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public Number? Length { get; set; }
 
     [Parameter]
-    public ElementPlusInputOtpValidator? Validator { get; set; }
+    public ElInputOtpValidator? Validator { get; set; }
 
     [Parameter]
     public string? Inputmode { get; set; }
@@ -2670,7 +2670,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public string? Type { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Mask { get; set; }
@@ -2679,7 +2679,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public ElementPlusInputOtpSeparatorValue? Separator { get; set; }
+    public ElInputOtpSeparatorValue? Separator { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -2718,7 +2718,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
 /// The InputTag component allows users to add content as tags.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputTag")]
-public sealed class ElInputTag : ElementPlusComponentBase
+public sealed class ElInputTag : ElComponentBase
 {
     [Parameter]
     public string[]? ModelValue { get; set; }
@@ -2745,7 +2745,7 @@ public sealed class ElInputTag : ElementPlusComponentBase
     public VueStringRegExpValue? Delimiter { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? CollapseTags { get; set; }
@@ -2840,7 +2840,7 @@ public sealed class ElInputTag : ElementPlusComponentBase
 /// Text hyperlink
 /// </summary>
 [VueLibraryComponent("element-plus", "ElLink")]
-public sealed class ElLink : ElementPlusContentComponentBase
+public sealed class ElLink : ElContentComponentBase
 {
     [Parameter]
     public string? Type { get; set; }
@@ -2870,7 +2870,7 @@ public sealed class ElLink : ElementPlusContentComponentBase
 /// el-main
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMain")]
-public sealed class ElMain : ElementPlusContentComponentBase
+public sealed class ElMain : ElContentComponentBase
 {
 }
 
@@ -2878,13 +2878,13 @@ public sealed class ElMain : ElementPlusContentComponentBase
 /// Used to mention someone or something in an input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMention")]
-public sealed class ElMention : ElementPlusComponentBase
+public sealed class ElMention : ElComponentBase
 {
     [Parameter]
-    public ElementPlusMentionOption[]? Options { get; set; }
+    public ElMentionOption[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusMentionOptionPropsAlias? Props { get; set; }
+    public ElMentionOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public VueStringOrStringsValue? Prefix { get; set; }
@@ -2893,7 +2893,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public string? Split { get; set; }
 
     [Parameter]
-    public ElementPlusMentionFilterOptionValue? FilterOption { get; set; }
+    public ElMentionFilterOptionValue? FilterOption { get; set; }
 
     [Parameter]
     public string? Placement { get; set; }
@@ -2908,7 +2908,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public bool? Whole { get; set; }
 
     [Parameter]
-    public ElementPlusMentionCheckIsWhole? CheckIsWhole { get; set; }
+    public ElMentionCheckIsWhole? CheckIsWhole { get; set; }
 
     [Parameter]
     public bool? Loading { get; set; }
@@ -2956,7 +2956,7 @@ public sealed class ElMention : ElementPlusComponentBase
 /// Menu that provides navigation for your website.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenu")]
-public sealed class ElMenu : ElementPlusContentComponentBase
+public sealed class ElMenu : ElContentComponentBase
 {
     [Parameter]
     public string? Mode { get; set; }
@@ -2983,7 +2983,7 @@ public sealed class ElMenu : ElementPlusContentComponentBase
     public bool? UniqueOpened { get; set; }
 
     [Parameter]
-    public ElementPlusHoverClickTrigger? MenuTrigger { get; set; }
+    public ElHoverClickTrigger? MenuTrigger { get; set; }
 
     [Parameter]
     public bool? Router { get; set; }
@@ -3036,7 +3036,7 @@ public sealed class ElMenu : ElementPlusContentComponentBase
 /// el-menu-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenuItem")]
-public sealed class ElMenuItem : ElementPlusContentComponentBase
+public sealed class ElMenuItem : ElContentComponentBase
 {
     [Parameter]
     public string? Index { get; set; }
@@ -3059,7 +3059,7 @@ public sealed class ElMenuItem : ElementPlusContentComponentBase
 /// el-menu-item-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenuItemGroup")]
-public sealed class ElMenuItemGroup : ElementPlusContentComponentBase
+public sealed class ElMenuItemGroup : ElContentComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
@@ -3074,7 +3074,7 @@ public sealed class ElMenuItemGroup : ElementPlusContentComponentBase
 /// el-option
 /// </summary>
 [VueLibraryComponent("element-plus", "ElOption")]
-public sealed class ElOption : ElementPlusContentComponentBase
+public sealed class ElOption : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
@@ -3091,7 +3091,7 @@ public sealed class ElOption : ElementPlusContentComponentBase
 /// el-option-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElOptionGroup")]
-public sealed class ElOptionGroup : ElementPlusContentComponentBase
+public sealed class ElOptionGroup : ElContentComponentBase
 {
     [Parameter]
     public string? Label { get; set; }
@@ -3105,7 +3105,7 @@ public sealed class ElOptionGroup : ElementPlusContentComponentBase
 /// If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPageHeader")]
-public sealed class ElPageHeader : ElementPlusContentComponentBase
+public sealed class ElPageHeader : ElContentComponentBase
 {
     [Parameter]
     public VueStringComponentValue? Icon { get; set; }
@@ -3143,10 +3143,10 @@ public sealed class ElPageHeader : ElementPlusContentComponentBase
 /// If you have too much data to display in one page, use pagination.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPagination")]
-public sealed class ElPagination : ElementPlusContentComponentBase
+public sealed class ElPagination : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Background { get; set; }
@@ -3232,7 +3232,7 @@ public sealed class ElPagination : ElementPlusContentComponentBase
 /// A simple confirmation dialog of an element click action.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopconfirm")]
-public sealed class ElPopconfirm : ElementPlusComponentBase
+public sealed class ElPopconfirm : ElComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
@@ -3291,10 +3291,10 @@ public sealed class ElPopconfirm : ElementPlusComponentBase
 /// el-popover
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopover")]
-public sealed class ElPopover : ElementPlusContentComponentBase
+public sealed class ElPopover : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusTooltipTriggerValue? Trigger { get; set; }
+    public ElTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
     public string[]? TriggerKeys { get; set; }
@@ -3303,7 +3303,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
     public string? Title { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Content { get; set; }
@@ -3312,7 +3312,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -3392,7 +3392,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
 /// ElPopper
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopper")]
-public sealed class ElPopper : ElementPlusContentComponentBase
+public sealed class ElPopper : ElContentComponentBase
 {
     [Parameter]
     public string? Role { get; set; }
@@ -3403,13 +3403,13 @@ public sealed class ElPopper : ElementPlusContentComponentBase
 /// Progress is used to show the progress of current operation, and inform the user the current status.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElProgress")]
-public sealed class ElProgress : ElementPlusContentComponentBase
+public sealed class ElProgress : ElContentComponentBase
 {
     [Parameter]
     public Number? Percentage { get; set; }
 
     [Parameter]
-    public ElementPlusProgressType? Type { get; set; }
+    public ElProgressType? Type { get; set; }
 
     [Parameter]
     public Number? StrokeWidth { get; set; }
@@ -3418,7 +3418,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public bool? TextInside { get; set; }
 
     [Parameter]
-    public ElementPlusProgressStatus? Status { get; set; }
+    public ElProgressStatus? Status { get; set; }
 
     [Parameter]
     public bool? Indeterminate { get; set; }
@@ -3427,7 +3427,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public Number? Duration { get; set; }
 
     [Parameter]
-    public ElementPlusProgressColorValue? Color { get; set; }
+    public ElProgressColorValue? Color { get; set; }
 
     [Parameter]
     public Number? Width { get; set; }
@@ -3439,7 +3439,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public string? StrokeLinecap { get; set; }
 
     [Parameter]
-    public ElementPlusProgressFormatCallback? Format { get; set; }
+    public ElProgressFormatCallback? Format { get; set; }
 
     [Parameter]
     public bool? Striped { get; set; }
@@ -3453,7 +3453,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
 /// Single selection among multiple options.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadio")]
-public sealed class ElRadio : ElementPlusContentComponentBase
+public sealed class ElRadio : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -3471,7 +3471,7 @@ public sealed class ElRadio : ElementPlusContentComponentBase
     public bool? Border { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public string? Name { get; set; }
@@ -3488,7 +3488,7 @@ public sealed class ElRadio : ElementPlusContentComponentBase
 /// el-radio-button
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadioButton")]
-public sealed class ElRadioButton : ElementPlusContentComponentBase
+public sealed class ElRadioButton : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? Value { get; set; }
@@ -3508,7 +3508,7 @@ public sealed class ElRadioButton : ElementPlusContentComponentBase
 /// el-radio-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadioGroup")]
-public sealed class ElRadioGroup : ElementPlusContentComponentBase
+public sealed class ElRadioGroup : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -3544,7 +3544,7 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusRadioOptionPropsAlias? Props { get; set; }
+    public ElRadioOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public string? Type { get; set; }
@@ -3561,7 +3561,7 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
 /// Used for rating
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRate")]
-public sealed class ElRate : ElementPlusComponentBase
+public sealed class ElRate : ElComponentBase
 {
     [Parameter]
     public Number? ModelValue { get; set; }
@@ -3570,7 +3570,7 @@ public sealed class ElRate : ElementPlusComponentBase
     public Number? Max { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -3585,7 +3585,7 @@ public sealed class ElRate : ElementPlusComponentBase
     public Number? HighThreshold { get; set; }
 
     [Parameter]
-    public ElementPlusRateColorsValue? Colors { get; set; }
+    public ElRateColorsValue? Colors { get; set; }
 
     [Parameter]
     public string? VoidColor { get; set; }
@@ -3594,7 +3594,7 @@ public sealed class ElRate : ElementPlusComponentBase
     public string? DisabledVoidColor { get; set; }
 
     [Parameter]
-    public ElementPlusRateIconsValue? Icons { get; set; }
+    public ElRateIconsValue? Icons { get; set; }
 
     [Parameter]
     public VueStringComponentValue? VoidIcon { get; set; }
@@ -3641,7 +3641,7 @@ public sealed class ElRate : ElementPlusComponentBase
 /// Used to give feedback on the result of user's operation or access exception.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElResult")]
-public sealed class ElResult : ElementPlusComponentBase
+public sealed class ElResult : ElComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
@@ -3673,7 +3673,7 @@ public sealed class ElResult : ElementPlusComponentBase
 /// el-row
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRow")]
-public sealed class ElRow : ElementPlusContentComponentBase
+public sealed class ElRow : ElContentComponentBase
 {
     [Parameter]
     public Number? Gutter { get; set; }
@@ -3693,7 +3693,7 @@ public sealed class ElRow : ElementPlusContentComponentBase
 /// Used to replace the browser's native scrollbar.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElScrollbar")]
-public sealed class ElScrollbar : ElementPlusContentComponentBase
+public sealed class ElScrollbar : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Height { get; set; }
@@ -3758,7 +3758,7 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 /// Display multiple options and allow users to select a single option.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSegmented")]
-public sealed class ElSegmented : ElementPlusContentComponentBase
+public sealed class ElSegmented : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -3767,10 +3767,10 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusSegmentedPropsAlias? Props { get; set; }
+    public ElSegmentedPropsAlias? Props { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Block { get; set; }
@@ -3791,7 +3791,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -3805,7 +3805,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 /// When there are plenty of options, use a drop-down menu to display and select desired ones.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelect")]
-public sealed class ElSelect : ElementPlusContentComponentBase
+public sealed class ElSelect : ElContentComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -3817,7 +3817,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusSelectPropsAlias? Props { get; set; }
+    public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -3838,7 +3838,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
-    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
+    public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
     public Number? MultipleLimit { get; set; }
@@ -3850,7 +3850,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -3865,7 +3865,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
+    public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Remote { get; set; }
@@ -3874,7 +3874,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
+    public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }
@@ -3925,10 +3925,10 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
-    public ElementPlusTagType? TagType { get; set; }
+    public ElTagType? TagType { get; set; }
 
     [Parameter]
-    public ElementPlusTagEffect? TagEffect { get; set; }
+    public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -3940,7 +3940,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -3958,7 +3958,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? SuffixTransition { get; set; }
@@ -4021,7 +4021,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
 /// When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSkeleton")]
-public sealed class ElSkeleton : ElementPlusContentComponentBase
+public sealed class ElSkeleton : ElContentComponentBase
 {
     [Parameter]
     public bool? Animated { get; set; }
@@ -4036,7 +4036,7 @@ public sealed class ElSkeleton : ElementPlusContentComponentBase
     public Number? Rows { get; set; }
 
     [Parameter]
-    public ElementPlusThrottleValue? Throttle { get; set; }
+    public ElThrottleValue? Throttle { get; set; }
 
     [Parameter]
     public RenderFragment? Template { get; set; }
@@ -4047,7 +4047,7 @@ public sealed class ElSkeleton : ElementPlusContentComponentBase
 /// el-skeleton-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSkeletonItem")]
-public sealed class ElSkeletonItem : ElementPlusComponentBase
+public sealed class ElSkeletonItem : ElComponentBase
 {
     [Parameter]
     public string? Variant { get; set; }
@@ -4058,7 +4058,7 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 /// Drag the slider within a fixed range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSlider")]
-public sealed class ElSlider : ElementPlusComponentBase
+public sealed class ElSlider : ElComponentBase
 {
     [Parameter]
     public VueNumberOrNumbersValue? ModelValue { get; set; }
@@ -4094,7 +4094,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public bool? ShowTooltip { get; set; }
 
     [Parameter]
-    public ElementPlusSliderFormatTooltipCallback? FormatTooltip { get; set; }
+    public ElSliderFormatTooltipCallback? FormatTooltip { get; set; }
 
     [Parameter]
     public bool? Range { get; set; }
@@ -4115,7 +4115,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public string? RangeEndLabel { get; set; }
 
     [Parameter]
-    public ElementPlusSliderFormatValueTextCallback? FormatValueText { get; set; }
+    public ElSliderFormatValueTextCallback? FormatValueText { get; set; }
 
     [Parameter]
     public string? TooltipClass { get; set; }
@@ -4124,7 +4124,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public ElementPlusSliderMarks? Marks { get; set; }
+    public ElSliderMarks? Marks { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -4150,13 +4150,13 @@ public sealed class ElSlider : ElementPlusComponentBase
 /// Even though we have [Divider]
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSpace")]
-public sealed class ElSpace : ElementPlusComponentBase
+public sealed class ElSpace : ElComponentBase
 {
     [Parameter]
     public string? Alignment { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public string? PrefixCls { get; set; }
@@ -4165,7 +4165,7 @@ public sealed class ElSpace : ElementPlusComponentBase
     public VueStringNumberVNodeValue? Spacer { get; set; }
 
     [Parameter]
-    public ElementPlusSpaceSizeValue? Size { get; set; }
+    public ElSpaceSizeValue? Size { get; set; }
 
     [Parameter]
     public bool? Wrap { get; set; }
@@ -4182,7 +4182,7 @@ public sealed class ElSpace : ElementPlusComponentBase
 /// el-splitter
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitter")]
-public sealed class ElSplitter : ElementPlusComponentBase
+public sealed class ElSplitter : ElComponentBase
 {
     [Parameter]
     public string? Layout { get; set; }
@@ -4208,7 +4208,7 @@ public sealed class ElSplitter : ElementPlusComponentBase
 /// el-splitter-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitterPanel")]
-public sealed class ElSplitterPanel : ElementPlusContentComponentBase
+public sealed class ElSplitterPanel : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Size { get; set; }
@@ -4240,7 +4240,7 @@ public sealed class ElSplitterPanel : ElementPlusContentComponentBase
 /// Display statistics.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElStatistic")]
-public sealed class ElStatistic : ElementPlusComponentBase
+public sealed class ElStatistic : ElComponentBase
 {
     [Parameter]
     public RenderFragment? Prefix { get; set; }
@@ -4257,7 +4257,7 @@ public sealed class ElStatistic : ElementPlusComponentBase
 /// el-step
 /// </summary>
 [VueLibraryComponent("element-plus", "ElStep")]
-public sealed class ElStep : ElementPlusComponentBase
+public sealed class ElStep : ElComponentBase
 {
     [Parameter]
     public string? Title { get; set; }
@@ -4269,7 +4269,7 @@ public sealed class ElStep : ElementPlusComponentBase
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
-    public ElementPlusStepStatus? Status { get; set; }
+    public ElStepStatus? Status { get; set; }
 
     [Parameter]
     [ECMAScriptName("icon")]
@@ -4289,22 +4289,22 @@ public sealed class ElStep : ElementPlusComponentBase
 /// Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSteps")]
-public sealed class ElSteps : ElementPlusContentComponentBase
+public sealed class ElSteps : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue? Space { get; set; }
 
     [Parameter]
-    public ElementPlusDirection? Direction { get; set; }
+    public ElDirection? Direction { get; set; }
 
     [Parameter]
     public Number? Active { get; set; }
 
     [Parameter]
-    public ElementPlusStepStatus? ProcessStatus { get; set; }
+    public ElStepStatus? ProcessStatus { get; set; }
 
     [Parameter]
-    public ElementPlusStepStatus? FinishStatus { get; set; }
+    public ElStepStatus? FinishStatus { get; set; }
 
     [Parameter]
     public bool? AlignCenter { get; set; }
@@ -4321,7 +4321,7 @@ public sealed class ElSteps : ElementPlusContentComponentBase
 /// el-sub-menu
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSubMenu")]
-public sealed class ElSubMenu : ElementPlusContentComponentBase
+public sealed class ElSubMenu : ElContentComponentBase
 {
     [Parameter]
     public string? Index { get; set; }
@@ -4368,7 +4368,7 @@ public sealed class ElSubMenu : ElementPlusContentComponentBase
 /// Switch is used for switching between two opposing states.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSwitch")]
-public sealed class ElSwitch : ElementPlusComponentBase
+public sealed class ElSwitch : ElComponentBase
 {
     [Parameter]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -4419,7 +4419,7 @@ public sealed class ElSwitch : ElementPlusComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public ElementPlusSwitchBeforeChangeCallback? BeforeChange { get; set; }
+    public ElSwitchBeforeChangeCallback? BeforeChange { get; set; }
 
     [Parameter]
     public string? Id { get; set; }
@@ -4466,7 +4466,7 @@ public sealed class ElSwitch : ElementPlusComponentBase
 /// el-tab-pane
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTabPane")]
-public sealed class ElTabPane : ElementPlusContentComponentBase
+public sealed class ElTabPane : ElContentComponentBase
 {
     [Parameter]
     public string? Label { get; set; }
@@ -4493,7 +4493,7 @@ public sealed class ElTabPane : ElementPlusContentComponentBase
 /// Display multiple data with similar format. You can sort, filter, compare your data in a table.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTable")]
-public sealed class ElTable : ElementPlusContentComponentBase
+public sealed class ElTable : ElContentComponentBase
 {
     [Parameter]
     public VueValue[]? Data { get; set; }
@@ -4526,31 +4526,31 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentRowKey { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowClassNameValue? RowClassName { get; set; }
+    public ElTableRowClassNameValue? RowClassName { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowStyleValue? RowStyle { get; set; }
+    public ElTableRowStyleValue? RowStyle { get; set; }
 
     [Parameter]
-    public ElementPlusTableCellClassNameValue? CellClassName { get; set; }
+    public ElTableCellClassNameValue? CellClassName { get; set; }
 
     [Parameter]
-    public ElementPlusTableCellStyleValue? CellStyle { get; set; }
+    public ElTableCellStyleValue? CellStyle { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowClassNameValue? HeaderRowClassName { get; set; }
+    public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowStyleValue? HeaderRowStyle { get; set; }
+    public ElTableRowStyleValue? HeaderRowStyle { get; set; }
 
     [Parameter]
-    public ElementPlusTableCellClassNameValue? HeaderCellClassName { get; set; }
+    public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
 
     [Parameter]
-    public ElementPlusTableCellStyleValue? HeaderCellStyle { get; set; }
+    public ElTableCellStyleValue? HeaderCellStyle { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowKeyValue? RowKey { get; set; }
+    public ElTableRowKeyValue? RowKey { get; set; }
 
     [Parameter]
     public string? EmptyText { get; set; }
@@ -4562,13 +4562,13 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public string[]? ExpandRowKeys { get; set; }
 
     [Parameter]
-    public ElementPlusTableSort? DefaultSort { get; set; }
+    public ElTableSort? DefaultSort { get; set; }
 
     [Parameter]
     public string? TooltipEffect { get; set; }
 
     [Parameter]
-    public ElementPlusTableOverflowTooltipOptions? TooltipOptions { get; set; }
+    public ElTableOverflowTooltipOptions? TooltipOptions { get; set; }
 
     [Parameter]
     public string? AppendFilterPanelTo { get; set; }
@@ -4580,10 +4580,10 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public string? SumText { get; set; }
 
     [Parameter]
-    public ElementPlusTableSummaryMethodCallback? SummaryMethod { get; set; }
+    public ElTableSummaryMethodCallback? SummaryMethod { get; set; }
 
     [Parameter]
-    public ElementPlusTableSpanMethodCallback? SpanMethod { get; set; }
+    public ElTableSpanMethodCallback? SpanMethod { get; set; }
 
     [Parameter]
     public bool? SelectOnIndeterminate { get; set; }
@@ -4595,10 +4595,10 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? Lazy { get; set; }
 
     [Parameter]
-    public ElementPlusTableLoadCallback? Load { get; set; }
+    public ElTableLoadCallback? Load { get; set; }
 
     [Parameter]
-    public ElementPlusTableTreeProps? TreeProps { get; set; }
+    public ElTableTreeProps? TreeProps { get; set; }
 
     [Parameter]
     public string? TableLayout { get; set; }
@@ -4607,7 +4607,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
-    public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
+    public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
     public bool? Flexible { get; set; }
@@ -4619,7 +4619,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? AllowDragLastColumn { get; set; }
 
     [Parameter]
-    public ElementPlusTableTooltipFormatter? TooltipFormatter { get; set; }
+    public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
     public bool? PreserveExpandedContent { get; set; }
@@ -4628,7 +4628,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? NativeScrollbar { get; set; }
 
     [Parameter]
-    public ElementPlusTableRowExpandableCallback? RowExpandable { get; set; }
+    public ElTableRowExpandableCallback? RowExpandable { get; set; }
 
     [Parameter]
     public RenderFragment? Append { get; set; }
@@ -4699,13 +4699,13 @@ public sealed class ElTable : ElementPlusContentComponentBase
 /// el-table-column
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTableColumn")]
-public sealed class ElTableColumn : ElementPlusContentComponentBase
+public sealed class ElTableColumn : ElContentComponentBase
 {
     [Parameter]
     public string? Type { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnIndexValue? Index { get; set; }
+    public ElTableColumnIndexValue? Index { get; set; }
 
     [Parameter]
     public string? Label { get; set; }
@@ -4726,28 +4726,28 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public VueBooleanStringValue? Fixed { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnRenderHeaderCallback? RenderHeader { get; set; }
+    public ElTableColumnRenderHeaderCallback? RenderHeader { get; set; }
 
     [Parameter]
     public VueBooleanStringValue? Sortable { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnSortMethodCallback? SortMethod { get; set; }
+    public ElTableColumnSortMethodCallback? SortMethod { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnSortByValue? SortBy { get; set; }
+    public ElTableColumnSortByValue? SortBy { get; set; }
 
     [Parameter]
-    public ElementPlusTableSortOrder?[]? SortOrders { get; set; }
+    public ElTableSortOrder?[]? SortOrders { get; set; }
 
     [Parameter]
     public bool? Resizable { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnFormatterCallback? Formatter { get; set; }
+    public ElTableColumnFormatterCallback? Formatter { get; set; }
 
     [Parameter]
-    public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
+    public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
     public string? Align { get; set; }
@@ -4762,13 +4762,13 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public string? LabelClassName { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnSelectableCallback? Selectable { get; set; }
+    public ElTableColumnSelectableCallback? Selectable { get; set; }
 
     [Parameter]
     public bool? ReserveSelection { get; set; }
 
     [Parameter]
-    public ElementPlusTableFilterItem[]? Filters { get; set; }
+    public ElTableFilterItem[]? Filters { get; set; }
 
     [Parameter]
     public string? FilterPlacement { get; set; }
@@ -4780,13 +4780,13 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public bool? FilterMultiple { get; set; }
 
     [Parameter]
-    public ElementPlusTableColumnFilterMethodCallback? FilterMethod { get; set; }
+    public ElTableColumnFilterMethodCallback? FilterMethod { get; set; }
 
     [Parameter]
     public string[]? FilteredValue { get; set; }
 
     [Parameter]
-    public ElementPlusTableTooltipFormatter? TooltipFormatter { get; set; }
+    public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
     public RenderFragment? Header { get; set; }
@@ -4803,7 +4803,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
 /// el-table-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTableV2")]
-public sealed class ElTableV2 : ElementPlusComponentBase
+public sealed class ElTableV2 : ElComponentBase
 {
     [Parameter]
     public Number? Cache { get; set; }
@@ -4812,58 +4812,58 @@ public sealed class ElTableV2 : ElementPlusComponentBase
     public Number? EstimatedRowHeight { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2ClassValue? HeaderClass { get; set; }
+    public ElTableV2ClassValue? HeaderClass { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DynamicPropsValue? HeaderProps { get; set; }
+    public ElTableV2DynamicPropsValue? HeaderProps { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DynamicPropsValue? HeaderCellProps { get; set; }
+    public ElTableV2DynamicPropsValue? HeaderCellProps { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2HeaderHeightValue? HeaderHeight { get; set; }
+    public ElTableV2HeaderHeightValue? HeaderHeight { get; set; }
 
     [Parameter]
     public Number? FooterHeight { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2ClassValue? RowClass { get; set; }
+    public ElTableV2ClassValue? RowClass { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2KeyValue? RowKey { get; set; }
+    public ElTableV2KeyValue? RowKey { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DynamicPropsValue? RowProps { get; set; }
+    public ElTableV2DynamicPropsValue? RowProps { get; set; }
 
     [Parameter]
     public Number? RowHeight { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2RowEventHandlers? RowEventHandlers { get; set; }
+    public ElTableV2RowEventHandlers? RowEventHandlers { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DynamicPropsValue? CellProps { get; set; }
+    public ElTableV2DynamicPropsValue? CellProps { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2Column[]? Columns { get; set; }
+    public ElTableV2Column[]? Columns { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DataItem[]? Data { get; set; }
+    public ElTableV2DataItem[]? Data { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DataGetter? DataGetter { get; set; }
+    public ElTableV2DataGetter? DataGetter { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2DataItem[]? FixedData { get; set; }
+    public ElTableV2DataItem[]? FixedData { get; set; }
 
     [Parameter]
     public string? ExpandColumnKey { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2KeyValue[]? ExpandedRowKeys { get; set; }
+    public ElTableV2KeyValue[]? ExpandedRowKeys { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2KeyValue[]? DefaultExpandedRowKeys { get; set; }
+    public ElTableV2KeyValue[]? DefaultExpandedRowKeys { get; set; }
 
     [Parameter]
     public bool? Fixed { get; set; }
@@ -4890,10 +4890,10 @@ public sealed class ElTableV2 : ElementPlusComponentBase
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2SortBy? SortBy { get; set; }
+    public ElTableV2SortBy? SortBy { get; set; }
 
     [Parameter]
-    public ElementPlusTableV2SortState? SortState { get; set; }
+    public ElTableV2SortState? SortState { get; set; }
 
     [Parameter]
     public RenderFragment? Cell { get; set; }
@@ -4940,7 +4940,7 @@ public sealed class ElTableV2 : ElementPlusComponentBase
 /// Divide data collections which are related yet belong to different types.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTabs")]
-public sealed class ElTabs : ElementPlusContentComponentBase
+public sealed class ElTabs : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -4949,7 +4949,7 @@ public sealed class ElTabs : ElementPlusContentComponentBase
     public VueStringNumberValue? DefaultValue { get; set; }
 
     [Parameter]
-    public ElementPlusTabsType? Type { get; set; }
+    public ElTabsType? Type { get; set; }
 
     [Parameter]
     public bool? Closable { get; set; }
@@ -4961,13 +4961,13 @@ public sealed class ElTabs : ElementPlusContentComponentBase
     public bool? Editable { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacementSide? TabPosition { get; set; }
+    public ElPopperPlacementSide? TabPosition { get; set; }
 
     [Parameter]
     public bool? Stretch { get; set; }
 
     [Parameter]
-    public ElementPlusTabsBeforeLeaveCallback? BeforeLeave { get; set; }
+    public ElTabsBeforeLeaveCallback? BeforeLeave { get; set; }
 
     [Parameter]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -4999,10 +4999,10 @@ public sealed class ElTabs : ElementPlusContentComponentBase
 /// Used for marking and selection.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTag")]
-public sealed class ElTag : ElementPlusContentComponentBase
+public sealed class ElTag : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusTagType? Type { get; set; }
+    public ElTagType? Type { get; set; }
 
     [Parameter]
     public bool? Closable { get; set; }
@@ -5017,10 +5017,10 @@ public sealed class ElTag : ElementPlusContentComponentBase
     public string? Color { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
-    public ElementPlusTagEffect? Effect { get; set; }
+    public ElTagEffect? Effect { get; set; }
 
     [Parameter]
     public bool? Round { get; set; }
@@ -5037,13 +5037,13 @@ public sealed class ElTag : ElementPlusContentComponentBase
 /// Used for text.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElText")]
-public sealed class ElText : ElementPlusContentComponentBase
+public sealed class ElText : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusSemanticType? Type { get; set; }
+    public ElSemanticType? Type { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Truncated { get; set; }
@@ -5060,7 +5060,7 @@ public sealed class ElText : ElementPlusContentComponentBase
 /// Use Time Picker for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimePicker")]
-public sealed class ElTimePicker : ElementPlusComponentBase
+public sealed class ElTimePicker : ElComponentBase
 {
     [Parameter]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -5078,7 +5078,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public bool? Clearable { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public string? Placeholder { get; set; }
@@ -5138,13 +5138,13 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
-    public ElementPlusTimePickerDisabledHoursCallback? DisabledHours { get; set; }
+    public ElTimePickerDisabledHoursCallback? DisabledHours { get; set; }
 
     [Parameter]
-    public ElementPlusTimePickerDisabledMinutesCallback? DisabledMinutes { get; set; }
+    public ElTimePickerDisabledMinutesCallback? DisabledMinutes { get; set; }
 
     [Parameter]
-    public ElementPlusTimePickerDisabledSecondsCallback? DisabledSeconds { get; set; }
+    public ElTimePickerDisabledSecondsCallback? DisabledSeconds { get; set; }
 
     [Parameter]
     public bool? Teleported { get; set; }
@@ -5156,7 +5156,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? SaveOnBlur { get; set; }
@@ -5197,7 +5197,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 /// Use Time Select for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimeSelect")]
-public sealed class ElTimeSelect : ElementPlusComponentBase
+public sealed class ElTimeSelect : ElComponentBase
 {
     [Parameter]
     public string? ModelValue { get; set; }
@@ -5215,7 +5215,7 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
     public bool? IncludeEndTime { get; set; }
 
     [Parameter]
-    public ElementPlusComponentSize? Size { get; set; }
+    public ElComponentSize? Size { get; set; }
 
     [Parameter]
     public string? Placeholder { get; set; }
@@ -5254,7 +5254,7 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -5283,13 +5283,13 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
 /// Visually display timeline.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimeline")]
-public sealed class ElTimeline : ElementPlusContentComponentBase
+public sealed class ElTimeline : ElContentComponentBase
 {
     [Parameter]
     public bool? Reverse { get; set; }
 
     [Parameter]
-    public ElementPlusTimelineMode? Mode { get; set; }
+    public ElTimelineMode? Mode { get; set; }
 
 }
 
@@ -5297,7 +5297,7 @@ public sealed class ElTimeline : ElementPlusContentComponentBase
 /// el-timeline-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimelineItem")]
-public sealed class ElTimelineItem : ElementPlusContentComponentBase
+public sealed class ElTimelineItem : ElContentComponentBase
 {
     [Parameter]
     public string? Timestamp { get; set; }
@@ -5309,10 +5309,10 @@ public sealed class ElTimelineItem : ElementPlusContentComponentBase
     public bool? Center { get; set; }
 
     [Parameter]
-    public ElementPlusTopBottomPlacement? Placement { get; set; }
+    public ElTopBottomPlacement? Placement { get; set; }
 
     [Parameter]
-    public ElementPlusSemanticType? Type { get; set; }
+    public ElSemanticType? Type { get; set; }
 
     [Parameter]
     public string? Color { get; set; }
@@ -5335,13 +5335,13 @@ public sealed class ElTimelineItem : ElementPlusContentComponentBase
 /// Display prompt information for mouse hover.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTooltip")]
-public sealed class ElTooltip : ElementPlusContentComponentBase
+public sealed class ElTooltip : ElContentComponentBase
 {
     [Parameter]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Content { get; set; }
@@ -5350,7 +5350,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public bool? RawContent { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -5398,7 +5398,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public bool? Teleported { get; set; }
 
     [Parameter]
-    public ElementPlusTooltipTriggerValue? Trigger { get; set; }
+    public ElTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
     public bool? VirtualTriggering { get; set; }
@@ -5440,7 +5440,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
 /// A popup component for guiding users through a product. Use when you want to guide users through a product.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTour")]
-public sealed class ElTour : ElementPlusComponentBase
+public sealed class ElTour : ElComponentBase
 {
 }
 
@@ -5448,7 +5448,7 @@ public sealed class ElTour : ElementPlusComponentBase
 /// el-tour-step
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTourStep")]
-public sealed class ElTourStep : ElementPlusComponentBase
+public sealed class ElTourStep : ElComponentBase
 {
 }
 
@@ -5456,13 +5456,13 @@ public sealed class ElTourStep : ElementPlusComponentBase
 /// el-transfer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTransfer")]
-public sealed class ElTransfer : ElementPlusContentComponentBase
+public sealed class ElTransfer : ElContentComponentBase
 {
     [Parameter]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
-    public ElementPlusTransferDataItem[]? Data { get; set; }
+    public ElTransferDataItem[]? Data { get; set; }
 
     [Parameter]
     public bool? Filterable { get; set; }
@@ -5471,25 +5471,25 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
     public string? FilterPlaceholder { get; set; }
 
     [Parameter]
-    public ElementPlusTransferFilterMethod? FilterMethod { get; set; }
+    public ElTransferFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
-    public ElementPlusTransferTargetOrder? TargetOrder { get; set; }
+    public ElTransferTargetOrder? TargetOrder { get; set; }
 
     [Parameter]
-    public ElementPlusTransferTextPair? Titles { get; set; }
+    public ElTransferTextPair? Titles { get; set; }
 
     [Parameter]
-    public ElementPlusTransferTextPair? ButtonTexts { get; set; }
+    public ElTransferTextPair? ButtonTexts { get; set; }
 
     [Parameter]
-    public ElementPlusTransferRenderContent? RenderContent { get; set; }
+    public ElTransferRenderContent? RenderContent { get; set; }
 
     [Parameter]
-    public ElementPlusTransferFormat? Format { get; set; }
+    public ElTransferFormat? Format { get; set; }
 
     [Parameter]
-    public ElementPlusTransferPropsAlias? Props { get; set; }
+    public ElTransferPropsAlias? Props { get; set; }
 
     [Parameter]
     public VueStringNumberValue[]? LeftDefaultChecked { get; set; }
@@ -5530,7 +5530,7 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
 /// Display a set of data with hierarchies.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTree")]
-public sealed class ElTree : ElementPlusContentComponentBase
+public sealed class ElTree : ElContentComponentBase
 {
     [Parameter]
     public VueValue[]? Data { get; set; }
@@ -5542,16 +5542,16 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public string? NodeKey { get; set; }
 
     [Parameter]
-    public ElementPlusTreeOptionProps? Props { get; set; }
+    public ElTreeOptionProps? Props { get; set; }
 
     [Parameter]
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
-    public ElementPlusTreeLoadCallback? Load { get; set; }
+    public ElTreeLoadCallback? Load { get; set; }
 
     [Parameter]
-    public ElementPlusTreeRenderContentCallback? RenderContent { get; set; }
+    public ElTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -5587,7 +5587,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public ElementPlusTreeFilterNodeMethod? FilterNodeMethod { get; set; }
+    public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
     public bool? Accordion { get; set; }
@@ -5605,10 +5605,10 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public bool? Draggable { get; set; }
 
     [Parameter]
-    public ElementPlusTreeAllowDragCallback? AllowDrag { get; set; }
+    public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
-    public ElementPlusTreeAllowDropCallback? AllowDrop { get; set; }
+    public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
     public RenderFragment? Empty { get; set; }
@@ -5658,13 +5658,13 @@ public sealed class ElTree : ElementPlusContentComponentBase
 /// ElTreeSelect
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeSelect")]
-public sealed class ElTreeSelect : ElementPlusContentComponentBase
+public sealed class ElTreeSelect : ElContentComponentBase
 {
     [Parameter]
     public VueValue[]? CacheData { get; set; }
 
     [Parameter]
-    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
+    public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -5676,7 +5676,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusSelectPropsAlias? Props { get; set; }
+    public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -5706,7 +5706,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -5721,7 +5721,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
+    public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Remote { get; set; }
@@ -5730,7 +5730,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
+    public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }
@@ -5781,10 +5781,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
-    public ElementPlusTagType? TagType { get; set; }
+    public ElTagType? TagType { get; set; }
 
     [Parameter]
-    public ElementPlusTagEffect? TagEffect { get; set; }
+    public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -5796,7 +5796,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -5814,7 +5814,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? SuffixTransition { get; set; }
@@ -5835,10 +5835,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
-    public ElementPlusTreeLoadCallback? Load { get; set; }
+    public ElTreeLoadCallback? Load { get; set; }
 
     [Parameter]
-    public ElementPlusTreeRenderContentCallback? RenderContent { get; set; }
+    public ElTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -5874,7 +5874,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public ElementPlusTreeFilterNodeMethod? FilterNodeMethod { get; set; }
+    public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
     public bool? Accordion { get; set; }
@@ -5892,10 +5892,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? Draggable { get; set; }
 
     [Parameter]
-    public ElementPlusTreeAllowDragCallback? AllowDrag { get; set; }
+    public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
-    public ElementPlusTreeAllowDropCallback? AllowDrop { get; set; }
+    public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
     public RenderFragment? Header { get; set; }
@@ -5991,7 +5991,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
 /// el-tree-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeV2")]
-public sealed class ElTreeV2 : ElementPlusContentComponentBase
+public sealed class ElTreeV2 : ElContentComponentBase
 {
     [Parameter]
     public VueValue[]? Data { get; set; }
@@ -6000,7 +6000,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
     public string? EmptyText { get; set; }
 
     [Parameter]
-    public ElementPlusTreeOptionProps? Props { get; set; }
+    public ElTreeOptionProps? Props { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -6030,7 +6030,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public ElementPlusTreeV2FilterMethod? FilterMethod { get; set; }
+    public ElTreeV2FilterMethod? FilterMethod { get; set; }
 
     [Parameter]
     public Number? Indent { get; set; }
@@ -6080,7 +6080,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
 /// Upload files by clicking or drag-and-drop.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElUpload")]
-public sealed class ElUpload : ElementPlusContentComponentBase
+public sealed class ElUpload : ElContentComponentBase
 {
     [Parameter]
     public string? Action { get; set; }
@@ -6095,7 +6095,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public bool? Multiple { get; set; }
 
     [Parameter]
-    public ElementPlusUploadDataValue? Data { get; set; }
+    public ElUploadDataValue? Data { get; set; }
 
     [Parameter]
     public string? Name { get; set; }
@@ -6113,46 +6113,46 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public string? Accept { get; set; }
 
     [Parameter]
-    public ElementPlusCrossorigin? Crossorigin { get; set; }
+    public ElCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
-    public ElementPlusUploadPreviewCallback? OnPreview { get; set; }
+    public ElUploadPreviewCallback? OnPreview { get; set; }
 
     [Parameter]
-    public ElementPlusUploadFileListCallback? OnRemove { get; set; }
+    public ElUploadFileListCallback? OnRemove { get; set; }
 
     [Parameter]
-    public ElementPlusUploadSuccessCallback? OnSuccess { get; set; }
+    public ElUploadSuccessCallback? OnSuccess { get; set; }
 
     [Parameter]
-    public ElementPlusUploadErrorCallback? OnError { get; set; }
+    public ElUploadErrorCallback? OnError { get; set; }
 
     [Parameter]
-    public ElementPlusUploadProgressCallback? OnProgress { get; set; }
+    public ElUploadProgressCallback? OnProgress { get; set; }
 
     [Parameter]
-    public ElementPlusUploadFileListCallback? OnChange { get; set; }
+    public ElUploadFileListCallback? OnChange { get; set; }
 
     [Parameter]
-    public ElementPlusUploadExceedCallback? OnExceed { get; set; }
+    public ElUploadExceedCallback? OnExceed { get; set; }
 
     [Parameter]
-    public ElementPlusUploadBeforeUploadCallback? BeforeUpload { get; set; }
+    public ElUploadBeforeUploadCallback? BeforeUpload { get; set; }
 
     [Parameter]
-    public ElementPlusUploadBeforeRemoveCallback? BeforeRemove { get; set; }
+    public ElUploadBeforeRemoveCallback? BeforeRemove { get; set; }
 
     [Parameter]
-    public ElementPlusUploadUserFile[]? FileList { get; set; }
+    public ElUploadUserFile[]? FileList { get; set; }
 
     [Parameter]
-    public ElementPlusUploadListType? ListType { get; set; }
+    public ElUploadListType? ListType { get; set; }
 
     [Parameter]
     public bool? AutoUpload { get; set; }
 
     [Parameter]
-    public ElementPlusUploadRequestCallback? HttpRequest { get; set; }
+    public ElUploadRequestCallback? HttpRequest { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -6178,16 +6178,16 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 /// :::tip
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelectV2")]
-public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
+public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
     [Parameter]
-    public ElementPlusSelectV2ModelValue? ModelValue { get; set; }
+    public ElSelectV2ModelValue? ModelValue { get; set; }
 
     [Parameter]
-    public ElementPlusSelectV2OptionValue[]? Options { get; set; }
+    public ElSelectV2OptionValue[]? Options { get; set; }
 
     [Parameter]
-    public ElementPlusSelectPropsAlias? Props { get; set; }
+    public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
     public bool? Multiple { get; set; }
@@ -6220,7 +6220,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? Effect { get; set; }
+    public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -6235,7 +6235,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
+    public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Loading { get; set; }
@@ -6301,7 +6301,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
+    public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }
@@ -6316,7 +6316,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public ElementPlusPopperPlacement? Placement { get; set; }
+    public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -6325,16 +6325,16 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
-    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
+    public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
-    public ElementPlusTagType? TagType { get; set; }
+    public ElTagType? TagType { get; set; }
 
     [Parameter]
-    public ElementPlusTagEffect? TagEffect { get; set; }
+    public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -6343,7 +6343,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+    public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? PopperAppendToBody { get; set; }
@@ -6395,7 +6395,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
-    public EventCallback<ElementPlusSelectV2ModelValue?> ModelValueChanged { get; set; }
+    public EventCallback<ElSelectV2ModelValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -6403,7 +6403,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
 /// Add specific text or patterns to the page.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElWatermark")]
-public sealed class ElWatermark : ElementPlusContentComponentBase
+public sealed class ElWatermark : ElContentComponentBase
 {
     [Parameter]
     public Number? Width { get; set; }

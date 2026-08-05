@@ -3,32 +3,32 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Link")]
-public sealed class TLink : TDesignContentComponentBase
+public sealed class TLink : TContentComponentBase
 {
     [Parameter]
     public bool Disabled { get; set; }
 
     [Parameter]
-    public TDesignLinkDownloadValue? Download { get; set; }
+    public TLinkDownloadValue? Download { get; set; }
 
     [Parameter]
-    public TDesignLinkHover? Hover { get; set; }
+    public TLinkHover? Hover { get; set; }
 
     [Parameter]
     public string? Href { get; set; }
 
     [Parameter]
-    public TDesignSize? Size { get; set; }
+    public TSize? Size { get; set; }
 
     [Parameter]
-    public TDesignTarget? Target { get; set; }
+    public TTarget? Target { get; set; }
 
     [Parameter]
     [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
-    public TDesignLinkTheme? Theme { get; set; }
+    public TLinkTheme? Theme { get; set; }
 
     [Parameter]
     public bool Underline { get; set; }

@@ -3,40 +3,40 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Menu")]
-public sealed class TMenu : TDesignContentComponentBase
+public sealed class TMenu : TContentComponentBase
 {
     [Parameter]
     public bool Collapsed { get; set; }
 
     [Parameter]
-    public TDesignMenuValue[]? Expanded { get; set; }
+    public TMenuValue[]? Expanded { get; set; }
 
     [Parameter]
-    public TDesignMenuValue[]? DefaultExpanded { get; set; }
+    public TMenuValue[]? DefaultExpanded { get; set; }
 
     [Parameter]
     public bool ExpandMutex { get; set; }
 
     [Parameter]
-    public TDesignMenuExpandType? ExpandType { get; set; }
+    public TMenuExpandType? ExpandType { get; set; }
 
     [Parameter]
-    public TDesignMenuTheme? Theme { get; set; }
+    public TMenuTheme? Theme { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? Value { get; set; }
+    public TMenuValue? Value { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? DefaultValue { get; set; }
+    public TMenuValue? DefaultValue { get; set; }
 
     [Parameter]
-    public TDesignMenuWidthValue? Width { get; set; }
+    public TMenuWidthValue? Width { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignMenuValue> OnChange { get; set; }
+    public EventCallback<TMenuValue> OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignMenuValue[]> OnExpand { get; set; }
+    public EventCallback<TMenuValue[]> OnExpand { get; set; }
 
     [Parameter]
     public RenderFragment? Logo { get; set; }
@@ -46,31 +46,31 @@ public sealed class TMenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "HeadMenu")]
-public sealed class THeadMenu : TDesignContentComponentBase
+public sealed class THeadMenu : TContentComponentBase
 {
     [Parameter]
-    public TDesignMenuValue[]? Expanded { get; set; }
+    public TMenuValue[]? Expanded { get; set; }
 
     [Parameter]
-    public TDesignMenuValue[]? DefaultExpanded { get; set; }
+    public TMenuValue[]? DefaultExpanded { get; set; }
 
     [Parameter]
-    public TDesignMenuExpandType? ExpandType { get; set; }
+    public TMenuExpandType? ExpandType { get; set; }
 
     [Parameter]
-    public TDesignMenuTheme? Theme { get; set; }
+    public TMenuTheme? Theme { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? Value { get; set; }
+    public TMenuValue? Value { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? DefaultValue { get; set; }
+    public TMenuValue? DefaultValue { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignMenuValue> OnChange { get; set; }
+    public EventCallback<TMenuValue> OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignMenuValue[]> OnExpand { get; set; }
+    public EventCallback<TMenuValue[]> OnExpand { get; set; }
 
     [Parameter]
     public RenderFragment? Logo { get; set; }
@@ -80,7 +80,7 @@ public sealed class THeadMenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Submenu")]
-public sealed class TSubmenu : TDesignContentComponentBase
+public sealed class TSubmenu : TContentComponentBase
 {
     [Parameter]
     public bool Disabled { get; set; }
@@ -89,7 +89,7 @@ public sealed class TSubmenu : TDesignContentComponentBase
     public string? Title { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? Value { get; set; }
+    public TMenuValue? Value { get; set; }
 
     [Parameter]
     public RenderFragment? Icon { get; set; }
@@ -99,7 +99,7 @@ public sealed class TSubmenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "MenuItem")]
-public sealed class TMenuItem : TDesignContentComponentBase
+public sealed class TMenuItem : TContentComponentBase
 {
     [Parameter]
     public bool Disabled { get; set; }
@@ -114,27 +114,27 @@ public sealed class TMenuItem : TDesignContentComponentBase
     public bool RouterLink { get; set; }
 
     [Parameter]
-    public TDesignTarget? Target { get; set; }
+    public TTarget? Target { get; set; }
 
     [Parameter]
     [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
-    public TDesignMenuRouteTarget? To { get; set; }
+    public TMenuRouteTarget? To { get; set; }
 
     [Parameter]
-    public TDesignMenuValue? Value { get; set; }
+    public TMenuValue? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignMenuItemClickContext> OnClick { get; set; }
+    public EventCallback<TMenuItemClickContext> OnClick { get; set; }
 
     [Parameter]
     public RenderFragment? Icon { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "MenuGroup")]
-public sealed class TMenuGroup : TDesignContentComponentBase
+public sealed class TMenuGroup : TContentComponentBase
 {
     [Parameter]
     public string? Title { get; set; }

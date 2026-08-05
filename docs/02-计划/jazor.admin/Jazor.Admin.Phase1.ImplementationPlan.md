@@ -130,7 +130,7 @@
 - `AdminComponentBase`
 - `AdminContentComponentBase`
 
-目标与 `TDesignComponentBase` 类似：
+目标与 `TComponentBase` 类似：
 
 - `CssClass`
 - `CssStyle`

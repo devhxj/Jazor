@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Avatar")]
-public sealed class TAvatar : TDesignContentComponentBase
+public sealed class TAvatar : TContentComponentBase
 {
     [Parameter]
     public string? Alt { get; set; }
@@ -15,7 +15,7 @@ public sealed class TAvatar : TDesignContentComponentBase
     public string? Image { get; set; }
 
     [Parameter]
-    public TDesignAvatarShape? Shape { get; set; }
+    public TAvatarShape? Shape { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
@@ -25,17 +25,17 @@ public sealed class TAvatar : TDesignContentComponentBase
     public string? Text { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignAvatarErrorContext> OnError { get; set; }
+    public EventCallback<TAvatarErrorContext> OnError { get; set; }
 
     [Parameter]
     public RenderFragment? Icon { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "AvatarGroup")]
-public sealed class TAvatarGroup : TDesignContentComponentBase
+public sealed class TAvatarGroup : TContentComponentBase
 {
     [Parameter]
-    public TDesignAvatarGroupCascading? Cascading { get; set; }
+    public TAvatarGroupCascading? Cascading { get; set; }
 
     [Parameter]
     public int? Max { get; set; }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Breadcrumb")]
-public sealed class TBreadcrumb : TDesignContentComponentBase
+public sealed class TBreadcrumb : TContentComponentBase
 {
     [Parameter]
     public int? ItemsAfterCollapse { get; set; }
@@ -18,7 +18,7 @@ public sealed class TBreadcrumb : TDesignContentComponentBase
     public int? MaxItems { get; set; }
 
     [Parameter]
-    public TDesignBreadcrumbTheme? Theme { get; set; }
+    public TBreadcrumbTheme? Theme { get; set; }
 
     [Parameter]
     public RenderFragment? Separator { get; set; }
@@ -28,7 +28,7 @@ public sealed class TBreadcrumb : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem")]
-public sealed class TBreadcrumbItem : TDesignContentComponentBase
+public sealed class TBreadcrumbItem : TContentComponentBase
 {
     [Parameter]
     public bool Disabled { get; set; }
@@ -43,14 +43,14 @@ public sealed class TBreadcrumbItem : TDesignContentComponentBase
     public bool Replace { get; set; }
 
     [Parameter]
-    public TDesignTarget? Target { get; set; }
+    public TTarget? Target { get; set; }
 
     [Parameter]
     [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
-    public TDesignMenuRouteTarget? To { get; set; }
+    public TMenuRouteTarget? To { get; set; }
 
     [Parameter]
     public EventCallback<MouseEvent> OnClick { get; set; }

@@ -37,6 +37,9 @@ public partial class SemanticWalker
 		var type = (INamedTypeSymbol)operation.Type!;
 		var constructor = operation.Constructor!;
 
+		if (Util.IsHostErasedUnionType(type))
+			return BuildErasedUnionCreation(operation, argument);
+
 		if (ShouldLowerStructurally(type))
 			return BuildStructuralLiteral(operation, argument);
 
@@ -134,6 +137,31 @@ public partial class SemanticWalker
 		}
 
 		return expr;
+	}
+
+	private Expression BuildErasedUnionCreation(IObjectCreationOperation operation, SenseArgument argument)
+	{
+		// An erased union remains one JavaScript value. Tagged fallbacks still need this path because
+		// C# forbids an implicit conversion whose source is an interface such as IPromise<T>.
+		// 擦除 union 在 JS 中始终是单个值；接口分支只能通过 new(...) 构造，不能走隐式转换。
+		if (operation.Initializer is not null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Erased union '{operation.Type!.ToDisplayString(Format.NameFormat)}' does not support object or collection initializers.");
+		}
+
+		var suppliedArguments = operation.Arguments
+			.Where(static value => value.ArgumentKind != ArgumentKind.DefaultValue)
+			.ToArray();
+		if (suppliedArguments.Length != 1)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Erased union '{operation.Type!.ToDisplayString(Format.NameFormat)}' requires exactly one constructor argument.");
+		}
+
+		return WithOriginIfMissing(Translate<Expression>(suppliedArguments[0].Value, argument), operation);
 	}
 
 	private Expression BuildMemberConstructorRefOutCreation(

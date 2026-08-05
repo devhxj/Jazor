@@ -1,7 +1,10 @@
 namespace ECMAScript.TDesign;
 
+// Defines TDesign value domains, typed payload records, and erased union authoring contracts.
+// 定义 TDesign 值域、强类型载荷 record 与擦除 union；可安全表达的联合值统一使用 C# 原生 union。
+
 [String]
-public enum TDesignSize
+public enum TSize
 {
     [Description("@#small")]
     Small,
@@ -14,7 +17,7 @@ public enum TDesignSize
 }
 
 [String]
-public enum TDesignButtonShape
+public enum TButtonShape
 {
     [Description("@#rectangle")]
     Rectangle,
@@ -30,7 +33,7 @@ public enum TDesignButtonShape
 }
 
 [String]
-public enum TDesignButtonTheme
+public enum TButtonTheme
 {
     [Description("@#default")]
     Default,
@@ -49,7 +52,7 @@ public enum TDesignButtonTheme
 }
 
 [String]
-public enum TDesignButtonType
+public enum TButtonType
 {
     [Description("@#submit")]
     Submit,
@@ -62,7 +65,7 @@ public enum TDesignButtonType
 }
 
 [String]
-public enum TDesignButtonVariant
+public enum TButtonVariant
 {
     [Description("@#base")]
     Base,
@@ -78,7 +81,7 @@ public enum TDesignButtonVariant
 }
 
 [String]
-public enum TDesignButtonTag
+public enum TButtonTag
 {
     [Description("@#button")]
     Button,
@@ -91,7 +94,7 @@ public enum TDesignButtonTag
 }
 
 [String]
-public enum TDesignLayoutDirection
+public enum TLayoutDirection
 {
     [Description("@#vertical")]
     Vertical,
@@ -101,7 +104,7 @@ public enum TDesignLayoutDirection
 }
 
 [String]
-public enum TDesignMenuExpandType
+public enum TMenuExpandType
 {
     [Description("@#normal")]
     Normal,
@@ -111,7 +114,7 @@ public enum TDesignMenuExpandType
 }
 
 [String]
-public enum TDesignMenuTheme
+public enum TMenuTheme
 {
     [Description("@#light")]
     Light,
@@ -121,7 +124,7 @@ public enum TDesignMenuTheme
 }
 
 [String]
-public enum TDesignTarget
+public enum TTarget
 {
     [Description("@#_blank")]
     Blank,
@@ -137,7 +140,7 @@ public enum TDesignTarget
 }
 
 [String]
-public enum TDesignSpaceAlign
+public enum TSpaceAlign
 {
     [Description("@#start")]
     Start,
@@ -153,7 +156,7 @@ public enum TDesignSpaceAlign
 }
 
 [String]
-public enum TDesignSpaceDirection
+public enum TSpaceDirection
 {
     [Description("@#vertical")]
     Vertical,
@@ -163,7 +166,7 @@ public enum TDesignSpaceDirection
 }
 
 [String]
-public enum TDesignDividerAlign
+public enum TDividerAlign
 {
     [Description("@#left")]
     Left,
@@ -176,7 +179,7 @@ public enum TDesignDividerAlign
 }
 
 [String]
-public enum TDesignDividerLayout
+public enum TDividerLayout
 {
     [Description("@#horizontal")]
     Horizontal,
@@ -186,7 +189,7 @@ public enum TDesignDividerLayout
 }
 
 [String]
-public enum TDesignCardSize
+public enum TCardSize
 {
     [Description("@#medium")]
     Medium,
@@ -196,7 +199,7 @@ public enum TDesignCardSize
 }
 
 [String]
-public enum TDesignCardTheme
+public enum TCardTheme
 {
     [Description("@#normal")]
     Normal,
@@ -209,14 +212,14 @@ public enum TDesignCardTheme
 }
 
 [String]
-public enum TDesignBreadcrumbTheme
+public enum TBreadcrumbTheme
 {
     [Description("@#light")]
     Light
 }
 
 [String]
-public enum TDesignLinkHover
+public enum TLinkHover
 {
     [Description("@#color")]
     Color,
@@ -226,7 +229,7 @@ public enum TDesignLinkHover
 }
 
 [String]
-public enum TDesignLinkTheme
+public enum TLinkTheme
 {
     [Description("@#default")]
     Default,
@@ -245,7 +248,7 @@ public enum TDesignLinkTheme
 }
 
 [String]
-public enum TDesignTabsPlacement
+public enum TTabsPlacement
 {
     [Description("@#left")]
     Left,
@@ -261,7 +264,7 @@ public enum TDesignTabsPlacement
 }
 
 [String]
-public enum TDesignTabsScrollPosition
+public enum TTabsScrollPosition
 {
     [Description("@#auto")]
     Auto,
@@ -277,7 +280,7 @@ public enum TDesignTabsScrollPosition
 }
 
 [String]
-public enum TDesignTabsSize
+public enum TTabsSize
 {
     [Description("@#medium")]
     Medium,
@@ -287,7 +290,7 @@ public enum TDesignTabsSize
 }
 
 [String]
-public enum TDesignTabsTheme
+public enum TTabsTheme
 {
     [Description("@#normal")]
     Normal,
@@ -297,7 +300,7 @@ public enum TDesignTabsTheme
 }
 
 [String]
-public enum TDesignAvatarShape
+public enum TAvatarShape
 {
     [Description("@#circle")]
     Circle,
@@ -307,7 +310,7 @@ public enum TDesignAvatarShape
 }
 
 [String]
-public enum TDesignAvatarGroupCascading
+public enum TAvatarGroupCascading
 {
     [Description("@#left-up")]
     LeftUp,
@@ -317,7 +320,7 @@ public enum TDesignAvatarGroupCascading
 }
 
 [String]
-public enum TDesignBadgeShape
+public enum TBadgeShape
 {
     [Description("@#circle")]
     Circle,
@@ -327,7 +330,7 @@ public enum TDesignBadgeShape
 }
 
 [String]
-public enum TDesignBadgeSize
+public enum TBadgeSize
 {
     [Description("@#small")]
     Small,
@@ -338,7 +341,7 @@ public enum TDesignBadgeSize
 
 [ECMAScript]
 [Description("@#")]
-public readonly union TDesignLinkDownloadValue(bool, string)
+public readonly union TLinkDownloadValue(bool, string)
 {
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
@@ -347,7 +350,7 @@ public readonly union TDesignLinkDownloadValue(bool, string)
 
 [ECMAScript]
 [Description("@#")]
-public readonly union TDesignTabValue(double, string)
+public readonly union TTabValue(double, string)
 {
     public double? AsNumber => Value is double value ? value : default(double?);
 
@@ -356,7 +359,7 @@ public readonly union TDesignTabValue(double, string)
 
 [ECMAScript]
 [Description("@#")]
-public readonly union TDesignBadgeCountValue(double, string)
+public readonly union TBadgeCountValue(double, string)
 {
     public double? AsNumber => Value is double value ? value : default(double?);
 
@@ -365,7 +368,7 @@ public readonly union TDesignBadgeCountValue(double, string)
 
 [ECMAScript]
 [Description("@#")]
-public readonly union TDesignBadgeOffsetValue(double, string)
+public readonly union TBadgeOffsetValue(double, string)
 {
     public double? AsNumber => Value is double value ? value : default(double?);
 
@@ -374,28 +377,28 @@ public readonly union TDesignBadgeOffsetValue(double, string)
 
 [ECMAScript]
 [Description("@#")]
-[CollectionBuilder(typeof(TDesignBadgeOffsetCollectionBuilder), nameof(TDesignBadgeOffsetCollectionBuilder.Create))]
-public readonly union TDesignBadgeOffset(TDesignBadgeOffsetValue[]) : IEnumerable<TDesignBadgeOffsetValue>
+[CollectionBuilder(typeof(TBadgeOffsetCollectionBuilder), nameof(TBadgeOffsetCollectionBuilder.Create))]
+public readonly union TBadgeOffset(TBadgeOffsetValue[]) : IEnumerable<TBadgeOffsetValue>
 {
-    public TDesignBadgeOffsetValue[]? AsValues => Value as TDesignBadgeOffsetValue[];
+    public TBadgeOffsetValue[]? AsValues => Value as TBadgeOffsetValue[];
 
-    IEnumerator<TDesignBadgeOffsetValue> IEnumerable<TDesignBadgeOffsetValue>.GetEnumerator()
-        => ((IEnumerable<TDesignBadgeOffsetValue>)(AsValues ?? Array.Empty<TDesignBadgeOffsetValue>())).GetEnumerator();
+    IEnumerator<TBadgeOffsetValue> IEnumerable<TBadgeOffsetValue>.GetEnumerator()
+        => ((IEnumerable<TBadgeOffsetValue>)(AsValues ?? Array.Empty<TBadgeOffsetValue>())).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<TDesignBadgeOffsetValue>)this).GetEnumerator();
+        => ((IEnumerable<TBadgeOffsetValue>)this).GetEnumerator();
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class TDesignBadgeOffsetCollectionBuilder
+public static class TBadgeOffsetCollectionBuilder
 {
-    public static TDesignBadgeOffset Create(ReadOnlySpan<TDesignBadgeOffsetValue> values)
+    public static TBadgeOffset Create(ReadOnlySpan<TBadgeOffsetValue> values)
         => values.ToArray();
 }
 
 [ECMAScript]
 [Description("@#TabAddContext")]
-public sealed record TDesignTabAddContext : VueProps
+public sealed record TTabAddContext : VueProps
 {
     [Description("@#e")]
     public required MouseEvent Event { get; init; }
@@ -403,10 +406,10 @@ public sealed record TDesignTabAddContext : VueProps
 
 [ECMAScript]
 [Description("@#TabRemoveContext")]
-public sealed record TDesignTabRemoveContext : VueProps
+public sealed record TTabRemoveContext : VueProps
 {
     [Description("@#value")]
-    public required TDesignTabValue Value { get; init; }
+    public required TTabValue Value { get; init; }
 
     [Description("@#index")]
     public required int Index { get; init; }
@@ -417,10 +420,10 @@ public sealed record TDesignTabRemoveContext : VueProps
 
 [ECMAScript]
 [Description("@#TabPanelRemoveContext")]
-public sealed record TDesignTabPanelRemoveContext : VueProps
+public sealed record TTabPanelRemoveContext : VueProps
 {
     [Description("@#value")]
-    public required TDesignTabValue Value { get; init; }
+    public required TTabValue Value { get; init; }
 
     [Description("@#e")]
     public required MouseEvent Event { get; init; }
@@ -428,24 +431,24 @@ public sealed record TDesignTabPanelRemoveContext : VueProps
 
 [ECMAScript]
 [Description("@#TabsDragSortContext")]
-public sealed record TDesignTabsDragSortContext : VueProps
+public sealed record TTabsDragSortContext : VueProps
 {
     [Description("@#currentIndex")]
     public required int CurrentIndex { get; init; }
 
     [Description("@#current")]
-    public required TDesignTabValue Current { get; init; }
+    public required TTabValue Current { get; init; }
 
     [Description("@#targetIndex")]
     public required int TargetIndex { get; init; }
 
     [Description("@#target")]
-    public required TDesignTabValue Target { get; init; }
+    public required TTabValue Target { get; init; }
 }
 
 [ECMAScript]
 [Description("@#AvatarErrorContext")]
-public sealed record TDesignAvatarErrorContext : VueProps
+public sealed record TAvatarErrorContext : VueProps
 {
     [Description("@#e")]
     public required Event Event { get; init; }
@@ -453,551 +456,336 @@ public sealed record TDesignAvatarErrorContext : VueProps
 
 [ECMAScript]
 [Description("@#Styles")]
-public sealed record TDesignStyles : VueDictionary<VueStringNumberValue>
+public sealed record TStyles : VueDictionary<VueStringNumberValue>
 {
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignDimensionValue : IUnion
+public readonly union TDimensionValue(Number, string)
 {
-    private readonly byte _kind;
-    private readonly Number? _number;
-    private readonly string? _string;
+    public Number? AsNumber
+        => Value is Number value ? value : default(Number?);
 
-    public TDesignDimensionValue(Number value)
-    {
-        _kind = 1;
-        _number = value;
-        _string = default;
-    }
+    public string? AsString
+        => Value is string value ? value : default(string?);
 
-    public TDesignDimensionValue(string value)
-    {
-        _kind = 2;
-        _number = default;
-        _string = value;
-    }
-
-    public Number? AsNumber => _kind == 1 ? _number : default;
-
-    public string? AsString => _kind == 2 ? _string : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsNumber,
-        2 => AsString,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignDimensionValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignDimensionValue From(string value);
-
-    public static implicit operator TDesignDimensionValue(Number value)
+    public static implicit operator TDimensionValue(Number value)
         => new(value);
 
-    public static implicit operator TDesignDimensionValue(string value)
+    public static implicit operator TDimensionValue(string value)
         => new(value);
 
-    public static implicit operator TDesignDimensionValue(byte value)
+    public static implicit operator TDimensionValue(byte value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(sbyte value)
+    public static implicit operator TDimensionValue(sbyte value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(short value)
+    public static implicit operator TDimensionValue(short value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(ushort value)
+    public static implicit operator TDimensionValue(ushort value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(int value)
+    public static implicit operator TDimensionValue(int value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(uint value)
+    public static implicit operator TDimensionValue(uint value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(float value)
+    public static implicit operator TDimensionValue(float value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(double value)
+    public static implicit operator TDimensionValue(double value)
         => new((Number)value);
 
-    public static implicit operator TDesignDimensionValue(decimal value)
+    public static implicit operator TDimensionValue(decimal value)
         => new((Number)value);
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-[CollectionBuilder(typeof(TDesignDimensionValuesCollectionBuilder), nameof(TDesignDimensionValuesCollectionBuilder.Create))]
-public readonly struct TDesignDimensionValues : IUnion, IEnumerable<TDesignDimensionValue>
+[CollectionBuilder(typeof(TDimensionValuesCollectionBuilder), nameof(TDimensionValuesCollectionBuilder.Create))]
+public readonly union TDimensionValues(TDimensionValue[]) : IEnumerable<TDimensionValue>
 {
-    private readonly TDesignDimensionValue[]? _values;
+    public TDimensionValue[]? AsArray
+        => Value is TDimensionValue[] value ? value : default(TDimensionValue[]?);
 
-    public TDesignDimensionValues(TDesignDimensionValue[] values)
-    {
-        _values = values;
-    }
-
-    public TDesignDimensionValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignDimensionValues From(TDesignDimensionValue[] values);
-
-    public static implicit operator TDesignDimensionValues(TDesignDimensionValue[] values)
+    public static implicit operator TDimensionValues(TDimensionValue[] values)
         => new(values);
 
-    IEnumerator<TDesignDimensionValue> IEnumerable<TDesignDimensionValue>.GetEnumerator()
-        => ((IEnumerable<TDesignDimensionValue>)(_values ?? [])).GetEnumerator();
+    IEnumerator<TDimensionValue> IEnumerable<TDimensionValue>.GetEnumerator()
+        => ((IEnumerable<TDimensionValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<TDesignDimensionValue>)this).GetEnumerator();
+        => ((IEnumerable<TDimensionValue>)this).GetEnumerator();
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class TDesignDimensionValuesCollectionBuilder
+public static class TDimensionValuesCollectionBuilder
 {
-    public static TDesignDimensionValues Create(ReadOnlySpan<TDesignDimensionValue> values)
+    public static TDimensionValues Create(ReadOnlySpan<TDimensionValue> values)
         => values.ToArray();
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignMenuWidthValue : IUnion
+public readonly union TMenuWidthValue(TDimensionValue, TDimensionValues)
 {
-    private readonly byte _kind;
-    private readonly TDesignDimensionValue? _value;
-    private readonly TDesignDimensionValues? _values;
+    public TDimensionValue? AsValue
+        => Value is TDimensionValue value ? value : default(TDimensionValue?);
 
-    public TDesignMenuWidthValue(TDesignDimensionValue value)
-    {
-        _kind = 1;
-        _value = value;
-        _values = default;
-    }
+    public TDimensionValues? AsValues
+        => Value is TDimensionValues value ? value : default(TDimensionValues?);
 
-    public TDesignMenuWidthValue(TDesignDimensionValues value)
-    {
-        _kind = 2;
-        _value = default;
-        _values = value;
-    }
-
-    public TDesignDimensionValue? AsValue => _kind == 1 ? _value : default;
-
-    public TDesignDimensionValues? AsValues => _kind == 2 ? _values : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsValue,
-        2 => AsValues,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuWidthValue From(TDesignDimensionValue value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuWidthValue From(TDesignDimensionValues value);
-
-    public static implicit operator TDesignMenuWidthValue(TDesignDimensionValue value)
+    public static implicit operator TMenuWidthValue(TDimensionValue value)
         => new(value);
 
-    public static implicit operator TDesignMenuWidthValue(TDesignDimensionValues value)
+    public static implicit operator TMenuWidthValue(TDimensionValues value)
         => new(value);
 
-    public static implicit operator TDesignMenuWidthValue(string value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(string value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(Number value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(Number value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(byte value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(byte value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(sbyte value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(sbyte value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(short value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(short value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(ushort value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(ushort value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(int value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(int value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(uint value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(uint value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(float value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(float value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(double value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(double value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(decimal value)
-        => new((TDesignDimensionValue)value);
+    public static implicit operator TMenuWidthValue(decimal value)
+        => new((TDimensionValue)value);
 
-    public static implicit operator TDesignMenuWidthValue(TDesignDimensionValue[] values)
-        => new((TDesignDimensionValues)values);
+    public static implicit operator TMenuWidthValue(TDimensionValue[] values)
+        => new((TDimensionValues)values);
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignSpaceSizeValue : IUnion
+public readonly union TSpaceSizeValue(
+    Number,
+    string,
+    TSize)
 {
-    private readonly byte _kind;
-    private readonly Number? _number;
-    private readonly string? _string;
-    private readonly TDesignSize? _size;
+    public Number? AsNumber
+        => Value is Number value ? value : default(Number?);
 
-    public TDesignSpaceSizeValue(Number value)
-    {
-        _kind = 1;
-        _number = value;
-        _string = default;
-        _size = default;
-    }
+    public string? AsString
+        => Value is string value ? value : default(string?);
 
-    public TDesignSpaceSizeValue(string value)
-    {
-        _kind = 2;
-        _number = default;
-        _string = value;
-        _size = default;
-    }
+    public TSize? AsSize
+        => Value is TSize value ? value : default(TSize?);
 
-    public TDesignSpaceSizeValue(TDesignSize value)
-    {
-        _kind = 3;
-        _number = default;
-        _string = default;
-        _size = value;
-    }
-
-    public Number? AsNumber => _kind == 1 ? _number : default;
-
-    public string? AsString => _kind == 2 ? _string : default;
-
-    public TDesignSize? AsSize => _kind == 3 ? _size : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsNumber,
-        2 => AsString,
-        3 => AsSize,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSizeValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSizeValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSizeValue From(TDesignSize value);
-
-    public static implicit operator TDesignSpaceSizeValue(Number value)
+    public static implicit operator TSpaceSizeValue(Number value)
         => new(value);
 
-    public static implicit operator TDesignSpaceSizeValue(string value)
+    public static implicit operator TSpaceSizeValue(string value)
         => new(value);
 
-    public static implicit operator TDesignSpaceSizeValue(TDesignSize value)
+    public static implicit operator TSpaceSizeValue(TSize value)
         => new(value);
 
-    public static implicit operator TDesignSpaceSizeValue(byte value)
+    public static implicit operator TSpaceSizeValue(byte value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(sbyte value)
+    public static implicit operator TSpaceSizeValue(sbyte value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(short value)
+    public static implicit operator TSpaceSizeValue(short value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(ushort value)
+    public static implicit operator TSpaceSizeValue(ushort value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(int value)
+    public static implicit operator TSpaceSizeValue(int value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(uint value)
+    public static implicit operator TSpaceSizeValue(uint value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(float value)
+    public static implicit operator TSpaceSizeValue(float value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(double value)
+    public static implicit operator TSpaceSizeValue(double value)
         => new((Number)value);
 
-    public static implicit operator TDesignSpaceSizeValue(decimal value)
+    public static implicit operator TSpaceSizeValue(decimal value)
         => new((Number)value);
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-[CollectionBuilder(typeof(TDesignSpaceSizeValuesCollectionBuilder), nameof(TDesignSpaceSizeValuesCollectionBuilder.Create))]
-public readonly struct TDesignSpaceSizeValues : IUnion, IEnumerable<TDesignSpaceSizeValue>
+[CollectionBuilder(typeof(TSpaceSizeValuesCollectionBuilder), nameof(TSpaceSizeValuesCollectionBuilder.Create))]
+public readonly union TSpaceSizeValues(TSpaceSizeValue[]) : IEnumerable<TSpaceSizeValue>
 {
-    private readonly TDesignSpaceSizeValue[]? _values;
+    public TSpaceSizeValue[]? AsArray
+        => Value is TSpaceSizeValue[] value ? value : default(TSpaceSizeValue[]?);
 
-    public TDesignSpaceSizeValues(TDesignSpaceSizeValue[] values)
-    {
-        _values = values;
-    }
-
-    public TDesignSpaceSizeValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSizeValues From(TDesignSpaceSizeValue[] values);
-
-    public static implicit operator TDesignSpaceSizeValues(TDesignSpaceSizeValue[] values)
+    public static implicit operator TSpaceSizeValues(TSpaceSizeValue[] values)
         => new(values);
 
-    IEnumerator<TDesignSpaceSizeValue> IEnumerable<TDesignSpaceSizeValue>.GetEnumerator()
-        => ((IEnumerable<TDesignSpaceSizeValue>)(_values ?? [])).GetEnumerator();
+    IEnumerator<TSpaceSizeValue> IEnumerable<TSpaceSizeValue>.GetEnumerator()
+        => ((IEnumerable<TSpaceSizeValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<TDesignSpaceSizeValue>)this).GetEnumerator();
+        => ((IEnumerable<TSpaceSizeValue>)this).GetEnumerator();
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class TDesignSpaceSizeValuesCollectionBuilder
+public static class TSpaceSizeValuesCollectionBuilder
 {
-    public static TDesignSpaceSizeValues Create(ReadOnlySpan<TDesignSpaceSizeValue> values)
+    public static TSpaceSizeValues Create(ReadOnlySpan<TSpaceSizeValue> values)
         => values.ToArray();
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignSpaceSize : IUnion
+public readonly union TSpaceSize(TSpaceSizeValue, TSpaceSizeValues)
 {
-    private readonly byte _kind;
-    private readonly TDesignSpaceSizeValue? _value;
-    private readonly TDesignSpaceSizeValues? _values;
+    public TSpaceSizeValue? AsValue
+        => Value is TSpaceSizeValue value ? value : default(TSpaceSizeValue?);
 
-    public TDesignSpaceSize(TDesignSpaceSizeValue value)
-    {
-        _kind = 1;
-        _value = value;
-        _values = default;
-    }
+    public TSpaceSizeValues? AsValues
+        => Value is TSpaceSizeValues value ? value : default(TSpaceSizeValues?);
 
-    public TDesignSpaceSize(TDesignSpaceSizeValues value)
-    {
-        _kind = 2;
-        _value = default;
-        _values = value;
-    }
-
-    public TDesignSpaceSizeValue? AsValue => _kind == 1 ? _value : default;
-
-    public TDesignSpaceSizeValues? AsValues => _kind == 2 ? _values : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsValue,
-        2 => AsValues,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSize From(TDesignSpaceSizeValue value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignSpaceSize From(TDesignSpaceSizeValues value);
-
-    public static implicit operator TDesignSpaceSize(TDesignSpaceSizeValue value)
+    public static implicit operator TSpaceSize(TSpaceSizeValue value)
         => new(value);
 
-    public static implicit operator TDesignSpaceSize(TDesignSpaceSizeValues value)
+    public static implicit operator TSpaceSize(TSpaceSizeValues value)
         => new(value);
 
-    public static implicit operator TDesignSpaceSize(Number value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(Number value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(string value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(string value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(TDesignSize value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(TSize value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(byte value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(byte value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(sbyte value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(sbyte value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(short value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(short value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(ushort value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(ushort value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(int value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(int value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(uint value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(uint value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(float value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(float value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(double value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(double value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(decimal value)
-        => new((TDesignSpaceSizeValue)value);
+    public static implicit operator TSpaceSize(decimal value)
+        => new((TSpaceSizeValue)value);
 
-    public static implicit operator TDesignSpaceSize(TDesignSpaceSizeValue[] values)
-        => new((TDesignSpaceSizeValues)values);
+    public static implicit operator TSpaceSize(TSpaceSizeValue[] values)
+        => new((TSpaceSizeValues)values);
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignMenuValue : IUnion
+public readonly union TMenuValue(Number, string)
 {
-    private readonly byte _kind;
-    private readonly Number? _number;
-    private readonly string? _string;
+    public Number? AsNumber
+        => Value is Number value ? value : default(Number?);
 
-    public TDesignMenuValue(Number value)
-    {
-        _kind = 1;
-        _number = value;
-        _string = default;
-    }
+    public string? AsString
+        => Value is string value ? value : default(string?);
 
-    public TDesignMenuValue(string value)
-    {
-        _kind = 2;
-        _number = default;
-        _string = value;
-    }
-
-    public Number? AsNumber => _kind == 1 ? _number : default;
-
-    public string? AsString => _kind == 2 ? _string : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsNumber,
-        2 => AsString,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuValue From(string value);
-
-    public static implicit operator TDesignMenuValue(Number value)
+    public static implicit operator TMenuValue(Number value)
         => new(value);
 
-    public static implicit operator TDesignMenuValue(string value)
+    public static implicit operator TMenuValue(string value)
         => new(value);
 
-    public static implicit operator TDesignMenuValue(byte value)
+    public static implicit operator TMenuValue(byte value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(sbyte value)
+    public static implicit operator TMenuValue(sbyte value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(short value)
+    public static implicit operator TMenuValue(short value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(ushort value)
+    public static implicit operator TMenuValue(ushort value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(int value)
+    public static implicit operator TMenuValue(int value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(uint value)
+    public static implicit operator TMenuValue(uint value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(float value)
+    public static implicit operator TMenuValue(float value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(double value)
+    public static implicit operator TMenuValue(double value)
         => new((Number)value);
 
-    public static implicit operator TDesignMenuValue(decimal value)
+    public static implicit operator TMenuValue(decimal value)
         => new((Number)value);
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignMenuQueryValue : IUnion
+public readonly union TMenuQueryValue(string, string[])
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly string[]? _strings;
+    public string? AsString
+        => Value is string value ? value : default(string?);
 
-    public TDesignMenuQueryValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _strings = default;
-    }
+    public string[]? AsStrings
+        => Value is string[] value ? value : default(string[]?);
 
-    public TDesignMenuQueryValue(string[] value)
-    {
-        _kind = 2;
-        _string = default;
-        _strings = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public string[]? AsStrings => _kind == 2 ? _strings : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsStrings,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuQueryValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuQueryValue From(string[] value);
-
-    public static implicit operator TDesignMenuQueryValue(string value)
+    public static implicit operator TMenuQueryValue(string value)
         => new(value);
 
-    public static implicit operator TDesignMenuQueryValue(string[] value)
+    public static implicit operator TMenuQueryValue(string[] value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#MenuQueryData")]
-public sealed record TDesignMenuQueryData : VueDictionary<TDesignMenuQueryValue>
+public sealed record TMenuQueryData : VueDictionary<TMenuQueryValue>
 {
 }
 
 [ECMAScript]
 [Description("@#MenuRoute")]
-public sealed record TDesignMenuRoute : VueProps
+public sealed record TMenuRoute : VueProps
 {
     [Description("@#path")]
     public string? Path { get; init; }
@@ -1009,66 +797,36 @@ public sealed record TDesignMenuRoute : VueProps
     public string? Hash { get; init; }
 
     [Description("@#query")]
-    public TDesignMenuQueryData? Query { get; init; }
+    public TMenuQueryData? Query { get; init; }
 
     [Description("@#params")]
-    public TDesignMenuQueryData? Params { get; init; }
+    public TMenuQueryData? Params { get; init; }
 }
 
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct TDesignMenuRouteTarget : IUnion
+public readonly union TMenuRouteTarget(string, TMenuRoute)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly TDesignMenuRoute? _route;
+    public string? AsString
+        => Value is string value ? value : default(string?);
 
-    public TDesignMenuRouteTarget(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _route = default;
-    }
+    public TMenuRoute? AsRoute
+        => Value is TMenuRoute value ? value : default(TMenuRoute?);
 
-    public TDesignMenuRouteTarget(TDesignMenuRoute value)
-    {
-        _kind = 2;
-        _string = default;
-        _route = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public TDesignMenuRoute? AsRoute => _kind == 2 ? _route : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsRoute,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuRouteTarget From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static TDesignMenuRouteTarget From(TDesignMenuRoute value);
-
-    public static implicit operator TDesignMenuRouteTarget(string value)
+    public static implicit operator TMenuRouteTarget(string value)
         => new(value);
 
-    public static implicit operator TDesignMenuRouteTarget(TDesignMenuRoute value)
+    public static implicit operator TMenuRouteTarget(TMenuRoute value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record TDesignMenuItemClickContext : VueProps
+public sealed record TMenuItemClickContext : VueProps
 {
     [Description("@#e")]
     public required MouseEvent Event { get; init; }
 
     [Description("@#value")]
-    public required TDesignMenuValue Value { get; init; }
+    public required TMenuValue Value { get; init; }
 }

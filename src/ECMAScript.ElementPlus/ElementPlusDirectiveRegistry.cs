@@ -6,13 +6,13 @@ namespace ECMAScript.ElementPlus;
 /// Registry of Element Plus directives.
 /// </summary>
 [ECMAScript]
-[Description("@#ElementPlusDirectiveRegistry")]
-public sealed record ElementPlusDirectiveRegistry : VueDirectiveRegistry
+[Description("@#ElDirectiveRegistry")]
+public sealed record ElDirectiveRegistry : VueDirectiveRegistry
 {
     [Description("@#InfiniteScroll")]
-    public ElementPlusDirective? InfiniteScroll { get; init; }
+    public ElDirective? InfiniteScroll { get; init; }
 
     [Description("@#Loading")]
-    public VueDirective<ElementPlusDirectiveValue>? Loading { get; init; }
+    public VueDirective<ElDirectiveValue>? Loading { get; init; }
 
 }

@@ -8,13 +8,13 @@ namespace ECMAScript.ElementPlus;
 public static class ElementPlus
 {
     [ECMAScriptName("default")]
-    public extern static ElementPlusPlugin Default { get; }
+    public extern static ElPlugin Default { get; }
 
     [Description("@#install")]
     public extern static void Install(VueApp app);
 
     [Description("@#install")]
-    public extern static void Install(VueApp app, ElementPlusInstallOptions options);
+    public extern static void Install(VueApp app, ElInstallOptions options);
 
     [Description("@#version")]
     public extern static string Version { get; }
@@ -24,7 +24,7 @@ public static class ElementPlus
 /// Marker interface for Element Plus components.
 /// </summary>
 [ECMAScript]
-public interface IElementPlusComponent : IVueComponent
+public interface IElComponent : IVueComponent
 {
 }
 
@@ -32,7 +32,7 @@ public interface IElementPlusComponent : IVueComponent
 /// Marker base type for Element Plus directives.
 /// </summary>
 [ECMAScript]
-public abstract record ElementPlusDirective : VueDirective
+public abstract record ElDirective : VueDirective
 {
 }
 
@@ -40,9 +40,9 @@ public abstract record ElementPlusDirective : VueDirective
 /// Element Plus plugin object.
 /// </summary>
 [ECMAScript]
-public sealed record ElementPlusPlugin : VuePlugin
+public sealed record ElPlugin : VuePlugin
 {
-    private ElementPlusPlugin()
+    private ElPlugin()
     {
     }
 }
@@ -52,34 +52,34 @@ public sealed record ElementPlusPlugin : VuePlugin
 /// </summary>
 [ECMAScript]
 [Description("@#ConfigProviderContext")]
-public sealed record ElementPlusInstallOptions : VuePluginOptions
+public sealed record ElInstallOptions : VuePluginOptions
 {
     [Description("@#emptyValues")]
     public VueValue[]? EmptyValues { get; init; }
 
     [Description("@#valueOnClear")]
-    public ElementPlusValueOnClearValue? ValueOnClear { get; init; }
+    public ElValueOnClearValue? ValueOnClear { get; init; }
 
     [Description("@#a11y")]
     public bool? A11y { get; init; }
 
     [Description("@#locale")]
-    public ElementPlusLanguage? Locale { get; init; }
+    public ElLanguage? Locale { get; init; }
 
     [Description("@#size")]
-    public ElementPlusComponentSize? Size { get; init; }
+    public ElComponentSize? Size { get; init; }
 
     [Description("@#button")]
-    public ElementPlusButtonConfig? Button { get; init; }
+    public ElButtonConfig? Button { get; init; }
 
     [Description("@#card")]
-    public ElementPlusCardConfig? Card { get; init; }
+    public ElCardConfig? Card { get; init; }
 
     [Description("@#dialog")]
-    public ElementPlusDialogConfig? Dialog { get; init; }
+    public ElDialogConfig? Dialog { get; init; }
 
     [Description("@#link")]
-    public ElementPlusLinkConfig? Link { get; init; }
+    public ElLinkConfig? Link { get; init; }
 
     [Description("@#experimentalFeatures")]
     public VueProps? ExperimentalFeatures { get; init; }
@@ -88,7 +88,7 @@ public sealed record ElementPlusInstallOptions : VuePluginOptions
     public bool? KeyboardNavigation { get; init; }
 
     [Description("@#message")]
-    public ElementPlusMessageConfig? Message { get; init; }
+    public ElMessageConfig? Message { get; init; }
 
     [Description("@#zIndex")]
     public Number? ZIndex { get; init; }
@@ -97,5 +97,5 @@ public sealed record ElementPlusInstallOptions : VuePluginOptions
     public string? Namespace { get; init; }
 
     [Description("@#table")]
-    public ElementPlusTableConfig? Table { get; init; }
+    public ElTableConfig? Table { get; init; }
 }

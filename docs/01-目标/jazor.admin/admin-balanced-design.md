@@ -148,7 +148,7 @@
 例如：
 
 - 公共层可以有 `Collapsed`、`Logo`、`Actions`、`NavItems`
-- 公共层不应直接出现 `TDesignMenuExpandType` 这类底层专有类型
+- 公共层不应直接出现 `TMenuExpandType` 这类底层专有类型
 
 ### 2. 公共层保持强类型
 

@@ -6,7 +6,7 @@ namespace ECMAScript.TDesign;
 /// TDesign button authoring proxy.
 /// </summary>
 [VueLibraryComponent("tdesign-vue-next", "Button")]
-public sealed class TButton : TDesignContentComponentBase
+public sealed class TButton : TContentComponentBase
 {
     [Parameter]
     public bool Block { get; set; }
@@ -27,26 +27,26 @@ public sealed class TButton : TDesignContentComponentBase
     public bool Loading { get; set; }
 
     [Parameter]
-    public TDesignButtonShape? Shape { get; set; }
+    public TButtonShape? Shape { get; set; }
 
     [Parameter]
-    public TDesignSize? Size { get; set; }
+    public TSize? Size { get; set; }
 
     [Parameter]
-    public TDesignButtonTag? Tag { get; set; }
+    public TButtonTag? Tag { get; set; }
 
     [Parameter]
     [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
-    public TDesignButtonTheme? Theme { get; set; }
+    public TButtonTheme? Theme { get; set; }
 
     [Parameter]
-    public TDesignButtonType? Type { get; set; }
+    public TButtonType? Type { get; set; }
 
     [Parameter]
-    public TDesignButtonVariant? Variant { get; set; }
+    public TButtonVariant? Variant { get; set; }
 
     [Parameter]
     public EventCallback<MouseEvent> OnClick { get; set; }

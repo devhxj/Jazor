@@ -90,7 +90,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 - Vue component-library authoring now uses ordinary `[Parameter]`, `EventCallback<T>`, `RenderFragment`, and member-level naming contracts. The redundant `VueProp`, `VueSlot`, library marker, style/plugin declaration, component flags, and emit-kind APIs have been removed.
 - RazorVue now infers conventional `XChanged` model updates and `OnX` events directly. Vuetify callbacks consistently use `OnX`, while explicit emit metadata is limited to raw Vue names that C# naming cannot reconstruct.
-- All 113 Vuetify erased-value domains now use native C# unions, retaining strongly typed projections, assignments, and collection expressions without handwritten wrappers or `From(...)` factories.
+- Vuetify's 113 and TDesign's 14 erased-value domains now use native C# unions. ElementPlus uses native unions for 45 of 46 domains; its single `File` versus `Blob` overlap retains a tagged contract for exact projections. None of the three libraries requires `From(...)` factories.
+- Element Plus and TDesign binding types now use the same concise `El*` and `T*` prefixes as their components; only their root package hosts retain the full names.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

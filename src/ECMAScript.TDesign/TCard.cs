@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Card")]
-public sealed class TCard : TDesignContentComponentBase
+public sealed class TCard : TContentComponentBase
 {
     [Parameter]
     public bool Bordered { get; set; }
@@ -14,7 +14,7 @@ public sealed class TCard : TDesignContentComponentBase
 
     [Parameter]
     [ECMAScriptName("bodyStyle")]
-    public TDesignStyles? BodyCssStyle { get; set; }
+    public TStyles? BodyCssStyle { get; set; }
 
     [Parameter]
     public string? Description { get; set; }
@@ -25,7 +25,7 @@ public sealed class TCard : TDesignContentComponentBase
 
     [Parameter]
     [ECMAScriptName("footerStyle")]
-    public TDesignStyles? FooterCssStyle { get; set; }
+    public TStyles? FooterCssStyle { get; set; }
 
     [Parameter]
     [ECMAScriptName("headerClassName")]
@@ -33,7 +33,7 @@ public sealed class TCard : TDesignContentComponentBase
 
     [Parameter]
     [ECMAScriptName("headerStyle")]
-    public TDesignStyles? HeaderCssStyle { get; set; }
+    public TStyles? HeaderCssStyle { get; set; }
 
     [Parameter]
     public bool HeaderBordered { get; set; }
@@ -48,7 +48,7 @@ public sealed class TCard : TDesignContentComponentBase
     public bool Shadow { get; set; }
 
     [Parameter]
-    public TDesignCardSize? Size { get; set; }
+    public TCardSize? Size { get; set; }
 
     [Parameter]
     public string? Status { get; set; }
@@ -57,7 +57,7 @@ public sealed class TCard : TDesignContentComponentBase
     public string? Subtitle { get; set; }
 
     [Parameter]
-    public TDesignCardTheme? Theme { get; set; }
+    public TCardTheme? Theme { get; set; }
 
     [Parameter]
     public string? Title { get; set; }

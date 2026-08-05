@@ -7527,6 +7527,82 @@ export function readValue(value) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingComponentLibraryUnionAssignments_GeneratesErasedValues()
+    {
+        var code = """
+            using ECMAScript;
+            using ECMAScript.ElementPlus;
+            using ECMAScript.TDesign;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/union-contract.mjs")]
+                public static class ComponentUnionModule
+                {
+                    public static TMenuValue CreateMenuValue(Number value) => value;
+
+                    public static TMenuWidthValue CreateMenuWidth(TDimensionValue[] values) => values;
+
+                    public static ElUploadBeforeUploadResult CreateUploadFile(File value) => value;
+
+                    public static ElUploadBeforeUploadResult CreateUploadBlob(Blob value) => value;
+
+                    public static ElUploadBeforeUploadResult CreateUploadPromise(IPromise<VueValue?> value) => new(value);
+
+                    public static File? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
+
+                    public static Blob? ReadUploadBlob(ElUploadBeforeUploadResult value) => value.AsBlob;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "ComponentUnionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ElementPlus.ElementPlus).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.TDesign.TDesign).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static declaration => declaration.Identifier.Text == "ComponentUnionModule")
+            .Select(declaration => semanticModel.GetDeclaredSymbol(declaration))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function createMenuValue(value) {
+  return value;
+}
+export function createMenuWidth(values) {
+  return values;
+}
+export function createUploadFile(value) {
+  return value;
+}
+export function createUploadBlob(value) {
+  return value;
+}
+export function createUploadPromise(value) {
+  return value;
+}
+export function readUploadFile(value) {
+  return value;
+}
+export function readUploadBlob(value) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingRuntimeIUnionWithoutSystemUnionAttribute_ThrowsUnsupportedExternalPropertyAccess()
     {
         var code = """

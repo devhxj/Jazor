@@ -29,18 +29,18 @@ public partial class TDesignSidebarMenu : AdminComponentBase
     [Parameter]
     public bool Horizontal { get; set; }
 
-    private TDesignMenuValue? MenuValue
-        => SelectedKey is null ? default(TDesignMenuValue?) : (TDesignMenuValue)SelectedKey;
+    private TMenuValue? MenuValue
+        => SelectedKey is null ? default(TMenuValue?) : (TMenuValue)SelectedKey;
 
-    private TDesignMenuValue[]? ExpandedMenuValues
-        => ExpandedKeys is null ? null : Array.ConvertAll(ExpandedKeys, static key => (TDesignMenuValue)key);
+    private TMenuValue[]? ExpandedMenuValues
+        => ExpandedKeys is null ? null : Array.ConvertAll(ExpandedKeys, static key => (TMenuValue)key);
 
     private RenderFragment RenderItem(AdminNavItem item) => builder =>
     {
         if (item.Children?.AsArray is { Length: > 0 } children)
         {
             builder.OpenComponent<TSubmenu>(0);
-            builder.AddAttribute(1, nameof(TSubmenu.Value), (TDesignMenuValue)item.Key);
+            builder.AddAttribute(1, nameof(TSubmenu.Value), (TMenuValue)item.Key);
             builder.AddAttribute(2, nameof(TSubmenu.TitleContent), (RenderFragment)(titleBuilder =>
             {
                 titleBuilder.OpenElement(0, "span");
@@ -67,7 +67,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
             var route = TDesignRouteMapper.MapRoute(item.RouteTarget);
 
             builder.OpenComponent<TMenuItem>(10);
-            builder.AddAttribute(11, nameof(TMenuItem.Value), (TDesignMenuValue)item.Key);
+            builder.AddAttribute(11, nameof(TMenuItem.Value), (TMenuValue)item.Key);
             builder.AddAttribute(12, nameof(TMenuItem.ChildContent), (RenderFragment)(childBuilder =>
             {
                 childBuilder.AddContent(0, item.Title);
@@ -90,7 +90,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
         }
     };
 
-    private async Task OnMenuChanged(TDesignMenuValue value)
+    private async Task OnMenuChanged(TMenuValue value)
     {
         if (value.AsString is string key)
         {
@@ -98,7 +98,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
         }
     }
 
-    private async Task OnMenuExpanded(TDesignMenuValue[] values)
+    private async Task OnMenuExpanded(TMenuValue[] values)
     {
         var expandedKeys = new List<string>();
         foreach (var value in values)

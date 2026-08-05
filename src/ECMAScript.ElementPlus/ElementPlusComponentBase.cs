@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.ElementPlus;
 
-public abstract class ElementPlusComponentBase : ComponentBase
+public abstract class ElComponentBase : ComponentBase
 {
     [Parameter]
     [ECMAScriptName("class")]
@@ -16,7 +16,7 @@ public abstract class ElementPlusComponentBase : ComponentBase
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }
 
-public abstract class ElementPlusContentComponentBase : ElementPlusComponentBase
+public abstract class ElContentComponentBase : ElComponentBase
 {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

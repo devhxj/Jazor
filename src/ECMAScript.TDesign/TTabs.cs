@@ -4,7 +4,7 @@ namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Tabs")]
 [VueLibraryEmit(nameof(ValueChanged), Name = "change")]
-public sealed class TTabs : TDesignContentComponentBase
+public sealed class TTabs : TContentComponentBase
 {
     [Parameter]
     public bool Addable { get; set; }
@@ -16,41 +16,41 @@ public sealed class TTabs : TDesignContentComponentBase
     public bool DragSort { get; set; }
 
     [Parameter]
-    public TDesignTabsPlacement? Placement { get; set; }
+    public TTabsPlacement? Placement { get; set; }
 
     [Parameter]
-    public TDesignTabsScrollPosition? ScrollPosition { get; set; }
+    public TTabsScrollPosition? ScrollPosition { get; set; }
 
     [Parameter]
-    public TDesignTabsSize? Size { get; set; }
+    public TTabsSize? Size { get; set; }
 
     [Parameter]
-    public TDesignTabsTheme? Theme { get; set; }
+    public TTabsTheme? Theme { get; set; }
 
     [Parameter]
-    public TDesignTabValue? Value { get; set; }
+    public TTabValue? Value { get; set; }
 
     [Parameter]
-    public TDesignTabValue? DefaultValue { get; set; }
+    public TTabValue? DefaultValue { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignTabValue> ValueChanged { get; set; }
+    public EventCallback<TTabValue> ValueChanged { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignTabAddContext> OnAdd { get; set; }
+    public EventCallback<TTabAddContext> OnAdd { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignTabsDragSortContext> OnDragSort { get; set; }
+    public EventCallback<TTabsDragSortContext> OnDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignTabRemoveContext> OnRemove { get; set; }
+    public EventCallback<TTabRemoveContext> OnRemove { get; set; }
 
     [Parameter]
     public RenderFragment? Action { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "TabPanel")]
-public sealed class TTabPanel : TDesignContentComponentBase
+public sealed class TTabPanel : TContentComponentBase
 {
     [Parameter]
     public bool DestroyOnHide { get; set; }
@@ -72,10 +72,10 @@ public sealed class TTabPanel : TDesignContentComponentBase
     public bool Removable { get; set; }
 
     [Parameter]
-    public TDesignTabValue? Value { get; set; }
+    public TTabValue? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TDesignTabPanelRemoveContext> OnRemove { get; set; }
+    public EventCallback<TTabPanelRemoveContext> OnRemove { get; set; }
 
     [Parameter]
     public RenderFragment? Label { get; set; }
