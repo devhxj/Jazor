@@ -13,19 +13,16 @@
     <Compile Remove="build-local.cs" />
     <Compile Remove="verify-smoke.cs" />
     <Compile Remove="InjectSmoke\**" />
-    <Compile Remove="wwwroot\jazor\**" />
     <Content Remove="InjectSmoke\**" />
     <EmbeddedResource Remove="InjectSmoke\**" />
     <None Remove="InjectSmoke\**" />
-    <Content Remove="wwwroot\jazor\**" />
-    <EmbeddedResource Remove="wwwroot\jazor\**" />
-    <None Remove="wwwroot\jazor\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
     <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="Jazor.Admin" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
   </ItemGroup>

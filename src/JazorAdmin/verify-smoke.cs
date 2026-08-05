@@ -34,6 +34,7 @@ if (!options.FrontendOnly)
         buildScript,
         "--",
         "--configuration", options.Configuration,
+        "--package-version", options.PackageVersion,
         "--jazor-dir", generatedOutputRoot,
         "--inject-jazor-dir", injectGeneratedOutputRoot,
         "--base-output-path", baseOutputPath,
@@ -217,10 +218,6 @@ static async Task VerifyBrowserSmokeAsync(
     {
         CopyDirectory(generatedOutputRoot, harnessRoot);
         CopyInjectBrowserArtifacts(injectGeneratedOutputRoot, harnessRoot);
-        File.Copy(
-            Path.Combine(adminRoot, "wwwroot", "app.css"),
-            Path.Combine(harnessRoot, "app.css"),
-            overwrite: true);
         var vendorRoot = Path.Combine(harnessRoot, "vendor");
         Directory.CreateDirectory(vendorRoot);
         File.Copy(vueRuntime, Path.Combine(vendorRoot, "vue.runtime.esm-browser.prod.js"), overwrite: true);
@@ -249,7 +246,6 @@ static async Task VerifyBrowserSmokeAsync(
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>JazorAdmin browser smoke</title>
-                <link rel="stylesheet" href="/app.css">
                 <link rel="stylesheet" href="/vendor/tdesign-vue-next.css">
                 <script type="importmap">
                 {
@@ -776,7 +772,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(desktopLayout.GetProperty("sidebarWidth").GetString() ?? string.Empty, "240px", "JazorAdmin desktop TDesign sidebar width", desktopLayout.GetRawText());
         AssertContains(desktopLayout.GetProperty("mainDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin desktop TDesign main layout", desktopLayout.GetRawText());
         AssertContains(desktopLayout.GetProperty("tableOverflowX").GetString() ?? string.Empty, "auto", "JazorAdmin desktop table overflow containment", desktopLayout.GetRawText());
-        AssertJsonBoolean(desktopLayout, "stylesheetLoaded", true, "JazorAdmin desktop stylesheet load", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "styleRuntimeLoaded", true, "JazorAdmin desktop ECMAScript.Style runtime", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "documentFitsViewport", true, "JazorAdmin desktop document width", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "sidebarBeforeMain", true, "JazorAdmin desktop sidebar and main geometry", desktopLayout.GetRawText());
 
@@ -787,7 +783,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertJsonBoolean(mobileLayout, "sidebarFillsShell", true, "JazorAdmin mobile TDesign sidebar width", mobileLayout.GetRawText());
         AssertContains(mobileLayout.GetProperty("navigationDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin mobile TDesign navigation layout", mobileLayout.GetRawText());
         AssertContains(mobileLayout.GetProperty("tableOverflowX").GetString() ?? string.Empty, "auto", "JazorAdmin mobile table overflow containment", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "stylesheetLoaded", true, "JazorAdmin mobile stylesheet load", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "styleRuntimeLoaded", true, "JazorAdmin mobile ECMAScript.Style runtime", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "documentFitsViewport", true, "JazorAdmin mobile document width", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "sidebarBeforeMain", true, "JazorAdmin mobile sidebar and main geometry", mobileLayout.GetRawText());
 
@@ -798,12 +794,6 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(mobileNavigation.GetProperty("pageTitleText").GetString() ?? string.Empty, "Audit Log", "JazorAdmin mobile child navigation page", mobileNavigation.GetRawText());
         AssertContains(mobileNavigation.GetProperty("activeKey").GetString() ?? string.Empty, "operations.audit", "JazorAdmin mobile child navigation selected key", mobileNavigation.GetRawText());
         AssertJsonBoolean(mobileNavigation, "documentFitsViewport", true, "JazorAdmin mobile child navigation document width", mobileNavigation.GetRawText());
-
-        var serverDiagnostics = root.GetProperty("serverDiagnostics").EnumerateArray()
-            .Select(static entry => entry.GetString() ?? string.Empty)
-            .ToArray();
-        if (!serverDiagnostics.Any(static entry => entry == "200 /app.css"))
-            throw new InvalidOperationException("JazorAdmin browser smoke did not load /app.css successfully." + Environment.NewLine + root.GetRawText());
 
         var text = root.GetProperty("text").GetString() ?? string.Empty;
         AssertContains(text, "JazorAdmin", "JazorAdmin browser DOM title", root.GetRawText());
@@ -1280,7 +1270,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 navigationDisplay: navigationStyle?.display ?? "",
                 sidebarFillsShell: !!shellRect && !!sidebarRect && Math.abs(shellRect.width - sidebarRect.width) <= 1,
                 tableOverflowX: table ? getComputedStyle(table).overflowX : "",
-                stylesheetLoaded: Array.from(document.styleSheets).some((sheet) => sheet.href?.endsWith("/app.css")),
+                styleRuntimeLoaded: document.querySelector("style#jazor-css") !== null,
                 documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
                 sidebarBeforeMain: sidebarRect && mainRect
                   ? sidebarRect.right <= mainRect.left + 1 || sidebarRect.bottom <= mainRect.top + 1
@@ -1711,6 +1701,7 @@ static string? TryResolveExecutable(string candidate)
 
 internal sealed record SmokeOptions(
     string Configuration,
+    string PackageVersion,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
     string? GeneratedOutputRoot,
@@ -1720,6 +1711,7 @@ internal sealed record SmokeOptions(
     public static SmokeOptions Parse(IReadOnlyList<string> arguments)
     {
         var configuration = "Debug";
+        var packageVersion = "0.1.46";
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
         string? generatedOutputRoot = null;
@@ -1735,6 +1727,10 @@ internal sealed record SmokeOptions(
                 case "-Configuration":
                 case "-c":
                     configuration = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--package-version":
+                case "-PackageVersion":
+                    packageVersion = RequireValue(arguments, ref index, argument);
                     break;
                 case "--base-output-path":
                 case "-BaseOutputPath":
@@ -1766,7 +1762,14 @@ internal sealed record SmokeOptions(
             }
         }
 
-        return new SmokeOptions(configuration, baseOutputPath, baseIntermediateOutputPath, generatedOutputRoot, frontendOnly, skipBrowser);
+        return new SmokeOptions(
+            configuration,
+            packageVersion,
+            baseOutputPath,
+            baseIntermediateOutputPath,
+            generatedOutputRoot,
+            frontendOnly,
+            skipBrowser);
     }
 
     private static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
@@ -1784,6 +1787,7 @@ internal sealed record SmokeOptions(
         Console.WriteLine("Usage: dotnet run --no-launch-profile --file src/JazorAdmin/verify-smoke.cs -- [options]");
         Console.WriteLine("Options:");
         Console.WriteLine("  --configuration <Debug|Release>");
+        Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --generated-output-root <path>");

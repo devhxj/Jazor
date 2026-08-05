@@ -100,7 +100,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.45
+dotnet add package Jazor --version 0.1.46
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -109,8 +109,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.45" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.45" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.46" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.46" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -118,11 +118,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.45" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.45" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.45" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.45" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.45" />
+  <PackageReference Include="Jazor" Version="0.1.46" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.46" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.46" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.46" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.46" />
 </ItemGroup>
 ```
 

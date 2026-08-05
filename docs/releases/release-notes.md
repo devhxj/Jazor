@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- Jazor 0.1.46 packages now ship the Acornima analyzer assemblies that match the compiler's 1.7.0 ABI, preventing runtime `MethodNotFoundException` failures during Razor compilation.
 - Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
 - Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
 - Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.

@@ -38,10 +38,16 @@ var packArguments = new List<string>
     "--skip-push",
     "--package", "jazor",
     "--package", "jazor-vue",
+    "--package", "style",
     "--package", "vueroute",
     "--package", "admin",
     "--package", "tdesign"
 };
+if (!string.IsNullOrWhiteSpace(options.PackageVersion))
+{
+    packArguments.Add("--package-version");
+    packArguments.Add(options.PackageVersion);
+}
 packArguments.AddRange(isolation.PublishArguments);
 await ScriptHelpers.RunDotNetAsync(packArguments, repoRoot, dotnetCliHome);
 
@@ -100,7 +106,8 @@ internal sealed record SampleBuildOptions(
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
     string? JazorDir,
-    string? InjectJazorDir)
+    string? InjectJazorDir,
+    string? PackageVersion)
 {
     public static SampleBuildOptions Parse(IReadOnlyList<string> arguments)
     {
@@ -109,6 +116,7 @@ internal sealed record SampleBuildOptions(
         string? baseIntermediateOutputPath = null;
         string? jazorDir = null;
         string? injectJazorDir = null;
+        string? packageVersion = null;
 
         for (var index = 0; index < arguments.Count; index++)
         {
@@ -136,6 +144,10 @@ internal sealed record SampleBuildOptions(
                 case "-InjectJazorDir":
                     injectJazorDir = RequireValue(arguments, ref index, argument);
                     break;
+                case "--package-version":
+                case "-PackageVersion":
+                    packageVersion = RequireValue(arguments, ref index, argument);
+                    break;
                 case "--help":
                 case "-h":
                     WriteUsage();
@@ -146,7 +158,13 @@ internal sealed record SampleBuildOptions(
             }
         }
 
-        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorDir, injectJazorDir);
+        return new SampleBuildOptions(
+            configuration,
+            baseOutputPath,
+            baseIntermediateOutputPath,
+            jazorDir,
+            injectJazorDir,
+            packageVersion);
     }
 
     private static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
@@ -168,6 +186,7 @@ internal sealed record SampleBuildOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --jazor-dir <path>");
         Console.WriteLine("  --inject-jazor-dir <path>");
+        Console.WriteLine("  --package-version <semver>");
     }
 }
 

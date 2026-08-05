@@ -1,5 +1,7 @@
 @inherits ComponentBase
 
+@{ JazorAdminStyles.EnsureLoaded(); }
+
 <ApplicationFrame Theme="@Theme" Language="@languageTag" Grayscale="@grayscale">
     @if (currentRoute.Path == "/login" || currentRoute.Path == "/lock")
     {
@@ -54,8 +56,8 @@
     else
     {
         <TDesignLayout Mode="@LayoutMode"
-                          Title="JazorAdmin"
-                          Subtitle="@Localization.Get(Language, TextKey.ShellSubtitle)"
+                          Title="医生生机"
+                          Subtitle="医疗项目招募管理工作台"
                           NavItems="@AdminRouteCatalog.BuildNavigation(LocalizedItems)"
                           Collapsed="@collapsed"
                           CollapsedChanged="@(value => collapsed = value)"
@@ -99,7 +101,8 @@
                 </div>
             </UserRegion>
             <ChildContent>
-                <TDesignPageContainer Title="@GetSelectedPageTitle()"
+                <TDesignPageContainer CssClass="@DashboardContainerClass"
+                                         Title="@GetSelectedPageTitle()"
                                          Subtitle="@GetSelectedPageSubtitle()"
                                          BreadcrumbItems="@GetSelectedBreadcrumbItems()"
                                          Actions="@GetPageActions()">

@@ -12,8 +12,8 @@ public partial class App : ComponentBase, IVueComponent
 {
     private readonly RouteLocationNormalizedLoaded currentRoute = VueRoute.UseRoute();
     private readonly Router router = UseRouter();
-    private string themeKey = "system";
-    private string languageTag = "en-US";
+    private string themeKey = "light";
+    private string languageTag = "zh-CN";
     private bool grayscale;
     private string loginAccount = "admin@jazor";
     private string loginPassword = string.Empty;
@@ -73,6 +73,11 @@ public partial class App : ComponentBase, IVueComponent
     private bool IsSettingsPage => SelectedKey == SettingsKey;
 
     private bool IsWorkspacePage => SelectedKey == WorkspaceKey;
+
+    private bool IsDashboardPage => SelectedKey == DashboardKey;
+
+    private string DashboardContainerClass
+        => IsDashboardPage ? "jazor-admin-tdesign-page-container--dashboard" : string.Empty;
 
     private string GetSelectedPageTitle() => SelectedRoute.Title ?? string.Empty;
 

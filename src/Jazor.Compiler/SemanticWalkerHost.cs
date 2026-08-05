@@ -1,7 +1,6 @@
 // File: SemanticWalkerHost.cs
 // Purpose: Defines optional product extension points around core SemanticWalker lowering.
 // host 仅处理明确拥有的 operation rewrite；未声明的场景仍回到标准编译器路径或显式失败。
-using System.Collections.Generic;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

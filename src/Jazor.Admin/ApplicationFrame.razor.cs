@@ -38,6 +38,8 @@ public partial class ApplicationFrame : AdminContentComponentBase, IVueContainer
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        AdminStyleSheet.EnsureLoaded();
+
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", RootCssClass);
         builder.AddAttribute(2, "style", RootStyle);

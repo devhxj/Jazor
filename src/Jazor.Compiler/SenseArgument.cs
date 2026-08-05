@@ -1,13 +1,9 @@
 // File: SenseArgument.cs
 // Purpose: Carries lowering context plus per-scope declarations and module-level import collection.
 // 结构体副本共享导入状态但隔离局部声明，使嵌套 lowering 同时保持 lexical scope 与 stable imports。
-using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Jazor.Compiler;
 
@@ -20,7 +16,7 @@ namespace Jazor.Compiler;
 /// WithNewScope 只隔离变量声明集合，保留导入集合和导入绑定，以保证嵌套 lowering 不会
 /// 重复生成或重新命名同一模块导入。
 /// </remarks>
-public record struct SenseArgument
+public readonly record struct SenseArgument
 {
     /// <summary>语义场景标识</summary>
     public Sense Sense { get; init; }
