@@ -3280,6 +3280,44 @@ public sealed class EcmaScriptVueProxyTests
         }
     }
 
+    [TestMethod]
+    public void TDesign_ComponentNames_UseMemberLevelGeneralMetadata()
+    {
+        var componentTypes = typeof(TDesign).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.TDesign" &&
+                typeof(ComponentBase).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
+
+        var names = new (Type Type, string Property, string RuntimeName)[]
+        {
+            (typeof(TButton), nameof(TButton.CssClass), "class"),
+            (typeof(TButton), nameof(TButton.CssStyle), "style"),
+            (typeof(TButton), nameof(TButton.Text), "content"),
+            (typeof(TCard), nameof(TCard.BodyCssClass), "bodyClassName"),
+            (typeof(TCard), nameof(TCard.HeaderCssStyle), "headerStyle"),
+            (typeof(TAvatarGroup), nameof(TAvatarGroup.CollapseAvatar), "collapseAvatar"),
+            (typeof(TLink), nameof(TLink.PrefixIcon), "prefixIcon"),
+            (typeof(TLink), nameof(TLink.SuffixIcon), "suffixIcon")
+        };
+
+        foreach (var (type, propertyName, runtimeName) in names)
+        {
+            var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            Assert.IsNotNull(property, $"{type.Name}.{propertyName}");
+            Assert.AreEqual(
+                runtimeName,
+                property!.GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name,
+                $"{type.Name}.{propertyName}");
+        }
+    }
+
     private static IEnumerable<string> GetVuetifyRuntimeComponentNames()
         => GetVuetifyRuntimeComponentNames(typeof(VuetifyComponents))
             .Concat(GetVuetifyRuntimeComponentNames(typeof(VuetifyLabsComponents)));

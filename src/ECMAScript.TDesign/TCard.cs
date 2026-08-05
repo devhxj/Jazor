@@ -5,43 +5,36 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Card")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(BodyCssClass), Name = "bodyClassName")]
-[VueProp(nameof(HeaderCssClass), Name = "headerClassName")]
-[VueProp(nameof(FooterCssClass), Name = "footerClassName")]
-[VueProp(nameof(BodyCssStyle), Name = "bodyStyle")]
-[VueProp(nameof(HeaderCssStyle), Name = "headerStyle")]
-[VueProp(nameof(FooterCssStyle), Name = "footerStyle")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(Avatar), Name = "avatar")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TCard : TDesignContentComponentBase
 {
     [Parameter]
     public bool Bordered { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyClassName")]
     public string? BodyCssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyStyle")]
     public TDesignStyles? BodyCssStyle { get; set; }
 
     [Parameter]
     public string? Description { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerClassName")]
     public string? FooterCssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerStyle")]
     public TDesignStyles? FooterCssStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerClassName")]
     public string? HeaderCssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerStyle")]
     public TDesignStyles? HeaderCssStyle { get; set; }
 
     [Parameter]

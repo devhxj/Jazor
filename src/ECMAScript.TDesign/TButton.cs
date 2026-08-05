@@ -8,12 +8,6 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Button")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Text), Name = "content")]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(Suffix), Name = "suffix")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TButton : TDesignContentComponentBase
 {
     [Parameter]
@@ -44,6 +38,7 @@ public sealed class TButton : TDesignContentComponentBase
     public TDesignButtonTag? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]

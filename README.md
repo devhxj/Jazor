@@ -88,6 +88,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-05
 
+- TDesign bindings now use standard inherited Razor conventions and member-level `ECMAScriptName` for exceptional prop and camelCase slot names, without `VueProp` or `VueSlot` metadata.
 - Vuetify bindings now use member-level `ECMAScriptName` for every exceptional prop and dot-qualified slot name; the package no longer declares `VueProp` or `VueSlot` metadata.
 - RazorVue component contracts now bind JavaScript names to the effective `[Parameter]` member through `ECMAScriptName` or `Description("@#...")`. Derived `new [Parameter]` members correctly replace hidden base parameters, duplicate Vue names fail explicitly, and `VueProp` / `VueSlot` are migration-only compatibility metadata.
 - Vuetify RazorVue bindings now use standard Razor conventions for two-way binding, ordinary `OnX` callbacks, and named `RenderFragment` slots. The binding surface retains explicit metadata only for Vue names that C# cannot express; ordinary bare callback parameters now use `OnX` names.

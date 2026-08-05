@@ -5,11 +5,6 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Avatar")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Text), Name = "content")]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TAvatar : TDesignContentComponentBase
 {
     [Parameter]
@@ -28,6 +23,7 @@ public sealed class TAvatar : TDesignContentComponentBase
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
@@ -40,10 +36,6 @@ public sealed class TAvatar : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "AvatarGroup")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(CollapseAvatar), Name = "collapseAvatar")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TAvatarGroup : TDesignContentComponentBase
 {
     [Parameter]
@@ -56,5 +48,6 @@ public sealed class TAvatarGroup : TDesignContentComponentBase
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseAvatar")]
     public RenderFragment? CollapseAvatar { get; set; }
 }

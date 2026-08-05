@@ -5,12 +5,7 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Tabs")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Value), Name = "value", AcceptsBinding = true)]
 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "change")]
-[VueSlot(nameof(Action), Name = "action")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TTabs : TDesignContentComponentBase
 {
     [Parameter]
@@ -59,11 +54,6 @@ public sealed class TTabs : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "TabPanel")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(LabelText), Name = "label")]
-[VueSlot(nameof(Label), Name = "label")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TTabPanel : TDesignContentComponentBase
 {
     [Parameter]
@@ -76,6 +66,7 @@ public sealed class TTabPanel : TDesignContentComponentBase
     public bool Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? LabelText { get; set; }
 
     [Parameter]

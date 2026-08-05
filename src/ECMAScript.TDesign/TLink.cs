@@ -5,12 +5,6 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Link")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Text), Name = "content")]
-[VueSlot(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueSlot(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TLink : TDesignContentComponentBase
 {
     [Parameter]
@@ -32,6 +26,7 @@ public sealed class TLink : TDesignContentComponentBase
     public TDesignTarget? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
@@ -44,8 +39,10 @@ public sealed class TLink : TDesignContentComponentBase
     public EventCallback<MouseEvent> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; set; }
 }

@@ -5,9 +5,11 @@ namespace ECMAScript.TDesign;
 public abstract class TDesignComponentBase : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("style")]
     public VueStyleValue? CssStyle { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]

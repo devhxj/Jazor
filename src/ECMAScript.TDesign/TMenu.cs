@@ -5,11 +5,6 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Menu")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(Logo), Name = "logo")]
-[VueSlot(nameof(Operations), Name = "operations")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TMenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -55,11 +50,6 @@ public sealed class TMenu : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "HeadMenu")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(Logo), Name = "logo")]
-[VueSlot(nameof(Operations), Name = "operations")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class THeadMenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -96,11 +86,6 @@ public sealed class THeadMenu : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "Submenu")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TSubmenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -122,11 +107,6 @@ public sealed class TSubmenu : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "MenuItem")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(Text), Name = "content")]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TMenuItem : TDesignContentComponentBase
 {
     [Parameter]
@@ -145,6 +125,7 @@ public sealed class TMenuItem : TDesignContentComponentBase
     public TDesignTarget? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Text { get; set; }
 
     [Parameter]
@@ -163,10 +144,6 @@ public sealed class TMenuItem : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "MenuGroup")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TMenuGroup : TDesignContentComponentBase
 {
     [Parameter]

@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- TDesign bindings now use inherited standard `class` / `style` / default-slot conventions and member-level `ECMAScriptName` for exceptional content, styling, and camelCase slot names. They no longer declare `VueProp` or `VueSlot` metadata.
 - Vuetify authoring bindings no longer declare `VueProp` or `VueSlot` metadata. Exceptional prop names and dot-qualified slots now use the same member-level `ECMAScriptName` contract as ordinary compiler naming, while Razor property names and component usage remain unchanged.
 - RazorVue component names now come from the effective `[Parameter]` symbol: member-level `ECMAScriptName` or `Description("@#...")` mappings override legacy class descriptors, derived `new [Parameter]` members replace hidden base parameters, and duplicate final Vue names fail explicitly. `VueProp` and `VueSlot` remain migration-only compatibility metadata until generated bindings are updated.
 - Vuetify RazorVue bindings now favor ordinary C# and Razor contracts: `X` plus `XChanged` supplies two-way binding, `OnX` supplies ordinary listeners, and `ChildContent` / `DefaultContent`, `XContent`, and PascalCase named fragments supply Vue slots. Bare `Save`, `Load`, `Next`, `Prev`, `AfterEnter`, `AfterLeave`, and `Submit` callback parameters were renamed to their `OnX` forms. Only Vue names that C# cannot express, such as colon events and dot slots, retain explicit metadata.

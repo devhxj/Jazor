@@ -5,10 +5,6 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Space")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(SeparatorText), Name = "separator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TSpace : TDesignContentComponentBase
 {
     [Parameter]
@@ -21,6 +17,7 @@ public sealed class TSpace : TDesignContentComponentBase
     public TDesignSpaceDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public string? SeparatorText { get; set; }
 
     [Parameter]
