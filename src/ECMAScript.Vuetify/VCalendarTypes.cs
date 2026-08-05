@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VCalendar values, collection carriers, callbacks, and slot contexts.
+// 定义 VCalendar 的值域、集合载体、回调与插槽上下文；多分支值优先使用 C# 原生 union。
+
 /// <summary>
 /// 日历视图模式（月、周、日）。
 /// Calendar view mode (month, week, day).
@@ -39,61 +42,14 @@ public enum VuetifyCalendarWeeksInMonth
 /// Calendar date value supporting Date, string, or Number types.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyCalendarDateValue(Date, string, Number)
 {
-    private readonly byte _kind;
-    private readonly Date? _date;
-    private readonly string? _string;
-    private readonly Number? _number;
+    public Date? AsDate => Value is Date value ? value : default(Date?);
 
-    public VuetifyCalendarDateValue(Date value)
-    {
-        _kind = 1;
-        _date = value;
-        _string = default;
-        _number = default;
-    }
+    public string? AsString => Value as string;
 
-    public VuetifyCalendarDateValue(string value)
-    {
-        _kind = 2;
-        _date = default;
-        _string = value;
-        _number = default;
-    }
-
-    public VuetifyCalendarDateValue(Number value)
-    {
-        _kind = 3;
-        _date = default;
-        _string = default;
-        _number = value;
-    }
-
-    public Date? AsDate => _kind == 1 ? _date : default;
-
-    public string? AsString => _kind == 2 ? _string : default;
-
-    public Number? AsNumber => _kind == 3 ? _number : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsDate,
-        2 => AsString,
-        3 => AsNumber,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarDateValue From(Date value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarDateValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarDateValue From(Number value);
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     public static implicit operator VuetifyCalendarDateValue(Date value)
         => new(value);
@@ -199,44 +155,15 @@ public delegate bool VuetifyCalendarAllowedDateResolver(VuetifyCalendarDateValue
 /// Calendar allowed dates value supporting date collections or custom filter functions.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarAllowedDatesValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyCalendarAllowedDatesValue(
+    VuetifyCalendarDateValues,
+    VuetifyCalendarAllowedDateResolver)
 {
-    private readonly byte _kind;
-    private readonly VuetifyCalendarDateValues? _dates;
-    private readonly VuetifyCalendarAllowedDateResolver? _resolver;
+    public VuetifyCalendarDateValues? AsDates
+        => Value is VuetifyCalendarDateValues value ? value : default(VuetifyCalendarDateValues?);
 
-    public VuetifyCalendarAllowedDatesValue(VuetifyCalendarDateValues dates)
-    {
-        _kind = 1;
-        _dates = dates;
-        _resolver = default;
-    }
-
-    public VuetifyCalendarAllowedDatesValue(VuetifyCalendarAllowedDateResolver resolver)
-    {
-        _kind = 2;
-        _dates = default;
-        _resolver = resolver;
-    }
-
-    public VuetifyCalendarDateValues? AsDates => _kind == 1 ? _dates : default;
-
-    public VuetifyCalendarAllowedDateResolver? AsResolver => _kind == 2 ? _resolver : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsDates,
-        2 => AsResolver,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarAllowedDatesValue From(VuetifyCalendarDateValues dates);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarAllowedDatesValue From(VuetifyCalendarAllowedDateResolver resolver);
+    public VuetifyCalendarAllowedDateResolver? AsResolver => Value as VuetifyCalendarAllowedDateResolver;
 
     public static implicit operator VuetifyCalendarAllowedDatesValue(VuetifyCalendarDateValues dates)
         => new(dates);
@@ -399,44 +326,12 @@ public delegate string VuetifyCalendarIntervalFormatter(VuetifyCalendarInterval 
 /// Calendar interval format value supporting format strings or custom formatter functions.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarIntervalFormatValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyCalendarIntervalFormatValue(string, VuetifyCalendarIntervalFormatter)
 {
-    private readonly byte _kind;
-    private readonly string? _format;
-    private readonly VuetifyCalendarIntervalFormatter? _formatter;
+    public string? AsFormat => Value as string;
 
-    public VuetifyCalendarIntervalFormatValue(string value)
-    {
-        _kind = 1;
-        _format = value;
-        _formatter = default;
-    }
-
-    public VuetifyCalendarIntervalFormatValue(VuetifyCalendarIntervalFormatter value)
-    {
-        _kind = 2;
-        _format = default;
-        _formatter = value;
-    }
-
-    public string? AsFormat => _kind == 1 ? _format : default;
-
-    public VuetifyCalendarIntervalFormatter? AsFormatter => _kind == 2 ? _formatter : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsFormat,
-        2 => AsFormatter,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarIntervalFormatValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarIntervalFormatValue From(VuetifyCalendarIntervalFormatter value);
+    public VuetifyCalendarIntervalFormatter? AsFormatter => Value as VuetifyCalendarIntervalFormatter;
 
     public static implicit operator VuetifyCalendarIntervalFormatValue(string value)
         => new(value);

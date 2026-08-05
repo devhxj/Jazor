@@ -9,6 +9,8 @@ using static ECMAScript.Vue3;
 
 namespace Jazor.ComplierTest;
 
+// Verifies proxy API contracts shared by Vue, component-library, and native-union bindings.
+// 验证 Vue、组件库和原生 union 绑定共享的代理 API 合同，防止 authoring 表面回退为弱类型包装。
 #pragma warning disable CA1416
 
 [TestClass]
@@ -3268,6 +3270,41 @@ public sealed class EcmaScriptVueProxyTests
             "op_Implicit",
             BindingFlags.Public | BindingFlags.Static,
             [typeof(decimal)]));
+    }
+
+    [TestMethod]
+    public void VuetifyCalendarValueUnions_UseNativeUnionContracts()
+    {
+        var unionTypes = new[]
+        {
+            typeof(VuetifyCalendarDateValue),
+            typeof(VuetifyCalendarAllowedDatesValue),
+            typeof(VuetifyCalendarIntervalFormatValue)
+        };
+
+        AssertNet11UnionContract(typeof(VuetifyCalendarDateValue), typeof(Date), typeof(string), typeof(Number));
+        AssertNet11UnionContract(
+            typeof(VuetifyCalendarAllowedDatesValue),
+            typeof(VuetifyCalendarDateValues),
+            typeof(VuetifyCalendarAllowedDateResolver));
+        AssertNet11UnionContract(
+            typeof(VuetifyCalendarIntervalFormatValue),
+            typeof(string),
+            typeof(VuetifyCalendarIntervalFormatter));
+
+        foreach (var unionType in unionTypes)
+        {
+            Assert.IsNull(unionType.GetMethod("From", BindingFlags.Public | BindingFlags.Static), unionType.FullName);
+        }
+
+        Assert.IsNotNull(typeof(VuetifyCalendarDateValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(decimal)]));
+        Assert.IsNotNull(typeof(VuetifyCalendarAllowedDatesValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(Date[])]));
     }
 
     [TestMethod]
