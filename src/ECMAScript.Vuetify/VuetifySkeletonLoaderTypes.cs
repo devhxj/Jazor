@@ -105,44 +105,13 @@ public enum VuetifySkeletonLoaderType
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySkeletonLoaderTypeValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifySkeletonLoaderTypeValue(VuetifySkeletonLoaderType, string)
 {
-    private readonly byte _kind;
-    private readonly VuetifySkeletonLoaderType? _type;
-    private readonly string? _customType;
+    public VuetifySkeletonLoaderType? AsType
+        => Value is VuetifySkeletonLoaderType value ? value : default(VuetifySkeletonLoaderType?);
 
-    public VuetifySkeletonLoaderTypeValue(VuetifySkeletonLoaderType value)
-    {
-        _kind = 1;
-        _type = value;
-        _customType = default;
-    }
-
-    public VuetifySkeletonLoaderTypeValue(string value)
-    {
-        _kind = 2;
-        _type = default;
-        _customType = value;
-    }
-
-    public VuetifySkeletonLoaderType? AsType => _kind == 1 ? _type : default;
-
-    public string? AsCustomType => _kind == 2 ? _customType : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsType,
-        2 => AsCustomType,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySkeletonLoaderTypeValue From(VuetifySkeletonLoaderType value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySkeletonLoaderTypeValue From(string value);
+    public string? AsCustomType => Value as string;
 
     public static implicit operator VuetifySkeletonLoaderTypeValue(VuetifySkeletonLoaderType value)
         => new(value);
@@ -152,24 +121,11 @@ public readonly struct VuetifySkeletonLoaderTypeValue : System.Runtime.CompilerS
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySkeletonLoaderTypesCollectionBuilder), nameof(VuetifySkeletonLoaderTypesCollectionBuilder.Create))]
-public readonly struct VuetifySkeletonLoaderTypes : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySkeletonLoaderTypeValue>
+public readonly union VuetifySkeletonLoaderTypes(VuetifySkeletonLoaderTypeValue[]) : IEnumerable<VuetifySkeletonLoaderTypeValue>
 {
-    private readonly VuetifySkeletonLoaderTypeValue[]? _values;
-
-    public VuetifySkeletonLoaderTypes(VuetifySkeletonLoaderTypeValue[] values)
-    {
-        _values = values;
-    }
-
-    public VuetifySkeletonLoaderTypeValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySkeletonLoaderTypes From(VuetifySkeletonLoaderTypeValue[] values);
+    public VuetifySkeletonLoaderTypeValue[]? AsArray => Value as VuetifySkeletonLoaderTypeValue[];
 
     public static implicit operator VuetifySkeletonLoaderTypes(VuetifySkeletonLoaderTypeValue[] values)
         => new(values);
@@ -181,7 +137,7 @@ public readonly struct VuetifySkeletonLoaderTypes : System.Runtime.CompilerServi
         => new(Array.ConvertAll(values, static value => (VuetifySkeletonLoaderTypeValue)value));
 
     IEnumerator<VuetifySkeletonLoaderTypeValue> IEnumerable<VuetifySkeletonLoaderTypeValue>.GetEnumerator()
-        => ((IEnumerable<VuetifySkeletonLoaderTypeValue>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifySkeletonLoaderTypeValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifySkeletonLoaderTypeValue>)this).GetEnumerator();
@@ -195,44 +151,16 @@ public static class VuetifySkeletonLoaderTypesCollectionBuilder
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySkeletonLoaderTypeSetting : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifySkeletonLoaderTypeSetting(
+    VuetifySkeletonLoaderTypeValue,
+    VuetifySkeletonLoaderTypes)
 {
-    private readonly byte _kind;
-    private readonly VuetifySkeletonLoaderTypeValue? _type;
-    private readonly VuetifySkeletonLoaderTypes? _types;
+    public VuetifySkeletonLoaderTypeValue? AsType
+        => Value is VuetifySkeletonLoaderTypeValue value ? value : default(VuetifySkeletonLoaderTypeValue?);
 
-    public VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypeValue value)
-    {
-        _kind = 1;
-        _type = value;
-        _types = default;
-    }
-
-    public VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypes value)
-    {
-        _kind = 2;
-        _type = default;
-        _types = value;
-    }
-
-    public VuetifySkeletonLoaderTypeValue? AsType => _kind == 1 ? _type : default;
-
-    public VuetifySkeletonLoaderTypes? AsTypes => _kind == 2 ? _types : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsType,
-        2 => AsTypes,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySkeletonLoaderTypeSetting From(VuetifySkeletonLoaderTypeValue value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySkeletonLoaderTypeSetting From(VuetifySkeletonLoaderTypes value);
+    public VuetifySkeletonLoaderTypes? AsTypes
+        => Value is VuetifySkeletonLoaderTypes value ? value : default(VuetifySkeletonLoaderTypes?);
 
     public static implicit operator VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypeValue value)
         => new(value);

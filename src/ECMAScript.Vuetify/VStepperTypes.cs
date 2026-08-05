@@ -8,24 +8,11 @@ namespace ECMAScript.Vuetify;
 /// Erased value union for stepper item lists.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyStepperItemsCollectionBuilder), nameof(VuetifyStepperItemsCollectionBuilder.Create))]
-public readonly struct VuetifyStepperItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyStepperItemValue>
+public readonly union VuetifyStepperItems(VuetifyStepperItemValue[]) : IEnumerable<VuetifyStepperItemValue>
 {
-    private readonly VuetifyStepperItemValue[]? _items;
-
-    public VuetifyStepperItems(VuetifyStepperItemValue[] items)
-    {
-        _items = items;
-    }
-
-    public VuetifyStepperItemValue[]? AsArray => _items;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStepperItems From(VuetifyStepperItemValue[] items);
+    public VuetifyStepperItemValue[]? AsArray => Value as VuetifyStepperItemValue[];
 
     public static implicit operator VuetifyStepperItems(VuetifyStepperItemValue[] items)
         => new(items);
@@ -37,7 +24,7 @@ public readonly struct VuetifyStepperItems : System.Runtime.CompilerServices.IUn
         => new(Array.ConvertAll(items, static item => (VuetifyStepperItemValue)item));
 
     IEnumerator<VuetifyStepperItemValue> IEnumerable<VuetifyStepperItemValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyStepperItemValue>)(_items ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyStepperItemValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyStepperItemValue>)this).GetEnumerator();
@@ -55,44 +42,12 @@ public static class VuetifyStepperItemsCollectionBuilder
 /// Erased value union for a single stepper item value.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyStepperItemValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyStepperItemValue(string, VuetifyStepperItem)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly VuetifyStepperItem? _item;
+    public string? AsString => Value as string;
 
-    public VuetifyStepperItemValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _item = default;
-    }
-
-    public VuetifyStepperItemValue(VuetifyStepperItem value)
-    {
-        _kind = 2;
-        _string = default;
-        _item = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public VuetifyStepperItem? AsItem => _kind == 2 ? _item : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsItem,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStepperItemValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStepperItemValue From(VuetifyStepperItem value);
+    public VuetifyStepperItem? AsItem => Value as VuetifyStepperItem;
 
     public static implicit operator VuetifyStepperItemValue(string value)
         => new(value);

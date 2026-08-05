@@ -71,24 +71,11 @@ public enum VuetifyTreeviewSelectionState
 /// Erased value union for Vuetify treeview selected values.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTreeviewValuesCollectionBuilder), nameof(VuetifyTreeviewValuesCollectionBuilder.Create))]
-public readonly struct VuetifyTreeviewValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
+public readonly union VuetifyTreeviewValues(VueValue[]) : IEnumerable<VueValue>
 {
-    private readonly VueValue[]? _values;
-
-    public VuetifyTreeviewValues(VueValue[] values)
-    {
-        _values = values;
-    }
-
-    public VueValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewValues From(VueValue[] values);
+    public VueValue[]? AsArray => Value as VueValue[];
 
     public static implicit operator VuetifyTreeviewValues(VueValue[] values)
         => new(values);
@@ -115,7 +102,7 @@ public readonly struct VuetifyTreeviewValues : System.Runtime.CompilerServices.I
         => new(Array.ConvertAll(values, static value => (VueValue)value));
 
     IEnumerator<VueValue> IEnumerable<VueValue>.GetEnumerator()
-        => ((IEnumerable<VueValue>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<VueValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VueValue>)this).GetEnumerator();
@@ -133,24 +120,11 @@ public static class VuetifyTreeviewValuesCollectionBuilder
 /// Erased value union for Vuetify treeview item collections.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTreeviewItemsCollectionBuilder), nameof(VuetifyTreeviewItemsCollectionBuilder.Create))]
-public readonly struct VuetifyTreeviewItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyTreeviewItemValue>
+public readonly union VuetifyTreeviewItems(VuetifyTreeviewItemValue[]) : IEnumerable<VuetifyTreeviewItemValue>
 {
-    private readonly VuetifyTreeviewItemValue[]? _items;
-
-    public VuetifyTreeviewItems(VuetifyTreeviewItemValue[] items)
-    {
-        _items = items;
-    }
-
-    public VuetifyTreeviewItemValue[]? AsArray => _items;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItems From(VuetifyTreeviewItemValue[] items);
+    public VuetifyTreeviewItemValue[]? AsArray => Value as VuetifyTreeviewItemValue[];
 
     public static implicit operator VuetifyTreeviewItems(VuetifyTreeviewItemValue[] items)
         => new(items);
@@ -162,7 +136,7 @@ public readonly struct VuetifyTreeviewItems : System.Runtime.CompilerServices.IU
         => new(Array.ConvertAll(items, static item => (VuetifyTreeviewItemValue)item));
 
     IEnumerator<VuetifyTreeviewItemValue> IEnumerable<VuetifyTreeviewItemValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyTreeviewItemValue>)(_items ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyTreeviewItemValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyTreeviewItemValue>)this).GetEnumerator();
@@ -180,101 +154,23 @@ public static class VuetifyTreeviewItemsCollectionBuilder
 /// Erased value union for a single Vuetify treeview item.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTreeviewItemValue(
+    string,
+    VuetifyTreeviewItem,
+    Number,
+    bool,
+    VueProps)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly VuetifyTreeviewItem? _item;
-    private readonly Number? _number;
-    private readonly bool? _boolean;
-    private readonly VueProps? _object;
+    public string? AsString => Value as string;
 
-    public VuetifyTreeviewItemValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _item = default;
-        _number = default;
-        _boolean = default;
-        _object = default;
-    }
+    public VuetifyTreeviewItem? AsItem => Value as VuetifyTreeviewItem;
 
-    public VuetifyTreeviewItemValue(VuetifyTreeviewItem value)
-    {
-        _kind = 2;
-        _string = default;
-        _item = value;
-        _number = default;
-        _boolean = default;
-        _object = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifyTreeviewItemValue(Number value)
-    {
-        _kind = 3;
-        _string = default;
-        _item = default;
-        _number = value;
-        _boolean = default;
-        _object = default;
-    }
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyTreeviewItemValue(bool value)
-    {
-        _kind = 4;
-        _string = default;
-        _item = default;
-        _number = default;
-        _boolean = value;
-        _object = default;
-    }
-
-    public VuetifyTreeviewItemValue(VueProps value)
-    {
-        _kind = 5;
-        _string = default;
-        _item = default;
-        _number = default;
-        _boolean = default;
-        _object = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public VuetifyTreeviewItem? AsItem => _kind == 2 ? _item : default;
-
-    public Number? AsNumber => _kind == 3 ? _number : default;
-
-    public bool? AsBool => _kind == 4 ? _boolean : default;
-
-    public VueProps? AsObject => _kind == 5 ? _object : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsItem,
-        3 => AsNumber,
-        4 => AsBool,
-        5 => AsObject,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItemValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItemValue From(VuetifyTreeviewItem value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItemValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItemValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewItemValue From(VueProps value);
+    public VueProps? AsObject => Value as VueProps;
 
     public static implicit operator VuetifyTreeviewItemValue(string value)
         => new(value);
@@ -357,61 +253,20 @@ public delegate VuetifyTreeviewSelectStrategyDefinition VuetifyTreeviewSelectStr
 /// Erased value union for Vuetify treeview active strategy.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTreeviewActiveStrategyValue(
+    VuetifyTreeviewActiveStrategy,
+    VuetifyTreeviewActiveStrategyDefinition,
+    VuetifyTreeviewActiveStrategyFactory)
 {
-    private readonly byte _kind;
-    private readonly VuetifyTreeviewActiveStrategy? _name;
-    private readonly VuetifyTreeviewActiveStrategyDefinition? _definition;
-    private readonly VuetifyTreeviewActiveStrategyFactory? _factory;
+    public VuetifyTreeviewActiveStrategy? AsName
+        => Value is VuetifyTreeviewActiveStrategy value ? value : default(VuetifyTreeviewActiveStrategy?);
 
-    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategy value)
-    {
-        _kind = 1;
-        _name = value;
-        _definition = default;
-        _factory = default;
-    }
+    public VuetifyTreeviewActiveStrategyDefinition? AsDefinition
+        => Value as VuetifyTreeviewActiveStrategyDefinition;
 
-    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyDefinition value)
-    {
-        _kind = 2;
-        _name = default;
-        _definition = value;
-        _factory = default;
-    }
-
-    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyFactory value)
-    {
-        _kind = 3;
-        _name = default;
-        _definition = default;
-        _factory = value;
-    }
-
-    public VuetifyTreeviewActiveStrategy? AsName => _kind == 1 ? _name : default;
-
-    public VuetifyTreeviewActiveStrategyDefinition? AsDefinition => _kind == 2 ? _definition : default;
-
-    public VuetifyTreeviewActiveStrategyFactory? AsFactory => _kind == 3 ? _factory : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsName,
-        2 => AsDefinition,
-        3 => AsFactory,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewActiveStrategyValue From(VuetifyTreeviewActiveStrategy value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewActiveStrategyValue From(VuetifyTreeviewActiveStrategyDefinition value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewActiveStrategyValue From(VuetifyTreeviewActiveStrategyFactory value);
+    public VuetifyTreeviewActiveStrategyFactory? AsFactory
+        => Value as VuetifyTreeviewActiveStrategyFactory;
 
     public static implicit operator VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategy value)
         => new(value);
@@ -428,61 +283,20 @@ public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.Compi
 /// Erased value union for Vuetify treeview select strategy.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewSelectStrategyValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTreeviewSelectStrategyValue(
+    VuetifyTreeviewSelectStrategy,
+    VuetifyTreeviewSelectStrategyDefinition,
+    VuetifyTreeviewSelectStrategyFactory)
 {
-    private readonly byte _kind;
-    private readonly VuetifyTreeviewSelectStrategy? _name;
-    private readonly VuetifyTreeviewSelectStrategyDefinition? _definition;
-    private readonly VuetifyTreeviewSelectStrategyFactory? _factory;
+    public VuetifyTreeviewSelectStrategy? AsName
+        => Value is VuetifyTreeviewSelectStrategy value ? value : default(VuetifyTreeviewSelectStrategy?);
 
-    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategy value)
-    {
-        _kind = 1;
-        _name = value;
-        _definition = default;
-        _factory = default;
-    }
+    public VuetifyTreeviewSelectStrategyDefinition? AsDefinition
+        => Value as VuetifyTreeviewSelectStrategyDefinition;
 
-    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyDefinition value)
-    {
-        _kind = 2;
-        _name = default;
-        _definition = value;
-        _factory = default;
-    }
-
-    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyFactory value)
-    {
-        _kind = 3;
-        _name = default;
-        _definition = default;
-        _factory = value;
-    }
-
-    public VuetifyTreeviewSelectStrategy? AsName => _kind == 1 ? _name : default;
-
-    public VuetifyTreeviewSelectStrategyDefinition? AsDefinition => _kind == 2 ? _definition : default;
-
-    public VuetifyTreeviewSelectStrategyFactory? AsFactory => _kind == 3 ? _factory : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsName,
-        2 => AsDefinition,
-        3 => AsFactory,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewSelectStrategyValue From(VuetifyTreeviewSelectStrategy value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewSelectStrategyValue From(VuetifyTreeviewSelectStrategyDefinition value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTreeviewSelectStrategyValue From(VuetifyTreeviewSelectStrategyFactory value);
+    public VuetifyTreeviewSelectStrategyFactory? AsFactory
+        => Value as VuetifyTreeviewSelectStrategyFactory;
 
     public static implicit operator VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategy value)
         => new(value);

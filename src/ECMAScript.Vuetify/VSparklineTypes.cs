@@ -42,24 +42,11 @@ public enum VuetifySparklineGradientDirection
 /// Erased value union for sparkline data item lists.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySparklineItemsCollectionBuilder), nameof(VuetifySparklineItemsCollectionBuilder.Create))]
-public readonly struct VuetifySparklineItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySparklineItem>
+public readonly union VuetifySparklineItems(VuetifySparklineItem[]) : IEnumerable<VuetifySparklineItem>
 {
-    private readonly VuetifySparklineItem[]? _items;
-
-    public VuetifySparklineItems(VuetifySparklineItem[] items)
-    {
-        _items = items;
-    }
-
-    public VuetifySparklineItem[]? AsArray => _items;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineItems From(VuetifySparklineItem[] items);
+    public VuetifySparklineItem[]? AsArray => Value as VuetifySparklineItem[];
 
     public static implicit operator VuetifySparklineItems(VuetifySparklineItem[] items)
         => new(items);
@@ -80,7 +67,7 @@ public readonly struct VuetifySparklineItems : System.Runtime.CompilerServices.I
         => new(Array.ConvertAll(items, static item => (VuetifySparklineItem)item));
 
     IEnumerator<VuetifySparklineItem> IEnumerable<VuetifySparklineItem>.GetEnumerator()
-        => ((IEnumerable<VuetifySparklineItem>)(_items ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifySparklineItem>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifySparklineItem>)this).GetEnumerator();
@@ -98,61 +85,14 @@ public static class VuetifySparklineItemsCollectionBuilder
 /// Erased value union for a single sparkline data item.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifySparklineItem(string, Number, VuetifySparklineValueItem)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Number? _number;
-    private readonly VuetifySparklineValueItem? _valueItem;
+    public string? AsString => Value as string;
 
-    public VuetifySparklineItem(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _number = default;
-        _valueItem = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifySparklineItem(Number value)
-    {
-        _kind = 2;
-        _string = default;
-        _number = value;
-        _valueItem = default;
-    }
-
-    public VuetifySparklineItem(VuetifySparklineValueItem value)
-    {
-        _kind = 3;
-        _string = default;
-        _number = default;
-        _valueItem = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public VuetifySparklineValueItem? AsValueItem => _kind == 3 ? _valueItem : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsNumber,
-        3 => AsValueItem,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineItem From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineItem From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineItem From(VuetifySparklineValueItem value);
+    public VuetifySparklineValueItem? AsValueItem => Value as VuetifySparklineValueItem;
 
     public static implicit operator VuetifySparklineItem(string value)
         => new(value);
@@ -208,61 +148,14 @@ public sealed record VuetifySparklineValueItem : VueProps
 /// Erased value union for sparkline smooth setting.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifySparklineSmoothValue(bool, Number, string)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly Number? _number;
-    private readonly string? _string;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifySparklineSmoothValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _number = default;
-        _string = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifySparklineSmoothValue(Number value)
-    {
-        _kind = 2;
-        _bool = default;
-        _number = value;
-        _string = default;
-    }
-
-    public VuetifySparklineSmoothValue(string value)
-    {
-        _kind = 3;
-        _bool = default;
-        _number = default;
-        _string = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public string? AsString => _kind == 3 ? _string : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsNumber,
-        3 => AsString,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineSmoothValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineSmoothValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySparklineSmoothValue From(string value);
+    public string? AsString => Value as string;
 
     public static implicit operator VuetifySparklineSmoothValue(bool value)
         => new(value);

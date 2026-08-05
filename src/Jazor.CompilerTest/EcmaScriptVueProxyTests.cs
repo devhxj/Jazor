@@ -3732,6 +3732,37 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vuetify_UnionTypes_UseNativeContracts()
+    {
+        var unionTypes = typeof(VuetifyComponentRegistry).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == typeof(VuetifyComponentRegistry).Namespace
+                && type.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>() is not null
+                && typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.AreEqual(113, unionTypes.Length);
+        foreach (var unionType in unionTypes)
+        {
+            var branchTypes = GetUnionConstructorBranchTypes(unionType);
+            Assert.IsTrue(branchTypes.Length > 0, unionType.FullName);
+            AssertNoAssignableBranchOverlap(unionType, branchTypes);
+
+            var storageFields = unionType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.AreEqual(1, storageFields.Length, unionType.FullName);
+            Assert.AreEqual(typeof(object), storageFields[0].FieldType, unionType.FullName);
+            Assert.IsNotNull(
+                storageFields[0].GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>(),
+                unionType.FullName);
+            Assert.IsFalse(
+                unionType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                    .Any(static method => method.Name == "From"),
+                $"{unionType.FullName} should use native union construction instead of From factories.");
+        }
+    }
+
+    [TestMethod]
     public void Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts()
     {
         Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptAttribute>());
@@ -3771,117 +3802,57 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.AreEqual(typeof(bool?), typeof(VuetifyHideDetailsValue).GetProperty(nameof(VuetifyHideDetailsValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         Assert.AreEqual(typeof(VuetifyHideDetailsMode?), typeof(VuetifyHideDetailsValue).GetProperty(nameof(VuetifyHideDetailsValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(VuetifyHideDetailsValue), typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyHideDetailsValue), typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyHideDetailsMode)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyHideDetailsMode)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
         Assert.AreEqual(typeof(string), typeof(VuetifyMessagesValue).GetProperty(nameof(VuetifyMessagesValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         Assert.AreEqual(typeof(string[]), typeof(VuetifyMessagesValue).GetProperty(nameof(VuetifyMessagesValue.AsStrings), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(VuetifyMessagesValue), typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyMessagesValue), typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string[])])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string[])])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(bool), typeof(VuetifyScrimValue).GetProperty(nameof(VuetifyScrimValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyScrimValue).GetProperty(nameof(VuetifyScrimValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyScrimValue), typeof(VuetifyScrimValue).GetMethod(nameof(VuetifyScrimValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyScrimValue), typeof(VuetifyScrimValue).GetMethod(nameof(VuetifyScrimValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyScrimValue).GetMethod(nameof(VuetifyScrimValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifyScrimValue).GetMethod(nameof(VuetifyScrimValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(string), typeof(VuetifyDisplayBreakpoint).GetProperty(nameof(VuetifyDisplayBreakpoint.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyDisplayBreakpoint).GetProperty(nameof(VuetifyDisplayBreakpoint.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyDisplayBreakpoint), typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyDisplayBreakpoint), typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        AssertNet11UnionContract(typeof(VuetifyDisplayBreakpoint), typeof(string), typeof(Number));
+        Assert.IsNull(typeof(VuetifyDisplayBreakpoint).GetMethod("From", BindingFlags.Public | BindingFlags.Static));
 
         Assert.AreEqual(typeof(bool), typeof(VuetifyAutoSelectFirstValue).GetProperty(nameof(VuetifyAutoSelectFirstValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyAutoSelectFirstMode), typeof(VuetifyAutoSelectFirstValue).GetProperty(nameof(VuetifyAutoSelectFirstValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyAutoSelectFirstValue), typeof(VuetifyAutoSelectFirstValue).GetMethod(nameof(VuetifyAutoSelectFirstValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyAutoSelectFirstValue), typeof(VuetifyAutoSelectFirstValue).GetMethod(nameof(VuetifyAutoSelectFirstValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyAutoSelectFirstMode)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyAutoSelectFirstValue).GetMethod(nameof(VuetifyAutoSelectFirstValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyAutoSelectFirstMode)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(bool), typeof(VuetifyFileShowSizeValue).GetProperty(nameof(VuetifyFileShowSizeValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyFileSizeBase), typeof(VuetifyFileShowSizeValue).GetProperty(nameof(VuetifyFileShowSizeValue.AsBase), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyFileShowSizeValue), typeof(VuetifyFileShowSizeValue).GetMethod(nameof(VuetifyFileShowSizeValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyFileShowSizeValue), typeof(VuetifyFileShowSizeValue).GetMethod(nameof(VuetifyFileShowSizeValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyFileSizeBase)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyFileShowSizeValue).GetMethod(nameof(VuetifyFileShowSizeValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyFileSizeBase)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(bool), typeof(VuetifyBooleanAlwaysValue).GetProperty(nameof(VuetifyBooleanAlwaysValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyAlwaysMode), typeof(VuetifyBooleanAlwaysValue).GetProperty(nameof(VuetifyBooleanAlwaysValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyBooleanAlwaysValue), typeof(VuetifyBooleanAlwaysValue).GetMethod(nameof(VuetifyBooleanAlwaysValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyBooleanAlwaysValue), typeof(VuetifyBooleanAlwaysValue).GetMethod(nameof(VuetifyBooleanAlwaysValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyAlwaysMode)])!.ReturnType);
         Assert.AreEqual(typeof(bool), typeof(VuetifyBooleanStringValue).GetProperty(nameof(VuetifyBooleanStringValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyBooleanStringValue).GetProperty(nameof(VuetifyBooleanStringValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyBooleanStringValue), typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyBooleanStringValue), typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(bool), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyCounterValue), typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyCounterValue), typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyCounterValue), typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(string), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyTextValue), typeof(VuetifyTextValue).GetMethod(nameof(VuetifyTextValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
         Assert.AreEqual(typeof(bool), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyRoundedValue), typeof(VuetifyRoundedValue).GetMethod(nameof(VuetifyRoundedValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyRoundedValue), typeof(VuetifyRoundedValue).GetMethod(nameof(VuetifyRoundedValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
         Assert.AreEqual(typeof(bool), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateMode), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateValue), typeof(VuetifyProgressCircularIndeterminateValue).GetMethod(nameof(VuetifyProgressCircularIndeterminateValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateValue), typeof(VuetifyProgressCircularIndeterminateValue).GetMethod(nameof(VuetifyProgressCircularIndeterminateValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyProgressCircularIndeterminateMode)])!.ReturnType);
         Assert.AreEqual(typeof(ECMAScript.File), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFile), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(ECMAScript.File[]), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFiles), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(VuetifyFileModelValue), typeof(VuetifyFileModelValue).GetMethod(nameof(VuetifyFileModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(ECMAScript.File)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyFileModelValue), typeof(VuetifyFileModelValue).GetMethod(nameof(VuetifyFileModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(ECMAScript.File[])])!.ReturnType);
         Assert.AreEqual(typeof(Number[]), typeof(VuetifyRangeSliderModelValue).GetProperty(nameof(VuetifyRangeSliderModelValue.AsArray), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(VuetifyRangeSliderModelValue), typeof(VuetifyRangeSliderModelValue).GetMethod(nameof(VuetifyRangeSliderModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number[])])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyRangeSliderModelValue), typeof(VuetifyRangeSliderModelValue).GetMethod(nameof(VuetifyRangeSliderModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number), typeof(Number)])!.ReturnType);
-        Assert.AreEqual("[__arg1, __arg2]", typeof(VuetifyRangeSliderModelValue).GetMethod(nameof(VuetifyRangeSliderModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number), typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
         var selectModelValuesCollectionBuilder = typeof(VuetifySelectModelValues).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
         Assert.IsNotNull(selectModelValuesCollectionBuilder);
         Assert.AreEqual(typeof(VuetifySelectModelValuesCollectionBuilder), selectModelValuesCollectionBuilder!.BuilderType);
         Assert.AreEqual(nameof(VuetifySelectModelValuesCollectionBuilder.Create), selectModelValuesCollectionBuilder.MethodName);
         Assert.AreEqual(typeof(VuetifySelectModelValue[]), typeof(VuetifySelectModelValues).GetProperty(nameof(VuetifySelectModelValues.AsArray), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifySelectModelValues), typeof(VuetifySelectModelValues).GetMethod(nameof(VuetifySelectModelValues.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectModelValue[])])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectModelValues).GetMethod(nameof(VuetifySelectModelValues.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectModelValue[])])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(string), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Symbol), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsSymbol), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueProps), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsObject), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifySelectModelValues), typeof(VuetifySelectModelValue).GetProperty(nameof(VuetifySelectModelValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Symbol)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VueProps)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectModelValue), typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectModelValues)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Symbol)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectModelValue).GetMethod(nameof(VuetifySelectModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectModelValues)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(string), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifySelectItem), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsItem), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectItem)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.AreEqual("__arg1", typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(string), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyBreadcrumbItem), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsItem), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyBreadcrumbItem)])!.ReturnType);
-        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.AreEqual("__arg1", typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(VuetifySelectItems), typeof(VSelect).GetProperty(nameof(VSelect.Items), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VSelect).GetProperty(nameof(VSelect.ItemTitle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VSelect).GetProperty(nameof(VSelect.ItemValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
@@ -4157,15 +4128,15 @@ public sealed class EcmaScriptVueProxyTests
     private static void AssertNoAssignableBranchOverlap(Type unionType, Type[] constructorBranchTypes)
     {
         foreach (var left in constructorBranchTypes)
-        foreach (var right in constructorBranchTypes)
-        {
-            if (left == right)
-                continue;
+            foreach (var right in constructorBranchTypes)
+            {
+                if (left == right)
+                    continue;
 
-            Assert.IsFalse(
-                left.IsAssignableFrom(right),
-                $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged [Union] + IUnion wrapper to preserve exact AsX projections.");
-        }
+                Assert.IsFalse(
+                    left.IsAssignableFrom(right),
+                    $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged [Union] + IUnion wrapper to preserve exact AsX projections.");
+            }
     }
 
     private static bool IsRecordRuntimeMethod(MethodInfo method)

@@ -93,24 +93,12 @@ public readonly union VuetifyCalendarDateValue(Date, string, Number)
 /// Calendar date value collection for multi-date selection.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyCalendarDateValuesCollectionBuilder), nameof(VuetifyCalendarDateValuesCollectionBuilder.Create))]
-public readonly struct VuetifyCalendarDateValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyCalendarDateValue>
+public readonly union VuetifyCalendarDateValues(VuetifyCalendarDateValue[]) : IEnumerable<VuetifyCalendarDateValue>
 {
-    private readonly VuetifyCalendarDateValue[]? _values;
-
-    public VuetifyCalendarDateValues(VuetifyCalendarDateValue[] values)
-    {
-        _values = values;
-    }
-
-    public VuetifyCalendarDateValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarDateValues From(VuetifyCalendarDateValue[] values);
+    public VuetifyCalendarDateValue[]? AsArray
+        => Value is VuetifyCalendarDateValue[] value ? value : default(VuetifyCalendarDateValue[]?);
 
     public static implicit operator VuetifyCalendarDateValues(VuetifyCalendarDateValue[] values)
         => new(values);
@@ -131,11 +119,12 @@ public readonly struct VuetifyCalendarDateValues : System.Runtime.CompilerServic
         => new(Array.ConvertAll(values, static value => (VuetifyCalendarDateValue)value));
 
     IEnumerator<VuetifyCalendarDateValue> IEnumerable<VuetifyCalendarDateValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyCalendarDateValue>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyCalendarDateValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyCalendarDateValue>)this).GetEnumerator();
 }
+
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class VuetifyCalendarDateValuesCollectionBuilder
@@ -219,34 +208,23 @@ public sealed record VuetifyCalendarEventItem : VueProps
 /// Calendar event collection for bulk event data.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyCalendarEventsCollectionBuilder), nameof(VuetifyCalendarEventsCollectionBuilder.Create))]
-public readonly struct VuetifyCalendarEvents : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyCalendarEventItem>
+public readonly union VuetifyCalendarEvents(VuetifyCalendarEventItem[]) : IEnumerable<VuetifyCalendarEventItem>
 {
-    private readonly VuetifyCalendarEventItem[]? _events;
-
-    public VuetifyCalendarEvents(VuetifyCalendarEventItem[] events)
-    {
-        _events = events;
-    }
-
-    public VuetifyCalendarEventItem[]? AsArray => _events;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCalendarEvents From(VuetifyCalendarEventItem[] events);
+    public VuetifyCalendarEventItem[]? AsArray
+        => Value is VuetifyCalendarEventItem[] value ? value : default(VuetifyCalendarEventItem[]?);
 
     public static implicit operator VuetifyCalendarEvents(VuetifyCalendarEventItem[] events)
         => new(events);
 
     IEnumerator<VuetifyCalendarEventItem> IEnumerable<VuetifyCalendarEventItem>.GetEnumerator()
-        => ((IEnumerable<VuetifyCalendarEventItem>)(_events ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyCalendarEventItem>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyCalendarEventItem>)this).GetEnumerator();
 }
+
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class VuetifyCalendarEventsCollectionBuilder

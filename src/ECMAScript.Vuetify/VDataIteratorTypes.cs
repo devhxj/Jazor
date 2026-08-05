@@ -24,30 +24,17 @@ public sealed class VuetifyDataIteratorItem : IEnumerable
 /// Collection accepted by VDataIterator's items prop.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataIteratorItemsCollectionBuilder), nameof(VuetifyDataIteratorItemsCollectionBuilder.Create))]
-public readonly struct VuetifyDataIteratorItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataIteratorItem>
+public readonly union VuetifyDataIteratorItems(VuetifyDataIteratorItem[]) : IEnumerable<VuetifyDataIteratorItem>
 {
-    private readonly VuetifyDataIteratorItem[]? _items;
-
-    public VuetifyDataIteratorItems(VuetifyDataIteratorItem[] items)
-    {
-        _items = items;
-    }
-
-    public VuetifyDataIteratorItem[]? AsArray => _items;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyDataIteratorItems From(VuetifyDataIteratorItem[] items);
+    public VuetifyDataIteratorItem[]? AsArray => Value as VuetifyDataIteratorItem[];
 
     public static implicit operator VuetifyDataIteratorItems(VuetifyDataIteratorItem[] items)
         => new(items);
 
     IEnumerator<VuetifyDataIteratorItem> IEnumerable<VuetifyDataIteratorItem>.GetEnumerator()
-        => ((IEnumerable<VuetifyDataIteratorItem>)(_items ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyDataIteratorItem>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyDataIteratorItem>)this).GetEnumerator();
@@ -65,24 +52,11 @@ public static class VuetifyDataIteratorItemsCollectionBuilder
 /// Selected-value collection used by VDataIterator's modelValue prop.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataIteratorSelectedValuesCollectionBuilder), nameof(VuetifyDataIteratorSelectedValuesCollectionBuilder.Create))]
-public readonly struct VuetifyDataIteratorSelectedValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
+public readonly union VuetifyDataIteratorSelectedValues(VueValue[]) : IEnumerable<VueValue>
 {
-    private readonly VueValue[]? _values;
-
-    public VuetifyDataIteratorSelectedValues(VueValue[] values)
-    {
-        _values = values;
-    }
-
-    public VueValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyDataIteratorSelectedValues From(VueValue[] values);
+    public VueValue[]? AsArray => Value as VueValue[];
 
     public static implicit operator VuetifyDataIteratorSelectedValues(VueValue[] values)
         => new(values);
@@ -100,7 +74,7 @@ public readonly struct VuetifyDataIteratorSelectedValues : System.Runtime.Compil
         => new(Array.ConvertAll(values, static value => (VueValue)value));
 
     IEnumerator<VueValue> IEnumerable<VueValue>.GetEnumerator()
-        => ((IEnumerable<VueValue>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<VueValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VueValue>)this).GetEnumerator();
@@ -178,44 +152,14 @@ public sealed record VuetifyDataIteratorGroup
 /// Union-like grouped item value used by VDataIterator slot contexts.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDataIteratorGroupedItem : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyDataIteratorGroupedItem(
+    VuetifyDataIteratorInternalItem,
+    VuetifyDataIteratorGroup)
 {
-    private readonly byte _kind;
-    private readonly VuetifyDataIteratorInternalItem? _item;
-    private readonly VuetifyDataIteratorGroup? _group;
+    public VuetifyDataIteratorInternalItem? AsItem => Value as VuetifyDataIteratorInternalItem;
 
-    public VuetifyDataIteratorGroupedItem(VuetifyDataIteratorInternalItem value)
-    {
-        _kind = 1;
-        _item = value;
-        _group = default;
-    }
-
-    public VuetifyDataIteratorGroupedItem(VuetifyDataIteratorGroup value)
-    {
-        _kind = 2;
-        _item = default;
-        _group = value;
-    }
-
-    public VuetifyDataIteratorInternalItem? AsItem => _kind == 1 ? _item : default;
-
-    public VuetifyDataIteratorGroup? AsGroup => _kind == 2 ? _group : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsItem,
-        2 => AsGroup,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyDataIteratorGroupedItem From(VuetifyDataIteratorInternalItem value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyDataIteratorGroupedItem From(VuetifyDataIteratorGroup value);
+    public VuetifyDataIteratorGroup? AsGroup => Value as VuetifyDataIteratorGroup;
 
     public static implicit operator VuetifyDataIteratorGroupedItem(VuetifyDataIteratorInternalItem value)
         => new(value);

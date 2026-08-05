@@ -15,44 +15,13 @@ public enum VuetifyWindowShowArrowsMode
 /// Vuetify VWindow show-arrows value, matching <c>boolean | "hover"</c>.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyWindowShowArrowsValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyWindowShowArrowsValue(bool, VuetifyWindowShowArrowsMode)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyWindowShowArrowsMode? _mode;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyWindowShowArrowsValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _mode = default;
-    }
-
-    public VuetifyWindowShowArrowsValue(VuetifyWindowShowArrowsMode value)
-    {
-        _kind = 2;
-        _bool = default;
-        _mode = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyWindowShowArrowsMode? AsMode => _kind == 2 ? _mode : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsMode,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyWindowShowArrowsValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyWindowShowArrowsValue From(VuetifyWindowShowArrowsMode value);
+    public VuetifyWindowShowArrowsMode? AsMode
+        => Value is VuetifyWindowShowArrowsMode value ? value : default(VuetifyWindowShowArrowsMode?);
 
     public static implicit operator VuetifyWindowShowArrowsValue(bool value)
         => new(value);
@@ -141,44 +110,12 @@ public sealed record VuetifyTouchHandlers : VueProps
 /// Vuetify VWindow touch prop value, matching <c>boolean | TouchHandlers</c>.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTouchValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTouchValue(bool, VuetifyTouchHandlers)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyTouchHandlers? _handlers;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyTouchValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _handlers = default;
-    }
-
-    public VuetifyTouchValue(VuetifyTouchHandlers value)
-    {
-        _kind = 2;
-        _bool = default;
-        _handlers = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyTouchHandlers? AsHandlers => _kind == 2 ? _handlers : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsHandlers,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTouchValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTouchValue From(VuetifyTouchHandlers value);
+    public VuetifyTouchHandlers? AsHandlers => Value as VuetifyTouchHandlers;
 
     public static implicit operator VuetifyTouchValue(bool value)
         => new(value);

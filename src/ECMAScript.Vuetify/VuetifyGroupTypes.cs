@@ -48,44 +48,13 @@ public enum VuetifyShowArrowsMode
 public delegate bool VuetifyValueComparator(VueValue? first, VueValue? second);
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyMandatoryValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyMandatoryValue(bool, VuetifyMandatoryMode)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyMandatoryMode? _mode;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyMandatoryValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _mode = default;
-    }
-
-    public VuetifyMandatoryValue(VuetifyMandatoryMode value)
-    {
-        _kind = 2;
-        _bool = default;
-        _mode = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyMandatoryMode? AsMode => _kind == 2 ? _mode : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsMode,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyMandatoryValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyMandatoryValue From(VuetifyMandatoryMode value);
+    public VuetifyMandatoryMode? AsMode
+        => Value is VuetifyMandatoryMode value ? value : default(VuetifyMandatoryMode?);
 
     public static implicit operator VuetifyMandatoryValue(bool value)
         => new(value);
@@ -95,44 +64,13 @@ public readonly struct VuetifyMandatoryValue : System.Runtime.CompilerServices.I
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyShowArrowsValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyShowArrowsValue(bool, VuetifyShowArrowsMode)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyShowArrowsMode? _mode;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyShowArrowsValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _mode = default;
-    }
-
-    public VuetifyShowArrowsValue(VuetifyShowArrowsMode value)
-    {
-        _kind = 2;
-        _bool = default;
-        _mode = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyShowArrowsMode? AsMode => _kind == 2 ? _mode : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsMode,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyShowArrowsValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyShowArrowsValue From(VuetifyShowArrowsMode value);
+    public VuetifyShowArrowsMode? AsMode
+        => Value is VuetifyShowArrowsMode value ? value : default(VuetifyShowArrowsMode?);
 
     public static implicit operator VuetifyShowArrowsValue(bool value)
         => new(value);
@@ -142,24 +80,11 @@ public readonly struct VuetifyShowArrowsValue : System.Runtime.CompilerServices.
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyGroupModelValuesCollectionBuilder), nameof(VuetifyGroupModelValuesCollectionBuilder.Create))]
-public readonly struct VuetifyGroupModelValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyGroupModelValue>
+public readonly union VuetifyGroupModelValues(VuetifyGroupModelValue[]) : IEnumerable<VuetifyGroupModelValue>
 {
-    private readonly VuetifyGroupModelValue[]? _values;
-
-    public VuetifyGroupModelValues(VuetifyGroupModelValue[] values)
-    {
-        _values = values;
-    }
-
-    public VuetifyGroupModelValue[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValues From(VuetifyGroupModelValue[] values);
+    public VuetifyGroupModelValue[]? AsArray => Value as VuetifyGroupModelValue[];
 
     public static implicit operator VuetifyGroupModelValues(VuetifyGroupModelValue[] values)
         => new(values);
@@ -180,7 +105,7 @@ public readonly struct VuetifyGroupModelValues : System.Runtime.CompilerServices
         => new(Array.ConvertAll(values, static value => (VuetifyGroupModelValue)value));
 
     IEnumerator<VuetifyGroupModelValue> IEnumerable<VuetifyGroupModelValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyGroupModelValue>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyGroupModelValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyGroupModelValue>)this).GetEnumerator();
@@ -194,124 +119,27 @@ public static class VuetifyGroupModelValuesCollectionBuilder
 }
 
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyGroupModelValue(
+    string,
+    Number,
+    bool,
+    Symbol,
+    VueProps,
+    VuetifyGroupModelValues)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Number? _number;
-    private readonly bool? _bool;
-    private readonly Symbol? _symbol;
-    private readonly VueProps? _object;
-    private readonly VuetifyGroupModelValues? _values;
+    public string? AsString => Value as string;
 
-    public VuetifyGroupModelValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _number = default;
-        _bool = default;
-        _symbol = default;
-        _object = default;
-        _values = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifyGroupModelValue(Number value)
-    {
-        _kind = 2;
-        _string = default;
-        _number = value;
-        _bool = default;
-        _symbol = default;
-        _object = default;
-        _values = default;
-    }
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyGroupModelValue(bool value)
-    {
-        _kind = 3;
-        _string = default;
-        _number = default;
-        _bool = value;
-        _symbol = default;
-        _object = default;
-        _values = default;
-    }
+    public Symbol? AsSymbol => Value as Symbol;
 
-    public VuetifyGroupModelValue(Symbol value)
-    {
-        _kind = 4;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _symbol = value;
-        _object = default;
-        _values = default;
-    }
+    public VueProps? AsObject => Value as VueProps;
 
-    public VuetifyGroupModelValue(VueProps value)
-    {
-        _kind = 5;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _symbol = default;
-        _object = value;
-        _values = default;
-    }
-
-    public VuetifyGroupModelValue(VuetifyGroupModelValues value)
-    {
-        _kind = 6;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _symbol = default;
-        _object = default;
-        _values = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public bool? AsBool => _kind == 3 ? _bool : default;
-
-    public Symbol? AsSymbol => _kind == 4 ? _symbol : default;
-
-    public VueProps? AsObject => _kind == 5 ? _object : default;
-
-    public VuetifyGroupModelValues? AsValues => _kind == 6 ? _values : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsNumber,
-        3 => AsBool,
-        4 => AsSymbol,
-        5 => AsObject,
-        6 => AsValues,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(Symbol value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(VueProps value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGroupModelValue From(VuetifyGroupModelValues value);
+    public VuetifyGroupModelValues? AsValues
+        => Value is VuetifyGroupModelValues value ? value : default(VuetifyGroupModelValues?);
 
     public static implicit operator VuetifyGroupModelValue(string value)
         => new(value);
