@@ -1,5 +1,8 @@
 namespace ECMAScript.Vuetify;
 
+// Defines VDateInput display-format values and actions-slot context.
+// 定义 VDateInput 的显示格式值和操作插槽上下文；可擦除值域使用原生 union。
+
 public delegate string VDateInputDisplayFormatCallback(string? value);
 
 /// <summary>
@@ -7,44 +10,12 @@ public delegate string VDateInputDisplayFormatCallback(string? value);
 /// Display-format value accepted by Vuetify VDateInput.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VDateInputDisplayFormatValue : System.Runtime.CompilerServices.IUnion
+public readonly union VDateInputDisplayFormatValue(string, VDateInputDisplayFormatCallback)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly VDateInputDisplayFormatCallback? _callback;
+    public string? AsString => Value as string;
 
-    public VDateInputDisplayFormatValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _callback = default;
-    }
-
-    public VDateInputDisplayFormatValue(VDateInputDisplayFormatCallback value)
-    {
-        _kind = 2;
-        _string = default;
-        _callback = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public VDateInputDisplayFormatCallback? AsCallback => _kind == 2 ? _callback : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsCallback,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VDateInputDisplayFormatValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VDateInputDisplayFormatValue From(VDateInputDisplayFormatCallback value);
+    public VDateInputDisplayFormatCallback? AsCallback => Value as VDateInputDisplayFormatCallback;
 
     public static implicit operator VDateInputDisplayFormatValue(string value)
         => new(value);

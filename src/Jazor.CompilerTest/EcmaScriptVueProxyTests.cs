@@ -3466,6 +3466,16 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void VDateInputValues_UseNativeUnionContracts()
+    {
+        AssertNet11UnionContract(
+            typeof(VDateInputDisplayFormatValue),
+            typeof(string),
+            typeof(VDateInputDisplayFormatCallback));
+        Assert.IsNull(typeof(VDateInputDisplayFormatValue).GetMethod("From", BindingFlags.Public | BindingFlags.Static));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,
