@@ -88,6 +88,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-05
 
+- JazorAdmin now validates a full ASP.NET Core production route with RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation authorization, account administration, and OpenID client/scope configuration. Its TDesign-inspired navigation is authored in Razor and `ECMAScript.Style`, without Blazor or application-owned JavaScript, CSS, or static HTML.
+- CSS-in-JS keyframes now preserve parameter frame arrays and selector validation accepts legal CSS line-break whitespace.
 - Jazor build targets now exclude native runtime DLL assets before invoking the managed emit tool, allowing applications that depend on packages such as SQLite to generate RazorVue artifacts successfully.
 - External ECMAScript host proxies can now consume a module's `default` export while Jazor-authored modules retain their deterministic named-export contract.
 - Generated WebIDL bindings now model `ByteString` browser text as `string` and distinguish WebCrypto's byte-array `BigInteger` typedef from the JavaScript `bigint` primitive.

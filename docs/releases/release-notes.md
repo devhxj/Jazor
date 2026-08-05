@@ -2,6 +2,8 @@
 
 ## 2026-08-05
 
+- JazorAdmin now validates the production application route in one ASP.NET Core host: RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation grants, platform accounts, and OpenID client/scope configuration. Its TDesign-inspired icon rail and scoped secondary navigation are authored with Razor and `ECMAScript.Style`, with no application-owned JavaScript, CSS, static `index.html`, or Blazor registration.
+- CSS-in-JS keyframes now preserve `params` frames as one JavaScript array, and global selector validation accepts all legal CSS whitespace, including line breaks in readable selector lists.
 - Jazor 0.1.48 build targets now exclude native runtime DLL assets before invoking the managed emit tool, so RazorVue builds work with dependencies such as SQLite that ship native `.dll` files.
 - Jazor 0.1.47 allows external ECMAScript host proxies to consume a module's `default` export while keeping Jazor-authored module declarations on deterministic named exports.
 - Generated WebIDL bindings now represent `ByteString` browser text as `string`, including Fetch, Headers, navigation preload, and XMLHttpRequest contracts.
