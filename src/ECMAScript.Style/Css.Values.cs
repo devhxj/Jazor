@@ -236,6 +236,42 @@ public static partial class css
         return CssTransform.create(output.Join(" "));
     }
 
+    public static CssShadowList shadows([PreserveParamsArray] params CssShadow[] values)
+    {
+        if (values.Length == 0)
+            Fail("CSS box-shadow requires at least one shadow.");
+
+        var output = new Array<string>();
+        foreach (var shadow in values)
+        {
+            // CSS accepts the optional tokens in several orders. Emit one stable order so
+            // hashes remain deterministic while the C# record stays easy to scan.
+            // CSS 可选 token 的顺序较自由；这里固定输出顺序以保证 hash 稳定，同时保持 record 易读。
+            var parts = new Array<string>();
+            if (shadow.Inset)
+                parts.Push("inset");
+
+            parts.Push(StringFn(shadow.OffsetX.Value));
+            parts.Push(StringFn(shadow.OffsetY.Value));
+
+            var blur = shadow.Blur;
+            if (blur is not null)
+                parts.Push(StringFn(blur.Value.Value));
+
+            var spread = shadow.Spread;
+            if (spread is not null)
+                parts.Push(StringFn(spread.Value.Value));
+
+            var colorValue = shadow.Color;
+            if (colorValue is not null)
+                parts.Push(StringFn(colorValue.Value.Value));
+
+            output.Push(parts.Join(" "));
+        }
+
+        return CssShadowList.create(output.Join(","));
+    }
+
     public static CssRatio ratio(int numerator, int denominator = 1)
     {
         if (numerator <= 0 || denominator <= 0)

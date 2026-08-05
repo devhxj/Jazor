@@ -265,6 +265,21 @@ public sealed class CssTransform
     internal static extern CssTransform create(string value);
 }
 
+/// <summary>
+/// A serialized <c>box-shadow</c> list. The value stays opaque so it cannot be
+/// accidentally assigned to an unrelated CSS domain.
+/// 已序列化的 <c>box-shadow</c> 列表；保持不透明，避免误赋值到其他 CSS 属性域。
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class CssShadowList
+{
+    internal CssShadowList() { }
+
+    [ECMAScriptInline("__arg1")]
+    internal static extern CssShadowList create(string value);
+}
+
 [ECMAScript]
 [Description("@#")]
 public sealed class CssTrack
@@ -404,6 +419,7 @@ public readonly union CssValue(
     CssIdent,
     CssKeyword,
     CssTransform,
+    CssShadowList,
     CssTrack,
     CssRatio,
     CssWideKeyword,
@@ -489,6 +505,19 @@ public readonly union CssResolutionValue(
 [Description("@#")]
 public readonly union CssColorValue(
     CssRaw, CssVariable, CssColor, CssColorKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssShadowLength(CssLength, CssVariable);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssShadowColor(CssColor, CssColorKeyword, CssVariable);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssBoxShadowValue(
+    CssRaw, CssVariable, CssNoneKeyword, CssWideKeyword, CssShadowList);
 
 [ECMAScript]
 [Description("@#")]

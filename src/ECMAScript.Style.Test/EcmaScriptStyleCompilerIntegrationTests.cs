@@ -38,6 +38,9 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     BackgroundColor = hex("1769aa"),
                     TransitionDuration = ms(180),
                     Opacity = 0.9,
+                    BoxShadow = shadows(
+                        new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05)),
+                        new CssShadow(px(0), px(1), Color: currentColor)),
                     ["--button-gap"] = rem(0.5),
                     Children =
                     [
@@ -83,6 +86,8 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(script, "\"transition-duration\": ms(180)");
         StringAssert.Contains(script, "opacity: 0.9");
+        StringAssert.Contains(script, "\"box-shadow\": shadows([");
+        Assert.DoesNotContain("class CssShadow", script);
         StringAssert.Contains(script, "\"--button-gap\"");
         StringAssert.Contains(script, "$children");
     }
@@ -221,6 +226,50 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             .ToArray();
 
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+    }
+
+    [TestMethod]
+    public void Compile_BoxShadow_RequiresItsNarrowDomain()
+    {
+        const string validSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            namespace Demo;
+
+            public static class ValidStyles
+            {
+                public static readonly CssRule Rule = new()
+                {
+                    BoxShadow = shadows(new CssShadow(px(0), px(4), Blur: px(12), Color: var("--shadow-color"))),
+                    WebkitBoxShadow = var("--shadow"),
+                    ["--shadow"] = shadows(new CssShadow(px(0), px(2), Blur: px(8), Color: rgba(0, 0, 0, 0.2)))
+                };
+            }
+            """;
+        var validErrors = CreateCompilation(validSource, "ValidBoxShadowConsumer")
+            .GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.IsEmpty(validErrors, string.Join(Environment.NewLine, validErrors.Select(static error => error.ToString())));
+
+        const string invalidSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            namespace Demo;
+
+            public static class InvalidStyles
+            {
+                public static readonly CssRule Rule = new() { BoxShadow = px(4) };
+            }
+            """;
+        var invalidErrors = CreateCompilation(invalidSource, "InvalidBoxShadowConsumer")
+            .GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(1, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
+        StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssLength));
     }
 
     private static CSharpCompilation CreateCompilation(string source, string assemblyName)

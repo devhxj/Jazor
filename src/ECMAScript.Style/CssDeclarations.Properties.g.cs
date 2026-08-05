@@ -88,7 +88,7 @@ public partial record CssDeclarations
     public CssValue? WebkitBoxPack { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-shadow")]
-    public CssValue? WebkitBoxShadow { get; init; }
+    public CssBoxShadowValue? WebkitBoxShadow { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-sizing")]
     public CssKeywordValue? WebkitBoxSizing { get; init; }
@@ -610,7 +610,7 @@ public partial record CssDeclarations
     public CssKeywordValue? BoxDecorationBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow")]
-    public CssValue? BoxShadow { get; init; }
+    public CssBoxShadowValue? BoxShadow { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-blur")]
     public CssLengthValue? BoxShadowBlur { get; init; }

@@ -15,6 +15,8 @@ public sealed class EcmaScriptStyleValueDomainTests
         AssertPropertyType(nameof(CssDeclarations.Opacity), typeof(CssNumberPercentageValue));
         AssertPropertyType(nameof(CssDeclarations.Display), typeof(CssDisplayValue));
         AssertPropertyType(nameof(CssDeclarations.GridTemplateColumns), typeof(CssTrackValue));
+        AssertPropertyType(nameof(CssDeclarations.BoxShadow), typeof(CssBoxShadowValue));
+        AssertPropertyType(nameof(CssDeclarations.WebkitBoxShadow), typeof(CssBoxShadowValue));
 
         Assert.AreNotEqual(typeof(string), typeof(CssDeclarations).GetProperty(nameof(CssDeclarations.Width))!.PropertyType);
     }
@@ -27,7 +29,8 @@ public sealed class EcmaScriptStyleValueDomainTests
             typeof(CssValue),
             typeof(CssLengthPercentageValue),
             typeof(CssColorValue),
-            typeof(CssTimeValue)
+            typeof(CssTimeValue),
+            typeof(CssBoxShadowValue)
         })
         {
             Assert.IsNotNull(type.GetCustomAttribute<UnionAttribute>(), type.FullName);

@@ -111,7 +111,7 @@ internal static class JazorAdminStyles
                 ["--warning-soft"] = raw("#fff7e8"),
                 ["--info"] = raw("#2f6fed"),
                 ["--info-soft"] = raw("#e9f1ff"),
-                ["--shadow"] = raw("0 4px 14px rgb(31 52 78 / 5%)"),
+                ["--shadow"] = shadows(new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05))),
                 MinHeight = raw("100vh"),
                 Background = raw("var(--app-bg)"),
                 Color = raw("var(--text)")
@@ -138,7 +138,9 @@ internal static class JazorAdminStyles
                 ["--warning-soft"] = raw("#45391f"),
                 ["--info"] = raw("#8bbaf0"),
                 ["--info-soft"] = raw("#24364c"),
-                ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
+                ["--shadow"] = shadows(
+                    new CssShadow(px(0), px(1), Blur: px(2), Color: rgba(0, 0, 0, 0.28)),
+                    new CssShadow(px(0), px(10), Blur: px(28), Color: rgba(0, 0, 0, 0.2)))
             });
 
         Media(".jazor-admin-application--system", "(prefers-color-scheme: dark)",
@@ -162,7 +164,9 @@ internal static class JazorAdminStyles
                 ["--warning-soft"] = raw("#45391f"),
                 ["--info"] = raw("#8bbaf0"),
                 ["--info-soft"] = raw("#24364c"),
-                ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
+                ["--shadow"] = shadows(
+                    new CssShadow(px(0), px(1), Blur: px(2), Color: rgba(0, 0, 0, 0.28)),
+                    new CssShadow(px(0), px(10), Blur: px(28), Color: rgba(0, 0, 0, 0.2)))
             });
 
         global(".jazor-admin-application--grayscale",
@@ -398,7 +402,10 @@ internal static class JazorAdminStyles
                 Width = raw("6px"),
                 Height = raw("6px"),
                 Background = raw("currentcolor"),
-                BoxShadow = raw("10px 0 0 currentcolor, 0 10px 0 currentcolor, 10px 10px 0 currentcolor")
+                BoxShadow = shadows(
+                    new CssShadow(px(10), px(0), Color: currentColor),
+                    new CssShadow(px(0), px(10), Color: currentColor),
+                    new CssShadow(px(10), px(10), Color: currentColor))
             });
 
         global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"organizations\"]::before", new CssRule
@@ -483,7 +490,9 @@ internal static class JazorAdminStyles
             Width = px(16),
             Height = px(2),
             Background = currentColor,
-            BoxShadow = raw("0 6px 0 currentcolor, 0 12px 0 currentcolor")
+            BoxShadow = shadows(
+                new CssShadow(px(0), px(6), Color: currentColor),
+                new CssShadow(px(0), px(12), Color: currentColor))
         });
 
         global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"configuration\"]::after", new CssRule
@@ -497,7 +506,11 @@ internal static class JazorAdminStyles
             BorderStyle = solid,
             BorderColor = currentColor,
             BorderRadius = percent(50),
-            BoxShadow = raw("7px 6px 0 -1px var(--surface), 7px 6px 0 1px currentcolor, 2px 12px 0 -1px var(--surface), 2px 12px 0 1px currentcolor")
+            BoxShadow = shadows(
+                new CssShadow(px(7), px(6), Blur: px(0), Spread: px(-1), Color: var("--surface")),
+                new CssShadow(px(7), px(6), Blur: px(0), Spread: px(1), Color: currentColor),
+                new CssShadow(px(2), px(12), Blur: px(0), Spread: px(-1), Color: var("--surface")),
+                new CssShadow(px(2), px(12), Blur: px(0), Spread: px(1), Color: currentColor))
         });
 
         global(".jazor-admin-tdesign-sidebar-shell__menu",
@@ -533,7 +546,7 @@ internal static class JazorAdminStyles
                 Height = raw("18px"),
                 Background = raw("#2f6fed"),
                 BorderRadius = raw("4px"),
-                BoxShadow = raw("inset 0 0 0 4px #dce8ff")
+                BoxShadow = shadows(new CssShadow(px(0), px(0), Blur: px(0), Spread: px(4), Color: hex("dce8ff"), Inset: true))
             });
 
         global(".jazor-admin-tdesign-sidebar-shell__menu [data-navigation-orientation=\"vertical\"]",
@@ -1066,7 +1079,7 @@ internal static class JazorAdminStyles
                 Border = raw("1px solid var(--border)"),
                 BorderTop = raw("4px solid var(--accent)"),
                 BorderRadius = raw("7px"),
-                BoxShadow = raw("var(--shadow)")
+                BoxShadow = var("--shadow")
             });
 
         global(".jazor-admin-access__brand",
@@ -1500,7 +1513,7 @@ internal static class JazorAdminStyles
                 Margin = raw("18px auto 28px"),
                 Background = raw("transparent !important"),
                 Border = raw("0 !important"),
-                BoxShadow = raw("none !important")
+                Additional = [new("box-shadow", none, Important: true)]
             });
 
         global(".jazor-admin-tdesign-page-container--dashboard .jazor-admin-tdesign-page-container__header",
@@ -1639,7 +1652,7 @@ internal static class JazorAdminStyles
                 Border = raw("1px solid var(--border)"),
                 BorderTop = raw("3px solid var(--accent)"),
                 BorderRadius = raw("6px"),
-                BoxShadow = raw("var(--shadow)"),
+                BoxShadow = var("--shadow"),
                 Animation = raw(dashboardEnter + " 260ms ease both")
             });
 
@@ -1712,7 +1725,7 @@ internal static class JazorAdminStyles
                 Background = raw("var(--surface)"),
                 Border = raw("1px solid var(--border)"),
                 BorderRadius = raw("6px"),
-                BoxShadow = raw("var(--shadow)")
+                BoxShadow = var("--shadow")
             });
 
         global(".jazor-admin-overview__panel-header, .jazor-admin-management__panel-header",

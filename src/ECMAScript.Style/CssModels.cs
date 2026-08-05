@@ -25,6 +25,19 @@ public sealed record CssDeclaration(
     CssValue Value,
     bool Important = false);
 
+/// <summary>
+/// Describes one structural CSS shadow. Optional parts are omitted instead of
+/// serialized as defaults, so the authored C# mirrors the CSS grammar.
+/// 描述一个结构化 CSS 阴影。可选部分会被省略而非填充默认值，使 C# 写法与 CSS 语法一致。
+/// </summary>
+public sealed record CssShadow(
+    CssShadowLength OffsetX,
+    CssShadowLength OffsetY,
+    CssShadowLength? Blur = null,
+    CssShadowLength? Spread = null,
+    CssShadowColor? Color = null,
+    bool Inset = false);
+
 [String]
 public enum CssChildKind
 {

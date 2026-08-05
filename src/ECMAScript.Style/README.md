@@ -68,6 +68,7 @@ The generated catalog contains 705 writable `CSSStyleDeclaration` properties fro
 | `CssNumberPercentageValue` | `Opacity` | numeric values, `percent(...)`, variables |
 | `CssDisplayValue` | `Display` | `block`, `flex`, `grid`, `inlineFlex`, `none`, variables |
 | `CssTrackValue` | `GridTemplateColumns`, `GridAutoRows` | lengths, percentages, `fr(...)`, `minMax(...)`, `repeat(...)` |
+| `CssBoxShadowValue` | `BoxShadow`, `WebkitBoxShadow` | `shadows(new CssShadow(...))`, `none`, variables, CSS-wide keywords |
 
 Nominal token types prevent accidental cross-domain assignments. For example, `Width = deg(10)`, `Color = rem(1)`, and `Height = "10px"` do not compile. Mixed length-percentage arithmetic has its own `CssLengthPercentage` type, so it is accepted by `Width` but rejected by pure-length properties such as `ColumnWidth`.
 
@@ -77,6 +78,7 @@ The value API includes:
 - colors and text: `color`, `hex`, `rgb`, `rgba`, `hsl`, `hsla`, `url`, and `str`;
 - variables and identifiers: `var`, `varOr`, `ident`, and `keyword`;
 - grids and transforms: `fr`, `minMax`, `fitContent`, `repeat`, `translate`, `rotate`, `scale`, and `transform`;
+- shadows: `shadows(new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05)))`;
 - numeric composition: typed operators produce `calc(...)`, with `min`, `max`, and `clamp` for length values.
 
 Use `raw(...)` when valid CSS cannot yet be represented by the typed surface:

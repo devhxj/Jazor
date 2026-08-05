@@ -184,6 +184,8 @@ static string ClassifyValueType(
         return "CssTrackValue";
     if (cssName == "aspect-ratio")
         return "CssRatioValue";
+    if (cssName is "box-shadow" or "-webkit-box-shadow")
+        return "CssBoxShadowValue";
 
     var references = new HashSet<string>(StringComparer.Ordinal);
     CollectReferences(grammars, grammarsByCssName, references, new(StringComparer.Ordinal));

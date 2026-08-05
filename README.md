@@ -88,6 +88,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-05
 
+- `ECMAScript.Style` now offers typed `box-shadow` authoring through `CssShadow` records and `shadows(...)`, covering composed shadows, variables, colors, inset, `none`, and CSS-wide values. JazorAdmin now uses this typed shadow surface for its themes and components.
 - JazorAdmin now validates a full ASP.NET Core production route with RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation authorization, account administration, and OpenID client/scope configuration. Its TDesign-inspired navigation is authored in Razor and `ECMAScript.Style`, without Blazor or application-owned JavaScript, CSS, or static HTML.
 - CSS-in-JS keyframes now preserve parameter frame arrays and selector validation accepts legal CSS line-break whitespace.
 - Jazor build targets now exclude native runtime DLL assets before invoking the managed emit tool, allowing applications that depend on packages such as SQLite to generate RazorVue artifacts successfully.

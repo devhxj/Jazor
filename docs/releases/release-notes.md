@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- `ECMAScript.Style` now models `box-shadow` as typed C# data: compose one or more `CssShadow` records with `shadows(...)`, including optional blur, spread, color, inset, variables, `none`, and CSS-wide values. JazorAdmin themes and components now use the same typed shadow surface instead of raw shadow strings.
 - JazorAdmin now validates the production application route in one ASP.NET Core host: RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation grants, platform accounts, and OpenID client/scope configuration. Its TDesign-inspired icon rail and scoped secondary navigation are authored with Razor and `ECMAScript.Style`, with no application-owned JavaScript, CSS, static `index.html`, or Blazor registration.
 - CSS-in-JS keyframes now preserve `params` frames as one JavaScript array, and global selector validation accepts all legal CSS whitespace, including line breaks in readable selector lists.
 - Jazor 0.1.48 build targets now exclude native runtime DLL assets before invoking the managed emit tool, so RazorVue builds work with dependencies such as SQLite that ship native `.dll` files.

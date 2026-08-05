@@ -43,12 +43,39 @@ public sealed class EcmaScriptStyleRuntimeTests
     }
 
     [TestMethod]
+    public async Task Runtime_Shadows_SerializesStructuredTokensInStableOrder()
+    {
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+            """
+            import { style, shadows, px, hex, variable, extract } from "./runtime.mjs";
+
+            const name = style({
+              "box-shadow": shadows([
+                { offsetX: px(10), offsetY: px(0), color: "currentColor" },
+                { offsetX: px(0), offsetY: px(10), blur: px(2), spread: px(-1), color: variable("--surface") },
+                { inset: true, offsetX: px(0), offsetY: px(0), blur: px(0), spread: px(4), color: hex("dce8ff") }
+              ])
+            });
+            console.log(JSON.stringify({ name, css: extract() }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var name = json.RootElement.GetProperty("name").GetString();
+        var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
+        Assert.IsNotNull(name);
+        StringAssert.Contains(
+            css,
+            "." + name + "{box-shadow:10px 0px currentColor,0px 10px 2px -1px var(--surface),inset 0px 0px 0px 4px #dce8ff;}");
+    }
+
+    [TestMethod]
     public async Task Runtime_TypedFactories_RejectInvalidValuesWithActionableErrors()
     {
         var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import {
-              px, hex, rgb, rgba, hsl, ratio, repeat, fr, transform,
+              px, hex, rgb, rgba, hsl, ratio, repeat, fr, transform, shadows,
               keyword, ident, variable
             } from "./runtime.mjs";
 
@@ -66,6 +93,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             capture(() => ratio(1, 0));
             capture(() => repeat(0, fr(1)));
             capture(() => transform([]));
+            capture(() => shadows([]));
             capture(() => keyword("1invalid"));
             capture(() => ident("-1invalid"));
             capture(() => variable("brand"));
@@ -75,7 +103,7 @@ public sealed class EcmaScriptStyleRuntimeTests
         Assert.AreEqual(0, result.ExitCode, result.StandardError);
         var messages = JsonSerializer.Deserialize<string[]>(result.StandardOutput.Trim());
         Assert.IsNotNull(messages);
-        Assert.HasCount(11, messages);
+        Assert.HasCount(12, messages);
         Assert.IsFalse(messages.Contains("missing-error", StringComparer.Ordinal));
         StringAssert.Contains(messages[0], "finite");
         StringAssert.Contains(messages[1], "hexadecimal");
@@ -85,9 +113,10 @@ public sealed class EcmaScriptStyleRuntimeTests
         StringAssert.Contains(messages[5], "greater than zero");
         StringAssert.Contains(messages[6], "greater than zero");
         StringAssert.Contains(messages[7], "at least one function");
-        StringAssert.Contains(messages[8], "must start");
+        StringAssert.Contains(messages[8], "at least one shadow");
         StringAssert.Contains(messages[9], "must start");
-        StringAssert.Contains(messages[10], "start with '--'");
+        StringAssert.Contains(messages[10], "must start");
+        StringAssert.Contains(messages[11], "start with '--'");
     }
 
     [TestMethod]
