@@ -9,19 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify combobox component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCombobox")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibraryEmit(nameof(MenuChanged), VueEmitKind.ModelUpdate, Name = "update:menu")]
-[VueLibraryEmit(nameof(SearchChanged), VueEmitKind.ModelUpdate, Name = "update:search")]
-[VueSlot(nameof(Item), Name = "item")]
-[VueSlot(nameof(Chip), Name = "chip")]
-[VueSlot(nameof(Selection), Name = "selection")]
-[VueSlot(nameof(PrependItem), Name = "prepend-item")]
-[VueSlot(nameof(AppendItem), Name = "append-item")]
-[VueSlot(nameof(NoData), Name = "no-data")]
+[VueProp(nameof(SelectedValue), Name = "modelValue")]
 public sealed class VCombobox : VSelectLikeComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -8,16 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify overlay component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VOverlay")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
-[VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueSlot(nameof(Activator), Name = "activator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VOverlay : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -270,14 +262,14 @@ public sealed class VOverlay : ComponentBase, IVueLibraryComponent
     /// Event callback fired after the overlay enters.
     /// </summary>
     [Parameter]
-    public EventCallback AfterEnter { get; set; }
+    public EventCallback OnAfterEnter { get; set; }
 
     /// <summary>
     /// 遮罩层离开后触发的事件回调。
     /// Event callback fired after the overlay leaves.
     /// </summary>
     [Parameter]
-    public EventCallback AfterLeave { get; set; }
+    public EventCallback OnAfterLeave { get; set; }
 
     /// <summary>
     /// 点击遮罩层外部时触发的事件回调。

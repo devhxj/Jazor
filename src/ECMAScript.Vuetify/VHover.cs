@@ -7,10 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify hover component for detecting and responding to mouse hover state.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VHover")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VHover : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

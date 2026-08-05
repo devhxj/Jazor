@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify messages component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMessages")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(Message), Name = "message")]
 public sealed class VMessages : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

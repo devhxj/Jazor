@@ -8,19 +8,11 @@ namespace ECMAScript.Vuetify;
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
-[VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
 [VueProp(nameof(ActivatorTarget), Name = "activator")]
-[VueSlot(nameof(Activator), Name = "activator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VDialog : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -322,14 +314,14 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     /// Event callback fired after enter transition completes.
     /// </summary>
     [Parameter]
-    public EventCallback AfterEnter { get; set; }
+    public EventCallback OnAfterEnter { get; set; }
 
     /// <summary>
     /// 离开动画完成后触发的事件回调。
     /// Event callback fired after leave transition completes.
     /// </summary>
     [Parameter]
-    public EventCallback AfterLeave { get; set; }
+    public EventCallback OnAfterLeave { get; set; }
 
     /// <summary>
     /// 点击对话框外部时触发的事件回调。

@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify file-input component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VFileInput")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VFileInput : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

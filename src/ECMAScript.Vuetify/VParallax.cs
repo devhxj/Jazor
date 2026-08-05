@@ -7,12 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify parallax authoring proxy for image-backed parallax sections.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VParallax")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Placeholder), Name = "placeholder")]
-[VueSlot(nameof(Error), Name = "error")]
-[VueSlot(nameof(Sources), Name = "sources")]
 public sealed class VParallax : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

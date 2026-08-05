@@ -8,15 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VEmptyState")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ActionClick), VueEmitKind.LibrarySpecific, Name = "click:action")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(HeadlineContent), Name = "headline")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(Media), Name = "media")]
-[VueSlot(nameof(TextContent), Name = "text")]
 public sealed class VEmptyState : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

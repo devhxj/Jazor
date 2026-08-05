@@ -7,11 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify icon authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VIcon")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VIcon : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

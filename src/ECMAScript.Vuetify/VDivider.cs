@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify divider component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDivider")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VDivider : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

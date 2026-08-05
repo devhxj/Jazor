@@ -88,6 +88,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-05
 
+- Vuetify RazorVue bindings now use standard Razor conventions for two-way binding, ordinary `OnX` callbacks, and named `RenderFragment` slots. The binding surface retains explicit metadata only for Vue names that C# cannot express; ordinary bare callback parameters now use `OnX` names.
+- `VuetifyGridSpanValue` now uses a native C# union while retaining bool, number, string, and numeric assignment authoring.
 - `ECMAScript.Style` now offers typed `box-shadow` authoring through `CssShadow` records and `shadows(...)`, covering composed shadows, variables, colors, inset, `none`, and CSS-wide values. JazorAdmin now uses this typed shadow surface for its themes and components.
 - JazorAdmin now validates a full ASP.NET Core production route with RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation authorization, account administration, and OpenID client/scope configuration. Its TDesign-inspired navigation is authored in Razor and `ECMAScript.Style`, without Blazor or application-owned JavaScript, CSS, or static HTML.
 - CSS-in-JS keyframes now preserve parameter frame arrays and selector validation accepts legal CSS line-break whitespace.

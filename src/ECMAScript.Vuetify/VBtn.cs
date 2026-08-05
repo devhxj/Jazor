@@ -10,12 +10,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBtn")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Loader), Name = "loader")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBtn : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -8,14 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify infinite-scroll authoring proxy for incremental list loading.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInfiniteScroll")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Loading), Name = "loading")]
-[VueSlot(nameof(Error), Name = "error")]
-[VueSlot(nameof(Empty), Name = "empty")]
-[VueSlot(nameof(LoadMore), Name = "load-more")]
 public sealed class VInfiniteScroll : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -121,7 +113,7 @@ public sealed class VInfiniteScroll : ComponentBase, IVueLibraryComponent
     /// Event callback fired when more data needs to be loaded.
     /// </summary>
     [Parameter]
-    public EventCallback<VInfiniteScrollLoadOptions> Load { get; set; }
+    public EventCallback<VInfiniteScrollLoadOptions> OnLoad { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

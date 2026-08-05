@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tab authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTab")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VTab : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

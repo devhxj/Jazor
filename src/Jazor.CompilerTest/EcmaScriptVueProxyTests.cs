@@ -3260,6 +3260,17 @@ public sealed class EcmaScriptVueProxyTests
             typeof(Vuetify).Namespace!);
 
     [TestMethod]
+    public void VuetifyGridSpanValue_UsesNativeUnionWithoutLosingNumericAssignments()
+    {
+        AssertNet11UnionContract(typeof(VuetifyGridSpanValue), typeof(bool), typeof(Number), typeof(string));
+
+        Assert.IsNotNull(typeof(VuetifyGridSpanValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(decimal)]));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,

@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify main content area component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMain")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VMain : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

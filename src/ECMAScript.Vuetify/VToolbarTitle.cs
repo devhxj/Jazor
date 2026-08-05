@@ -8,12 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar title authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarTitle")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TextContent), Name = "text")]
 public sealed class VToolbarTitle : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

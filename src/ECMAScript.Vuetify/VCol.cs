@@ -8,11 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid column component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCol")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCol : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

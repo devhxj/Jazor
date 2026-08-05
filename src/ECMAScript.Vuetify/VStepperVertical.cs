@@ -8,20 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs vertical stepper authoring proxy for expansion-panel based workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VStepperVertical")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
-[VueSlot(nameof(Prev), Name = "prev")]
-[VueSlot(nameof(Next), Name = "next")]
-[VueSlot(nameof(HeaderItem), Name = "header-item", NamePattern = "header-item.${string}", PatternOnly = true)]
-[VueSlot(nameof(Item), Name = "item", NamePattern = "item.${string}", PatternOnly = true)]
 public sealed class VStepperVertical : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -346,17 +334,4 @@ public sealed class VStepperVertical : ComponentBase, IVueLibraryComponent
     [Parameter]
     public RenderFragment<VStepperVerticalActionSlotContext>? Next { get; set; }
 
-    /// <summary>
-    /// 头部项插槽，自定义单个步骤的头部渲染。
-    /// Header-item slot for customizing a single step header rendering.
-    /// </summary>
-    [Parameter]
-    public RenderFragment<VStepperVerticalItemSlotContext>? HeaderItem { get; set; }
-
-    /// <summary>
-    /// 内容项插槽，自定义步骤内容的渲染。
-    /// Item slot for customizing step content rendering.
-    /// </summary>
-    [Parameter]
-    public RenderFragment<VStepperVerticalItemSlotContext>? Item { get; set; }
 }

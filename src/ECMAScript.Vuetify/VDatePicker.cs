@@ -8,17 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify date-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDatePicker")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(MonthChanged), VueEmitKind.ModelUpdate, Name = "update:month")]
-[VueLibraryEmit(nameof(YearChanged), VueEmitKind.ModelUpdate, Name = "update:year")]
-[VueLibraryEmit(nameof(ViewModeChanged), VueEmitKind.ModelUpdate, Name = "update:viewMode")]
 [VueProp(nameof(HeaderText), Name = "header")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(HeaderContent), Name = "header")]
-[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VDatePicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

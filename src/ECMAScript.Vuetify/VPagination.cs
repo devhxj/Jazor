@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify pagination stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VPagination")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VPagination : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

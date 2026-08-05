@@ -61,7 +61,7 @@
 
 - `Vuetify.CreateVuetify()` / `CreateVuetify(VuetifyOptions)` 的强类型 runtime 代理；
 - `vuetify/components` / `vuetify/directives` 的导入与 registry lowering；
-- `vuetify/styles` 与 `vuetify` plugin requirement 的 host requirement 汇总；
+- 应用 bootstrap 显式导入 `vuetify/styles` 并安装 `createVuetify()` 的运行时路径；
 - 一批高频组件的 RazorVue library component lowering；
 - `ModelValue + ModelValueChanged`、`EventCallback`、默认槽、`RenderFragment<TContext>` 作用域槽等 Blazor 风格 authoring。
 
@@ -174,7 +174,7 @@
 
 当前事实：
 
-- `ECMAScript.Vuetify` 组件桩通过 `VueLibraryStyle("vuetify/styles")` 把 Vuetify 样式声明为 host requirement；
+- `ECMAScript.Vuetify` 组件桩不声明或注入 Vuetify CSS；该样式是应用 bootstrap 责任；
 - 生成的 `.vue` 工件不会自动注入 `<style src="vuetify/styles">`；
 - consumer 侧需要显式 `import "vuetify/styles"` 并安装 `createVuetify()`；
 - `.razor.css` / style-hash / styles manifest 路径在底层是存在的，但 `ECMAScript.Vuetify` 文档里没有把“业务 CSS 怎么写、谁来 import、谁来收口”讲清楚。

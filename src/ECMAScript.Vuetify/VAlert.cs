@@ -3,18 +3,9 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAlert")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ClickClose), VueEmitKind.LibrarySpecific, Name = "click:close")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(TextContent), Name = "text")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Close), Name = "close")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.

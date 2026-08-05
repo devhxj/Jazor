@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify locale-provider authoring proxy for scoped locale, fallback, RTL, and messages.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLocaleProvider")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VLocaleProvider : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

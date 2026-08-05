@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify timeline authoring proxy for chronological vertical or horizontal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTimeline")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VTimeline : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

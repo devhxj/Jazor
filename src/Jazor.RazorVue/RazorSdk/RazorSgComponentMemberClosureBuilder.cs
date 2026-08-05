@@ -329,6 +329,8 @@ internal sealed record RazorSgComponentMemberClosure(
             }
         }
 
+        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentSymbol, map);
+
         return map;
     }
 

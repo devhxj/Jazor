@@ -7,19 +7,12 @@ namespace ECMAScript.Vuetify;
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(LoadStart), VueEmitKind.LibrarySpecific, Name = "loadstart")]
-[VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
 [VueLibraryEmit(nameof(LoadError), VueEmitKind.LibrarySpecific, Name = "error")]
 [VueProp(nameof(CrossOrigin), Name = "crossorigin")]
 [VueProp(nameof(ReferrerPolicy), Name = "referrerpolicy")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Placeholder), Name = "placeholder")]
-[VueSlot(nameof(ErrorContent), Name = "error")]
-[VueSlot(nameof(Sources), Name = "sources")]
 public sealed class VImg : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -237,7 +230,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the image has loaded.
     /// </summary>
     [Parameter]
-    public EventCallback<string?> Load { get; set; }
+    public EventCallback<string?> OnLoad { get; set; }
 
     /// <summary>
     /// 图片加载失败时触发的事件回调。

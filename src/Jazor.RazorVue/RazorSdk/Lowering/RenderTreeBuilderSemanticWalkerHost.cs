@@ -866,6 +866,9 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             }
         }
 
+        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentType, names);
+        VueLibraryComponentConventions.AddInferredSlotNames(componentType, names);
+
         if (names.Count == 0)
             return null;
 

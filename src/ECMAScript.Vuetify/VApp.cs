@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VApp")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 应用根包装组件。
 /// Vuetify app root wrapper component.

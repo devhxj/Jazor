@@ -8,14 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify color-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VColorPicker")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(ModeChanged), VueEmitKind.ModelUpdate, Name = "update:mode")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VColorPicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

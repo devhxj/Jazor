@@ -8,13 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar-queue authoring proxy for sequential notifications.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbarQueue")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TextContent), Name = "text")]
-[VueSlot(nameof(Actions), Name = "actions")]
 public sealed class VSnackbarQueue : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

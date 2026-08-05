@@ -8,16 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbar")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(ImageContent), Name = "image")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(Extension), Name = "extension")]
 public sealed class VToolbar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify range slider component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRangeSlider")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VRangeSlider : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

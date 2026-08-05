@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify layout component for managing page region layout structure.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLayout")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VLayout : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -8,16 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs file-upload authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VFileUpload")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3.File[]?")]
-[VueSlot(nameof(Browse), Name = "browse")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(IconContent), Name = "icon")]
-[VueSlot(nameof(InputContent), Name = "input")]
-[VueSlot(nameof(ItemContent), Name = "item")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(DividerContent), Name = "divider")]
 public sealed class VFileUpload : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

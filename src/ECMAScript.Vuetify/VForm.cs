@@ -8,13 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify form component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VForm")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(Submit), VueEmitKind.LibrarySpecific, Name = "submit")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VForm : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -78,7 +73,7 @@ public sealed class VForm : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the form is submitted.
     /// </summary>
     [Parameter]
-    public EventCallback<VFormSubmitEvent> Submit { get; set; }
+    public EventCallback<VFormSubmitEvent> OnSubmit { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

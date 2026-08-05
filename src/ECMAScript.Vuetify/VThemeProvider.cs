@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify theme provider authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VThemeProvider")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VThemeProvider : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

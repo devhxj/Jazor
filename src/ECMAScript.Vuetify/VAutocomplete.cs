@@ -5,19 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAutocomplete")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
-[VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibraryEmit(nameof(MenuChanged), VueEmitKind.ModelUpdate, Name = "update:menu")]
-[VueLibraryEmit(nameof(SearchChanged), VueEmitKind.ModelUpdate, Name = "update:search")]
-[VueSlot(nameof(Item), Name = "item")]
-[VueSlot(nameof(Chip), Name = "chip")]
-[VueSlot(nameof(Selection), Name = "selection")]
-[VueSlot(nameof(PrependItem), Name = "prepend-item")]
-[VueSlot(nameof(AppendItem), Name = "append-item")]
-[VueSlot(nameof(NoData), Name = "no-data")]
+[VueProp(nameof(SelectedValue), Name = "modelValue")]
 /// <summary>
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.

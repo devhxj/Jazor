@@ -10,11 +10,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify rating component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRating")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ItemContent), Name = "item")]
-[VueSlot(nameof(ItemLabel), Name = "item-label")]
 public sealed class VRating : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

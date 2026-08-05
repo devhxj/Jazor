@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify code authoring proxy for inline or block code containers.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCode")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCode : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

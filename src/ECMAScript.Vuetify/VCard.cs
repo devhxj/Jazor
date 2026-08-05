@@ -8,17 +8,6 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify card stub for child-content composition.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCard")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(TextContent), Name = "text")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
-[VueSlot(nameof(ImageContent), Name = "image")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(Item), Name = "item")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCard : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

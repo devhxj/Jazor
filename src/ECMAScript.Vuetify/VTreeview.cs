@@ -8,25 +8,10 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(ActivatedChanged), VueEmitKind.ModelUpdate, Name = "update:activated")]
-[VueLibraryEmit(nameof(SelectedChanged), VueEmitKind.ModelUpdate, Name = "update:selected")]
-[VueLibraryEmit(nameof(OpenedChanged), VueEmitKind.ModelUpdate, Name = "update:opened")]
 [VueLibraryEmit(nameof(OpenClicked), VueEmitKind.LibrarySpecific, Name = "click:open")]
 [VueLibraryEmit(nameof(SelectClicked), VueEmitKind.LibrarySpecific, Name = "click:select")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
-[VueSlot(nameof(ItemContent), Name = "item")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Divider), Name = "divider")]
-[VueSlot(nameof(Subheader), Name = "subheader")]
 public sealed class VTreeview : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

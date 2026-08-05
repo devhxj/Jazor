@@ -3133,6 +3133,9 @@ internal static class RazorSgDirectRenderOperationEmitter
             }
         }
 
+        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentType, names);
+        VueLibraryComponentConventions.AddInferredSlotNames(componentType, names);
+
         return names.ToImmutable();
     }
 

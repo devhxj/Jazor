@@ -8,21 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs date-input authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VDateInput")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibraryEmit(nameof(Save), VueEmitKind.LibrarySpecific, Name = "save")]
-[VueLibraryEmit(nameof(Cancel), VueEmitKind.LibrarySpecific, Name = "cancel")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(PrependInner), Name = "prepend-inner")]
-[VueSlot(nameof(AppendInner), Name = "append-inner")]
-[VueSlot(nameof(Clear), Name = "clear")]
-[VueSlot(nameof(LabelContent), Name = "label")]
-[VueSlot(nameof(Details), Name = "details")]
-[VueSlot(nameof(CounterContent), Name = "counter")]
-[VueSlot(nameof(Actions), Name = "actions")]
 public sealed class VDateInput : VInputComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -93,14 +78,14 @@ public sealed class VDateInput : VInputComponentBase, IVueLibraryComponent
     /// Event callback fired on save.
     /// </summary>
     [Parameter]
-    public EventCallback<string> Save { get; set; }
+    public EventCallback<string> OnSave { get; set; }
 
     /// <summary>
     /// 取消时触发的事件回调。
     /// Event callback fired on cancel.
     /// </summary>
     [Parameter]
-    public EventCallback Cancel { get; set; }
+    public EventCallback OnCancel { get; set; }
 
     /// <summary>
     /// 附加到组件的额外 HTML 属性。

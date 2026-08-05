@@ -5,13 +5,8 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VBottomNavigation")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 底部导航组件。
 /// Vuetify bottom navigation component.

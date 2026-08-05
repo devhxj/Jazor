@@ -9,8 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify table authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTable")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VTable : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -6,12 +6,6 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VCardItem")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
 /// <summary>
 /// Vuetify 卡片项分组组件，用于组织标题、副标题和前后缀。
 /// Vuetify card item grouping component for organizing title, subtitle, and prepend/append content.

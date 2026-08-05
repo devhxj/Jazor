@@ -8,10 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify lazy component that renders content on demand based on viewport visibility.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLazy")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VLazy : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

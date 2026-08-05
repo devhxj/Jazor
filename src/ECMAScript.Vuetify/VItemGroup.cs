@@ -7,10 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify item group component for managing selection state across a group of items.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VItemGroup")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VItemGroup : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

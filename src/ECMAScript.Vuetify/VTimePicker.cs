@@ -8,17 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs time-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTimePicker")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(ViewModeChanged), VueEmitKind.ModelUpdate, Name = "update:viewMode")]
-[VueLibraryEmit(nameof(PeriodChanged), VueEmitKind.ModelUpdate, Name = "update:period")]
-[VueLibraryEmit(nameof(HourChanged), VueEmitKind.ModelUpdate, Name = "update:hour")]
-[VueLibraryEmit(nameof(MinuteChanged), VueEmitKind.ModelUpdate, Name = "update:minute")]
-[VueLibraryEmit(nameof(SecondChanged), VueEmitKind.ModelUpdate, Name = "update:second")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VTimePicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

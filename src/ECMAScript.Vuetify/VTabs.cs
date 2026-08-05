@@ -8,10 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabs")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VTabs : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

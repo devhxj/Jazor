@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify counter component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCounter")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCounter : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

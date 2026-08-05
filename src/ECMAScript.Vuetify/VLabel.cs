@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify label component for form control label display.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLabel")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VLabel : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

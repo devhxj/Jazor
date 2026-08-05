@@ -8,10 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify list item component for a single interactive entry within a list.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VListItem")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
 public sealed class VListItem : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -2,6 +2,8 @@
 
 ## 2026-08-05
 
+- Vuetify RazorVue bindings now favor ordinary C# and Razor contracts: `X` plus `XChanged` supplies two-way binding, `OnX` supplies ordinary listeners, and `ChildContent` / `DefaultContent`, `XContent`, and PascalCase named fragments supply Vue slots. Bare `Save`, `Load`, `Next`, `Prev`, `AfterEnter`, `AfterLeave`, and `Submit` callback parameters were renamed to their `OnX` forms. Only Vue names that C# cannot express, such as colon events and dot slots, retain explicit metadata.
+- `VuetifyGridSpanValue` now uses the native C# union contract while retaining its boolean, number, string, and numeric assignment authoring forms.
 - `ECMAScript.Style` now models `box-shadow` as typed C# data: compose one or more `CssShadow` records with `shadows(...)`, including optional blur, spread, color, inset, variables, `none`, and CSS-wide values. JazorAdmin themes and components now use the same typed shadow surface instead of raw shadow strings.
 - JazorAdmin now validates the production application route in one ASP.NET Core host: RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation grants, platform accounts, and OpenID client/scope configuration. Its TDesign-inspired icon rail and scoped secondary navigation are authored with Razor and `ECMAScript.Style`, with no application-owned JavaScript, CSS, static `index.html`, or Blazor registration.
 - CSS-in-JS keyframes now preserve `params` frames as one JavaScript array, and global selector validation accepts all legal CSS whitespace, including line breaks in readable selector lists.

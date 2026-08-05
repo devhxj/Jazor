@@ -8,20 +8,10 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ClickClose), VueEmitKind.LibrarySpecific, Name = "click:close")]
 [VueLibraryEmit(nameof(GroupSelected), VueEmitKind.LibrarySpecific, Name = "group:selected")]
-[VueSlot(nameof(DefaultContent), Name = "default")]
-[VueSlot(nameof(LabelContent), Name = "label")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Close), Name = "close")]
-[VueSlot(nameof(FilterContent), Name = "filter")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VChip : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

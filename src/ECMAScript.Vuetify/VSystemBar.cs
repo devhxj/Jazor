@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify system bar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSystemBar")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VSystemBar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

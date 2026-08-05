@@ -8,12 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify speed-dial authoring proxy built on the VMenu/VOverlay surface.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSpeedDial")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Activator), Name = "activator")]
 public sealed class VSpeedDial : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

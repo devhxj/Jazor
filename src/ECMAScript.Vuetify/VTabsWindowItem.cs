@@ -8,10 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs-window-item authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindowItem")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(GroupSelected), VueEmitKind.LibrarySpecific, Name = "group:selected")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VTabsWindowItem : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

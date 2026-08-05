@@ -8,11 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify validation authoring proxy exposing the validation composable as a scoped slot.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VValidation")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VValidation : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

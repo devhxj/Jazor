@@ -9,21 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data-iterator authoring proxy for filtered, sorted, grouped, paginated item rendering.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataIterator")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(PageChanged), VueEmitKind.ModelUpdate, Name = "update:page")]
-[VueLibraryEmit(nameof(ItemsPerPageChanged), VueEmitKind.ModelUpdate, Name = "update:itemsPerPage")]
-[VueLibraryEmit(nameof(SortByChanged), VueEmitKind.ModelUpdate, Name = "update:sortBy")]
-[VueLibraryEmit(nameof(GroupByChanged), VueEmitKind.ModelUpdate, Name = "update:groupBy")]
-[VueLibraryEmit(nameof(ExpandedChanged), VueEmitKind.ModelUpdate, Name = "update:expanded")]
-[VueLibraryEmit(nameof(OptionsChanged), VueEmitKind.ModelUpdate, Name = "update:options")]
-[VueLibraryEmit(nameof(CurrentItemsChanged), VueEmitKind.ModelUpdate, Name = "update:currentItems")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(Loader), Name = "loader")]
-[VueSlot(nameof(NoData), Name = "no-data")]
 public sealed class VDataIterator : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

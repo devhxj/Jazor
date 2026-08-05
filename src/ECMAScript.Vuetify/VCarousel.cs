@@ -8,13 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify carousel authoring proxy for grouped slide navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCarousel")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Prev), Name = "prev")]
-[VueSlot(nameof(Next), Name = "next")]
-[VueSlot(nameof(Item), Name = "item")]
 public sealed class VCarousel : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

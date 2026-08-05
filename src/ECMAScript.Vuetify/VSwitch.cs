@@ -7,21 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify switch authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSwitch")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(Details), Name = "details")]
-[VueSlot(nameof(Message), Name = "message")]
-[VueSlot(nameof(LabelContent), Name = "label")]
-[VueSlot(nameof(Input), Name = "input")]
-[VueSlot(nameof(Loader), Name = "loader")]
-[VueSlot(nameof(Thumb), Name = "thumb")]
-[VueSlot(nameof(TrackTrue), Name = "track-true")]
-[VueSlot(nameof(TrackFalse), Name = "track-false")]
 public sealed class VSwitch : VSelectionControlComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -9,21 +9,11 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
-[VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueProp(nameof(ZIndex), Name = "zIndex")]
 [VueProp(nameof(ActivatorTarget), Name = "activator")]
-[VueSlot(nameof(Activator), Name = "activator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(TextContent), Name = "text")]
-[VueSlot(nameof(Actions), Name = "actions")]
 public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -346,14 +336,14 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     /// Callback invoked after the enter transition completes.
     /// </summary>
     [Parameter]
-    public EventCallback AfterEnter { get; set; }
+    public EventCallback OnAfterEnter { get; set; }
 
     /// <summary>
     /// 离开动画完成后触发的回调。
     /// Callback invoked after the leave transition completes.
     /// </summary>
     [Parameter]
-    public EventCallback AfterLeave { get; set; }
+    public EventCallback OnAfterLeave { get; set; }
 
     /// <summary>
     /// 点击消息条外部时触发的回调。

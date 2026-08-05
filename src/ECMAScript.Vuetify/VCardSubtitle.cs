@@ -5,9 +5,6 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VCardSubtitle")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 卡片副标题组件。
 /// Vuetify card subtitle component.

@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify no-SSR component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VNoSsr")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 public sealed class VNoSsr : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

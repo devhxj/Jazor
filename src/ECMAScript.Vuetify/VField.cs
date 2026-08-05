@@ -7,19 +7,9 @@ namespace ECMAScript.Vuetify;
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VField")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
 [VueLibraryEmit(nameof(ClearClick), VueEmitKind.LibrarySpecific, Name = "click:clear")]
 [VueLibraryEmit(nameof(AppendInnerClick), VueEmitKind.LibrarySpecific, Name = "click:appendInner")]
 [VueLibraryEmit(nameof(PrependInnerClick), VueEmitKind.LibrarySpecific, Name = "click:prependInner")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(PrependInner), Name = "prepend-inner")]
-[VueSlot(nameof(AppendInner), Name = "append-inner")]
-[VueSlot(nameof(Clear), Name = "clear")]
-[VueSlot(nameof(LabelContent), Name = "label")]
-[VueSlot(nameof(Loader), Name = "loader")]
 public sealed class VField : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

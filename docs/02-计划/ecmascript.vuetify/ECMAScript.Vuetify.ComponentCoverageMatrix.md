@@ -165,8 +165,8 @@
 | `VItemGroup` | `ModelValue`, `ModelValueChanged`, `Mandatory`, `Max`, `Multiple`, `SelectedClass`, `Tag`, `ValueComparator`, typed default slot | `A` | 低频 group internals 继续按业务扩展 |
 | `VChipGroup` | `ModelValue`, `ModelValueChanged`, `BaseColor`, `CenterActive`, `Color`, `Column`, `Filter`, `Direction`, `Mandatory`, `Max`, `Mobile`, `Multiple`, `NextIcon`, `PrevIcon`, `ShowArrows`, `SelectedClass`, `Variant`, `Tag`, `ValueComparator`, `ChildContent` | `A` | 低频 slide-group display props 继续按业务扩展 |
 | `VSlideGroup` | `ModelValue`, `ModelValueChanged`, `Multiple`, `Mandatory`, `Max`, `SelectedClass`, `Disabled`, `Tag`, `Mobile`, `MobileBreakpoint`, `CenterActive`, `Direction`, `NextIcon`, `PrevIcon`, `ShowArrows`, typed default/prev/next slots | `A` | `symbol` injection key 暂未暴露，作为内部组合协议保留 |
-| `VStepper` | group model、items union/collection、stepper/group/sheet/display/actions props、default/actions/header/item/prev/next scoped slots 和 dynamic step item slots | `A` | 深层 item context 字段随业务页面继续补齐 |
-| `VStepperVertical` | labs vertical stepper：group model、items union/collection、expansion-panel/stepper props、pattern-only dynamic `header-item.${string}` / `item.${string}` slots、actions/icon/title/subtitle/prev/next slots | `A` | labs API 版本敏感，复杂 panel 组合行为按真实页面继续验证 |
+| `VStepper` | group model、items union/collection、stepper/group/sheet/display/actions props、default/actions/header/item/prev/next scoped slots | `A` | keyed dynamic item slot 尚未有 C# API 与 lowering，不能计入已支持范围 |
+| `VStepperVertical` | labs vertical stepper：group model、items union/collection、expansion-panel/stepper props、actions/icon/title/subtitle/prev/next slots | `A` | keyed dynamic `header-item.${string}` / `item.${string}` 槽尚未实现，labs API 版本敏感 |
 | `VVirtualScroll` | dimensions, `ItemHeight`, `ItemKey`, `Items`, `Renderless`, typed default slot | `A` | 当前 `Items` 使用 `VueValue[]` 覆盖常见标量/object bag；泛型库组件支持成熟后可评估泛型 authoring |
 | `VInfiniteScroll` | `Tag`, dimensions, `Color`, `Direction`, `Side`, `Mode`, `Margin`, `LoadMoreText`, `EmptyText`, `Load`, default/loading/error/empty/load-more slots | `A` | 复杂按钮 props 通过 status slot context 的 `Props` 或 `AdditionalAttributes` 继续表达 |
 
@@ -269,7 +269,7 @@ Vuetify 官方 scoped slot 中的 `Ref`、`ComputedRef`、`WritableComputedRef` 
 - `VDateInput` actions scoped slot
 - `VFileUpload` browse/input/item scoped slots
 - `VPullToRefresh` pullDownPanel scoped slot
-- `VStepper` / `VStepperVertical` dynamic step item slots
+- `VStepper` / `VStepperVertical` 固定 scoped slots
 - `VCounter` scoped default slot
 - `VMessages` scoped `message` slot
 

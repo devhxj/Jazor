@@ -8,11 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sheet container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSheet")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VSheet : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

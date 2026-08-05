@@ -8,10 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sparkline authoring proxy for compact trend and bar visualizations.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSparkline")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Label), Name = "label")]
 public sealed class VSparkline : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

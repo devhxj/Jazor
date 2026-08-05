@@ -10,18 +10,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify textarea authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextarea")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueSlot(nameof(Prepend), Name = "prepend")]
-[VueSlot(nameof(Append), Name = "append")]
-[VueSlot(nameof(PrependInner), Name = "prepend-inner")]
-[VueSlot(nameof(AppendInner), Name = "append-inner")]
-[VueSlot(nameof(Clear), Name = "clear")]
-[VueSlot(nameof(LabelContent), Name = "label")]
-[VueSlot(nameof(Details), Name = "details")]
-[VueSlot(nameof(CounterContent), Name = "counter")]
 public sealed class VTextarea : VInputComponentBase, IVueLibraryComponent
 {
     /// <summary>

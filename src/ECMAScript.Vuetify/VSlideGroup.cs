@@ -8,12 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify slide-group authoring proxy for horizontally or vertically scrollable grouped content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSlideGroup")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Prev), Name = "prev")]
-[VueSlot(nameof(Next), Name = "next")]
 public sealed class VSlideGroup : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

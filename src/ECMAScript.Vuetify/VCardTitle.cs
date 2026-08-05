@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VCardTitle")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 卡片标题组件。
 /// Vuetify card title component.

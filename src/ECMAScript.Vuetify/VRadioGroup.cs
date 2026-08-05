@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify radio group component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRadioGroup")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VRadioGroup : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

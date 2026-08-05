@@ -8,13 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs calendar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VCalendar")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(Next), VueEmitKind.LibrarySpecific, Name = "next")]
-[VueLibraryEmit(nameof(Prev), VueEmitKind.LibrarySpecific, Name = "prev")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(EventContent), Name = "event")]
 public sealed class VCalendar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -232,14 +225,14 @@ public sealed class VCalendar : ComponentBase, IVueLibraryComponent
     /// Next page event.
     /// </summary>
     [Parameter]
-    public EventCallback Next { get; set; }
+    public EventCallback OnNext { get; set; }
 
     /// <summary>
     /// 上一页事件。
     /// Previous page event.
     /// </summary>
     [Parameter]
-    public EventCallback Prev { get; set; }
+    public EventCallback OnPrev { get; set; }
 
     /// <summary>
     /// 传递给根元素的额外 HTML 属性。

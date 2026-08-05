@@ -8,19 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify stepper authoring proxy for multi-step workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VStepper")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(HeaderItem), Name = "header-item", NamePattern = "header-item.${string}")]
-[VueSlot(nameof(Icon), Name = "icon")]
-[VueSlot(nameof(TitleContent), Name = "title")]
-[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
-[VueSlot(nameof(Item), Name = "item", NamePattern = "item.${string}")]
-[VueSlot(nameof(Prev), Name = "prev")]
-[VueSlot(nameof(Next), Name = "next")]
 public sealed class VStepper : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

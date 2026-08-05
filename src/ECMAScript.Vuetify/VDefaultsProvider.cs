@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify defaults-provider authoring proxy for scoped component defaults.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDefaultsProvider")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VDefaultsProvider : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

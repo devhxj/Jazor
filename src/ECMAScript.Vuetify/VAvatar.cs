@@ -4,11 +4,8 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAvatar")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 头像组件。
 /// Vuetify avatar component.

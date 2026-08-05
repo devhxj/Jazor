@@ -5,11 +5,6 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VBottomSheet")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(Activator), Name = "activator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 底部抽屉组件。
 /// Vuetify bottom sheet component.

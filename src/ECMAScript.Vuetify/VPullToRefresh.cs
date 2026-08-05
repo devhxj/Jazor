@@ -8,11 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs pull-to-refresh authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPullToRefresh")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(PullDownPanel), Name = "pullDownPanel")]
 public sealed class VPullToRefresh : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -34,7 +29,7 @@ public sealed class VPullToRefresh : ComponentBase, IVueLibraryComponent
     /// Callback invoked when a pull-to-refresh load is triggered.
     /// </summary>
     [Parameter]
-    public EventCallback<VPullToRefreshLoadOptions> Load { get; set; }
+    public EventCallback<VPullToRefreshLoadOptions> OnLoad { get; set; }
 
     /// <summary>
     /// 附加到根元素上的额外属性。

@@ -1866,6 +1866,8 @@ internal static class RazorSgVueComponentModuleBuilder
             property.Name,
             out var descriptorName)
             ? descriptorName
+            : VueLibraryComponentConventions.TryGetModelUpdateEventName(componentSymbol, property, out var modelUpdateEventName)
+                ? modelUpdateEventName
             : GetVueEmitName(Util.GetConfigOrSymbolName(property));
 
     private static bool TryGetClassDescriptorName(

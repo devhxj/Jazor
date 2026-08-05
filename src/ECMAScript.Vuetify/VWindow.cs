@@ -7,13 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify window authoring proxy for grouped panel navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VWindow")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Additional), Name = "additional")]
-[VueSlot(nameof(Prev), Name = "prev")]
-[VueSlot(nameof(Next), Name = "next")]
 public sealed class VWindow : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

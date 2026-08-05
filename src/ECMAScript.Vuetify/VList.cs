@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify list component for displaying interactive collections of list items.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VList")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VList : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

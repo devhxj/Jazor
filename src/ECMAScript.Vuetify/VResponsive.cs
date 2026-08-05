@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify responsive container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VResponsive")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(Additional), Name = "additional")]
 public sealed class VResponsive : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

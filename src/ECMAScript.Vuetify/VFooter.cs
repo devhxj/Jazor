@@ -9,9 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify footer component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VFooter")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VFooter : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

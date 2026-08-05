@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify selection-control group authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSelectionControlGroup")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VSelectionControlGroup : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

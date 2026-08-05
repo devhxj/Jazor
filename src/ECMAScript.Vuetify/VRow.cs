@@ -8,11 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid row authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRow")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VRow : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

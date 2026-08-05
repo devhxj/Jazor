@@ -8,11 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar-items authoring proxy for grouped toolbar actions.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarItems")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

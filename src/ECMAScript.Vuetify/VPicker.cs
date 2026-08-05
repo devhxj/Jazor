@@ -8,12 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs picker shell authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPicker")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(Header), Name = "header")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Actions), Name = "actions")]
-[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VPicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

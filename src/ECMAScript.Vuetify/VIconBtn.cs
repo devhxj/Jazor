@@ -8,11 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs icon-btn authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VIconBtn")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
-[VueSlot(nameof(Loader), Name = "loader")]
 public sealed class VIconBtn : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

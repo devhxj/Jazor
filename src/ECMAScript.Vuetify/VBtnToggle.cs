@@ -5,10 +5,6 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VBtnToggle")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 按钮切换组件。
 /// Vuetify button toggle component.

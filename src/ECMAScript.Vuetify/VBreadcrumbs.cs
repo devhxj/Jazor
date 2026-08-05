@@ -8,9 +8,6 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify breadcrumbs stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBreadcrumbs")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBreadcrumbs : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

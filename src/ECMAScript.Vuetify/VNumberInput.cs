@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify number input component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VNumberInput")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VNumberInput : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

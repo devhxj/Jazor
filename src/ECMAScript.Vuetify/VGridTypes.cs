@@ -5,70 +5,14 @@ namespace ECMAScript.Vuetify;
 /// Grid span value supporting boolean, numeric, or string representation.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyGridSpanValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyGridSpanValue(bool, Number, string)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly Number? _number;
-    private readonly string? _string;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyGridSpanValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _number = default;
-        _string = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifyGridSpanValue(Number value)
-    {
-        _kind = 2;
-        _bool = default;
-        _number = value;
-        _string = default;
-    }
-
-    public VuetifyGridSpanValue(string value)
-    {
-        _kind = 3;
-        _bool = default;
-        _number = default;
-        _string = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public string? AsString => _kind == 3 ? _string : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsNumber,
-        3 => AsString,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGridSpanValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGridSpanValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyGridSpanValue From(string value);
-
-    public static implicit operator VuetifyGridSpanValue(bool value)
-        => new(value);
-
-    public static implicit operator VuetifyGridSpanValue(Number value)
-        => new(value);
-
-    public static implicit operator VuetifyGridSpanValue(string value)
-        => new(value);
+    public string? AsString => Value as string;
 
     public static implicit operator VuetifyGridSpanValue(byte value)
         => new((Number)value);

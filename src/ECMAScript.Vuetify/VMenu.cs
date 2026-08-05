@@ -8,11 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify menu component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMenu")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(Activator), Name = "activator")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VMenu : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

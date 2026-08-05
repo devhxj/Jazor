@@ -8,12 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify confirm-edit authoring proxy for editable value confirmation flows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VConfirmEdit")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(Save), VueEmitKind.LibrarySpecific, Name = "save")]
-[VueLibraryEmit(nameof(Cancel), VueEmitKind.LibrarySpecific, Name = "cancel")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VConfirmEdit : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -70,14 +64,14 @@ public sealed class VConfirmEdit : ComponentBase, IVueLibraryComponent
     /// Callback invoked when the value is saved.
     /// </summary>
     [Parameter]
-    public EventCallback<VueValue?> Save { get; set; }
+    public EventCallback<VueValue?> OnSave { get; set; }
 
     /// <summary>
     /// 取消事件回调。
     /// Callback invoked when editing is cancelled.
     /// </summary>
     [Parameter]
-    public EventCallback Cancel { get; set; }
+    public EventCallback OnCancel { get; set; }
 
     /// <summary>
     /// 附加的自定义属性。

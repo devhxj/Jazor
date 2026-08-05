@@ -7,10 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip group component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChipGroup")]
-[VueLibraryStyle("vuetify/styles")]
-[VueLibraryPluginRequirement("vuetify")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VChipGroup : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
