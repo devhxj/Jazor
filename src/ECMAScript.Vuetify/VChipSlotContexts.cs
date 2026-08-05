@@ -1,5 +1,8 @@
 namespace ECMAScript.Vuetify;
 
+// Defines VChip scoped-slot contexts and the selected-class value domain.
+// 定义 VChip 作用域插槽上下文和 selected-class 值域；可擦除值域使用原生 union。
+
 /// <summary>
 /// Vuetify VChip 公开的作用域默认插槽上下文。
 /// Scoped default slot context exposed by Vuetify VChip.
@@ -34,44 +37,12 @@ public delegate void VChipSelectCallback(bool value);
 /// Value shape used by Vuetify VChip default slot selectedClass.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VChipSelectedClassValue : System.Runtime.CompilerServices.IUnion
+public readonly union VChipSelectedClassValue(bool, string?[])
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly string?[]? _classes;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VChipSelectedClassValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _classes = default;
-    }
-
-    public VChipSelectedClassValue(string?[] value)
-    {
-        _kind = 2;
-        _bool = default;
-        _classes = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public string?[]? AsClasses => _kind == 2 ? _classes : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsClasses,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VChipSelectedClassValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VChipSelectedClassValue From(string?[] value);
+    public string?[]? AsClasses => Value as string?[];
 
     public static implicit operator VChipSelectedClassValue(bool value)
         => new(value);

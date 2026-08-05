@@ -1,5 +1,8 @@
 namespace ECMAScript.Vuetify;
 
+// Defines VCarousel-specific slot values and scoped-slot context records.
+// 定义 VCarousel 专用的插槽值域和作用域插槽上下文；可擦除值域使用原生 union。
+
 /// <summary>
 /// Vuetify 轮播垂直分隔线位置枚举。
 /// Vuetify carousel vertical delimiter position enum.
@@ -19,44 +22,15 @@ public enum VuetifyCarouselVerticalDelimiterPosition
 /// Vuetify carousel vertical-delimiters value, matching <c>boolean | "left" | "right"</c>.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCarouselVerticalDelimiters : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyCarouselVerticalDelimiters(bool, VuetifyCarouselVerticalDelimiterPosition)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyCarouselVerticalDelimiterPosition? _position;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyCarouselVerticalDelimiters(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _position = default;
-    }
-
-    public VuetifyCarouselVerticalDelimiters(VuetifyCarouselVerticalDelimiterPosition value)
-    {
-        _kind = 2;
-        _bool = default;
-        _position = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyCarouselVerticalDelimiterPosition? AsPosition => _kind == 2 ? _position : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsPosition,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCarouselVerticalDelimiters From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyCarouselVerticalDelimiters From(VuetifyCarouselVerticalDelimiterPosition value);
+    public VuetifyCarouselVerticalDelimiterPosition? AsPosition
+        => Value is VuetifyCarouselVerticalDelimiterPosition value
+            ? value
+            : default(VuetifyCarouselVerticalDelimiterPosition?);
 
     public static implicit operator VuetifyCarouselVerticalDelimiters(bool value)
         => new(value);
