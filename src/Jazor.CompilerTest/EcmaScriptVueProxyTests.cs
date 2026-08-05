@@ -3476,6 +3476,60 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void VDatePickerValues_UseNativeUnionContracts()
+    {
+        var unionTypes = new[]
+        {
+            typeof(VuetifyCalendarWeekdays),
+            typeof(VuetifyDatePickerMultipleValue),
+            typeof(VuetifyDatePickerModelValues),
+            typeof(VuetifyDatePickerModelValue),
+            typeof(VuetifyDatePickerAllowedDates),
+            typeof(VuetifyDatePickerAllowedDatesValue),
+            typeof(VuetifyDatePickerActiveValue)
+        };
+
+        AssertNet11UnionContract(typeof(VuetifyCalendarWeekdays), typeof(VuetifyCalendarWeekday[]));
+        AssertNet11UnionContract(
+            typeof(VuetifyDatePickerMultipleValue),
+            typeof(bool),
+            typeof(Number),
+            typeof(VuetifyDatePickerMultipleMode),
+            typeof(string));
+        AssertNet11UnionContract(typeof(VuetifyDatePickerModelValues), typeof(VueValue[]));
+        AssertNet11UnionContract(
+            typeof(VuetifyDatePickerModelValue),
+            typeof(Date),
+            typeof(string),
+            typeof(Number),
+            typeof(VuetifyDatePickerModelValues));
+        AssertNet11UnionContract(typeof(VuetifyDatePickerAllowedDates), typeof(VueValue[]));
+        AssertNet11UnionContract(
+            typeof(VuetifyDatePickerAllowedDatesValue),
+            typeof(VuetifyDatePickerAllowedDates),
+            typeof(VuetifyDatePickerAllowedDateResolver));
+        AssertNet11UnionContract(typeof(VuetifyDatePickerActiveValue), typeof(string), typeof(string[]));
+
+        foreach (var unionType in unionTypes)
+        {
+            Assert.IsNull(unionType.GetMethod("From", BindingFlags.Public | BindingFlags.Static), unionType.FullName);
+        }
+
+        Assert.IsNotNull(typeof(VuetifyDatePickerMultipleValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(decimal)]));
+        Assert.IsNotNull(typeof(VuetifyDatePickerModelValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(double[])]));
+        Assert.IsNotNull(typeof(VuetifyDatePickerAllowedDatesValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(double[])]));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,
