@@ -23,6 +23,12 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             [ECMAScriptModule("styles/button.mjs")]
             public static class ButtonStyles
             {
+                public static readonly string Enter = keyframes(
+                [
+                    new("from", new CssDeclarations { Opacity = 0 }),
+                    new("to", new CssDeclarations { Opacity = 1 })
+                ]);
+
                 public static readonly string Button = style(new CssRule
                 {
                     Display = inlineFlex,
@@ -68,6 +74,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
         StringAssert.Contains(script, "from \"style.mjs\"");
+        StringAssert.Contains(script, "keyframes([{ selector: \"from\", declarations: { opacity: 0 } }, { selector: \"to\", declarations: { opacity: 1 } }])");
         StringAssert.Contains(script, "style(");
         StringAssert.Contains(script, "display: inlineFlex");
         StringAssert.Contains(script, "calc(${percent(100)} - ${rem(2)})");

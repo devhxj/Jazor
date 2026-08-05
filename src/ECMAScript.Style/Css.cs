@@ -31,7 +31,7 @@ public static partial class css
         return name;
     }
 
-    public static string keyframes(params CssFrame[] frames)
+    public static string keyframes([PreserveParamsArray] params CssFrame[] frames)
         => keyframes(DefaultContext, frames);
 
     [ECMAScriptName("keyframesIn")]

@@ -132,7 +132,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               { selector: "from", declarations: { opacity: "0" } },
               { selector: "50%, to", declarations: { opacity: "1" } }
             ]);
-            cssGlobal("html, body", { margin: "0", color: "black" });
+            cssGlobal("html,\nbody", { margin: "0", color: "black" });
             const css = extract();
             console.log(JSON.stringify({ first, second, animation, css, repeated: extract() }));
             """);

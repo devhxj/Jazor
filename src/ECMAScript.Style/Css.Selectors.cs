@@ -50,7 +50,10 @@ public static partial class css
         {
             var character = selector.Substring(index, 1);
             var codeUnit = (int)selector.CharCodeAt(index);
-            if (codeUnit < 32 || codeUnit == 127 || character == "{" || character == "}")
+            // CSS selector whitespace includes tab, LF, form feed, and CR. These characters are
+            // normalized when each selector part is trimmed. CSS 选择器允许这些空白字符。
+            var isCssWhitespace = codeUnit is 9 or 10 or 12 or 13;
+            if (codeUnit < 32 && !isCssWhitespace || codeUnit == 127 || character == "{" || character == "}")
                 Fail(label + " contains an invalid character.");
 
             if (escaped)
