@@ -3,29 +3,19 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VSnackbarQueue message values, options, and scoped-slot contexts.
+// 定义 VSnackbarQueue 的消息值、选项和作用域插槽上下文；可擦除的消息值使用原生 union。
+
 /// <summary>
 /// 消息条队列消息列表的擦除值联合类型。
 /// Erased value union for snackbar-queue message lists.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySnackbarQueueMessagesCollectionBuilder), nameof(VuetifySnackbarQueueMessagesCollectionBuilder.Create))]
-public readonly struct VuetifySnackbarQueueMessages : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySnackbarQueueMessage>
+public readonly union VuetifySnackbarQueueMessages(VuetifySnackbarQueueMessage[]) : IEnumerable<VuetifySnackbarQueueMessage>
 {
-    private readonly VuetifySnackbarQueueMessage[]? _items;
-
-    public VuetifySnackbarQueueMessages(VuetifySnackbarQueueMessage[] items)
-    {
-        _items = items;
-    }
-
-    public VuetifySnackbarQueueMessage[]? AsArray => _items;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySnackbarQueueMessages From(VuetifySnackbarQueueMessage[] items);
+    public VuetifySnackbarQueueMessage[]? AsArray => Value as VuetifySnackbarQueueMessage[];
 
     public static implicit operator VuetifySnackbarQueueMessages(VuetifySnackbarQueueMessage[] items)
         => new(items);
@@ -37,7 +27,7 @@ public readonly struct VuetifySnackbarQueueMessages : System.Runtime.CompilerSer
         => new(Array.ConvertAll(items, static item => (VuetifySnackbarQueueMessage)item));
 
     IEnumerator<VuetifySnackbarQueueMessage> IEnumerable<VuetifySnackbarQueueMessage>.GetEnumerator()
-        => ((IEnumerable<VuetifySnackbarQueueMessage>)(_items ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifySnackbarQueueMessage>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifySnackbarQueueMessage>)this).GetEnumerator();
@@ -55,44 +45,12 @@ public static class VuetifySnackbarQueueMessagesCollectionBuilder
 /// Erased value union for a single snackbar-queue message.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySnackbarQueueMessage : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifySnackbarQueueMessage(string, VuetifySnackbarQueueMessageOptions)
 {
-    private readonly byte _kind;
-    private readonly string? _text;
-    private readonly VuetifySnackbarQueueMessageOptions? _options;
+    public string? AsText => Value as string;
 
-    public VuetifySnackbarQueueMessage(string value)
-    {
-        _kind = 1;
-        _text = value;
-        _options = default;
-    }
-
-    public VuetifySnackbarQueueMessage(VuetifySnackbarQueueMessageOptions value)
-    {
-        _kind = 2;
-        _text = default;
-        _options = value;
-    }
-
-    public string? AsText => _kind == 1 ? _text : default;
-
-    public VuetifySnackbarQueueMessageOptions? AsOptions => _kind == 2 ? _options : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsText,
-        2 => AsOptions,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySnackbarQueueMessage From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifySnackbarQueueMessage From(VuetifySnackbarQueueMessageOptions value);
+    public VuetifySnackbarQueueMessageOptions? AsOptions => Value as VuetifySnackbarQueueMessageOptions;
 
     public static implicit operator VuetifySnackbarQueueMessage(string value)
         => new(value);
