@@ -10,9 +10,6 @@ using static ECMAScript.Vue3;
 namespace JazorAdmin.InjectSmoke;
 
 [ECMAScriptModule("./components/jazor-admin-inject-page-container")]
-[VueProp(nameof(Title), Name = "injectedTitle")]
-[VueSlot(nameof(Extra), Name = "injected-extra")]
-[VueSlot(nameof(ChildContent), Name = "injected-content", IsDefault = true)]
 public sealed class InjectPageContainer : ComponentBase, IVueComponent,
     IVueContainerImplementation<PageContainer>
 {
@@ -26,9 +23,11 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("injected-content")]
     public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("injectedTitle")]
     public string? Title { get; set; }
 
     [Parameter]
@@ -41,6 +40,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
     public AdminPageAction[]? Actions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("injected-extra")]
     public RenderFragment? Extra { get; set; }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

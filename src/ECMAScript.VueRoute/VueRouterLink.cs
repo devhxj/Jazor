@@ -9,16 +9,14 @@ namespace ECMAScript;
 /// Razor authoring proxy for Vue Router's <c>RouterLink</c> component.
 /// </summary>
 [VueLibraryComponent("npm:vue-router@4.mjs", "RouterLink")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(To), Required = true)]
-[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VueRouterLink : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("style")]
     public VueStyleValue? CssStyle { get; set; }
 
     [Parameter]

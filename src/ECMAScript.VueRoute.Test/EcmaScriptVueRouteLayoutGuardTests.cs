@@ -89,6 +89,15 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         Assert.AreEqual("npm:vue-router@4.mjs", component!.ImportSpecifier);
         Assert.AreEqual("RouterLink", component.ExportName);
 
+        Assert.AreEqual(
+            "class",
+            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.CssClass))!
+                .GetCustomAttribute<ECMAScript.ECMAScriptNameAttribute>()?.Name);
+        Assert.AreEqual(
+            "style",
+            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.CssStyle))!
+                .GetCustomAttribute<ECMAScript.ECMAScriptNameAttribute>()?.Name);
+
         var to = componentType.GetProperty(nameof(ECMAScript.VueRouterLink.To));
         Assert.IsNotNull(to);
         Assert.AreEqual(typeof(ECMAScript.RouteLocationRaw), to!.PropertyType);
