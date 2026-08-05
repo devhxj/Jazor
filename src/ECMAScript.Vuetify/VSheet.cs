@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sheet container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSheet")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VSheet : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -115,6 +113,7 @@ public sealed class VSheet : ComponentBase, IVueLibraryComponent
     /// CSS class names.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -122,6 +121,7 @@ public sealed class VSheet : ComponentBase, IVueLibraryComponent
     /// Inline styles.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

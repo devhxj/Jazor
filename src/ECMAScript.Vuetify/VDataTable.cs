@@ -9,11 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data table authoring proxy for RazorVue.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataTable")]
-[VueSlot(nameof(HeaderSelect), Name = "header.data-table-select")]
-[VueSlot(nameof(HeaderExpand), Name = "header.data-table-expand")]
-[VueSlot(nameof(BodyPrepend), Name = "body.prepend")]
-[VueSlot(nameof(BodyAppend), Name = "body.append")]
-[VueSlot(nameof(FooterPrepend), Name = "footer.prepend")]
 public sealed class VDataTable : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -441,6 +436,7 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     /// Slot content for the header select column.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header.data-table-select")]
     public RenderFragment<VDataTableHeaderCellSlotContext>? HeaderSelect { get; set; }
 
     /// <summary>
@@ -448,6 +444,7 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     /// Slot content for the header expand column.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header.data-table-expand")]
     public RenderFragment<VDataTableHeaderCellSlotContext>? HeaderExpand { get; set; }
 
     /// <summary>
@@ -462,6 +459,7 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     /// Slot content prepended to the table body.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("body.prepend")]
     public RenderFragment<VDataTableSlotContext>? BodyPrepend { get; set; }
 
     /// <summary>
@@ -469,6 +467,7 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     /// Slot content appended to the table body.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("body.append")]
     public RenderFragment<VDataTableSlotContext>? BodyAppend { get; set; }
 
     /// <summary>
@@ -525,6 +524,7 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     /// Slot content prepended to the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("footer.prepend")]
     public RenderFragment? FooterPrepend { get; set; }
 
     /// <summary>

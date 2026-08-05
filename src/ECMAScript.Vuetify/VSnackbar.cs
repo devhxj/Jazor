@@ -9,11 +9,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueProp(nameof(ActivatorTarget), Name = "activator")]
 public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -147,6 +144,7 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -154,6 +152,7 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
@@ -252,6 +251,7 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     /// Activator target element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public VuetifyOverlayActivatorTarget? ActivatorTarget { get; set; }
 
     /// <summary>

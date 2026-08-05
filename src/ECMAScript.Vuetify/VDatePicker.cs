@@ -8,7 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify date-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDatePicker")]
-[VueProp(nameof(HeaderText), Name = "header")]
 public sealed class VDatePicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -205,6 +204,7 @@ public sealed class VDatePicker : ComponentBase, IVueLibraryComponent
     /// Header display text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public string? HeaderText { get; set; }
 
     /// <summary>

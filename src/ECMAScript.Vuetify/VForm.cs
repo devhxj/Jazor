@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify form component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VForm")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VForm : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -59,6 +57,7 @@ public sealed class VForm : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the form root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -66,6 +65,7 @@ public sealed class VForm : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the form root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

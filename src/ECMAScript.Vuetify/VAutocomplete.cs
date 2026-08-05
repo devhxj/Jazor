@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAutocomplete")]
-[VueProp(nameof(SelectedValue), Name = "modelValue")]
 /// <summary>
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.
@@ -31,6 +30,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase, IVueLibraryCompone
     /// Selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifySelectModelValue? SelectedValue { get; set; }
 
     /// <summary>

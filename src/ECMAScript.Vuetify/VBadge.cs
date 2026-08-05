@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VBadge")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 /// <summary>
 /// Vuetify 徽章组件。
 /// Vuetify badge component.
@@ -59,6 +57,7 @@ public sealed class VBadge : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -66,6 +65,7 @@ public sealed class VBadge : ComponentBase, IVueLibraryComponent
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

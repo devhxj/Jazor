@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs vertical stepper authoring proxy for expansion-panel based workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VStepperVertical")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VStepperVertical : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -59,6 +57,7 @@ public sealed class VStepperVertical : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -66,6 +65,7 @@ public sealed class VStepperVertical : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

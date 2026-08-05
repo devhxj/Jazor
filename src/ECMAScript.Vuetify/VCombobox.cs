@@ -9,7 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify combobox component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCombobox")]
-[VueProp(nameof(SelectedValue), Name = "modelValue")]
 public sealed class VCombobox : VSelectLikeComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -101,6 +100,7 @@ public sealed class VCombobox : VSelectLikeComponentBase, IVueLibraryComponent
     /// The bound selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifySelectModelValue? SelectedValue { get; set; }
 
     /// <summary>

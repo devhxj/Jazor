@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify linear progress bar component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VProgressLinear")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -52,6 +50,7 @@ public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -59,6 +58,7 @@ public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

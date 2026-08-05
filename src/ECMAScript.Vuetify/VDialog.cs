@@ -8,11 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueProp(nameof(ActivatorTarget), Name = "activator")]
 public sealed class VDialog : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -237,6 +234,7 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     /// CSS class for the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -244,6 +242,7 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     /// Inline style for the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
@@ -307,6 +306,7 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     /// Activator target element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public VuetifyDialogActivatorTarget? ActivatorTarget { get; set; }
 
     /// <summary>

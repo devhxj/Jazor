@@ -9,7 +9,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify select component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSelect")]
-[VueProp(nameof(SelectedValue), Name = "modelValue")]
 public sealed class VSelect : VSelectLikeComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -31,6 +30,7 @@ public sealed class VSelect : VSelectLikeComponentBase, IVueLibraryComponent
     /// The selected item value bound to v-model.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifySelectModelValue? SelectedValue { get; set; }
 
     /// <summary>

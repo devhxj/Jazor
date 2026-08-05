@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify icon authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VIcon")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VIcon : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -58,6 +56,7 @@ public sealed class VIcon : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -65,6 +64,7 @@ public sealed class VIcon : ComponentBase, IVueLibraryComponent
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid row authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRow")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VRow : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -24,6 +22,7 @@ public sealed class VRow : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -31,6 +30,7 @@ public sealed class VRow : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

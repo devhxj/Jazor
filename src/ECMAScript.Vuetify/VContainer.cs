@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid container component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VContainer")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VContainer : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -66,6 +64,7 @@ public sealed class VContainer : ComponentBase, IVueLibraryComponent
     /// The CSS class to apply.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -73,6 +72,7 @@ public sealed class VContainer : ComponentBase, IVueLibraryComponent
     /// The inline style to apply.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

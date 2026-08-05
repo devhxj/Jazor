@@ -3193,6 +3193,47 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vuetify_ComponentNames_UseMemberLevelGeneralMetadata()
+    {
+        var componentTypes = typeof(Vuetify).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.Vuetify" &&
+                typeof(ComponentBase).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
+        Assert.IsFalse(componentTypes.Any(static type =>
+            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
+
+        var names = new (Type Type, string Property, string RuntimeName)[]
+        {
+            (typeof(VAlert), nameof(VAlert.CssClass), "class"),
+            (typeof(VAlert), nameof(VAlert.CssStyle), "style"),
+            (typeof(VAutocomplete), nameof(VAutocomplete.SelectedValue), "modelValue"),
+            (typeof(VDatePicker), nameof(VDatePicker.HeaderText), "header"),
+            (typeof(VImg), nameof(VImg.CrossOrigin), "crossorigin"),
+            (typeof(VImg), nameof(VImg.ReferrerPolicy), "referrerpolicy"),
+            (typeof(VDataTable), nameof(VDataTable.HeaderSelect), "header.data-table-select"),
+            (typeof(VDataTable), nameof(VDataTable.HeaderExpand), "header.data-table-expand"),
+            (typeof(VDataTable), nameof(VDataTable.BodyPrepend), "body.prepend"),
+            (typeof(VDataTable), nameof(VDataTable.BodyAppend), "body.append"),
+            (typeof(VDataTable), nameof(VDataTable.FooterPrepend), "footer.prepend")
+        };
+
+        foreach (var (type, propertyName, runtimeName) in names)
+        {
+            var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            Assert.IsNotNull(property, $"{type.Name}.{propertyName}");
+            Assert.AreEqual(
+                runtimeName,
+                property!.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name,
+                $"{type.Name}.{propertyName}");
+        }
+    }
+
+    [TestMethod]
     public void TDesign_AuthoringComponents_ExposeOnlyAdditionalAttributesAsObjectSink()
     {
         var componentTypes = typeof(TDesign).Assembly

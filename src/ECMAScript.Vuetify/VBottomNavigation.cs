@@ -5,8 +5,6 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VBottomNavigation")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 /// <summary>
 /// Vuetify 底部导航组件。
 /// Vuetify bottom navigation component.
@@ -172,6 +170,7 @@ public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -179,6 +178,7 @@ public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

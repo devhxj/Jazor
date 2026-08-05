@@ -7,12 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(LoadStart), VueEmitKind.LibrarySpecific, Name = "loadstart")]
 [VueLibraryEmit(nameof(LoadError), VueEmitKind.LibrarySpecific, Name = "error")]
-[VueProp(nameof(CrossOrigin), Name = "crossorigin")]
-[VueProp(nameof(ReferrerPolicy), Name = "referrerpolicy")]
 public sealed class VImg : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -153,6 +149,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the image root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -160,6 +157,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Inline styles applied to the image root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
@@ -209,6 +207,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Cross-origin policy of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("crossorigin")]
     public VImgCrossOrigin? CrossOrigin { get; set; }
 
     /// <summary>
@@ -216,6 +215,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Referrer policy of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("referrerpolicy")]
     public VImgReferrerPolicy? ReferrerPolicy { get; set; }
 
     /// <summary>

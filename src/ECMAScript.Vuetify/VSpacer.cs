@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify spacer authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSpacer")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VSpacer : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -17,6 +15,7 @@ public sealed class VSpacer : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -24,6 +23,7 @@ public sealed class VSpacer : ComponentBase, IVueLibraryComponent
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(OpenClicked), VueEmitKind.LibrarySpecific, Name = "click:open")]
 [VueLibraryEmit(nameof(SelectClicked), VueEmitKind.LibrarySpecific, Name = "click:select")]
 public sealed class VTreeview : ComponentBase, IVueLibraryComponent
@@ -180,6 +178,7 @@ public sealed class VTreeview : ComponentBase, IVueLibraryComponent
     /// CSS class.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -187,6 +186,7 @@ public sealed class VTreeview : ComponentBase, IVueLibraryComponent
     /// Inline style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

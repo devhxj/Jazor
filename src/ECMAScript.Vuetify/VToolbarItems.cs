@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar-items authoring proxy for grouped toolbar actions.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarItems")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
 {
     /// <summary>
@@ -31,6 +29,7 @@ public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
     /// CSS class.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -38,6 +37,7 @@ public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
     /// Inline style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

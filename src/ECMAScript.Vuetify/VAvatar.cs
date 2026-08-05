@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAvatar")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 /// <summary>
 /// Vuetify 头像组件。
 /// Vuetify avatar component.
@@ -73,6 +71,7 @@ public sealed class VAvatar : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -80,6 +79,7 @@ public sealed class VAvatar : ComponentBase, IVueLibraryComponent
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>

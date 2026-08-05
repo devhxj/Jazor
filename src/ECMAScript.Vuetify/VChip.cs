@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
-[VueProp(nameof(CssClass), Name = "class")]
-[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ClickClose), VueEmitKind.LibrarySpecific, Name = "click:close")]
 [VueLibraryEmit(nameof(GroupSelected), VueEmitKind.LibrarySpecific, Name = "group:selected")]
 public sealed class VChip : ComponentBase, IVueLibraryComponent
@@ -145,6 +143,7 @@ public sealed class VChip : ComponentBase, IVueLibraryComponent
     /// The CSS class to apply.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
 
     /// <summary>
@@ -152,6 +151,7 @@ public sealed class VChip : ComponentBase, IVueLibraryComponent
     /// The inline style to apply.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
