@@ -1,3 +1,6 @@
+// File: Util.cs
+// Purpose: Holds shared symbol, naming, type, and syntax utilities for compiler lowering.
+// 只收纳跨多个 lowering 文件的纯辅助逻辑；具体 C# 语义应保留在 SemanticWalker 分部文件中。
 using System;
 using System.IO;
 using System.Linq;

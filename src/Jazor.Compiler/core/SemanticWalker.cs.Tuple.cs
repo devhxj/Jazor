@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Tuple.cs
+// Purpose: Erases tuple and structural-value operations into JavaScript object composition.
+// 保留位置语义、目标 shape、解构与比较；复杂 source 必须缓存以避免重复 getter/call。
 using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
@@ -982,8 +985,7 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// <summary>
-	/// 元组比较操作数的处理结果
+	/// 元组比较操作数的处理结果。
 	/// </summary>
 	/// <param name="Expression">转换后的表达式（用于成员访问）</param>
 	/// <param name="TupleOperation">如果是元组字面量，保留原始操作</param>

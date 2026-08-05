@@ -1,3 +1,6 @@
+// File: JavaScriptAstFactory.cs
+// Purpose: Centralizes small, validated ESTree node construction helpers.
+// 将 JavaScript identifier、literal 和 module-name 约束集中，避免各 lowering 分支手写不一致的 AST。
 using System;
 using System.Collections.Generic;
 using System.Globalization;

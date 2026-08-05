@@ -1,3 +1,6 @@
+// File: WhiteListLookup.cs
+// Purpose: Resolves whitelist entries from Roslyn symbols using consumer-side compatibility probes.
+// 查找可尝试 override/extension 等回退，但不能改写生成文件中持久化的 canonical whitelist key。
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;

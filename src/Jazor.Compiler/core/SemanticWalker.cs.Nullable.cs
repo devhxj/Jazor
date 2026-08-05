@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Nullable.cs
+// Purpose: Lowers supported Nullable<T> members while preserving null, throw, and evaluation-order behavior.
+// Nullable 擦除为 JS 值或 nullish；不同重载的惰性/急切求值差异必须在这里显式表达。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
@@ -5,6 +8,19 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
 
+/// <summary>
+/// Lowers the supported <c>Nullable&lt;T&gt;</c> members without creating a CLR nullable object.
+/// </summary>
+/// <remarks>
+/// Nullable values erase to either the underlying JavaScript value or <c>null</c>/<c>undefined</c>.
+/// The important distinction is evaluation timing: <c>Value</c> throws only for a missing value,
+/// parameterless <c>GetValueOrDefault()</c> can use a direct fallback, while
+/// <c>GetValueOrDefault(defaultValue)</c> must evaluate <paramref name="defaultValue"/> before
+/// choosing the result because C# evaluates invocation arguments eagerly.
+/// <para/>
+/// Nullable 在运行时不是包装对象；这里保的是使用点结果、抛错行为与求值顺序，不能把
+/// <c>??</c> 直接套到所有重载上，否则会漏掉显式默认参数的急切求值。
+/// </remarks>
 public partial class SemanticWalker
 {
     public Expression? CompileNullableValue(
@@ -28,6 +44,7 @@ public partial class SemanticWalker
 
         // `??` evaluates the receiver exactly once. The throw remains inside the right operand so
         // populated nullable values preserve their direct value representation and control flow.
+        // 用 IIFE 承载 throw 是因为 throw 是 statement；它只会在缺值分支执行。
         var missingValueThrow = new ThrowStatement(
             new NewExpression(
                 new Identifier("Error"),
@@ -78,7 +95,8 @@ public partial class SemanticWalker
     {
         // C# evaluates the receiver and default argument before the invocation. Passing both as
         // IIFE arguments preserves left-to-right eager evaluation before `??` chooses its result.
-        // The generated Compile mapping guarantees the instance handler and the one bound argument.
+        // A direct `handler ?? args[0]` would incorrectly skip side effects in defaultValue when
+        // handler is populated. generated Compile mapping 保证这里恰有实例和一个已绑定实参。
         var nullableParameter = new Identifier("nullable");
         var defaultValueParameter = new Identifier("defaultValue");
         var coalesce = new LogicalExpression(

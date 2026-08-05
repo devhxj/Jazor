@@ -1,3 +1,6 @@
+// File: CompositeSemanticWalkerHost.cs
+// Purpose: Composes multiple product hosts for SemanticWalker extension points.
+// 固定 rewrite 的 first-handler-wins 与观察通知 fan-out 规则，避免宿主处理顺序含糊。
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

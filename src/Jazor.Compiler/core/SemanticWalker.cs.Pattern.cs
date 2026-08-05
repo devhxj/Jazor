@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Pattern.cs
+// Purpose: Lowers C# pattern matching, type checks, and pattern-based switch control flow.
+// 重点是单次求值、变量绑定时机与可证明的 interface folding；不可证明的 erased runtime check 必须失败。
 /*
 IPatternOperation  (base: InputType, NarrowedType)
  ├─ 常见的上下文（pattern 可直接出现在这些位置）

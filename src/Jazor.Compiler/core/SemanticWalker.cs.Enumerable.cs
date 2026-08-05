@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Enumerable.cs
+// Purpose: Implements compiler-owned lowering for the supported LINQ enumerable surface.
+// 将已声明支持的高阶集合操作映射到 JavaScript 载体；不把未知 CLR LINQ 成员静默当作 JS 调用。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;

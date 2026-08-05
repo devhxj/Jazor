@@ -1,3 +1,6 @@
+// File: OperationTree.cs
+// Purpose: Provides focused Roslyn IOperation tree queries used by lowering decisions.
+// 这些查询只描述局部语义结构，避免把 Parent 链发展成隐式的全局控制流。
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System;

@@ -1,3 +1,6 @@
+// File: EmissionScopeContext.cs
+// Purpose: Tracks lexical emission scopes and allocates collision-free stable temporary names.
+// 合成名称由语义位点而非遍历顺序决定，既不能遮蔽父作用域，也不能因无关改动抖动。
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -52,6 +55,10 @@ internal sealed class EmissionScopeContext
         if (_allocatedNames.TryGetValue(allocationKey, out var name))
             return name;
 
+        // Name generation is deterministic, but a generated hash can still equal a user binding
+        // or a name allocated by an ancestor scope. Probe with deterministic salts rather than a
+        // traversal counter, so unrelated lowering visits cannot rename this temporary.
+        // 哈希不是“天然不冲突”的证明；后备序号同样必须是稳定输入的一部分。
         var fallbackIndex = 0;
         while (true)
         {

@@ -1,3 +1,6 @@
+// File: UniqueNameSession.cs
+// Purpose: Creates deterministic scope keys and synthetic names for one lowering session.
+// 名称由源符号、operation identity、scope 和 lowering site 哈希得到，避免输出随访问顺序变化。
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

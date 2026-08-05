@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Event.cs
+// Purpose: Lowers supported event add/remove and invocation operations through EventLowering.
+// 事件语义走明确 runtime seam；没有映射的 CLR event 场景必须保持不支持而非猜测 JavaScript 行为。
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

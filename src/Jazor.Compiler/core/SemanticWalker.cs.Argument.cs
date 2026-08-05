@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Argument.cs
+// Purpose: Lowers bound invocation and constructor arguments into JavaScript call positions.
+// 保留 C# 源码求值顺序、具名参数槽位重排与 ref/out 回写目标单次物化。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
@@ -12,6 +15,11 @@ namespace Jazor.Compiler;
 /// C# 具名实参仍按源码书写顺序求值，但最终进入由 <see cref="IArgumentOperation.Parameter"/>
 /// 指定的形参槽位。JavaScript 没有具名调用语法，因此重排时必须先在第一个实参位置缓存
 /// 全部源码实参，再按形参顺序消费缓存，不能直接排序 AST 而改变副作用顺序。
+/// <para/>
+/// 例如 <c>M(second: Next(), first: Read())</c> 必须先执行 <c>Next()</c>、再执行
+/// <c>Read()</c>，但 JavaScript 调用仍必须成为 <c>M(firstValue, secondValue)</c>。
+/// 本文件同时承载 <c>ref/out</c> 调用端协议：callee 返回回写值，caller 只对已经物化的
+/// JavaScript location 写回，避免再次计算数组下标、属性 receiver 等可能有副作用的目标。
 /// </remarks>
 public partial class SemanticWalker
 {
@@ -44,6 +52,8 @@ public partial class SemanticWalker
         {
             // `out _` has no caller-visible storage. Its callee slot still exists, but C# does
             // not read an incoming value before the callee assigns it.
+            // `out _` 没有回写目标；传入 undefined 仅用于保留 callee 参数位置，并不表示
+            // C# 会读取该值。
             return new LoweredBoundArgument(operation, CreateUndefined(), null);
         }
 
@@ -191,7 +201,10 @@ public partial class SemanticWalker
             .ToList();
 
         // The callee (including an instance receiver) is evaluated before its first argument.
-        // Nesting the source-order cache here retains that ordering without an IIFE.
+        // Put the source-order assignments in the first emitted argument so `receiver` still
+        // runs first, then each source argument runs once, and only then the reordered values
+        // reach the callee. Nesting this SequenceExpression avoids an IIFE while preserving
+        // C# evaluation order. 将缓存嵌入首个实参是刻意的顺序约束，不能改成调用前的普通语句。
         evaluations.Add(ordered[0].Value);
         ordered[0] = ordered[0] with
         {

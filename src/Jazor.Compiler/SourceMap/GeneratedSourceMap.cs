@@ -1,3 +1,6 @@
+// File: GeneratedSourceMap.cs
+// Purpose: Models source-map metadata generated alongside emitted JavaScript.
+// 保存可序列化的映射目录；原始 source origin 必须在 lowering 阶段就附着到 AST。
 using System.Collections.Generic;
 
 namespace Jazor.Compiler;

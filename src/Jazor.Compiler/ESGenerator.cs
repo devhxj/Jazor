@@ -1,3 +1,6 @@
+// File: ESGenerator.cs
+// Purpose: Writes Acornima ESTree nodes as JavaScript text and source-map-aware output.
+// 文本序列化属于 emit 边界；此文件不应承担 C# 语义修复或 host fallback。
 using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;

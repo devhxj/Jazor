@@ -1,3 +1,6 @@
+// File: SourceOrigin.cs
+// Purpose: Represents the source-level origin attached to a lowered AST node.
+// lowering 同时产出 AST shape 与调试锚点；emit 阶段只消费该信息，不应重新猜测来源。
 namespace Jazor.Compiler;
 
 /// <summary>

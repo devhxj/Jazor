@@ -1,3 +1,6 @@
+// File: AstReferenceAnalysis.cs
+// Purpose: Collects identifier references from emitted ESTree nodes.
+// 用于在模块头生成前过滤未被最终 AST 使用的 import binding，不参与 C# 语义判定。
 using System;
 using System.Collections.Generic;
 using Acornima;

@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Lock.cs
+// Purpose: Defines the supported lowering boundary for C# lock operations.
+// JavaScript 没有 CLR monitor；本文件只实现已设计的 protocol，并对超出边界的同步语义明确拒绝。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;

@@ -1,3 +1,6 @@
+// File: ReferenceEqualityComparer.cs
+// Purpose: Supplies reference-identity equality for compiler-owned object graphs.
+// Roslyn/AST node identity must not accidentally collapse structurally equal but distinct nodes.
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 

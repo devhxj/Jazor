@@ -1,3 +1,6 @@
+// File: ScopeSite.cs
+// Purpose: Describes the kind of emitted JavaScript scope entered during lowering.
+// scope site 参与稳定名称分配，确保同一 C# 语义在不同 lexical 边界内不会发生名称冲突。
 namespace Jazor.Compiler;
 
 /// <summary>

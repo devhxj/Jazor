@@ -302,7 +302,7 @@ export function method() { }
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.AreEqual("类 TestClass 不是 public，无法转换", exception.Message);
+        Assert.AreEqual("Jazor module class 'TestClass' must be public to be converted.", exception.Message);
     }
 
     [TestMethod]
@@ -716,7 +716,7 @@ Assert.AreEqual(
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("嵌套类 NestedClass 需要扁平化处理", exception.Message);
+        Assert.AreEqual("Nested class 'NestedClass' must be flattened before conversion.", exception.Message);
     }
 
     [TestMethod]
@@ -737,7 +737,7 @@ Assert.AreEqual(
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("Jazor 模块类中不支持静态成员类NestedHelpers。", exception.Message);
+        Assert.AreEqual("Jazor module class does not support static member class NestedHelpers.", exception.Message);
     }
 
     [TestMethod]
@@ -780,7 +780,7 @@ Assert.AreEqual(
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("Jazor 模块类不支持NamedType:Data。", exception.Message);
+        Assert.AreEqual("Jazor module class does not support NamedType:Data.", exception.Message);
     }
 
     [TestMethod]
@@ -3029,7 +3029,7 @@ export function method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.AreEqual("Jazor 模块类.cctor不支持静态构造函数。", exception.Message);
+        Assert.AreEqual("Jazor module class does not support static constructor .cctor.", exception.Message);
 
     }
 
@@ -3113,7 +3113,7 @@ export let numbers = createDefault();
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.AreEqual("Jazor 模块类不支持NamedType:MathOp。", exception.Message);
+        Assert.AreEqual("Jazor module class does not support NamedType:MathOp.", exception.Message);
 
     }
 
@@ -3133,7 +3133,7 @@ export let numbers = createDefault();
 
         // Act & Assert - 事件声明本身当前不支持导出
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
-        Assert.AreEqual("Jazor 模块类不支持Event:MyEvent。", exception.Message);
+        Assert.AreEqual("Jazor module class does not support Event:MyEvent.", exception.Message);
     }
 
     [TestMethod]
@@ -3151,7 +3151,7 @@ export let numbers = createDefault();
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("Jazor 不支持转换方法 Native，无法从操作生成函数体。", exception.Message);
+        Assert.AreEqual("Jazor cannot convert method Native: no function body could be generated from its operation.", exception.Message);
     }
 
     #endregion

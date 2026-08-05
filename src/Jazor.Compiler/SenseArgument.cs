@@ -1,3 +1,6 @@
+// File: SenseArgument.cs
+// Purpose: Carries lowering context plus per-scope declarations and module-level import collection.
+// 结构体副本共享导入状态但隔离局部声明，使嵌套 lowering 同时保持 lexical scope 与 stable imports。
 using Acornima;
 using Acornima.Ast;
 using Jazor.Common;

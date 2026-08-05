@@ -1,3 +1,6 @@
+// File: GeneratedJavaScriptArtifact.cs
+// Purpose: Defines the final in-memory JavaScript artifact and its optional source map.
+// 它是 compiler-to-emit 的数据载体，不直接写文件，也不承担 AST lowering。
 namespace Jazor.Compiler;
 
 /// <summary>

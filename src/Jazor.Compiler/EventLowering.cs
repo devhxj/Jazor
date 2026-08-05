@@ -1,3 +1,6 @@
+// File: EventLowering.cs
+// Purpose: Contains the shared lowering model for supported C# event operations.
+// 将事件订阅/取消映射到明确的 JavaScript runtime seam，避免把 CLR event identity 误当作原生 JS 能力。
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 

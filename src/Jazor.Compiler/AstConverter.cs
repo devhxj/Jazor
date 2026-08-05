@@ -1,3 +1,6 @@
+// File: AstConverter.cs
+// Purpose: Builds the module-level ESTree artifact from a Roslyn source type.
+// 负责成员组织、导入提升和模块声明；方法体语义必须委托给 SemanticWalker，不能在此绕过 lowering。
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;
@@ -98,10 +101,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         // 检查是否为 public 顶层类型
         if (!IsAllowedTopLevelAccessibility(_classSymbol.DeclaredAccessibility))
-            throw new NotSupportedException($"类 {_classSymbol.Name} 不是 public，无法转换");
+            throw new NotSupportedException($"Jazor module class '{_classSymbol.Name}' must be public to be converted.");
 
         if (_classSymbol.ContainingType != null)
-            throw new NotSupportedException($"嵌套类 {_classSymbol.Name} 需要扁平化处理");
+            throw new NotSupportedException($"Nested class '{_classSymbol.Name}' must be flattened before conversion.");
 
         ValidateModuleExportPolicy();
 
@@ -140,7 +143,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     // 模块层仅保留其编译期约束，不发射 JS 声明。
                     break;
                 default:
-                    throw new NotSupportedException($"Jazor 模块类不支持{member.Kind}:{member.Name}。");
+                    throw new NotSupportedException($"Jazor module class does not support {member.Kind}:{member.Name}.");
             }
         }
 
@@ -170,6 +173,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private IEnumerable<ImportDeclaration> BuildImportDeclarations(IReadOnlyList<Statement> members)
     {
+        // Collection happens while each member is lowered, but import declarations belong at the
+        // module header. Retain only bindings actually referenced by the final AST: some host
+        // rewrites claim a mapping and later replace its original expression entirely.
+        // 先收集、后提升能让 walker 保持表达式语义；这里依据最终 AST 再过滤死导入。
         var referencedIdentifiers = CollectReferencedIdentifiers(members);
         foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
@@ -220,6 +227,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private void MergeImports(in SenseArgument argument)
     {
+        // Do not normalize per member. The module owns dedupe and ordering after every member has
+        // contributed, which keeps one import alias stable across fields, methods, and classes.
+        // 不在此处排序/去重，避免局部转换顺序影响模块级 import 的最终形状。
         foreach (var pair in argument.FlushImportSpecifiers())
         {
             if (_imports.TryGetValue(pair.Key, out var list))
@@ -298,14 +308,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
-            throw new NotSupportedException($"Jazor 模块类不支持Event:{eventSymbol.Name}。");
+            throw new NotSupportedException($"Jazor module class does not support Event:{eventSymbol.Name}.");
 
         if (symbol.MethodKind == MethodKind.SharedConstructor)
         {
             if (symbol.IsImplicitlyDeclared)
                 return;
 
-            throw new NotSupportedException($"Jazor 模块类{symbol.Name}不支持静态构造函数。");
+            throw new NotSupportedException($"Jazor module class does not support static constructor {symbol.Name}.");
         }
 
         if (Util.IsBodylessInitAccessor(symbol))
@@ -406,7 +416,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
         }
         if (body is null)
-            throw new NotSupportedException($"Jazor 不支持转换方法 {symbol.Name}，无法从操作生成函数体。");
+            throw new NotSupportedException($"Jazor cannot convert method {symbol.Name}: no function body could be generated from its operation.");
 
         if (refParas.Count > 0)
             body = RefOutReturnProtocol.Apply(body, refParas, hasReturn);
@@ -1393,7 +1403,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         if (symbol.IsStatic)
-            throw new NotSupportedException($"Jazor 模块类中不支持静态成员类{symbol.Name}。");
+            throw new NotSupportedException($"Jazor module class does not support static member class {symbol.Name}.");
             
         var declaration = ConvertMemberClass(symbol, baseType, cancellationToken);
 

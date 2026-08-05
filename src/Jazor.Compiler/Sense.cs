@@ -1,3 +1,6 @@
+// File: Sense.cs
+// Purpose: Enumerates the immediate semantic context in which an operation is lowered.
+// Sense 通过显式参数传递上下文，避免靠 Roslyn Parent 链猜测当前表达式/语句用途。
 namespace Jazor.Compiler;
 
 /// <summary>

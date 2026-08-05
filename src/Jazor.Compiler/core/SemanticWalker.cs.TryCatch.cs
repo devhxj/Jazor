@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.TryCatch.cs
+// Purpose: Lowers try/catch/finally and exception-filter-related control flow.
+// JavaScript 异常对象与 C# 过滤语义不完全等价，因此本文件只表达已验证的使用点行为。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;

@@ -1,3 +1,6 @@
+// File: LoweringSite.cs
+// Purpose: Names the precise lowering location for synthetic temporaries and helpers.
+// site 是稳定命名和 source-level reasoning 的语义坐标，不是普通调试标签。
 namespace Jazor.Compiler;
 
 /// <summary>

@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Ordinary.cs
+// Purpose: Handles ordinary C# expressions, statements, operators, and callable bodies.
+// 这是通用 lowering 主线；遇到 host member 时仍须转入 WhiteList 的 Alias/Inline/Import/Compile 层次。
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;

@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Reference.cs
+// Purpose: Lowers symbol references, member access, invocation, assignment targets, and conversions.
+// 这里是 CLR/host member dispatch 的关键入口，必须按 Compile -> Alias -> Inline -> Import -> normal 路线裁决。
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;

@@ -1,3 +1,6 @@
+// File: ConstructorRefOutSinkProtocol.cs
+// Purpose: Implements constructor-specific ref/out write-back through a compiler-owned sink.
+// JavaScript constructor 不能返回普通 ref/out 数组；本文件保住实例 identity 与 C# 回写结果。
 using Acornima;
 using Acornima.Ast;
 
@@ -5,7 +8,7 @@ namespace Jazor.Compiler;
 
 /// <summary>
 /// Preserves C# constructor <c>ref</c>/<c>out</c> write-back without changing JavaScript
-/// constructor identity.
+/// constructor identity. 在保持 JavaScript <c>new</c> 结果为实例的前提下模拟 C# 回写。
 /// </summary>
 /// <remarks>
 /// A JavaScript <c>constructor</c> cannot return the ordinary array used by method ref/out
@@ -13,6 +16,10 @@ namespace Jazor.Compiler;
 /// therefore receives a compiler-owned final sink array and copies writable parameters into it
 /// before every return path and on normal completion. The caller owns reading that sink back into
 /// the bound C# argument targets.
+/// <para/>
+/// 不能复用普通方法的 <c>[returnValue, ...]</c> 协议：JavaScript constructor 返回对象会替换
+/// <c>this</c>，从而破坏实例创建。sink 是额外的 compiler-owned 最后参数，调用端创建实例后
+/// 才按固定槽位回写到 C# 的 <c>ref/out</c> 目标。
 /// </remarks>
 internal static class ConstructorRefOutSinkProtocol
 {
@@ -68,6 +75,7 @@ internal static class ConstructorRefOutSinkProtocol
 
         // Nested callable bodies establish their own ref/out protocol and must not write to the
         // constructor's sink merely because they appear lexically inside the constructor body.
+        // 嵌套函数在语法上位于构造器内，不代表其 return 属于构造器的 sink 生命周期。
         protected override object VisitFunctionExpression(FunctionExpression node) => node;
         protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
         protected override object VisitFunctionDeclaration(FunctionDeclaration node) => node;

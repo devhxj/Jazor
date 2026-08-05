@@ -1,3 +1,6 @@
+// File: WhiteList.cs
+// Purpose: Defines the compiler-side whitelist contract for supported CLR and host semantics.
+// WhiteList 是正式语义边界，不是字符串替换表；具体 key 生成和 lookup 规则必须保持可追溯。
 using ECMAScript.Contract;
 
 namespace Jazor.Compiler;

@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Creation.cs
+// Purpose: Lowers object, collection, array, anonymous-function, and initializer creation forms.
+// 创建路径需要同时保住构造器选择、初始化顺序和 structural value 擦除边界，不能退化为任意对象字面量。
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;

@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.Using.cs
+// Purpose: Lowers using declarations/statements and supported disposal protocols.
+// 清理必须遵循 C# 的作用域和 finally 时机；不支持的 disposal shape 不能被静默省略。
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;

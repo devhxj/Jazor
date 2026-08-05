@@ -1,3 +1,6 @@
+// File: GeneratedSourceMapWriter.cs
+// Purpose: Serializes the compiler source-map model to its generated artifact format.
+// 只负责稳定输出，不推断或修正来源位置；source-origin 决策属于 SemanticWalker。
 using System;
 using System.Collections.Generic;
 using System.Linq;

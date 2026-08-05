@@ -1,3 +1,6 @@
+// File: Optimizer.cs
+// Purpose: Performs conservative post-lowering AST cleanup.
+// Optimizer 只能删除可证明无语义影响的冗余节点，不能修补 SemanticWalker 未正确表达的 C# 行为。
 using System.Collections.Generic;
 using System.Linq;
 using Acornima;

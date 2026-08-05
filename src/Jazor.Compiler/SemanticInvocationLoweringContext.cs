@@ -1,3 +1,6 @@
+// File: SemanticInvocationLoweringContext.cs
+// Purpose: Exposes compiler-owned services to host-specific invocation rewrites.
+// 宿主可请求类型映射、导入和诊断，但不能借此手拼 JavaScript 或绕过 SemanticWalker 边界。
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

@@ -1,4 +1,7 @@
-﻿using Acornima;
+// File: SemanticWalker.cs.String.cs
+// Purpose: Implements lowering for interpolated strings and supported string-specific operations.
+// 保留 C# 插值部分的从左到右求值；字符串 host API 仍需通过 whitelist 映射而非任意 JS 方法名猜测。
+using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;

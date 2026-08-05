@@ -1,3 +1,6 @@
+// File: GlobalUsings.cs
+// Purpose: Declares assembly-wide imports and friend-assembly visibility for Jazor.Compiler.
+// 只放编译项目共享的基础依赖；语义实现仍应在各自职责文件中保持显式。
 global using System;
 global using System.Collections.Generic;
 global using System.Collections.Immutable;

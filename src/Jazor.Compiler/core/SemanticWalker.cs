@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs
+// Purpose: Hosts the central Roslyn IOperation-to-ESTree visitor and shared semantic guards.
+// 各分部文件在此共同完成使用点 lowering；不支持的 runtime-sensitive 外部语义必须在这里显式失败。
 using Acornima.Ast;
 using ECMAScript.Contract;
 using Jazor.Common;

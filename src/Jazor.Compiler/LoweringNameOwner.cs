@@ -1,3 +1,6 @@
+// File: LoweringNameOwner.cs
+// Purpose: Identifies the semantic owner used in stable synthetic-name allocation.
+// owner key 与 scope/site 一起构成确定性命名输入，不可用访问顺序或临时计数器替代。
 namespace Jazor.Compiler;
 
 /// <summary>

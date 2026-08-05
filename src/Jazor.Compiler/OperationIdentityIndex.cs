@@ -1,3 +1,6 @@
+// File: OperationIdentityIndex.cs
+// Purpose: Assigns stable identities to Roslyn operations within one conversion root.
+// 为临时名和 scope key 提供与树遍历顺序无关的操作身份，不能跨不同 operation tree 复用。
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;

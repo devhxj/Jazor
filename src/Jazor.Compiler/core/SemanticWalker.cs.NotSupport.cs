@@ -1,4 +1,7 @@
-﻿using Acornima.Ast;
+// File: SemanticWalker.cs.NotSupport.cs
+// Purpose: Centralizes explicit failures for Roslyn operations outside the current compiler contract.
+// fail-fast 诊断是产品边界的一部分；本文件防止未知语义悄悄落成看似可运行的原始 JavaScript。
+using Acornima.Ast;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;

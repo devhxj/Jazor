@@ -1,3 +1,6 @@
+// File: AstConverter.Options.cs
+// Purpose: Defines immutable configuration for AstConverter module conversion.
+// 集中表达 profile、成员筛选和 host policy，避免把产品特例写入核心转换流程。
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Compiler;

@@ -1,3 +1,6 @@
+// File: AstConverterModulePolicy.cs
+// Purpose: Provides the extension contract for module shape and declaration naming.
+// 产品层通过此策略投影模块结构，而非继承或修改 AstConverter 的通用 C# lowering。
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Compiler;

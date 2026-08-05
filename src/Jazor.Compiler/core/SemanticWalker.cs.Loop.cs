@@ -1,4 +1,7 @@
-﻿using Acornima.Ast;
+// File: SemanticWalker.cs.Loop.cs
+// Purpose: Lowers C# loop and foreach operation forms into JavaScript control-flow AST.
+// 循环 lowering 必须保留迭代变量生命周期、continue/break 目标与 enumerator 的求值顺序。
+using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

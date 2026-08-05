@@ -1,3 +1,6 @@
+// File: ImportDeclarationFactory.cs
+// Purpose: Normalizes collected import specifiers into deterministic ES module declarations.
+// 统一去重、排序和语法合法的 default/namespace/named 拆分，保证模块头不依赖 traversal order。
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

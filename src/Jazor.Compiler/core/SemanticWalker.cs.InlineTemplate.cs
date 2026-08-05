@@ -1,3 +1,6 @@
+// File: SemanticWalker.cs.InlineTemplate.cs
+// Purpose: Parses and instantiates small whitelist Inline expression templates.
+// Inline 仅适合稳定、局部的表达式替换；复杂 control flow 或上下文敏感 AST 必须升级到 Compile。
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

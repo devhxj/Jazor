@@ -1,3 +1,6 @@
+// File: BlockComment.cs
+// Purpose: Represents a compiler-owned comment node in the Acornima AST stream.
+// 仅承载生成产物的辅助标记，不参与用户 C# 语义或 JavaScript 执行行为。
 using Acornima;
 using Acornima.Ast;
 using System.Runtime.CompilerServices;

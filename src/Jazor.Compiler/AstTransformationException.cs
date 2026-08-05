@@ -1,3 +1,6 @@
+// File: AstTransformationException.cs
+// Purpose: Carries a source-aware failure from the lowering pipeline.
+// 将不支持的语义与 Roslyn source location 关联，保证 fail-fast 诊断可定位、可解释。
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

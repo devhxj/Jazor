@@ -1,4 +1,7 @@
-﻿using Acornima.Ast;
+// File: SemanticWalker.cs.Declaration.cs
+// Purpose: Lowers local declarations, fields, functions, and declaration-oriented operations.
+// 负责把 C# 声明形状落到合法 JavaScript binding，并与发射作用域和稳定命名设施协作。
+using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;

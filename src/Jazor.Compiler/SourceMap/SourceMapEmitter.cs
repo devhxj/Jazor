@@ -1,3 +1,6 @@
+// File: SourceMapEmitter.cs
+// Purpose: Records JavaScript writer positions against source origins while emitting text.
+// sourcemap 服务源级观察点；synthetic AST 不能伪造为无关的用户源位置。
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,4 +1,7 @@
-﻿using Acornima.Ast;
+// File: SemanticWalker.cs.Switch.cs
+// Purpose: Lowers switch statements and switch expressions into JavaScript branching AST.
+// 负责 discriminant 单次求值、arm/case 顺序和表达式位置的 IIFE/temporary 协议。
+using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
