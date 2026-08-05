@@ -37,8 +37,11 @@
     <ItemGroup>
       <JazorDebugAssembly Include="$(TargetPath)" />
       <JazorDebugAssembly Include="@(ReferenceCopyLocalPaths)"
-                         Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
+                         Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
     </ItemGroup>
+
+    <!-- Emit reflects managed assemblies only. Native runtime DLLs can also use a .dll extension on Windows. -->
+    <!-- Emit 仅反射托管程序集；Windows 的原生 runtime DLL 也会使用 .dll 扩展名，必须在此排除。 -->
 
     <MakeDir Directories="$(_JazorDebugOutputDir)" />
 
@@ -59,8 +62,11 @@
     <ItemGroup>
       <JazorReleaseAssembly Include="$(TargetPath)" />
       <JazorReleaseAssembly Include="@(ReferenceCopyLocalPaths)"
-                           Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
+                           Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
     </ItemGroup>
+
+    <!-- Keep release emission consistent with the debug managed-assembly boundary above. -->
+    <!-- Release 与 Debug 保持同一托管程序集边界，避免发布构建重新传入原生库。 -->
 
     <RemoveDir Directories="$(_JazorReleaseOutputDir)" Condition="Exists('$(_JazorReleaseOutputDir)')" />
     <MakeDir Directories="$(_JazorReleaseArtifactDir);$(_JazorReleaseOutputDir)" />

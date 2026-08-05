@@ -91,6 +91,20 @@ public sealed class LegacyRazorVueContractRetirementTests
         StringAssert.Contains(targets, "Could not locate Jazor.Emit.", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void SdkTargets_ExcludeNativeRuntimeAssetsFromEmit()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        const string managedAssemblyCondition =
+            "'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'";
+
+        var conditionCount = targets.Split(managedAssemblyCondition, StringSplitOptions.None).Length - 1;
+
+        Assert.AreEqual(2, conditionCount, "Both debug and release emission must exclude native runtime DLLs.");
+        Assert.IsFalse(targets.Contains(".Contains('\\native\\')", StringComparison.Ordinal));
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

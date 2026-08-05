@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- Jazor 0.1.48 build targets now exclude native runtime DLL assets before invoking the managed emit tool, so RazorVue builds work with dependencies such as SQLite that ship native `.dll` files.
 - Jazor 0.1.47 allows external ECMAScript host proxies to consume a module's `default` export while keeping Jazor-authored module declarations on deterministic named exports.
 - Generated WebIDL bindings now represent `ByteString` browser text as `string`, including Fetch, Headers, navigation preload, and XMLHttpRequest contracts.
 - WebIDL bindings now distinguish WebCrypto's `BigInteger` byte-array typedef from the JavaScript `bigint` primitive, which maps to `System.Numerics.BigInteger` and retains the concise `AsBigInteger` union projection.
