@@ -22,2018 +22,2137 @@ internal static class JazorAdminStyles
     {
         var dashboardEnter = keyframes(
         [
-            new("from",
-                Rule(
-                    D("opacity", "0"),
-                    D("transform", "translateY(8px)")
-                )
-            ),
-            new("to",
-                Rule(
-                    D("opacity", "1"),
-                    D("transform", "translateY(0)")
-                )
-            )
+            new("from", new CssDeclarations
+            {
+                Opacity = 0,
+                Transform = translateY(px(8))
+            }),
+            new("to", new CssDeclarations
+            {
+                Opacity = 1,
+                Transform = translateY(px(0))
+            })
+        ]);
+
+        var sessionSpin = keyframes(
+        [
+            new("to", new CssDeclarations
+            {
+                Transform = rotate(deg(360))
+            })
         ]);
 
         global(":root",
-            Rule(
-                D("color-scheme", "light"),
-                D("font-family", "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"),
-                D("font-synthesis", "none"),
-                D("text-rendering", "optimizeLegibility")
-            ));
+            new CssRule
+            {
+                ColorScheme = raw("light"),
+                FontFamily = raw("Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"),
+                FontSynthesis = raw("none"),
+                TextRendering = raw("optimizeLegibility")
+            });
 
         global("*",
-            Rule(
-                D("box-sizing", "border-box")
-            ));
+            new CssRule
+            {
+                BoxSizing = raw("border-box")
+            });
 
-        global("html,\nbody,\n#app",
-            Rule(
-                D("min-width", "320px"),
-                D("min-height", "100%"),
-                D("margin", "0")
-            ));
+        global("html, body, #app",
+            new CssRule
+            {
+                MinWidth = raw("320px"),
+                MinHeight = raw("100%"),
+                Margin = raw("0")
+            });
 
         global("body",
-            Rule(
-                D("min-height", "100vh"),
-                D("background", "#f4f6f5")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("100vh"),
+                Background = raw("#f4f6f5")
+            });
 
-        global("button,\ninput,\nselect",
-            Rule(
-                D("font", "inherit")
-            ));
+        global("button, input, select",
+            new CssRule
+            {
+                Font = raw("inherit")
+            });
 
-        global("button,\nselect,\ninput[type=\"checkbox\"]",
-            Rule(
-                D("cursor", "pointer")
-            ));
+        global("button, select, input[type=\"checkbox\"]",
+            new CssRule
+            {
+                Cursor = raw("pointer")
+            });
 
-        global("button:disabled,\ninput:disabled,\nselect:disabled",
-            Rule(
-                D("cursor", "not-allowed"),
-                D("opacity", "0.56")
-            ));
+        global("button:disabled, input:disabled, select:disabled",
+            new CssRule
+            {
+                Cursor = raw("not-allowed"),
+                Opacity = raw("0.56")
+            });
 
         global(".jazor-admin-application",
-            Rule(
-                D("--app-bg", "#f5f7fa"),
-                D("--surface", "#ffffff"),
-                D("--surface-subtle", "#f8fafc"),
-                D("--surface-strong", "#edf2f7"),
-                D("--text", "#1f2937"),
-                D("--text-muted", "#738092"),
-                D("--border", "#e5eaf1"),
-                D("--border-strong", "#ccd6e2"),
-                D("--accent", "#2f6fed"),
-                D("--accent-strong", "#1f5bd2"),
-                D("--accent-soft", "#e9f1ff"),
-                D("--danger", "#d84a4a"),
-                D("--danger-soft", "#fff0f0"),
-                D("--warning", "#d18a19"),
-                D("--warning-soft", "#fff7e8"),
-                D("--info", "#2f6fed"),
-                D("--info-soft", "#e9f1ff"),
-                D("--shadow", "0 4px 14px rgb(31 52 78 / 5%)"),
-                D("min-height", "100vh"),
-                D("background", "var(--app-bg)"),
-                D("color", "var(--text)")
-            ));
+            new CssRule
+            {
+                ["--app-bg"] = raw("#f5f7fa"),
+                ["--surface"] = raw("#ffffff"),
+                ["--surface-subtle"] = raw("#f8fafc"),
+                ["--surface-strong"] = raw("#edf2f7"),
+                ["--text"] = raw("#1f2937"),
+                ["--text-muted"] = raw("#738092"),
+                ["--border"] = raw("#e5eaf1"),
+                ["--border-strong"] = raw("#ccd6e2"),
+                ["--accent"] = raw("#2f6fed"),
+                ["--accent-strong"] = raw("#1f5bd2"),
+                ["--accent-soft"] = raw("#e9f1ff"),
+                ["--danger"] = raw("#d84a4a"),
+                ["--danger-soft"] = raw("#fff0f0"),
+                ["--warning"] = raw("#d18a19"),
+                ["--warning-soft"] = raw("#fff7e8"),
+                ["--info"] = raw("#2f6fed"),
+                ["--info-soft"] = raw("#e9f1ff"),
+                ["--shadow"] = raw("0 4px 14px rgb(31 52 78 / 5%)"),
+                MinHeight = raw("100vh"),
+                Background = raw("var(--app-bg)"),
+                Color = raw("var(--text)")
+            });
 
         global(".jazor-admin-application--dark",
-            Rule(
-                D("color-scheme", "dark"),
-                D("--app-bg", "#151a18"),
-                D("--surface", "#1e2522"),
-                D("--surface-subtle", "#242c29"),
-                D("--surface-strong", "#2c3732"),
-                D("--text", "#edf3f0"),
-                D("--text-muted", "#aab8b1"),
-                D("--border", "#39453f"),
-                D("--border-strong", "#526159"),
-                D("--accent", "#50c99a"),
-                D("--accent-strong", "#78dab4"),
-                D("--accent-soft", "#193e31"),
-                D("--danger", "#ff8c86"),
-                D("--danger-soft", "#492827"),
-                D("--warning", "#f1c35d"),
-                D("--warning-soft", "#45391f"),
-                D("--info", "#8bbaf0"),
-                D("--info-soft", "#24364c"),
-                D("--shadow", "0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
-            ));
+            new CssRule
+            {
+                ColorScheme = raw("dark"),
+                ["--app-bg"] = raw("#151a18"),
+                ["--surface"] = raw("#1e2522"),
+                ["--surface-subtle"] = raw("#242c29"),
+                ["--surface-strong"] = raw("#2c3732"),
+                ["--text"] = raw("#edf3f0"),
+                ["--text-muted"] = raw("#aab8b1"),
+                ["--border"] = raw("#39453f"),
+                ["--border-strong"] = raw("#526159"),
+                ["--accent"] = raw("#50c99a"),
+                ["--accent-strong"] = raw("#78dab4"),
+                ["--accent-soft"] = raw("#193e31"),
+                ["--danger"] = raw("#ff8c86"),
+                ["--danger-soft"] = raw("#492827"),
+                ["--warning"] = raw("#f1c35d"),
+                ["--warning-soft"] = raw("#45391f"),
+                ["--info"] = raw("#8bbaf0"),
+                ["--info-soft"] = raw("#24364c"),
+                ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
+            });
 
         Media(".jazor-admin-application--system", "(prefers-color-scheme: dark)",
-            Rule(
-                D("color-scheme", "dark"),
-                D("--app-bg", "#151a18"),
-                D("--surface", "#1e2522"),
-                D("--surface-subtle", "#242c29"),
-                D("--surface-strong", "#2c3732"),
-                D("--text", "#edf3f0"),
-                D("--text-muted", "#aab8b1"),
-                D("--border", "#39453f"),
-                D("--border-strong", "#526159"),
-                D("--accent", "#50c99a"),
-                D("--accent-strong", "#78dab4"),
-                D("--accent-soft", "#193e31"),
-                D("--danger", "#ff8c86"),
-                D("--danger-soft", "#492827"),
-                D("--warning", "#f1c35d"),
-                D("--warning-soft", "#45391f"),
-                D("--info", "#8bbaf0"),
-                D("--info-soft", "#24364c"),
-                D("--shadow", "0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
-            ));
+            new CssRule
+            {
+                ColorScheme = raw("dark"),
+                ["--app-bg"] = raw("#151a18"),
+                ["--surface"] = raw("#1e2522"),
+                ["--surface-subtle"] = raw("#242c29"),
+                ["--surface-strong"] = raw("#2c3732"),
+                ["--text"] = raw("#edf3f0"),
+                ["--text-muted"] = raw("#aab8b1"),
+                ["--border"] = raw("#39453f"),
+                ["--border-strong"] = raw("#526159"),
+                ["--accent"] = raw("#50c99a"),
+                ["--accent-strong"] = raw("#78dab4"),
+                ["--accent-soft"] = raw("#193e31"),
+                ["--danger"] = raw("#ff8c86"),
+                ["--danger-soft"] = raw("#492827"),
+                ["--warning"] = raw("#f1c35d"),
+                ["--warning-soft"] = raw("#45391f"),
+                ["--info"] = raw("#8bbaf0"),
+                ["--info-soft"] = raw("#24364c"),
+                ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
+            });
 
         global(".jazor-admin-application--grayscale",
-            Rule(
-                D("filter", "grayscale(1)")
-            ));
+            new CssRule
+            {
+                Filter = raw("grayscale(1)")
+            });
 
         global(".jazor-admin-shell",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "232px minmax(0, 1fr)"),
-                D("min-height", "100vh")
-            ));
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("232px minmax(0, 1fr)"),
+                MinHeight = raw("100vh")
+            });
 
         global(".jazor-admin-shell--top",
-            Rule(
-                D("display", "block")
-            ));
+            new CssRule
+            {
+                Display = raw("block")
+            });
 
         global(".jazor-admin-shell__sidebar",
-            Rule(
-                D("position", "sticky"),
-                D("top", "0"),
-                D("z-index", "20"),
-                D("height", "100vh"),
-                D("overflow", "auto"),
-                D("background", "#17241f"),
-                D("color", "#eef7f3"),
-                D("border-right", "1px solid #293a33")
-            ));
+            new CssRule
+            {
+                Position = raw("sticky"),
+                Top = raw("0"),
+                ZIndex = raw("20"),
+                Height = raw("100vh"),
+                Overflow = raw("auto"),
+                Background = raw("#17241f"),
+                Color = raw("#eef7f3"),
+                BorderRight = raw("1px solid #293a33")
+            });
 
         global(".jazor-admin-shell--collapsed",
-            Rule(
-                D("grid-template-columns", "0 minmax(0, 1fr)")
-            ));
+            new CssRule
+            {
+                GridTemplateColumns = raw("0 minmax(0, 1fr)")
+            });
 
         global(".jazor-admin-shell--collapsed .jazor-admin-shell__sidebar",
-            Rule(
-                D("display", "none"),
-                D("width", "0"),
-                D("border-right", "0")
-            ));
+            new CssRule
+            {
+                Display = raw("none"),
+                Width = raw("0"),
+                BorderRight = raw("0")
+            });
 
         global(".jazor-admin-shell__main",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-shell__header",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("position", "sticky"),
-                D("top", "0"),
-                D("z-index", "15"),
-                D("min-height", "64px"),
-                D("background", "color-mix(in srgb, var(--surface) 94%, transparent)"),
-                D("border-bottom", "1px solid var(--border)"),
-                D("backdrop-filter", "blur(12px)")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                Position = raw("sticky"),
+                Top = raw("0"),
+                ZIndex = raw("15"),
+                MinHeight = raw("64px"),
+                Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
+                BorderBottom = raw("1px solid var(--border)"),
+                BackdropFilter = raw("blur(12px)")
+            });
 
         global(".jazor-admin-shell__sidebar-toggle",
-            Rule(
-                D("position", "relative"),
-                D("flex", "0 0 36px"),
-                D("width", "36px"),
-                D("height", "36px"),
-                D("padding", "0"),
-                D("margin-left", "14px"),
-                D("color", "var(--text)"),
-                D("background", "transparent"),
-                D("border", "1px solid var(--border)"),
-                D("border-radius", "5px")
-            ));
+            new CssRule
+            {
+                Position = raw("relative"),
+                Flex = raw("0 0 36px"),
+                Width = raw("36px"),
+                Height = raw("36px"),
+                Padding = raw("0"),
+                MarginLeft = raw("14px"),
+                Color = raw("var(--text)"),
+                Background = raw("transparent"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("5px")
+            });
 
         global(".jazor-admin-shell__sidebar-toggle::before",
-            Rule(
-                D("font-size", "20px"),
-                D("line-height", "1"),
-                D("content", "\"\\2630\"")
-            ));
+            new CssRule
+            {
+                FontSize = raw("20px"),
+                LineHeight = raw("1"),
+                Content = raw("\"\\2630\"")
+            });
 
         global(".jazor-admin-shell__sidebar-toggle:hover",
-            Rule(
-                D("background", "var(--surface-strong)")
-            ));
+            new CssRule
+            {
+                Background = raw("var(--surface-strong)")
+            });
 
         global(".jazor-admin-shell__content",
-            Rule(
-                D("width", "100%")
-            ));
+            new CssRule
+            {
+                Width = raw("100%")
+            });
 
         global(".jazor-admin-tdesign-layout",
-            Rule(
-                D("min-width", "0"),
-                D("min-height", "100vh"),
-                D("background", "var(--background)")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                MinHeight = raw("100vh"),
+                Background = raw("var(--background)")
+            });
 
         global(".jazor-admin-tdesign-layout > [data-shell-region=\"sidebar\"]",
-            Rule(
-                D("position", "sticky"),
-                D("top", "0"),
-                D("z-index", "20"),
-                D("height", "100vh"),
-                D("overflow", "auto"),
-                D("border-right", "1px solid var(--border)")
-            ));
+            new CssRule
+            {
+                Position = raw("sticky"),
+                Top = raw("0"),
+                ZIndex = raw("20"),
+                Height = raw("100vh"),
+                Overflow = raw("auto"),
+                BorderRight = raw("1px solid var(--border)")
+            });
 
         global(".jazor-admin-tdesign-layout[data-shell-collapsed=\"false\"] > [data-shell-region=\"sidebar\"]",
-            Rule(
-                D("width", "240px !important"),
-                D("flex", "0 0 240px !important")
-            ));
+            new CssRule
+            {
+                Width = raw("240px !important"),
+                Flex = raw("0 0 240px !important")
+            });
 
         global(".jazor-admin-tdesign-layout[data-shell-collapsed=\"true\"] > [data-shell-region=\"sidebar\"]",
-            Rule(
-                D("width", "64px !important"),
-                D("flex", "0 0 64px !important")
-            ));
+            new CssRule
+            {
+                Width = raw("64px !important"),
+                Flex = raw("0 0 64px !important")
+            });
 
         global(".jazor-admin-tdesign-layout > [data-shell-region=\"main\"]",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-layout [data-shell-region=\"header\"]",
-            Rule(
-                D("position", "sticky"),
-                D("top", "0"),
-                D("z-index", "15"),
-                D("border-bottom", "1px solid var(--border)")
-            ));
+            new CssRule
+            {
+                Position = raw("sticky"),
+                Top = raw("0"),
+                ZIndex = raw("15"),
+                BorderBottom = raw("1px solid var(--border)")
+            });
 
         global(".jazor-admin-tdesign-layout__header",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("width", "100%"),
-                D("min-width", "0"),
-                D("min-height", "64px"),
-                D("gap", "14px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                Width = raw("100%"),
+                MinWidth = raw("0"),
+                MinHeight = raw("64px"),
+                Gap = raw("14px")
+            });
 
         global(".jazor-admin-tdesign-layout [data-shell-region=\"content\"]",
-            Rule(
-                D("width", "100%"),
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                Width = raw("100%"),
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-sidebar-shell",
-            Rule(
-                D("display", "flex"),
-                D("min-height", "100%"),
-                D("background", "var(--surface)")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                MinHeight = raw("100%"),
+                Background = raw("var(--surface)")
+            });
 
         global(".jazor-admin-tdesign-sidebar-rail",
-            Rule(
-                D("display", "flex"),
-                D("flex", "0 0 64px"),
-                D("flex-direction", "column"),
-                D("align-items", "center"),
-                D("width", "64px"),
-                D("min-height", "100vh"),
-                D("padding", "14px 8px"),
-                D("gap", "10px"),
-                D("background", "#20415d")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                Flex = raw("0 0 64px"),
+                FlexDirection = raw("column"),
+                AlignItems = raw("center"),
+                Width = raw("64px"),
+                MinHeight = raw("100vh"),
+                Padding = raw("14px 8px"),
+                Gap = raw("10px"),
+                Background = raw("#20415d")
+            });
 
         global(".jazor-admin-tdesign-sidebar-rail__link",
-            Rule(
-                D("display", "grid"),
-                D("width", "42px"),
-                D("height", "42px"),
-                D("place-items", "center"),
-                D("color", "#c8d8e6"),
-                D("text-decoration", "none"),
-                D("border-radius", "6px")
-            ));
+            new CssRule
+            {
+                Display = raw("grid"),
+                Width = raw("42px"),
+                Height = raw("42px"),
+                PlaceItems = raw("center"),
+                Color = raw("#c8d8e6"),
+                TextDecoration = raw("none"),
+                BorderRadius = raw("6px")
+            });
 
-        global(".jazor-admin-tdesign-sidebar-rail__link:hover,\n.jazor-admin-tdesign-sidebar-rail__link.is-selected",
-            Rule(
-                D("color", "#ffffff"),
-                D("background", "#2f6fed")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__link:hover, .jazor-admin-tdesign-sidebar-rail__link.is-selected",
+            new CssRule
+            {
+                Color = raw("#ffffff"),
+                Background = raw("#2f6fed")
+            });
 
         global(".jazor-admin-tdesign-sidebar-rail__icon",
-            Rule(
-                D("position", "relative"),
-                D("display", "block"),
-                D("width", "18px"),
-                D("height", "18px")
-            ));
+            new CssRule
+            {
+                Position = raw("relative"),
+                Display = raw("block"),
+                Width = raw("18px"),
+                Height = raw("18px")
+            });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon::before,\n.jazor-admin-tdesign-sidebar-rail__icon::after",
-            Rule(
-                D("position", "absolute"),
-                D("display", "block"),
-                D("box-sizing", "border-box"),
-                D("content", "\"\"")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon::before, .jazor-admin-tdesign-sidebar-rail__icon::after",
+            new CssRule
+            {
+                Position = raw("absolute"),
+                Display = raw("block"),
+                BoxSizing = raw("border-box"),
+                Content = raw("\"\"")
+            });
 
         global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"dashboard\"]::before",
-            Rule(
-                D("width", "6px"),
-                D("height", "6px"),
-                D("background", "currentcolor"),
-                D("box-shadow", "10px 0 0 currentcolor, 0 10px 0 currentcolor, 10px 10px 0 currentcolor")
-            ));
+            new CssRule
+            {
+                Width = raw("6px"),
+                Height = raw("6px"),
+                Background = raw("currentcolor"),
+                BoxShadow = raw("10px 0 0 currentcolor, 0 10px 0 currentcolor, 10px 10px 0 currentcolor")
+            });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"operations\"]::before",
-            Rule(
-                D("top", "2px"),
-                D("left", "1px"),
-                D("width", "16px"),
-                D("height", "3px"),
-                D("background", "currentcolor"),
-                D("box-shadow", "0 6px 0 currentcolor, 0 12px 0 currentcolor")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"organizations\"]::before", new CssRule
+        {
+            Top = px(1),
+            Left = px(5),
+            Width = px(8),
+            Height = px(8),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = percent(50)
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"operations\"]::after",
-            Rule(
-                D("top", "0"),
-                D("left", "3px"),
-                D("width", "3px"),
-                D("height", "16px"),
-                D("background", "#20415d"),
-                D("box-shadow", "5px 0 0 #20415d, 5px 6px 0 #20415d, 10px 6px 0 #20415d, 10px 12px 0 #20415d")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"organizations\"]::after", new CssRule
+        {
+            Right = px(1),
+            Bottom = px(1),
+            Left = px(1),
+            Height = px(7),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = raw("8px 8px 3px 3px")
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__link.is-selected .jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"operations\"]::after,\n.jazor-admin-tdesign-sidebar-rail__link:hover .jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"operations\"]::after",
-            Rule(
-                D("background", "#2f6fed"),
-                D("box-shadow", "5px 0 0 #2f6fed, 5px 6px 0 #2f6fed, 10px 6px 0 #2f6fed, 10px 12px 0 #2f6fed")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"authorization\"]::before", new CssRule
+        {
+            Top = px(1),
+            Left = px(3),
+            Width = px(12),
+            Height = px(14),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = raw("3px 3px 7px 7px")
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"workspace\"]::before",
-            Rule(
-                D("width", "18px"),
-                D("height", "18px"),
-                D("border", "2px solid currentcolor")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"authorization\"]::after", new CssRule
+        {
+            Top = px(5),
+            Left = px(7),
+            Width = px(4),
+            Height = px(7),
+            BorderRightWidth = px(2),
+            BorderRightStyle = solid,
+            BorderRightColor = currentColor,
+            BorderBottomWidth = px(2),
+            BorderBottomStyle = solid,
+            BorderBottomColor = currentColor,
+            Transform = rotate(deg(45))
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"workspace\"]::after",
-            Rule(
-                D("top", "2px"),
-                D("left", "7px"),
-                D("width", "2px"),
-                D("height", "14px"),
-                D("background", "currentcolor"),
-                D("box-shadow", "5px 0 0 currentcolor")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"accounts\"]::before", new CssRule
+        {
+            Top = px(1),
+            Left = px(5),
+            Width = px(8),
+            Height = px(8),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = percent(50)
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"settings\"]::before",
-            Rule(
-                D("top", "1px"),
-                D("left", "8px"),
-                D("width", "3px"),
-                D("height", "16px"),
-                D("background", "currentcolor"),
-                D("box-shadow", "-7px 0 0 currentcolor, 7px 0 0 currentcolor")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"accounts\"]::after", new CssRule
+        {
+            Right = px(1),
+            Bottom = px(1),
+            Left = px(1),
+            Height = px(7),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = raw("6px 6px 2px 2px")
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"settings\"]::after",
-            Rule(
-                D("top", "4px"),
-                D("left", "5px"),
-                D("width", "6px"),
-                D("height", "6px"),
-                D("border", "2px solid currentcolor"),
-                D("border-radius", "50%"),
-                D("box-shadow", "7px 5px 0 -2px #20415d, -7px 7px 0 -2px #20415d")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"configuration\"]::before", new CssRule
+        {
+            Top = px(2),
+            Left = px(1),
+            Width = px(16),
+            Height = px(2),
+            Background = currentColor,
+            BoxShadow = raw("0 6px 0 currentcolor, 0 12px 0 currentcolor")
+        });
 
-        global(".jazor-admin-tdesign-sidebar-rail__link.is-selected .jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"settings\"]::after,\n.jazor-admin-tdesign-sidebar-rail__link:hover .jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"settings\"]::after",
-            Rule(
-                D("box-shadow", "7px 5px 0 -2px #2f6fed, -7px 7px 0 -2px #2f6fed")
-            ));
+        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"configuration\"]::after", new CssRule
+        {
+            Top = px(0),
+            Left = px(4),
+            Width = px(4),
+            Height = px(5),
+            Background = raw("var(--surface)"),
+            BorderWidth = px(2),
+            BorderStyle = solid,
+            BorderColor = currentColor,
+            BorderRadius = percent(50),
+            BoxShadow = raw("7px 6px 0 -1px var(--surface), 7px 6px 0 1px currentcolor, 2px 12px 0 -1px var(--surface), 2px 12px 0 1px currentcolor")
+        });
 
         global(".jazor-admin-tdesign-sidebar-shell__menu",
-            Rule(
-                D("flex", "1 1 auto"),
-                D("width", "176px"),
-                D("min-width", "0"),
-                D("padding", "14px 10px"),
-                D("overflow", "auto"),
-                D("border-left", "1px solid var(--border)")
-            ));
+            new CssRule
+            {
+                Flex = raw("1 1 auto"),
+                Width = raw("176px"),
+                MinWidth = raw("0"),
+                Padding = raw("14px 10px"),
+                Overflow = raw("auto"),
+                BorderLeft = raw("1px solid var(--border)")
+            });
 
         global(".jazor-admin-tdesign-sidebar-shell__brand",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("min-height", "36px"),
-                D("margin", "0 8px 16px"),
-                D("gap", "8px"),
-                D("color", "var(--text)"),
-                D("font-size", "16px"),
-                D("font-weight", "700"),
-                D("white-space", "nowrap")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                MinHeight = raw("36px"),
+                Margin = raw("0 8px 16px"),
+                Gap = raw("8px"),
+                Color = raw("var(--text)"),
+                FontSize = raw("16px"),
+                FontWeight = raw("700"),
+                WhiteSpace = raw("nowrap")
+            });
 
         global(".jazor-admin-tdesign-sidebar-shell__brand-mark",
-            Rule(
-                D("display", "block"),
-                D("width", "18px"),
-                D("height", "18px"),
-                D("background", "#2f6fed"),
-                D("border-radius", "4px"),
-                D("box-shadow", "inset 0 0 0 4px #dce8ff")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                Width = raw("18px"),
+                Height = raw("18px"),
+                Background = raw("#2f6fed"),
+                BorderRadius = raw("4px"),
+                BoxShadow = raw("inset 0 0 0 4px #dce8ff")
+            });
 
         global(".jazor-admin-tdesign-sidebar-shell__menu [data-navigation-orientation=\"vertical\"]",
-            Rule(
-                D("width", "100%")
-            ));
+            new CssRule
+            {
+                Width = raw("100%")
+            });
 
         global(".jazor-admin-sidebar",
-            Rule(
-                D("min-height", "100%"),
-                D("padding", "20px 14px")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("100%"),
+                Padding = raw("20px 14px")
+            });
 
         global(".jazor-admin-sidebar__logo",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("min-height", "42px"),
-                D("margin", "0 8px 22px"),
-                D("color", "#ffffff"),
-                D("font-size", "18px"),
-                D("font-weight", "750")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                MinHeight = raw("42px"),
+                Margin = raw("0 8px 22px"),
+                Color = raw("#ffffff"),
+                FontSize = raw("18px"),
+                FontWeight = raw("750")
+            });
 
-        global(".jazor-admin-sidebar__list,\n.jazor-admin-sidebar__children",
-            Rule(
-                D("padding", "0"),
-                D("margin", "0"),
-                D("list-style", "none")
-            ));
+        global(".jazor-admin-sidebar__list, .jazor-admin-sidebar__children",
+            new CssRule
+            {
+                Padding = raw("0"),
+                Margin = raw("0"),
+                ListStyle = raw("none")
+            });
 
         global(".jazor-admin-sidebar__item",
-            Rule(
-                D("margin", "3px 0")
-            ));
+            new CssRule
+            {
+                Margin = raw("3px 0")
+            });
 
         global(".jazor-admin-sidebar__item-content",
-            Rule(
-                D("position", "relative")
-            ));
+            new CssRule
+            {
+                Position = raw("relative")
+            });
 
-        global(".jazor-admin-sidebar__link,\n.jazor-admin-sidebar__button",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("width", "100%"),
-                D("min-height", "40px"),
-                D("padding", "8px 12px"),
-                D("color", "#b8c8c1"),
-                D("text-align", "left"),
-                D("text-decoration", "none"),
-                D("background", "transparent"),
-                D("border", "0"),
-                D("border-radius", "6px")
-            ));
+        global(".jazor-admin-sidebar__link, .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                Width = raw("100%"),
+                MinHeight = raw("40px"),
+                Padding = raw("8px 12px"),
+                Color = raw("#b8c8c1"),
+                TextAlign = raw("left"),
+                TextDecoration = raw("none"),
+                Background = raw("transparent"),
+                Border = raw("0"),
+                BorderRadius = raw("6px")
+            });
 
-        global(".jazor-admin-sidebar__link:hover,\n.jazor-admin-sidebar__button:hover,\n.jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            Rule(
-                D("color", "#ffffff"),
-                D("background", "#243a31")
-            ));
+        global(".jazor-admin-sidebar__link:hover, .jazor-admin-sidebar__button:hover, .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Color = raw("#ffffff"),
+                Background = raw("#243a31")
+            });
 
-        global(".jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link,\n.jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            Rule(
-                D("color", "#ffffff"),
-                D("background", "#087f5b")
-            ));
+        global(".jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link, .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Color = raw("#ffffff"),
+                Background = raw("#087f5b")
+            });
 
         global(".jazor-admin-sidebar__toggle",
-            Rule(
-                D("margin-left", "auto"),
-                D("font-size", "12px")
-            ));
+            new CssRule
+            {
+                MarginLeft = raw("auto"),
+                FontSize = raw("12px")
+            });
 
         global(".jazor-admin-sidebar__children",
-            Rule(
-                D("padding", "4px 0 4px 12px")
-            ));
+            new CssRule
+            {
+                Padding = raw("4px 0 4px 12px")
+            });
 
-        global(".jazor-admin-sidebar__children .jazor-admin-sidebar__link,\n.jazor-admin-sidebar__children .jazor-admin-sidebar__button",
-            Rule(
-                D("min-height", "36px"),
-                D("padding-left", "16px"),
-                D("font-size", "14px")
-            ));
+        global(".jazor-admin-sidebar__children .jazor-admin-sidebar__link, .jazor-admin-sidebar__children .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                MinHeight = raw("36px"),
+                PaddingLeft = raw("16px"),
+                FontSize = raw("14px")
+            });
 
         global(".jazor-admin-header",
-            Rule(
-                D("flex", "1 1 auto"),
-                D("min-width", "0"),
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("justify-content", "space-between"),
-                D("min-height", "64px"),
-                D("padding", "8px 24px"),
-                D("gap", "20px")
-            ));
+            new CssRule
+            {
+                Flex = raw("1 1 auto"),
+                MinWidth = raw("0"),
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                JustifyContent = raw("space-between"),
+                MinHeight = raw("64px"),
+                Padding = raw("8px 24px"),
+                Gap = raw("20px")
+            });
 
-        global(".jazor-admin-header__main,\n.jazor-admin-header__actions,\n.jazor-admin-header__toolbar,\n.jazor-admin-header__user-region,\n.jazor-admin__preferences,\n.jazor-admin__user-region",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center")
-            ));
+        global(".jazor-admin-header__main, .jazor-admin-header__actions, .jazor-admin-header__toolbar, .jazor-admin-header__user-region, .jazor-admin__preferences, .jazor-admin__user-region",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center")
+            });
 
         global(".jazor-admin-header__main",
-            Rule(
-                D("min-width", "0"),
-                D("gap", "12px")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                Gap = raw("12px")
+            });
 
         global(".jazor-admin-header__logo",
-            Rule(
-                D("color", "var(--accent)"),
-                D("font-weight", "750")
-            ));
+            new CssRule
+            {
+                Color = raw("var(--accent)"),
+                FontWeight = raw("750")
+            });
 
         global(".jazor-admin-header__titles",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-header__title",
-            Rule(
-                D("overflow", "hidden"),
-                D("font-size", "16px"),
-                D("font-weight", "700"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap")
-            ));
+            new CssRule
+            {
+                Overflow = raw("hidden"),
+                FontSize = raw("16px"),
+                FontWeight = raw("700"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
         global(".jazor-admin-header__subtitle",
-            Rule(
-                D("margin-top", "2px"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "12px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("2px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px")
+            });
 
         global(".jazor-admin-header__actions",
-            Rule(
-                D("justify-content", "flex-end"),
-                D("min-width", "0"),
-                D("gap", "16px")
-            ));
+            new CssRule
+            {
+                JustifyContent = raw("flex-end"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
         global(".jazor-admin-header__navigation",
-            Rule(
-                D("flex", "1 1 auto"),
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                Flex = raw("1 1 auto"),
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-header",
-            Rule(
-                D("display", "flex"),
-                D("flex", "1 1 auto"),
-                D("align-items", "center"),
-                D("justify-content", "space-between"),
-                D("min-width", "0"),
-                D("min-height", "64px"),
-                D("padding", "8px 24px"),
-                D("gap", "20px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                Flex = raw("1 1 auto"),
+                AlignItems = raw("center"),
+                JustifyContent = raw("space-between"),
+                MinWidth = raw("0"),
+                MinHeight = raw("64px"),
+                Padding = raw("8px 24px"),
+                Gap = raw("20px")
+            });
 
-        global(".jazor-admin-tdesign-header__main,\n.jazor-admin-tdesign-header__actions",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center")
-            ));
+        global(".jazor-admin-tdesign-header__main, .jazor-admin-tdesign-header__actions",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center")
+            });
 
         global(".jazor-admin-tdesign-header__main",
-            Rule(
-                D("min-width", "0"),
-                D("gap", "12px")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                Gap = raw("12px")
+            });
 
         global(".jazor-admin-tdesign-header__titles",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-header__title",
-            Rule(
-                D("overflow", "hidden"),
-                D("font-size", "16px"),
-                D("font-weight", "700"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap")
-            ));
+            new CssRule
+            {
+                Overflow = raw("hidden"),
+                FontSize = raw("16px"),
+                FontWeight = raw("700"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
         global(".jazor-admin-tdesign-header__subtitle",
-            Rule(
-                D("margin-top", "2px"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "12px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("2px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px")
+            });
 
         global(".jazor-admin-tdesign-header__navigation",
-            Rule(
-                D("flex", "1 1 auto"),
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                Flex = raw("1 1 auto"),
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-header__actions",
-            Rule(
-                D("justify-content", "flex-end"),
-                D("min-width", "0"),
-                D("gap", "16px")
-            ));
+            new CssRule
+            {
+                JustifyContent = raw("flex-end"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
         global(".jazor-admin-sidebar--horizontal",
-            Rule(
-                D("min-height", "0"),
-                D("padding", "0"),
-                D("color", "var(--text)")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("0"),
+                Padding = raw("0"),
+                Color = raw("var(--text)")
+            });
 
-        global(".jazor-admin-sidebar--horizontal > .jazor-admin-sidebar__list,\n.jazor-admin-sidebar--horizontal .jazor-admin-sidebar__children",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("gap", "4px")
-            ));
+        global(".jazor-admin-sidebar--horizontal > .jazor-admin-sidebar__list, .jazor-admin-sidebar--horizontal .jazor-admin-sidebar__children",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                Gap = raw("4px")
+            });
 
         global(".jazor-admin-sidebar--horizontal > .jazor-admin-sidebar__list",
-            Rule(
-                D("overflow-x", "auto"),
-                D("overscroll-behavior-inline", "contain")
-            ));
+            new CssRule
+            {
+                OverflowX = raw("auto"),
+                OverscrollBehaviorInline = raw("contain")
+            });
 
         global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item",
-            Rule(
-                D("display", "flex"),
-                D("flex", "0 0 auto"),
-                D("align-items", "center"),
-                D("margin", "0")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                Flex = raw("0 0 auto"),
+                AlignItems = raw("center"),
+                Margin = raw("0")
+            });
 
-        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__link,\n.jazor-admin-sidebar--horizontal .jazor-admin-sidebar__button",
-            Rule(
-                D("width", "auto"),
-                D("min-height", "34px"),
-                D("padding", "6px 10px"),
-                D("color", "var(--text-muted)"),
-                D("white-space", "nowrap")
-            ));
+        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__link, .jazor-admin-sidebar--horizontal .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Width = raw("auto"),
+                MinHeight = raw("34px"),
+                Padding = raw("6px 10px"),
+                Color = raw("var(--text-muted)"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__link:hover,\n.jazor-admin-sidebar--horizontal .jazor-admin-sidebar__button:hover,\n.jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            Rule(
-                D("color", "var(--text)"),
-                D("background", "var(--surface-strong)")
-            ));
+        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__link:hover, .jazor-admin-sidebar--horizontal .jazor-admin-sidebar__button:hover, .jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Color = raw("var(--text)"),
+                Background = raw("var(--surface-strong)")
+            });
 
-        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link,\n.jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            Rule(
-                D("color", "var(--accent-strong)"),
-                D("background", "var(--accent-soft)")
-            ));
+        global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link, .jazor-admin-sidebar--horizontal .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
+            new CssRule
+            {
+                Color = raw("var(--accent-strong)"),
+                Background = raw("var(--accent-soft)")
+            });
 
         global(".jazor-admin-sidebar--horizontal .jazor-admin-sidebar__children",
-            Rule(
-                D("padding", "0 0 0 4px")
-            ));
+            new CssRule
+            {
+                Padding = raw("0 0 0 4px")
+            });
 
-        global(".jazor-admin-header__toolbar,\n.jazor-admin__preferences,\n.jazor-admin__user-region",
-            Rule(
-                D("gap", "8px")
-            ));
+        global(".jazor-admin-header__toolbar, .jazor-admin__preferences, .jazor-admin__user-region",
+            new CssRule
+            {
+                Gap = raw("8px")
+            });
 
-        global(".jazor-admin__preference,\n.jazor-admin__preference-toggle",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("gap", "6px"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "12px"),
-                D("white-space", "nowrap")
-            ));
+        global(".jazor-admin__preference, .jazor-admin__preference-toggle",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                Gap = raw("6px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin__preference select,\n.jazor-admin-release-table__search,\n.jazor-admin-settings-form__input,\n.jazor-admin-settings-form__select,\n.jazor-admin-access input",
-            Rule(
-                D("min-height", "36px"),
-                D("padding", "7px 10px"),
-                D("color", "var(--text)"),
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border-strong)"),
-                D("border-radius", "5px")
-            ));
+        global(".jazor-admin__preference select, .jazor-admin-access input",
+            new CssRule
+            {
+                MinHeight = raw("36px"),
+                Padding = raw("7px 10px"),
+                Color = raw("var(--text)"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border-strong)"),
+                BorderRadius = raw("5px")
+            });
 
         global(".jazor-admin__preference select",
-            Rule(
-                D("min-height", "32px"),
-                D("padding", "4px 24px 4px 8px")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("32px"),
+                Padding = raw("4px 24px 4px 8px")
+            });
 
         global(".jazor-admin__user",
-            Rule(
-                D("max-width", "180px"),
-                D("overflow", "hidden"),
-                D("font-size", "13px"),
-                D("font-weight", "650"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap")
-            ));
+            new CssRule
+            {
+                MaxWidth = raw("180px"),
+                Overflow = raw("hidden"),
+                FontSize = raw("13px"),
+                FontWeight = raw("650"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin__access-command,\n.jazor-admin-page__action,\n.jazor-admin-release-table__page-button,\n.jazor-admin-settings-form__submit,\n.jazor-admin-action-notice__dismiss,\n.jazor-admin-error__action,\n.jazor-admin-access button",
-            Rule(
-                D("min-height", "34px"),
-                D("padding", "7px 12px"),
-                D("color", "var(--text)"),
-                D("font-weight", "650"),
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border-strong)"),
-                D("border-radius", "5px")
-            ));
+        global(".jazor-admin__access-command, .jazor-admin-error__action, .jazor-admin-access button",
+            new CssRule
+            {
+                MinHeight = raw("34px"),
+                Padding = raw("7px 12px"),
+                Color = raw("var(--text)"),
+                FontWeight = raw("650"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border-strong)"),
+                BorderRadius = raw("5px")
+            });
 
-        global(".jazor-admin__access-command:hover,\n.jazor-admin-page__action:hover,\n.jazor-admin-release-table__page-button:hover,\n.jazor-admin-action-notice__dismiss:hover",
-            Rule(
-                D("background", "var(--surface-strong)")
-            ));
+        global(".jazor-admin__access-command:hover",
+            new CssRule
+            {
+                Background = raw("var(--surface-strong)")
+            });
 
         global(".jazor-admin-page",
-            Rule(
-                D("width", "min(100%, 1480px)"),
-                D("margin", "0 auto"),
-                D("padding", "24px")
-            ));
+            new CssRule
+            {
+                Width = raw("min(100%, 1480px)"),
+                Margin = raw("0 auto"),
+                Padding = raw("24px")
+            });
 
         global(".jazor-admin-page__header",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "flex-end"),
-                D("justify-content", "space-between"),
-                D("margin-bottom", "20px"),
-                D("gap", "20px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("flex-end"),
+                JustifyContent = raw("space-between"),
+                MarginBottom = raw("20px"),
+                Gap = raw("20px")
+            });
 
         global(".jazor-admin-page__titles",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-page__breadcrumb",
-            Rule(
-                D("display", "flex"),
-                D("flex-wrap", "wrap"),
-                D("gap", "6px"),
-                D("margin-bottom", "7px"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "13px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                FlexWrap = raw("wrap"),
+                Gap = raw("6px"),
+                MarginBottom = raw("7px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("13px")
+            });
 
         global(".jazor-admin-page__breadcrumb-item + .jazor-admin-page__breadcrumb-item::before",
-            Rule(
-                D("margin-right", "6px"),
-                D("color", "var(--border-strong)"),
-                D("content", "\"/\"")
-            ));
+            new CssRule
+            {
+                MarginRight = raw("6px"),
+                Color = raw("var(--border-strong)"),
+                Content = raw("\"/\"")
+            });
 
         global(".jazor-admin-page__title",
-            Rule(
-                D("margin", "0"),
-                D("font-size", "26px"),
-                D("line-height", "1.25")
-            ));
+            new CssRule
+            {
+                Margin = raw("0"),
+                FontSize = raw("26px"),
+                LineHeight = raw("1.25")
+            });
 
         global(".jazor-admin-page__subtitle",
-            Rule(
-                D("max-width", "760px"),
-                D("margin", "7px 0 0"),
-                D("color", "var(--text-muted)"),
-                D("line-height", "1.5")
-            ));
+            new CssRule
+            {
+                MaxWidth = raw("760px"),
+                Margin = raw("7px 0 0"),
+                Color = raw("var(--text-muted)"),
+                LineHeight = raw("1.5")
+            });
 
         global(".jazor-admin-page__actions",
-            Rule(
-                D("display", "flex"),
-                D("flex-wrap", "wrap"),
-                D("justify-content", "flex-end"),
-                D("gap", "8px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                FlexWrap = raw("wrap"),
+                JustifyContent = raw("flex-end"),
+                Gap = raw("8px")
+            });
 
-        global(".jazor-admin-page__action--primary,\n.jazor-admin-settings-form__submit,\n.jazor-admin-error__action,\n.jazor-admin-access button",
-            Rule(
-                D("color", "#ffffff"),
-                D("background", "var(--accent)"),
-                D("border-color", "var(--accent)")
-            ));
+        global(".jazor-admin-error__action, .jazor-admin-access button",
+            new CssRule
+            {
+                Color = raw("#ffffff"),
+                Background = raw("var(--accent)"),
+                BorderColor = raw("var(--accent)")
+            });
 
-        global(".jazor-admin-page__action--primary:hover,\n.jazor-admin-settings-form__submit:hover,\n.jazor-admin-error__action:hover,\n.jazor-admin-access button:hover",
-            Rule(
-                D("background", "var(--accent-strong)"),
-                D("border-color", "var(--accent-strong)")
-            ));
+        global(".jazor-admin-error__action:hover, .jazor-admin-access button:hover",
+            new CssRule
+            {
+                Background = raw("var(--accent-strong)"),
+                BorderColor = raw("var(--accent-strong)")
+            });
 
         global(".jazor-admin-page__action--danger",
-            Rule(
-                D("color", "var(--danger)"),
-                D("border-color", "var(--danger)")
-            ));
+            new CssRule
+            {
+                Color = raw("var(--danger)"),
+                BorderColor = raw("var(--danger)")
+            });
 
         global(".jazor-admin-page__body > * + *",
-            Rule(
-                D("margin-top", "20px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("20px")
+            });
 
         global(".jazor-admin-tdesign-page-container",
-            Rule(
-                D("width", "min(calc(100% - 48px), 1480px)"),
-                D("min-width", "0"),
-                D("margin", "24px auto")
-            ));
+            new CssRule
+            {
+                Width = raw("min(calc(100% - 48px), 1480px)"),
+                MinWidth = raw("0"),
+                Margin = raw("24px auto")
+            });
 
         global(".jazor-admin-tdesign-page-container__header",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "flex-end"),
-                D("justify-content", "space-between"),
-                D("margin-bottom", "20px"),
-                D("gap", "20px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("flex-end"),
+                JustifyContent = raw("space-between"),
+                MarginBottom = raw("20px"),
+                Gap = raw("20px")
+            });
 
         global(".jazor-admin-tdesign-page-container__titles",
-            Rule(
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                MinWidth = raw("0")
+            });
 
         global(".jazor-admin-tdesign-page-container__title",
-            Rule(
-                D("margin-top", "7px"),
-                D("font-size", "26px"),
-                D("font-weight", "700"),
-                D("line-height", "1.25")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("7px"),
+                FontSize = raw("26px"),
+                FontWeight = raw("700"),
+                LineHeight = raw("1.25")
+            });
 
         global(".jazor-admin-tdesign-page-container__subtitle",
-            Rule(
-                D("max-width", "760px"),
-                D("margin-top", "7px"),
-                D("color", "var(--text-muted)"),
-                D("line-height", "1.5")
-            ));
+            new CssRule
+            {
+                MaxWidth = raw("760px"),
+                MarginTop = raw("7px"),
+                Color = raw("var(--text-muted)"),
+                LineHeight = raw("1.5")
+            });
 
         global(".jazor-admin-tdesign-page-container__body > * + *",
-            Rule(
-                D("margin-top", "20px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("20px")
+            });
 
-        global(".jazor-admin__metrics",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "repeat(3, minmax(0, 1fr))"),
-                D("gap", "14px")
-            ));
+        global(".jazor-admin-access, .jazor-admin-error",
+            new CssRule
+            {
+                Display = raw("grid"),
+                MinHeight = raw("100vh"),
+                Padding = raw("32px"),
+                PlaceItems = raw("center"),
+                Background = raw("var(--app-bg)")
+            });
 
-        global(".jazor-admin__metric,\n.jazor-admin__release-section,\n.jazor-admin__audit,\n.jazor-admin__settings,\n.jazor-admin__workspace",
-            Rule(
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border)"),
-                D("border-radius", "7px"),
-                D("box-shadow", "var(--shadow)")
-            ));
-
-        global(".jazor-admin__metric",
-            Rule(
-                D("min-width", "0"),
-                D("padding", "18px")
-            ));
-
-        global(".jazor-admin__metric h2,\n.jazor-admin__release-section h2,\n.jazor-admin__audit h2,\n.jazor-admin__settings h2,\n.jazor-admin__workspace h2",
-            Rule(
-                D("margin", "0"),
-                D("font-size", "15px")
-            ));
-
-        global(".jazor-admin__metric strong",
-            Rule(
-                D("display", "block"),
-                D("margin-top", "12px"),
-                D("color", "var(--accent)"),
-                D("font-size", "22px")
-            ));
-
-        global(".jazor-admin__metric p,\n.jazor-admin__selection",
-            Rule(
-                D("margin", "7px 0 0"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "13px"),
-                D("line-height", "1.45")
-            ));
-
-        global(".jazor-admin__release-section,\n.jazor-admin__audit,\n.jazor-admin__settings,\n.jazor-admin__workspace",
-            Rule(
-                D("padding", "20px")
-            ));
-
-        global(".jazor-admin__release-section--focused",
-            Rule(
-                D("border-top", "3px solid var(--accent)")
-            ));
-
-        global(".jazor-admin-release-table",
-            Rule(
-                D("margin-top", "16px")
-            ));
-
-        global(".jazor-admin-release-table__toolbar,\n.jazor-admin-release-table__pagination",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("justify-content", "space-between"),
-                D("gap", "12px")
-            ));
-
-        global(".jazor-admin-release-table__search",
-            Rule(
-                D("width", "min(100%, 320px)")
-            ));
-
-        global(".jazor-admin-release-table__summary,\n.jazor-admin-release-table__page-status",
-            Rule(
-                D("color", "var(--text-muted)"),
-                D("font-size", "13px"),
-                D("white-space", "nowrap")
-            ));
-
-        global(".jazor-admin-release-table__table",
-            Rule(
-                D("display", "block"),
-                D("width", "100%"),
-                D("margin-top", "12px"),
-                D("overflow-x", "auto"),
-                D("border", "1px solid var(--border)"),
-                D("border-radius", "6px"),
-                D("border-spacing", "0")
-            ));
-
-        global(".jazor-admin-release-table__head,\n.jazor-admin-release-table__body",
-            Rule(
-                D("display", "table"),
-                D("width", "100%"),
-                D("min-width", "680px"),
-                D("table-layout", "fixed")
-            ));
-
-        global(".jazor-admin-release-table__heading,\n.jazor-admin-release-table__cell",
-            Rule(
-                D("padding", "11px 14px"),
-                D("text-align", "left"),
-                D("border-bottom", "1px solid var(--border)")
-            ));
-
-        global(".jazor-admin-release-table__heading",
-            Rule(
-                D("color", "var(--text-muted)"),
-                D("font-size", "12px"),
-                D("font-weight", "700"),
-                D("text-transform", "uppercase")
-            ));
-
-        global(".jazor-admin-release-table__selection-heading,\n.jazor-admin-release-table__selection-cell",
-            Rule(
-                D("width", "48px"),
-                D("padding-right", "6px"),
-                D("padding-left", "14px")
-            ));
-
-        global(".jazor-admin-release-table__sort-button",
-            Rule(
-                D("width", "100%"),
-                D("padding", "0"),
-                D("color", "inherit"),
-                D("font", "inherit"),
-                D("text-align", "left"),
-                D("text-transform", "inherit"),
-                D("background", "transparent"),
-                D("border", "0")
-            ));
-
-        global(".jazor-admin-release-table__sort-indicator",
-            Rule(
-                D("margin-left", "5px"),
-                D("color", "var(--accent)")
-            ));
-
-        global(".jazor-admin-release-table__row:last-child .jazor-admin-release-table__cell",
-            Rule(
-                D("border-bottom", "0")
-            ));
-
-        global(".jazor-admin-release-table__row:hover",
-            Rule(
-                D("background", "var(--surface-subtle)")
-            ));
-
-        global(".jazor-admin-release-table__row.is-selected",
-            Rule(
-                D("background", "var(--accent-soft)")
-            ));
-
-        global(".jazor-admin-release-table__row.is-disabled",
-            Rule(
-                D("color", "var(--text-muted)"),
-                D("opacity", "0.64")
-            ));
-
-        global(".jazor-admin-release-table__loading,\n.jazor-admin-release-table__empty",
-            Rule(
-                D("padding", "30px 14px"),
-                D("color", "var(--text-muted)"),
-                D("text-align", "center")
-            ));
-
-        global(".jazor-admin-release-table__pagination",
-            Rule(
-                D("justify-content", "flex-end"),
-                D("margin-top", "12px")
-            ));
-
-        global(".jazor-admin-settings-form",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "repeat(2, minmax(0, 1fr))"),
-                D("max-width", "720px"),
-                D("margin-top", "18px"),
-                D("gap", "18px")
-            ));
-
-        global(".jazor-admin-settings-form__field",
-            Rule(
-                D("display", "flex"),
-                D("flex-direction", "column"),
-                D("min-width", "0"),
-                D("gap", "7px")
-            ));
-
-        global(".jazor-admin-settings-form__checkbox-field",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "auto minmax(0, 1fr)"),
-                D("align-content", "start"),
-                D("align-items", "center"),
-                D("min-width", "0"),
-                D("gap", "7px 8px")
-            ));
-
-        global(".jazor-admin-settings-form__checkbox-field .jazor-admin-settings-form__help",
-            Rule(
-                D("grid-column", "2")
-            ));
-
-        global(".jazor-admin-settings-form__label,\n.jazor-admin-settings-form__checkbox-field .jazor-admin-settings-form__label",
-            Rule(
-                D("font-size", "13px"),
-                D("font-weight", "650")
-            ));
-
-        global(".jazor-admin-settings-form__help,\n.jazor-admin-settings-form__status",
-            Rule(
-                D("margin", "0"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "12px"),
-                D("line-height", "1.45")
-            ));
-
-        global(".jazor-admin-settings-form__submit,\n.jazor-admin-settings-form__status",
-            Rule(
-                D("grid-column", "1 / -1"),
-                D("justify-self", "start")
-            ));
-
-        global(".jazor-admin__status-line",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "minmax(150px, 0.3fr) minmax(0, 1fr)"),
-                D("padding", "14px 0"),
-                D("gap", "16px"),
-                D("border-bottom", "1px solid var(--border)")
-            ));
-
-        global(".jazor-admin__status-line:last-child",
-            Rule(
-                D("border-bottom", "0")
-            ));
-
-        global(".jazor-admin__status-line span",
-            Rule(
-                D("color", "var(--text-muted)")
-            ));
-
-        global(".jazor-admin-action-notice",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "flex-start"),
-                D("justify-content", "space-between"),
-                D("padding", "13px 14px"),
-                D("gap", "16px"),
-                D("background", "var(--info-soft)"),
-                D("border", "1px solid var(--info)"),
-                D("border-radius", "6px")
-            ));
-
-        global(".jazor-admin-action-notice--success",
-            Rule(
-                D("background", "var(--accent-soft)"),
-                D("border-color", "var(--accent)")
-            ));
-
-        global(".jazor-admin-action-notice--warning",
-            Rule(
-                D("background", "var(--warning-soft)"),
-                D("border-color", "var(--warning)")
-            ));
-
-        global(".jazor-admin-action-notice--error",
-            Rule(
-                D("background", "var(--danger-soft)"),
-                D("border-color", "var(--danger)")
-            ));
-
-        global(".jazor-admin-action-notice__title,\n.jazor-admin-action-notice__description",
-            Rule(
-                D("margin", "0")
-            ));
-
-        global(".jazor-admin-action-notice__description",
-            Rule(
-                D("margin-top", "3px"),
-                D("color", "var(--text-muted)"),
-                D("line-height", "1.45")
-            ));
-
-        global(".jazor-admin-access,\n.jazor-admin-error",
-            Rule(
-                D("display", "grid"),
-                D("min-height", "100vh"),
-                D("padding", "32px"),
-                D("place-items", "center"),
-                D("background", "var(--app-bg)")
-            ));
-
-        global(".jazor-admin-access__panel,\n.jazor-admin-error__content",
-            Rule(
-                D("width", "min(100%, 420px)")
-            ));
+        global(".jazor-admin-access__panel, .jazor-admin-error__content",
+            new CssRule
+            {
+                Width = raw("min(100%, 420px)")
+            });
 
         global(".jazor-admin-access__panel",
-            Rule(
-                D("padding", "30px"),
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border)"),
-                D("border-top", "4px solid var(--accent)"),
-                D("border-radius", "7px"),
-                D("box-shadow", "var(--shadow)")
-            ));
+            new CssRule
+            {
+                Padding = raw("30px"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border)"),
+                BorderTop = raw("4px solid var(--accent)"),
+                BorderRadius = raw("7px"),
+                BoxShadow = raw("var(--shadow)")
+            });
 
         global(".jazor-admin-access__brand",
-            Rule(
-                D("color", "var(--accent)"),
-                D("font-size", "17px")
-            ));
+            new CssRule
+            {
+                Color = raw("var(--accent)"),
+                FontSize = raw("17px")
+            });
 
         global(".jazor-admin-access h1",
-            Rule(
-                D("margin", "22px 0 8px"),
-                D("font-size", "26px")
-            ));
+            new CssRule
+            {
+                Margin = raw("22px 0 8px"),
+                FontSize = raw("26px")
+            });
 
         global(".jazor-admin-access p",
-            Rule(
-                D("margin", "0"),
-                D("color", "var(--text-muted)"),
-                D("line-height", "1.5")
-            ));
+            new CssRule
+            {
+                Margin = raw("0"),
+                Color = raw("var(--text-muted)"),
+                LineHeight = raw("1.5")
+            });
 
         global(".jazor-admin-access form",
-            Rule(
-                D("display", "grid"),
-                D("margin-top", "24px"),
-                D("gap", "16px")
-            ));
+            new CssRule
+            {
+                Display = raw("grid"),
+                MarginTop = raw("24px"),
+                Gap = raw("16px")
+            });
 
         global(".jazor-admin-access label",
-            Rule(
-                D("display", "grid"),
-                D("gap", "7px"),
-                D("font-size", "13px"),
-                D("font-weight", "650")
-            ));
+            new CssRule
+            {
+                Display = raw("grid"),
+                Gap = raw("7px"),
+                FontSize = raw("13px"),
+                FontWeight = raw("650")
+            });
 
         global(".jazor-admin-access__error",
-            Rule(
-                D("color", "var(--danger) !important"),
-                D("font-size", "13px")
-            ));
+            new CssRule
+            {
+                Color = raw("var(--danger) !important"),
+                FontSize = raw("13px")
+            });
 
         global(".jazor-admin-error__content",
-            Rule(
-                D("text-align", "center")
-            ));
+            new CssRule
+            {
+                TextAlign = raw("center")
+            });
 
         global(".jazor-admin-error__code",
-            Rule(
-                D("display", "block"),
-                D("color", "var(--accent)"),
-                D("font-size", "72px"),
-                D("font-weight", "800"),
-                D("line-height", "1")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                Color = raw("var(--accent)"),
+                FontSize = raw("72px"),
+                FontWeight = raw("800"),
+                LineHeight = raw("1")
+            });
 
         global(".jazor-admin-error--internal-server-error .jazor-admin-error__code",
-            Rule(
-                D("color", "var(--danger)")
-            ));
+            new CssRule
+            {
+                Color = raw("var(--danger)")
+            });
 
         global(".jazor-admin-error h1",
-            Rule(
-                D("margin", "18px 0 8px"),
-                D("font-size", "28px")
-            ));
+            new CssRule
+            {
+                Margin = raw("18px 0 8px"),
+                FontSize = raw("28px")
+            });
 
         global(".jazor-admin-error p",
-            Rule(
-                D("margin", "0"),
-                D("color", "var(--text-muted)"),
-                D("line-height", "1.6")
-            ));
+            new CssRule
+            {
+                Margin = raw("0"),
+                Color = raw("var(--text-muted)"),
+                LineHeight = raw("1.6")
+            });
 
         global(".jazor-admin-error__action",
-            Rule(
-                D("margin-top", "24px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("24px")
+            });
 
         global(":where(a, button, input, select):focus-visible",
-            Rule(
-                D("outline", "3px solid color-mix(in srgb, var(--accent) 35%, transparent)"),
-                D("outline-offset", "2px")
-            ));
+            new CssRule
+            {
+                Outline = raw("3px solid color-mix(in srgb, var(--accent) 35%, transparent)"),
+                OutlineOffset = raw("2px")
+            });
 
         Media(".jazor-admin-header", "(max-width: 1080px)",
-            Rule(
-                D("align-items", "flex-start")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("flex-start")
+            });
 
         Media(".jazor-admin-header__actions", "(max-width: 1080px)",
-            Rule(
-                D("align-items", "flex-end"),
-                D("flex-direction", "column-reverse"),
-                D("gap", "6px")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("flex-end"),
+                FlexDirection = raw("column-reverse"),
+                Gap = raw("6px")
+            });
 
         Media(".jazor-admin-header__navigation", "(max-width: 1080px)",
-            Rule(
-                D("width", "100%")
-            ));
+            new CssRule
+            {
+                Width = raw("100%")
+            });
 
         Media(".jazor-admin__preferences", "(max-width: 1080px)",
-            Rule(
-                D("flex-wrap", "wrap"),
-                D("justify-content", "flex-end")
-            ));
+            new CssRule
+            {
+                FlexWrap = raw("wrap"),
+                JustifyContent = raw("flex-end")
+            });
 
         Media(".jazor-admin-tdesign-header", "(max-width: 1080px)",
-            Rule(
-                D("align-items", "flex-start")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("flex-start")
+            });
 
         Media(".jazor-admin-tdesign-header__actions", "(max-width: 1080px)",
-            Rule(
-                D("align-items", "flex-end"),
-                D("flex-direction", "column-reverse"),
-                D("gap", "6px")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("flex-end"),
+                FlexDirection = raw("column-reverse"),
+                Gap = raw("6px")
+            });
 
         Media(".jazor-admin-tdesign-header__navigation", "(max-width: 1080px)",
-            Rule(
-                D("width", "100%")
-            ));
+            new CssRule
+            {
+                Width = raw("100%")
+            });
 
         Media(".jazor-admin-shell", "(max-width: 760px)",
-            Rule(
-                D("display", "block"),
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                MinWidth = raw("0")
+            });
 
         Media(".jazor-admin-shell__sidebar", "(max-width: 760px)",
-            Rule(
-                D("position", "static"),
-                D("height", "auto"),
-                D("overflow", "visible"),
-                D("border-right", "0"),
-                D("border-bottom", "1px solid #293a33")
-            ));
+            new CssRule
+            {
+                Position = raw("static"),
+                Height = raw("auto"),
+                Overflow = raw("visible"),
+                BorderRight = raw("0"),
+                BorderBottom = raw("1px solid #293a33")
+            });
 
         Media(".jazor-admin-tdesign-layout", "(max-width: 760px)",
-            Rule(
-                D("flex-direction", "column !important"),
-                D("min-width", "0")
-            ));
+            new CssRule
+            {
+                FlexDirection = raw("column !important"),
+                MinWidth = raw("0")
+            });
 
         Media(".jazor-admin-tdesign-layout[data-shell-collapsed] > [data-shell-region=\"sidebar\"]", "(max-width: 760px)",
-            Rule(
-                D("position", "static"),
-                D("width", "100% !important"),
-                D("max-width", "100%"),
-                D("height", "auto"),
-                D("overflow", "visible"),
-                D("border-right", "0"),
-                D("border-bottom", "1px solid var(--border)"),
-                D("flex", "0 0 auto !important")
-            ));
+            new CssRule
+            {
+                Position = raw("static"),
+                Width = raw("100% !important"),
+                MaxWidth = raw("100%"),
+                Height = raw("auto"),
+                Overflow = raw("visible"),
+                BorderRight = raw("0"),
+                BorderBottom = raw("1px solid var(--border)"),
+                Flex = raw("0 0 auto !important")
+            });
 
         Media(".jazor-admin-tdesign-layout > [data-shell-region=\"main\"]", "(max-width: 760px)",
-            Rule(
-                D("width", "100%")
-            ));
+            new CssRule
+            {
+                Width = raw("100%")
+            });
 
         Media(".jazor-admin-tdesign-layout [data-shell-region=\"header\"]", "(max-width: 760px)",
-            Rule(
-                D("position", "static"),
-                D("height", "auto !important"),
-                D("min-height", "64px")
-            ));
+            new CssRule
+            {
+                Position = raw("static"),
+                Height = raw("auto !important"),
+                MinHeight = raw("64px")
+            });
 
         Media(".jazor-admin-tdesign-layout__header", "(max-width: 760px)",
-            Rule(
-                D("align-items", "flex-start"),
-                D("flex-wrap", "wrap")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("flex-start"),
+                FlexWrap = raw("wrap")
+            });
 
         Media("[data-navigation-orientation=\"vertical\"]", "(max-width: 760px)",
-            Rule(
-                D("display", "flex !important"),
-                D("align-items", "flex-start"),
-                D("width", "100%"),
-                D("overflow-x", "auto"),
-                D("overscroll-behavior-inline", "contain")
-            ));
+            new CssRule
+            {
+                Display = raw("flex !important"),
+                AlignItems = raw("flex-start"),
+                Width = raw("100%"),
+                OverflowX = raw("auto"),
+                OverscrollBehaviorInline = raw("contain")
+            });
 
         Media(".jazor-admin-sidebar", "(max-width: 760px)",
-            Rule(
-                D("min-height", "0"),
-                D("padding", "10px 12px")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("0"),
+                Padding = raw("10px 12px")
+            });
 
         Media(".jazor-admin-sidebar__logo", "(max-width: 760px)",
-            Rule(
-                D("min-height", "34px"),
-                D("margin", "0 6px 8px"),
-                D("font-size", "16px")
-            ));
+            new CssRule
+            {
+                MinHeight = raw("34px"),
+                Margin = raw("0 6px 8px"),
+                FontSize = raw("16px")
+            });
 
         Media(".jazor-admin-sidebar__list", "(max-width: 760px)",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "flex-start"),
-                D("width", "100%"),
-                D("padding-bottom", "3px"),
-                D("gap", "4px"),
-                D("overflow-x", "auto"),
-                D("overscroll-behavior-inline", "contain")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("flex-start"),
+                Width = raw("100%"),
+                PaddingBottom = raw("3px"),
+                Gap = raw("4px"),
+                OverflowX = raw("auto"),
+                OverscrollBehaviorInline = raw("contain")
+            });
 
         Media(".jazor-admin-sidebar__item", "(max-width: 760px)",
-            Rule(
-                D("flex", "0 0 auto"),
-                D("margin", "0")
-            ));
+            new CssRule
+            {
+                Flex = raw("0 0 auto"),
+                Margin = raw("0")
+            });
 
-        Media(".jazor-admin-sidebar__link,\n  .jazor-admin-sidebar__button", "(max-width: 760px)",
-            Rule(
-                D("min-height", "36px"),
-                D("width", "auto"),
-                D("white-space", "nowrap")
-            ));
+        Media(".jazor-admin-sidebar__link,   .jazor-admin-sidebar__button", "(max-width: 760px)",
+            new CssRule
+            {
+                MinHeight = raw("36px"),
+                Width = raw("auto"),
+                WhiteSpace = raw("nowrap")
+            });
 
         Media(".jazor-admin-sidebar__children", "(max-width: 760px)",
-            Rule(
-                D("display", "flex"),
-                D("padding", "4px 0 0 8px"),
-                D("gap", "4px")
-            ));
+            new CssRule
+            {
+                Display = raw("flex"),
+                Padding = raw("4px 0 0 8px"),
+                Gap = raw("4px")
+            });
 
         Media(".jazor-admin-sidebar__children .jazor-admin-sidebar__item", "(max-width: 760px)",
-            Rule(
-                D("flex", "0 0 auto")
-            ));
+            new CssRule
+            {
+                Flex = raw("0 0 auto")
+            });
 
-        Media(".jazor-admin-sidebar__children .jazor-admin-sidebar__link,\n  .jazor-admin-sidebar__children .jazor-admin-sidebar__button", "(max-width: 760px)",
-            Rule(
-                D("min-height", "32px"),
-                D("padding", "6px 10px")
-            ));
+        Media(".jazor-admin-sidebar__children .jazor-admin-sidebar__link,   .jazor-admin-sidebar__children .jazor-admin-sidebar__button", "(max-width: 760px)",
+            new CssRule
+            {
+                MinHeight = raw("32px"),
+                Padding = raw("6px 10px")
+            });
 
         Media(".jazor-admin-shell__header", "(max-width: 760px)",
-            Rule(
-                D("position", "static")
-            ));
+            new CssRule
+            {
+                Position = raw("static")
+            });
 
         Media(".jazor-admin-header", "(max-width: 760px)",
-            Rule(
-                D("display", "block"),
-                D("min-height", "0"),
-                D("padding", "12px 16px")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                MinHeight = raw("0"),
+                Padding = raw("12px 16px")
+            });
 
         Media(".jazor-admin-shell__sidebar-toggle", "(max-width: 760px)",
-            Rule(
-                D("align-self", "flex-start"),
-                D("margin", "12px 0 0 12px")
-            ));
+            new CssRule
+            {
+                AlignSelf = raw("flex-start"),
+                Margin = raw("12px 0 0 12px")
+            });
 
         Media(".jazor-admin-header__subtitle", "(max-width: 760px)",
-            Rule(
-                D("display", "none")
-            ));
+            new CssRule
+            {
+                Display = raw("none")
+            });
 
         Media(".jazor-admin-header__actions", "(max-width: 760px)",
-            Rule(
-                D("align-items", "stretch"),
-                D("margin-top", "10px")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("stretch"),
+                MarginTop = raw("10px")
+            });
 
         Media(".jazor-admin-tdesign-header", "(max-width: 760px)",
-            Rule(
-                D("display", "block"),
-                D("min-height", "0"),
-                D("padding", "12px 16px")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                MinHeight = raw("0"),
+                Padding = raw("12px 16px")
+            });
 
         Media(".jazor-admin-tdesign-header__subtitle", "(max-width: 760px)",
-            Rule(
-                D("display", "none")
-            ));
+            new CssRule
+            {
+                Display = raw("none")
+            });
 
         Media(".jazor-admin-tdesign-header__actions", "(max-width: 760px)",
-            Rule(
-                D("align-items", "stretch"),
-                D("margin-top", "10px")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("stretch"),
+                MarginTop = raw("10px")
+            });
 
         Media(".jazor-admin-tdesign-header__navigation", "(max-width: 760px)",
-            Rule(
-                D("margin-top", "10px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("10px")
+            });
 
         Media(".jazor-admin-header__navigation", "(max-width: 760px)",
-            Rule(
-                D("margin-top", "10px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("10px")
+            });
 
-        Media(".jazor-admin__preferences,\n  .jazor-admin__user-region", "(max-width: 760px)",
-            Rule(
-                D("justify-content", "flex-start"),
-                D("overflow-x", "auto")
-            ));
+        Media(".jazor-admin__preferences,   .jazor-admin__user-region", "(max-width: 760px)",
+            new CssRule
+            {
+                JustifyContent = raw("flex-start"),
+                OverflowX = raw("auto")
+            });
 
         Media(".jazor-admin-page", "(max-width: 760px)",
-            Rule(
-                D("padding", "18px 14px 28px")
-            ));
+            new CssRule
+            {
+                Padding = raw("18px 14px 28px")
+            });
 
         Media(".jazor-admin-page__header", "(max-width: 760px)",
-            Rule(
-                D("display", "block"),
-                D("margin-bottom", "16px")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                MarginBottom = raw("16px")
+            });
 
         Media(".jazor-admin-page__title", "(max-width: 760px)",
-            Rule(
-                D("font-size", "23px")
-            ));
+            new CssRule
+            {
+                FontSize = raw("23px")
+            });
 
         Media(".jazor-admin-page__actions", "(max-width: 760px)",
-            Rule(
-                D("justify-content", "flex-start"),
-                D("margin-top", "14px")
-            ));
+            new CssRule
+            {
+                JustifyContent = raw("flex-start"),
+                MarginTop = raw("14px")
+            });
 
         Media(".jazor-admin-tdesign-page-container", "(max-width: 760px)",
-            Rule(
-                D("width", "calc(100% - 28px)"),
-                D("margin", "14px")
-            ));
+            new CssRule
+            {
+                Width = raw("calc(100% - 28px)"),
+                Margin = raw("14px")
+            });
 
         Media(".jazor-admin-tdesign-page-container__header", "(max-width: 760px)",
-            Rule(
-                D("display", "block"),
-                D("margin-bottom", "16px")
-            ));
+            new CssRule
+            {
+                Display = raw("block"),
+                MarginBottom = raw("16px")
+            });
 
         Media(".jazor-admin-tdesign-page-container__title", "(max-width: 760px)",
-            Rule(
-                D("font-size", "23px")
-            ));
+            new CssRule
+            {
+                FontSize = raw("23px")
+            });
 
-        Media(".jazor-admin__metrics,\n  .jazor-admin-settings-form", "(max-width: 760px)",
-            Rule(
-                D("grid-template-columns", "1fr")
-            ));
-
-        Media(".jazor-admin__release-section,\n  .jazor-admin__audit,\n  .jazor-admin__settings,\n  .jazor-admin__workspace", "(max-width: 760px)",
-            Rule(
-                D("padding", "16px")
-            ));
-
-        Media(".jazor-admin-release-table__toolbar", "(max-width: 760px)",
-            Rule(
-                D("align-items", "stretch"),
-                D("flex-direction", "column")
-            ));
-
-        Media(".jazor-admin-release-table__search", "(max-width: 760px)",
-            Rule(
-                D("width", "100%")
-            ));
-
-        Media(".jazor-admin__status-line", "(max-width: 760px)",
-            Rule(
-                D("grid-template-columns", "1fr"),
-                D("gap", "5px")
-            ));
-
-        Media(".jazor-admin-access,\n  .jazor-admin-error", "(max-width: 760px)",
-            Rule(
-                D("padding", "20px")
-            ));
+        Media(".jazor-admin-access,   .jazor-admin-error", "(max-width: 760px)",
+            new CssRule
+            {
+                Padding = raw("20px")
+            });
 
         Media(".jazor-admin-access__panel", "(max-width: 760px)",
-            Rule(
-                D("padding", "24px 20px")
-            ));
+            new CssRule
+            {
+                Padding = raw("24px 20px")
+            });
 
         Media(".jazor-admin-error__code", "(max-width: 760px)",
-            Rule(
-                D("font-size", "58px")
-            ));
+            new CssRule
+            {
+                FontSize = raw("58px")
+            });
 
         Media(".jazor-admin__preference-toggle", "(max-width: 430px)",
-            Rule(
-                D("display", "none")
-            ));
+            new CssRule
+            {
+                Display = raw("none")
+            });
 
         Media(".jazor-admin__user", "(max-width: 430px)",
-            Rule(
-                D("max-width", "120px")
-            ));
-
-        Media(".jazor-admin-action-notice", "(max-width: 430px)",
-            Rule(
-                D("align-items", "stretch"),
-                D("flex-direction", "column")
-            ));
+            new CssRule
+            {
+                MaxWidth = raw("120px")
+            });
 
         global(".jazor-admin-tdesign-page-container--dashboard",
-            Rule(
-                D("width", "min(calc(100% - 36px), 1480px)"),
-                D("margin", "18px auto 28px"),
-                D("background", "transparent !important"),
-                D("border", "0 !important"),
-                D("box-shadow", "none !important")
-            ));
+            new CssRule
+            {
+                Width = raw("min(calc(100% - 36px), 1480px)"),
+                Margin = raw("18px auto 28px"),
+                Background = raw("transparent !important"),
+                Border = raw("0 !important"),
+                BoxShadow = raw("none !important")
+            });
 
         global(".jazor-admin-tdesign-page-container--dashboard .jazor-admin-tdesign-page-container__header",
-            Rule(
-                D("align-items", "center"),
-                D("margin-bottom", "14px")
-            ));
+            new CssRule
+            {
+                AlignItems = raw("center"),
+                MarginBottom = raw("14px")
+            });
 
         global(".jazor-admin-tdesign-page-container--dashboard .jazor-admin-tdesign-page-container__title",
-            Rule(
-                D("margin-top", "5px"),
-                D("font-size", "21px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("5px"),
+                FontSize = raw("21px")
+            });
 
         global(".jazor-admin-tdesign-page-container--dashboard .jazor-admin-tdesign-page-container__subtitle",
-            Rule(
-                D("margin-top", "4px"),
-                D("font-size", "13px")
-            ));
+            new CssRule
+            {
+                MarginTop = raw("4px"),
+                FontSize = raw("13px")
+            });
 
-        global(".jazor-admin-medical-dashboard",
-            Rule(
-                D("display", "grid"),
-                D("min-width", "0"),
-                D("gap", "14px")
-            ));
+        // The production administration pages share a compact TDesign Starter-like work surface.
+        // 生产管理页共用紧凑的 TDesign Starter 风格工作台，状态层次由数据与选择关系表达。
+        global(".jazor-admin-session-state",
+            new CssRule
+            {
+                Display = raw("grid"),
+                MinHeight = raw("100vh"),
+                PlaceItems = raw("center"),
+                Gap = raw("10px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("14px"),
+                Background = raw("var(--app-bg)")
+            });
 
-        global(".jazor-admin-medical-dashboard__metrics",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "repeat(4, minmax(0, 1fr))"),
-                D("gap", "12px")
-            ));
+        global(".jazor-admin-session-state__spinner",
+            new CssRule
+            {
+                Width = raw("24px"),
+                Height = raw("24px"),
+                Border = raw("2px solid var(--border-strong)"),
+                BorderTopColor = raw("var(--accent)"),
+                BorderRadius = raw("50%"),
+                Animation = raw(sessionSpin + " 720ms linear infinite")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric",
-            Rule(
-                D("position", "relative"),
-                D("min-height", "104px"),
-                D("padding", "15px 17px 14px 20px"),
-                D("overflow", "hidden"),
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border)"),
-                D("border-radius", "7px"),
-                D("box-shadow", "var(--shadow)"),
-                D("animation", raw(dashboardEnter + " 320ms ease both"))
-            ));
+        global(".jazor-admin__header-context",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                MinWidth = raw("0"),
+                Gap = raw("8px")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric::before",
-            Rule(
-                D("position", "absolute"),
-                D("top", "16px"),
-                D("right", "16px"),
-                D("width", "30px"),
-                D("height", "30px"),
-                D("background", "var(--accent-soft)"),
-                D("border-radius", "6px"),
-                D("content", "\"\"")
-            ));
+        global(".jazor-admin__organization-picker",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("auto minmax(112px, 180px)"),
+                AlignItems = raw("center"),
+                MinWidth = raw("0"),
+                PaddingRight = raw("8px"),
+                Gap = raw("7px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                BorderRight = raw("1px solid var(--border)")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric::after",
-            Rule(
-                D("position", "absolute"),
-                D("top", "25px"),
-                D("right", "25px"),
-                D("width", "12px"),
-                D("height", "12px"),
-                D("border", "2px solid var(--accent)"),
-                D("border-radius", "3px"),
-                D("content", "\"\"")
-            ));
+        global(".jazor-admin__organization-picker select",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                MinHeight = raw("32px"),
+                Padding = raw("4px 26px 4px 8px"),
+                Overflow = raw("hidden"),
+                Color = raw("var(--text)"),
+                FontSize = raw("12px"),
+                FontWeight = raw("600"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap"),
+                Background = raw("var(--surface-subtle)"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("4px")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric:nth-child(2)",
-            Rule(
-                D("animation-delay", "45ms")
-            ));
+        global(".jazor-admin__user-region",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                PaddingLeft = raw("8px"),
+                BorderLeft = raw("1px solid var(--border)")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric:nth-child(3)",
-            Rule(
-                D("animation-delay", "90ms")
-            ));
+        global(".jazor-admin__access-command",
+            new CssRule
+            {
+                MinHeight = raw("30px"),
+                Padding = raw("4px 8px"),
+                FontSize = raw("12px"),
+                Background = raw("transparent"),
+                Border = raw("0")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric:nth-child(4)",
-            Rule(
-                D("animation-delay", "135ms")
-            ));
+        global(".jazor-admin__access-command[data-access-command=\"sign-out\"]",
+            new CssRule
+            {
+                Color = raw("var(--danger)")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--recruiting::before",
-            Rule(
-                D("background", "#ecfbf3")
-            ));
+        global(".jazor-admin-overview",
+            new CssRule
+            {
+                Display = raw("grid"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--recruiting::after",
-            Rule(
-                D("border-color", "#24a76a"),
-                D("border-radius", "50%")
-            ));
+        global(".jazor-admin-overview__metrics",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(4, minmax(0, 1fr))"),
+                Gap = raw("16px")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--applications::before",
-            Rule(
-                D("background", "#f2f4f7")
-            ));
+        global(".jazor-admin-overview__metric",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                MinHeight = raw("132px"),
+                Padding = raw("18px 20px"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border)"),
+                BorderTop = raw("3px solid var(--accent)"),
+                BorderRadius = raw("6px"),
+                BoxShadow = raw("var(--shadow)"),
+                Animation = raw(dashboardEnter + " 260ms ease both")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--applications::after",
-            Rule(
-                D("border-color", "#7b8798"),
-                D("border-radius", "50%")
-            ));
+        global(".jazor-admin-overview__metric:nth-child(2)",
+            new CssRule
+            {
+                AnimationDelay = raw("35ms")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--review::before",
-            Rule(
-                D("background", "#fff7e7")
-            ));
+        global(".jazor-admin-overview__metric:nth-child(3)",
+            new CssRule
+            {
+                AnimationDelay = raw("70ms")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric--review::after",
-            Rule(
-                D("border-color", "#dfa22f"),
-                D("border-radius", "50%")
-            ));
+        global(".jazor-admin-overview__metric:nth-child(4)",
+            new CssRule
+            {
+                AnimationDelay = raw("105ms")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric-label,\n.jazor-admin-medical-dashboard__metric-detail",
-            Rule(
-                D("display", "block")
-            ));
+        global(".jazor-admin-overview__metric span, .jazor-admin-overview__metric small",
+            new CssRule
+            {
+                Display = raw("block"),
+                Overflow = raw("hidden"),
+                Color = raw("var(--text-muted)"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric-label",
-            Rule(
-                D("color", "#5f6b7a"),
-                D("font-size", "13px"),
-                D("font-weight", "650")
-            ));
+        global(".jazor-admin-overview__metric span",
+            new CssRule
+            {
+                FontSize = raw("13px"),
+                FontWeight = raw("600")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric strong",
-            Rule(
-                D("display", "block"),
-                D("margin-top", "8px"),
-                D("color", "var(--text)"),
-                D("font-size", "26px"),
-                D("line-height", "1")
-            ));
+        global(".jazor-admin-overview__metric strong",
+            new CssRule
+            {
+                Display = raw("block"),
+                Margin = raw("16px 0 8px"),
+                Overflow = raw("hidden"),
+                FontSize = raw("24px"),
+                LineHeight = raw("1"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin-medical-dashboard__metric-detail",
-            Rule(
-                D("margin-top", "8px"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "11px")
-            ));
+        global(".jazor-admin-overview__metric small",
+            new CssRule
+            {
+                FontSize = raw("12px")
+            });
 
-        global(".jazor-admin-medical-dashboard__grid",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "minmax(0, 1.08fr) minmax(0, 0.92fr)"),
-                D("min-width", "0"),
-                D("gap", "12px")
-            ));
+        global(".jazor-admin-overview__grid",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel",
-            Rule(
-                D("min-width", "0"),
-                D("min-height", "430px"),
-                D("overflow", "hidden"),
-                D("background", "var(--surface)"),
-                D("border", "1px solid var(--border)"),
-                D("border-radius", "7px"),
-                D("box-shadow", "var(--shadow)"),
-                D("animation", raw(dashboardEnter + " 360ms 120ms ease both"))
-            ));
+        global(".jazor-admin-overview__panel, .jazor-admin-management__panel",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("6px"),
+                BoxShadow = raw("var(--shadow)")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel--applications",
-            Rule(
-                D("animation-delay", "180ms")
-            ));
+        global(".jazor-admin-overview__panel-header, .jazor-admin-management__panel-header",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                JustifyContent = raw("space-between"),
+                MinHeight = raw("68px"),
+                Padding = raw("15px 20px"),
+                Gap = raw("16px"),
+                BorderBottom = raw("1px solid var(--border)")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel-header",
-            Rule(
-                D("display", "flex"),
-                D("align-items", "center"),
-                D("justify-content", "space-between"),
-                D("min-height", "62px"),
-                D("padding", "13px 16px"),
-                D("gap", "16px"),
-                D("border-bottom", "1px solid var(--border)")
-            ));
+        global(".jazor-admin-overview__panel-header h2, .jazor-admin-overview__panel-header p, .jazor-admin-management__panel-header h2, .jazor-admin-management__panel-header p",
+            new CssRule
+            {
+                Margin = raw("0")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel-header h2,\n.jazor-admin-medical-dashboard__panel-header p",
-            Rule(
-                D("margin", "0")
-            ));
+        global(".jazor-admin-overview__panel-header h2, .jazor-admin-management__panel-header h2",
+            new CssRule
+            {
+                FontSize = raw("15px"),
+                FontWeight = raw("650")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel-header h2",
-            Rule(
-                D("font-size", "14px"),
-                D("font-weight", "700")
-            ));
+        global(".jazor-admin-overview__panel-header p, .jazor-admin-management__panel-header p",
+            new CssRule
+            {
+                MarginTop = raw("5px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                LineHeight = raw("1.4")
+            });
 
-        global(".jazor-admin-medical-dashboard__panel-header p",
-            Rule(
-                D("max-width", "440px"),
-                D("margin-top", "4px"),
-                D("overflow", "hidden"),
-                D("color", "var(--text-muted)"),
-                D("font-size", "11px"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap")
-            ));
+        global(".jazor-admin-overview__organization-list, .jazor-admin-overview__role-list, .jazor-admin-management__item-list, .jazor-admin-management__role-list",
+            new CssRule
+            {
+                Padding = raw("0"),
+                Margin = raw("0"),
+                ListStyle = raw("none")
+            });
 
-        global(".jazor-admin-medical-dashboard__text-action",
-            Rule(
-                D("flex", "0 0 auto"),
-                D("min-height", "30px"),
-                D("padding", "4px 9px"),
-                D("color", "var(--accent)"),
-                D("font-size", "12px"),
-                D("font-weight", "650"),
-                D("background", "transparent"),
-                D("border", "1px solid transparent"),
-                D("border-radius", "5px")
-            ));
+        global(".jazor-admin-overview__organization-list li, .jazor-admin-overview__role-list li, .jazor-admin-management__item-list li",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                MinHeight = raw("48px"),
+                Padding = raw("10px 20px"),
+                Gap = raw("10px"),
+                BorderBottom = raw("1px solid var(--border)")
+            });
 
-        global(".jazor-admin-medical-dashboard__text-action:hover",
-            Rule(
-                D("background", "var(--accent-soft)"),
-                D("border-color", "#cfe0ff")
-            ));
+        global(".jazor-admin-overview__organization-list li.is-current",
+            new CssRule
+            {
+                Color = raw("var(--accent-strong)"),
+                Background = raw("var(--accent-soft)")
+            });
 
-        global(".jazor-admin-medical-dashboard__study-list",
-            Rule(
-                D("padding", "4px 16px 16px"),
-                D("margin", "0"),
-                D("list-style", "none")
-            ));
+        global(".jazor-admin-overview__organization-code, .jazor-admin-management__code",
+            new CssRule
+            {
+                Flex = raw("0 0 auto"),
+                Padding = raw("3px 6px"),
+                Color = raw("var(--accent-strong)"),
+                FontSize = raw("11px"),
+                FontWeight = raw("650"),
+                Background = raw("var(--accent-soft)"),
+                BorderRadius = raw("3px")
+            });
 
-        global(".jazor-admin-medical-dashboard__study-list li + li",
-            Rule(
-                D("border-top", "1px solid var(--border)")
-            ));
+        global(".jazor-admin-overview__role-list li",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("13px")
+            });
 
-        global(".jazor-admin-medical-dashboard__study",
-            Rule(
-                D("display", "grid"),
-                D("grid-template-columns", "minmax(0, 1fr) auto"),
-                D("align-items", "center"),
-                D("width", "100%"),
-                D("min-height", "56px"),
-                D("padding", "9px 6px 9px 9px"),
-                D("gap", "12px"),
-                D("color", "var(--text)"),
-                D("text-align", "left"),
-                D("background", "transparent"),
-                D("border", "0"),
-                D("border-left", "3px solid transparent"),
-                D("transition", "background-color 150ms ease, border-color 150ms ease, transform 150ms ease")
-            ));
+        global(".jazor-admin-overview__empty, .jazor-admin-management__empty, .jazor-admin-management__loading, .jazor-admin-management__error",
+            new CssRule
+            {
+                Margin = raw("0"),
+                Padding = raw("20px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("13px"),
+                LineHeight = raw("1.5")
+            });
 
-        global(".jazor-admin-medical-dashboard__study span",
-            Rule(
-                D("overflow", "hidden"),
-                D("font-size", "12px"),
-                D("font-weight", "550"),
-                D("line-height", "1.45"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap")
-            ));
+        global(".jazor-admin-management__error",
+            new CssRule
+            {
+                Color = raw("var(--danger)"),
+                Background = raw("var(--danger-soft)"),
+                Border = raw("1px solid color-mix(in srgb, var(--danger) 30%, var(--border))"),
+                BorderRadius = raw("6px")
+            });
 
-        global(".jazor-admin-medical-dashboard__study strong",
-            Rule(
-                D("color", "var(--text-muted)"),
-                D("font-size", "11px"),
-                D("font-weight", "600")
-            ));
+        global(".jazor-admin-management",
+            new CssRule
+            {
+                Display = raw("grid"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
-        global(".jazor-admin-medical-dashboard__study:hover,\n.jazor-admin-medical-dashboard__study.is-selected",
-            Rule(
-                D("background", "#f5f8ff"),
-                D("border-left-color", "var(--accent)")
-            ));
+        global(".jazor-admin-management__split",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("minmax(0, 7fr) minmax(300px, 4fr)"),
+                AlignItems = raw("start"),
+                MinWidth = raw("0"),
+                Gap = raw("16px")
+            });
 
-        global(".jazor-admin-medical-dashboard__study:hover",
-            Rule(
-                D("transform", "translateX(2px)")
-            ));
+        global(".jazor-admin-management__split--authorization",
+            new CssRule
+            {
+                GridTemplateColumns = raw("minmax(260px, 4fr) minmax(0, 7fr)")
+            });
 
-        global(".jazor-admin-medical-dashboard__table-wrap",
-            Rule(
-                D("width", "100%"),
-                D("overflow-x", "auto")
-            ));
+        global(".jazor-admin-management__split--members",
+            new CssRule
+            {
+                GridTemplateColumns = raw("minmax(0, 7fr) minmax(320px, 4fr)")
+            });
 
-        global(".jazor-admin-medical-dashboard__table",
-            Rule(
-                D("width", "100%"),
-                D("min-width", "560px"),
-                D("border-collapse", "collapse"),
-                D("table-layout", "fixed")
-            ));
+        global(".jazor-admin-management__panel > h3, .jazor-admin-management__role-editor h3",
+            new CssRule
+            {
+                Margin = raw("20px 20px 10px"),
+                FontSize = raw("14px")
+            });
 
-        global(".jazor-admin-medical-dashboard__table th,\n.jazor-admin-medical-dashboard__table td",
-            Rule(
-                D("padding", "12px 14px"),
-                D("text-align", "left"),
-                D("vertical-align", "middle"),
-                D("border-bottom", "1px solid var(--border)")
-            ));
+        global(".jazor-admin-management__details",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(3, minmax(0, 1fr))"),
+                Padding = raw("20px"),
+                Margin = raw("0"),
+                Gap = raw("12px")
+            });
 
-        global(".jazor-admin-medical-dashboard__table th",
-            Rule(
-                D("color", "var(--text-muted)"),
-                D("font-size", "11px"),
-                D("font-weight", "650"),
-                D("background", "#fbfcfe")
-            ));
+        global(".jazor-admin-management__details div",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                Padding = raw("12px"),
+                Background = raw("var(--surface-subtle)"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("4px")
+            });
 
-        global(".jazor-admin-medical-dashboard__table th:first-child,\n.jazor-admin-medical-dashboard__table td:first-child",
-            Rule(
-                D("width", "54%")
-            ));
+        global(".jazor-admin-management__details dt, .jazor-admin-management__details dd",
+            new CssRule
+            {
+                Margin = raw("0")
+            });
 
-        global(".jazor-admin-medical-dashboard__table th:nth-child(2),\n.jazor-admin-medical-dashboard__table td:nth-child(2)",
-            Rule(
-                D("width", "18%")
-            ));
+        global(".jazor-admin-management__details dt",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px")
+            });
 
-        global(".jazor-admin-medical-dashboard__table td",
-            Rule(
-                D("overflow", "hidden"),
-                D("color", "#536174"),
-                D("font-size", "11px"),
-                D("text-overflow", "ellipsis"),
-                D("white-space", "nowrap"),
-                D("transition", "background-color 150ms ease")
-            ));
+        global(".jazor-admin-management__details dd",
+            new CssRule
+            {
+                MarginTop = raw("6px"),
+                Overflow = raw("hidden"),
+                FontSize = raw("13px"),
+                FontWeight = raw("600"),
+                TextOverflow = raw("ellipsis"),
+                WhiteSpace = raw("nowrap")
+            });
 
-        global(".jazor-admin-medical-dashboard__table tr:hover td",
-            Rule(
-                D("background", "#f8faff")
-            ));
+        global(".jazor-admin-management__form",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Padding = raw("20px"),
+                Gap = raw("14px")
+            });
 
-        global(".jazor-admin-medical-dashboard__status",
-            Rule(
-                D("display", "inline-flex"),
-                D("align-items", "center"),
-                D("min-height", "22px"),
-                D("padding", "2px 7px"),
-                D("font-size", "10px"),
-                D("border-radius", "4px")
-            ));
+        global(".jazor-admin-management__form--inline",
+            new CssRule
+            {
+                GridTemplateColumns = raw("minmax(0, 1fr) minmax(0, 1fr) auto"),
+                AlignItems = raw("end")
+            });
 
-        global(".jazor-admin-medical-dashboard__status--cancelled",
-            Rule(
-                D("color", "#b77713"),
-                D("background", "var(--warning-soft)")
-            ));
+        global(".jazor-admin-management__form label",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Gap = raw("6px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                FontWeight = raw("600")
+            });
 
-        global(".jazor-admin-medical-dashboard__status--registered",
-            Rule(
-                D("color", "#238458"),
-                D("background", "#eaf8f1")
-            ));
+        global(".jazor-admin-management input, .jazor-admin-management select",
+            new CssRule
+            {
+                Width = raw("100%"),
+                MinHeight = raw("34px"),
+                Padding = raw("6px 9px"),
+                Color = raw("var(--text)"),
+                Background = raw("var(--surface)"),
+                Border = raw("1px solid var(--border-strong)"),
+                BorderRadius = raw("4px")
+            });
 
-        global(".jazor-admin__release-section--supporting",
-            Rule(
-                D("margin-top", "28px")
-            ));
+        global(".jazor-admin-management button",
+            new CssRule
+            {
+                MinHeight = raw("34px"),
+                Padding = raw("6px 12px"),
+                Color = raw("#ffffff"),
+                FontSize = raw("13px"),
+                FontWeight = raw("600"),
+                Background = raw("var(--accent)"),
+                Border = raw("1px solid var(--accent)"),
+                BorderRadius = raw("4px")
+            });
 
-        Media(".jazor-admin-medical-dashboard__metrics", "(max-width: 980px)",
-            Rule(
-                D("grid-template-columns", "repeat(2, minmax(0, 1fr))")
-            ));
+        global(".jazor-admin-management button:hover",
+            new CssRule
+            {
+                Background = raw("var(--accent-strong)")
+            });
 
-        Media(".jazor-admin-medical-dashboard__grid", "(max-width: 980px)",
-            Rule(
-                D("grid-template-columns", "1fr")
-            ));
+        global(".jazor-admin-management__table-wrap",
+            new CssRule
+            {
+                Width = raw("100%"),
+                OverflowX = raw("auto")
+            });
 
-        Media(".jazor-admin-medical-dashboard__panel", "(max-width: 980px)",
-            Rule(
-                D("min-height", "0")
-            ));
+        global(".jazor-admin-management__table",
+            new CssRule
+            {
+                Width = raw("100%"),
+                MinWidth = raw("560px"),
+                BorderCollapse = raw("collapse")
+            });
 
-        Media(".jazor-admin-tdesign-page-container--dashboard", "(max-width: 620px)",
-            Rule(
-                D("width", "calc(100% - 24px)"),
-                D("margin", "12px")
-            ));
+        global(".jazor-admin-management__table th, .jazor-admin-management__table td",
+            new CssRule
+            {
+                Padding = raw("13px 20px"),
+                TextAlign = raw("left"),
+                VerticalAlign = raw("middle"),
+                BorderBottom = raw("1px solid var(--border)")
+            });
 
-        Media(".jazor-admin-medical-dashboard__metrics", "(max-width: 620px)",
-            Rule(
-                D("grid-template-columns", "1fr")
-            ));
+        global(".jazor-admin-management__table th",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                FontWeight = raw("600"),
+                Background = raw("var(--surface-subtle)")
+            });
 
-        Media(".jazor-admin-medical-dashboard__metric", "(max-width: 620px)",
-            Rule(
-                D("min-height", "96px")
-            ));
+        global(".jazor-admin-management__table td",
+            new CssRule
+            {
+                FontSize = raw("13px")
+            });
 
-        Media(".jazor-admin-medical-dashboard__panel-header", "(max-width: 620px)",
-            Rule(
-                D("align-items", "flex-start")
-            ));
+        global(".jazor-admin-management__table td strong, .jazor-admin-management__table td span",
+            new CssRule
+            {
+                Display = raw("block")
+            });
 
-        Media("*,\n  *::before,\n  *::after", "(prefers-reduced-motion: reduce)",
-            Rule(
-                D("animation-duration", "0.01ms !important"),
-                D("scroll-behavior", "auto !important"),
-                D("transition-duration", "0.01ms !important")
-            ));
+        global(".jazor-admin-management__table td span",
+            new CssRule
+            {
+                MarginTop = raw("3px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px")
+            });
+
+        global(".jazor-admin-management__table tr.is-selected td, .jazor-admin-management__table tbody tr:hover td",
+            new CssRule
+            {
+                Background = raw("var(--accent-soft)")
+            });
+
+        global(".jazor-admin-management__text-button",
+            new CssRule
+            {
+                Padding = raw("4px 0 !important"),
+                Color = raw("var(--accent) !important"),
+                Background = raw("transparent !important"),
+                Border = raw("0 !important")
+            });
+
+        global(".jazor-admin-management__role-list",
+            new CssRule
+            {
+                Padding = raw("8px 0")
+            });
+
+        global(".jazor-admin-management__role-list button",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                JustifyContent = raw("space-between"),
+                Width = raw("100%"),
+                Padding = raw("11px 20px"),
+                Color = raw("var(--text)"),
+                TextAlign = raw("left"),
+                Background = raw("transparent"),
+                Border = raw("0"),
+                BorderLeft = raw("3px solid transparent"),
+                BorderRadius = raw("0")
+            });
+
+        global(".jazor-admin-management__role-list button:hover, .jazor-admin-management__role-list li.is-selected button",
+            new CssRule
+            {
+                Color = raw("var(--accent-strong)"),
+                Background = raw("var(--accent-soft)"),
+                BorderLeftColor = raw("var(--accent)")
+            });
+
+        global(".jazor-admin-management__role-list small, .jazor-admin-management__check small",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("11px")
+            });
+
+        global(".jazor-admin-management__grant-list, .jazor-admin-management__role-editor",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Padding = raw("12px 20px 20px"),
+                Gap = raw("8px")
+            });
+
+        global(".jazor-admin-management__check",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("16px minmax(0, 1fr) auto"),
+                AlignItems = raw("center"),
+                MinHeight = raw("40px"),
+                Padding = raw("7px 9px"),
+                Gap = raw("8px"),
+                FontSize = raw("13px"),
+                Background = raw("var(--surface-subtle)"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("4px")
+            });
+
+        global(".jazor-admin-management__check input",
+            new CssRule
+            {
+                Width = raw("16px"),
+                MinHeight = raw("16px"),
+                Padding = raw("0")
+            });
+
+        global(".jazor-admin-management__grant-list + button, .jazor-admin-management__role-editor > button",
+            new CssRule
+            {
+                Margin = raw("0 20px 20px")
+            });
+
+        Media(".jazor-admin-overview__metrics", "(max-width: 1100px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))")
+            });
+
+        Media(".jazor-admin-management__split, .jazor-admin-management__split--authorization, .jazor-admin-management__split--members", "(max-width: 980px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin__header-context", "(max-width: 1080px)",
+            new CssRule
+            {
+                FlexWrap = raw("wrap"),
+                JustifyContent = raw("flex-end")
+            });
+
+        Media(".jazor-admin-overview__grid", "(max-width: 760px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin-management__details", "(max-width: 620px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin-overview__metrics", "(max-width: 620px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin-management__form--inline", "(max-width: 620px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin__organization-picker", "(max-width: 620px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr"),
+                PaddingRight = raw("0"),
+                BorderRight = raw("0")
+            });
+
+        Media("*,   *::before,   *::after", "(prefers-reduced-motion: reduce)",
+            new CssRule
+            {
+                AnimationDuration = raw("0.01ms !important"),
+                ScrollBehavior = raw("auto !important"),
+                TransitionDuration = raw("0.01ms !important")
+            });
 
         return true;
     }
-
-    private static CssRule Rule(params CssDeclaration[] declarations)
-        => new() { Additional = declarations };
-
-    private static CssDeclaration D(string name, string value)
-        => new(name, raw(value));
-
-    private static CssDeclaration D(string name, CssValue value)
-        => new(name, value);
 
     private static void Media(string selector, string prelude, CssRule rule)
         => global(selector, new CssRule

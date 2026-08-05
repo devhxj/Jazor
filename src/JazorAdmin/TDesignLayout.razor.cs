@@ -1,3 +1,5 @@
+// Extends the TDesign layout hierarchy with a fixed icon rail and scoped secondary navigation.
+// 在 TDesign 布局层级上增加固定图标 rail 与范围化二级导航。
 using ECMAScript;
 using Microsoft.AspNetCore.Components;
 using static ECMAScript.VueRoute;
@@ -79,19 +81,23 @@ public partial class TDesignLayout : AdminContentComponentBase
 
     private static RouteLocationRaw DashboardRoute => (RouteLocationRaw)"/";
 
-    private static RouteLocationRaw OperationsRoute => (RouteLocationRaw)"/operations/releases";
+    private static RouteLocationRaw OrganizationsRoute => (RouteLocationRaw)"/organizations/structure";
 
-    private static RouteLocationRaw WorkspaceRoute => (RouteLocationRaw)"/workspace";
+    private static RouteLocationRaw AuthorizationRoute => (RouteLocationRaw)"/authorization/roles";
 
-    private static RouteLocationRaw SettingsRoute => (RouteLocationRaw)"/settings";
+    private static RouteLocationRaw AccountsRoute => (RouteLocationRaw)"/accounts";
+
+    private static RouteLocationRaw ConfigurationRoute => (RouteLocationRaw)"/configuration/clients";
 
     private string DashboardRailClass => GetRailItemClass("dashboard");
 
-    private string OperationsRailClass => GetRailItemClass("operations");
+    private string OrganizationsRailClass => GetRailItemClass("organizations");
 
-    private string WorkspaceRailClass => GetRailItemClass("workspace");
+    private string AuthorizationRailClass => GetRailItemClass("authorization");
 
-    private string SettingsRailClass => GetRailItemClass("settings");
+    private string AccountsRailClass => GetRailItemClass("accounts");
+
+    private string ConfigurationRailClass => GetRailItemClass("configuration");
 
     // RouterLink is emitted through the component builder because Razor's tag parser
     // does not bind this proxy consistently in the package-consumer compilation.
@@ -101,9 +107,10 @@ public partial class TDesignLayout : AdminContentComponentBase
         builder.AddAttribute(1, "class", "jazor-admin-tdesign-sidebar-rail");
         builder.AddAttribute(2, "aria-label", "Primary navigation");
         builder.AddContent(3, RenderRailItem(DashboardRoute, DashboardRailClass, "dashboard", "Dashboard"));
-        builder.AddContent(4, RenderRailItem(OperationsRoute, OperationsRailClass, "operations", "Operations"));
-        builder.AddContent(5, RenderRailItem(WorkspaceRoute, WorkspaceRailClass, "workspace", "Workspace"));
-        builder.AddContent(6, RenderRailItem(SettingsRoute, SettingsRailClass, "settings", "Settings"));
+        builder.AddContent(4, RenderRailItem(OrganizationsRoute, OrganizationsRailClass, "organizations", "Organizations"));
+        builder.AddContent(5, RenderRailItem(AuthorizationRoute, AuthorizationRailClass, "authorization", "Authorization"));
+        builder.AddContent(6, RenderRailItem(AccountsRoute, AccountsRailClass, "accounts", "Accounts"));
+        builder.AddContent(7, RenderRailItem(ConfigurationRoute, ConfigurationRailClass, "configuration", "Configuration"));
         builder.CloseElement();
     };
 
@@ -133,17 +140,51 @@ public partial class TDesignLayout : AdminContentComponentBase
         builder.CloseComponent();
     };
 
-    // The rail is a coarse route switcher; operations remains selected for either child page.
+    private string PrimarySection => SelectedKey switch
+    {
+        "organizations.structure" or "organizations.members" => "organizations",
+        "authorization.roles" or "authorization.resources" => "authorization",
+        "accounts" => "accounts",
+        "configuration.clients" or "configuration.scopes" => "configuration",
+        _ => "dashboard"
+    };
+
+    private string SecondaryTitle => PrimarySection switch
+    {
+        "organizations" => "Organizations",
+        "authorization" => "Authorization",
+        "accounts" => "Accounts",
+        "configuration" => "Configuration",
+        _ => "Overview"
+    };
+
+    private AdminNavItems? SecondaryNavItems
+    {
+        get
+        {
+            if (NavItems?.AsArray is not { Length: > 0 } items)
+                return null;
+
+            foreach (var item in items)
+            {
+                if (item.Key != PrimarySection)
+                    continue;
+
+                return item.Children?.AsArray is { Length: > 0 } children
+                    ? children
+                    : new AdminNavItem[] { item };
+            }
+
+            return NavItems;
+        }
+    }
+
+    // The rail selects a complete work area. Its menu is deliberately derived from the same
+    // route catalog so the two navigation layers cannot drift into incompatible targets.
+    // rail 选择完整工作域；二级菜单同源于路由目录，避免两层导航出现不一致的目标。
     private string GetRailItemClass(string section)
     {
-        var isSelected = section switch
-        {
-            "dashboard" => SelectedKey == "dashboard",
-            "operations" => SelectedKey is "operations.releases" or "operations.audit",
-            "workspace" => SelectedKey == "workspace",
-            "settings" => SelectedKey == "settings",
-            _ => false
-        };
+        var isSelected = section == PrimarySection;
 
         return isSelected
             ? "jazor-admin-tdesign-sidebar-rail__link is-selected"
@@ -154,7 +195,7 @@ public partial class TDesignLayout : AdminContentComponentBase
         ? builder =>
         {
             builder.OpenComponent<TDesignSidebarMenu>(0);
-            builder.AddComponentParameter(1, nameof(TDesignSidebarMenu.Items), NavItems);
+            builder.AddComponentParameter(1, nameof(TDesignSidebarMenu.Items), SecondaryNavItems);
             builder.AddComponentParameter(2, nameof(TDesignSidebarMenu.SelectedKey), SelectedKey);
             builder.AddComponentParameter(3, nameof(TDesignSidebarMenu.ExpandedKeys), ExpandedKeys);
             builder.AddComponentParameter(4, nameof(TDesignSidebarMenu.SelectedKeyChanged), SelectedKeyChanged);

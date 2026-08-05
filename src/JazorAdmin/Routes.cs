@@ -1,3 +1,5 @@
+// Defines the administration information architecture used by Vue Router and both navigation tiers.
+// 定义 Vue Router 与两级导航共用的管理信息架构。
 using ECMAScript;
 using Jazor.Admin;
 
@@ -7,10 +9,16 @@ namespace JazorAdmin;
 public static class Routes
 {
     public const string DashboardKey = "dashboard";
-    public const string ReleasesKey = "operations.releases";
-    public const string AuditKey = "operations.audit";
-    public const string SettingsKey = "settings";
-    public const string WorkspaceKey = "workspace";
+    public const string OrganizationsKey = "organizations";
+    public const string OrganizationStructureKey = "organizations.structure";
+    public const string OrganizationMembersKey = "organizations.members";
+    public const string AuthorizationKey = "authorization";
+    public const string AuthorizationRolesKey = "authorization.roles";
+    public const string AuthorizationResourcesKey = "authorization.resources";
+    public const string AccountsKey = "accounts";
+    public const string ConfigurationKey = "configuration";
+    public const string ConfigurationClientsKey = "configuration.clients";
+    public const string ConfigurationScopesKey = "configuration.scopes";
     public const string LoginKey = "login";
     public const string LockKey = "lock";
     public const string InternalErrorKey = "error.500";
@@ -61,40 +69,77 @@ public static class Routes
         },
         new()
         {
-            Key = "operations",
-            Title = Localization.Get(language, TextKey.Operations),
+            Key = OrganizationsKey,
+            Title = Localization.Get(language, TextKey.Organizations),
             Children =
             [
                 new()
                 {
-                    Key = ReleasesKey,
-                    Path = "/operations/releases",
-                    Title = Localization.Get(language, TextKey.Releases),
-                    Subtitle = Localization.Get(language, TextKey.ReleasesSubtitle)
+                    Key = OrganizationStructureKey,
+                    Path = "/organizations/structure",
+                    Title = Localization.Get(language, TextKey.OrganizationStructure),
+                    Subtitle = Localization.Get(language, TextKey.OrganizationStructureSubtitle)
                 },
                 new()
                 {
-                    Key = AuditKey,
-                    Path = "/operations/audit",
-                    Title = Localization.Get(language, TextKey.AuditLog),
-                    Subtitle = Localization.Get(language, TextKey.AuditLogSubtitle)
+                    Key = OrganizationMembersKey,
+                    Path = "/organizations/members",
+                    Title = Localization.Get(language, TextKey.Members),
+                    Subtitle = Localization.Get(language, TextKey.MembersSubtitle)
                 }
             ]
         },
         new()
         {
-            Key = SettingsKey,
-            Path = "/settings",
-            Title = Localization.Get(language, TextKey.Settings),
-            Subtitle = Localization.Get(language, TextKey.SettingsSubtitle)
+            Key = AuthorizationKey,
+            Title = Localization.Get(language, TextKey.Authorization),
+            Children =
+            [
+                new()
+                {
+                    Key = AuthorizationRolesKey,
+                    Path = "/authorization/roles",
+                    Title = Localization.Get(language, TextKey.RolesAndGrants),
+                    Subtitle = Localization.Get(language, TextKey.RolesAndGrantsSubtitle)
+                },
+                new()
+                {
+                    Key = AuthorizationResourcesKey,
+                    Path = "/authorization/resources",
+                    Title = Localization.Get(language, TextKey.ResourceOperations),
+                    Subtitle = Localization.Get(language, TextKey.ResourceOperationsSubtitle)
+                }
+            ]
         },
         new()
         {
-            Key = WorkspaceKey,
-            Path = "/workspace",
-            Title = Localization.Get(language, TextKey.Workspace),
-            Subtitle = Localization.Get(language, TextKey.WorkspaceSubtitle)
-        }
+            Key = AccountsKey,
+            Path = "/accounts",
+            Title = Localization.Get(language, TextKey.Accounts),
+            Subtitle = Localization.Get(language, TextKey.AccountsSubtitle)
+        },
+        new()
+        {
+            Key = ConfigurationKey,
+            Title = Localization.Get(language, TextKey.Configuration),
+            Children =
+            [
+                new()
+                {
+                    Key = ConfigurationClientsKey,
+                    Path = "/configuration/clients",
+                    Title = Localization.Get(language, TextKey.OpenIdClients),
+                    Subtitle = Localization.Get(language, TextKey.OpenIdClientsSubtitle)
+                },
+                new()
+                {
+                    Key = ConfigurationScopesKey,
+                    Path = "/configuration/scopes",
+                    Title = Localization.Get(language, TextKey.OpenIdScopes),
+                    Subtitle = Localization.Get(language, TextKey.OpenIdScopesSubtitle)
+                }
+            ]
+        },
         ];
 
     public static readonly AdminNavItems NavigationItems =

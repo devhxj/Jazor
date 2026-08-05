@@ -1,130 +1,76 @@
+@* Summarizes the signed-in operator's real administration context. 首页概览当前登录用户的真实管理上下文。 *@
 @inherits AppComponentBase
 
-<section class="jazor-admin-medical-dashboard" data-dashboard="recruitment">
-    <section class="jazor-admin-medical-dashboard__metrics" aria-label="项目概览">
-        <article class="jazor-admin__metric jazor-admin-medical-dashboard__metric jazor-admin-medical-dashboard__metric--projects">
-            <span class="jazor-admin-medical-dashboard__metric-label">项目总数</span>
-            <strong>10572</strong>
-            <span class="jazor-admin-medical-dashboard__metric-detail">覆盖全部医生生机项目</span>
+<section class="jazor-admin-overview" data-dashboard="administration">
+    <section class="jazor-admin-overview__metrics" aria-label="Administration overview">
+        <article class="jazor-admin-overview__metric">
+            <span>Organizations</span>
+            <strong>@(Session?.Organizations.Length ?? 0)</strong>
+            <small>Available in this session</small>
         </article>
-        <article class="jazor-admin__metric jazor-admin-medical-dashboard__metric jazor-admin-medical-dashboard__metric--recruiting">
-            <span class="jazor-admin-medical-dashboard__metric-label">招募中项目</span>
-            <strong>10572</strong>
-            <span class="jazor-admin-medical-dashboard__metric-detail">当前正在开放报名</span>
+        <article class="jazor-admin-overview__metric">
+            <span>Platform roles</span>
+            <strong>@(Session?.Roles.Length ?? 0)</strong>
+            <small>Assigned to the signed-in account</small>
         </article>
-        <article class="jazor-admin__metric jazor-admin-medical-dashboard__metric jazor-admin-medical-dashboard__metric--applications">
-            <span class="jazor-admin-medical-dashboard__metric-label">报名总数</span>
-            <strong>4</strong>
-            <span class="jazor-admin-medical-dashboard__metric-detail">近 24 小时新增记录</span>
+        <article class="jazor-admin-overview__metric">
+            <span>Current organization</span>
+            <strong>@(SelectedOrganization?.Code ?? "None")</strong>
+            <small>@(SelectedOrganization?.DisplayName ?? "Choose an organization from the header")</small>
         </article>
-        <article class="jazor-admin__metric jazor-admin-medical-dashboard__metric jazor-admin-medical-dashboard__metric--review">
-            <span class="jazor-admin-medical-dashboard__metric-label">待审核</span>
-            <strong>0</strong>
-            <span class="jazor-admin-medical-dashboard__metric-detail">当前无需人工处理</span>
+        <article class="jazor-admin-overview__metric">
+            <span>Session</span>
+            <strong>Active</strong>
+            <small>@Session?.Email</small>
         </article>
     </section>
 
-    <div class="jazor-admin-medical-dashboard__grid">
-        <section class="jazor-admin-medical-dashboard__panel jazor-admin-medical-dashboard__panel--progress" aria-labelledby="recruitment-progress-title">
-            <header class="jazor-admin-medical-dashboard__panel-header">
+    <div class="jazor-admin-overview__grid">
+        <section class="jazor-admin-overview__panel" aria-labelledby="organization-access-title">
+            <header class="jazor-admin-overview__panel-header">
                 <div>
-                    <h2 id="recruitment-progress-title">招募进度概览</h2>
-                    <p aria-live="polite">当前跟进：@SelectedStudy</p>
+                    <h2 id="organization-access-title">Organization access</h2>
+                    <p>Organizations available to the signed-in account</p>
                 </div>
-                <button type="button" class="jazor-admin-medical-dashboard__text-action" @onclick="ShowAllStudies">查看全部</button>
             </header>
-
-            <ol class="jazor-admin-medical-dashboard__study-list">
-                <li>
-                    <button type="button" class="@GetStudyClass(StudyKras)" @onclick="() => SelectStudy(StudyKras)">
-                        <span>@StudyKras</span>
-                        <strong>0/53</strong>
-                    </button>
-                </li>
-                <li>
-                    <button type="button" class="@GetStudyClass(StudyLiver)" @onclick="() => SelectStudy(StudyLiver)">
-                        <span>@StudyLiver</span>
-                        <strong>0/450</strong>
-                    </button>
-                </li>
-                <li>
-                    <button type="button" class="@GetStudyClass(StudyTargeted)" @onclick="() => SelectStudy(StudyTargeted)">
-                        <span>@StudyTargeted</span>
-                        <strong>0/270</strong>
-                    </button>
-                </li>
-                <li>
-                    <button type="button" class="@GetStudyClass(StudyMercury)" @onclick="() => SelectStudy(StudyMercury)">
-                        <span>@StudyMercury</span>
-                        <strong>0/26</strong>
-                    </button>
-                </li>
-                <li>
-                    <button type="button" class="@GetStudyClass(StudyTt0113)" @onclick="() => SelectStudy(StudyTt0113)">
-                        <span>@StudyTt0113</span>
-                        <strong>0/300</strong>
-                    </button>
-                </li>
-            </ol>
+            @if (Session?.Organizations is { Length: > 0 } organizations)
+            {
+                <ul class="jazor-admin-overview__organization-list">
+                    @foreach (var organization in organizations)
+                    {
+                        <li class="@(organization.Id == SelectedOrganization?.Id ? "is-current" : string.Empty)">
+                            <span class="jazor-admin-overview__organization-code">@organization.Code</span>
+                            <span>@organization.DisplayName</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="jazor-admin-overview__empty">No organizations are assigned to this account.</p>
+            }
         </section>
 
-        <section class="jazor-admin-medical-dashboard__panel jazor-admin-medical-dashboard__panel--applications" aria-labelledby="recent-applications-title">
-            <header class="jazor-admin-medical-dashboard__panel-header">
+        <section class="jazor-admin-overview__panel" aria-labelledby="access-profile-title">
+            <header class="jazor-admin-overview__panel-header">
                 <div>
-                    <h2 id="recent-applications-title">最近报名记录</h2>
-                    <p>按提交时间排序</p>
+                    <h2 id="access-profile-title">Access profile</h2>
+                    <p>Platform-level roles provided by the current session</p>
                 </div>
-                <button type="button" class="jazor-admin-medical-dashboard__text-action" @onclick="ShowApplications">全部记录</button>
             </header>
-
-            <div class="jazor-admin-medical-dashboard__table-wrap">
-                <table class="jazor-admin-medical-dashboard__table">
-                    <thead>
-                        <tr>
-                            <th>项目</th>
-                            <th>状态</th>
-                            <th>提交时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ZENITH - 瑞查鲁肽用于代谢相关脂肪性肝病</td>
-                            <td><span class="jazor-admin-medical-dashboard__status jazor-admin-medical-dashboard__status--cancelled">已取消</span></td>
-                            <td>2026-07-13 23:39</td>
-                        </tr>
-                        <tr>
-                            <td>双靶点肿瘤靶变试验</td>
-                            <td><span class="jazor-admin-medical-dashboard__status jazor-admin-medical-dashboard__status--cancelled">已取消</span></td>
-                            <td>2026-07-13 23:50</td>
-                        </tr>
-                        <tr>
-                            <td>澳洲 OL51014T 代谢管理受试者项目</td>
-                            <td><span class="jazor-admin-medical-dashboard__status jazor-admin-medical-dashboard__status--cancelled">已取消</span></td>
-                            <td>2026-07-02 17:09</td>
-                        </tr>
-                        <tr>
-                            <td>双靶点肿瘤靶变试验</td>
-                            <td><span class="jazor-admin-medical-dashboard__status jazor-admin-medical-dashboard__status--registered">已报名</span></td>
-                            <td>2026-07-02 17:07</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            @if (Session?.Roles is { Length: > 0 } roles)
+            {
+                <ul class="jazor-admin-overview__role-list">
+                    @foreach (var role in roles)
+                    {
+                        <li>@role</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="jazor-admin-overview__empty">No platform-level roles are assigned.</p>
+            }
         </section>
     </div>
 </section>
-
-<ReleaseQueue SectionClass="jazor-admin__release-section jazor-admin__release-section--supporting"
-              SelectedRowKey="@SelectedRowKey"
-              SelectedRowKeyChanged="@SelectedRowKeyChanged"
-              SelectedRowKeys="@SelectedRowKeys"
-              SelectedRowKeysChanged="@SelectedRowKeysChanged"
-              SearchText="@SearchText"
-              SearchTextChanged="@SearchTextChanged"
-              PageIndex="@PageIndex"
-              PageIndexChanged="@PageIndexChanged"
-              SortColumnKey="@SortColumnKey"
-              SortColumnKeyChanged="@SortColumnKeyChanged"
-              SortDescending="@SortDescending"
-              SortDescendingChanged="@SortDescendingChanged"
-              Loading="@Loading" />

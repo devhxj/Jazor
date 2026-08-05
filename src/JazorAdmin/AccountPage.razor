@@ -1,0 +1,73 @@
+@* Administers Identity accounts and their platform access. 管理 Identity 账户及其平台访问权限。 *@
+@inherits AppComponentBase
+
+<section class="jazor-admin-management" data-management-area="accounts">
+    @if (loading)
+    {
+        <p class="jazor-admin-management__loading" aria-live="polite">Loading accounts</p>
+    }
+    else if (error is not null)
+    {
+        <p class="jazor-admin-management__error" role="alert">@error</p>
+    }
+    else
+    {
+        <div class="jazor-admin-management__split jazor-admin-management__split--members">
+            <section class="jazor-admin-management__panel" aria-labelledby="accounts-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="accounts-title">Accounts</h2>
+                        <p>Identity accounts accepted by the single sign-on center</p>
+                    </div>
+                </header>
+                <div class="jazor-admin-management__table-wrap">
+                    <table class="jazor-admin-management__table">
+                        <thead><tr><th>Account</th><th>Platform role</th><th>State</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var account in accounts)
+                            {
+                                <tr class="@(account.Id == selectedAccountId ? "is-selected" : string.Empty)">
+                                    <td><strong>@account.DisplayName</strong><span>@account.Email</span></td>
+                                    <td>@(account.PlatformAdministrator ? "Platform administrator" : "Organization account")</td>
+                                    <td>@(account.Enabled ? "Enabled" : "Disabled")</td>
+                                    <td>
+                                        <button type="button" class="jazor-admin-management__text-button" @onclick="() => SelectAccount(account)">Manage</button>
+                                        <button type="button" class="jazor-admin-management__text-button" @onclick="() => SetEnabled(account)">@(account.Enabled ? "Disable" : "Enable")</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="jazor-admin-management__panel" aria-labelledby="create-account-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="create-account-title">Create account</h2>
+                        <p>New accounts can then be assigned to organizations and roles</p>
+                    </div>
+                </header>
+                <form class="jazor-admin-management__form" @onsubmit="CreateAccount" @onsubmit:preventDefault>
+                    <label><span>Email</span><input required type="email" autocomplete="off" @bind="email" @bind:event="oninput" /></label>
+                    <label><span>Display name</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
+                    <label><span>Initial password</span><input required type="password" autocomplete="new-password" @bind="password" @bind:event="oninput" /></label>
+                    <label class="jazor-admin-management__check"><input type="checkbox" @bind="platformAdministrator" /><span>Platform administrator</span></label>
+                    <button type="submit">Create account</button>
+                </form>
+
+                @if (SelectedAccount is not null)
+                {
+                    <div class="jazor-admin-management__role-editor">
+                        <h3>Reset password</h3>
+                        <p>@SelectedAccount.Email</p>
+                        <form class="jazor-admin-management__form jazor-admin-management__form--inline" @onsubmit="ResetPassword" @onsubmit:preventDefault>
+                            <input required type="password" autocomplete="new-password" placeholder="New password" @bind="newPassword" @bind:event="oninput" />
+                            <button type="submit">Update password</button>
+                        </form>
+                    </div>
+                }
+            </section>
+        </div>
+    }
+</section>

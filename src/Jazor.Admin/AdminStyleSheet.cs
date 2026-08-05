@@ -19,106 +19,321 @@ internal static class AdminStyleSheet
 
     private static bool Register()
     {
-        G(".jazor-admin-application",
-            D("--app-bg", "#f5f7fa"), D("--surface", "#ffffff"), D("--surface-subtle", "#f8fafc"),
-            D("--surface-strong", "#edf2f7"), D("--text", "#1f2937"), D("--text-muted", "#738092"),
-            D("--border", "#e5eaf1"), D("--border-strong", "#ccd6e2"), D("--accent", "#2f6fed"),
-            D("--accent-strong", "#1f5bd2"), D("--accent-soft", "#e9f1ff"), D("--danger", "#d84a4a"),
-            D("--danger-soft", "#fff0f0"), D("--warning", "#d18a19"), D("--warning-soft", "#fff7e8"),
-            D("--info", "#2f6fed"), D("--info-soft", "#e9f1ff"),
-            D("--shadow", "0 4px 14px rgb(31 52 78 / 5%)"),
-            D("min-height", "100vh"), D("background", "var(--app-bg)"), D("color", "var(--text)"));
+        global(".jazor-admin-application", new CssRule
+        {
+            ["--app-bg"] = raw("#f5f7fa"),
+            ["--surface"] = raw("#ffffff"),
+            ["--surface-subtle"] = raw("#f8fafc"),
+            ["--surface-strong"] = raw("#edf2f7"),
+            ["--text"] = raw("#1f2937"),
+            ["--text-muted"] = raw("#738092"),
+            ["--border"] = raw("#e5eaf1"),
+            ["--border-strong"] = raw("#ccd6e2"),
+            ["--accent"] = raw("#2f6fed"),
+            ["--accent-strong"] = raw("#1f5bd2"),
+            ["--accent-soft"] = raw("#e9f1ff"),
+            ["--danger"] = raw("#d84a4a"),
+            ["--danger-soft"] = raw("#fff0f0"),
+            ["--warning"] = raw("#d18a19"),
+            ["--warning-soft"] = raw("#fff7e8"),
+            ["--info"] = raw("#2f6fed"),
+            ["--info-soft"] = raw("#e9f1ff"),
+            ["--shadow"] = raw("0 4px 14px rgb(31 52 78 / 5%)"),
+            MinHeight = raw("100vh"),
+            Background = raw("var(--app-bg)"),
+            Color = raw("var(--text)")
+        });
 
-        var darkTheme = Rule(
-            D("color-scheme", "dark"), D("--app-bg", "#151a18"), D("--surface", "#1e2522"),
-            D("--surface-subtle", "#242c29"), D("--surface-strong", "#2c3732"), D("--text", "#edf3f0"),
-            D("--text-muted", "#aab8b1"), D("--border", "#39453f"), D("--border-strong", "#526159"),
-            D("--accent", "#50c99a"), D("--accent-strong", "#78dab4"), D("--accent-soft", "#193e31"),
-            D("--danger", "#ff8c86"), D("--danger-soft", "#492827"), D("--warning", "#f1c35d"),
-            D("--warning-soft", "#45391f"), D("--info", "#8bbaf0"), D("--info-soft", "#24364c"),
-            D("--shadow", "0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)"));
+        var darkTheme = new CssRule
+        {
+            ColorScheme = raw("dark"),
+            ["--app-bg"] = raw("#151a18"),
+            ["--surface"] = raw("#1e2522"),
+            ["--surface-subtle"] = raw("#242c29"),
+            ["--surface-strong"] = raw("#2c3732"),
+            ["--text"] = raw("#edf3f0"),
+            ["--text-muted"] = raw("#aab8b1"),
+            ["--border"] = raw("#39453f"),
+            ["--border-strong"] = raw("#526159"),
+            ["--accent"] = raw("#50c99a"),
+            ["--accent-strong"] = raw("#78dab4"),
+            ["--accent-soft"] = raw("#193e31"),
+            ["--danger"] = raw("#ff8c86"),
+            ["--danger-soft"] = raw("#492827"),
+            ["--warning"] = raw("#f1c35d"),
+            ["--warning-soft"] = raw("#45391f"),
+            ["--info"] = raw("#8bbaf0"),
+            ["--info-soft"] = raw("#24364c"),
+            ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
+        };
         global(".jazor-admin-application--dark", darkTheme);
         Media(".jazor-admin-application--system", "(prefers-color-scheme: dark)", darkTheme);
-        G(".jazor-admin-application--grayscale", D("filter", "grayscale(1)"));
+        global(".jazor-admin-application--grayscale", new CssRule
+        {
+            Filter = raw("grayscale(1)")
+        });
 
-        G(".jazor-admin-shell", D("display", "grid"), D("grid-template-columns", "232px minmax(0, 1fr)"), D("min-height", "100vh"));
-        G(".jazor-admin-shell--top", D("display", "block"));
-        G(".jazor-admin-shell__sidebar",
-            D("position", "sticky"), D("top", "0"), D("z-index", "20"), D("height", "100vh"),
-            D("overflow", "auto"), D("background", "#17241f"), D("color", "#eef7f3"),
-            D("border-right", "1px solid #293a33"));
-        G(".jazor-admin-shell--collapsed", D("grid-template-columns", "0 minmax(0, 1fr)"));
-        G(".jazor-admin-shell--collapsed .jazor-admin-shell__sidebar", D("display", "none"), D("width", "0"), D("border-right", "0"));
-        G(".jazor-admin-shell__main", D("min-width", "0"));
-        G(".jazor-admin-shell__header",
-            D("display", "flex"), D("align-items", "center"), D("position", "sticky"), D("top", "0"),
-            D("z-index", "15"), D("min-height", "64px"),
-            D("background", "color-mix(in srgb, var(--surface) 94%, transparent)"),
-            D("border-bottom", "1px solid var(--border)"), D("backdrop-filter", "blur(12px)"));
-        G(".jazor-admin-shell__sidebar-toggle",
-            D("position", "relative"), D("flex", "0 0 36px"), D("width", "36px"), D("height", "36px"),
-            D("padding", "0"), D("margin-left", "14px"), D("color", "var(--text)"),
-            D("background", "transparent"), D("border", "1px solid var(--border)"), D("border-radius", "5px"));
-        G(".jazor-admin-shell__sidebar-toggle::before", D("font-size", "20px"), D("line-height", "1"), D("content", "\"\\2630\""));
-        G(".jazor-admin-shell__sidebar-toggle:hover", D("background", "var(--surface-strong)"));
-        G(".jazor-admin-shell__content", D("width", "100%"));
+        global(".jazor-admin-shell", new CssRule
+        {
+            Display = raw("grid"),
+            GridTemplateColumns = raw("232px minmax(0, 1fr)"),
+            MinHeight = raw("100vh")
+        });
+        global(".jazor-admin-shell--top", new CssRule
+        {
+            Display = raw("block")
+        });
+        global(".jazor-admin-shell__sidebar", new CssRule
+        {
+            Position = raw("sticky"),
+            Top = raw("0"),
+            ZIndex = raw("20"),
+            Height = raw("100vh"),
+            Overflow = raw("auto"),
+            Background = raw("#17241f"),
+            Color = raw("#eef7f3"),
+            BorderRight = raw("1px solid #293a33")
+        });
+        global(".jazor-admin-shell--collapsed", new CssRule
+        {
+            GridTemplateColumns = raw("0 minmax(0, 1fr)")
+        });
+        global(".jazor-admin-shell--collapsed .jazor-admin-shell__sidebar", new CssRule
+        {
+            Display = raw("none"),
+            Width = raw("0"),
+            BorderRight = raw("0")
+        });
+        global(".jazor-admin-shell__main", new CssRule
+        {
+            MinWidth = raw("0")
+        });
+        global(".jazor-admin-shell__header", new CssRule
+        {
+            Display = raw("flex"),
+            AlignItems = raw("center"),
+            Position = raw("sticky"),
+            Top = raw("0"),
+            ZIndex = raw("15"),
+            MinHeight = raw("64px"),
+            Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
+            BorderBottom = raw("1px solid var(--border)"),
+            BackdropFilter = raw("blur(12px)")
+        });
+        global(".jazor-admin-shell__sidebar-toggle", new CssRule
+        {
+            Position = raw("relative"),
+            Flex = raw("0 0 36px"),
+            Width = raw("36px"),
+            Height = raw("36px"),
+            Padding = raw("0"),
+            MarginLeft = raw("14px"),
+            Color = raw("var(--text)"),
+            Background = raw("transparent"),
+            Border = raw("1px solid var(--border)"),
+            BorderRadius = raw("5px")
+        });
+        global(".jazor-admin-shell__sidebar-toggle::before", new CssRule
+        {
+            FontSize = raw("20px"),
+            LineHeight = raw("1"),
+            Content = raw("\"\\2630\"")
+        });
+        global(".jazor-admin-shell__sidebar-toggle:hover", new CssRule
+        {
+            Background = raw("var(--surface-strong)")
+        });
+        global(".jazor-admin-shell__content", new CssRule
+        {
+            Width = raw("100%")
+        });
 
-        G(".jazor-admin-sidebar", D("min-height", "100%"), D("padding", "20px 14px"));
-        G(".jazor-admin-sidebar__logo",
-            D("display", "flex"), D("align-items", "center"), D("min-height", "42px"),
-            D("margin", "0 8px 22px"), D("color", "#ffffff"), D("font-size", "18px"), D("font-weight", "750"));
-        G(".jazor-admin-sidebar__list, .jazor-admin-sidebar__children", D("padding", "0"), D("margin", "0"), D("list-style", "none"));
-        G(".jazor-admin-sidebar__item", D("margin", "3px 0"));
-        G(".jazor-admin-sidebar__item-content", D("position", "relative"));
-        G(".jazor-admin-sidebar__link, .jazor-admin-sidebar__button",
-            D("display", "flex"), D("align-items", "center"), D("width", "100%"), D("min-height", "40px"),
-            D("padding", "8px 12px"), D("color", "#b8c8c1"), D("text-align", "left"),
-            D("text-decoration", "none"), D("background", "transparent"), D("border", "0"), D("border-radius", "6px"));
-        G(".jazor-admin-sidebar__link:hover, .jazor-admin-sidebar__button:hover, .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            D("color", "#ffffff"), D("background", "#243a31"));
-        G(".jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link, .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button",
-            D("color", "#ffffff"), D("background", "#087f5b"));
-        G(".jazor-admin-sidebar__toggle", D("margin-left", "auto"), D("font-size", "12px"));
-        G(".jazor-admin-sidebar__children", D("padding", "4px 0 4px 12px"));
+        global(".jazor-admin-sidebar", new CssRule
+        {
+            MinHeight = raw("100%"),
+            Padding = raw("20px 14px")
+        });
+        global(".jazor-admin-sidebar__logo", new CssRule
+        {
+            Display = raw("flex"),
+            AlignItems = raw("center"),
+            MinHeight = raw("42px"),
+            Margin = raw("0 8px 22px"),
+            Color = raw("#ffffff"),
+            FontSize = raw("18px"),
+            FontWeight = raw("750")
+        });
+        global(".jazor-admin-sidebar__list, .jazor-admin-sidebar__children", new CssRule
+        {
+            Padding = raw("0"),
+            Margin = raw("0"),
+            ListStyle = raw("none")
+        });
+        global(".jazor-admin-sidebar__item", new CssRule
+        {
+            Margin = raw("3px 0")
+        });
+        global(".jazor-admin-sidebar__item-content", new CssRule
+        {
+            Position = raw("relative")
+        });
+        global(".jazor-admin-sidebar__link, .jazor-admin-sidebar__button", new CssRule
+        {
+            Display = raw("flex"),
+            AlignItems = raw("center"),
+            Width = raw("100%"),
+            MinHeight = raw("40px"),
+            Padding = raw("8px 12px"),
+            Color = raw("#b8c8c1"),
+            TextAlign = raw("left"),
+            TextDecoration = raw("none"),
+            Background = raw("transparent"),
+            Border = raw("0"),
+            BorderRadius = raw("6px")
+        });
+        global(".jazor-admin-sidebar__link:hover, .jazor-admin-sidebar__button:hover, .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button", new CssRule
+        {
+            Color = raw("#ffffff"),
+            Background = raw("#243a31")
+        });
+        global(".jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link, .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button", new CssRule
+        {
+            Color = raw("#ffffff"),
+            Background = raw("#087f5b")
+        });
+        global(".jazor-admin-sidebar__toggle", new CssRule
+        {
+            MarginLeft = raw("auto"),
+            FontSize = raw("12px")
+        });
+        global(".jazor-admin-sidebar__children", new CssRule
+        {
+            Padding = raw("4px 0 4px 12px")
+        });
 
-        G(".jazor-admin-header",
-            D("display", "flex"), D("flex", "1 1 auto"), D("align-items", "center"),
-            D("justify-content", "space-between"), D("min-width", "0"), D("min-height", "64px"),
-            D("padding", "8px 24px"), D("gap", "20px"));
-        G(".jazor-admin-header__main, .jazor-admin-header__actions, .jazor-admin-header__toolbar, .jazor-admin-header__user-region",
-            D("display", "flex"), D("align-items", "center"));
-        G(".jazor-admin-header__main", D("min-width", "0"), D("gap", "12px"));
-        G(".jazor-admin-header__logo", D("color", "var(--accent)"), D("font-weight", "750"));
-        G(".jazor-admin-header__titles", D("min-width", "0"));
-        G(".jazor-admin-header__title", D("overflow", "hidden"), D("font-size", "16px"), D("font-weight", "700"), D("text-overflow", "ellipsis"), D("white-space", "nowrap"));
-        G(".jazor-admin-header__subtitle", D("margin-top", "2px"), D("color", "var(--text-muted)"), D("font-size", "12px"));
-        G(".jazor-admin-header__actions", D("justify-content", "flex-end"), D("min-width", "0"), D("gap", "16px"));
-        G(".jazor-admin-header__navigation", D("flex", "1 1 auto"), D("min-width", "0"));
+        global(".jazor-admin-header", new CssRule
+        {
+            Display = raw("flex"),
+            Flex = raw("1 1 auto"),
+            AlignItems = raw("center"),
+            JustifyContent = raw("space-between"),
+            MinWidth = raw("0"),
+            MinHeight = raw("64px"),
+            Padding = raw("8px 24px"),
+            Gap = raw("20px")
+        });
+        global(".jazor-admin-header__main, .jazor-admin-header__actions, .jazor-admin-header__toolbar, .jazor-admin-header__user-region", new CssRule
+        {
+            Display = raw("flex"),
+            AlignItems = raw("center")
+        });
+        global(".jazor-admin-header__main", new CssRule
+        {
+            MinWidth = raw("0"),
+            Gap = raw("12px")
+        });
+        global(".jazor-admin-header__logo", new CssRule
+        {
+            Color = raw("var(--accent)"),
+            FontWeight = raw("750")
+        });
+        global(".jazor-admin-header__titles", new CssRule
+        {
+            MinWidth = raw("0")
+        });
+        global(".jazor-admin-header__title", new CssRule
+        {
+            Overflow = raw("hidden"),
+            FontSize = raw("16px"),
+            FontWeight = raw("700"),
+            TextOverflow = raw("ellipsis"),
+            WhiteSpace = raw("nowrap")
+        });
+        global(".jazor-admin-header__subtitle", new CssRule
+        {
+            MarginTop = raw("2px"),
+            Color = raw("var(--text-muted)"),
+            FontSize = raw("12px")
+        });
+        global(".jazor-admin-header__actions", new CssRule
+        {
+            JustifyContent = raw("flex-end"),
+            MinWidth = raw("0"),
+            Gap = raw("16px")
+        });
+        global(".jazor-admin-header__navigation", new CssRule
+        {
+            Flex = raw("1 1 auto"),
+            MinWidth = raw("0")
+        });
 
-        G(".jazor-admin-page", D("width", "min(100%, 1480px)"), D("margin", "0 auto"), D("padding", "24px"));
-        G(".jazor-admin-page__header", D("display", "flex"), D("align-items", "flex-end"), D("justify-content", "space-between"), D("margin-bottom", "20px"), D("gap", "20px"));
-        G(".jazor-admin-page__titles", D("min-width", "0"));
-        G(".jazor-admin-page__title", D("margin", "0"), D("font-size", "26px"), D("line-height", "1.25"));
-        G(".jazor-admin-page__subtitle", D("max-width", "760px"), D("margin", "7px 0 0"), D("color", "var(--text-muted)"), D("line-height", "1.5"));
-        G(".jazor-admin-page__actions", D("display", "flex"), D("flex-wrap", "wrap"), D("justify-content", "flex-end"), D("gap", "8px"));
-        G(".jazor-admin-page__body > * + *", D("margin-top", "20px"));
+        global(".jazor-admin-page", new CssRule
+        {
+            Width = raw("min(100%, 1480px)"),
+            Margin = raw("0 auto"),
+            Padding = raw("24px")
+        });
+        global(".jazor-admin-page__header", new CssRule
+        {
+            Display = raw("flex"),
+            AlignItems = raw("flex-end"),
+            JustifyContent = raw("space-between"),
+            MarginBottom = raw("20px"),
+            Gap = raw("20px")
+        });
+        global(".jazor-admin-page__titles", new CssRule
+        {
+            MinWidth = raw("0")
+        });
+        global(".jazor-admin-page__title", new CssRule
+        {
+            Margin = raw("0"),
+            FontSize = raw("26px"),
+            LineHeight = raw("1.25")
+        });
+        global(".jazor-admin-page__subtitle", new CssRule
+        {
+            MaxWidth = raw("760px"),
+            Margin = raw("7px 0 0"),
+            Color = raw("var(--text-muted)"),
+            LineHeight = raw("1.5")
+        });
+        global(".jazor-admin-page__actions", new CssRule
+        {
+            Display = raw("flex"),
+            FlexWrap = raw("wrap"),
+            JustifyContent = raw("flex-end"),
+            Gap = raw("8px")
+        });
+        global(".jazor-admin-page__body > * + *", new CssRule
+        {
+            MarginTop = raw("20px")
+        });
 
-        Media(".jazor-admin-shell", "(max-width: 760px)", Rule(D("display", "block"), D("min-width", "0")));
-        Media(".jazor-admin-shell__sidebar", "(max-width: 760px)", Rule(
-            D("position", "static"), D("height", "auto"), D("overflow", "visible"), D("border-right", "0"), D("border-bottom", "1px solid #293a33")));
-        Media(".jazor-admin-sidebar", "(max-width: 760px)", Rule(D("min-height", "0"), D("padding", "10px 12px")));
-        Media(".jazor-admin-page", "(max-width: 760px)", Rule(D("padding", "18px 14px 28px")));
+        Media(".jazor-admin-shell", "(max-width: 760px)", new CssRule
+        {
+            Display = raw("block"),
+            MinWidth = raw("0")
+        });
+        Media(".jazor-admin-shell__sidebar", "(max-width: 760px)", new CssRule
+        {
+            Position = raw("static"),
+            Height = raw("auto"),
+            Overflow = raw("visible"),
+            BorderRight = raw("0"),
+            BorderBottom = raw("1px solid #293a33")
+        });
+        Media(".jazor-admin-sidebar", "(max-width: 760px)", new CssRule
+        {
+            MinHeight = raw("0"),
+            Padding = raw("10px 12px")
+        });
+        Media(".jazor-admin-page", "(max-width: 760px)", new CssRule
+        {
+            Padding = raw("18px 14px 28px")
+        });
         return true;
     }
-
-    private static void G(string selector, params CssDeclaration[] declarations)
-        => global(selector, Rule(declarations));
-
-    private static CssRule Rule(params CssDeclaration[] declarations)
-        => new() { Additional = declarations };
-
-    private static CssDeclaration D(string name, string value)
-        => new(name, raw(value));
 
     private static void Media(string selector, string prelude, CssRule rule)
         => global(selector, new CssRule { Children = [new(CssChildKind.Media, prelude, rule)] });

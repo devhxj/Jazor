@@ -26,6 +26,9 @@ SetCommonEnvironment(repoRoot);
 if (!options.FrontendOnly)
 {
     CleanDirectory(generatedOutputRoot, repoRoot);
+    // Let build-local create a unique current-source package version. Pinning a released version
+    // here could let restore select NuGet.org instead of the local artifact under test.
+    // 由 build-local 生成唯一的当前源码包版本；固定已发布版本可能让还原误选 NuGet.org 包。
     RunDotNet(repoRoot,
     [
         "run",
@@ -34,7 +37,6 @@ if (!options.FrontendOnly)
         buildScript,
         "--",
         "--configuration", options.Configuration,
-        "--package-version", options.PackageVersion,
         "--jazor-dir", generatedOutputRoot,
         "--inject-jazor-dir", injectGeneratedOutputRoot,
         "--base-output-path", baseOutputPath,
@@ -59,10 +61,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     const string appModulePath = "components/jazor-admin-app.mjs";
     const string bootstrapModulePath = "components/jazor-admin-bootstrap.mjs";
     const string routeCatalogModulePath = "components/jazor-admin-admin-route-catalog.mjs";
-    const string dataTableModulePath = "components/jazor-admin-release-table.mjs";
-    const string formModulePath = "components/jazor-admin-settings-form.mjs";
-    const string noticeModulePath = "components/jazor-admin-action-notice.mjs";
     const string errorPageModulePath = "components/jazor-admin-error-page.mjs";
+    const string apiClientModulePath = "components/jazor-admin-api-client.mjs";
+    const string organizationModulePath = "components/organization.mjs";
+    const string accessControlModulePath = "components/access-control.mjs";
+    const string accountModulePath = "components/accounts.mjs";
+    const string configModulePath = "components/config.mjs";
     var componentModules = new[]
     {
         (appModulePath, "JazorAdmin app module"),
@@ -75,10 +79,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         ("components/jazor-admin-tdesign-page-container.mjs", "TDesign page container module"),
         ("components/jazor-admin-tdesign-header-bar.mjs", "TDesign header bar module"),
         ("components/jazor-admin-localization.mjs", "JazorAdmin localization module"),
-        (dataTableModulePath, "JazorAdmin release table module"),
-        (formModulePath, "JazorAdmin settings form module"),
-        (noticeModulePath, "JazorAdmin action notice module"),
-        (errorPageModulePath, "JazorAdmin error page module")
+        (errorPageModulePath, "JazorAdmin error page module"),
+        (apiClientModulePath, "JazorAdmin API client module"),
+        (organizationModulePath, "organization management module"),
+        (accessControlModulePath, "access control management module"),
+        (accountModulePath, "account management module"),
+        (configModulePath, "OpenIddict configuration module")
     };
     var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
 
@@ -95,7 +101,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         AssertDoesNotContain(module, "builder.finish()", "legacy render builder completion in " + description);
     }
 
-    foreach (var (relativePath, description) in componentModules.Where((_, index) => index == 0 || (index >= 4 && index != 9)))
+    foreach (var (relativePath, description) in componentModules.Where((_, index) => index == 0 || (index >= 4 && index != 9 && index != 11)))
     {
         var module = File.ReadAllText(Path.Combine(generatedOutputRoot, relativePath));
         AssertContains(module, "defineComponent", "Vue component wrapper in " + description);
@@ -104,50 +110,62 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
 
     var appModule = File.ReadAllText(Path.Combine(generatedOutputRoot, appModulePath));
     var bootstrapModule = File.ReadAllText(Path.Combine(generatedOutputRoot, bootstrapModulePath));
+    var routesModule = File.ReadAllText(Path.Combine(generatedOutputRoot, "components/jazor-admin-routes.mjs"));
     var routeCatalogModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeCatalogModulePath));
     var adminLayoutModule = File.ReadAllText(Path.Combine(generatedOutputRoot, "components/jazor-admin-tdesign-admin-layout.mjs"));
     var headerBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, "components/jazor-admin-tdesign-header-bar.mjs"));
-    var dataTableModule = File.ReadAllText(Path.Combine(generatedOutputRoot, dataTableModulePath));
-    var formModule = File.ReadAllText(Path.Combine(generatedOutputRoot, formModulePath));
-    var noticeModule = File.ReadAllText(Path.Combine(generatedOutputRoot, noticeModulePath));
     var errorPageModule = File.ReadAllText(Path.Combine(generatedOutputRoot, errorPageModulePath));
+    var apiClientModule = File.ReadAllText(Path.Combine(generatedOutputRoot, apiClientModulePath));
+    var organizationModule = File.ReadAllText(Path.Combine(generatedOutputRoot, organizationModulePath));
+    var accessControlModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accessControlModulePath));
+    var accountModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accountModulePath));
+    var configModule = File.ReadAllText(Path.Combine(generatedOutputRoot, configModulePath));
     var manifest = File.ReadAllText(manifestPath);
 
     AssertContains(appModule, "defineComponent", "Vue component wrapper in JazorAdmin app module");
     AssertContains(appModule, "function $renderDirect()", "direct VNode render function in JazorAdmin app module");
     AssertContains(appModule, "JazorAdmin", "JazorAdmin app text in generated module");
     AssertContains(appModule, "useRoute", "Vue Router route injection in JazorAdmin app module");
+    AssertContains(appModule, "onMounted", "session restoration mount hook in JazorAdmin app module");
+    AssertContains(appModule, "scope.onAfterRender(true)", "initial Razor lifecycle invocation in JazorAdmin app module");
+    AssertContains(appModule, "restoreSession();", "mounted session restoration invocation in JazorAdmin app module");
     AssertContains(bootstrapModule, "createRouter", "Vue Router creation in JazorAdmin bootstrap module");
     AssertContains(bootstrapModule, "createWebHistory", "Vue Router web history in JazorAdmin bootstrap module");
     AssertContains(bootstrapModule, "RouterView", "Vue Router view in JazorAdmin bootstrap module");
     AssertContains(routeCatalogModule, "routeTarget", "strongly typed route target in admin route catalog module");
     AssertDoesNotContain(routeCatalogModule, "return path == null ? null : from(path)", "undefined union factory in admin route catalog module");
+    AssertContains(routesModule, "organizations.structure", "organization structure route in JazorAdmin routes module");
+    AssertContains(routesModule, "authorization.roles", "authorization roles route in JazorAdmin routes module");
+    AssertContains(routesModule, "accounts", "account route in JazorAdmin routes module");
+    AssertContains(routesModule, "configuration.clients", "OpenIddict client route in JazorAdmin routes module");
+    AssertContains(routesModule, "configuration.scopes", "OpenIddict scope route in JazorAdmin routes module");
+    AssertDoesNotContain(routesModule, "operations/releases", "retired release route in JazorAdmin routes module");
+    AssertDoesNotContain(routesModule, "settings", "retired settings route in JazorAdmin routes module");
     AssertContains(adminLayoutModule, "data-shell-command", "sidebar toggle command in TDesign admin layout module");
     AssertContains(adminLayoutModule, "toggle-sidebar", "sidebar toggle command key in TDesign admin layout module");
     AssertContains(adminLayoutModule, "collapsedChanged", "controlled collapsed callback in TDesign admin layout module");
     AssertContains(adminLayoutModule, "horizontal: true", "top navigation variant in TDesign admin layout module");
     AssertContains(headerBarModule, "jazor-admin-tdesign-header__navigation", "navigation slot region in TDesign header bar module");
-    AssertContains(dataTableModule, "aria-busy", "loading accessibility state in JazorAdmin release table module");
-    AssertContains(dataTableModule, "jazor-admin-release-table__loading-row", "loading row in JazorAdmin release table module");
-    AssertContains(dataTableModule, "jazor-admin-release-table__loading", "loading fallback in JazorAdmin release table module");
-    AssertContains(appModule, "setTimeout", "Task.Delay async refresh lowering in JazorAdmin app module");
-    AssertContains(formModule, "data-form-field", "field marker in JazorAdmin settings form module");
-    AssertContains(formModule, "jazor-admin-settings-form__input", "text control in JazorAdmin settings form module");
-    AssertContains(formModule, "jazor-admin-settings-form__select", "select control in JazorAdmin settings form module");
-    AssertContains(formModule, "jazor-admin-settings-form__checkbox", "checkbox control in JazorAdmin settings form module");
-    AssertContains(noticeModule, "data-notice-kind", "notice kind marker in JazorAdmin action notice module");
-    AssertContains(noticeModule, "aria-live", "live-region semantics in JazorAdmin action notice module");
-    AssertContains(noticeModule, "jazor-admin-action-notice--warning", "warning notice branch in JazorAdmin action notice module");
-    AssertContains(noticeModule, "jazor-admin-action-notice--error", "error notice branch in JazorAdmin action notice module");
-    AssertContains(noticeModule, "assertive", "assertive warning and error semantics in JazorAdmin action notice module");
-    AssertContains(noticeModule, "Dismiss notice", "accessible dismiss command in JazorAdmin action notice module");
     AssertContains(errorPageModule, "data-error-kind", "typed error kind marker in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-labelledby", "error title accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-describedby", "error description accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "data-error-action", "error recovery action in JazorAdmin error page module");
+    AssertContains(apiClientModule, "getSession", "session transport in JazorAdmin API client module");
+    AssertContains(organizationModule, "createChildOrganization", "child organization command in organization management module");
+    AssertContains(organizationModule, "scope.onParametersSet();", "route parameter lifecycle in organization management module");
+    AssertContains(accessControlModule, "replaceRoleGrants", "role grant command in access control management module");
+    AssertContains(accessControlModule, "scope.onParametersSet();", "route parameter lifecycle in access control management module");
+    AssertContains(accountModule, "getAccounts", "account query in account management module");
+    AssertContains(accountModule, "resetAccountPassword", "account password command in account management module");
+    AssertContains(accountModule, "scope.onAfterRender(true)", "initial Razor lifecycle invocation in account management module");
+    AssertContains(configModule, "getClients", "OpenIddict client query in configuration module");
+    AssertContains(configModule, "getScopes", "OpenIddict scope query in configuration module");
+    AssertContains(configModule, "scope.onParametersSet();", "route parameter lifecycle in configuration module");
     foreach (var (relativePath, description) in componentModules)
         AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
     AssertDoesNotContain(manifest, ".vue", "legacy SFC artifact in JazorAdmin manifest");
+    AssertDoesNotContain(manifest, "release-table", "retired release table artifact in JazorAdmin manifest");
+    AssertDoesNotContain(manifest, "settings-form", "retired settings form artifact in JazorAdmin manifest");
 }
 
 static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
@@ -257,6 +275,7 @@ static async Task VerifyBrowserSmokeAsync(
                     "npm:vue-router@4.mjs": "/vendor/vue-router.esm-browser.prod.js",
                     "tdesign-vue-next": "/vendor/tdesign-vue-next.bundle.mjs",
                     "npm:tdesign-vue-next": "/vendor/tdesign-vue-next.bundle.mjs",
+                    "style.mjs": "/style.mjs",
                     "@jazor/vue-runtime/": "/@jazor/vue-runtime/",
                     "components/": "/components/",
                     "System/": "/System/"
@@ -282,6 +301,87 @@ static async Task VerifyBrowserSmokeAsync(
                       stack: event.reason instanceof Error ? event.reason.stack : ""
                     };
                   });
+
+                  // The browser harness validates generated RazorVue behavior in isolation. API
+                  // semantics and real sign-in are covered by JazorAdmin.Test against the host.
+                  // 浏览器 harness 只验证生成的 RazorVue 行为；真实 API 和登录由宿主集成测试覆盖。
+                  const organization = {
+                    id: "5e1246c9-9d41-48bb-bd50-02cadc780911",
+                    code: "north-hub",
+                    displayName: "North Hub"
+                  };
+                  const roles = [{
+                    id: "ed671921-3218-451c-a92f-671cb5b83119",
+                    code: "organization-admin",
+                    displayName: "Organization administrator"
+                  }];
+                  const operations = [
+                    { resource: "organizations", operation: "read", displayName: "Read" },
+                    { resource: "organizations", operation: "manage", displayName: "Manage" },
+                    { resource: "authorization", operation: "read", displayName: "Read" },
+                    { resource: "authorization", operation: "manage", displayName: "Manage" }
+                  ];
+                  const accounts = [{
+                    id: "9d04612a-86ed-4971-84f0-50ded72a8a30",
+                    email: "platform.admin@example.test",
+                    displayName: "Platform administrator",
+                    enabled: true,
+                    platformAdministrator: true
+                  }];
+                  const clients = [{
+                    id: "c05e9d5a-e435-47cb-92f6-ca31f46ca8a5",
+                    clientId: "jazoradmin-spa",
+                    displayName: "JazorAdmin SPA",
+                    redirectUris: ["http://localhost/auth/callback"],
+                    postLogoutRedirectUris: ["http://localhost/login"],
+                    scopes: ["openid", "profile", "jazoradmin_api"]
+                  }];
+                  const scopes = [{
+                    id: "c4351a3e-8f51-4e98-a505-6500c9d591e7",
+                    name: "jazoradmin_api",
+                    displayName: "JazorAdmin API",
+                    resources: ["jazoradmin_api"]
+                  }];
+                  const json = (data, status = 200) => Promise.resolve(new Response(JSON.stringify(data), {
+                    status,
+                    headers: { "content-type": "application/json" }
+                  }));
+                  globalThis.fetch = (input, init = {}) => {
+                    const url = new URL(typeof input === "string" ? input : input.url, location.href);
+                    const method = String(init.method ?? "GET").toUpperCase();
+                    if (method !== "GET") return Promise.resolve(new Response(null, { status: 204 }));
+                    if (url.pathname === "/api/auth/session") return json({
+                      userId: "74b0b0be-4b91-461f-9d57-c2f94aed4842",
+                      email: "smoke.operator@example.test",
+                      displayName: "Smoke operator",
+                      roles: ["platform-administrator"],
+                      organizations: [organization]
+                    });
+                    if (url.pathname === "/api/organizations/") return json([organization]);
+                    if (url.pathname.endsWith("/members")) return json([{
+                      membershipId: "5e7e599d-c9a3-40d6-bd1d-5ce2d3e976d8",
+                      userId: "06b75c0b-89d3-4302-94c9-d5f356a04d7a",
+                      email: "operator@example.test",
+                      displayName: "Organization operator",
+                      roles
+                    }]);
+                    if (url.pathname.endsWith("/authorization-resources")) return json(operations);
+                    if (url.pathname.endsWith("/grants")) return json(operations.slice(0, 2));
+                    if (url.pathname.endsWith("/roles")) return json(roles);
+                    if (url.pathname.startsWith("/api/organizations/")) return json({
+                      ...organization,
+                      parentId: null,
+                      children: [{
+                        id: "f32d974e-2fe5-4429-851c-70d9e2ec72c2",
+                        code: "north-clinic",
+                        displayName: "North Clinic"
+                      }]
+                    });
+                    if (url.pathname === "/api/accounts/") return json(accounts);
+                    if (url.pathname === "/api/configuration/clients") return json(clients);
+                    if (url.pathname === "/api/configuration/scopes") return json(scopes);
+                    return json({ title: "Not Found" }, 404);
+                  };
                 </script>
                 <script type="module">
                   import { createApp, nextTick } from "vue";
@@ -296,7 +396,7 @@ static async Task VerifyBrowserSmokeAsync(
                       await new Promise((resolve) => setTimeout(resolve, 10));
                     }
                     if (!document.querySelector('[data-page-region="title"], .jazor-admin-error')) {
-                      throw new Error(`JazorAdmin router root did not mount for ${location.pathname}.`);
+                      throw new Error(`JazorAdmin router root did not mount for ${location.pathname}. Body: ${document.body.textContent ?? ""}`);
                     }
                     await nextTick();
                     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -341,7 +441,10 @@ static async Task VerifyBrowserSmokeAsync(
                         errorDescription,
                         returnPathname: location.pathname
                       };
-                    } else if (location.pathname === "/operations/releases") {
+                    } else if (location.pathname === "/organizations/structure") {
+                      for (let attempt = 0; attempt < 100 && document.querySelector(".jazor-admin-management__loading"); attempt++) {
+                        await new Promise((resolve) => setTimeout(resolve, 10));
+                      }
                       globalThis.__jazorAdminBrowserSmoke = {
                         ok: true,
                         mode: "deep-link",
@@ -349,380 +452,139 @@ static async Task VerifyBrowserSmokeAsync(
                         pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
                         breadcrumbText: document.querySelector('[data-page-region="breadcrumb"]')?.textContent ?? "",
                         activeKey: document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "",
-                        operationsExpanded: document.querySelector('[data-nav-key="operations"]')?.getAttribute("data-nav-expanded") === "true",
-                        releaseQueueVisible: document.querySelector(".jazor-admin__release-section--focused") !== null
+                        organizationPanelVisible: document.querySelector('[data-management-area="organizations"]') !== null
                       };
                     } else {
-                    const text = document.body.textContent ?? "";
-                    const initialDataTableRowCount = document.querySelectorAll(".jazor-admin-release-table__row").length;
-                    const initialPageStatusText = document.querySelector(".jazor-admin-release-table__page-status")?.textContent ?? "";
-                    const initialFirstReleaseName = document.querySelector('.jazor-admin-release-table__row .jazor-admin-release-table__cell[data-column-key="name"]')?.textContent ?? "";
-                    const initialNoticePresent = document.querySelector(".jazor-admin-action-notice") !== null;
-                    const initialSidebarItems = Array.from(document.querySelectorAll('[data-shell-region="sidebar"] [data-nav-kind]'))
-                      .map((item) => item.textContent?.trim() ?? "");
-                    const sidebarToggle = document.querySelector('[data-shell-command="toggle-sidebar"]');
-                    const initialSidebarExpanded = sidebarToggle?.getAttribute("aria-expanded") ?? "";
-                    sidebarToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                    const shellCollapsed = document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "true";
-                    const collapsedSidebar = document.querySelector('[data-shell-region="sidebar"]');
-                    let collapsedSidebarWidth = collapsedSidebar ? getComputedStyle(collapsedSidebar).width : "";
-                    for (let attempt = 0; collapsedSidebar && collapsedSidebarWidth !== "64px" && attempt < 100; attempt++) {
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                      collapsedSidebarWidth = getComputedStyle(collapsedSidebar).width;
-                    }
-                    const collapsedSidebarExpanded = sidebarToggle?.getAttribute("aria-expanded") ?? "";
-                    sidebarToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                    const shellExpandedAgain = document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "false";
-                    document.querySelector('[data-action-key="refresh"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      const waitFor = async (predicate, description) => {
+                        for (let attempt = 0; attempt < 120; attempt++) {
+                          await nextTick();
+                          if (predicate()) return;
+                          await new Promise((resolve) => setTimeout(resolve, 10));
+                        }
+                        throw new Error(`Timed out waiting for ${description}.`);
+                      };
+                      const click = async (selector, description) => {
+                        const target = document.querySelector(selector);
+                        if (!(target instanceof HTMLElement)) throw new Error(`Missing ${description}.`);
+                        target.click();
+                        await nextTick();
+                      };
+                      const waitForTitle = (title) => waitFor(
+                        () => document.querySelector('[data-page-region="title"]')?.textContent?.includes(title) === true,
+                        `${title} page`);
 
-                    const refreshLoadingText = document.querySelector(".jazor-admin-release-table__loading")?.textContent ?? "";
-                    const refreshLoadingRowCount = document.querySelectorAll(".jazor-admin-release-table__loading-row").length;
-                    const refreshAriaBusy = document.querySelector(".jazor-admin-release-table")?.getAttribute("aria-busy") ?? "";
-                    const refreshSearchDisabled = document.querySelector(".jazor-admin-release-table__search")?.hasAttribute("disabled") ?? false;
-                    const refreshActionDisabled = document.querySelector('[data-action-key="refresh"]')?.hasAttribute("disabled") ?? false;
-                    await new Promise((resolve) => setTimeout(resolve, 120));
-                    await nextTick();
+                      await waitFor(() => document.querySelectorAll(".jazor-admin-overview__metric").length === 4, "administration overview");
+                      const dashboardText = document.querySelector('[data-page-region="body"]')?.textContent ?? "";
+                      const metricCount = document.querySelectorAll(".jazor-admin-overview__metric").length;
+                      const railSectionCount = document.querySelectorAll("[data-rail-section]").length;
+                      const userText = document.querySelector(".jazor-admin__user")?.textContent ?? "";
+                      const organizationPickerValue = document.querySelector("[data-organization-picker]")?.value ?? "";
 
-                    const afterRefreshNotice = document.querySelector(".jazor-admin-action-notice");
-                    const afterRefreshActionStatusText = afterRefreshNotice?.textContent ?? "";
-                    const afterRefreshNoticeKind = afterRefreshNotice?.getAttribute("data-notice-kind") ?? "";
-                    const afterRefreshNoticeRole = afterRefreshNotice?.getAttribute("role") ?? "";
-                    document.querySelector(".jazor-admin-action-notice__dismiss")?.click();
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                    const noticeDismissedAfterRefresh = document.querySelector(".jazor-admin-action-notice") === null;
+                      const sidebarToggle = document.querySelector('[data-shell-command="toggle-sidebar"]');
+                      const initialSidebarExpanded = sidebarToggle?.getAttribute("aria-expanded") ?? "";
+                      sidebarToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+                      await nextTick();
+                      await waitFor(
+                        () => document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "true",
+                        "collapsed shell");
+                      await waitFor(
+                        () => getComputedStyle(document.querySelector('[data-shell-region="sidebar"]')).width === "64px",
+                        "collapsed sidebar transition");
+                      const collapsedSidebar = document.querySelector('[data-shell-region="sidebar"]');
+                      const collapsedSidebarWidth = collapsedSidebar ? getComputedStyle(collapsedSidebar).width : "";
+                      sidebarToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+                      await waitFor(
+                        () => document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "false",
+                        "expanded shell");
 
-                    const beforeToggleExpanded = document.querySelector('[data-nav-key="operations"]')?.getAttribute("data-nav-expanded") === "true";
-                    document.querySelector('[data-nav-key="operations"] [data-nav-command="toggle"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-rail-section="organizations"]', "organizations rail item");
+                      await waitForTitle("组织架构");
+                      await waitFor(() => document.querySelector(".jazor-admin-management__details") !== null, "organization details");
+                      const organizationPathname = location.pathname;
+                      const organizationTitle = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
+                      const organizationText = document.querySelector('[data-management-area="organizations"]')?.textContent ?? "";
+                      const childOrganizationCount = document.querySelectorAll(".jazor-admin-management__item-list li").length;
 
-                    const afterToggleExpanded = document.querySelector('[data-nav-key="operations"]')?.getAttribute("data-nav-expanded") === "true";
+                      await click('[data-nav-key="organizations.members"] a', "members navigation item");
+                      await waitForTitle("成员管理");
+                      await waitFor(() => document.querySelectorAll(".jazor-admin-management__table tbody tr").length === 1, "member table");
+                      const membersPathname = location.pathname;
+                      const memberRowText = document.querySelector(".jazor-admin-management__table tbody tr")?.textContent ?? "";
+                      await click(".jazor-admin-management__text-button", "member role editor command");
+                      const memberRoleEditorVisible = document.querySelector(".jazor-admin-management__role-editor") !== null;
 
-                    const serviceSortButton = document.querySelector('[data-column-key="name"] .jazor-admin-release-table__sort-button');
-                    serviceSortButton
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-rail-section="authorization"]', "authorization rail item");
+                      await waitForTitle("角色与授权");
+                      await waitFor(() => document.querySelector(".jazor-admin-management__grant-list") !== null, "role grants");
+                      const accessPathname = location.pathname;
+                      const roleCount = document.querySelectorAll(".jazor-admin-management__role-list li").length;
+                      const grantCount = document.querySelectorAll(".jazor-admin-management__grant-list .jazor-admin-management__check").length;
 
-                    serviceSortButton
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-nav-key="authorization.resources"] a', "resource operations navigation item");
+                      await waitForTitle("资源操作");
+                      await waitFor(() => document.querySelectorAll(".jazor-admin-management__table tbody tr").length === 4, "resource operation table");
+                      const resourcesPathname = location.pathname;
+                      const resourceOperationCount = document.querySelectorAll(".jazor-admin-management__table tbody tr").length;
+                      const resourceText = document.querySelector('[data-management-area="authorization"]')?.textContent ?? "";
 
-                    const afterSortFirstReleaseName = document.querySelector('.jazor-admin-release-table__row .jazor-admin-release-table__cell[data-column-key="name"]')?.textContent ?? "";
-                    const serviceSortState = document.querySelector('[data-column-key="name"]')?.getAttribute("aria-sort") ?? "";
+                      await click('[data-rail-section="accounts"]', "accounts rail item");
+                      await waitForTitle("账户管理");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="accounts"] .jazor-admin-management__table tbody tr').length === 1, "account table");
+                      const accountsPathname = location.pathname;
+                      const accountRowText = document.querySelector('[data-management-area="accounts"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
-                    document.querySelector('[data-row-select-key="release.worker"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-rail-section="configuration"]', "configuration rail item");
+                      await waitForTitle("OpenID 客户端");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="configuration"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict client table");
+                      const clientsPathname = location.pathname;
+                      const clientRowText = document.querySelector('[data-management-area="configuration"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
-                    document.querySelector('[data-row-select-key="release.web"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-nav-key="configuration.scopes"] a', "OpenIddict scope navigation item");
+                      await waitForTitle("OpenID Scope");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="configuration"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict scope table");
+                      const scopesPathname = location.pathname;
+                      const scopeRowText = document.querySelector('[data-management-area="configuration"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
-                    document.querySelector('[data-row-key="release.web"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
+                      await click('[data-rail-section="dashboard"]', "dashboard rail item");
+                      await waitForTitle("仪表盘");
+                      const dashboardReturnPathname = location.pathname;
 
-                    document.querySelector('[data-action-key="deploy"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const afterDeployNotice = document.querySelector(".jazor-admin-action-notice");
-                    const afterDeployActionStatusText = afterDeployNotice?.textContent ?? "";
-                    const afterDeployNoticeKind = afterDeployNotice?.getAttribute("data-notice-kind") ?? "";
-
-                    document.querySelector(".jazor-admin-release-table__pagination .jazor-admin-release-table__page-button:last-child")
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const afterNextDataTableRowCount = document.querySelectorAll(".jazor-admin-release-table__row").length;
-                    const afterNextPageStatusText = document.querySelector(".jazor-admin-release-table__page-status")?.textContent ?? "";
-
-                    const searchInput = document.querySelector(".jazor-admin-release-table__search");
-                    if (searchInput instanceof HTMLInputElement) {
-                      searchInput.value = "web";
-                      searchInput.dispatchEvent(new InputEvent("input", { bubbles: true, cancelable: true, data: "web" }));
-                    }
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const releaseWebRow = document.querySelector('[data-row-key="release.web"]');
-                    const releaseApiRow = document.querySelector('[data-row-key="release.api"]');
-                    const releaseWorkerRow = document.querySelector('[data-row-key="release.worker"]');
-                    const dataTableHeadingCount = document.querySelectorAll(".jazor-admin-release-table__heading").length;
-                    const dataTableRowCount = document.querySelectorAll(".jazor-admin-release-table__row").length;
-                    const tableSummaryText = document.querySelector(".jazor-admin-release-table__summary")?.textContent ?? "";
-                    const selectedReleaseText = document.querySelector(".jazor-admin__selection")?.textContent ?? "";
-                    const releaseWebSelected = releaseWebRow?.classList.contains("is-selected") ?? false;
-                    const releaseApiSelected = releaseApiRow?.classList.contains("is-selected") ?? false;
-                    const releaseWorkerVisible = releaseWorkerRow !== null;
-                    const dashboardAppHtml = document.querySelector("#app")?.innerHTML ?? "";
-                    const dashboardMetricCount = document.querySelectorAll(".jazor-admin__metric").length;
-
-                    document.querySelector('[data-shell-region="sidebar"] [data-nav-key="workspace"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const workspaceItem = document.querySelector('[data-nav-key="workspace"]');
-                    const dashboardItem = document.querySelector('[data-nav-key="dashboard"]');
-                    const workspacePageTitleText = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const workspaceBreadcrumbText = document.querySelector('[data-page-region="breadcrumb"]')?.textContent ?? "";
-                    const workspacePageHtml = document.querySelector('[data-page-region="body"]')?.innerHTML ?? "";
-                    const workspaceSelectedAfterClick = workspaceItem?.getAttribute("data-nav-selected") === "true";
-                    const dashboardSelectedAfterWorkspaceClick = dashboardItem?.getAttribute("data-nav-selected") === "true";
-                    const workspacePathname = location.pathname;
-
-                    document.querySelector('[data-shell-region="sidebar"] [data-nav-key="settings"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const settingsItem = document.querySelector('[data-nav-key="settings"]');
-                    const settingsSelectedAfterClick = settingsItem?.getAttribute("data-nav-selected") === "true";
-                    const settingsInitialStatusText = document.querySelector(".jazor-admin-settings-form__status")?.textContent ?? "";
-                    const themeSelect = document.querySelector('[data-form-field="theme"]');
-                    if (themeSelect instanceof HTMLSelectElement) {
-                      themeSelect.value = "Dark";
-                      themeSelect.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
-                    }
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const navigationModeSelect = document.querySelector('[data-form-field="navigation-mode"]');
-                    if (navigationModeSelect instanceof HTMLSelectElement) {
-                      navigationModeSelect.value = "Header";
-                      navigationModeSelect.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
-                    }
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const topLayoutActive = document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-layout") === "top";
-                    const topLayoutSidebarAbsent = document.querySelector('[data-shell-region="sidebar"]') === null;
-                    const topNavigationLinkCount = document.querySelectorAll('[data-shell-region="navigation"] [data-nav-kind="item"]').length;
-                    const topNavigationHtml = document.querySelector('[data-shell-region="navigation"]')?.innerHTML ?? "";
-                    document.querySelector('[data-shell-region="navigation"] [data-nav-key="operations.audit"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/operations/audit"; attempt++) {
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                    }
-                    await nextTick();
-                    const topNavigationAuditTitle = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const topNavigationAuditActiveKey = document.querySelector('[data-shell-region="navigation"] [data-navigation-selected-key]')?.getAttribute("data-navigation-selected-key") ?? "";
-                    document.querySelector('[data-shell-region="navigation"] [data-nav-key="settings"]')
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/settings"; attempt++) {
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                    }
-                    await nextTick();
-
-                    const sidebarModeSelect = document.querySelector('[data-form-field="navigation-mode"]');
-                    if (sidebarModeSelect instanceof HTMLSelectElement) {
-                      sidebarModeSelect.value = "Sidebar";
-                      sidebarModeSelect.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
-                    }
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                    const sidebarLayoutActive = document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-layout") === "sidebar";
-                    const topNavigationAbsentAfterSidebar = document.querySelector('[data-shell-region="navigation"]') === null;
-
-                    const releaseChannelInput = document.querySelector('[data-form-field="release-channel"]');
-                    if (releaseChannelInput instanceof HTMLInputElement) {
-                      releaseChannelInput.value = "beta";
-                      releaseChannelInput.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-                    }
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const smokeRequiredCheckbox = document.querySelector('[data-form-field="smoke-required"]');
-                    smokeRequiredCheckbox
-                      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    document.querySelector('[data-form-action="submit"]')?.click();
-                    await nextTick();
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-
-                    const settingsPageHtml = document.querySelector('[data-page-region="body"]')?.innerHTML ?? "";
-                    const settingsPageTitleText = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const settingsBreadcrumbText = document.querySelector('[data-page-region="breadcrumb"]')?.textContent ?? "";
-                    const settingsStatusText = document.querySelector(".jazor-admin-settings-form__status")?.textContent ?? "";
-                    const settingsPathname = location.pathname;
-
-                    history.back();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/operations/audit"; attempt++) {
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                    }
-                    await nextTick();
-                    const historyBackPathname = location.pathname;
-                    const historyBackPageTitleText = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const historyBackActiveKey = document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "";
-
-                    history.forward();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/settings"; attempt++) {
-                      await new Promise((resolve) => setTimeout(resolve, 10));
-                    }
-                    await nextTick();
-                    const historyForwardPathname = location.pathname;
-                    const historyForwardPageTitleText = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const historyForwardActiveKey = document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "";
-                    const settingsFieldCount = document.querySelectorAll(".jazor-admin-settings-form__field, .jazor-admin-settings-form__checkbox-field").length;
-                    const preferenceControlCount = document.querySelectorAll("[data-preference]").length;
-                    const activeKeyAfterSettings = document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "";
-
-                    const globalThemeSelect = document.querySelector('select[data-preference="theme"]');
-                    if (globalThemeSelect instanceof HTMLSelectElement) {
-                      globalThemeSelect.value = "dark";
-                      globalThemeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-                    }
-                    const globalLanguageSelect = document.querySelector('select[data-preference="language"]');
-                    if (globalLanguageSelect instanceof HTMLSelectElement) {
-                      globalLanguageSelect.value = "zh-CN";
-                      globalLanguageSelect.dispatchEvent(new Event("change", { bubbles: true }));
-                    }
-                    document.querySelector('input[data-preference="grayscale"]')?.click();
-                    await nextTick();
-                    const preferenceTheme = document.querySelector(".jazor-admin-application")?.getAttribute("data-theme") ?? "";
-                    const preferenceLanguage = document.querySelector(".jazor-admin-application")?.getAttribute("lang") ?? "";
-                    const preferenceGrayscale = document.querySelector(".jazor-admin-application")?.getAttribute("data-grayscale") ?? "";
-                    const localizedSettingsTitle = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
-                    const localizedSidebarToggleLabel = document.querySelector('[data-shell-command="toggle-sidebar"]')?.getAttribute("aria-label") ?? "";
-
-                    document.querySelector('[data-access-command="lock"]')?.click();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/lock"; attempt++) await new Promise((resolve) => setTimeout(resolve, 10));
-                    await nextTick();
-                    const lockTitle = document.querySelector(".jazor-admin-access h1")?.textContent ?? "";
-                    const unlockInput = document.querySelector('input[data-access-field="password"]');
-                    if (unlockInput instanceof HTMLInputElement) {
-                      unlockInput.value = "unlock";
-                      unlockInput.dispatchEvent(new InputEvent("input", { bubbles: true, data: "unlock" }));
-                    }
-                    document.querySelector('[data-access-submit="lock"]')?.click();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/"; attempt++) await new Promise((resolve) => setTimeout(resolve, 10));
-                    await nextTick();
-                    const unlockPathname = location.pathname;
-
-                    document.querySelector('[data-access-command="sign-out"]')?.click();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/login"; attempt++) await new Promise((resolve) => setTimeout(resolve, 10));
-                    await nextTick();
-                    const loginTitle = document.querySelector(".jazor-admin-access h1")?.textContent ?? "";
-                    const loginPasswordInput = document.querySelector('input[data-access-field="password"]');
-                    if (loginPasswordInput instanceof HTMLInputElement) {
-                      loginPasswordInput.value = "login";
-                      loginPasswordInput.dispatchEvent(new InputEvent("input", { bubbles: true, data: "login" }));
-                    }
-                    document.querySelector('[data-access-submit="login"]')?.click();
-                    for (let attempt = 0; attempt < 100 && location.pathname !== "/"; attempt++) await new Promise((resolve) => setTimeout(resolve, 10));
-                    await nextTick();
-                    const loginPathname = location.pathname;
-                    const payload = {
-                      ok: true,
-                      text,
-                      appHtml: document.querySelector("#app")?.innerHTML ?? "",
-                      dashboardAppHtml,
-                      currentText: document.body.textContent ?? "",
-                      workspacePageTitleText,
-                      workspaceBreadcrumbText,
-                      workspacePageHtml,
-                      workspacePathname,
-                      settingsPageTitleText,
-                      settingsBreadcrumbText,
-                      settingsPageHtml,
-                      settingsPathname,
-                      historyBackPathname,
-                      historyBackPageTitleText,
-                      historyBackActiveKey,
-                      historyForwardPathname,
-                      historyForwardPageTitleText,
-                      historyForwardActiveKey,
-                      preferenceTheme,
-                      preferenceLanguage,
-                      preferenceGrayscale,
-                      localizedSettingsTitle,
-                      lockTitle,
-                      unlockPathname,
-                      loginTitle,
-                      loginPathname,
-                      metricCount: dashboardMetricCount,
-                      settingsFieldCount,
-                      preferenceControlCount,
-                      userText: document.querySelector(".jazor-admin__user")?.textContent ?? "",
-                      sidebarItems: initialSidebarItems,
-                      hasLegacyVueReference: Array.from(document.scripts).some((script) => (script.getAttribute("src") ?? "").includes(".vue")),
-                      initialSidebarExpanded,
-                      shellCollapsed,
-                      collapsedSidebarWidth,
-                      collapsedSidebarExpanded,
-                      shellExpandedAgain,
-                      localizedSidebarToggleLabel,
-                      beforeToggleExpanded,
-                      afterToggleExpanded,
-                      workspaceSelected: workspaceSelectedAfterClick,
-                      settingsSelected: settingsSelectedAfterClick,
-                      dashboardSelected: dashboardSelectedAfterWorkspaceClick,
-                      activeKey: activeKeyAfterSettings,
-                      dataTableHeadingCount,
-                      dataTableRowCount,
-                      initialDataTableRowCount,
-                      initialPageStatusText,
-                      initialFirstReleaseName,
-                      initialNoticePresent,
-                      refreshLoadingText,
-                      refreshLoadingRowCount,
-                      refreshAriaBusy,
-                      refreshSearchDisabled,
-                      refreshActionDisabled,
-                      afterRefreshActionStatusText,
-                      afterRefreshNoticeKind,
-                      afterRefreshNoticeRole,
-                      noticeDismissedAfterRefresh,
-                      afterDeployActionStatusText,
-                      afterDeployNoticeKind,
-                      afterSortFirstReleaseName,
-                      serviceSortState,
-                      afterNextDataTableRowCount,
-                      afterNextPageStatusText,
-                      searchValue: searchInput instanceof HTMLInputElement ? searchInput.value : "",
-                      tableSummaryText,
-                      releaseWebSelected,
-                      releaseApiSelected,
-                      releaseWorkerVisible,
-                      selectedReleaseText,
-                      settingsInitialStatusText,
-                      settingsStatusText,
-                      settingsThemeValue: themeSelect instanceof HTMLSelectElement ? themeSelect.value : "",
-                      settingsNavigationModeValue: sidebarModeSelect instanceof HTMLSelectElement ? sidebarModeSelect.value : "",
-                      settingsReleaseChannelValue: releaseChannelInput instanceof HTMLInputElement ? releaseChannelInput.value : "",
-                      settingsSmokeRequiredChecked: smokeRequiredCheckbox instanceof HTMLInputElement ? smokeRequiredCheckbox.checked : true,
-                      topLayoutActive,
-                      topLayoutSidebarAbsent,
-                      topNavigationLinkCount,
-                      topNavigationHtml,
-                      topNavigationAuditTitle,
-                      topNavigationAuditActiveKey,
-                      sidebarLayoutActive,
-                      topNavigationAbsentAfterSidebar,
-                      injectSmoke
-                    };
-                    globalThis.__jazorAdminBrowserSmoke = payload;
-                    }
-                  } catch (error) {
+                      globalThis.__jazorAdminBrowserSmoke = {
+                        ok: true,
+                        mode: "app",
+                        pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
+                        dashboardText,
+                        metricCount,
+                        railSectionCount,
+                        userText,
+                        organizationPickerValue,
+                        initialSidebarExpanded,
+                        collapsedSidebarWidth,
+                        organizationPathname,
+                        organizationTitle,
+                        organizationText,
+                        childOrganizationCount,
+                        membersPathname,
+                        memberRowText,
+                        memberRoleEditorVisible,
+                        accessPathname,
+                        roleCount,
+                        grantCount,
+                        resourcesPathname,
+                        resourceOperationCount,
+                        resourceText,
+                        accountsPathname,
+                        accountRowText,
+                        clientsPathname,
+                        clientRowText,
+                        scopesPathname,
+                        scopeRowText,
+                        dashboardReturnPathname,
+                        injectSmoke,
+                        hasLegacyVueReference: Array.from(document.scripts)
+                          .some((script) => script.getAttribute("src")?.endsWith(".vue"))
+                      };
+                    }                  } catch (error) {
                     globalThis.__jazorAdminBrowserSmoke = {
                       ok: false,
                       message: error instanceof Error ? error.message : String(error),
@@ -766,142 +628,53 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(injectSmoke.GetProperty("initialCount").GetString() ?? string.Empty, "0", "JazorAdmin VueInject initial action count", injectSmoke.GetRawText());
         AssertContains(injectSmoke.GetProperty("updatedCount").GetString() ?? string.Empty, "1", "JazorAdmin VueInject updated action count", injectSmoke.GetRawText());
 
-        var desktopLayout = root.GetProperty("desktopLayout");
-        AssertContains(desktopLayout.GetProperty("shellDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin desktop TDesign shell layout", desktopLayout.GetRawText());
-        AssertContains(desktopLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "row", "JazorAdmin desktop TDesign shell direction", desktopLayout.GetRawText());
-        AssertContains(desktopLayout.GetProperty("sidebarWidth").GetString() ?? string.Empty, "240px", "JazorAdmin desktop TDesign sidebar width", desktopLayout.GetRawText());
-        AssertContains(desktopLayout.GetProperty("mainDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin desktop TDesign main layout", desktopLayout.GetRawText());
-        AssertContains(desktopLayout.GetProperty("tableOverflowX").GetString() ?? string.Empty, "auto", "JazorAdmin desktop table overflow containment", desktopLayout.GetRawText());
-        AssertJsonBoolean(desktopLayout, "styleRuntimeLoaded", true, "JazorAdmin desktop ECMAScript.Style runtime", desktopLayout.GetRawText());
-        AssertJsonBoolean(desktopLayout, "documentFitsViewport", true, "JazorAdmin desktop document width", desktopLayout.GetRawText());
-        AssertJsonBoolean(desktopLayout, "sidebarBeforeMain", true, "JazorAdmin desktop sidebar and main geometry", desktopLayout.GetRawText());
+        AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "仪表盘", "JazorAdmin browser dashboard title", root.GetRawText());
+        AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "Organization access", "JazorAdmin browser administration overview", root.GetRawText());
+        AssertJsonInt(root, "metricCount", 4, "JazorAdmin administration metric count", root.GetRawText());
+        AssertJsonInt(root, "railSectionCount", 5, "JazorAdmin primary rail section count", root.GetRawText());
+        AssertContains(root.GetProperty("userText").GetString() ?? string.Empty, "Smoke operator", "JazorAdmin browser session account", root.GetRawText());
+        AssertContains(root.GetProperty("organizationPickerValue").GetString() ?? string.Empty, "5e1246c9", "JazorAdmin browser organization selection", root.GetRawText());
+        AssertContains(root.GetProperty("initialSidebarExpanded").GetString() ?? string.Empty, "true", "JazorAdmin initial sidebar state", root.GetRawText());
+        AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed rail width", root.GetRawText());
 
-        var mobileLayout = root.GetProperty("mobileLayout");
-        AssertJsonInt(mobileLayout, "viewportWidth", 390, "JazorAdmin mobile viewport width", mobileLayout.GetRawText());
-        AssertContains(mobileLayout.GetProperty("shellDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin mobile TDesign shell layout", mobileLayout.GetRawText());
-        AssertContains(mobileLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "column", "JazorAdmin mobile TDesign shell direction", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "sidebarFillsShell", true, "JazorAdmin mobile TDesign sidebar width", mobileLayout.GetRawText());
-        AssertContains(mobileLayout.GetProperty("navigationDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin mobile TDesign navigation layout", mobileLayout.GetRawText());
-        AssertContains(mobileLayout.GetProperty("tableOverflowX").GetString() ?? string.Empty, "auto", "JazorAdmin mobile table overflow containment", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "styleRuntimeLoaded", true, "JazorAdmin mobile ECMAScript.Style runtime", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "documentFitsViewport", true, "JazorAdmin mobile document width", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "sidebarBeforeMain", true, "JazorAdmin mobile sidebar and main geometry", mobileLayout.GetRawText());
+        AssertContains(root.GetProperty("organizationPathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin organization structure navigation", root.GetRawText());
+        AssertContains(root.GetProperty("organizationTitle").GetString() ?? string.Empty, "组织架构", "JazorAdmin organization structure title", root.GetRawText());
+        AssertContains(root.GetProperty("organizationText").GetString() ?? string.Empty, "North Clinic", "JazorAdmin child organization display", root.GetRawText());
+        AssertJsonInt(root, "childOrganizationCount", 1, "JazorAdmin child organization count", root.GetRawText());
 
-        var mobileNavigation = root.GetProperty("mobileNavigation");
-        AssertJsonBoolean(mobileNavigation, "auditVisible", true, "JazorAdmin mobile child navigation visibility", mobileNavigation.GetRawText());
-        AssertJsonInt(mobileNavigation, "childLinkCount", 2, "JazorAdmin mobile child navigation link count", mobileNavigation.GetRawText());
-        AssertContains(mobileNavigation.GetProperty("pathname").GetString() ?? string.Empty, "/operations/audit", "JazorAdmin mobile child navigation location", mobileNavigation.GetRawText());
-        AssertContains(mobileNavigation.GetProperty("pageTitleText").GetString() ?? string.Empty, "Audit Log", "JazorAdmin mobile child navigation page", mobileNavigation.GetRawText());
-        AssertContains(mobileNavigation.GetProperty("activeKey").GetString() ?? string.Empty, "operations.audit", "JazorAdmin mobile child navigation selected key", mobileNavigation.GetRawText());
-        AssertJsonBoolean(mobileNavigation, "documentFitsViewport", true, "JazorAdmin mobile child navigation document width", mobileNavigation.GetRawText());
+        AssertContains(root.GetProperty("membersPathname").GetString() ?? string.Empty, "/organizations/members", "JazorAdmin members navigation", root.GetRawText());
+        AssertContains(root.GetProperty("memberRowText").GetString() ?? string.Empty, "Organization operator", "JazorAdmin member row", root.GetRawText());
+        AssertJsonBoolean(root, "memberRoleEditorVisible", true, "JazorAdmin member role editor", root.GetRawText());
 
-        var text = root.GetProperty("text").GetString() ?? string.Empty;
-        AssertContains(text, "JazorAdmin", "JazorAdmin browser DOM title", root.GetRawText());
-        AssertContains(text, "Dashboard", "JazorAdmin browser DOM page title", root.GetRawText());
-        AssertContains(text, "Direct VNode", "JazorAdmin browser DOM direct VNode metric", root.GetRawText());
-        AssertContains(text, "TDesign", "JazorAdmin browser DOM TDesign metric", root.GetRawText());
-        AssertContains(text, "integration", "JazorAdmin browser DOM integration metric", root.GetRawText());
-        AssertContains(text, "Release Queue", "JazorAdmin browser DOM release queue title", root.GetRawText());
-        AssertContains(text, "Admin Web", "JazorAdmin browser DOM release table row", root.GetRawText());
-        AssertContains(root.GetProperty("dashboardAppHtml").GetString() ?? string.Empty, "Filter releases", "JazorAdmin browser DOM data table search placeholder", root.GetRawText());
-        AssertContains(root.GetProperty("workspacePageTitleText").GetString() ?? string.Empty, "Workspace", "JazorAdmin workspace page title after sidebar navigation", root.GetRawText());
-        AssertContains(root.GetProperty("workspaceBreadcrumbText").GetString() ?? string.Empty, "Workspace", "JazorAdmin workspace breadcrumb after sidebar navigation", root.GetRawText());
-        AssertContains(root.GetProperty("workspacePageHtml").GetString() ?? string.Empty, "Operator Workspace", "JazorAdmin workspace content after sidebar navigation", root.GetRawText());
-        AssertDoesNotContain(root.GetProperty("workspacePageHtml").GetString() ?? string.Empty, "jazor-admin-release-table", "dashboard data table in workspace page body");
-        AssertContains(root.GetProperty("workspacePathname").GetString() ?? string.Empty, "/workspace", "JazorAdmin workspace browser location", root.GetRawText());
-        AssertContains(root.GetProperty("settingsPageTitleText").GetString() ?? string.Empty, "Settings", "JazorAdmin settings page title after sidebar navigation", root.GetRawText());
-        AssertContains(root.GetProperty("settingsBreadcrumbText").GetString() ?? string.Empty, "Settings", "JazorAdmin settings breadcrumb after sidebar navigation", root.GetRawText());
-        AssertContains(root.GetProperty("settingsPageHtml").GetString() ?? string.Empty, "Application Settings", "JazorAdmin settings page body", root.GetRawText());
-        AssertContains(root.GetProperty("settingsPathname").GetString() ?? string.Empty, "/settings", "JazorAdmin settings browser location", root.GetRawText());
-        AssertContains(root.GetProperty("settingsInitialStatusText").GetString() ?? string.Empty, "No settings have been saved.", "JazorAdmin initial settings status", root.GetRawText());
-        AssertContains(root.GetProperty("settingsStatusText").GetString() ?? string.Empty, "Saved settings 1: Dark, smoke optional, Sidebar, beta", "JazorAdmin saved settings status", root.GetRawText());
-        AssertContains(root.GetProperty("settingsThemeValue").GetString() ?? string.Empty, "Dark", "JazorAdmin settings theme select value", root.GetRawText());
-        AssertContains(root.GetProperty("settingsNavigationModeValue").GetString() ?? string.Empty, "Sidebar", "JazorAdmin settings navigation mode select value", root.GetRawText());
-        AssertJsonBoolean(root, "topLayoutActive", true, "JazorAdmin top layout mode", root.GetRawText());
-        AssertJsonBoolean(root, "topLayoutSidebarAbsent", true, "JazorAdmin top layout sidebar removal", root.GetRawText());
-        AssertJsonInt(root, "topNavigationLinkCount", 5, "JazorAdmin top navigation link count", root.GetRawText());
-        AssertContains(root.GetProperty("topNavigationAuditTitle").GetString() ?? string.Empty, "Audit Log", "JazorAdmin top navigation route", root.GetRawText());
-        AssertContains(root.GetProperty("topNavigationAuditActiveKey").GetString() ?? string.Empty, "operations.audit", "JazorAdmin top navigation selected key", root.GetRawText());
-        AssertJsonBoolean(root, "sidebarLayoutActive", true, "JazorAdmin sidebar layout mode", root.GetRawText());
-        AssertJsonBoolean(root, "topNavigationAbsentAfterSidebar", true, "JazorAdmin top navigation removal in sidebar mode", root.GetRawText());
-        AssertContains(root.GetProperty("settingsReleaseChannelValue").GetString() ?? string.Empty, "beta", "JazorAdmin settings release channel input value", root.GetRawText());
-        AssertJsonBoolean(root, "settingsSmokeRequiredChecked", false, "JazorAdmin settings smoke-required checkbox state", root.GetRawText());
-        AssertContains(root.GetProperty("historyBackPathname").GetString() ?? string.Empty, "/operations/audit", "JazorAdmin browser history back location", root.GetRawText());
-        AssertContains(root.GetProperty("historyBackPageTitleText").GetString() ?? string.Empty, "Audit Log", "JazorAdmin browser history back page", root.GetRawText());
-        AssertContains(root.GetProperty("historyBackActiveKey").GetString() ?? string.Empty, "operations.audit", "JazorAdmin browser history back selected key", root.GetRawText());
-        AssertContains(root.GetProperty("historyForwardPathname").GetString() ?? string.Empty, "/settings", "JazorAdmin browser history forward location", root.GetRawText());
-        AssertContains(root.GetProperty("historyForwardPageTitleText").GetString() ?? string.Empty, "Settings", "JazorAdmin browser history forward page", root.GetRawText());
-        AssertContains(root.GetProperty("historyForwardActiveKey").GetString() ?? string.Empty, "settings", "JazorAdmin browser history forward selected key", root.GetRawText());
-        AssertContains(root.GetProperty("userText").GetString() ?? string.Empty, "admin@jazor", "JazorAdmin browser user region", root.GetRawText());
-        AssertJsonInt(root, "metricCount", 3, "JazorAdmin browser metric card count", root.GetRawText());
-        AssertJsonInt(root, "settingsFieldCount", 4, "JazorAdmin settings field count", root.GetRawText());
-        AssertJsonInt(root, "preferenceControlCount", 3, "JazorAdmin global preference control count", root.GetRawText());
-        AssertContains(root.GetProperty("initialSidebarExpanded").GetString() ?? string.Empty, "true", "JazorAdmin initial sidebar expanded state", root.GetRawText());
-        AssertJsonBoolean(root, "shellCollapsed", true, "JazorAdmin controlled sidebar collapse", root.GetRawText());
-        AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed TDesign sidebar width", root.GetRawText());
-        AssertContains(root.GetProperty("collapsedSidebarExpanded").GetString() ?? string.Empty, "false", "JazorAdmin collapsed sidebar aria state", root.GetRawText());
-        AssertJsonBoolean(root, "shellExpandedAgain", true, "JazorAdmin controlled sidebar restore", root.GetRawText());
-        AssertContains(root.GetProperty("preferenceTheme").GetString() ?? string.Empty, "dark", "JazorAdmin global dark theme state", root.GetRawText());
-        AssertContains(root.GetProperty("preferenceLanguage").GetString() ?? string.Empty, "zh-CN", "JazorAdmin global language state", root.GetRawText());
-        AssertContains(root.GetProperty("preferenceGrayscale").GetString() ?? string.Empty, "true", "JazorAdmin global grayscale state", root.GetRawText());
-        AssertContains(root.GetProperty("localizedSettingsTitle").GetString() ?? string.Empty, "设置", "JazorAdmin localized page title", root.GetRawText());
-        AssertContains(root.GetProperty("localizedSidebarToggleLabel").GetString() ?? string.Empty, "收起侧边栏", "JazorAdmin localized sidebar toggle label", root.GetRawText());
-        AssertContains(root.GetProperty("lockTitle").GetString() ?? string.Empty, "会话已锁定", "JazorAdmin lock screen title", root.GetRawText());
-        AssertContains(root.GetProperty("unlockPathname").GetString() ?? string.Empty, "/", "JazorAdmin unlock navigation", root.GetRawText());
-        AssertContains(root.GetProperty("loginTitle").GetString() ?? string.Empty, "登录 JazorAdmin", "JazorAdmin login screen title", root.GetRawText());
-        AssertContains(root.GetProperty("loginPathname").GetString() ?? string.Empty, "/", "JazorAdmin login navigation", root.GetRawText());
-        AssertJsonInt(root, "dataTableHeadingCount", 5, "JazorAdmin browser data table heading count", root.GetRawText());
-        AssertJsonInt(root, "initialDataTableRowCount", 2, "JazorAdmin browser initial paged data table row count", root.GetRawText());
-        AssertContains(root.GetProperty("initialPageStatusText").GetString() ?? string.Empty, "1 / 2", "JazorAdmin initial data table page status", root.GetRawText());
-        AssertContains(root.GetProperty("initialFirstReleaseName").GetString() ?? string.Empty, "Admin API", "JazorAdmin initial data table first service", root.GetRawText());
-        AssertContains(root.GetProperty("afterRefreshActionStatusText").GetString() ?? string.Empty, "Refreshed Dashboard", "JazorAdmin refresh action status", root.GetRawText());
-        AssertContains(root.GetProperty("afterRefreshActionStatusText").GetString() ?? string.Empty, "Refreshes: 1", "JazorAdmin refresh action count", root.GetRawText());
-        AssertContains(root.GetProperty("refreshLoadingText").GetString() ?? string.Empty, "Refreshing releases", "JazorAdmin refresh loading text", root.GetRawText());
-        AssertJsonInt(root, "refreshLoadingRowCount", 1, "JazorAdmin refresh loading row count", root.GetRawText());
-        AssertContains(root.GetProperty("refreshAriaBusy").GetString() ?? string.Empty, "true", "JazorAdmin refresh aria-busy state", root.GetRawText());
-        AssertJsonBoolean(root, "refreshSearchDisabled", true, "JazorAdmin refresh search disabled state", root.GetRawText());
-        AssertJsonBoolean(root, "refreshActionDisabled", true, "JazorAdmin refresh action disabled state", root.GetRawText());
-        AssertContains(root.GetProperty("afterRefreshNoticeKind").GetString() ?? string.Empty, "success", "JazorAdmin refresh notice kind", root.GetRawText());
-        AssertContains(root.GetProperty("afterRefreshNoticeRole").GetString() ?? string.Empty, "status", "JazorAdmin refresh notice role", root.GetRawText());
-        AssertJsonBoolean(root, "initialNoticePresent", false, "JazorAdmin initial notice state", root.GetRawText());
-        AssertJsonBoolean(root, "noticeDismissedAfterRefresh", true, "JazorAdmin dismissed refresh notice state", root.GetRawText());
-        AssertContains(root.GetProperty("afterDeployActionStatusText").GetString() ?? string.Empty, "Bulk deploy requested for 2 releases", "JazorAdmin deploy action status", root.GetRawText());
-        AssertContains(root.GetProperty("afterDeployActionStatusText").GetString() ?? string.Empty, "Deploys: 1", "JazorAdmin deploy action count", root.GetRawText());
-        AssertContains(root.GetProperty("afterDeployNoticeKind").GetString() ?? string.Empty, "success", "JazorAdmin deploy notice kind", root.GetRawText());
-        AssertContains(root.GetProperty("afterSortFirstReleaseName").GetString() ?? string.Empty, "Audit Worker", "JazorAdmin sorted data table first service", root.GetRawText());
-        AssertContains(root.GetProperty("serviceSortState").GetString() ?? string.Empty, "descending", "JazorAdmin service column sort state", root.GetRawText());
-        AssertJsonInt(root, "afterNextDataTableRowCount", 1, "JazorAdmin browser next-page data table row count", root.GetRawText());
-        AssertContains(root.GetProperty("afterNextPageStatusText").GetString() ?? string.Empty, "2 / 2", "JazorAdmin next data table page status", root.GetRawText());
-        AssertJsonInt(root, "dataTableRowCount", 1, "JazorAdmin browser filtered data table row count", root.GetRawText());
-        AssertContains(root.GetProperty("searchValue").GetString() ?? string.Empty, "web", "JazorAdmin data table search input value", root.GetRawText());
-        AssertContains(root.GetProperty("tableSummaryText").GetString() ?? string.Empty, "1 rows", "JazorAdmin filtered data table summary", root.GetRawText());
-        AssertJsonBoolean(root, "beforeToggleExpanded", false, "JazorAdmin sidebar initial collapsed branch state", root.GetRawText());
-        AssertJsonBoolean(root, "afterToggleExpanded", true, "JazorAdmin sidebar expanded after branch click", root.GetRawText());
-        AssertJsonBoolean(root, "workspaceSelected", true, "JazorAdmin workspace item selected after click", root.GetRawText());
-        AssertJsonBoolean(root, "settingsSelected", true, "JazorAdmin settings item selected after click", root.GetRawText());
-        AssertJsonBoolean(root, "dashboardSelected", false, "JazorAdmin dashboard item deselected after workspace click", root.GetRawText());
-        AssertContains(root.GetProperty("activeKey").GetString() ?? string.Empty, "settings", "JazorAdmin active sidebar key after settings click", root.GetRawText());
-        AssertJsonBoolean(root, "releaseWebSelected", true, "JazorAdmin release.web row selected after click", root.GetRawText());
-        AssertJsonBoolean(root, "releaseApiSelected", false, "JazorAdmin release.api row deselected after release.web click", root.GetRawText());
-        AssertJsonBoolean(root, "releaseWorkerVisible", false, "JazorAdmin release.worker row hidden after search", root.GetRawText());
-        AssertContains(root.GetProperty("selectedReleaseText").GetString() ?? string.Empty, "release.web", "JazorAdmin selected release text after table click", root.GetRawText());
-        AssertContains(root.GetProperty("selectedReleaseText").GetString() ?? string.Empty, "Bulk selected: 2", "JazorAdmin selected release bulk count after table checkbox clicks", root.GetRawText());
+        AssertContains(root.GetProperty("accessPathname").GetString() ?? string.Empty, "/authorization/roles", "JazorAdmin role grant navigation", root.GetRawText());
+        AssertJsonInt(root, "roleCount", 1, "JazorAdmin role list count", root.GetRawText());
+        AssertJsonInt(root, "grantCount", 4, "JazorAdmin resource grant count", root.GetRawText());
+        AssertContains(root.GetProperty("resourcesPathname").GetString() ?? string.Empty, "/authorization/resources", "JazorAdmin resource operations navigation", root.GetRawText());
+        AssertJsonInt(root, "resourceOperationCount", 4, "JazorAdmin resource operation count", root.GetRawText());
+        AssertDoesNotContain(root.GetProperty("resourceText").GetString() ?? string.Empty, "Recruitment", "JazorAdmin removed recruitment resource");
+        AssertContains(root.GetProperty("accountsPathname").GetString() ?? string.Empty, "/accounts", "JazorAdmin account navigation", root.GetRawText());
+        AssertContains(root.GetProperty("accountRowText").GetString() ?? string.Empty, "Platform administrator", "JazorAdmin account row", root.GetRawText());
+        AssertContains(root.GetProperty("clientsPathname").GetString() ?? string.Empty, "/configuration/clients", "JazorAdmin OpenIddict client navigation", root.GetRawText());
+        AssertContains(root.GetProperty("clientRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict client row", root.GetRawText());
+        AssertContains(root.GetProperty("scopesPathname").GetString() ?? string.Empty, "/configuration/scopes", "JazorAdmin OpenIddict scope navigation", root.GetRawText());
+        AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "JazorAdmin API", "JazorAdmin OpenIddict scope row", root.GetRawText());
+        AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard rail return", root.GetRawText());
+        if (root.GetProperty("hasLegacyVueReference").GetBoolean())
+            throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
 
         var deepLink = root.GetProperty("deepLink");
         AssertContains(deepLink.GetProperty("mode").GetString() ?? string.Empty, "deep-link", "JazorAdmin deep-link smoke mode", deepLink.GetRawText());
-        AssertContains(deepLink.GetProperty("pathname").GetString() ?? string.Empty, "/operations/releases", "JazorAdmin deep-link browser location", deepLink.GetRawText());
-        AssertContains(deepLink.GetProperty("pageTitleText").GetString() ?? string.Empty, "Releases", "JazorAdmin deep-link page title", deepLink.GetRawText());
-        AssertContains(deepLink.GetProperty("breadcrumbText").GetString() ?? string.Empty, "Operations", "JazorAdmin deep-link parent breadcrumb", deepLink.GetRawText());
-        AssertContains(deepLink.GetProperty("activeKey").GetString() ?? string.Empty, "operations.releases", "JazorAdmin deep-link selected key", deepLink.GetRawText());
-        AssertJsonBoolean(deepLink, "operationsExpanded", true, "JazorAdmin deep-link expanded ancestor", deepLink.GetRawText());
-        AssertJsonBoolean(deepLink, "releaseQueueVisible", true, "JazorAdmin deep-link release page body", deepLink.GetRawText());
-
+        AssertContains(deepLink.GetProperty("pathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin deep-link browser location", deepLink.GetRawText());
+        AssertContains(deepLink.GetProperty("pageTitleText").GetString() ?? string.Empty, "组织架构", "JazorAdmin deep-link page title", deepLink.GetRawText());
+        AssertContains(deepLink.GetProperty("breadcrumbText").GetString() ?? string.Empty, "组织机构", "JazorAdmin deep-link breadcrumb", deepLink.GetRawText());
+        AssertContains(deepLink.GetProperty("activeKey").GetString() ?? string.Empty, "organizations.structure", "JazorAdmin deep-link selected key", deepLink.GetRawText());
+        AssertJsonBoolean(deepLink, "organizationPanelVisible", true, "JazorAdmin deep-link organization page body", deepLink.GetRawText());
         var internalError = root.GetProperty("internalError");
         AssertContains(internalError.GetProperty("mode").GetString() ?? string.Empty, "error", "JazorAdmin internal-error smoke mode", internalError.GetRawText());
         AssertContains(internalError.GetProperty("pathname").GetString() ?? string.Empty, "/error/500", "JazorAdmin internal-error browser location", internalError.GetRawText());
         AssertContains(internalError.GetProperty("errorKind").GetString() ?? string.Empty, "internal-server-error", "JazorAdmin internal-error kind", internalError.GetRawText());
         AssertContains(internalError.GetProperty("errorCode").GetString() ?? string.Empty, "500", "JazorAdmin internal-error code", internalError.GetRawText());
-        AssertContains(internalError.GetProperty("errorTitle").GetString() ?? string.Empty, "Something went wrong", "JazorAdmin internal-error title", internalError.GetRawText());
+        AssertContains(internalError.GetProperty("errorTitle").GetString() ?? string.Empty, "系统暂时无法处理请求", "JazorAdmin internal-error title", internalError.GetRawText());
         AssertContains(internalError.GetProperty("errorRole").GetString() ?? string.Empty, "alert", "JazorAdmin internal-error live role", internalError.GetRawText());
         AssertContains(internalError.GetProperty("returnPathname").GetString() ?? string.Empty, "/", "JazorAdmin internal-error recovery navigation", internalError.GetRawText());
 
@@ -910,22 +683,12 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(notFound.GetProperty("pathname").GetString() ?? string.Empty, "/missing/admin/page", "JazorAdmin preserved unknown browser location", notFound.GetRawText());
         AssertContains(notFound.GetProperty("errorKind").GetString() ?? string.Empty, "not-found", "JazorAdmin not-found kind", notFound.GetRawText());
         AssertContains(notFound.GetProperty("errorCode").GetString() ?? string.Empty, "404", "JazorAdmin not-found code", notFound.GetRawText());
-        AssertContains(notFound.GetProperty("errorTitle").GetString() ?? string.Empty, "Page not found", "JazorAdmin not-found title", notFound.GetRawText());
+        AssertContains(notFound.GetProperty("errorTitle").GetString() ?? string.Empty, "页面不存在", "JazorAdmin not-found title", notFound.GetRawText());
         AssertContains(notFound.GetProperty("errorRole").GetString() ?? string.Empty, "status", "JazorAdmin not-found status role", notFound.GetRawText());
         AssertContains(notFound.GetProperty("returnPathname").GetString() ?? string.Empty, "/", "JazorAdmin not-found recovery navigation", notFound.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
 
-        var sidebarItems = root.GetProperty("sidebarItems").EnumerateArray()
-            .Select(static item => item.GetString() ?? string.Empty)
-            .ToArray();
-        if (!sidebarItems.Any(static item => item.Contains("Dashboard", StringComparison.Ordinal)) ||
-            !sidebarItems.Any(static item => item.Contains("Operations", StringComparison.Ordinal)) ||
-            !sidebarItems.Any(static item => item.Contains("Settings", StringComparison.Ordinal)) ||
-            !sidebarItems.Any(static item => item.Contains("Workspace", StringComparison.Ordinal)))
-        {
-            throw new InvalidOperationException("JazorAdmin browser smoke did not find expected sidebar navigation items.");
-        }
     }
     finally
     {
@@ -1030,7 +793,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               await page.navigate(`http://127.0.0.1:${server.port}/`);
               const result = await page.waitForSmoke();
               result.desktopLayout = await page.readLayout();
-              await page.navigate(`http://127.0.0.1:${server.port}/operations/releases`);
+              await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               const deepLink = await page.waitForSmoke();
               await page.send("Emulation.setDeviceMetricsOverride", {
                 width: 390,
@@ -1038,10 +801,9 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 deviceScaleFactor: 1,
                 mobile: false
               });
-              await page.navigate(`http://127.0.0.1:${server.port}/operations/releases`);
+              await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               await page.waitForSmoke();
               result.mobileLayout = await page.readLayout();
-              result.mobileNavigation = await page.exerciseMobileChildNavigation();
               await page.navigate(`http://127.0.0.1:${server.port}/error/500`);
               const internalError = await page.waitForSmoke();
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);
@@ -1253,7 +1015,6 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               const sidebar = document.querySelector('[data-shell-region="sidebar"]');
               const main = document.querySelector('[data-shell-region="main"]');
               const navigation = document.querySelector('[data-navigation-orientation="vertical"]');
-              const table = document.querySelector(".jazor-admin-release-table__table");
               const shellStyle = shell ? getComputedStyle(shell) : null;
               const sidebarStyle = sidebar ? getComputedStyle(sidebar) : null;
               const mainStyle = main ? getComputedStyle(main) : null;
@@ -1269,35 +1030,11 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 mainDisplay: mainStyle?.display ?? "",
                 navigationDisplay: navigationStyle?.display ?? "",
                 sidebarFillsShell: !!shellRect && !!sidebarRect && Math.abs(shellRect.width - sidebarRect.width) <= 1,
-                tableOverflowX: table ? getComputedStyle(table).overflowX : "",
                 styleRuntimeLoaded: document.querySelector("style#jazor-css") !== null,
                 documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
                 sidebarBeforeMain: sidebarRect && mainRect
                   ? sidebarRect.right <= mainRect.left + 1 || sidebarRect.bottom <= mainRect.top + 1
                   : false
-              };
-            })()`);
-          }
-
-          exerciseMobileChildNavigation() {
-            return this.evaluate(`(async () => {
-              const branch = document.querySelector('[data-nav-key="operations"]');
-              const auditLink = branch?.querySelector('[data-nav-key="operations.audit"]');
-              const childLinkCount = branch?.querySelectorAll('[data-nav-kind="item"]').length ?? 0;
-              const auditRect = auditLink?.getBoundingClientRect();
-              const auditVisible = !!auditRect && auditRect.width > 0 && auditRect.height > 0;
-              auditLink?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-              for (let attempt = 0; attempt < 100 && location.pathname !== "/operations/audit"; attempt++) {
-                await new Promise((resolve) => setTimeout(resolve, 10));
-              }
-              await new Promise((resolve) => setTimeout(resolve, 0));
-              return {
-                auditVisible,
-                childLinkCount,
-                pathname: location.pathname,
-                pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
-                activeKey: document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "",
-                documentFitsViewport: document.documentElement.scrollWidth <= innerWidth
               };
             })()`);
           }
@@ -1701,7 +1438,6 @@ static string? TryResolveExecutable(string candidate)
 
 internal sealed record SmokeOptions(
     string Configuration,
-    string PackageVersion,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
     string? GeneratedOutputRoot,
@@ -1711,7 +1447,6 @@ internal sealed record SmokeOptions(
     public static SmokeOptions Parse(IReadOnlyList<string> arguments)
     {
         var configuration = "Debug";
-        var packageVersion = "0.1.46";
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
         string? generatedOutputRoot = null;
@@ -1727,10 +1462,6 @@ internal sealed record SmokeOptions(
                 case "-Configuration":
                 case "-c":
                     configuration = RequireValue(arguments, ref index, argument);
-                    break;
-                case "--package-version":
-                case "-PackageVersion":
-                    packageVersion = RequireValue(arguments, ref index, argument);
                     break;
                 case "--base-output-path":
                 case "-BaseOutputPath":
@@ -1764,7 +1495,6 @@ internal sealed record SmokeOptions(
 
         return new SmokeOptions(
             configuration,
-            packageVersion,
             baseOutputPath,
             baseIntermediateOutputPath,
             generatedOutputRoot,
@@ -1787,7 +1517,6 @@ internal sealed record SmokeOptions(
         Console.WriteLine("Usage: dotnet run --no-launch-profile --file src/JazorAdmin/verify-smoke.cs -- [options]");
         Console.WriteLine("Options:");
         Console.WriteLine("  --configuration <Debug|Release>");
-        Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --generated-output-root <path>");

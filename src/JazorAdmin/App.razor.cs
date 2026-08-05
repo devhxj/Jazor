@@ -4,6 +4,8 @@ using static ECMAScript.Vue3;
 using Microsoft.AspNetCore.Components;
 using static JazorAdmin.Routes;
 using static ECMAScript.VueRoute;
+using JazorAdmin.Frontend;
+using JazorAdmin.Features.Identity;
 
 namespace JazorAdmin;
 
@@ -15,29 +17,16 @@ public partial class App : ComponentBase, IVueComponent
     private string themeKey = "light";
     private string languageTag = "zh-CN";
     private bool grayscale;
-    private string loginAccount = "admin@jazor";
+    private string loginAccount = string.Empty;
     private string loginPassword = string.Empty;
     private string unlockPassword = string.Empty;
     private string? accessError;
+    private bool sessionRestoring = true;
+    private SessionResponse? session;
+    private OrganizationSummary[] organizations = [];
+    private string? selectedOrganizationId;
     private bool collapsed;
     private string[] expandedKeys = [];
-    private string selectedReleaseKey = "release.api";
-    private string[] selectedReleaseKeys = [];
-    private string releaseSearchText = string.Empty;
-    private int releasePageIndex;
-    private string releaseSortColumnKey = string.Empty;
-    private bool releaseSortDescending;
-    private bool releaseLoading;
-    private int refreshCount;
-    private int deployCount;
-    private int settingsSaveCount;
-    private string settingsTheme = "System";
-    private string settingsNavigationMode = "Mixed";
-    private string settingsReleaseChannel = "stable";
-    private bool settingsSmokeRequired = true;
-    private string settingsStatus = "No settings have been saved.";
-    private string? actionStatus;
-    private ActionNoticeKind actionStatusKind = ActionNoticeKind.Info;
 
     private AdminThemeMode Theme
         => themeKey == "dark" ? AdminThemeMode.Dark : themeKey == "light" ? AdminThemeMode.Light : AdminThemeMode.System;
@@ -46,11 +35,7 @@ public partial class App : ComponentBase, IVueComponent
         => languageTag == "zh-CN" ? AdminLanguage.Chinese : AdminLanguage.English;
 
     private AdminLayoutMode LayoutMode
-        => settingsNavigationMode == "Header"
-            ? AdminLayoutMode.Top
-            : settingsNavigationMode == "Sidebar"
-                ? AdminLayoutMode.Sidebar
-                : AdminLayoutMode.Mixed;
+        => AdminLayoutMode.Mixed;
 
     private AdminRouteDefinition[] LocalizedItems => CreateItems(Language);
 
@@ -59,6 +44,13 @@ public partial class App : ComponentBase, IVueComponent
 
     private string SelectedKey => SelectedRoute.Key;
 
+    private bool HasSession => session is not null;
+
+    private string CurrentUserLabel => session?.DisplayName ?? session?.Email ?? string.Empty;
+
+    private OrganizationSummary? SelectedOrganization
+        => organizations.FirstOrDefault(organization => organization.Id == selectedOrganizationId);
+
     private string[] EffectiveExpandedKeys
         => AdminRouteCatalog.BuildExpandedKeys(LocalizedItems, SelectedKey, expandedKeys);
 
@@ -66,13 +58,22 @@ public partial class App : ComponentBase, IVueComponent
         => currentRoute.Path == InternalErrorPath ||
            !AdminRouteCatalog.ContainsPath(RouterItems, currentRoute.Path);
 
-    private bool IsReleasesPage => SelectedKey == ReleasesKey;
+    private bool IsOrganizationPage
+        => SelectedKey is OrganizationStructureKey or OrganizationMembersKey;
 
-    private bool IsAuditPage => SelectedKey == AuditKey;
+    private bool IsOrganizationMembersPage => SelectedKey == OrganizationMembersKey;
 
-    private bool IsSettingsPage => SelectedKey == SettingsKey;
+    private bool IsAuthorizationPage
+        => SelectedKey is AuthorizationRolesKey or AuthorizationResourcesKey;
 
-    private bool IsWorkspacePage => SelectedKey == WorkspaceKey;
+    private bool IsAuthorizationResourcesPage => SelectedKey == AuthorizationResourcesKey;
+
+    private bool IsAccountsPage => SelectedKey == AccountsKey;
+
+    private bool IsConfigurationPage
+        => SelectedKey is ConfigurationClientsKey or ConfigurationScopesKey;
+
+    private bool IsConfigurationScopesPage => SelectedKey == ConfigurationScopesKey;
 
     private bool IsDashboardPage => SelectedKey == DashboardKey;
 
@@ -94,139 +95,6 @@ public partial class App : ComponentBase, IVueComponent
                 RouteTarget = (RouteLocationRaw)"/"
             });
 
-    private AdminPageAction[] GetPageActions()
-        =>
-        [
-            new()
-            {
-                Key = "refresh",
-                Text = "Refresh",
-                Kind = AdminPageActionKind.Secondary,
-                Disabled = releaseLoading,
-                Click = EventCallback.Factory.Create(this, RefreshPage)
-            },
-            new()
-            {
-                Key = "deploy",
-                Text = "Deploy",
-                Kind = AdminPageActionKind.Primary,
-                Disabled = releaseLoading,
-                Click = EventCallback.Factory.Create(this, DeploySelectedRelease)
-            }
-        ];
-
-    private async Task RefreshPage()
-    {
-        if (releaseLoading)
-            return;
-
-        releaseLoading = true;
-        actionStatus = null;
-        await Task.Delay(75);
-        refreshCount++;
-        releaseLoading = false;
-        actionStatusKind = ActionNoticeKind.Success;
-        actionStatus = "Refreshed " + GetSelectedPageTitle()
-                       + ". Refreshes: " + refreshCount
-                       + " Deploys: " + deployCount;
-    }
-
-    private void DeploySelectedRelease()
-    {
-        deployCount++;
-        actionStatusKind = ActionNoticeKind.Success;
-        var requestStatus = selectedReleaseKeys.Length == 0
-            ? "Deploy requested for " + selectedReleaseKey
-            : "Bulk deploy requested for " + selectedReleaseKeys.Length + " releases";
-        actionStatus = requestStatus
-                       + ". Refreshes: " + refreshCount
-                       + " Deploys: " + deployCount;
-    }
-
-    private SettingsFields GetSettingsFields()
-        => new SettingsField[]
-        {
-            new()
-            {
-                Key = "theme",
-                Kind = SettingsFieldKind.Select,
-                Label = "Theme",
-                Value = settingsTheme,
-                Options = new SettingsOption[]
-                {
-                    new() { Value = "System" },
-                    new() { Value = "Light" },
-                    new() { Value = "Dark" }
-                }
-            },
-            new()
-            {
-                Key = "navigation-mode",
-                Kind = SettingsFieldKind.Select,
-                Label = "Navigation mode",
-                Value = settingsNavigationMode,
-                Options = new SettingsOption[]
-                {
-                    new() { Value = "Mixed" },
-                    new() { Value = "Sidebar" },
-                    new() { Value = "Header" }
-                }
-            },
-            new()
-            {
-                Key = "release-channel",
-                Kind = SettingsFieldKind.Text,
-                Label = "Default release channel",
-                HelpText = "Used when a release does not provide an explicit channel.",
-                Value = settingsReleaseChannel,
-                Autocomplete = "off"
-            },
-            new()
-            {
-                Key = "smoke-required",
-                Kind = SettingsFieldKind.Checkbox,
-                Label = "Require smoke verification before release",
-                Checked = settingsSmokeRequired
-            }
-        };
-
-    private void OnSettingsFieldChanged(SettingsFieldChange change)
-    {
-        if (change.Key == "theme" && change.Value.AsString is { } theme)
-        {
-            settingsTheme = theme;
-            return;
-        }
-
-        if (change.Key == "navigation-mode" && change.Value.AsString is { } navigationMode)
-        {
-            settingsNavigationMode = navigationMode;
-            return;
-        }
-
-        if (change.Key == "release-channel" && change.Value.AsString is { } releaseChannel)
-        {
-            settingsReleaseChannel = releaseChannel;
-            return;
-        }
-
-        if (change.Key == "smoke-required" && change.Value.AsBoolean is { } smokeRequired)
-        {
-            settingsSmokeRequired = smokeRequired;
-        }
-    }
-
-    private void SaveSettings()
-    {
-        settingsSaveCount++;
-        settingsStatus = "Saved settings " + settingsSaveCount + ": "
-                         + settingsTheme + ", "
-                         + (settingsSmokeRequired ? "smoke required" : "smoke optional") + ", "
-                         + settingsNavigationMode + ", "
-                         + settingsReleaseChannel;
-    }
-
-    private void DismissActionStatus()
-        => actionStatus = null;
+    private AdminPageAction[] GetPageActions() => [];
 
 }

@@ -1,9 +1,9 @@
 @inherits AdminContentComponentBase
 
-<TCard CssClass="@RootCssClass"
-       CssStyle="@CssStyle"
-       data-page-container=""
-       @attributes="AdditionalAttributes">
+<section class="@RootCssClass"
+         style="@CssStyle"
+         data-page-container=""
+         @attributes="AdditionalAttributes">
     <div class='@("jazor-admin-tdesign-page-container__header")'>
         <div class='@("jazor-admin-tdesign-page-container__titles")'>
             @if (BreadcrumbItems is { Length: > 0 })
@@ -55,4 +55,4 @@
          data-page-region="body">
         @ChildContent
     </div>
-</TCard>
+</section>

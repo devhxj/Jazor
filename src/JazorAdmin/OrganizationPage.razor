@@ -1,0 +1,143 @@
+@* Operates the selected organization's hierarchy and membership records. 管理当前组织的层级与成员记录。 *@
+@inherits AppComponentBase
+
+<section class="jazor-admin-management" data-management-area="organizations">
+    @if (OrganizationId is null)
+    {
+        <p class="jazor-admin-management__empty">Select an organization from the header to manage it.</p>
+    }
+    else if (loading)
+    {
+        <p class="jazor-admin-management__loading" aria-live="polite">Loading organization data</p>
+    }
+    else if (error is not null)
+    {
+        <p class="jazor-admin-management__error" role="alert">@error</p>
+    }
+    else if (View == OrganizationView.Structure)
+    {
+        <div class="jazor-admin-management__split">
+            <section class="jazor-admin-management__panel" aria-labelledby="organization-detail-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="organization-detail-title">Organization structure</h2>
+                        <p>@organization?.Code</p>
+                    </div>
+                </header>
+                <dl class="jazor-admin-management__details">
+                    <div><dt>Name</dt><dd>@organization?.DisplayName</dd></div>
+                    <div><dt>Code</dt><dd>@organization?.Code</dd></div>
+                    <div><dt>Parent</dt><dd>@(organization?.ParentId ?? "Root organization")</dd></div>
+                </dl>
+                <h3>Child organizations</h3>
+                @if (organization?.Children is { Length: > 0 } children)
+                {
+                    <ul class="jazor-admin-management__item-list">
+                        @foreach (var child in children)
+                        {
+                            <li>
+                                <span class="jazor-admin-management__code">@child.Code</span>
+                                <span>@child.DisplayName</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="jazor-admin-management__empty">No child organizations.</p>
+                }
+            </section>
+
+            <section class="jazor-admin-management__panel" aria-labelledby="create-child-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="create-child-title">Add child organization</h2>
+                        <p>Create a direct child under the active organization</p>
+                    </div>
+                </header>
+                <form class="jazor-admin-management__form" @onsubmit="CreateChild" @onsubmit:preventDefault>
+                    <label>
+                        <span>Code</span>
+                        <input required autocomplete="off" @bind="childCode" @bind:event="oninput" />
+                    </label>
+                    <label>
+                        <span>Display name</span>
+                        <input required autocomplete="off" @bind="childDisplayName" @bind:event="oninput" />
+                    </label>
+                    <button type="submit">Create organization</button>
+                </form>
+            </section>
+        </div>
+    }
+    else
+    {
+        <div class="jazor-admin-management__split jazor-admin-management__split--members">
+            <section class="jazor-admin-management__panel" aria-labelledby="organization-members-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="organization-members-title">Members</h2>
+                        <p>Memberships in the active organization</p>
+                    </div>
+                </header>
+                <div class="jazor-admin-management__table-wrap">
+                    <table class="jazor-admin-management__table">
+                        <thead>
+                            <tr><th>Member</th><th>Roles</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in members)
+                            {
+                                <tr class="@(member.MembershipId == editingMembershipId ? "is-selected" : string.Empty)">
+                                    <td><strong>@member.DisplayName</strong><span>@member.Email</span></td>
+                                    <td>@GetRoleNames(member.Roles)</td>
+                                    <td><button type="button" class="jazor-admin-management__text-button" @onclick="() => SelectMember(member)">Edit roles</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="jazor-admin-management__panel" aria-labelledby="membership-actions-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div>
+                        <h2 id="membership-actions-title">Membership</h2>
+                        <p>Add a known account or change the selected member's roles</p>
+                    </div>
+                </header>
+                <form class="jazor-admin-management__form" @onsubmit="CreateMember" @onsubmit:preventDefault>
+                    <label>
+                        <span>Account email</span>
+                        <input required type="email" autocomplete="off" @bind="memberEmail" @bind:event="oninput" />
+                    </label>
+                    <label>
+                        <span>Initial role</span>
+                        <select @bind="newMemberRoleId">
+                            <option value="">No role</option>
+                            @foreach (var role in roles)
+                            {
+                                <option value="@role.Id">@role.DisplayName</option>
+                            }
+                        </select>
+                    </label>
+                    <button type="submit">Add member</button>
+                </form>
+
+                @if (editingMembershipId is not null)
+                {
+                    <div class="jazor-admin-management__role-editor">
+                        <h3>Member roles</h3>
+                        @foreach (var role in roles)
+                        {
+                            <label class="jazor-admin-management__check">
+                                <input type="checkbox" checked="@HasEditedMemberRole(role.Id)" @onclick="() => ToggleEditedMemberRole(role.Id)" />
+                                <span>@role.DisplayName</span>
+                            </label>
+                        }
+                        <button type="button" @onclick="SaveMemberRoles">Save roles</button>
+                    </div>
+                }
+            </section>
+        </div>
+    }
+</section>

@@ -3,7 +3,14 @@
 @{ JazorAdminStyles.EnsureLoaded(); }
 
 <ApplicationFrame Theme="@Theme" Language="@languageTag" Grayscale="@grayscale">
-    @if (currentRoute.Path == "/login" || currentRoute.Path == "/lock")
+    @if (sessionRestoring && currentRoute.Path != "/login" && currentRoute.Path != "/lock")
+    {
+        <main class="jazor-admin-session-state" data-session-state="restoring" aria-live="polite">
+            <span class="jazor-admin-session-state__spinner" aria-hidden="true"></span>
+            <span>Restoring session</span>
+        </main>
+    }
+    else if (currentRoute.Path == "/login" || currentRoute.Path == "/lock")
     {
         <main class="@(IsLoginPage ? "jazor-admin-access jazor-admin-access--login" : "jazor-admin-access jazor-admin-access--lock")"
               data-access-page="@(IsLoginPage ? "login" : "lock")">
@@ -45,6 +52,12 @@
             </section>
         </main>
     }
+    else if (!HasSession)
+    {
+        <main class="jazor-admin-session-state" data-session-state="anonymous" aria-live="polite">
+            <span>Redirecting to sign in</span>
+        </main>
+    }
     else if (IsErrorRoute)
     {
         <ErrorPage Kind="@(IsInternalErrorPage ? ErrorKind.InternalServerError : ErrorKind.NotFound)"
@@ -56,8 +69,8 @@
     else
     {
         <TDesignLayout Mode="@LayoutMode"
-                          Title="医生生机"
-                          Subtitle="医疗项目招募管理工作台"
+                          Title="JazorAdmin"
+                          Subtitle="Identity and access management"
                           NavItems="@AdminRouteCatalog.BuildNavigation(LocalizedItems)"
                           Collapsed="@collapsed"
                           CollapsedChanged="@(value => collapsed = value)"
@@ -67,7 +80,20 @@
                           ExpandedKeys="@EffectiveExpandedKeys"
                           ExpandedKeysChanged="@(value => expandedKeys = value)">
             <HeaderActions>
-                <div class="jazor-admin__preferences">
+                <div class="jazor-admin__header-context">
+                    @if (organizations.Length > 0)
+                    {
+                        <label class="jazor-admin__organization-picker">
+                            <span>Organization</span>
+                            <select data-organization-picker=""
+                                    @bind="selectedOrganizationId">
+                                @foreach (var organization in organizations)
+                                {
+                                    <option value="@organization.Id">@organization.DisplayName</option>
+                                }
+                            </select>
+                        </label>
+                    }
                     <label class="jazor-admin__preference">
                         @Localization.Get(Language, TextKey.Theme)
                         <select data-preference="theme" @bind="themeKey">
@@ -90,8 +116,8 @@
                 </div>
             </HeaderActions>
             <UserRegion>
-                <div class="jazor-admin__user-region">
-                    <span class="jazor-admin__user">@loginAccount</span>
+                <div class="jazor-admin__user-region" data-user-menu="">
+                    <span class="jazor-admin__user">@CurrentUserLabel</span>
                     <button type="button" class="jazor-admin__access-command" data-access-command="lock" @onclick="OpenLockScreen">
                         @Localization.Get(Language, TextKey.Lock)
                     </button>
@@ -106,61 +132,28 @@
                                          Subtitle="@GetSelectedPageSubtitle()"
                                          BreadcrumbItems="@GetSelectedBreadcrumbItems()"
                                          Actions="@GetPageActions()">
-                    @if (actionStatus is not null)
+                    @if (IsOrganizationPage)
                     {
-                        <ActionNotice Kind="@actionStatusKind"
-                                                Title="Action completed"
-                                                Description="@actionStatus"
-                                                Dismissible
-                                                Dismissed="@DismissActionStatus" />
+                        <OrganizationPage OrganizationId="@selectedOrganizationId"
+                                          View="@(IsOrganizationMembersPage ? OrganizationView.Members : OrganizationView.Structure)" />
                     }
-                    @if (IsReleasesPage)
+                    else if (IsAuthorizationPage)
                     {
-                        <ReleaseQueue SectionClass="jazor-admin__release-section jazor-admin__release-section--focused"
-                                      SelectedRowKey="@selectedReleaseKey"
-                                      SelectedRowKeyChanged="@(value => selectedReleaseKey = value)"
-                                      SelectedRowKeys="@selectedReleaseKeys"
-                                      SelectedRowKeysChanged="@(value => selectedReleaseKeys = value)"
-                                      SearchText="@releaseSearchText"
-                                      SearchTextChanged="@(value => releaseSearchText = value)"
-                                      PageIndex="@releasePageIndex"
-                                      PageIndexChanged="@(value => releasePageIndex = value)"
-                                      SortColumnKey="@releaseSortColumnKey"
-                                      SortColumnKeyChanged="@(value => releaseSortColumnKey = value)"
-                                      SortDescending="@releaseSortDescending"
-                                      SortDescendingChanged="@(value => releaseSortDescending = value)"
-                                      Loading="@releaseLoading" />
+                        <AccessControlPage OrganizationId="@selectedOrganizationId"
+                                           View="@(IsAuthorizationResourcesPage ? AccessControlView.Resources : AccessControlView.Roles)" />
                     }
-                    else if (IsAuditPage)
+                    else if (IsAccountsPage)
                     {
-                        <AuditPage />
+                        <AccountPage />
                     }
-                    else if (IsSettingsPage)
+                    else if (IsConfigurationPage)
                     {
-                        <SettingsPage Fields="@GetSettingsFields()"
-                                      StatusText="@settingsStatus"
-                                      Submit="@SaveSettings"
-                                      FieldChanged="@OnSettingsFieldChanged" />
-                    }
-                    else if (IsWorkspacePage)
-                    {
-                        <WorkspacePage />
+                        <ConfigPage View="@(IsConfigurationScopesPage ? ConfigView.Scopes : ConfigView.Clients)" />
                     }
                     else
                     {
-                        <DashboardPage SelectedRowKey="@selectedReleaseKey"
-                                       SelectedRowKeyChanged="@(value => selectedReleaseKey = value)"
-                                       SelectedRowKeys="@selectedReleaseKeys"
-                                       SelectedRowKeysChanged="@(value => selectedReleaseKeys = value)"
-                                       SearchText="@releaseSearchText"
-                                       SearchTextChanged="@(value => releaseSearchText = value)"
-                                       PageIndex="@releasePageIndex"
-                                       PageIndexChanged="@(value => releasePageIndex = value)"
-                                       SortColumnKey="@releaseSortColumnKey"
-                                       SortColumnKeyChanged="@(value => releaseSortColumnKey = value)"
-                                       SortDescending="@releaseSortDescending"
-                                       SortDescendingChanged="@(value => releaseSortDescending = value)"
-                                       Loading="@releaseLoading" />
+                        <DashboardPage Session="@session"
+                                       SelectedOrganization="@SelectedOrganization" />
                     }
                 </TDesignPageContainer>
             </ChildContent>
