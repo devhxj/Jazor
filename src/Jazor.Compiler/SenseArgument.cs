@@ -315,7 +315,7 @@ public record struct SenseArgument
         }
         else
         {
-            localName = $"i${Format.HashName(key).TrimStart('_')}";
+            localName = AllocateImportAlias(key);
             var specifier = CreateAliasedImportSpecifier(importedName, localName);
             if (_specifiers.TryGetValue(modulePath!, out var list))
                 list.Add(specifier);
@@ -328,6 +328,24 @@ public record struct SenseArgument
 
         _importBindings.Add(key, localName);
         return new Identifier(localName);
+    }
+
+    private string AllocateImportAlias(string key)
+    {
+        var prefix = $"i${Format.HashName(key).TrimStart('_')}";
+        for (var suffix = 0; ; suffix++)
+        {
+            var candidate = suffix == 0 ? prefix : prefix + suffix;
+            // Import aliases share module scope with explicitly configured exports. A hash avoids
+            // ordinary collisions, but it is still a valid user-authored JavaScript binding.
+            if (_reservedImportNames?.Contains(candidate) == true ||
+                _importLocalBindings?.ContainsKey(candidate) == true)
+            {
+                continue;
+            }
+
+            return candidate;
+        }
     }
 
     /// <summary>

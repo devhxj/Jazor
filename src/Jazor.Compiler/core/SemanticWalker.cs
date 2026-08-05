@@ -278,13 +278,12 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             $"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot be used for {usage} because its runtime alias '{runtimeAlias}' is shared with incompatible supported types: {string.Join(", ", conflicts)}. Configure distinct runtime types in Jazor.CLR if precise runtime filtering is required.");
     }
 
-    private void RejectUnsupportedRuntimeFallback(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+    private void RejectUnsupportedRuntimeFallback(IOperation operation, ISymbol symbol, string usage, ITypeSymbol hostType)
     {
-        var effectiveHost = hostType ?? symbol.ContainingType!;
-        if (IsSupportedExternalMember(operation, symbol, effectiveHost))
+        if (IsSupportedExternalMember(operation, symbol, hostType))
             return;
 
-        var unsupportedType = FindFirstUnsupportedExternalType(operation, effectiveHost);
+        var unsupportedType = FindFirstUnsupportedExternalType(operation, hostType);
         if (unsupportedType is not null)
         {
             HandleTransformationFailure<Node>(
@@ -625,7 +624,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return false;
     }
 
-    private bool IsSupportedExternalMember(IOperation operation, ISymbol symbol, ITypeSymbol? hostType = null)
+    private bool IsSupportedExternalMember(IOperation operation, ISymbol symbol, ITypeSymbol hostType)
     {
         if (IsStructuralMember(symbol))
             return true;
@@ -649,18 +648,15 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             IsUnsupportedUnionProjectionProperty(associatedProperty))
             return false;
 
-        if (symbol is IPropertySymbol property &&
-            IsUnsupportedUnionProjectionProperty(property))
-            return false;
-
-        if (HasEcmascriptSupportMarker(symbol))
+        if (HasEcmascriptSupportMarker(symbol) ||
+            HasEcmascriptSupportMarker(hostType))
             return true;
 
-        if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType ?? field.ContainingType!))
+        if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType))
             return true;
 
         if ((symbol is IMethodSymbol or IPropertySymbol) &&
-            IsIntrinsicCallableOrPropertyFallbackAllowed(hostType ?? symbol.ContainingType!))
+            IsIntrinsicCallableOrPropertyFallbackAllowed(hostType))
             return true;
 
         return !RequiresExplicitExternalMemberSupport(operation, symbol, hostType);
@@ -747,12 +743,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return false;
     }
 
-    private bool RequiresExplicitExternalMemberSupport(IOperation operation, ISymbol symbol, ITypeSymbol? hostType)
+    private bool RequiresExplicitExternalMemberSupport(IOperation operation, ISymbol symbol, ITypeSymbol effectiveHost)
     {
-        // All callers validate constructors, methods, properties, or fields, so a runtime member
-        // always has either an explicit receiver type or a containing type.
-        var effectiveHost = hostType ?? symbol.ContainingType!;
-
         // IsSupportedExternalMember has already accepted current-module, current-source and
         // directly marked hosts before this final external-support test.
         if (effectiveHost is INamedTypeSymbol namedEffectiveHost &&
@@ -950,9 +942,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (symbol.IsStatic)
             return (null, ToNullableExpressionArray(arguments));
 
-        return (instance ?? throw new InvalidOperationException(
-            $"Jazor 无法为实例成员 {symbol.Name} 绑定 Compile handler。"),
-            ToNullableExpressionArray(arguments));
+        // Bound instance Compile members (Nullable<T> today) always contribute their receiver.
+        return (instance!, ToNullableExpressionArray(arguments));
     }
 
     private static Expression?[] ToNullableExpressionArray(List<Expression> arguments)
@@ -1630,17 +1621,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     }
 
     /// <summary>
-    /// 安全访问操作并将其添加到集合中
-    /// <para>
-    /// 此方法用于将操作转换为指定类型的AST节点，并将成功转换的节点添加到集合中。
-    /// 如果操作为null或转换结果为null，则跳过处理，不抛出异常。
-    /// 如果转换结果类型不匹配，会记录错误信息但不中断处理流程。
-    /// </para>
+    /// 安全访问操作并将其添加到集合中。
     /// </summary>
-    /// <typeparam name="T">期望的AST节点类型</typeparam>
-    /// <param name="target">用于存放成功转换的AST节点的集合</param>
-    /// <param name="operation">要访问和转换的操作，可能为null</param>
-    /// <param name="argument">用于存放变量声明的队列</param>
     private void Translate<T>(ICollection<T> target, IOperation? operation, SenseArgument argument) where T : INode
     {
         if (operation is null)
@@ -1657,18 +1639,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     }
 
     /// <summary>
-    /// 安全访问操作并将其添加到集合中
-    /// <para>
-    /// 此方法用于将操作转换为指定类型的AST节点，并将成功转换的节点添加到集合中。
-    /// 如果操作为null或转换结果为null，则跳过处理，不抛出异常。
-    /// 如果转换结果类型不匹配，会记录错误信息但不中断处理流程。
-    /// </para>
+    /// Adds a translated operation to a nullable AST collection when the lowering produces the requested node type.
     /// </summary>
-    /// <typeparam name="T">期望的AST节点类型</typeparam>
-    /// <param name="target">用于存放成功转换的AST节点的集合</param>
-    /// <param name="operation">要访问和转换的操作，可能为null</param>
-    /// <param name="argument">用于存放变量声明的队列</param>
-    /// <param name="defaultValue">为空时的默认值</param>
     private void Translate<T>(ICollection<T?> target, IOperation? operation, SenseArgument argument, T? defaultValue) where T : INode
     {
         if (operation is null)
@@ -1683,4 +1655,5 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         else
             ReportTranslationTypeMismatch<T>(operation);
     }
+
 }

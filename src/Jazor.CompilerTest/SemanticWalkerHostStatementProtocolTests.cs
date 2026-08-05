@@ -11,6 +11,31 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerHostStatementProtocolTests
 {
     [TestMethod]
+    public void Visit_UnsupportedGotoFromInMemorySource_PreservesUnknownLocationMetadata()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    goto Exit;
+                Exit:
+                    return;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Goto statements are not supported", StringComparison.Ordinal);
+        Assert.AreEqual("<unknown>", exception.Data["location.path"]);
+        Assert.IsInstanceOfType<int>(exception.Data["location.startLine"]);
+        Assert.IsInstanceOfType<int>(exception.Data["location.startColumn"]);
+    }
+
+    [TestMethod]
     public void Host_SkipsOnlyAnEntireGeneratedLocalDeclarationGroup()
     {
         var block = GetBlockOperation(
@@ -58,6 +83,33 @@ public sealed class SemanticWalkerHostStatementProtocolTests
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("generated", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "let retained = 2;", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Host_SkipsAnEntireSharedDeclarationWhenEveryDeclaratorIsGenerated()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int generatedFirst = 1, generatedSecond = 2;
+                    int retained = 3;
+                }
+            }
+            """);
+
+        var script = new SemanticWalker(true)
+        {
+            Host = new GeneratedDeclarationHost()
+        }.Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.DoesNotContain("generatedFirst", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("generatedSecond", script, StringComparison.Ordinal);
+        StringAssert.Contains(script, "let retained = 3;", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 
@@ -113,7 +165,7 @@ public sealed class SemanticWalkerHostStatementProtocolTests
     private sealed class GeneratedDeclarationHost : SemanticWalkerHost
     {
         public override bool ShouldSkipVariableDeclarator(IVariableDeclaratorOperation operation, SenseArgument argument)
-            => operation.Symbol.Name == "generated";
+            => operation.Symbol.Name.StartsWith("generated", StringComparison.Ordinal);
 
         public override bool ShouldSkipLocalFunctionDeclaration(ILocalFunctionOperation operation, SenseArgument argument)
             => operation.Symbol.Name == "Generated";

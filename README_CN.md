@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="10192 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-10192%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 98.73%" src="https://img.shields.io/badge/compiler%20line%20coverage-98.73%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 95.06%" src="https://img.shields.io/badge/compiler%20branch%20coverage-95.06%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="10297 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-10297%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器行覆盖率 98.94%" src="https://img.shields.io/badge/compiler%20line%20coverage-98.94%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="编译器分支覆盖率 96.01%" src="https://img.shields.io/badge/compiler%20branch%20coverage-96.01%25-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -39,9 +39,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 | 指标 | 验证结果 | 当前强制阈值 |
 |------|----------|--------------|
-| 编译器回归测试 | 10192 / 10192 通过 | 至少通过 10000 项 |
-| 行覆盖率 | 16366 / 16576（98.73%） | 98% |
-| 分支覆盖率 | 6354 / 6684（95.06%） | 96% |
+| 编译器回归测试 | 10297 / 10297 通过 | 至少通过 10000 项 |
+| 行覆盖率 | 16369 / 16545（98.94%） | 98% |
+| 分支覆盖率 | 6324 / 6587（96.01%） | 96% |
 
 在仓库根目录运行正式覆盖率门禁：
 
@@ -49,7 +49,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
 
-该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。95.06% 是已验证的 `v0.1.44` 发布基线，当前分支目标和强制门槛均已上调为 96%。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
+该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。96.01% 是已验证的 `v0.1.45` 发布基线，已达到当前 96% 分支门槛。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
 
 ## RazorVue 验证基线
 
@@ -91,14 +91,16 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - 绑定扩展方法组作为 delegate 使用时现在保留 receiver，包括标识符 receiver；生成的 callback 不会丢失原始调用上下文。
 - 复合赋值、无符号右移、隐式派生类构造函数、属性初始化、插值格式 intrinsic 与 host-bound member dispatch 现在均有聚焦的 Roslyn operation 回归，覆盖求值顺序和运行时形状契约。
 - 白名单生成会在生成阶段拒绝不完整的 alias 声明，避免 catalog 出现没有可用 runtime 名称的条目。
-- Compiler 门禁已验证 10,192 个真实场景，行覆盖率 98.73%、分支覆盖率 95.06%，超过 10,000 / 98% / 94% 发布门槛。
+- 公开名称与已声明或保留 module binding 冲突的 import 现在会分配稳定的生成别名；继承泛型静态成员仍会使用具体 runtime host。
+- 插值 `dynamic` 值现在会和其他无稳定文本契约的运行时载体一样给出明确诊断，不再泄漏内部 cast 异常。
+- Compiler 门禁已验证 10,297 个真实场景，行覆盖率 98.94%、分支覆盖率 96.01%，达到 10,000 / 98% / 96% 发布门槛。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.44
+dotnet add package Jazor --version 0.1.45
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -107,8 +109,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.44" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.44" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.45" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.45" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -116,11 +118,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.44" />
+  <PackageReference Include="Jazor" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.45" />
 </ItemGroup>
 ```
 

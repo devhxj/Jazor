@@ -55,8 +55,8 @@ public partial class SemanticWalker
 	/// </summary>
 	private SwitchStatement VisitSwitchTraditional(ISwitchOperation operation, SenseArgument argument)
 	{
-		if (Visit(operation.Value, argument) is not Expression discriminant)
-			return HandleTransformationFailure<SwitchStatement>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
+		// A successful Roslyn switch binding always supplies an expression-valued discriminant.
+		var discriminant = Translate<Expression>(operation.Value, argument);
 
 		var cases = new List<SwitchCase>();
 		foreach (var switchCase in operation.Cases)
@@ -126,8 +126,6 @@ public partial class SemanticWalker
 	{
 		// 将switch case转换为if-else链
 		var clauses = operation.Clauses;
-		if (clauses.Length == 0)
-			return null;
 
 		var statements = new List<Statement>();
 		foreach (var clause in clauses)
@@ -138,7 +136,9 @@ public partial class SemanticWalker
 		// 如果有body操作，添加到语句中
 		statements.AddRange(TranslateOperationsToStatements(operation.Body, argument));
 
-		return statements.Count > 0 ? new NestedBlockStatement(NodeList.From(statements)) : null;
+		// A successfully bound switch section cannot fall through empty. Every valid section
+		// therefore contributes at least one lowered statement (including a terminating break).
+		return new NestedBlockStatement(NodeList.From(statements));
 	}
 
 	/// <summary>

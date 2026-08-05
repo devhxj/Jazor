@@ -1,4 +1,5 @@
 using Acornima;
+using System.Collections.Immutable;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -785,6 +786,697 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         _ = new Parser().ParseScript("function verify(release) " + script);
     }
 
+    [TestMethod]
+    public void Visit_RuntimeOptionalParameters_PreserveBoundNamedArgumentsAndOmitTrailingDefaults()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            static class BrowserTelemetry
+            {
+                public static int Publish(string channel, int retryCount = 3, bool dryRun = false) => 0;
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(string channel)
+                {
+                    int retry = BrowserTelemetry.Publish(channel, retryCount: 2);
+                    return retry + BrowserTelemetry.Publish(channel);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "publish(channel, 2)", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "publish(channel)", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("publish(channel, 2, false)", script, StringComparison.OrdinalIgnoreCase);
+        _ = new Parser().ParseScript("function verify(channel) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_AdjacentInterpolations_PreserveTemplateQuasiBoundaries()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static string TestMethod(string channel, int revision)
+                {
+                    return $"{channel}{revision}";
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "${channel ?? \"\"}${revision}", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(channel, revision) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_TextOnlyInterpolatedString_UsesTheStableStringLiteralForm()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static string TestMethod()
+                {
+                    return $"release-ready";
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "\"release-ready\"", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_TupleAndEnumFields_PreserveIntrinsicScalarFallbacks()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static int TestMethod((int Revision, int RetryCount) release)
+                {
+                    int revision = release.Item1;
+                    DateTimeKind kind = DateTimeKind.Utc;
+                    return revision + (int)kind;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "release", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let kind", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(release) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_TrailingListSlices_PreserveDiscardAndCaptureLengthProtocols()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static bool TestMethod(int[] values)
+                {
+                    return values is [var first, ..] &&
+                        values is [.. var remaining] &&
+                        first >= 0 &&
+                        remaining.Length >= 0;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, ".slice(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "remaining", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_UnmatchedComputedAliasSyntax_RemainsAQuotedRuntimeKey()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseMetadata
+            {
+                [ECMAScriptName("[\"release']")]
+                public string? State { get; set; }
+            }
+
+            static class TestClass
+            {
+                static string? TestMethod(ReleaseMetadata metadata)
+                {
+                    metadata.State = "ready";
+                    return metadata.State;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "release", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ready", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(metadata) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_TraditionalSwitchWithSharedLabels_AssignsTheBodyToTheLastLabel()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(int phase)
+                {
+                    switch (phase)
+                    {
+                        case 0:
+                        case 1:
+                            return 10;
+                        case 2:
+                            return 20;
+                        default:
+                            return -1;
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "case 0:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "case 1:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "default:", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(phase) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_DeconstructionWithDependentFieldPropertyAndParameterTargets_CachesBeforeWrites()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseState
+            {
+                public int Revision;
+
+                public int RetryCount { get; set; }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(ReleaseState state, int left, int right)
+                {
+                    (left, right) = (right, left);
+                    (state.Revision, state.RetryCount) = (state.RetryCount, state.Revision);
+                    ((int current, int next), int later) = ((left, right), state.RetryCount);
+                    return current + next + later + state.Revision + state.RetryCount;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "state.revision", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "state.retryCount", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "v$0 = right, v$1 = left, left = v$0, right = v$1", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.revision = v$2, state.retryCount = v$3", StringComparison.OrdinalIgnoreCase);
+        _ = new Parser().ParseScript("function verify(state, left, right) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_IndexAndRangeArrayAccess_PreservesBoundOffsetAndSliceSemantics()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static int TestMethod(int[] values)
+                {
+                    Index last = ^1;
+                    Range interior = 1..^1;
+                    int[] selected = values[interior];
+                    return values[last] + selected.Length;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "values.slice(", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".offset", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".length", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_NullCoalescingPropertyAssignment_UsesOneGetterAndOneSetterProtocol()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseMetadata
+            {
+                public string? State { get; set; }
+            }
+
+            static class TestClass
+            {
+                static string TestMethod(ReleaseMetadata metadata)
+                {
+                    metadata.State ??= "ready";
+                    return metadata.State;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "metadata.state", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "??", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(metadata) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_WhitelistedAliasMethod_UsesTheBoundRuntimeMemberName()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static int TestMethod(int[] values)
+                {
+                    Array.Fill(values, 7);
+                    return values[0];
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "Array.fill(values, 7)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_UserDefinedTrueOperator_UsesJavaScriptBooleanCoercion()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseGate
+            {
+                public static bool operator true(ReleaseGate value) => true;
+
+                public static bool operator false(ReleaseGate value) => false;
+            }
+
+            static class TestClass
+            {
+                static bool TestMethod(ReleaseGate gate)
+                {
+                    return gate ? true : false;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "!(!gate)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(gate) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_IfWithoutElse_PreservesTheAbsentAlternateBranch()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(int revision)
+                {
+                    if (revision < 0)
+                        return 0;
+
+                    return revision;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "if (revision < 0)", StringComparison.Ordinal);
+        Assert.DoesNotContain("else", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(revision) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_UserDefinedIncrementOnProperty_PreservesPrefixAndPostfixWriteBack()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class Revision
+            {
+                public static Revision operator ++(Revision value) => value;
+            }
+
+            [ECMAScript]
+            sealed class ReleaseState
+            {
+                public Revision Current { get; set; } = null!;
+            }
+
+            static class TestClass
+            {
+                static Revision TestMethod(ReleaseState state)
+                {
+                    Revision previous = state.Current++;
+                    return ++state.Current;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "state.current", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "previous", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(state) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_DefaultTupleValue_MaterializesEveryNestedScalarSlot()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    (int Revision, (bool Active, long Total) Meta) snapshot = default;
+                    return snapshot.Revision + (snapshot.Meta.Active ? 1 : 0) + (int)snapshot.Meta.Total;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "revision: 0", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "active: false", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "total: 0n", StringComparison.OrdinalIgnoreCase);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_UnmappedCustomCompoundAssignment_RejectsRawJavaScriptFallback()
+    {
+        var exception = Assert.Throws<OperationTransformationException>(() => VisitBlock(
+            """
+            sealed class Revision
+            {
+                public static Revision operator +(Revision left, Revision right) => left;
+            }
+
+            static class TestClass
+            {
+                static void TestMethod(Revision current, Revision delta)
+                {
+                    current += delta;
+                }
+            }
+            """));
+
+        StringAssert.Contains(exception.Message, "requires an explicit whitelist mapping", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_UnmappedCustomUnaryOperator_RejectsRawJavaScriptFallback()
+    {
+        var exception = Assert.Throws<OperationTransformationException>(() => VisitBlock(
+            """
+            sealed class Revision
+            {
+                public static Revision operator -(Revision value) => value;
+            }
+
+            static class TestClass
+            {
+                static Revision TestMethod(Revision value)
+                {
+                    return -value;
+                }
+            }
+            """));
+
+        StringAssert.Contains(exception.Message, "requires an explicit whitelist/ECMAScript mapping", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_BaseFieldAccess_RejectsPrototypeUnsafeStateProjection()
+    {
+        var exception = Assert.Throws<OperationTransformationException>(() => VisitBlock(
+            """
+            class BaseRelease
+            {
+                protected int Revision;
+            }
+
+            class Release : BaseRelease
+            {
+                int TestMethod()
+                {
+                    return base.Revision;
+                }
+            }
+            """));
+
+        StringAssert.Contains(exception.Message, "Base field access", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_DefaultUnsupportedValueType_RejectsInventedJavaScriptRepresentation()
+    {
+        var exception = Assert.Throws<OperationTransformationException>(() => VisitBlock(
+            """
+            struct RevisionToken
+            {
+                public int Value;
+            }
+
+            static class TestClass
+            {
+                static RevisionToken TestMethod()
+                {
+                    return default;
+                }
+            }
+            """));
+
+        StringAssert.Contains(exception.Message, "cannot be used for default value", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalLegacyUnionProjection_RejectsTheUnownedRuntimeProtocol()
+    {
+        var block = GetExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static string? TestMethod(LegacyRuntimeUnion value)
+                {
+                    return value.AsString;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "External member 'ExternalContracts.LegacyRuntimeUnion.AsString.get' is not supported", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "property access", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalLegacyUnionProjectionPattern_RejectsTheUnownedRuntimeProtocol()
+    {
+        var block = GetExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static bool TestMethod(LegacyRuntimeUnion value)
+                {
+                    return value is { AsString: "release" };
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "External member 'ExternalContracts.LegacyRuntimeUnion.AsString.get' is not supported", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "pattern property access", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalMarkedGenericStaticHost_UsesTheDeclaredRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return RuntimeGeneric<string>.Revision;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "RuntimeGeneric.revision", StringComparison.OrdinalIgnoreCase);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalUnmarkedSelfTypedGenericStaticHost_RejectsAnUnboundRuntimeConstructor()
+    {
+        var block = GetExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return PlainRuntime.Revision;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "External type 'ExternalContracts.PlainRuntime' is not supported", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "field access", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalMarkedSelfTypedGenericStaticHost_RecoversTheConcreteRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using System;
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    Func<int> readRevision = MarkedRuntime.ReadRevision;
+                    return MarkedRuntime.Revision + MarkedRuntime.RetryCount + readRevision();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "MarkedRuntime.revision", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "MarkedRuntime.retryCount", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "MarkedRuntime.readRevision", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("GenericRuntime", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_ExternalOpenGenericStaticHost_UsesTheErasedGenericRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod<T>()
+                {
+                    return RuntimeGeneric<T>.Revision;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "RuntimeGeneric.revision", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("<", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_UnmarkedSelfTypedGenericStaticHost_RejectsTheUnownedConstructedHost()
+    {
+        var block = GetExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return GenericRuntime<PlainRuntime>.Revision;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "External type 'ExternalContracts.GenericRuntime<TSelf>' is not supported", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "field access", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_MarkedGenericStaticHostWithInheritedSelfMarker_UsesTheConcreteRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return MarkedGenericRuntime<PlainMarkedRuntime>.Revision;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "PlainMarkedRuntime.revision", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("MarkedGenericRuntime", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_GenericStaticHostWithOrdinaryConstraint_UsesTheErasedDeclaredRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return ConstraintRuntime<int>.Revision;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "ConstraintRuntime.revision", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("<", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_MarkedInheritedStaticPropertyAndMethod_UseTheConcreteRuntimeConstructor()
+    {
+        var script = VisitExternalBlock(
+            """
+            using ExternalContracts;
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return MarkedRuntime.RetryCount + MarkedRuntime.ReadRevision();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "MarkedRuntime.retryCount", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "MarkedRuntime.readRevision()", StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("GenericRuntime", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
     private static string VisitBlock(string source)
     {
         var block = GetBlock(source);
@@ -793,7 +1485,21 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         return script;
     }
 
+    private static string VisitExternalBlock(string source)
+    {
+        var block = GetExternalBlock(source);
+        var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+        Assert.IsNotNull(script);
+        return script;
+    }
+
     private static IBlockOperation GetBlock(string source)
+        => GetBlock(source, []);
+
+    private static IBlockOperation GetExternalBlock(string source)
+        => GetBlock(source, [CreateExternalContractsReference()]);
+
+    private static IBlockOperation GetBlock(string source, ImmutableArray<MetadataReference> additionalReferences)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             source,
@@ -804,7 +1510,8 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+                .AddRange(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -816,6 +1523,91 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
             .Single(static candidate => candidate.Identifier.ValueText == "TestMethod");
         return Assert.IsInstanceOfType<IBlockOperation>(
             compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
+    }
+
+    private static MetadataReference CreateExternalContractsReference()
+    {
+        const string source = """
+            using ECMAScript;
+
+            namespace System.Runtime.CompilerServices
+            {
+                public interface IUnion
+                {
+                    object? Value { get; }
+                }
+            }
+
+            namespace ExternalContracts
+            {
+                [ECMAScript]
+                public readonly struct LegacyRuntimeUnion : System.Runtime.CompilerServices.IUnion
+                {
+                    public string? AsString => default;
+
+                    public object? Value => default;
+                }
+
+                [ECMAScript]
+                public class RuntimeGeneric<T>
+                {
+                    public static int Revision;
+                }
+
+                [ECMAScript]
+                public abstract class MarkedGenericRuntime<TSelf>
+                    where TSelf : MarkedGenericRuntime<TSelf>
+                {
+                    public static int Revision;
+                }
+
+                public sealed class PlainMarkedRuntime : MarkedGenericRuntime<PlainMarkedRuntime>
+                {
+                }
+
+                [ECMAScript]
+                public class ConstraintRuntime<T>
+                    where T : System.IComparable<T>
+                {
+                    public static int Revision;
+                }
+
+                public abstract class GenericRuntime<TSelf>
+                    where TSelf : GenericRuntime<TSelf>
+                {
+                    public static int Revision;
+
+                    public static int RetryCount { get; set; }
+
+                    public static int ReadRevision() => Revision;
+                }
+
+                public sealed class PlainRuntime : GenericRuntime<PlainRuntime>
+                {
+                }
+
+                [ECMAScript]
+                public sealed class MarkedRuntime : GenericRuntime<MarkedRuntime>
+                {
+                }
+            }
+            """;
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            source,
+            TestMetadataReferences.PreviewParseOptions,
+            path: "ExternalContracts.cs");
+        var compilation = CSharpCompilation.Create(
+            "ExternalContracts_" + Guid.NewGuid().ToString("N"),
+            [syntaxTree],
+            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var image = new MemoryStream();
+        var emitResult = compilation.Emit(image);
+        Assert.IsTrue(
+            emitResult.Success,
+            string.Join(Environment.NewLine, emitResult.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+        return MetadataReference.CreateFromImage(ImmutableArray.CreateRange(image.ToArray()));
     }
 
     private static int CountOccurrences(string value, string fragment)

@@ -14731,12 +14731,6 @@ export function create() {{
                     public JazorAttribute(int op, string member) { }
                 }
 
-                [AttributeUsage(AttributeTargets.Method)]
-                public sealed class Jazor : Attribute
-                {
-                    public Jazor(int op, string member) { }
-                }
-
                 public static class RuntimeModule
                 {
                     [JazorAttribute(3, "static string.Compare(string, string)")]
@@ -14757,8 +14751,8 @@ export function create() {{
                     [JazorAttribute(3, "")]
                     public static int EmptyMember() => 0;
 
-                    [Jazor(2, "legacyAliasOnly")]
-                    public static int LegacyAliasOwned() => 0;
+                    [JazorAttribute(3, null)]
+                    public static int NullMember() => 0;
 
                     [Obsolete("documentation only")]
                     public static int Helper() => 0;

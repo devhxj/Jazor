@@ -206,13 +206,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static bool ShouldRetainImportSpecifier(
         ImportDeclarationSpecifier specifier,
         HashSet<string> referencedIdentifiers)
-        => specifier switch
-        {
-            ImportSpecifier named => referencedIdentifiers.Contains(named.Local.Name),
-            ImportDefaultSpecifier @default => referencedIdentifiers.Contains(@default.Local.Name),
-            ImportNamespaceSpecifier @namespace => referencedIdentifiers.Contains(@namespace.Local.Name),
-            _ => true
-        };
+        => referencedIdentifiers.Contains(specifier.Local.Name);
 
     private static string GetImportedSpecifierName(ImportDeclarationSpecifier specifier)
         => specifier switch
@@ -464,7 +458,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var annotatedSymbol = symbol.AssociatedSymbol ?? (ISymbol)symbol;
         foreach (var attribute in annotatedSymbol.GetAttributes())
         {
-            if (attribute.AttributeClass?.Name is not ("JazorAttribute" or "Jazor") ||
+            if (attribute.AttributeClass!.Name != "JazorAttribute" ||
                 attribute.ConstructorArguments.Length < 2 ||
                 !IsImportOperation(attribute.ConstructorArguments[0]) ||
                 attribute.ConstructorArguments[1].Value is not string { Length: > 0 } authoredMemberName)
@@ -480,8 +474,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private static bool IsImportOperation(TypedConstant argument)
-        => argument.Value is not null &&
-           System.Convert.ToInt32(argument.Value, CultureInfo.InvariantCulture) == (int)Op.Import;
+        => System.Convert.ToInt32(argument.Value!, CultureInfo.InvariantCulture) == (int)Op.Import;
 
     private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {

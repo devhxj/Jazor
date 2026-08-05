@@ -27,8 +27,8 @@ public partial class SemanticWalker
 	public override Node? VisitInterpolatedStringText(IInterpolatedStringTextOperation operation, SenseArgument argument)
 	{
 		// 插值字符串中的文本部分转换为字符串字面量
-		var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
-		return CreateStringLiteral(text);
+		// Roslyn binds every interpolation text fragment as a non-null string literal.
+		return CreateStringLiteral((string)operation.Text.ConstantValue.Value!);
 	}
 
 	/// <summary>
@@ -100,9 +100,8 @@ public partial class SemanticWalker
 		if (operation.Expression.ConstantValue is { HasValue: true, Value: null })
 			return null;
 
-		return operation.Expression.Type ?? HandleTransformationFailure<ITypeSymbol>(
-			operation,
-			"Interpolated value is missing a bound static type.");
+		// The null literal case above is the only typeless interpolation expression.
+		return operation.Expression.Type!;
 	}
 
 	private Expression BuildFormattedInterpolationValue(
@@ -120,12 +119,13 @@ public partial class SemanticWalker
 				$"Interpolated enum value '{valueType.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an enum text runtime contract.");
 
 		RejectUnsupportedInterpolationRuntimeType(operation, valueType);
+		var namedValueType = (INamedTypeSymbol)valueType;
 		if (operation.FormatString is not null)
 		{
 			if (TryBuildNumericHexInterpolation(operation, valueType, value, argument, out var numericHex))
 				return numericHex;
 
-			var formattableMethod = FindFormattableToStringMethod(valueType);
+			var formattableMethod = FindFormattableToStringMethod(namedValueType);
 			if (formattableMethod is not null)
 			{
 				EnsureInterpolationFormatContract(operation, formattableMethod);
@@ -142,10 +142,7 @@ public partial class SemanticWalker
 			}
 		}
 
-		var toStringMethod = FindParameterlessToStringMethod(valueType)
-			?? HandleTransformationFailure<IMethodSymbol>(
-				operation,
-				$"Interpolated value type '{valueType.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not expose a callable ToString() contract.");
+		var toStringMethod = FindParameterlessToStringMethod(namedValueType);
 		EnsureInterpolationToStringContract(operation, valueType, toStringMethod);
 		return BuildMethodCallExpression(
 			operation,
@@ -266,9 +263,11 @@ public partial class SemanticWalker
 			? nullable.TypeArguments[0]
 			: type;
 
-	private static IMethodSymbol? FindParameterlessToStringMethod(ITypeSymbol type)
+	private static IMethodSymbol FindParameterlessToStringMethod(INamedTypeSymbol type)
 	{
-		for (var current = type as INamedTypeSymbol; current is not null; current = current.BaseType)
+		// Every named type that reaches this path is neither an interface nor an error carrier.
+		// Its base chain therefore reaches System.Object, which declares the final ToString contract.
+		for (var current = type; ; current = current.BaseType!)
 		{
 			var method = current.GetMembers(nameof(ToString))
 				.OfType<IMethodSymbol>()
@@ -277,23 +276,19 @@ public partial class SemanticWalker
 				return method;
 		}
 
-		return null;
 	}
 
-	private static IMethodSymbol? FindFormattableToStringMethod(ITypeSymbol type)
+	private static IMethodSymbol? FindFormattableToStringMethod(INamedTypeSymbol type)
 	{
-		if (type is not INamedTypeSymbol namedType)
-			return null;
-
-		var formattable = namedType.AllInterfaces.FirstOrDefault(static candidate =>
-			IsSystemInterface(candidate, "IFormattable"));
+		var formattable = type.AllInterfaces.FirstOrDefault(static candidate =>
+			IsSystemFormattableInterface(candidate));
 		if (formattable is null)
 			return null;
 
 		var interfaceMethod = formattable.GetMembers(nameof(ToString))
 			.OfType<IMethodSymbol>()
 			.Single();
-		return namedType.FindImplementationForInterfaceMember(interfaceMethod) as IMethodSymbol;
+		return type.FindImplementationForInterfaceMember(interfaceMethod) as IMethodSymbol;
 	}
 
 	private void EnsureInterpolationFormatContract(IInterpolationOperation operation, IMethodSymbol method)
@@ -306,7 +301,7 @@ public partial class SemanticWalker
 
 		HandleTransformationFailure<Node>(
 			operation,
-			$"Interpolated format '{operation.FormatString?.Syntax}' requires a supported CLR mapping for '{method.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}'.");
+			$"Interpolated format '{operation.FormatString!.Syntax}' requires a supported CLR mapping for '{method.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}'.");
 	}
 
 	private void EnsureInterpolationToStringContract(
@@ -327,16 +322,17 @@ public partial class SemanticWalker
 			$"Interpolated source value type '{valueType.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not expose a stable string conversion contract. Override ToString() or use an explicit mapped text projection.");
 	}
 
-	private static bool IsSystemInterface(ITypeSymbol type, string name)
-		=> type.TypeKind == TypeKind.Interface &&
-			string.Equals(type.Name, name, StringComparison.Ordinal) &&
-			string.Equals(type.ContainingNamespace?.ToDisplayString(), "System", StringComparison.Ordinal);
+	private static bool IsSystemFormattableInterface(ITypeSymbol type)
+		=> string.Equals(
+			type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat),
+			"System.IFormattable",
+			StringComparison.Ordinal);
 
 	private void RejectUnsupportedInterpolationRuntimeType(IInterpolationOperation operation, ITypeSymbol type)
 	{
 		if (type is ITypeParameterSymbol ||
 			type.SpecialType == SpecialType.System_Object ||
-			type.TypeKind is TypeKind.Interface or TypeKind.Delegate ||
+			type.TypeKind is TypeKind.Interface or TypeKind.Delegate or TypeKind.Dynamic ||
 			type.IsTupleType ||
 			type.IsAnonymousType ||
 			type is IArrayTypeSymbol)
@@ -373,8 +369,11 @@ public partial class SemanticWalker
 			{
 				case IInterpolatedStringTextOperation textOp:
 					// 遇到文本，直接添加为 quasi
-					var literal = textOp.Text as ILiteralOperation;
-					var cooked = literal?.ConstantValue.Value as string ?? "";
+					// Roslyn represents every bound interpolation text part as a string literal.
+					// Keeping that contract explicit avoids inventing an empty-text fallback for
+					// malformed operations that cannot come from a successful C# compilation.
+					var literal = (ILiteralOperation)textOp.Text;
+					var cooked = (string)literal.ConstantValue.Value!;
 					quasis.Add(new TemplateElement(
 						TemplateValue.From(cooked, cooked),
 						tail: false // tail 将在最后统一设置
@@ -418,7 +417,7 @@ public partial class SemanticWalker
 		// 优化：如果没有任何表达式，只有一个文本部分，返回更简单的 StringLiteral。
 		if (expressions.Count == 0 && quasis.Count == 1)
 		{
-			var cookedValue = quasis[0].Value.Cooked ?? "";
+			var cookedValue = quasis[0].Value.Cooked!;
 			// 对于测试兼容性，确保返回带引号的字符串字面量
 			return CreateStringLiteral(cookedValue);
 		}

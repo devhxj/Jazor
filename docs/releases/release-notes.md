@@ -5,7 +5,10 @@
 - Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
 - Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
 - Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
-- The compiler quality gate now verifies 10,192 genuine Roslyn `IOperation` scenarios at 98.73% line coverage and 95.06% branch coverage, exceeding its 10,000 / 98% / 94% release gate.
+- Compiler packages now use Acornima 1.7.0 while preserving the existing ESTree emission and parsing contracts.
+- Imports whose public name collides with a declared or reserved module binding now receive a stable generated alias, and inherited generic static members retain their concrete runtime host.
+- Interpolating `dynamic` values now reports the stable text-contract diagnostic instead of exposing an internal compiler exception.
+- The compiler quality gate now verifies 10,297 genuine Roslyn `IOperation` scenarios at 98.94% line coverage and 96.01% branch coverage, satisfying its 10,000 / 98% / 96% release gate.
 
 ## 2026-08-04
 

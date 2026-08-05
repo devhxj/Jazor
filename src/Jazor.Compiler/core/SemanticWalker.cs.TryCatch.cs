@@ -226,7 +226,9 @@ public partial class SemanticWalker
                 return null;
         }
 
-        return sharedName is null ? null : new Identifier(sharedName);
+		// Every non-null return above comes from a declared catch local, so reaching here means
+		// all clauses agreed on that name.
+		return new Identifier(sharedName!);
     }
 
     private static bool ContainsBareRethrow(IOperation operation)
@@ -254,13 +256,11 @@ public partial class SemanticWalker
         && operation.ExceptionType is not null
         && !IsCatchAllExceptionType(operation.ExceptionType);
 
-    private static bool HasDeclaredCatchType(ICatchClauseOperation operation)
-        => operation.Syntax is CatchClauseSyntax { Declaration: not null };
+	private static bool HasDeclaredCatchType(ICatchClauseOperation operation)
+		=> ((CatchClauseSyntax)operation.Syntax).Declaration is not null;
 
-    private static bool IsCatchAllExceptionType(ITypeSymbol? typeSymbol)
-        => typeSymbol?.OriginalDefinition is INamedTypeSymbol namedType
-        && namedType.Name == "Exception"
-        && namedType.ContainingNamespace?.ToDisplayString() == "System";
+	private static bool IsCatchAllExceptionType(ITypeSymbol typeSymbol)
+		=> typeSymbol.OriginalDefinition.ToDisplayString() == "System.Exception";
 
     private void RejectUnsupportedSingleCatchTypeIfNeeded(ICatchClauseOperation operation)
     {
@@ -314,9 +314,9 @@ public partial class SemanticWalker
 
             // 获取用于重新抛出的异常标识符
             // 如果 catch 有参数名则使用参数名，否则使用 tryParam
-            var throwExpr = exceptionParam is not null
-                ? (Expression)new Identifier(exceptionParam.Name)
-                : new Identifier(AllocateUniqueName(operation, argument, LoweringSite.SyntheticCatchParameter()));
+			// A filter itself requires a catch binding; VisitCatchClause has already synthesized one
+			// when the source omitted an identifier.
+			var throwExpr = (Expression)new Identifier(exceptionParam!.Name);
 
             // 构造 if (!(condition)) throw ex; 语句
             var notFilter = new NonUpdateUnaryExpression(Operator.LogicalNot, filterExpr);

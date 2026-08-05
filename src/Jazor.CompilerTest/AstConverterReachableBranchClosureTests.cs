@@ -1,5 +1,7 @@
 using Acornima;
+using Acornima.Ast;
 using Jazor.Compiler;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,6 +12,582 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class AstConverterReachableBranchClosureTests
 {
+    [TestMethod]
+    public async Task Convert_NonBindingExportNames_UseSourceBindingsAndPreserveConfiguredExports()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("release")]
+            public static class TestModule
+            {
+                [ECMAScriptName("release-count")]
+                public static int ReleaseCount = 1;
+
+                [ECMAScriptName("release-work")]
+                public static int ReleaseWork() => ReleaseCount + 1;
+
+                [ECMAScriptName("release-worker")]
+                public sealed class ReleaseWorker
+                {
+                }
+
+                public static int Run() => ReleaseWork();
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "export { ReleaseCount as \"release-count\" };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export { ReleaseWork as \"release-work\" };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export { ReleaseWorker as \"release-worker\" };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return ReleaseWork();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_NonBindingAccessorName_UsesThePropertySourceNameForItsLocalBinding()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("release")]
+            public static class TestModule
+            {
+                public static int ReleaseValue
+                {
+                    [ECMAScriptName("release-value")]
+                    get => 5;
+                }
+
+                public static int Read() => ReleaseValue;
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "function ReleaseValue()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return ReleaseValue();", StringComparison.Ordinal);
+        Assert.DoesNotContain("function release-value", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_AutoPropertyBackingFieldNameCollision_UsesAStablePrivateBinding()
+    {
+        var initialFixture = CompileModule(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("release")]
+            public static class TestModule
+            {
+                public static int ReleaseValue { get; } = 5;
+            }
+            """);
+        var property = initialFixture.Module.GetMembers("ReleaseValue").OfType<IPropertySymbol>().Single();
+        var backingFieldName = Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat));
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+
+            [ECMAScriptModule("release")]
+            public static class TestModule
+            {
+                [ECMAScriptName("{{backingFieldName}}")]
+                public static int Collision() => 1;
+
+                public static int ReleaseValue { get; } = 5;
+
+                public static int Read() => Collision() + ReleaseValue;
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"function {backingFieldName}()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function get_ReleaseValue()", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return {backingFieldName}() + get_ReleaseValue();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ImportAliasCollidingWithConfiguredModuleBindings_AllocatesTheFirstAvailableStableSuffix()
+    {
+        var aliasBase = $"i${Format.HashName("runtime\0make").TrimStart('_')}";
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    [ECMAScriptName("make")]
+                    public static int LocalMake() => 2;
+
+                    [ECMAScriptName("{{aliasBase}}")]
+                    public static int ReservedGeneratedAlias() => 3;
+
+                    [ECMAScriptName("{{aliasBase}}1")]
+                    public static int ReservedGeneratedAliasSuffix() => 4;
+
+                    public static int Combine() => LocalMake() + Runtime.Make();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        var specifier = import.Specifiers.OfType<ImportSpecifier>().Single();
+        Assert.AreEqual("make", ((Identifier)specifier.Imported).Name);
+        Assert.AreEqual(aliasBase + "2", specifier.Local.Name);
+
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"import {{ make as {aliasBase}2 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return make() + {aliasBase}2();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ReservedExternalExportName_UsesAnAliasedImportBinding()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    [ECMAScriptName("class")]
+                    public static int Make() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    public static int Read() => Runtime.Make();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        var specifier = import.Specifiers.OfType<ImportSpecifier>().Single();
+        Assert.AreEqual("class", ((Identifier)specifier.Imported).Name);
+        Assert.AreNotEqual("class", specifier.Local.Name);
+
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"import {{ class as {specifier.Local.Name} }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return {specifier.Local.Name}();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ImportAliasOccupiedByAnotherExternalBinding_AllocatesAStableSuffix()
+    {
+        var aliasBase = $"i${Format.HashName("runtime\0make").TrimStart('_')}";
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+            using AliasOwner = Demo.AliasOwnerModule;
+            using Left = Demo.LeftModule;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("alias-owner")]
+                public static class AliasOwnerModule
+                {
+                    [ECMAScriptName("{{aliasBase}}")]
+                    public static int Read() => 1;
+                }
+
+                [ECMAScriptModule("left")]
+                public static class LeftModule
+                {
+                    public static int Make() => 2;
+                }
+
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    public static int Make() => 3;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    public static int Combine() => AliasOwner.Read() + Left.Make() + Runtime.Make();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var imports = module.Body.OfType<ImportDeclaration>().ToArray();
+        var occupiedBinding = imports
+            .SelectMany(static import => import.Specifiers.OfType<ImportSpecifier>())
+            .Single(specifier => specifier.Imported is Identifier identifier && identifier.Name == aliasBase);
+        var runtimeMake = imports
+            .Single(import => ((StringLiteral)import.Source).Value == "runtime")
+            .Specifiers
+            .OfType<ImportSpecifier>()
+            .Single();
+        Assert.AreEqual(aliasBase, occupiedBinding.Local.Name);
+        Assert.AreEqual(aliasBase + "1", runtimeMake.Local.Name);
+
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"import {{ make as {aliasBase}1 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return {aliasBase}() + make() + {aliasBase}1();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_StringExportImportAliasCollidingWithConfiguredBindings_UsesTheFirstFreeStableSuffix()
+    {
+        var aliasBase = $"i${Format.HashName("runtime\0release-work").TrimStart('_')}";
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    [ECMAScriptName("release-work")]
+                    public static int ReleaseWork() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    [ECMAScriptName("{{aliasBase}}")]
+                    public static int ReservedGeneratedAlias() => 2;
+
+                    [ECMAScriptName("{{aliasBase}}1")]
+                    public static int ReservedGeneratedAliasSuffix() => 3;
+
+                    public static int Read() => Runtime.ReleaseWork();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var specifier = module.Body
+            .OfType<ImportDeclaration>()
+            .Single()
+            .Specifiers
+            .OfType<ImportSpecifier>()
+            .Single();
+        Assert.IsInstanceOfType<StringLiteral>(specifier.Imported);
+        Assert.AreEqual("release-work", ((StringLiteral)specifier.Imported).Value);
+        Assert.AreEqual(aliasBase + "2", specifier.Local.Name);
+
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"import {{ \"release-work\" as {aliasBase}2 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return {aliasBase}2();", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ImportedMemberShadowedByLocalAndParameterBindings_UsesOneStableAliasAcrossMethods()
+    {
+        var alias = $"i${Format.HashName("runtime\0releaseWork").TrimStart('_')}";
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    public static int ReleaseWork() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    public static int FromLocal()
+                    {
+                        var releaseWork = 2;
+                        return releaseWork + Runtime.ReleaseWork();
+                    }
+
+                    public static int FromParameter(int releaseWork)
+                        => releaseWork + Runtime.ReleaseWork();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var specifier = module.Body
+            .OfType<ImportDeclaration>()
+            .Single()
+            .Specifiers
+            .OfType<ImportSpecifier>()
+            .Single();
+        Assert.AreEqual("releaseWork", ((Identifier)specifier.Imported).Name);
+        Assert.AreEqual(alias, specifier.Local.Name);
+
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, $"import {{ releaseWork as {alias} }} from \"runtime\";", StringComparison.Ordinal);
+        Assert.AreEqual(2, CountOccurrences(script, $"+ {alias}()"), script);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_DefaultExportMemberImport_IsRejectedBeforeAliasAllocation()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+            using Runtime = Demo.RuntimeModule;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("runtime")]
+                public static class RuntimeModule
+                {
+                    [ECMAScriptName("default")]
+                    public static int DefaultExport() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    public static int Read() => Runtime.DefaultExport();
+                }
+            }
+            """);
+
+        var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() =>
+            new AstConverter(fixture.Module, fixture.SemanticModel).Convert());
+
+        StringAssert.Contains(exception.Message, "does not support default export", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "Demo.RuntimeModule", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_CurrentModuleStringExportWithoutLocalBinding_RejectsTheInvalidSelfImport()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("consumer")]
+                public static class SharedModuleMember
+                {
+                    [ECMAScriptName("release-work")]
+                    public static int Make() => 1;
+                }
+
+                [ECMAScriptModule("consumer")]
+                public static class TestModule
+                {
+                    public static int Read() => SharedModuleMember.Make();
+                }
+            }
+            """);
+
+        var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() =>
+            new AstConverter(fixture.Module, fixture.SemanticModel).Convert());
+
+        StringAssert.Contains(exception.Message, "Import 'release-work'", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "current module 'consumer'", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClrErrorConstructors_PreserveNativeTypeAndImportedCauseProtocol()
+    {
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public static Exception WithCause(string message, Exception cause)
+                    => new Exception(message, cause);
+
+                public static void Require(string? value)
+                {
+                    if (value == null)
+                        throw new ArgumentNullException(nameof(value));
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "System/ExceptionModule.js", StringComparison.Ordinal);
+        StringAssert.Contains(script, "new TypeError(\"value\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_EcmascriptTypeErrorDerivedFromException_UsesTheNativeConstructorFallback()
+    {
+        var fixture = CompileModule(
+            """
+            using System;
+            using ECMAScript;
+
+            namespace Hosts
+            {
+                [ECMAScript]
+                public sealed class TypeError : Exception
+                {
+                    public TypeError(string message) : base(message) { }
+                }
+            }
+
+            public static class TestModule
+            {
+                public static Exception Create(string message) => new Hosts.TypeError(message);
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "return new TypeError(message);", StringComparison.Ordinal);
+        Assert.DoesNotContain("Hosts.TypeError", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_EcmascriptErrorDerivedFromException_UsesTheNativeConstructorFallback()
+    {
+        var fixture = CompileModule(
+            """
+            using System;
+            using ECMAScript;
+
+            namespace Hosts
+            {
+                [ECMAScript]
+                public sealed class Error : Exception
+                {
+                    public Error(string message) : base(message) { }
+                }
+            }
+
+            public static class TestModule
+            {
+                public static Exception Create(string message) => new Hosts.Error(message);
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "return new Error(message);", StringComparison.Ordinal);
+        Assert.DoesNotContain("Hosts.Error", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_EcmascriptErrorNameWithoutExceptionBase_UsesTheDeclaredHostConstructor()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            namespace Hosts
+            {
+                [ECMAScript]
+                public sealed class Error
+                {
+                    public Error(string message) { }
+                }
+            }
+
+            public static class TestModule
+            {
+                public static Hosts.Error Create(string message) => new Hosts.Error(message);
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "return new Error(message);", StringComparison.Ordinal);
+        Assert.DoesNotContain("Hosts.Error", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_GenericRuntimeHostWithNonSelfConstraint_DoesNotInventAConcreteRuntimeType()
+    {
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            namespace Hosts
+            {
+                [ECMAScript]
+                public static class GenericHost<TBase, TValue>
+                    where TValue : TBase
+                {
+                    public static int Count => 1;
+                }
+            }
+
+            public static class TestModule
+            {
+                public static int Read() => Hosts.GenericHost<object, string>.Count;
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "GenericHost.count", StringComparison.Ordinal);
+        Assert.DoesNotContain("String.count", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
     [TestMethod]
     public void ConvertRuntimeClass_ExpressionBodiedConstructorAndEmptyMethod_EmitStableBodies()
     {
@@ -83,6 +661,63 @@ public sealed class AstConverterReachableBranchClosureTests
             converter.ConvertRuntimeClass(fixture.GetType("Derived")));
 
         StringAssert.Contains(exception.Message, "ref/out constructor initializer arguments", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_TupleDeconstructionIntoMemberClassStaticFields_UsesTheDeclaredClassBinding()
+    {
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Counters
+                {
+                    public static int Left;
+                    public static int Right;
+                }
+
+                public static void Update((int Left, int Right) value)
+                {
+                    (Counters.Left, Counters.Right) = value;
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "class Counters", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Counters.", StringComparison.Ordinal);
+        Assert.DoesNotContain("let Counters", script, StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_MemberClassFieldLikeEvent_SkipsTheCompilerBackingFieldAndEmitsTheEventProtocol()
+    {
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public sealed class ReleaseNotice
+                {
+                    public event Action? Published;
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+        StringAssert.Contains(script, "class ReleaseNotice", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$event_store_", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$event_add_", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$event_remove_", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
     }
 
     [TestMethod]
@@ -349,6 +984,46 @@ public sealed class AstConverterReachableBranchClosureTests
         StringAssert.Contains(exception.Message, "static constructor", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public async Task Convert_CurrentModuleIndexerCompoundAssignment_UsesSingleEvaluationGetterSetterProtocol()
+    {
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class ReleaseSlots
+                {
+                    public int this[int index]
+                    {
+                        get => index;
+                        set { }
+                    }
+                }
+
+                public static ReleaseSlots GetSlots() => new();
+
+                public static int GetIndex() => 1;
+
+                public static int GetDelta() => 2;
+
+                public static void Update()
+                {
+                    GetSlots()[GetIndex()] |= GetDelta();
+                }
+            }
+            """);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+
+        Assert.AreEqual(1, CountOccurrences(script, "= getSlots()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "= getIndex()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "| getDelta()"), script);
+        StringAssert.Contains(script, "|", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
     private static ModuleFixture CompileModule(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
@@ -358,7 +1033,8 @@ public sealed class AstConverterReachableBranchClosureTests
         var compilation = CSharpCompilation.Create(
             "AstConverterReachableBranchClosure_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11,
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -373,6 +1049,14 @@ public sealed class AstConverterReachableBranchClosureTests
             .OfType<INamedTypeSymbol>()
             .Single();
         return new ModuleFixture(module, semanticModel);
+    }
+
+    private static int CountOccurrences(string value, string fragment)
+    {
+        var count = 0;
+        for (var offset = 0; (offset = value.IndexOf(fragment, offset, StringComparison.Ordinal)) >= 0; offset += fragment.Length)
+            count++;
+        return count;
     }
 
     private sealed record ModuleFixture(INamedTypeSymbol Module, SemanticModel SemanticModel)

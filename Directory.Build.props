@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <AcornimaVersion>1.6.2</AcornimaVersion>
+    <AcornimaVersion>1.7.0</AcornimaVersion>
     <DenoHostVersion>2.9.4</DenoHostVersion>
     <NetPackVersion>0.6.0</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>

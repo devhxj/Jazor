@@ -1129,7 +1129,7 @@ public partial class SemanticWalker
 			$"unsupported dynamic object key in {usage} for '{hostDisplay}'. Object-literal host types only support compile-time string literal keys, plus computed Symbol keys when the indexer/Add contract explicitly declares ECMAScript.Symbol.");
 	}
 
-	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol hostType)
 	{
 		var validationSymbol = symbol switch
 		{
@@ -1147,7 +1147,7 @@ public partial class SemanticWalker
 		return GetCurrentModuleDeclaredOrConfigName(symbol);
 	}
 
-	private string ResolveInitializerAccessMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+	private string ResolveInitializerAccessMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol hostType)
 	{
 		var validationSymbol = symbol switch
 		{

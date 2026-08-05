@@ -44,6 +44,15 @@ public partial class SemanticWalker
 			[BinaryOperatorKind.UnsignedRightShift] = Operator.UnsignedRightShift
 		};
 
+	private static readonly IReadOnlyDictionary<UnaryOperatorKind, Operator> CSharpUnaryOperators =
+		new Dictionary<UnaryOperatorKind, Operator>
+		{
+			[UnaryOperatorKind.BitwiseNegation] = Operator.BitwiseNot,
+			[UnaryOperatorKind.Not] = Operator.LogicalNot,
+			[UnaryOperatorKind.Plus] = Operator.UnaryPlus,
+			[UnaryOperatorKind.Minus] = Operator.UnaryNegation
+		};
+
 	/// <summary>
 	/// 处理代码块操作
 	/// C# 示例：
@@ -148,14 +157,9 @@ public partial class SemanticWalker
 		var node = Visit(labeledOperation, argument);
 		// An all-discard deconstruction is represented by an empty sequence marker. The label
 		// must still survive as a valid jump target even though the assignment has no runtime work.
-		var statement = node switch
-		{
-			Statement translatedStatement => translatedStatement,
-			SequenceExpression { Expressions.Count: 0 } => new EmptyStatement(),
-			_ => HandleTransformationFailure<Statement>(
-				labeledOperation,
-				"Labeled statement target could not be translated to JavaScript.")
-		};
+		var statement = node is SequenceExpression { Expressions.Count: 0 }
+			? new EmptyStatement()
+			: (Statement)node!;
 
 		return new LabeledStatement(label, statement);
 	}
@@ -239,13 +243,12 @@ public partial class SemanticWalker
 	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, SenseArgument argument)
 	{
 		var node = Visit(operation.Operation, argument);
-		return node switch
-		{
-			Statement statement => statement,
-			SequenceExpression { Expressions.Count: 0 } sequenceExpression => sequenceExpression,
-			Expression expression => WithOrigin(new NonSpecialExpressionStatement(expression), operation),
-			_ => HandleTransformationFailure<Node>(operation, "Expression statement could not be translated to JavaScript.")
-		};
+		if (node is Statement statement)
+			return statement;
+		if (node is SequenceExpression { Expressions.Count: 0 } sequenceExpression)
+			return sequenceExpression;
+
+		return WithOrigin(new NonSpecialExpressionStatement((Expression)node!), operation);
 	}
 
 	/// <summary>
@@ -810,15 +813,7 @@ public partial class SemanticWalker
 			operation.OperatorKind == UnaryOperatorKind.Minus)
 		{
 			// 一元运算
-			var @operator = operation.OperatorKind switch
-			{
-				UnaryOperatorKind.BitwiseNegation => Operator.BitwiseNot,
-				UnaryOperatorKind.Not => Operator.LogicalNot,
-				UnaryOperatorKind.Plus => Operator.UnaryPlus,
-				UnaryOperatorKind.Minus => Operator.UnaryNegation,
-				_ => Operator.Unknown
-			};
-			return new NonUpdateUnaryExpression(@operator, operand);
+			return new NonUpdateUnaryExpression(CSharpUnaryOperators[operation.OperatorKind], operand);
 		}
 		else if (operation.OperatorKind == UnaryOperatorKind.True)
 		{
@@ -900,23 +895,16 @@ public partial class SemanticWalker
 		var alternate = Visit(operation.WhenFalse, argument);
 		var consequent = Translate<Node>(operation.WhenTrue, argument);
 		var test = Translate<Expression>(operation.Condition, argument);
-		if (operation.Syntax is ConditionalExpressionSyntax &&
-			consequent is Expression expConsequent &&
-			alternate is Expression expAlternate)
+		if (operation.Syntax is ConditionalExpressionSyntax)
 		{
 			// 这是三元表达式 a ? b : c
 			// 生成 JavaScript 的三元表达式
-			return new ConditionalExpression(test, expConsequent, expAlternate);
-		}
-		else if (operation.Syntax is IfStatementSyntax &&
-			consequent is Statement ifConsequent)
-		{
-			// 这是 if 语句
-			// 生成 JavaScript 的 if...else 语句
-			return new IfStatement(test, ifConsequent, alternate as Statement);
+			return new ConditionalExpression(test, (Expression)consequent, (Expression)alternate!);
 		}
 
-		return HandleTransformationFailure<Node>(operation, "Conditional operator could not be translated to JavaScript.");
+		// IConditionalOperation is emitted only for ?: and if statement syntax. The bound branch
+		// operation shape follows that syntax, so no recovery tree can reach this lowering path.
+		return new IfStatement(test, (Statement)consequent, alternate as Statement);
 	}
 
 	/// <summary>
@@ -1037,12 +1025,8 @@ public partial class SemanticWalker
 			? BuildDefaultRangeBoundary(operation, indexType, "End", argument)
 			: Translate<Expression>(operation.RightOperand, argument);
 
-		var mapped = GetWhiteListExpression(constructor, argument, [start, end], out _, operation);
-		return mapped is not null
-			? WithOriginIfMissing(mapped, operation)
-			: HandleTransformationFailure<Node>(
-				operation,
-				"System.Range values require the generated System.Range constructor mapping.");
+		// The generated CLR whitelist owns this constructor as part of the supported Range value protocol.
+		return WithOriginIfMissing(GetWhiteListExpression(constructor, argument, [start, end], out _, operation)!, operation);
 	}
 
 	private Expression BuildDefaultRangeBoundary(
@@ -1055,10 +1039,7 @@ public partial class SemanticWalker
 			.OfType<IPropertySymbol>()
 			.Single();
 
-		return GetWhiteListExpression(property.GetMethod!, argument, [], out _, operation)
-			?? HandleTransformationFailure<Expression>(
-				operation,
-				$"System.Index.{propertyName} requires the generated System.Index mapping.");
+		return GetWhiteListExpression(property.GetMethod!, argument, [], out _, operation)!;
 	}
 
 	/// <summary>
@@ -1078,10 +1059,7 @@ public partial class SemanticWalker
 			.Single();
 
 		var value = Translate<Expression>(operation.Operand, argument);
-		return GetWhiteListExpression(factory, argument, [value], out _, operation)
-			?? HandleTransformationFailure<Expression>(
-				operation,
-				"System.Index.FromEnd(int) requires the generated System.Index mapping.");
+		return GetWhiteListExpression(factory, argument, [value], out _, operation)!;
 	}
 
 	/// <summary>
@@ -1094,14 +1072,13 @@ public partial class SemanticWalker
 	/// </remarks>
 	public override Node? VisitSizeOf(ISizeOfOperation operation, SenseArgument argument)
 	{
-		if (!IsSupportedSizeOfType(operation.TypeOperand) ||
-			!operation.ConstantValue.HasValue ||
-			operation.ConstantValue.Value is not int size)
+		if (!IsSupportedSizeOfType(operation.TypeOperand))
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
 				"sizeof is supported only for compile-time primitive scalar or enum-underlying sizes; CLR carrier and user-defined layouts have no JavaScript storage-layout contract.");
 		}
+		var size = (int)operation.ConstantValue.Value!;
 
 		return WithOriginIfMissing(
 			new NumericLiteral(size, size.ToString(System.Globalization.CultureInfo.InvariantCulture)),

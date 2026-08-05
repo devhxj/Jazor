@@ -275,7 +275,546 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
         _ = new Parser().ParseScript("function verify(values, expected) " + script);
     }
 
-    private static string VisitBlock(string source)
+    [TestMethod]
+    public void Visit_TypedCatchClausesWithTheSameBindingName_HoistsOneSharedJavaScriptBinding()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseFailure : Exception
+            {
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(ReleaseFailure error, bool firstHandlerAccepts)
+                {
+                    try
+                    {
+                        throw error;
+                    }
+                    catch (ReleaseFailure failure) when (firstHandlerAccepts)
+                    {
+                        return 1;
+                    }
+                    catch (ReleaseFailure failure)
+                    {
+                        return failure.Message.Length;
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "failure", StringComparison.Ordinal);
+        StringAssert.Contains(script, "instanceof ReleaseFailure", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(error, firstHandlerAccepts) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_InterpolationOfInheritedSourceToString_UsesTheInheritedRuntimeContract()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            abstract class ReleaseIdentity
+            {
+                public override string ToString() => "release";
+            }
+
+            [ECMAScript]
+            sealed class ReleaseTag : ReleaseIdentity
+            {
+            }
+
+            static class TestClass
+            {
+                static string TestMethod(ReleaseTag tag)
+                {
+                    return $"tag:{tag}";
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, ".toString()", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(tag) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedTupleForEachDeconstruction_UsesRecursiveArrayPatterns()
+    {
+        var script = VisitBlock(
+            """
+            using System.Collections.Generic;
+
+            static class TestClass
+            {
+                static int TestMethod(IEnumerable<(int Left, (int First, int Second) Pair)> values)
+                {
+                    var total = 0;
+                    foreach (var (left, (first, second)) in values)
+                    {
+                        total += left + first + second;
+                    }
+
+                    return total;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "for (let { left: left, pair: { first: first, second: second } } of values)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_ForLoopWithExpressionInitializer_PreservesTheOrderedInitializerSequence()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(int maximum)
+                {
+                    var total = 0;
+                    var index = -1;
+                    for (total = 0, index = 0; index < maximum; index++)
+                    {
+                        total += index;
+                    }
+
+                    return total;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "for (total = 0, index = 0;", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(maximum) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_StaticFieldTupleDeconstruction_UsesTheBoundStaticRuntimeHost()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            static class ReleaseTotals
+            {
+                public static int Published;
+                public static int Queued;
+            }
+
+            static class TestClass
+            {
+                static void TestMethod()
+                {
+                    (ReleaseTotals.Published, ReleaseTotals.Queued) =
+                        (ReleaseTotals.Queued, ReleaseTotals.Published);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "ReleaseTotals.published", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseTotals.queued", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_RuntimeCollectionInitializer_UsesTheDeclaredAddMemberContract()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            [ECMAScript]
+            sealed class ReleaseLabels : IEnumerable<string>
+            {
+                public void Add(string label)
+                {
+                }
+
+                public IEnumerator<string> GetEnumerator() => throw null!;
+
+                IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            }
+
+            static class TestClass
+            {
+                static void TestMethod()
+                {
+                    var labels = new ReleaseLabels { "canary", "stable" };
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "new ReleaseLabels", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".add(\"canary\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".add(\"stable\")", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_SizeOfCarrierValue_RejectsAnInventedJavaScriptStorageLayout()
+    {
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            VisitBlock(
+                """
+                using System;
+
+                static class TestClass
+                {
+                    static unsafe int TestMethod()
+                    {
+                        return sizeof(Half);
+                    }
+                }
+                """,
+                allowUnsafe: true));
+
+        StringAssert.Contains(exception.Message, "sizeof is supported only", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ListPatternWithRangeIndexerProperty_RejectsTheUnsupportedSliceProtocol()
+    {
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            VisitBlock(
+                """
+                using System;
+                using ECMAScript;
+
+                [ECMAScript]
+                sealed class ReleaseWindow
+                {
+                    public int Length => 0;
+
+                    public int this[Index index] => index.Value;
+
+                    public ReleaseWindow this[System.Range range] => this;
+                }
+
+                static class TestClass
+                {
+                    static bool TestMethod(ReleaseWindow values)
+                    {
+                        return values is [.. var remaining] && remaining.Length >= 0;
+                    }
+                }
+                """));
+
+        StringAssert.Contains(exception.Message, "Range-based slice property", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_InterpolationOfSourceTypeWithoutTextContract_RejectsObjectPrototypeFallback()
+    {
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            VisitBlock(
+                """
+                sealed class ReleaseCode
+                {
+                }
+
+                static class TestClass
+                {
+                    static string TestMethod(ReleaseCode code)
+                    {
+                        return $"release:{code}";
+                    }
+                }
+                """));
+
+        StringAssert.Contains(exception.Message, "stable string conversion contract", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_InterpolationOfDynamicValue_RejectsTheMissingRuntimeTextContract()
+    {
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            VisitBlock(
+                """
+                static class TestClass
+                {
+                    static string TestMethod(dynamic value)
+                    {
+                        return $"release:{value}";
+                    }
+                }
+                """));
+
+        StringAssert.Contains(exception.Message, "stable string conversion contract", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_FilteredCatchWithoutDeclaredType_UsesTheSyntheticRethrowBinding()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(bool accepts)
+                {
+                    try
+                    {
+                        throw new System.Exception("release");
+                    }
+                    catch when (accepts)
+                    {
+                        return 1;
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "catch", StringComparison.Ordinal);
+        StringAssert.Contains(script, "throw", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(accepts) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_CustomListPatternWithSliceMethod_CachesLengthAndPreservesTrailingIndex()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseWindow
+            {
+                public int Length => 0;
+
+                public int this[Index index] => index.Value;
+
+                public ReleaseWindow Slice(int start, int length) => this;
+            }
+
+            static class TestClass
+            {
+                static bool TestMethod(ReleaseWindow values)
+                {
+                    return values is [var first, .. var middle, var last] &&
+                        first < last && middle is { Length: > 0 };
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, ".slice(1,", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0 - 1", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(values) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_NullableValueAndDefaultValue_UseTheBoundClrContracts()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(int? candidate)
+                {
+                    if (candidate.HasValue)
+                        return candidate.Value;
+
+                    return candidate.GetValueOrDefault(-1);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "candidate !== null && candidate !== undefined", StringComparison.Ordinal);
+        StringAssert.Contains(script, "nullable ?? defaultValue", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(candidate) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_StructuralInitializerWithNumberAndSymbolKeys_PreservesBothKeyKinds()
+    {
+        var script = VisitBlock(
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScript]
+            [Description("@#")]
+            sealed class ReleaseMetadata
+            {
+                public string this[Number key]
+                {
+                    set { }
+                }
+
+                public string this[Symbol key]
+                {
+                    set { }
+                }
+            }
+
+            static class TestClass
+            {
+                static ReleaseMetadata TestMethod()
+                {
+                    return new ReleaseMetadata
+                    {
+                        [(Number)12] = "ready",
+                        [Symbol.Iterator] = "iterable"
+                    };
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "12", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Symbol.iterator", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedEcmascriptStaticHostMember_UsesTheDeclaredTypePath()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            static class ReleaseHosts
+            {
+                [ECMAScript]
+                public static class Dashboard
+                {
+                    public static int Published { get; }
+                }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod()
+                {
+                    return ReleaseHosts.Dashboard.Published;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "published", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_InterpolationWithoutTextSegment_PreservesTheConvertedExpression()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static string TestMethod(int release)
+                {
+                    return $"{release}";
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "release", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(release) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_GenericUsingDisposableConstraint_ResolvesTheInterfaceDisposeContract()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static int TestMethod<TLease>(TLease lease)
+                    where TLease : IDisposable
+                {
+                    using (lease)
+                    {
+                        return 1;
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "finally", StringComparison.Ordinal);
+        StringAssert.Contains(script, "lease !== null", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(lease) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_CustomEnumerableForeach_UsesItsDeclaredEnumeratorMembers()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseEnumerator
+            {
+                public int Current { get; }
+
+                public bool MoveNext() => false;
+            }
+
+            [ECMAScript]
+            sealed class ReleaseSequence
+            {
+                public ReleaseEnumerator GetEnumerator() => throw null!;
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(ReleaseSequence releases)
+                {
+                    var total = 0;
+                    foreach (var release in releases)
+                        total += release;
+                    return total;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "for (let release of releases)", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(releases) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_EmptyAndFallthroughSwitches_PreserveTheSourceControlFlow()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                static int TestMethod(int release)
+                {
+                    switch (release)
+                    {
+                    }
+
+                    switch (release)
+                    {
+                        case 1:
+                        case 2:
+                            return 20;
+                        default:
+                            return 0;
+                    }
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "case 1:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "case 2:", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(release) " + script);
+    }
+
+    private static string VisitBlock(string source, bool allowUnsafe = false)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             source,
@@ -285,7 +824,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             "SemanticWalkerLongTailProtocolScenario_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: allowUnsafe));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();

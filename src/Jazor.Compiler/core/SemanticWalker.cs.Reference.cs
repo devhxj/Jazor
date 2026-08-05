@@ -19,6 +19,34 @@ namespace Jazor.Compiler;
 /// </remarks>
 public partial class SemanticWalker
 {
+	private static ITypeSymbol GetRuntimeMemberHostType(
+		IOperation operation,
+		ISymbol member,
+		ITypeSymbol? instanceType)
+	{
+		if (instanceType is not null)
+			return instanceType;
+
+		var containingType = member.ContainingType!;
+		if (!IsStaticRuntimeMember(member) || operation.SemanticModel is null)
+			return containingType;
+
+		// Inherited static members keep their declaration's generic containing type on the member
+		// symbol. The source receiver is the only Roslyn-bound place that preserves the concrete
+		// runtime constructor, for example MarkedRuntime.Revision -> MarkedRuntime rather than
+		// GenericRuntime<TSelf>. Reuse the static-access compatibility relation for fields,
+		// properties, method groups, and invocations so their host rules cannot drift.
+		var sourceHost = TryGetStaticSourceHostTypeFromSyntax(operation.Syntax, operation.SemanticModel);
+		return sourceHost is not null && IsStaticHostOverrideCompatible(sourceHost, containingType)
+			? sourceHost
+			: containingType;
+	}
+
+	private static bool IsStaticRuntimeMember(ISymbol member)
+		=> member is IFieldSymbol { IsStatic: true } or
+			IPropertySymbol { IsStatic: true } or
+			IMethodSymbol { IsStatic: true };
+
 	private static readonly HashSet<string> GlobalRuntimeTypeNames = new(StringComparer.Ordinal)
 	{
 		"Array",
@@ -440,9 +468,6 @@ public partial class SemanticWalker
 
 		start += marker.Length;
 		var end = display.LastIndexOf(')');
-		if (end <= start)
-			return null;
-
 		return display.Substring(start, end - start);
 	}
 
@@ -1100,7 +1125,7 @@ private const string ECMAScriptInlineAttributeFullName = "ECMAScript.ECMAScriptI
 
 private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	=> parameter.GetAttributes().Any(static attribute =>
-		attribute.AttributeClass?.ToDisplayString() == PreserveParamsArrayAttributeFullName);
+		attribute.AttributeClass!.ToDisplayString() == PreserveParamsArrayAttributeFullName);
 
 	private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out string template)
 	{
@@ -2010,6 +2035,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	{
 		// 处理字段的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var runtimeHostType = GetRuntimeMemberHostType(operation, operation.Field, operation.Instance?.Type);
 
 		if (IsBaseInstanceReference(operation.Instance))
 		{
@@ -2033,7 +2059,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		}
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(operation, operation.Field, "field access", operation.Instance?.Type ?? operation.Field.ContainingType);
+			RejectUnsupportedRuntimeFallback(operation, operation.Field, "field access", runtimeHostType);
 
 		// 对于实例字段访问，需要创建成员访问表达式
 		// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
@@ -2051,9 +2077,6 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			? GetCurrentModuleDeclaredOrConfigName(operation.Field)
 			: alias;
 
-		Expression property = IsPrivateRuntimeClassField(operation.Field)
-			? new PrivateIdentifier(fieldName!)
-			: new Identifier(fieldName!);
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
@@ -2063,28 +2086,24 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		// 静态成员：生成完整的限定名
 		// public 静态类带[ECMAScriptModule]是模块类
-		if (operation.Field.IsStatic && operation.Field.ContainingType is not null)
-		{
-			if (TryBuildStringEnumLiteral(operation.Field, out var stringEnumLiteral))
-				return WithOriginIfMissing(stringEnumLiteral, operation);
+		// A valid bound field reference with no translated instance is static. Its symbol's
+		// containing type and any source-host override are therefore both named types.
+		var namedRuntimeHost = (INamedTypeSymbol)runtimeHostType;
+		if (TryBuildStringEnumLiteral(operation.Field, out var stringEnumLiteral))
+			return WithOriginIfMissing(stringEnumLiteral, operation);
 
-			if (operation.Field.IsConst)
-				return WithOriginIfMissing(GetFieldName(operation.Field), operation);
+		if (operation.Field.IsConst)
+			return WithOriginIfMissing(GetFieldName(operation.Field), operation);
 
-			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
-				importedMember is not null)
-				return WithOriginIfMissing(importedMember, operation);
+		if (TryBuildImportedModuleMember(namedRuntimeHost, fieldName!, argument, out var importedMember) &&
+			importedMember is not null)
+			return WithOriginIfMissing(importedMember, operation);
 
-			var runtimeHost = TryBuildRuntimeHostExpression(operation.Field.ContainingType, argument);
-			if (runtimeHost is not null)
-				return WithOriginIfMissing(BuildFieldAccess(runtimeHost, operation.Field, fieldName!, optional: false), operation);
+		var runtimeHost = TryBuildRuntimeHostExpression(runtimeHostType, argument);
+		if (runtimeHost is not null)
+			return WithOriginIfMissing(BuildFieldAccess(runtimeHost, operation.Field, fieldName!, optional: false), operation);
 
-		}
-
-		var fallback = operation.Instance is null
-			? GetFieldName(operation.Field)
-			: property;
-		return WithOriginIfMissing(fallback, operation);
+		return WithOriginIfMissing(GetFieldName(operation.Field), operation);
 	}
 
 	/// <summary>
@@ -2103,9 +2122,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			operation.Instance?.Type is IArrayTypeSymbol arrayType)
 			return WithOrigin(new NumericLiteral(arrayType.Rank, arrayType.Rank.ToString()), operation);
 
+		var runtimeHostType = GetRuntimeMemberHostType(operation, operation.Property, operation.Instance?.Type);
+
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
 			operation,
-			operation.Instance?.Type ?? operation.Property.ContainingType,
+			runtimeHostType,
 			"property access");
 
 		// 处理属性调用的实例对象
@@ -2149,7 +2170,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		}
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(operation, operation.Property.GetMethod!, "property access", operation.Instance?.Type ?? operation.Property.ContainingType);
+			RejectUnsupportedRuntimeFallback(operation, operation.Property.GetMethod!, "property access", runtimeHostType);
 
 		if (instance is not null &&
 			arguments.Count > 0 &&
@@ -2179,7 +2200,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		// todo：后续需要清理和白名单整合
 		// 静态成员：生成完整的限定名（如 DateTime.Now）
 		// 检查属性是否是静态成员
-		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
+		if (operation.Property.IsStatic && runtimeHostType is INamedTypeSymbol)
 		{
 			if (TryBuildCurrentModulePropertyGetterCall(operation.Property, out var currentModuleProperty) &&
 				currentModuleProperty is not null)
@@ -2193,7 +2214,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 				preferredStaticProperty is not null)
 				return WithOriginIfMissing(preferredStaticProperty, operation);
 
-			var runtimeHost = TryBuildRuntimeHostExpression(operation.Property.ContainingType, argument);
+			var runtimeHost = TryBuildRuntimeHostExpression(runtimeHostType, argument);
 			if (runtimeHost is not null)
 				return WithOriginIfMissing(new MemberExpression(runtimeHost, property, computed: false, optional: false), operation);
 
@@ -2216,9 +2237,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (Host?.RewriteMethodReferencePreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
 
+		var runtimeHostType = GetRuntimeMemberHostType(operation, operation.Method, operation.Instance?.Type);
+
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
 			operation,
-			operation.Instance?.Type ?? operation.Method.ContainingType,
+			runtimeHostType,
 			"method reference");
 
 		if (operation.Method.MethodKind == MethodKind.LocalFunction)
@@ -2291,7 +2314,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		}
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(operation, operation.Method, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
+			RejectUnsupportedRuntimeFallback(operation, operation.Method, "method reference", runtimeHostType);
 
 		var instance = hasBoundExtensionReceiver
 			? boundExtensionReceiver
@@ -2308,7 +2331,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (hasBoundExtensionReceiver)
 		{
 			var call = new CallExpression(
-				BuildStaticMethodReferenceCallee(operation, methodName!, argument),
+				BuildStaticMethodReferenceCallee(operation, methodName!, argument, runtimeHostType),
 				NodeList.From(explicitArgs),
 				optional: false);
 			var func = new ArrowFunctionExpression(
@@ -2349,7 +2372,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (instance is null)
 		{
 			if (operation.Method.IsStatic)
-				callee = BuildStaticMethodReferenceCallee(operation, methodName!, argument);
+				callee = BuildStaticMethodReferenceCallee(operation, methodName!, argument, runtimeHostType);
 		}
 		else
 		{
@@ -2396,9 +2419,11 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	private Expression BuildStaticMethodReferenceCallee(
 		IMethodReferenceOperation operation,
 		string methodName,
-		SenseArgument argument)
+		SenseArgument argument,
+		ITypeSymbol runtimeHostType)
 	{
-		if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName, argument, out var importedMethod) &&
+		if (runtimeHostType is INamedTypeSymbol namedRuntimeHost &&
+			TryBuildImportedModuleMember(namedRuntimeHost, methodName, argument, out var importedMethod) &&
 			importedMethod is not null)
 		{
 			return importedMethod;
@@ -2414,7 +2439,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		if (extensionHost is not null)
 			return BuildAliasedPropertyAccess(extensionHost, methodName, optional: false);
 
-		var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
+		var containing = BuildFullTypeName(runtimeHostType, argument);
 		return containing is not null
 			? BuildAliasedPropertyAccess(containing, methodName, optional: false)
 			: new Identifier(methodName);
@@ -2503,6 +2528,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		var runtimeHostType = GetRuntimeMemberHostType(operation, operation.TargetMethod, operation.Instance?.Type);
 		var refParas = new List<Expression?>();
 		var hasReturn = !operation.TargetMethod.ReturnsVoid;
 
@@ -2589,7 +2615,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 			instance,
 			arguments,
 			argument,
-			operation.Instance?.Type ?? operation.TargetMethod.ContainingType,
+			runtimeHostType,
 			allowIntrinsic: true,
 			invocationOperation: operation);
 		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
@@ -2686,7 +2712,8 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		{
 			if (targetMethod.IsStatic)
 			{
-				if (TryBuildImportedModuleMember(targetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+				if (hostType is INamedTypeSymbol namedRuntimeHost &&
+					TryBuildImportedModuleMember(namedRuntimeHost, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel!, methodName!, out var preferredStaticCallee) &&
@@ -2696,7 +2723,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 					callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
 				else
 				{
-					var containing = BuildFullTypeName(targetMethod.ContainingType, argument);
+					var containing = BuildFullTypeName(hostType, argument);
 					if (containing is not null)
 						callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
 				}

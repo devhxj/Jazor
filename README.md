@@ -15,9 +15,9 @@
 </p>
 
 <p>
-  <a href="src/Jazor.CompilerTest/README.md"><img alt="10192 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-10192%20passed-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="98.73 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98.73%25-2ea44f" /></a>
-  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="95.06 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-95.06%25-2ea44f" /></a>
+  <a href="src/Jazor.CompilerTest/README.md"><img alt="10297 compiler tests passed" src="https://img.shields.io/badge/compiler%20tests-10297%20passed-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="98.94 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98.94%25-2ea44f" /></a>
+  <a href="docs/03-%E5%AE%8C%E6%88%90/compiler/status.md"><img alt="96.01 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-96.01%25-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -39,9 +39,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 | Metric | Verified result | Active enforced minimum |
 |--------|-----------------|-------------------------|
-| Compiler regression tests | 10192 / 10192 passed | 10000 passed |
-| Line coverage | 16366 / 16576 (98.73%) | 98% |
-| Branch coverage | 6354 / 6684 (95.06%) | 96% |
+| Compiler regression tests | 10297 / 10297 passed | 10000 passed |
+| Line coverage | 16369 / 16545 (98.94%) | 98% |
+| Branch coverage | 6324 / 6587 (96.01%) | 96% |
 
 Run the authoritative coverage gate from the repository root:
 
@@ -49,7 +49,7 @@ Run the authoritative coverage gate from the repository root:
 dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
 
-The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. The 95.06% result is the verified `v0.1.44` release baseline; the active branch target and enforced gate are now 96%. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
+The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. The 96.01% result is the verified `v0.1.45` release baseline and satisfies the active 96% branch gate. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
 
 ## RazorVue Verification Baseline
 
@@ -91,14 +91,16 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
 - Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
 - Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
-- The compiler gate verifies 10,192 genuine scenarios at 98.73% line and 95.06% branch coverage, exceeding the 10,000 / 98% / 94% release gate.
+- Imports whose public name collides with a declared or reserved module binding now receive one stable generated alias; concrete runtime hosts remain intact for inherited generic static members.
+- Interpolating a `dynamic` value now produces the same explicit stable-text-contract diagnostic as other unsupported runtime text carriers, rather than an internal cast exception.
+- The compiler gate verifies 10,297 genuine scenarios at 98.94% line and 96.01% branch coverage, satisfying the 10,000 / 98% / 96% release gate.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.44
+dotnet add package Jazor --version 0.1.45
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -107,8 +109,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.44" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.44" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.45" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.45" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -116,11 +118,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.44" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.44" />
+  <PackageReference Include="Jazor" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.45" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.45" />
 </ItemGroup>
 ```
 

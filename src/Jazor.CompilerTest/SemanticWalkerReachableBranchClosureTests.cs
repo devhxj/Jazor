@@ -13,6 +13,73 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerReachableBranchClosureTests
 {
     [TestMethod]
+    public void Visit_NestedObjectInitializers_ResolvePropertyIndexerAndFieldReceivers()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class NestedItem
+            {
+                public int Value { get; set; }
+            }
+
+            [ECMAScript]
+            sealed class Bucket
+            {
+                public NestedItem Child { get; } = new();
+                public NestedItem this[int index] => Child;
+                public NestedItem Field = new();
+            }
+
+            static class TestClass
+            {
+                static void TestMethod()
+                {
+                    var bucket = new Bucket
+                    {
+                        Child = { Value = 1 },
+                        [0] = { Value = 2 },
+                        Field = { Value = 3 }
+                    };
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, ".child.value = 1", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "[0].value = 2", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, ".field.value = 3", StringComparison.OrdinalIgnoreCase);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_IndexAndRangeImplicitConversions_EraseCarrierConstructionAtTheUsageSite()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static void TestMethod()
+                {
+                    Index fromStart = 2;
+                    Index fromEnd = ^2;
+                    Range interior = fromStart..fromEnd;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "let fromStart = _", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let fromEnd = _", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let interior = _", StringComparison.Ordinal);
+        Assert.DoesNotContain("new Index", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("new Range", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
     public void Visit_TypedArrayUsingStatic_RecoversTheConcreteSelfTypedRuntimeHost()
     {
         var script = VisitBlock(
@@ -568,6 +635,300 @@ public sealed class SemanticWalkerReachableBranchClosureTests
         var expression = new SemanticWalker(true).VisitArgument(outArgument, new SenseArgument());
 
         Assert.AreEqual("value", expression?.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void Visit_RefReturnArgument_RejectsTheInvocationAsAnUnassignableWriteBackLocation()
+    {
+        var block = GetBlock(
+            """
+            static class TestClass
+            {
+                private static int _revision;
+
+                static ref int CurrentRevision() => ref _revision;
+
+                static void Advance(ref int revision) => revision++;
+
+                static void TestMethod()
+                {
+                    Advance(ref CurrentRevision());
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "requires an assignable JavaScript location", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "ref/out argument", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_StructDeconstruction_RejectsTheMissingRuntimeStructDeclarationProtocol()
+    {
+        var block = GetBlock(
+            """
+            struct RevisionPair
+            {
+                public void Deconstruct(out int current, out int next)
+                {
+                    current = 1;
+                    next = 2;
+                }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(RevisionPair pair)
+                {
+                    var (current, next) = pair;
+                    return current + next;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Custom Deconstruct on struct type", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "member struct runtime declarations", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ExtensionDeconstruction_RejectsTheMissingReceiverRuntimeSlot()
+    {
+        var block = GetBlock(
+            """
+            sealed class RevisionBox
+            {
+            }
+
+            static class RevisionBoxExtensions
+            {
+                public static void Deconstruct(this RevisionBox box, out int revision, out int next)
+                {
+                    revision = 1;
+                    next = 2;
+                }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(RevisionBox box)
+                {
+                    var (revision, _) = box;
+                    return revision;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "Extension Deconstruct method", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "receiver-member runtime slot", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ArrayElementDeconstructionTarget_RejectsTheUnsupportedWriteBackShape()
+    {
+        var block = GetBlock(
+            """
+            static class TestClass
+            {
+                static void TestMethod(int[] values)
+                {
+                    (values[0], values[1]) = (1, 2);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "ArrayElementReference", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "DeconstructionAssignment", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_CustomClassDeconstruction_UsesTheBoundMemberResultProtocol()
+    {
+        var script = VisitBlock(
+            """
+            sealed class RevisionPair
+            {
+                public void Deconstruct(out int current, out int next)
+                {
+                    current = 1;
+                    next = 2;
+                }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(RevisionPair pair)
+                {
+                    var (current, next) = pair;
+                    return current + next;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "pair.deconstruct(current, next)", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "current = v$0[0]", StringComparison.Ordinal);
+        StringAssert.Contains(script, "next = v$0[1]", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(pair) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_ErasedInterfacePatterns_FoldKnownAssignableAndIncompatibleObjectCreations()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class DisposableRelease : IDisposable
+            {
+                public void Dispose() { }
+            }
+
+            [ECMAScript]
+            sealed class PendingRelease
+            {
+            }
+
+            static class TestClass
+            {
+                static bool TestMethod()
+                {
+                    return ((object)new DisposableRelease()) is IDisposable &&
+                        !(((object)new PendingRelease()) is IDisposable);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "true", StringComparison.Ordinal);
+        StringAssert.Contains(script, "false", StringComparison.Ordinal);
+        Assert.DoesNotContain("instanceof IDisposable", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_ErasedInterfacePatterns_FoldKnownNullAndConstrainedValueSources()
+    {
+        var script = VisitBlock(
+            """
+            using System;
+
+            static class TestClass
+            {
+                static bool TestMethod<T>(T resource)
+                    where T : struct, IDisposable
+                {
+                    object? missing = null;
+                    return missing is IDisposable || resource is IDisposable;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "false", StringComparison.Ordinal);
+        StringAssert.Contains(script, "true", StringComparison.Ordinal);
+        Assert.DoesNotContain("instanceof IDisposable", script, StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(resource) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_NestedCustomDeconstruction_UsesTheBoundNestedWriteBackProtocol()
+    {
+        var script = VisitBlock(
+            """
+            sealed class RevisionPair
+            {
+                public void Deconstruct(out (int Major, int Minor) version, out int build)
+                {
+                    version = (1, 2);
+                    build = 3;
+                }
+            }
+
+            static class TestClass
+            {
+                static int TestMethod(RevisionPair pair)
+                {
+                    var ((major, minor), build) = pair;
+                    return major + minor + build;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "pair.deconstruct", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "major =", StringComparison.Ordinal);
+        StringAssert.Contains(script, "minor =", StringComparison.Ordinal);
+        StringAssert.Contains(script, "build =", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify(pair) " + script);
+    }
+
+    [TestMethod]
+    public void Visit_DeconstructionIntoCurrentModuleStaticField_UsesTheDeclaredHostTarget()
+    {
+        var script = VisitBlock(
+            """
+            static class TestClass
+            {
+                private static int Revision;
+
+                static int TestMethod()
+                {
+                    int build;
+                    (Revision, build) = (1, 2);
+                    return Revision + build;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "TestClass.revision = 1", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "build = 2", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
+    }
+
+    [TestMethod]
+    public void Visit_CurrentModuleIndexerCompoundAssignment_UsesTheBoundGetterSetterBridge()
+    {
+        var script = VisitBlock(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            sealed class ReleaseSlots
+            {
+                public int this[int index]
+                {
+                    get => index;
+                    set { }
+                }
+            }
+
+            static class TestClass
+            {
+                static ReleaseSlots GetSlots() => new();
+                static int GetIndex() => 1;
+                static int GetDelta() => 2;
+
+                static void TestMethod()
+                {
+                    GetSlots()[GetIndex()] |= GetDelta();
+                }
+            }
+            """);
+
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getSlots()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getIndex()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getDelta()"), script);
+        StringAssert.Contains(script, "|", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + script);
     }
 
     [TestMethod]

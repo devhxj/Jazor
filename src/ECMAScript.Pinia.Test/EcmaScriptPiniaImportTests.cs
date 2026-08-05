@@ -2026,8 +2026,9 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "SubscriptionCookbookModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "let detach = store.$subscribe(HandleMutation.bind(this), { detached: true, flush: \"sync\" });");
+		StringAssert.Contains(script, "let detach = store.$subscribe(HandleMutation, { detached: true, flush: \"sync\" });");
 		StringAssert.Contains(script, "function HandleMutation(mutation, state) {");
+		Assert.IsFalse(script.Contains("HandleMutation.bind", StringComparison.Ordinal), script);
 		Assert.IsFalse(script.Contains("this.HandleMutation", StringComparison.Ordinal), script);
 		StringAssert.Contains(script, "store.count += 1;");
 		StringAssert.Contains(script, "store.$patch({ count: 5, status: \"patched\" });");
