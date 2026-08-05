@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VTimePicker model and allowed-unit value contracts.
+// 定义 VTimePicker 的模型和允许单位值合同；可擦除的多值域使用原生 union。
+
 /// <summary>
 /// 时间选择器格式枚举。
 /// Time picker format enum.
@@ -53,44 +56,12 @@ public enum VuetifyTimePickerPeriod
 /// Erased value union for time-picker model values.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTimePickerModelValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTimePickerModelValue(string, Date)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Date? _date;
+    public string? AsString => Value as string;
 
-    public VuetifyTimePickerModelValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _date = default;
-    }
-
-    public VuetifyTimePickerModelValue(Date value)
-    {
-        _kind = 2;
-        _string = default;
-        _date = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public Date? AsDate => _kind == 2 ? _date : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsDate,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTimePickerModelValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTimePickerModelValue From(Date value);
+    public Date? AsDate => Value is Date value ? value : default(Date?);
 
     public static implicit operator VuetifyTimePickerModelValue(string value)
         => new(value);
@@ -110,24 +81,11 @@ public delegate bool VuetifyTimePickerAllowedUnitResolver(Number value);
 /// Erased value union for time-picker allowed unit value lists.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTimePickerAllowedUnitsCollectionBuilder), nameof(VuetifyTimePickerAllowedUnitsCollectionBuilder.Create))]
-public readonly struct VuetifyTimePickerAllowedUnits : System.Runtime.CompilerServices.IUnion, IEnumerable<Number>
+public readonly union VuetifyTimePickerAllowedUnits(Number[]) : IEnumerable<Number>
 {
-    private readonly Number[]? _values;
-
-    public VuetifyTimePickerAllowedUnits(Number[] values)
-    {
-        _values = values;
-    }
-
-    public Number[]? AsArray => _values;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTimePickerAllowedUnits From(Number[] values);
+    public Number[]? AsArray => Value as Number[];
 
     public static implicit operator VuetifyTimePickerAllowedUnits(Number[] values)
         => new(values);
@@ -139,7 +97,7 @@ public readonly struct VuetifyTimePickerAllowedUnits : System.Runtime.CompilerSe
         => new(Array.ConvertAll(values, static value => (Number)value));
 
     IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
-        => ((IEnumerable<Number>)(_values ?? [])).GetEnumerator();
+        => ((IEnumerable<Number>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<Number>)this).GetEnumerator();
@@ -157,44 +115,15 @@ public static class VuetifyTimePickerAllowedUnitsCollectionBuilder
 /// Erased value union for time-picker allowed unit values, supporting arrays or resolver functions.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTimePickerAllowedUnitValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyTimePickerAllowedUnitValue(
+    VuetifyTimePickerAllowedUnits,
+    VuetifyTimePickerAllowedUnitResolver)
 {
-    private readonly byte _kind;
-    private readonly VuetifyTimePickerAllowedUnits? _units;
-    private readonly VuetifyTimePickerAllowedUnitResolver? _resolver;
+    public VuetifyTimePickerAllowedUnits? AsUnits
+        => Value is VuetifyTimePickerAllowedUnits value ? value : default(VuetifyTimePickerAllowedUnits?);
 
-    public VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnits units)
-    {
-        _kind = 1;
-        _units = units;
-        _resolver = default;
-    }
-
-    public VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnitResolver resolver)
-    {
-        _kind = 2;
-        _units = default;
-        _resolver = resolver;
-    }
-
-    public VuetifyTimePickerAllowedUnits? AsUnits => _kind == 1 ? _units : default;
-
-    public VuetifyTimePickerAllowedUnitResolver? AsResolver => _kind == 2 ? _resolver : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsUnits,
-        2 => AsResolver,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTimePickerAllowedUnitValue From(VuetifyTimePickerAllowedUnits units);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyTimePickerAllowedUnitValue From(VuetifyTimePickerAllowedUnitResolver resolver);
+    public VuetifyTimePickerAllowedUnitResolver? AsResolver => Value as VuetifyTimePickerAllowedUnitResolver;
 
     public static implicit operator VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnits units)
         => new(units);

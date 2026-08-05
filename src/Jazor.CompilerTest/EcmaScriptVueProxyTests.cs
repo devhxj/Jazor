@@ -3415,6 +3415,34 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void VTimePickerValues_UseNativeUnionContracts()
+    {
+        var unionTypes = new[]
+        {
+            typeof(VuetifyTimePickerModelValue),
+            typeof(VuetifyTimePickerAllowedUnits),
+            typeof(VuetifyTimePickerAllowedUnitValue)
+        };
+
+        AssertNet11UnionContract(typeof(VuetifyTimePickerModelValue), typeof(string), typeof(Date));
+        AssertNet11UnionContract(typeof(VuetifyTimePickerAllowedUnits), typeof(Number[]));
+        AssertNet11UnionContract(
+            typeof(VuetifyTimePickerAllowedUnitValue),
+            typeof(VuetifyTimePickerAllowedUnits),
+            typeof(VuetifyTimePickerAllowedUnitResolver));
+
+        foreach (var unionType in unionTypes)
+        {
+            Assert.IsNull(unionType.GetMethod("From", BindingFlags.Public | BindingFlags.Static), unionType.FullName);
+        }
+
+        Assert.IsNotNull(typeof(VuetifyTimePickerAllowedUnitValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(double[])]));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,
