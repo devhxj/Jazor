@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialComponentCompositionAuthoringTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentComposition_EmitsDescriptorMappedPropsModelAndSlots()
+    public async Task BuildComponent_OfficialRazorComponentComposition_EmitsMemberMappedPropsModelAndSlots()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\ComponentComposition.razor",
@@ -32,19 +32,17 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/authoring-child")]
-                [VueProp(nameof(Title), Name = "heading")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-                [VueSlot(nameof(ChildContent), IsDefault = true)]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "System.String", ContextParameterName = "item")]
                 public sealed class AuthoringChild : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("heading")]
                     [Parameter] public string Title { get; set; } = "";
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
                     [Parameter] public RenderFragment? ChildContent { get; set; }
                     [Parameter] public RenderFragment? Header { get; set; }
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -116,10 +114,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-after-child")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class BindAfterChild : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
@@ -183,10 +181,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-set-child")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class BindSetChild : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 

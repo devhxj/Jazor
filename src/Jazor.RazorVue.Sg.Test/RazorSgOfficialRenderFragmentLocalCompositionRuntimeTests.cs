@@ -22,7 +22,6 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-footer-slot-panel-runtime")]
-                [VueSlot(nameof(Footer), Name = "footer")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Footer { get; set; }

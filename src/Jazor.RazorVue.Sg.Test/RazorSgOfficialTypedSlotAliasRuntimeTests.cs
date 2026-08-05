@@ -27,9 +27,9 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/release-row-template")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public partial class ReleaseRowTemplate : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     private ReleaseEntry Current { get; } = new(17, "Deploy");

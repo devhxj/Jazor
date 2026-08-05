@@ -119,23 +119,21 @@ internal static class RazorSgDirectRenderMatrixTestHost
         namespace RazorVue.Matrix;
 
         [ECMAScriptModule("./matrix/child.mjs")]
-        [VueProp(nameof(Title), Name = "heading")]
-        [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
         [VueLibraryEmit(nameof(OnClick), Name = "click")]
         [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-        [VueSlot(nameof(ChildContent), IsDefault = true)]
-        [VueSlot(nameof(Header), Name = "header")]
-        [VueSlot(nameof(ItemTemplate), Name = "item")]
         public sealed class MatrixChild : ComponentBase, IVueComponent
         {
+            [ECMAScriptName("heading")]
             [Parameter] public string? Title { get; set; }
             [Parameter] public int Count { get; set; }
             [Parameter] public bool Enabled { get; set; }
+            [ECMAScriptName("modelValue")]
             [Parameter] public string? Value { get; set; }
             [Parameter] public EventCallback OnClick { get; set; }
             [Parameter] public EventCallback<string> ValueChanged { get; set; }
             [Parameter] public RenderFragment? ChildContent { get; set; }
             [Parameter] public RenderFragment? Header { get; set; }
+            [ECMAScriptName("item")]
             [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
         }
         """;

@@ -25,9 +25,9 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/template-panel-render-state-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class TemplatePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -129,9 +129,9 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
                 public sealed record ReleaseEntry(string Id, string Label);
 
                 [ECMAScriptModule("./components/template-panel-render-state-initializer-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class TemplatePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

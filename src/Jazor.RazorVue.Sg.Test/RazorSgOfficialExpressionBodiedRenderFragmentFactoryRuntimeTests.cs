@@ -23,7 +23,6 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/expression-bodied-release-header-panel-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class ReleaseHeaderPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }
@@ -107,9 +106,9 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
                 public sealed record ReleaseEntry(string Name, int Pending);
 
                 [ECMAScriptModule("./components/expression-bodied-release-template-panel-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ReleaseTemplatePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

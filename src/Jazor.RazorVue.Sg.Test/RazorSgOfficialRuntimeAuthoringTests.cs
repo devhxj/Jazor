@@ -83,11 +83,10 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-after-child-runtime")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-                [VueProp(nameof(LastObserved), Name = "lastObserved")]
                 public sealed class BindAfterChild : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
                     [Parameter] public string LastObserved { get; set; } = "";
@@ -482,9 +481,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-runtime")]
-                [VueProp(nameof(Heading), Name = "heading")]
-                [VueSlot(nameof(ChildContent), IsDefault = true)]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public string Heading { get; set; } = "";
@@ -587,11 +583,10 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-template-list-runtime")]
-                [VueProp(nameof(Entries), Name = "entries")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Models.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ReleaseTemplateList : ComponentBase, IVueComponent
                 {
                     [Parameter] public IReadOnlyList<ReleaseEntry> Entries { get; set; } = [];
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -696,11 +691,10 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-template-control-flow-list-runtime")]
-                [VueProp(nameof(Entries), Name = "entries")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Models.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ReleaseTemplateControlFlowList : ComponentBase, IVueComponent
                 {
                     [Parameter] public IReadOnlyList<ReleaseEntry> Entries { get; set; } = [];
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -794,7 +788,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-header-panel-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class ReleaseHeaderPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }
@@ -891,7 +884,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/generic-value-runtime")]
-                [VueProp(nameof(Value), Name = "value")]
                 public sealed class GenericValue<TItem> : ComponentBase, IVueComponent
                 {
                     [Parameter] public TItem Value { get; set; }
@@ -974,8 +966,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/generic-selectable-runtime")]
-                [VueProp(nameof(Entry), Name = "entry")]
-                [VueProp(nameof(WasSelected), Name = "wasSelected")]
                 [VueLibraryEmit(nameof(Selected), VueEmitKind.Normal, Name = "select")]
                 public sealed class GenericSelectable<TItem> : ComponentBase, IVueComponent
                 {
@@ -1078,8 +1068,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/content-descriptor-slot-panel-runtime")]
-                [VueProp(nameof(Heading), Name = "heading")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public string Heading { get; set; } = "";

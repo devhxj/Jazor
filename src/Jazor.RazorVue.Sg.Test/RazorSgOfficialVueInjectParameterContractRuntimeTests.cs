@@ -54,17 +54,17 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
                     }
 
                     [ECMAScriptModule("./components/injected-shell-parameter-contract-runtime")]
-                    [VueProp(nameof(Title), Name = "injectedTitle")]
-                    [VueSlot(nameof(ChildContent), Name = "injected-content")]
                     public partial class InjectedShell : ComponentBase, IVueComponent, IVueContainerImplementation<ContractShell>
                     {
                         [Parameter, EditorRequired]
+                        [ECMAScriptName("injectedTitle")]
                         public string? Title { get; set; }
 
                         [Parameter(CaptureUnmatchedValues = true)]
                         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
                         [Parameter]
+                        [ECMAScriptName("injected-content")]
                         public RenderFragment? ChildContent { get; set; }
                     }
                 }

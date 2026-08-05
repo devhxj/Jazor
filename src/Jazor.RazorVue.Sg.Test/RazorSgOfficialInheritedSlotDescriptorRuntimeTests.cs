@@ -1,10 +1,10 @@
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
+public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDerivedLayout_UsesConcreteSlotDescriptorForInheritedParameter()
+    public async Task BuildComponent_OfficialRazorDerivedLayout_UsesNewMemberNameForInheritedParameter()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\ReleaseLayout.razor",
@@ -32,9 +32,11 @@ public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/release-layout-inherited-slot-runtime")]
-                [VueSlot(nameof(Header), Name = "release-header")]
                 public partial class ReleaseLayout : HeaderLayoutBase, IVueComponent
                 {
+                    [Parameter]
+                    [ECMAScriptName("release-header")]
+                    public new RenderFragment? Header { get; set; }
                 }
             }
             """,
@@ -55,7 +57,7 @@ public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
 
             import component from "./components/release-layout-inherited-slot-runtime.mjs";
 
-            test("official Razor derived layout resolves the concrete slot descriptor", () => {
+            test("official Razor derived layout resolves the new slot member name", () => {
                 const render = component.setup({}, {
                     slots: {
                         "release-header": () => ["Release queue"]
@@ -70,7 +72,7 @@ public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDerivedLayout_InheritsBaseSlotDescriptorWhenNotOverridden()
+    public async Task BuildComponent_OfficialRazorDerivedLayout_InheritsBaseSlotNameWhenNotHidden()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\AuditLayout.razor",
@@ -89,9 +91,9 @@ public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
 
             namespace Demo.Components
             {
-                [VueSlot(nameof(Header), Name = "base-header")]
                 public abstract class HeaderLayoutBase : ComponentBase
                 {
+                    [ECMAScriptName("base-header")]
                     [Parameter] public RenderFragment? Header { get; set; }
                 }
             }
@@ -121,7 +123,7 @@ public sealed class RazorSgOfficialInheritedSlotDescriptorRuntimeTests
 
             import component from "./components/audit-layout-inherited-slot-runtime.mjs";
 
-            test("official Razor derived layout falls back to its base slot descriptor", () => {
+            test("official Razor derived layout inherits its base slot member name", () => {
                 const render = component.setup({}, {
                     slots: {
                         "base-header": () => ["Audit trail"]

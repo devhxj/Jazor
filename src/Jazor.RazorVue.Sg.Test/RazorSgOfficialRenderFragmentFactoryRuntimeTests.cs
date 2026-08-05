@@ -25,9 +25,9 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/template-panel-factory-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class TemplatePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -116,9 +116,9 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/template-panel-property-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class TemplatePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -208,7 +208,6 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-conditional-property-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }
@@ -312,7 +311,6 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-conditional-parameter-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }
@@ -415,8 +413,6 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-method-group-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(Footer), Name = "footer")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }

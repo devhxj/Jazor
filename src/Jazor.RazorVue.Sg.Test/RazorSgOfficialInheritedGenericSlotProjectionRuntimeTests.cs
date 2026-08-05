@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_UsesDerivedDescriptorForDirectProjectionOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_UsesDerivedMemberNameForDirectProjectionOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\InheritedReleaseTemplate.razor",
@@ -46,9 +46,12 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
                 using Demo.Shared;
 
                 [ECMAScriptModule("./components/inherited-release-template-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "release-item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public partial class InheritedReleaseTemplate : ReleaseTemplateBase, IVueComponent
                 {
+                    [Parameter]
+                    [ECMAScriptName("release-item")]
+                    public new RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
+
                     private ReleaseEntry Current { get; } = new(34, "Payments API");
                 }
             }
@@ -70,7 +73,7 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
 
             import component from "./components/inherited-release-template-runtime.mjs";
 
-            test("official Razor inherited generic slots use the derived descriptor and retain context", () => {
+            test("official Razor inherited generic slots use the derived member name and retain context", () => {
                 const withoutSlot = component.setup({}, { slots: {} })();
                 assert.equal(withoutSlot.name, "section");
                 assert.equal(withoutSlot.props["data-area"], "release-template");

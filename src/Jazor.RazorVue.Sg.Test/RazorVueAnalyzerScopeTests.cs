@@ -64,7 +64,7 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
-    public async Task VueDescriptorNamedArguments_DoNotTriggerRuntimeWhitelistDiagnostics()
+    public async Task VueMemberNameMetadata_DoesNotTriggerRuntimeWhitelistDiagnostics()
     {
         var diagnostics = await AnalyzeAsync(
             """
@@ -74,10 +74,10 @@ public sealed class RazorVueAnalyzerScopeTests
             using static ECMAScript.Vue3;
 
             [ECMAScriptModule("./components/counter")]
-            [VueProp(nameof(Title), Name = "runtimeTitle", Required = true)]
             public sealed class Counter : ComponentBase, IVueComponent
             {
                 [Parameter]
+                [ECMAScriptName("runtimeTitle")]
                 public string Title { get; set; } = string.Empty;
             }
             """);

@@ -22,9 +22,9 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
             namespace Demo.Direct;
 
             [ECMAScriptModule("./components/direct-generic-slot-alias-runtime")]
-            [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "System.String", ContextParameterName = "item")]
             public sealed class DirectGenericSlotAlias : ComponentBase, IVueComponent
             {
+                [ECMAScriptName("item")]
                 [Parameter] public RenderFragment<string> ItemTemplate { get; set; } = default!;
 
                 private string Current { get; } = "Deploy API";

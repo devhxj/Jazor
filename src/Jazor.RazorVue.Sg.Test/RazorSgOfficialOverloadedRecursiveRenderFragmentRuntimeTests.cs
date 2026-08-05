@@ -22,8 +22,6 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/dual-slot-panel-overloaded-template-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(Footer), Name = "footer")]
                 public sealed class DualSlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }
@@ -141,7 +139,6 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-header-variant-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }

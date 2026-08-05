@@ -1851,11 +1851,11 @@ public sealed class SdkIntegrationTests
             namespace ExternalRazorSgG0Consumer;
 
             [ECMAScriptModule("./components/release-editor")]
-            [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
             [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
             public partial class ReleaseEditor : ComponentBase, IVueComponent
             {
                 [Parameter]
+                [ECMAScriptName("modelValue")]
                 public string Value { get; set; } = "";
 
                 [Parameter]

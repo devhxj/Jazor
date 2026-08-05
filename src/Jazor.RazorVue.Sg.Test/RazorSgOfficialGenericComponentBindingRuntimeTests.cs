@@ -22,10 +22,10 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-editor-generic-runtime")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class ReleaseEditor<TValue> : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public TValue Value { get; set; } = default!;
 
                     [Parameter] public EventCallback<TValue> ValueChanged { get; set; }

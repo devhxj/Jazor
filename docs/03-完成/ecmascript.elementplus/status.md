@@ -16,7 +16,7 @@
   - 相关组件 `.d.ts`
 - `ElementPlusComponentExports` / `ElementPlusComponentRegistry` / `ElementPlus.Components.generated.cs` 已由同一生成链产出；
 - authoring export 与 runtime export 已支持分离映射，当前已覆盖 `ElVirtualizedSelect -> ElSelectV2`；
-- canonical `modelValue` 即使在元数据遗漏 `update:modelValue` 时，也会显式生成 `VuePropKind.Model`、`AcceptsBinding = true` 和 `*Changed` 回调；
+- canonical `modelValue` 即使在元数据遗漏 `update:modelValue` 时，也会生成成员级通用名称和标准 `*Changed` 回调；旧 `VuePropKind` / `AcceptsBinding` 元数据已退役；
 - 公共 CSS / style / 常见联合值已优先复用 `ECMAScript.Vue3`，不再在 `ECMAScript.ElementPlus` 内重复制造一批近似类型；
 - 截至本轮，之前列出的 **29 个 `VueValue?` / `EventCallback<VueValue?>` 弱面已全部从生成组件 authoring surface 清零**。
 

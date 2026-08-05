@@ -45,15 +45,14 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Name, bool IsReady);
 
                 [ECMAScriptModule("./components/release-panel-workflow")]
-                [VueProp(nameof(SelectedId), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(SelectedIdChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public int SelectedId { get; set; }
                     [Parameter] public EventCallback<int> SelectedIdChanged { get; set; }
                     [Parameter] public RenderFragment? Header { get; set; }
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

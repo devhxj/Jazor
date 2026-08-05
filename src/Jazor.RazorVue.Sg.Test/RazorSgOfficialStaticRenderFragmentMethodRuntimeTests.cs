@@ -22,7 +22,6 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-host-static-render-fragment-runtime")]
-                [VueSlot(nameof(Content), Name = "content")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Content { get; set; }

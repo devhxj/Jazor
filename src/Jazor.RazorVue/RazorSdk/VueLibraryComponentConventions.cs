@@ -14,20 +14,18 @@ namespace Jazor.RazorVue.RazorSdk;
 /// </summary>
 /// <remarks>
 /// Member-level <c>ECMAScriptName</c>/<c>Description("@#...")</c> metadata owns
-/// the concrete Roslyn symbol and therefore has priority. Legacy class-level
-/// Vue descriptors remain a migration fallback only.
+/// the concrete Roslyn symbol. Class-level emit metadata is retained only where
+/// the raw Vue event name cannot be reconstructed from a listener property name.
 /// <para>
-/// 成员级通用命名元数据绑定到具体 Roslyn 符号，因此优先级最高；旧的类级 Vue
-/// 描述符仅作为迁移兼容层，不能覆盖成员自身声明。
+/// 成员级通用命名元数据绑定到具体 Roslyn 符号；只有监听器属性名无法无损还原
+/// Vue 原始事件名时，才继续读取类级 emit 元数据。
 /// </para>
 /// </remarks>
 internal static class VueLibraryComponentConventions
 {
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
-    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
-    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
 
     /// <summary>
     /// Returns the effective Razor parameter contract from derived type to base type.
@@ -68,14 +66,11 @@ internal static class VueLibraryComponentConventions
 
         foreach (var property in GetEffectiveParameterProperties(componentType))
         {
-            if (IsRenderFragment(property.Type) && IsPatternOnlySlot(componentType, property))
-                continue;
-
             var runtimeName = IsRenderFragment(property.Type)
                 ? GetSlotRuntimeName(componentType, property)
                 : IsEventCallback(property.Type)
                     ? GetEventListenerRuntimeName(componentType, property)
-                    : GetPropRuntimeName(componentType, property);
+                    : GetPropRuntimeName(property);
 
             if (owners.TryGetValue(runtimeName, out var existing))
             {
@@ -92,21 +87,13 @@ internal static class VueLibraryComponentConventions
         return names.ToImmutable();
     }
 
-    public static string GetPropRuntimeName(
-        INamedTypeSymbol componentType,
-        IPropertySymbol property)
+    public static string GetPropRuntimeName(IPropertySymbol property)
     {
         var explicitName = Util.GetSymbolConfigName(property);
         if (!string.IsNullOrWhiteSpace(explicitName))
             return explicitName!;
 
-        return TryGetLegacyDescriptorName(
-            componentType,
-            property,
-            VuePropAttributeMetadataName,
-            out var descriptorName)
-            ? descriptorName
-            : Util.GetConfigOrSymbolName(property);
+        return Util.GetConfigOrSymbolName(property);
     }
 
     public static string GetSlotRuntimeName(
@@ -116,9 +103,6 @@ internal static class VueLibraryComponentConventions
         var explicitName = Util.GetSymbolConfigName(property);
         if (!string.IsNullOrWhiteSpace(explicitName))
             return explicitName!;
-
-        if (TryGetLegacySlotName(componentType, property, out var descriptorName))
-            return descriptorName;
 
         if (property.Name is "ChildContent" or "DefaultContent")
             return "default";
@@ -136,11 +120,7 @@ internal static class VueLibraryComponentConventions
         if (!string.IsNullOrWhiteSpace(explicitName))
             return explicitName!;
 
-        if (TryGetLegacyDescriptorName(
-                componentType,
-                property,
-                VueLibraryEmitAttributeMetadataName,
-                out var descriptorName))
+        if (TryGetEmitDescriptorName(componentType, property, out var descriptorName))
         {
             return VueDescriptorNaming.ToListenerPropertyName(descriptorName);
         }
@@ -158,11 +138,7 @@ internal static class VueLibraryComponentConventions
         if (!string.IsNullOrWhiteSpace(explicitName))
             return ToEmitName(explicitName!);
 
-        if (TryGetLegacyDescriptorName(
-                componentType,
-                property,
-                VueLibraryEmitAttributeMetadataName,
-                out var descriptorName))
+        if (TryGetEmitDescriptorName(componentType, property, out var descriptorName))
         {
             return descriptorName;
         }
@@ -192,7 +168,7 @@ internal static class VueLibraryComponentConventions
         if (model is null)
             return false;
 
-        eventName = "update:" + GetPropRuntimeName(componentType, model);
+        eventName = "update:" + GetPropRuntimeName(model);
         return true;
     }
 
@@ -203,20 +179,19 @@ internal static class VueLibraryComponentConventions
                 VueLibraryComponentAttributeMetadataName,
                 StringComparison.Ordinal));
 
-    private static bool TryGetLegacyDescriptorName(
+    private static bool TryGetEmitDescriptorName(
         INamedTypeSymbol componentType,
         IPropertySymbol property,
-        string attributeMetadataName,
         out string name)
     {
-        // Class-level descriptors cannot identify hidden same-name symbols. They are
-        // consulted only after the effective symbol and its member metadata are known.
-        // 类级描述符无法区分同名隐藏成员，只能在有效符号及成员元数据确定后兼容读取。
+        // Emit metadata carries the raw event name, but it still resolves only after
+        // the effective parameter symbol is known so hidden members stay deterministic.
+        // Emit 元数据承载原始事件名，但仍须先确定有效参数符号，保证隐藏成员解析稳定。
         for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
         {
             foreach (var attribute in current.GetAttributes())
             {
-                if (!IsDescriptorFor(attribute, attributeMetadataName, property.Name))
+                if (!IsDescriptorFor(attribute, VueLibraryEmitAttributeMetadataName, property.Name))
                     continue;
 
                 var descriptorName = GetNamedString(attribute, "Name");
@@ -229,59 +204,6 @@ internal static class VueLibraryComponentConventions
         }
 
         name = string.Empty;
-        return false;
-    }
-
-    private static bool TryGetLegacySlotName(
-        INamedTypeSymbol componentType,
-        IPropertySymbol property,
-        out string name)
-    {
-        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
-        {
-            foreach (var attribute in current.GetAttributes())
-            {
-                if (!IsDescriptorFor(attribute, VueSlotAttributeMetadataName, property.Name) ||
-                    GetNamedBoolean(attribute, "PatternOnly") == true)
-                {
-                    continue;
-                }
-
-                if (GetNamedBoolean(attribute, "IsDefault") == true)
-                {
-                    name = "default";
-                    return true;
-                }
-
-                var descriptorName = GetNamedString(attribute, "Name");
-                if (!string.IsNullOrWhiteSpace(descriptorName))
-                {
-                    name = descriptorName!;
-                    return true;
-                }
-            }
-        }
-
-        name = string.Empty;
-        return false;
-    }
-
-    private static bool IsPatternOnlySlot(
-        INamedTypeSymbol componentType,
-        IPropertySymbol property)
-    {
-        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
-        {
-            foreach (var attribute in current.GetAttributes())
-            {
-                if (IsDescriptorFor(attribute, VueSlotAttributeMetadataName, property.Name) &&
-                    GetNamedBoolean(attribute, "PatternOnly") == true)
-                {
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
@@ -306,20 +228,6 @@ internal static class VueLibraryComponentConventions
                 !string.IsNullOrWhiteSpace(value))
             {
                 return value.Trim();
-            }
-        }
-
-        return null;
-    }
-
-    private static bool? GetNamedBoolean(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is bool value)
-            {
-                return value;
             }
         }
 

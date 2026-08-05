@@ -25,7 +25,6 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-local-descriptor-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }

@@ -26,10 +26,10 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/splat-bind-child-runtime")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class SplatBindChild : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 

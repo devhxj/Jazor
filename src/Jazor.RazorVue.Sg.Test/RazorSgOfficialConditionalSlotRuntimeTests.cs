@@ -33,7 +33,6 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-panel-conditional-slot-runtime")]
-                [VueSlot(nameof(ChildContent), Name = "default")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? ChildContent { get; set; }

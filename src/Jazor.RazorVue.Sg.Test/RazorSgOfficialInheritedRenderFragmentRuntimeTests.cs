@@ -23,8 +23,6 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-inherited-template-runtime")]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(Footer), Name = "footer")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }

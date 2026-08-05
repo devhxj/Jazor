@@ -26,10 +26,10 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/typed-template-bridge-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public partial class TypedTemplateBridgeRuntime : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("item")]
                     public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     private ReleaseEntry Current { get; } = new(42, "Deploy");

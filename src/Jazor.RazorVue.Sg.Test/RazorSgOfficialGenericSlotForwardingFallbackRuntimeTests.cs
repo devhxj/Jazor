@@ -24,9 +24,9 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/release-list-generic-slot-forwarding-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "row")]
                 public sealed class ReleaseList : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -40,12 +40,11 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
                 using Demo.Components;
 
                 [ECMAScriptModule("./components/release-template-forwarder-runtime")]
-                [VueProp(nameof(UseIncomingTemplate), Name = "useIncomingTemplate")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "value")]
                 public partial class ReleaseTemplateForwarder : ComponentBase, IVueComponent
                 {
                     [Parameter] public bool UseIncomingTemplate { get; set; }
 
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     // The forwarded slot and the fallback lambda intentionally use different

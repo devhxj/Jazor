@@ -204,10 +204,10 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 namespace Demo.Library;
 
                 [VueLibraryComponent("tdesign-vue-next", "Select")]
-                [VueProp(nameof(SelectedValue), Name = "modelValue")]
                 public sealed class TSelect : ComponentBase
                 {
                     [Parameter]
+                    [ECMAScriptName("modelValue")]
                     public string SelectedValue { get; set; } = string.Empty;
 
                     [Parameter]

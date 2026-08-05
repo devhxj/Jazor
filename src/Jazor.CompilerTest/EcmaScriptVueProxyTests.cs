@@ -3202,11 +3202,6 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(ComponentBase).IsAssignableFrom(type))
             .ToArray();
 
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
-
         var names = new (Type Type, string Property, string RuntimeName)[]
         {
             (typeof(VAlert), nameof(VAlert.CssClass), "class"),
@@ -3290,11 +3285,6 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(ComponentBase).IsAssignableFrom(type))
             .ToArray();
 
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
-
         var names = new (Type Type, string Property, string RuntimeName)[]
         {
             (typeof(TButton), nameof(TButton.CssClass), "class"),
@@ -3328,10 +3318,6 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(ComponentBase).IsAssignableFrom(type))
             .ToArray();
 
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VuePropAttribute>(inherit: false).Any()));
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VueSlotAttribute>(inherit: false).Any()));
         Assert.IsFalse(componentTypes.Any(static type =>
             type.GetCustomAttributes<ECMAScript.VueContract.VueLibraryStyleAttribute>(inherit: false).Any()));
         Assert.IsFalse(componentTypes.Any(static type =>

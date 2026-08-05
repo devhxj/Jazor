@@ -866,15 +866,15 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
     }
 
     [TestMethod]
-    public void RewriteInvocation_RenderFragmentComponentParameter_UsesVueSlotDescriptorNameMap()
+    public void RewriteInvocation_RenderFragmentComponentParameter_UsesMemberNameMap()
     {
         var script = CompileWithRenderTreeBuilderHost(
             """
             [ECMAScriptModule("./components/child")]
-            [ECMAScript.VueContract.VueSlot(nameof(TitleContent), Name = "title")]
             class Child : ComponentBase
             {
                 [Parameter]
+                [ECMAScriptName("title")]
                 public RenderFragment<string> TitleContent { get; set; }
             }
 
@@ -1287,7 +1287,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueSlotAttribute).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryEmitAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs).Assembly.Location));
         var compilation = CSharpCompilation.Create(

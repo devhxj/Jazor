@@ -31,9 +31,9 @@ public sealed class RazorSgOfficialLocalGenericSlotAliasRuntimeTests
             public sealed record ReleaseEntry(string Name, int Pending);
 
             [ECMAScriptModule("./components/release-template-alias-runtime")]
-            [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Pages.ReleaseEntry", ContextParameterName = "release")]
             public partial class ReleaseTemplateAlias : ComponentBase, IVueComponent
             {
+                [ECMAScriptName("item")]
                 [Parameter] public RenderFragment<ReleaseEntry> ItemTemplate { get; set; } = default!;
 
                 private readonly ReleaseEntry[] Releases =

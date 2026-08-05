@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialVueInjectRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorVueInject_UsesImplementationDescriptorsAndSlots()
+    public async Task BuildComponent_OfficialRazorVueInject_UsesImplementationMemberNamesAndSlots()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\InjectedShellRuntime.razor",
@@ -50,14 +50,14 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
                     }
 
                     [ECMAScriptModule("./components/injected-shell-runtime")]
-                    [VueProp(nameof(Title), Name = "injectedTitle")]
-                    [VueSlot(nameof(ChildContent), Name = "injected-content")]
                     public partial class InjectedShell : ComponentBase, IVueComponent, IVueContainerImplementation<ContractShell>
                     {
                         [Parameter]
+                        [ECMAScriptName("injectedTitle")]
                         public string? Title { get; set; }
 
                         [Parameter]
+                        [ECMAScriptName("injected-content")]
                         public RenderFragment? ChildContent { get; set; }
                     }
                 }
@@ -82,7 +82,7 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
             import parent from "./components/injected-parent-runtime.mjs";
             import injectedShell from "./components/injected-shell-runtime.mjs";
 
-            test("official Razor VueInject resolves the implementation component and its descriptor names", () => {
+            test("official Razor VueInject resolves the implementation component and its member names", () => {
                 const vnode = parent.setup({}, { slots: {} })();
                 assert.equal(vnode.name, injectedShell);
                 assert.equal(vnode.props.injectedTitle, "Account");

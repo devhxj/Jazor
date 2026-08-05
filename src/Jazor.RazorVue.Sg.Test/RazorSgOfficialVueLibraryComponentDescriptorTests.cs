@@ -43,9 +43,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
 
                 namespace Demo.Library;
 
-                [VueProp(nameof(Theme), Name = "theme")]
                 [VueLibraryEmit(nameof(OnClick), Name = "click")]
-                [VueSlot(nameof(ChildContent), IsDefault = true)]
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
                 public sealed class TButton : ComponentBase, IVueLibraryComponent
                 {

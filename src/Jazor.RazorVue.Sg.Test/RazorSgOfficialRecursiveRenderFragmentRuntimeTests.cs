@@ -23,7 +23,6 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/tree-panel-recursive-template-runtime")]
-                [VueSlot(nameof(Content), Name = "content")]
                 public sealed class TreePanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Content { get; set; }

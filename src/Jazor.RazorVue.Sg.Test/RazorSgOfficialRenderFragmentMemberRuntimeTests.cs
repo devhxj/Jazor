@@ -21,8 +21,6 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-panel-render-fragment-members")]
-                [VueSlot(nameof(Header), Name = "header")]
-                [VueSlot(nameof(Footer), Name = "footer")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Header { get; set; }

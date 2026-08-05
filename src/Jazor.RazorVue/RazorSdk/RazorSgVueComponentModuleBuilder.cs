@@ -904,9 +904,7 @@ internal static class RazorSgVueComponentModuleBuilder
                 ? VueLibraryComponentConventions.GetEventListenerRuntimeName(
                     closure.ComponentSymbol,
                     property)
-                : VueLibraryComponentConventions.GetPropRuntimeName(
-                    closure.ComponentSymbol,
-                    property))
+                : VueLibraryComponentConventions.GetPropRuntimeName(property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)

@@ -173,7 +173,7 @@ public sealed class RenderTreeBuilderHostScenarioTests
             """;
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueSlotAttribute).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryEmitAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(MouseEventArgs).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location));
@@ -218,7 +218,6 @@ public enum RenderTreeBuilderHostSuccessKind
 {
     CombinedDescriptorMap,
     ExistingListenerDescriptor,
-    PatternOnlySlot,
     VueLibraryImportTrimming,
     ModulePathNormalization,
     ConvertedLocalComponentType,
@@ -280,11 +279,10 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             "derived-component-inherits-prop-emit-and-slot-runtime-name-map",
             RenderTreeBuilderHostSuccessKind.InheritedDescriptorMap,
             """
-            [VueProp(nameof(Value), Name = "model-value")]
             [VueLibraryEmit(nameof(ValueChanged), Name = "value-change")]
-            [VueSlot(nameof(ChildContent), IsDefault = true)]
             abstract class EditorBase : ComponentBase
             {
+                [ECMAScriptName("model-value")]
                 [Parameter] public string Value { get; set; } = "";
                 [Parameter] public EventCallback<string> ValueChanged { get; set; }
                 [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -318,11 +316,10 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             RenderTreeBuilderHostSuccessKind.CombinedDescriptorMap,
             """
             [ECMAScriptModule("./components/editor")]
-            [VueProp(nameof(Value), Name = "model-value")]
             [VueLibraryEmit(nameof(ValueChanged), Name = "update:modelValue")]
-            [VueSlot(nameof(ChildContent), IsDefault = true)]
             sealed class Editor : ComponentBase
             {
+                [ECMAScriptName("model-value")]
                 [Parameter] public string Value { get; set; } = "";
                 [Parameter] public EventCallback<string> ValueChanged { get; set; }
                 [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -370,33 +367,6 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             ["onOnClick"],
             [],
             [DefaultImport("./components/button.mjs")]),
-        Success(
-            "pattern-only-slot",
-            "dynamic-slot-pattern-excluded-from-static-name-map",
-            RenderTreeBuilderHostSuccessKind.PatternOnlySlot,
-            """
-            [ECMAScriptModule("./components/list")]
-            [VueSlot(nameof(ItemContent), Name = "item")]
-            [VueSlot(nameof(DynamicContent), NamePattern = "item-*", PatternOnly = true)]
-            sealed class ListView : ComponentBase
-            {
-                [Parameter] public RenderFragment? ItemContent { get; set; }
-                [Parameter] public RenderFragment? DynamicContent { get; set; }
-            }
-
-            sealed class TestClass
-            {
-                void Render(RenderTreeBuilder builder)
-                {
-                    builder.OpenComponent<ListView>(0);
-                    builder.CloseComponent();
-                }
-            }
-            """,
-            ["\"ItemContent\": \"item\""],
-            ["\"DynamicContent\"", "item-*"],
-            [],
-            [DefaultImport("./components/list.mjs")]),
         Success(
             "vue-library-import-trimming",
             "library-component-import-and-export-normalization",

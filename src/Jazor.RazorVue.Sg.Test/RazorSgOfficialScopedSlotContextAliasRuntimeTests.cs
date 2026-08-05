@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorScopedSlotContextAlias_BindsTheDescriptorContextOnDenoHost()
+    public async Task BuildComponent_OfficialRazorScopedSlotContextAlias_BindsTypedContextOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\ReleaseListPage.razor",
@@ -29,9 +29,9 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/release-list-scoped-slot-context-alias-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ReleaseList : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

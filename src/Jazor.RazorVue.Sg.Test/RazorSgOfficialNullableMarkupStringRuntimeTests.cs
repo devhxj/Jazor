@@ -190,7 +190,6 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/nullable-release-summary-slot-panel-runtime")]
-                [VueSlot(nameof(ChildContent), Name = "default")]
                 public sealed class ReleaseSummaryPanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? ChildContent { get; set; }

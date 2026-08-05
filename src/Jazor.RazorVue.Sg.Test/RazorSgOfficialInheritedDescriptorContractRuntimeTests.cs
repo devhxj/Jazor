@@ -22,10 +22,10 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
             namespace Demo.Components
             {
-                [VueProp(nameof(Title), Name = "heading")]
                 [VueLibraryEmit(nameof(TitleChanged), Name = "title-change")]
                 public abstract class InheritedReleasePanelBase : ComponentBase
                 {
+                    [ECMAScriptName("heading")]
                     [Parameter] public string Title { get; set; } = string.Empty;
                     [Parameter] public EventCallback<string> TitleChanged { get; set; }
                 }
@@ -88,11 +88,10 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
             namespace Demo.Components
             {
-                [VueProp(nameof(Title), Name = "heading")]
                 [VueLibraryEmit(nameof(TitleChanged), Name = "title-change")]
-                [VueSlot(nameof(Header), Name = "header")]
                 public abstract class InheritedReleasePanelBase : ComponentBase
                 {
+                    [ECMAScriptName("heading")]
                     [Parameter] public string Title { get; set; } = string.Empty;
                     [Parameter] public EventCallback<string> TitleChanged { get; set; }
                     [Parameter] public RenderFragment? Header { get; set; }

@@ -31,9 +31,9 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
                 }
 
                 [ECMAScriptModule("./components/navigation-panel-recursive-scoped-slot-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.NavigationNode", ContextParameterName = "node")]
                 public sealed class NavigationPanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<NavigationNode>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

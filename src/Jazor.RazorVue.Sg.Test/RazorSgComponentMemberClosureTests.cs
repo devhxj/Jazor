@@ -217,7 +217,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task Build_CurrentComponentClosure_UsesVueDescriptorNamesForPropsAndListeners()
+    public async Task Build_CurrentComponentClosure_UsesMemberNamesForPropsAndListeners()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -231,11 +231,11 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/counter")]
-                [VueProp(nameof(Title), Name = "data-title")]
                 [VueLibraryEmit(nameof(OnSave), Name = "saved")]
                 public partial class Counter : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("data-title")]
                     public string Title { get; set; } = "";
 
                     [Parameter]
@@ -1475,7 +1475,6 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [VueLibraryComponent("npm:demo-links@1.mjs", "DemoLink")]
-                [VueSlot(nameof(ChildContent), IsDefault = true)]
                 public sealed class DemoLink : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
@@ -1537,14 +1536,14 @@ public sealed class RazorSgComponentMemberClosureTests
                 }
 
                 [ECMAScriptModule("./components/injected-shell")]
-                [VueProp(nameof(Title), Name = "injectedTitle")]
-                [VueSlot(nameof(ChildContent), Name = "injected-content")]
                 public partial class InjectedShell : ComponentBase, IVueComponent, IVueContainerImplementation<ContractShell>
                 {
                     [Parameter]
+                    [ECMAScriptName("injectedTitle")]
                     public string? Title { get; set; }
 
                     [Parameter]
+                    [ECMAScriptName("injected-content")]
                     public RenderFragment? ChildContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -5562,7 +5561,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_UsesVueSlotDescriptorForNamedRenderFragmentSlot()
+    public async Task BuildVueComponentModule_UsesMemberNameForNamedRenderFragmentSlot()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -5575,10 +5574,10 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueSlot(nameof(Header), Name = "title")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("title")]
                     public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -5640,7 +5639,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_UsesVueSlotDescriptorForTypedRenderFragmentSlot()
+    public async Task BuildVueComponentModule_UsesMemberNameForTypedRenderFragmentSlot()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -5653,10 +5652,10 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueSlot(nameof(TitleContent), Name = "title")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("title")]
                     public RenderFragment<string>? TitleContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -6433,7 +6432,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_RuntimeUsesComponentBindDescriptorNames()
+    public async Task BuildVueComponentModule_RuntimeUsesComponentBindingNames()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -6447,11 +6446,11 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("modelValue")]
                     public string Value { get; set; } = "";
 
                     [Parameter]
@@ -6592,7 +6591,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_RuntimeCombinesDescriptorBindSlotAndEventCallback()
+    public async Task BuildVueComponentModule_RuntimeCombinesBindingSlotAndEventCallback()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -6606,13 +6605,12 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 [VueLibraryEmit(nameof(OnAction), VueEmitKind.Normal, Name = "action")]
-                [VueSlot(nameof(TitleContent), Name = "title")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [ECMAScriptName("modelValue")]
                     public string Value { get; set; } = "";
 
                     [Parameter]
@@ -6622,6 +6620,7 @@ public sealed class RazorSgComponentMemberClosureTests
                     public EventCallback<string> OnAction { get; set; }
 
                     [Parameter]
+                    [ECMAScriptName("title")]
                     public RenderFragment<string>? TitleContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -7228,7 +7227,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_DerivedParameterMemberNamesOverrideLegacyDescriptors()
+    public async Task BuildVueComponentModule_DerivedNewParametersOverrideBaseMemberNames()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -7254,8 +7253,6 @@ public sealed class RazorSgComponentMemberClosureTests
                 }
 
                 [VueLibraryComponent("demo-components", "Child")]
-                [VueProp(nameof(Title), Name = "legacyTitle")]
-                [VueSlot(nameof(Header), Name = "legacy.header")]
                 public sealed class Child : ChildBase, IVueLibraryComponent
                 {
                     [Parameter]
@@ -7359,9 +7356,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.AreEqual("ChildBase", parameter.ContainingType.Name);
         Assert.AreEqual(
             "baseTitle",
-            VueLibraryComponentConventions.GetPropRuntimeName(
-                fixture.Component.ComponentSymbol,
-                parameter));
+            VueLibraryComponentConventions.GetPropRuntimeName(parameter));
 
         var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
             fixture.Binding,

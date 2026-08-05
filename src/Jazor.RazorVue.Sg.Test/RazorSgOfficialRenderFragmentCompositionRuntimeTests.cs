@@ -23,7 +23,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-host-render-fragment-composition-runtime")]
-                [VueSlot(nameof(Content), Name = "content")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Content { get; set; }
@@ -140,9 +139,9 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 }
 
                 [ECMAScriptModule("./components/item-panel-render-fragment-composition-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ItemPanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -246,9 +245,9 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 }
 
                 [ECMAScriptModule("./components/item-panel-render-fragment-variant-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public sealed class ItemPanel : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -346,7 +345,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/tree-panel-local-render-fragment-runtime")]
-                [VueSlot(nameof(Content), Name = "content")]
                 public sealed class TreePanel : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Content { get; set; }
@@ -447,7 +445,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/slot-host-expression-fragment-runtime")]
-                [VueSlot(nameof(Content), Name = "content")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
                     [Parameter] public RenderFragment? Content { get; set; }

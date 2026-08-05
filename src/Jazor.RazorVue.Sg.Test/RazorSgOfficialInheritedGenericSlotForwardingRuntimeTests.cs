@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_ForwardsDerivedDescriptorOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_ForwardsDerivedMemberNameOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\InheritedReleaseTemplateForwarder.razor",
@@ -25,9 +25,9 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
                 public sealed record ReleaseEntry(int Id, string Label);
 
                 [ECMAScriptModule("./components/release-list-inherited-generic-slot-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "row")]
                 public sealed class ReleaseList : ComponentBase, IVueComponent
                 {
+                    [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -48,12 +48,15 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
 
             namespace Demo.Pages
             {
+                using Demo.Components;
                 using Demo.Shared;
 
                 [ECMAScriptModule("./components/inherited-release-template-forwarder-runtime")]
-                [VueSlot(nameof(ItemTemplate), Name = "forwarded-item", ContextTypeName = "Demo.Components.ReleaseEntry", ContextParameterName = "release")]
                 public partial class InheritedReleaseTemplateForwarder : ReleaseTemplateBase, IVueComponent
                 {
+                    [Parameter]
+                    [ECMAScriptName("forwarded-item")]
+                    public new RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
                 }
             }
             """,
