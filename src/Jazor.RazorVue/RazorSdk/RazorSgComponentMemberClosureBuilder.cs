@@ -197,9 +197,6 @@ internal sealed record RazorSgComponentMemberClosure(
     ImmutableArray<IMethodSymbol> LifecycleRoots)
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
-    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
-    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
-    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
 
     public ImmutableArray<ISymbol> OrderedMembers
         => CompilerClosure.Members;
@@ -208,10 +205,19 @@ internal sealed record RazorSgComponentMemberClosure(
         => OrderedMembers.OfType<IFieldSymbol>().ToImmutableArray();
 
     public ImmutableArray<IPropertySymbol> ParameterProperties
-        => OrderedMembers
-            .OfType<IPropertySymbol>()
-            .Where(IsParameterProperty)
-            .ToImmutableArray();
+    {
+        get
+        {
+            var effectiveParameters = VueLibraryComponentConventions
+                .GetEffectiveParameterProperties(ComponentSymbol)
+                .Select(static property => property.OriginalDefinition)
+                .ToImmutableHashSet(Comparer);
+            return OrderedMembers
+                .OfType<IPropertySymbol>()
+                .Where(property => effectiveParameters.Contains(property.OriginalDefinition))
+                .ToImmutableArray();
+        }
+    }
 
     public ImmutableArray<IPropertySymbol> StateProperties
         => OrderedMembers
@@ -271,11 +277,7 @@ internal sealed record RazorSgComponentMemberClosure(
     }
 
     private static bool IsParameterProperty(IPropertySymbol property)
-        => property.GetAttributes().Any(static attribute =>
-            string.Equals(
-                attribute.AttributeClass?.ToDisplayString(),
-                ParameterAttributeMetadataName,
-                StringComparison.Ordinal));
+        => VueLibraryComponentConventions.IsParameterProperty(property);
 
     private static bool IsAutoProperty(IPropertySymbol property)
     {
@@ -303,70 +305,6 @@ internal sealed record RazorSgComponentMemberClosure(
     }
 
     private static IReadOnlyDictionary<string, string> BuildParameterRuntimeNameMap(INamedTypeSymbol componentSymbol)
-    {
-        var map = new Dictionary<string, string>(StringComparer.Ordinal);
-        // A derived component owns any redefinition; base descriptors complete the contract.
-        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
-        {
-            var currentMap = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var attribute in current.GetAttributes())
-            {
-                var attributeName = attribute.AttributeClass?.ToDisplayString();
-                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
-                {
-                    AddDescriptorName(attribute, currentMap, listener: false);
-                    continue;
-                }
-
-                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
-                    AddDescriptorName(attribute, currentMap, listener: true);
-            }
-
-            foreach (var entry in currentMap)
-            {
-                if (!map.ContainsKey(entry.Key))
-                    map.Add(entry.Key, entry.Value);
-            }
-        }
-
-        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentSymbol, map);
-
-        return map;
-    }
-
-    private static void AddDescriptorName(
-        AttributeData attribute,
-        Dictionary<string, string> map,
-        bool listener)
-    {
-        if (attribute.ConstructorArguments.Length == 0 ||
-            attribute.ConstructorArguments[0].Value is not string publicName ||
-            string.IsNullOrWhiteSpace(publicName))
-        {
-            return;
-        }
-
-        var name = GetNamedString(attribute, "Name");
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-
-        map[publicName] = listener
-            ? VueDescriptorNaming.ToListenerPropertyName(name!)
-            : name!;
-    }
-
-    private static string? GetNamedString(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is string value)
-            {
-                return value.Trim();
-            }
-        }
-
-        return null;
-    }
+        => VueLibraryComponentConventions.BuildParameterRuntimeNameMap(componentSymbol);
 
 }

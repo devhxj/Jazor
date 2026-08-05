@@ -26,9 +26,6 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     private const string RenderContextModulePath = "@jazor/vue-runtime/render-context.mjs";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
-    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
-    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
-    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
 
     private enum RenderContextMethodKind
     {
@@ -835,123 +832,21 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static ObjectExpression? BuildComponentParameterNameMapExpression(INamedTypeSymbol componentType)
     {
-        var names = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        // Keep compiler-host fallback aligned with the direct-render component contract.
-        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
-        {
-            var currentNames = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            foreach (var attribute in current.GetAttributes())
-            {
-                var attributeName = attribute.AttributeClass?.ToDisplayString();
-                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
-                {
-                    AddDescriptorName(attribute, currentNames, listener: false);
-                    continue;
-                }
-
-                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
-                {
-                    AddDescriptorName(attribute, currentNames, listener: true);
-                    continue;
-                }
-
-                if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
-                    AddSlotDescriptorName(attribute, currentNames);
-            }
-
-            foreach (var entry in currentNames)
-            {
-                if (!names.ContainsKey(entry.Key))
-                    names.Add(entry.Key, entry.Value);
-            }
-        }
-
-        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentType, names);
-        VueLibraryComponentConventions.AddInferredSlotNames(componentType, names);
+        var names = VueLibraryComponentConventions.BuildParameterRuntimeNameMap(componentType);
 
         if (names.Count == 0)
             return null;
 
-        var properties = names.Select(static pair => (Node)new ObjectProperty(
-            PropertyKind.Init,
-            key: CreateStringLiteral(pair.Key),
-            value: CreateStringLiteral(pair.Value),
-            computed: false,
-            shorthand: false,
-            method: false));
+        var properties = names
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .Select(static pair => (Node)new ObjectProperty(
+                PropertyKind.Init,
+                key: CreateStringLiteral(pair.Key),
+                value: CreateStringLiteral(pair.Value),
+                computed: false,
+                shorthand: false,
+                method: false));
         return new ObjectExpression(NodeList.From(properties));
-    }
-
-    private static void AddDescriptorName(
-        AttributeData attribute,
-        SortedDictionary<string, string> names,
-        bool listener)
-    {
-        if (attribute.ConstructorArguments.Length == 0 ||
-            attribute.ConstructorArguments[0].Value is not string publicName ||
-            string.IsNullOrWhiteSpace(publicName))
-        {
-            return;
-        }
-
-        var name = GetNamedString(attribute, "Name");
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-
-        names[publicName] = listener
-            ? VueDescriptorNaming.ToListenerPropertyName(name!)
-            : name!;
-    }
-
-    private static void AddSlotDescriptorName(
-        AttributeData attribute,
-        SortedDictionary<string, string> names)
-    {
-        if (attribute.ConstructorArguments.Length == 0 ||
-            attribute.ConstructorArguments[0].Value is not string publicName ||
-            string.IsNullOrWhiteSpace(publicName))
-        {
-            return;
-        }
-
-        if (GetNamedBoolean(attribute, "PatternOnly") == true)
-            return;
-
-        var name = GetNamedBoolean(attribute, "IsDefault") == true
-            ? "default"
-            : GetNamedString(attribute, "Name");
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-
-        names[publicName] = name!;
-    }
-
-    private static string? GetNamedString(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is string value)
-            {
-                return value.Trim();
-            }
-        }
-
-        return null;
-    }
-
-    private static bool? GetNamedBoolean(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is bool value)
-            {
-                return value;
-            }
-        }
-
-        return null;
     }
 
     private static StringLiteral CreateStringLiteral(string value)

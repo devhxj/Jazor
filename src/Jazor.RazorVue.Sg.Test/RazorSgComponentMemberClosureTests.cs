@@ -271,7 +271,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         StringAssert.Contains(script, "return props[\"data-title\"];", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.onSaved?.(props[\"data-title\"]);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "props: [\"data-title\", \"onSave\"]", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props: [\"data-title\", \"onSaved\"]", StringComparison.Ordinal);
         StringAssert.Contains(script, "emits: [\"saved\"]", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("props.title", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("props.onSave?.", StringComparison.Ordinal), script);
@@ -7225,6 +7225,191 @@ public sealed class RazorSgComponentMemberClosureTests
                 System.Threading.Thread.Sleep(100);
             }
         }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_DerivedParameterMemberNamesOverrideLegacyDescriptors()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                public abstract class ChildBase : ComponentBase
+                {
+                    [Parameter]
+                    [ECMAScriptName("baseTitle")]
+                    public string Title { get; set; } = "base";
+
+                    [Parameter]
+                    [ECMAScriptName("base.header")]
+                    public RenderFragment? Header { get; set; }
+                }
+
+                [VueLibraryComponent("demo-components", "Child")]
+                [VueProp(nameof(Title), Name = "legacyTitle")]
+                [VueSlot(nameof(Header), Name = "legacy.header")]
+                public sealed class Child : ChildBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    [ECMAScriptName("derivedTitle")]
+                    public new string Title { get; set; } = "derived";
+
+                    [Parameter]
+                    [Description("@#header.data-table-select")]
+                    public new RenderFragment? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.AddContent(2, Header);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/parent")]
+                public sealed class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment header = content => content.AddContent(0, "selected");
+                        builder.OpenComponent<Child>(0);
+                        builder.AddComponentParameter(1, "Title", "current");
+                        builder.AddComponentParameter(2, "Header", header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
+        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            child,
+            BuildClosure(fixture, child.ComponentSymbol.Name));
+        var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(childScript, "props.derivedTitle", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "slots[\"header.data-table-select\"]", StringComparison.Ordinal);
+        Assert.IsFalse(childScript.Contains("baseTitle", StringComparison.Ordinal), childScript);
+        Assert.IsFalse(childScript.Contains("legacyTitle", StringComparison.Ordinal), childScript);
+        Assert.IsFalse(childScript.Contains("base.header", StringComparison.Ordinal), childScript);
+        Assert.IsFalse(childScript.Contains("legacy.header", StringComparison.Ordinal), childScript);
+
+        var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
+        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            parent,
+            BuildClosure(fixture, parent.ComponentSymbol.Name));
+        var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(parentScript, "derivedTitle: \"current\"", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "\"header.data-table-select\"", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("baseTitle", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("legacyTitle", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("base.header", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("legacy.header", StringComparison.Ordinal), parentScript);
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_NonParameterMemberDoesNotHideInheritedParameterContract()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                public abstract class ChildBase : ComponentBase
+                {
+                    [Parameter]
+                    [ECMAScriptName("baseTitle")]
+                    public string Title { get; set; } = "base";
+                }
+
+                [VueLibraryComponent("demo-components", "Child")]
+                public sealed class Counter : ChildBase, IVueLibraryComponent
+                {
+                    public new string Title { get; set; } = "local";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Title);
+                    }
+                }
+            }
+            """);
+
+        var effectiveParameters = VueLibraryComponentConventions
+            .GetEffectiveParameterProperties(fixture.Component.ComponentSymbol);
+        var parameter = effectiveParameters.Single(property => property.Name == "Title");
+
+        Assert.AreEqual("ChildBase", parameter.ContainingType.Name);
+        Assert.AreEqual(
+            "baseTitle",
+            VueLibraryComponentConventions.GetPropRuntimeName(
+                fixture.Component.ComponentSymbol,
+                parameter));
+
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            BuildClosure(fixture));
+        StringAssert.Contains(artifact.ModuleText, "props: [\"baseTitle\"]", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BuildParameterRuntimeNameMap_RejectsDuplicateEffectiveVueNames()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [VueLibraryComponent("demo-components", "Counter")]
+                public sealed class Counter : ComponentBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    [ECMAScriptName("sameName")]
+                    public string First { get; set; } = "first";
+
+                    [Parameter]
+                    [ECMAScriptName("sameName")]
+                    public string Second { get; set; } = "second";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, First);
+                        builder.AddContent(1, Second);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            VueLibraryComponentConventions.BuildParameterRuntimeNameMap(
+                fixture.Component.ComponentSymbol));
+
+        StringAssert.Contains(exception.Message, "duplicate Vue name 'sameName'", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "First", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "Second", StringComparison.Ordinal);
     }
 
     private static RazorSgComponentMemberClosure BuildClosure(ClosureFixture fixture)

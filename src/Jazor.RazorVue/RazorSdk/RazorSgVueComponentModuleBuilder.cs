@@ -14,12 +14,8 @@ namespace Jazor.RazorVue.RazorSdk;
 internal static class RazorSgVueComponentModuleBuilder
 {
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
-    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
-    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
-    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
     private static readonly ImmutableHashSet<string> FramingReservedNames =
     new[]
@@ -902,18 +898,26 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static ImmutableArray<string> GetVuePropNames(RazorSgComponentMemberClosure closure)
-        => GetComponentParameterProperties(closure.ComponentSymbol)
+        => VueLibraryComponentConventions.GetEffectiveParameterProperties(closure.ComponentSymbol)
             .Where(static property => !IsAnyRenderFragmentType(property.Type))
-            .Select(property => GetVueParameterPropName(closure.ComponentSymbol, property))
+            .Select(property => IsEventCallbackType(property.Type)
+                ? VueLibraryComponentConventions.GetEventListenerRuntimeName(
+                    closure.ComponentSymbol,
+                    property)
+                : VueLibraryComponentConventions.GetPropRuntimeName(
+                    closure.ComponentSymbol,
+                    property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToImmutableArray();
 
     private static ImmutableArray<string> GetVueEmitNames(RazorSgComponentMemberClosure closure)
-        => GetComponentParameterProperties(closure.ComponentSymbol)
+        => VueLibraryComponentConventions.GetEffectiveParameterProperties(closure.ComponentSymbol)
             .Where(static property => IsEventCallbackType(property.Type))
-            .Select(property => GetVueParameterEmitName(closure.ComponentSymbol, property))
+            .Select(property => VueLibraryComponentConventions.GetEmitRuntimeName(
+                closure.ComponentSymbol,
+                property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
@@ -1302,12 +1306,7 @@ internal static class RazorSgVueComponentModuleBuilder
         => type.TypeKind == TypeKind.Class && !type.IsRecord;
 
     private static bool IsParameterProperty(IPropertySymbol? property)
-        => property is not null &&
-           property.GetAttributes().Any(static attribute =>
-               string.Equals(
-                   attribute.AttributeClass?.ToDisplayString(),
-                   ParameterAttributeMetadataName,
-                   StringComparison.Ordinal));
+        => property is not null && VueLibraryComponentConventions.IsParameterProperty(property);
 
     private static ImmutableArray<CompilerStatement> RemoveBuildRenderTreeFunction(
         ImmutableArray<CompilerStatement> setupStatements)
@@ -1469,10 +1468,12 @@ internal static class RazorSgVueComponentModuleBuilder
         CreateDirectRenderSlotParameterPropertyReferenceRewriter(RazorSgComponentMemberClosure closure)
     {
         var slotNames = ImmutableDictionary.CreateBuilder<IPropertySymbol, string>(SymbolComparer);
-        foreach (var property in GetComponentParameterProperties(closure.ComponentSymbol)
+        foreach (var property in VueLibraryComponentConventions
+                     .GetEffectiveParameterProperties(closure.ComponentSymbol)
                      .Where(static property => IsAnyRenderFragmentType(property.Type)))
         {
-            slotNames[(IPropertySymbol)property.OriginalDefinition] = GetVueSlotName(
+            slotNames[(IPropertySymbol)property.OriginalDefinition] =
+                VueLibraryComponentConventions.GetSlotRuntimeName(
                 closure.ComponentSymbol,
                 property);
         }
@@ -1777,186 +1778,6 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         return null;
-    }
-
-    private static string GetVueSlotName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
-        => TryGetClassSlotDescriptorName(componentSymbol, property, out var descriptorName)
-            ? descriptorName
-            : IsChildContentParameter(property)
-            ? "default"
-            : Util.GetConfigOrSymbolName(property);
-
-    private static bool TryGetClassSlotDescriptorName(
-        INamedTypeSymbol componentSymbol,
-        IPropertySymbol property,
-        out string name)
-    {
-        // Slot metadata belongs to the concrete component contract. A derived layout
-        // may intentionally rename a RenderFragment parameter declared by its base.
-        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
-        {
-            foreach (var attribute in current.GetAttributes())
-            {
-                if (!string.Equals(
-                        attribute.AttributeClass?.ToDisplayString(),
-                        VueSlotAttributeMetadataName,
-                        StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                if (attribute.ConstructorArguments.Length == 0 ||
-                    attribute.ConstructorArguments[0].Value is not string publicName ||
-                    !string.Equals(publicName, property.Name, StringComparison.Ordinal) ||
-                    GetNamedBoolean(attribute, "PatternOnly") == true)
-                {
-                    continue;
-                }
-
-                if (GetNamedBoolean(attribute, "IsDefault") == true)
-                {
-                    name = "default";
-                    return true;
-                }
-
-                var descriptorName = GetNamedString(attribute, "Name");
-                if (!string.IsNullOrWhiteSpace(descriptorName))
-                {
-                    name = descriptorName!;
-                    return true;
-                }
-            }
-        }
-
-        name = string.Empty;
-        return false;
-    }
-
-    private static IEnumerable<IPropertySymbol> GetComponentParameterProperties(INamedTypeSymbol componentSymbol)
-    {
-        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
-        {
-            foreach (var property in current
-                .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(static property => property.GetAttributes().Any(static attribute =>
-                    string.Equals(
-                        attribute.AttributeClass?.ToDisplayString(),
-                        ParameterAttributeMetadataName,
-                        StringComparison.Ordinal))))
-            {
-                yield return property;
-            }
-        }
-    }
-
-    private static string GetVueParameterPropName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
-        => TryGetClassDescriptorName(
-            componentSymbol,
-            VuePropAttributeMetadataName,
-            property.Name,
-            out var descriptorName)
-            ? descriptorName
-            : Util.GetConfigOrSymbolName(property);
-
-    private static string GetVueParameterEmitName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
-        => TryGetClassDescriptorName(
-            componentSymbol,
-            VueLibraryEmitAttributeMetadataName,
-            property.Name,
-            out var descriptorName)
-            ? descriptorName
-            : VueLibraryComponentConventions.TryGetModelUpdateEventName(componentSymbol, property, out var modelUpdateEventName)
-                ? modelUpdateEventName
-            : GetVueEmitName(Util.GetConfigOrSymbolName(property));
-
-    private static bool TryGetClassDescriptorName(
-        INamedTypeSymbol componentSymbol,
-        string attributeMetadataName,
-        string publicName,
-        out string name)
-    {
-        // Descriptors define the public Vue contract of the entire component hierarchy.
-        // The first match preserves a derived component's intentional override.
-        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
-        {
-            foreach (var attribute in current.GetAttributes())
-            {
-                if (!string.Equals(
-                        attribute.AttributeClass?.ToDisplayString(),
-                        attributeMetadataName,
-                        StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                if (attribute.ConstructorArguments.Length == 0 ||
-                    attribute.ConstructorArguments[0].Value is not string attributePublicName ||
-                    !string.Equals(attributePublicName, publicName, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                foreach (var argument in attribute.NamedArguments)
-                {
-                    if (string.Equals(argument.Key, "Name", StringComparison.Ordinal) &&
-                        argument.Value.Value is string descriptorName &&
-                        !string.IsNullOrWhiteSpace(descriptorName))
-                    {
-                        name = descriptorName.Trim();
-                        return true;
-                    }
-                }
-            }
-        }
-
-        name = string.Empty;
-        return false;
-    }
-
-    private static string? GetNamedString(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is string value &&
-                !string.IsNullOrWhiteSpace(value))
-            {
-                return value.Trim();
-            }
-        }
-
-        return null;
-    }
-
-    private static bool? GetNamedBoolean(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is bool value)
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static string GetVueEmitName(string runtimePropName)
-    {
-        if (string.IsNullOrWhiteSpace(runtimePropName))
-            return string.Empty;
-
-        if (runtimePropName.Length > 2 &&
-            runtimePropName.StartsWith("on", StringComparison.Ordinal) &&
-            char.IsUpper(runtimePropName[2]))
-        {
-            var eventName = runtimePropName.Substring(2);
-            return char.ToLowerInvariant(eventName[0]) + eventName.Substring(1);
-        }
-
-        return runtimePropName;
     }
 
     private static bool IsEventCallbackType(ITypeSymbol? type)

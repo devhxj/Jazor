@@ -2,6 +2,7 @@
 
 ## 2026-08-05
 
+- RazorVue component names now come from the effective `[Parameter]` symbol: member-level `ECMAScriptName` or `Description("@#...")` mappings override legacy class descriptors, derived `new [Parameter]` members replace hidden base parameters, and duplicate final Vue names fail explicitly. `VueProp` and `VueSlot` remain migration-only compatibility metadata until generated bindings are updated.
 - Vuetify RazorVue bindings now favor ordinary C# and Razor contracts: `X` plus `XChanged` supplies two-way binding, `OnX` supplies ordinary listeners, and `ChildContent` / `DefaultContent`, `XContent`, and PascalCase named fragments supply Vue slots. Bare `Save`, `Load`, `Next`, `Prev`, `AfterEnter`, `AfterLeave`, and `Submit` callback parameters were renamed to their `OnX` forms. Only Vue names that C# cannot express, such as colon events and dot slots, retain explicit metadata.
 - `VuetifyGridSpanValue` now uses the native C# union contract while retaining its boolean, number, string, and numeric assignment authoring forms.
 - `VCalendar` date, allowed-date, and interval-format values now use native C# unions. Their `AsX` projections and scalar/array convenience conversions remain, while the redundant JavaScript `From(...)` factories are removed.

@@ -40,7 +40,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             componentMetadataName: "Demo.Components.InheritedReleasePanel");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props: [\"heading\", \"titleChanged\"]", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props: [\"heading\", \"onTitleChange\"]", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "emits: [\"title-change\"]", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "props.heading", StringComparison.Ordinal);
 

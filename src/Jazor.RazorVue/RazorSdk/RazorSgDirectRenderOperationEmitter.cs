@@ -15,10 +15,6 @@ internal static class RazorSgDirectRenderOperationEmitter
     private const string MarkupStringMetadataName = "Microsoft.AspNetCore.Components.MarkupString";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
-    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
-    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
-    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
-    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static bool TryEmit(
@@ -3099,74 +3095,20 @@ internal static class RazorSgDirectRenderOperationEmitter
     }
 
     private static ImmutableDictionary<string, string> BuildComponentParameterNameMap(INamedTypeSymbol componentType)
-    {
-        var names = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
-        // Vue descriptor metadata describes the complete component contract. A derived
-        // component may override a base parameter name, while base metadata remains the
-        // fallback for parameters it inherits unchanged.
-        for (INamedTypeSymbol? current = componentType; current is not null; current = current.BaseType)
-        {
-            var currentNames = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
-            foreach (var attribute in current.GetAttributes())
-            {
-                var attributeName = attribute.AttributeClass?.ToDisplayString();
-                if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
-                {
-                    AddDescriptorName(attribute, currentNames, listener: false);
-                    continue;
-                }
-
-                if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
-                {
-                    AddDescriptorName(attribute, currentNames, listener: true);
-                    continue;
-                }
-
-                if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
-                    AddSlotDescriptorName(attribute, currentNames);
-            }
-
-            foreach (var entry in currentNames)
-            {
-                if (!names.ContainsKey(entry.Key))
-                    names.Add(entry.Key, entry.Value);
-            }
-        }
-
-        VueLibraryComponentConventions.AddInferredModelUpdateNames(componentType, names);
-        VueLibraryComponentConventions.AddInferredSlotNames(componentType, names);
-
-        return names.ToImmutable();
-    }
+        => VueLibraryComponentConventions.BuildParameterRuntimeNameMap(componentType);
 
     private static ImmutableDictionary<IPropertySymbol, string> BuildComponentSlotNameMap(INamedTypeSymbol componentType)
     {
         var names = ImmutableDictionary.CreateBuilder<IPropertySymbol, string>(SymbolComparer);
-        var descriptorNames = BuildComponentParameterNameMap(componentType);
-        for (var current = componentType; current is not null; current = current.BaseType)
+        foreach (var property in VueLibraryComponentConventions
+                     .GetEffectiveParameterProperties(componentType))
         {
-            foreach (var member in current.GetMembers())
-            {
-                if (member is not IPropertySymbol property ||
-                    !IsAnyRenderFragmentType(property.Type) ||
-                    !property.GetAttributes().Any(static attribute =>
-                        string.Equals(
-                            attribute.AttributeClass?.ToDisplayString(),
-                            ParameterAttributeMetadataName,
-                            StringComparison.Ordinal)))
-                {
-                    continue;
-                }
+            if (!IsAnyRenderFragmentType(property.Type))
+                continue;
 
-                var publicName = property.Name;
-                var slotName = descriptorNames.TryGetValue(publicName, out var descriptorName)
-                    ? descriptorName
-                    : string.Equals(publicName, "ChildContent", StringComparison.Ordinal)
-                        ? "default"
-                        : NormalizeDirectComponentParameterName(publicName);
-                if (!string.IsNullOrWhiteSpace(slotName))
-                    names[property.OriginalDefinition] = slotName;
-            }
+            var slotName = VueLibraryComponentConventions.GetSlotRuntimeName(componentType, property);
+            if (!string.IsNullOrWhiteSpace(slotName))
+                names[property.OriginalDefinition] = slotName;
         }
 
         return names.ToImmutable();
@@ -3208,65 +3150,6 @@ internal static class RazorSgDirectRenderOperationEmitter
         }
 
         return hasRenderFragmentProperty;
-    }
-
-    private static void AddDescriptorName(
-        AttributeData attribute,
-        ImmutableDictionary<string, string>.Builder names,
-        bool listener)
-    {
-        if (attribute.ConstructorArguments.Length == 0 ||
-            attribute.ConstructorArguments[0].Value is not string publicName ||
-            string.IsNullOrWhiteSpace(publicName))
-        {
-            return;
-        }
-
-        var name = GetNamedString(attribute, "Name");
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-
-        names[publicName] = listener ? VueDescriptorNaming.ToListenerPropertyName(name!) : name!;
-    }
-
-    private static void AddSlotDescriptorName(
-        AttributeData attribute,
-        ImmutableDictionary<string, string>.Builder names)
-    {
-        if (attribute.ConstructorArguments.Length == 0 ||
-            attribute.ConstructorArguments[0].Value is not string publicName ||
-            string.IsNullOrWhiteSpace(publicName))
-        {
-            return;
-        }
-
-        if (GetNamedBoolean(attribute, "PatternOnly") == true)
-            return;
-
-        var name = GetNamedBoolean(attribute, "IsDefault") == true
-            ? "default"
-            : GetNamedString(attribute, "Name");
-        if (!string.IsNullOrWhiteSpace(name))
-            names[publicName] = name!;
-    }
-
-    private static string? GetNamedString(AttributeData attribute, string name)
-        => attribute.NamedArguments
-            .FirstOrDefault(argument => string.Equals(argument.Key, name, StringComparison.Ordinal))
-            .Value.Value as string;
-
-    private static bool? GetNamedBoolean(AttributeData attribute, string name)
-    {
-        foreach (var argument in attribute.NamedArguments)
-        {
-            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
-                argument.Value.Value is bool value)
-            {
-                return value;
-            }
-        }
-
-        return null;
     }
 
     private static FunctionDeclaration BuildComponentAttributeNormalizer(string helperName)

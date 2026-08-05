@@ -17,15 +17,16 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
             codeBehindSource:
             """
             using System.Collections.Generic;
-            using ECMAScript.VueContract;
+            using ECMAScript;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-panel-attribute-bag")]
-                [VueProp(nameof(Heading), Name = "heading")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public string Heading { get; set; } = string.Empty;
+                    [Parameter]
+                    [ECMAScriptName("panel-heading")]
+                    public string Heading { get; set; } = string.Empty;
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -51,7 +52,7 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddMultipleAttributes", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "normalizeComponentAttributes", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "heading", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "panel-heading", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-panel-host.mjs",
@@ -73,7 +74,7 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
                 }, { slots: {} })();
 
                 assert.equal(panel.name, releasePanel);
-                assert.equal(panel.props.heading, "Release details");
+                assert.equal(panel.props["panel-heading"], "Release details");
                 assert.equal(panel.props["data-area"], "summary");
                 assert.equal("Heading" in panel.props, false);
             });
