@@ -24,7 +24,7 @@ public static class TDesign
 /// Marker interface for TDesign components.
 /// </summary>
 [ECMAScript]
-public interface ITComponent : IVueComponent
+public interface ITDesignComponent : IVueComponent
 {
 }
 

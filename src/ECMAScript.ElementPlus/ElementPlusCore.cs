@@ -24,7 +24,7 @@ public static class ElementPlus
 /// Marker interface for Element Plus components.
 /// </summary>
 [ECMAScript]
-public interface IElComponent : IVueComponent
+public interface IElementPlusComponent : IVueComponent
 {
 }
 

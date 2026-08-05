@@ -539,7 +539,7 @@ internal static class Program
         foreach (var component in components)
         {
             builder.AppendLine($"    [ECMAScriptName(\"{component.RuntimeExportName}\")]");
-            builder.AppendLine($"    public extern static IElComponent {component.AuthoringName} {{ get; }}");
+            builder.AppendLine($"    public extern static IElementPlusComponent {component.AuthoringName} {{ get; }}");
             builder.AppendLine();
         }
 
@@ -565,7 +565,7 @@ internal static class Program
         foreach (var component in components)
         {
             builder.AppendLine($"    [Description(\"@#{component.AuthoringName}\")]");
-            builder.AppendLine($"    public IElComponent? {component.ClassName} {{ get; init; }}");
+            builder.AppendLine($"    public IElementPlusComponent? {component.ClassName} {{ get; init; }}");
             builder.AppendLine();
         }
 

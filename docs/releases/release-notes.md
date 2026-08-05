@@ -6,7 +6,7 @@
 - RazorVue now infers every `X` plus `XChanged` model update and converts conventional `OnX` callbacks to kebab-case Vue event names. Vuetify callback properties consistently use `OnX`; explicit emit metadata remains only for raw names that cannot be reconstructed, such as colon events and `loadstart`.
 - All 113 Vuetify erased-value domains now use native C# unions. Existing `AsX` projections, scalar and array assignments, and collection expressions remain available, while handwritten tag/state wrappers and redundant `From(...)` factories are removed.
 - TDesign's 14 erased-value domains now use native C# unions, and ElementPlus uses native unions for 45 of 46 domains. The one required tagged contract preserves exact `File` versus `Blob` projections for upload callbacks; neither library requires `From(...)` factories.
-- Element Plus and TDesign authoring types now follow their component names as `El*` and `T*`, while the `ElementPlus` and `TDesign` root hosts retain the package identities.
+- Element Plus and TDesign component authoring types now follow their component names as `El*` and `T*`. The `ElementPlus` / `TDesign` root hosts and `IElementPlusComponent` / `ITDesignComponent` marker interfaces retain the package identities for clear cross-library references.
 
 ## 2026-08-05
 

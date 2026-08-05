@@ -8,71 +8,71 @@ namespace ECMAScript.TDesign;
 public sealed record TComponentRegistry : VueComponentRegistry
 {
     [Description("@#Button")]
-    public ITComponent? TButton { get; init; }
+    public ITDesignComponent? TButton { get; init; }
 
     [Description("@#Breadcrumb")]
-    public ITComponent? TBreadcrumb { get; init; }
+    public ITDesignComponent? TBreadcrumb { get; init; }
 
     [Description("@#BreadcrumbItem")]
-    public ITComponent? TBreadcrumbItem { get; init; }
+    public ITDesignComponent? TBreadcrumbItem { get; init; }
 
     [Description("@#Layout")]
-    public ITComponent? TLayout { get; init; }
+    public ITDesignComponent? TLayout { get; init; }
 
     [Description("@#Aside")]
-    public ITComponent? TAside { get; init; }
+    public ITDesignComponent? TAside { get; init; }
 
     [Description("@#Header")]
-    public ITComponent? THeader { get; init; }
+    public ITDesignComponent? THeader { get; init; }
 
     [Description("@#Content")]
-    public ITComponent? TContent { get; init; }
+    public ITDesignComponent? TContent { get; init; }
 
     [Description("@#Footer")]
-    public ITComponent? TFooter { get; init; }
+    public ITDesignComponent? TFooter { get; init; }
 
     [Description("@#Menu")]
-    public ITComponent? TMenu { get; init; }
+    public ITDesignComponent? TMenu { get; init; }
 
     [Description("@#HeadMenu")]
-    public ITComponent? THeadMenu { get; init; }
+    public ITDesignComponent? THeadMenu { get; init; }
 
     [Description("@#Submenu")]
-    public ITComponent? TSubmenu { get; init; }
+    public ITDesignComponent? TSubmenu { get; init; }
 
     [Description("@#MenuItem")]
-    public ITComponent? TMenuItem { get; init; }
+    public ITDesignComponent? TMenuItem { get; init; }
 
     [Description("@#MenuGroup")]
-    public ITComponent? TMenuGroup { get; init; }
+    public ITDesignComponent? TMenuGroup { get; init; }
 
     [Description("@#Card")]
-    public ITComponent? TCard { get; init; }
+    public ITDesignComponent? TCard { get; init; }
 
     [Description("@#Link")]
-    public ITComponent? TLink { get; init; }
+    public ITDesignComponent? TLink { get; init; }
 
     [Description("@#Tabs")]
-    public ITComponent? TTabs { get; init; }
+    public ITDesignComponent? TTabs { get; init; }
 
     [Description("@#TabPanel")]
-    public ITComponent? TTabPanel { get; init; }
+    public ITDesignComponent? TTabPanel { get; init; }
 
     [Description("@#Avatar")]
-    public ITComponent? TAvatar { get; init; }
+    public ITDesignComponent? TAvatar { get; init; }
 
     [Description("@#AvatarGroup")]
-    public ITComponent? TAvatarGroup { get; init; }
+    public ITDesignComponent? TAvatarGroup { get; init; }
 
     [Description("@#Badge")]
-    public ITComponent? TBadge { get; init; }
+    public ITDesignComponent? TBadge { get; init; }
 
     [Description("@#Space")]
-    public ITComponent? TSpace { get; init; }
+    public ITDesignComponent? TSpace { get; init; }
 
     [Description("@#Divider")]
-    public ITComponent? TDivider { get; init; }
+    public ITDesignComponent? TDivider { get; init; }
 
     [Description("@#ConfigProvider")]
-    public ITComponent? TConfigProvider { get; init; }
+    public ITDesignComponent? TConfigProvider { get; init; }
 }

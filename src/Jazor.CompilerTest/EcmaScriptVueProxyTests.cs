@@ -101,7 +101,7 @@ public sealed class EcmaScriptVueProxyTests
     {
         var runtimeShapes = new[]
         {
-            typeof(ITComponent),
+            typeof(ITDesignComponent),
             typeof(TPlugin),
             typeof(TInstallOptions),
             typeof(TGlobalConfig),
@@ -3411,7 +3411,7 @@ public sealed class EcmaScriptVueProxyTests
     private static IEnumerable<string> GetTDesignRuntimeComponentNames()
         => typeof(TComponents)
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static property => property.PropertyType == typeof(ITComponent))
+            .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
 
     [TestMethod]
@@ -3690,18 +3690,20 @@ public sealed class EcmaScriptVueProxyTests
             expectedCount: 14);
 
     [TestMethod]
-    public void ComponentLibraries_UseShortAuthoringTypePrefixes()
+    public void ComponentLibraries_UseShortComponentTypes_AndLibraryQualifiedMarkers()
     {
         AssertRetiredAuthoringPrefixIsAbsent(
             typeof(ElComponents).Assembly,
             typeof(ElComponents).Namespace!,
             "ElementPlus",
-            nameof(ElementPlus));
+            nameof(ElementPlus),
+            nameof(IElementPlusComponent));
         AssertRetiredAuthoringPrefixIsAbsent(
             typeof(TComponents).Assembly,
             typeof(TComponents).Namespace!,
             "TDesign",
-            nameof(TDesign));
+            nameof(TDesign),
+            nameof(ITDesignComponent));
     }
 
     [TestMethod]

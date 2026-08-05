@@ -7,71 +7,71 @@ namespace ECMAScript.TDesign;
 public static class TComponents
 {
     [ECMAScriptName("Button")]
-    public extern static ITComponent TButton { get; }
+    public extern static ITDesignComponent TButton { get; }
 
     [ECMAScriptName("Breadcrumb")]
-    public extern static ITComponent TBreadcrumb { get; }
+    public extern static ITDesignComponent TBreadcrumb { get; }
 
     [ECMAScriptName("BreadcrumbItem")]
-    public extern static ITComponent TBreadcrumbItem { get; }
+    public extern static ITDesignComponent TBreadcrumbItem { get; }
 
     [ECMAScriptName("Layout")]
-    public extern static ITComponent TLayout { get; }
+    public extern static ITDesignComponent TLayout { get; }
 
     [ECMAScriptName("Aside")]
-    public extern static ITComponent TAside { get; }
+    public extern static ITDesignComponent TAside { get; }
 
     [ECMAScriptName("Header")]
-    public extern static ITComponent THeader { get; }
+    public extern static ITDesignComponent THeader { get; }
 
     [ECMAScriptName("Content")]
-    public extern static ITComponent TContent { get; }
+    public extern static ITDesignComponent TContent { get; }
 
     [ECMAScriptName("Footer")]
-    public extern static ITComponent TFooter { get; }
+    public extern static ITDesignComponent TFooter { get; }
 
     [ECMAScriptName("Menu")]
-    public extern static ITComponent TMenu { get; }
+    public extern static ITDesignComponent TMenu { get; }
 
     [ECMAScriptName("HeadMenu")]
-    public extern static ITComponent THeadMenu { get; }
+    public extern static ITDesignComponent THeadMenu { get; }
 
     [ECMAScriptName("Submenu")]
-    public extern static ITComponent TSubmenu { get; }
+    public extern static ITDesignComponent TSubmenu { get; }
 
     [ECMAScriptName("MenuItem")]
-    public extern static ITComponent TMenuItem { get; }
+    public extern static ITDesignComponent TMenuItem { get; }
 
     [ECMAScriptName("MenuGroup")]
-    public extern static ITComponent TMenuGroup { get; }
+    public extern static ITDesignComponent TMenuGroup { get; }
 
     [ECMAScriptName("Card")]
-    public extern static ITComponent TCard { get; }
+    public extern static ITDesignComponent TCard { get; }
 
     [ECMAScriptName("Link")]
-    public extern static ITComponent TLink { get; }
+    public extern static ITDesignComponent TLink { get; }
 
     [ECMAScriptName("Tabs")]
-    public extern static ITComponent TTabs { get; }
+    public extern static ITDesignComponent TTabs { get; }
 
     [ECMAScriptName("TabPanel")]
-    public extern static ITComponent TTabPanel { get; }
+    public extern static ITDesignComponent TTabPanel { get; }
 
     [ECMAScriptName("Avatar")]
-    public extern static ITComponent TAvatar { get; }
+    public extern static ITDesignComponent TAvatar { get; }
 
     [ECMAScriptName("AvatarGroup")]
-    public extern static ITComponent TAvatarGroup { get; }
+    public extern static ITDesignComponent TAvatarGroup { get; }
 
     [ECMAScriptName("Badge")]
-    public extern static ITComponent TBadge { get; }
+    public extern static ITDesignComponent TBadge { get; }
 
     [ECMAScriptName("Space")]
-    public extern static ITComponent TSpace { get; }
+    public extern static ITDesignComponent TSpace { get; }
 
     [ECMAScriptName("Divider")]
-    public extern static ITComponent TDivider { get; }
+    public extern static ITDesignComponent TDivider { get; }
 
     [ECMAScriptName("ConfigProvider")]
-    public extern static ITComponent TConfigProvider { get; }
+    public extern static ITDesignComponent TConfigProvider { get; }
 }
