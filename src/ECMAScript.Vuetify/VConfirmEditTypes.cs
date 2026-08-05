@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VConfirmEdit action values and scoped-slot context contracts.
+// 定义 VConfirmEdit 的操作值和作用域插槽上下文合同；可擦除值域使用原生 union。
+
 /// <summary>
 /// Vuetify 确认编辑操作枚举。
 /// Vuetify confirm edit action enum.
@@ -22,30 +25,17 @@ public enum VuetifyConfirmEditAction
 /// Collection of Vuetify confirm edit actions.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyConfirmEditActionsCollectionBuilder), nameof(VuetifyConfirmEditActionsCollectionBuilder.Create))]
-public readonly struct VuetifyConfirmEditActions : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyConfirmEditAction>
+public readonly union VuetifyConfirmEditActions(VuetifyConfirmEditAction[]) : IEnumerable<VuetifyConfirmEditAction>
 {
-    private readonly VuetifyConfirmEditAction[]? _actions;
-
-    public VuetifyConfirmEditActions(VuetifyConfirmEditAction[] actions)
-    {
-        _actions = actions;
-    }
-
-    public VuetifyConfirmEditAction[]? AsArray => _actions;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyConfirmEditActions From(VuetifyConfirmEditAction[] actions);
+    public VuetifyConfirmEditAction[]? AsArray => Value as VuetifyConfirmEditAction[];
 
     public static implicit operator VuetifyConfirmEditActions(VuetifyConfirmEditAction[] actions)
         => new(actions);
 
     IEnumerator<VuetifyConfirmEditAction> IEnumerable<VuetifyConfirmEditAction>.GetEnumerator()
-        => ((IEnumerable<VuetifyConfirmEditAction>)(_actions ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyConfirmEditAction>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyConfirmEditAction>)this).GetEnumerator();
@@ -63,44 +53,13 @@ public static class VuetifyConfirmEditActionsCollectionBuilder
 /// Vuetify confirm edit disabled state value, supporting boolean or action array.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyConfirmEditDisabled : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyConfirmEditDisabled(bool, VuetifyConfirmEditActions)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly VuetifyConfirmEditActions? _actions;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VuetifyConfirmEditDisabled(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _actions = default;
-    }
-
-    public VuetifyConfirmEditDisabled(VuetifyConfirmEditActions value)
-    {
-        _kind = 2;
-        _bool = default;
-        _actions = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public VuetifyConfirmEditActions? AsActions => _kind == 2 ? _actions : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsActions,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyConfirmEditDisabled From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyConfirmEditDisabled From(VuetifyConfirmEditActions value);
+    public VuetifyConfirmEditActions? AsActions
+        => Value is VuetifyConfirmEditActions value ? value : default(VuetifyConfirmEditActions?);
 
     public static implicit operator VuetifyConfirmEditDisabled(bool value)
         => new(value);

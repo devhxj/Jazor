@@ -3443,6 +3443,29 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void VConfirmEditValues_UseNativeUnionContracts()
+    {
+        var unionTypes = new[]
+        {
+            typeof(VuetifyConfirmEditActions),
+            typeof(VuetifyConfirmEditDisabled)
+        };
+
+        AssertNet11UnionContract(typeof(VuetifyConfirmEditActions), typeof(VuetifyConfirmEditAction[]));
+        AssertNet11UnionContract(typeof(VuetifyConfirmEditDisabled), typeof(bool), typeof(VuetifyConfirmEditActions));
+
+        foreach (var unionType in unionTypes)
+        {
+            Assert.IsNull(unionType.GetMethod("From", BindingFlags.Public | BindingFlags.Static), unionType.FullName);
+        }
+
+        Assert.IsNotNull(typeof(VuetifyConfirmEditDisabled).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(VuetifyConfirmEditAction[])]));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,
