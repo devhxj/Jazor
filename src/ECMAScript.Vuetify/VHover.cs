@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify hover component for detecting and responding to mouse hover state.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VHover")]
-public sealed class VHover : ComponentBase, IVueLibraryComponent
+public sealed class VHover : ComponentBase
 {
     /// <summary>
     /// 是否禁用悬停检测。

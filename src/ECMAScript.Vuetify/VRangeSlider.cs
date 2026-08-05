@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify range slider component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRangeSlider")]
-public sealed class VRangeSlider : ComponentBase, IVueLibraryComponent
+public sealed class VRangeSlider : ComponentBase
 {
     /// <summary>
     /// 范围滑块的标签文本。

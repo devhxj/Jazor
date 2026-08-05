@@ -14,7 +14,6 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
         const string source = """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using static ECMAScript.Vue3;

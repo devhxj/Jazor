@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Avatar")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TAvatar : TDesignContentComponentBase
 {
     [Parameter]
@@ -34,8 +32,6 @@ public sealed class TAvatar : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "AvatarGroup")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TAvatarGroup : TDesignContentComponentBase
 {
     [Parameter]

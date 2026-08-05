@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 应用根包装组件。
 /// Vuetify app root wrapper component.
 /// </summary>
-public sealed class VApp : ComponentBase, IVueLibraryComponent
+public sealed class VApp : ComponentBase
 {
     /// <summary>
     /// 占据全部高度。

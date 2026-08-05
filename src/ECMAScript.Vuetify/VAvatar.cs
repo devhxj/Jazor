@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 头像组件。
 /// Vuetify avatar component.
 /// </summary>
-public sealed class VAvatar : ComponentBase, IVueLibraryComponent
+public sealed class VAvatar : ComponentBase
 {
     /// <summary>
     /// 组件的主题颜色。

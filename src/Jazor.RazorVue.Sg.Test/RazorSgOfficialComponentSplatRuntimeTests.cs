@@ -21,12 +21,10 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
             """
             using System.Collections.Generic;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/splat-bind-child-runtime")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class SplatBindChild : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]

@@ -86,26 +86,10 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-05
+### 2026-08-06
 
-- ElementPlus generated bindings now use ordinary Razor parameters and emit member-level names only for genuine exceptions, removing generated `VueProp`, `VueSlot`, style, and plugin descriptor duplication.
-- TDesign bindings now use standard inherited Razor conventions and member-level `ECMAScriptName` for exceptional prop and camelCase slot names, without `VueProp` or `VueSlot` metadata.
-- Vuetify bindings now use member-level `ECMAScriptName` for every exceptional prop and dot-qualified slot name; the package no longer declares `VueProp` or `VueSlot` metadata.
-- RazorVue component contracts now bind JavaScript names to the effective `[Parameter]` member through `ECMAScriptName` or `Description("@#...")`. Derived `new [Parameter]` members correctly replace hidden base parameters, duplicate Vue names fail explicitly, and `VueProp` / `VueSlot` are migration-only compatibility metadata.
-- Vuetify RazorVue bindings now use standard Razor conventions for two-way binding, ordinary `OnX` callbacks, and named `RenderFragment` slots. The binding surface retains explicit metadata only for Vue names that C# cannot express; ordinary bare callback parameters now use `OnX` names.
-- `VuetifyGridSpanValue` now uses a native C# union while retaining bool, number, string, and numeric assignment authoring.
-- `ECMAScript.Style` now offers typed `box-shadow` authoring through `CssShadow` records and `shadows(...)`, covering composed shadows, variables, colors, inset, `none`, and CSS-wide values. JazorAdmin now uses this typed shadow surface for its themes and components.
-- JazorAdmin now validates a full ASP.NET Core production route with RazorVue UI, Web API, Identity, OpenIddict SSO, organization and membership management, role-based resource-operation authorization, account administration, and OpenID client/scope configuration. Its TDesign-inspired navigation is authored in Razor and `ECMAScript.Style`, without Blazor or application-owned JavaScript, CSS, or static HTML.
-- CSS-in-JS keyframes now preserve parameter frame arrays and selector validation accepts legal CSS line-break whitespace.
-- Jazor build targets now exclude native runtime DLL assets before invoking the managed emit tool, allowing applications that depend on packages such as SQLite to generate RazorVue artifacts successfully.
-- External ECMAScript host proxies can now consume a module's `default` export while Jazor-authored modules retain their deterministic named-export contract.
-- Generated WebIDL bindings now model `ByteString` browser text as `string` and distinguish WebCrypto's byte-array `BigInteger` typedef from the JavaScript `bigint` primitive.
-- Bound extension method groups now retain their receiver when used as delegates, including identifier receivers; generated callbacks preserve the original call target instead of losing instance context.
-- Compound assignment, unsigned right shift, implicit derived constructors, property initialization, interpolation format intrinsics, and host-bound member dispatch now have focused Roslyn-operation regressions for their evaluation and runtime-shape contracts.
-- Whitelist generation now rejects incomplete alias declarations at generation time, preventing a catalog entry with no usable runtime name.
-- Imports whose public name collides with a declared or reserved module binding now receive one stable generated alias; concrete runtime hosts remain intact for inherited generic static members.
-- Interpolating a `dynamic` value now produces the same explicit stable-text-contract diagnostic as other unsupported runtime text carriers, rather than an internal cast exception.
-- The compiler gate verifies 10,297 genuine scenarios at 98.94% line and 96.01% branch coverage, satisfying the 10,000 / 98% / 96% release gate.
+- Vue component-library authoring now uses ordinary `[Parameter]`, `EventCallback<T>`, `RenderFragment`, and member-level naming contracts. The redundant `VueProp`, `VueSlot`, library marker, style/plugin declaration, component flags, and emit-kind APIs have been removed.
+- RazorVue now infers conventional `XChanged` model updates and `OnX` events directly. Vuetify callbacks consistently use `OnX`, while explicit emit metadata is limited to raw Vue names that C# naming cannot reconstruct.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

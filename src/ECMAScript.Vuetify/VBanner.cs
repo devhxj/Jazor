@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 横幅组件。
 /// Vuetify banner component.
 /// </summary>
-public sealed class VBanner : ComponentBase, IVueLibraryComponent
+public sealed class VBanner : ComponentBase
 {
     /// <summary>
     /// 头像图片 URL。

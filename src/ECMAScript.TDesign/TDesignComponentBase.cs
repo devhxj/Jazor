@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-public abstract class TDesignComponentBase : ComponentBase, IVueLibraryComponent
+public abstract class TDesignComponentBase : ComponentBase
 {
     [Parameter]
     [ECMAScriptName("class")]

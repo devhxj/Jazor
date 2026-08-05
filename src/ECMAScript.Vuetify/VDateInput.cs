@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs date-input authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VDateInput")]
-public sealed class VDateInput : VInputComponentBase, IVueLibraryComponent
+public sealed class VDateInput : VInputComponentBase
 {
     /// <summary>
     /// 允许选择的最小日期。

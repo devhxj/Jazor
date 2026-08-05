@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify locale-provider authoring proxy for scoped locale, fallback, RTL, and messages.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLocaleProvider")]
-public sealed class VLocaleProvider : ComponentBase, IVueLibraryComponent
+public sealed class VLocaleProvider : ComponentBase
 {
     /// <summary>
     /// 当前作用域的区域设置标识符。

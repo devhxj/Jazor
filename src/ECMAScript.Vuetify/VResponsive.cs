@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify responsive container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VResponsive")]
-public sealed class VResponsive : ComponentBase, IVueLibraryComponent
+public sealed class VResponsive : ComponentBase
 {
     /// <summary>
     /// 容器的宽高比。

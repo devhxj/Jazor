@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 按钮切换组件。
 /// Vuetify button toggle component.
 /// </summary>
-public sealed class VBtnToggle : ComponentBase, IVueLibraryComponent
+public sealed class VBtnToggle : ComponentBase
 {
     /// <summary>
     /// 基础颜色。

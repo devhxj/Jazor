@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片文本区域组件。
 /// Vuetify card text section component.
 /// </summary>
-public sealed class VCardText : ComponentBase, IVueLibraryComponent
+public sealed class VCardText : ComponentBase
 {
     /// <summary>
     /// 附加到组件根元素的额外属性。

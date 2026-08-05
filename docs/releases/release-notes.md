@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2026-08-06
+
+- Vue component-library authoring now relies on ordinary C# and Razor contracts for props, events, model updates, and slots. The retired `VueProp`, `VueSlot`, library marker, style/plugin declaration, component flags, and emit-kind APIs are removed instead of requiring authors to duplicate information already expressed by `[Parameter]`, `EventCallback<T>`, `RenderFragment`, and member-level names.
+- RazorVue now infers every `X` plus `XChanged` model update and converts conventional `OnX` callbacks to kebab-case Vue event names. Vuetify callback properties consistently use `OnX`; explicit emit metadata remains only for raw names that cannot be reconstructed, such as colon events and `loadstart`.
+
 ## 2026-08-05
 
 - ElementPlus binding generation now emits ordinary Razor parameters, standard `EditorRequired` metadata, and member-level `ECMAScriptName` only when a prop or slot differs from naming conventions. Regenerated components no longer contain `VueProp`, `VueSlot`, style, or plugin descriptor duplication.

@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Badge")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TBadge : TDesignContentComponentBase
 {
     [Parameter]

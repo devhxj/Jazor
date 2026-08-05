@@ -34,7 +34,6 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
                 """
                 using System.Collections.Generic;
                 using ECMAScript.VueContract;
-                using ECMAScript.VueContract.Descriptor;
 
                 [assembly: VueInject(typeof(Demo.Components.ContractShell), typeof(Demo.Components.InjectedShell))]
 

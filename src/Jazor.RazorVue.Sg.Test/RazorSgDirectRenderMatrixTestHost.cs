@@ -112,15 +112,12 @@ internal static class RazorSgDirectRenderMatrixTestHost
         #nullable enable
         using ECMAScript;
         using ECMAScript.VueContract;
-        using ECMAScript.VueContract.Descriptor;
         using Microsoft.AspNetCore.Components;
         using static ECMAScript.Vue3;
 
         namespace RazorVue.Matrix;
 
         [ECMAScriptModule("./matrix/child.mjs")]
-        [VueLibraryEmit(nameof(OnClick), Name = "click")]
-        [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
         public sealed class MatrixChild : ComponentBase, IVueComponent
         {
             [ECMAScriptName("heading")]

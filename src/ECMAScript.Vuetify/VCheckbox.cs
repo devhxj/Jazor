@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify checkbox authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCheckbox")]
-public sealed class VCheckbox : VSelectionControlComponentBase, IVueLibraryComponent
+public sealed class VCheckbox : VSelectionControlComponentBase
 {
     /// <summary>
     /// 附加到组件根元素的额外属性。

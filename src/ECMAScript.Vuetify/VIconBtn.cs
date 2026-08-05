@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs icon-btn authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VIconBtn")]
-public sealed class VIconBtn : ComponentBase, IVueLibraryComponent
+public sealed class VIconBtn : ComponentBase
 {
     /// <summary>
     /// 按钮的主题颜色。

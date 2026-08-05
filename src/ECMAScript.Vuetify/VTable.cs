@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify table authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTable")]
-public sealed class VTable : ComponentBase, IVueLibraryComponent
+public sealed class VTable : ComponentBase
 {
     /// <summary>
     /// 是否固定表头。

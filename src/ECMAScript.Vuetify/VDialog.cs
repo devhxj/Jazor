@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,9 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]
-[VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
-[VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-public sealed class VDialog : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
+public sealed class VDialog : ComponentBase
 {
     /// <summary>
     /// 对话框的显示状态。
@@ -328,14 +326,14 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     /// Event callback fired when clicking outside the dialog.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClickOutside { get; set; }
+    public EventCallback<MouseEvent> OnClickOutside { get; set; }
 
     /// <summary>
     /// 按键时触发的事件回调。
     /// Event callback fired on keydown.
     /// </summary>
     [Parameter]
-    public EventCallback<KeyboardEvent> Keydown { get; set; }
+    public EventCallback<KeyboardEvent> OnKeydown { get; set; }
 
     /// <summary>
     /// 激活器插槽内容。

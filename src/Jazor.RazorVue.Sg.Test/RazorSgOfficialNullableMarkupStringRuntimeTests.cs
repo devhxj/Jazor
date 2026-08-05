@@ -185,7 +185,6 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

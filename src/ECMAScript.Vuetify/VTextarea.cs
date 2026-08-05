@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify textarea authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextarea")]
-public sealed class VTextarea : VInputComponentBase, IVueLibraryComponent
+public sealed class VTextarea : VInputComponentBase
 {
     /// <summary>
     /// 自动增长。

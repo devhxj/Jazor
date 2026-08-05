@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -9,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify combobox component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCombobox")]
-public sealed class VCombobox : VSelectLikeComponentBase, IVueLibraryComponent
+public sealed class VCombobox : VSelectLikeComponentBase
 {
     /// <summary>
     /// 是否自动选中第一个匹配项。

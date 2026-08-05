@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs time-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTimePicker")]
-public sealed class VTimePicker : ComponentBase, IVueLibraryComponent
+public sealed class VTimePicker : ComponentBase
 {
     /// <summary>
     /// 模型值。

@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片副标题组件。
 /// Vuetify card subtitle component.
 /// </summary>
-public sealed class VCardSubtitle : ComponentBase, IVueLibraryComponent
+public sealed class VCardSubtitle : ComponentBase
 {
     /// <summary>
     /// 附加到组件根元素的额外属性。

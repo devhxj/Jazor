@@ -1844,14 +1844,12 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
 
             [ECMAScriptModule("./components/release-editor")]
-            [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
             public partial class ReleaseEditor : ComponentBase, IVueComponent
             {
                 [Parameter]

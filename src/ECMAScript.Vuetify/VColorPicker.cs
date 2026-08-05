@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify color-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VColorPicker")]
-public sealed class VColorPicker : ComponentBase, IVueLibraryComponent
+public sealed class VColorPicker : ComponentBase
 {
     /// <summary>
     /// 选中的颜色绑定值。

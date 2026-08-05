@@ -21,7 +21,6 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

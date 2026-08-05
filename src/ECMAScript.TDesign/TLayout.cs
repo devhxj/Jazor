@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Layout")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TLayout : TDesignContentComponentBase
 {
     [Parameter]
@@ -12,8 +10,6 @@ public sealed class TLayout : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Header")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class THeader : TDesignContentComponentBase
 {
     [Parameter]
@@ -21,8 +17,6 @@ public sealed class THeader : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Aside")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TAside : TDesignContentComponentBase
 {
     [Parameter]
@@ -30,8 +24,6 @@ public sealed class TAside : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Content")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TContent : TDesignContentComponentBase
 {
     [Parameter]
@@ -40,8 +32,6 @@ public sealed class TContent : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Footer")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TFooter : TDesignContentComponentBase
 {
     [Parameter]

@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify slide-group authoring proxy for horizontally or vertically scrollable grouped content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSlideGroup")]
-public sealed class VSlideGroup : ComponentBase, IVueLibraryComponent
+public sealed class VSlideGroup : ComponentBase
 {
     /// <summary>
     /// 当前选中的值。

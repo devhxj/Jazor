@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar-queue authoring proxy for sequential notifications.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbarQueue")]
-public sealed class VSnackbarQueue : ComponentBase, IVueLibraryComponent
+public sealed class VSnackbarQueue : ComponentBase
 {
     /// <summary>
     /// 消息队列中待显示的通知列表。

@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片操作区域组件。
 /// Vuetify card actions section component.
 /// </summary>
-public sealed class VCardActions : ComponentBase, IVueLibraryComponent
+public sealed class VCardActions : ComponentBase
 {
     /// <summary>
     /// 附加到组件根元素的额外属性。

@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs pull-to-refresh authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPullToRefresh")]
-public sealed class VPullToRefresh : ComponentBase, IVueLibraryComponent
+public sealed class VPullToRefresh : ComponentBase
 {
     /// <summary>
     /// 是否禁用下拉刷新功能。

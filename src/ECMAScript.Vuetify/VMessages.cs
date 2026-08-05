@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify messages component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMessages")]
-public sealed class VMessages : ComponentBase, IVueLibraryComponent
+public sealed class VMessages : ComponentBase
 {
     /// <summary>
     /// 消息是否处于活跃可见状态。

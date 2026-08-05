@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片项分组组件，用于组织标题、副标题和前后缀。
 /// Vuetify card item grouping component for organizing title, subtitle, and prepend/append content.
 /// </summary>
-public sealed class VCardItem : ComponentBase, IVueLibraryComponent
+public sealed class VCardItem : ComponentBase
 {
     /// <summary>
     /// 后缀头像图片的 URL。

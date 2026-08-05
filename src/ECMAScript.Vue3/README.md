@@ -54,10 +54,10 @@
 
 ## Authoring Contract
 
-- `IVueComponent` / `IVueLibraryComponent` 的 canonical 类型定义在 `ECMAScript.Vue3`。
-- `ECMAScript.VueContract` 只承载 C# 无法直接表达的 RazorVue library-mode contract，例如 `VueLibraryComponentAttribute`、`VueLibraryEmitAttribute`、`VueEmitKind`、`VueComponentFlags`；普通 prop/slot 不再拥有专用 attribute。
+- `IVueComponent` 的 canonical 类型定义在 `ECMAScript.Vue3`；library component 不再需要额外 marker interface，由类级 `VueLibraryComponentAttribute` 直接标识。
+- `ECMAScript.VueContract` 只承载 C# 无法直接表达的 RazorVue library-mode contract，例如 npm 导入所需的 `VueLibraryComponentAttribute`，以及异常原始事件名所需的 `VueLibraryEmitAttribute`；普通 prop、event、model 与 slot 不再拥有专用 attribute。
 - RazorVue authoring 走显式按需导入，不通过 `Jazor` NuGet 包对 consumer 做全局 marker 注入。
-- 如果组件作者要直接使用 `IVueComponent` / `IVueLibraryComponent` 简名，应该在文件或共享 global usings 中显式添加：
+- 如果组件作者要直接使用 `IVueComponent` 简名，应该在文件或共享 global usings 中显式添加：
 
 ```csharp
 using static ECMAScript.Vue3;

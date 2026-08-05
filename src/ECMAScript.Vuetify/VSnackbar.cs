@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -9,9 +8,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
-[VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
-[VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
+public sealed class VSnackbar : ComponentBase
 {
     /// <summary>
     /// 消息条的显示状态。
@@ -350,14 +348,14 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     /// Callback invoked when clicking outside the snackbar.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClickOutside { get; set; }
+    public EventCallback<MouseEvent> OnClickOutside { get; set; }
 
     /// <summary>
     /// 按键时触发的回调。
     /// Callback invoked on keydown events.
     /// </summary>
     [Parameter]
-    public EventCallback<KeyboardEvent> Keydown { get; set; }
+    public EventCallback<KeyboardEvent> OnKeydown { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外属性。

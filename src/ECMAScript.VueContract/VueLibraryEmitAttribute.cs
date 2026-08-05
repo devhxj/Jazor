@@ -1,13 +1,16 @@
 using System;
-using ECMAScript.VueContract.Descriptor;
 
 namespace ECMAScript.VueContract;
 
 /// <summary>
-/// 声明组件事件的 Razor 别名、Vue 名称、payload 类型和事件类别。
+/// Maps a Razor event parameter to a Vue event name that cannot be inferred by convention.
+/// 映射无法通过约定推断的 Razor 事件参数与 Vue 原始事件名。
 /// </summary>
 /// <remarks>
-/// 事件名称解析必须在编译期完成；该属性不引入中间事件对象，最终直接落到 Vue emit/handler 形状。
+/// Payload typing remains owned by <c>EventCallback&lt;T&gt;</c>. This attribute only
+/// carries exceptional raw names such as <c>click:close</c> or <c>loadstart</c>.
+/// payload 类型由 <c>EventCallback&lt;T&gt;</c> 提供；本特性只承载
+/// <c>click:close</c>、<c>loadstart</c> 等异常原始名称。
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class VueLibraryEmitAttribute : Attribute
@@ -17,20 +20,7 @@ public sealed class VueLibraryEmitAttribute : Attribute
         RazorAlias = razorAlias;
     }
 
-    public VueLibraryEmitAttribute(string razorAlias, VueEmitKind kind)
-        : this(razorAlias)
-    {
-        Kind = kind;
-        HasKindOverride = true;
-    }
-
     public string RazorAlias { get; }
 
     public string? Name { get; set; }
-
-    public string? PayloadTypeName { get; set; }
-
-    public VueEmitKind Kind { get; }
-
-    internal bool HasKindOverride { get; }
 }

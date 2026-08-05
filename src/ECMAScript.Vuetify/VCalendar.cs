@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs calendar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VCalendar")]
-public sealed class VCalendar : ComponentBase, IVueLibraryComponent
+public sealed class VCalendar : ComponentBase
 {
     /// <summary>
     /// 日历的当前日期值。

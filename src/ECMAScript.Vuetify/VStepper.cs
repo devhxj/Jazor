@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify stepper authoring proxy for multi-step workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VStepper")]
-public sealed class VStepper : ComponentBase, IVueLibraryComponent
+public sealed class VStepper : ComponentBase
 {
     /// <summary>
     /// 步骤条当前选中的步骤值。

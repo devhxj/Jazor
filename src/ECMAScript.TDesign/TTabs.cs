@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Tabs")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
-[VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "change")]
+[VueLibraryEmit(nameof(ValueChanged), Name = "change")]
 public sealed class TTabs : TDesignContentComponentBase
 {
     [Parameter]
@@ -52,8 +50,6 @@ public sealed class TTabs : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "TabPanel")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TTabPanel : TDesignContentComponentBase
 {
     [Parameter]

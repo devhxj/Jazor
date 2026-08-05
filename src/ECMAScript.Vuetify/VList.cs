@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify list component for displaying interactive collections of list items.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VList")]
-public sealed class VList : ComponentBase, IVueLibraryComponent
+public sealed class VList : ComponentBase
 {
     /// <summary>
     /// 列表中显示的选项数据源。

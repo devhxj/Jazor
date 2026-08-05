@@ -42,9 +42,8 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
 
                 namespace Demo.Library;
 
-                [VueLibraryEmit(nameof(OnClick), Name = "click")]
                 [VueLibraryComponent("demo-release-library", "queueRelease")]
-                public sealed class ReleasePanel : ComponentBase, IVueLibraryComponent
+                public sealed class ReleasePanel : ComponentBase
                 {
                     [Parameter] public string Status { get; set; } = string.Empty;
                     [Parameter] public EventCallback OnClick { get; set; }

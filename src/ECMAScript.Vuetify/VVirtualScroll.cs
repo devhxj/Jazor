@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify virtual-scroll authoring proxy for large item collections.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VVirtualScroll")]
-public sealed class VVirtualScroll : ComponentBase, IVueLibraryComponent
+public sealed class VVirtualScroll : ComponentBase
 {
     /// <summary>
     /// 高。

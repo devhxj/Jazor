@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs picker shell authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPicker")]
-public sealed class VPicker : ComponentBase, IVueLibraryComponent
+public sealed class VPicker : ComponentBase
 {
     /// <summary>
     /// 组件使用的主题名称。

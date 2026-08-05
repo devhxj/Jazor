@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 底部导航组件。
 /// Vuetify bottom navigation component.
 /// </summary>
-public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
+public sealed class VBottomNavigation : ComponentBase
 {
     /// <summary>
     /// 组件的模型值。

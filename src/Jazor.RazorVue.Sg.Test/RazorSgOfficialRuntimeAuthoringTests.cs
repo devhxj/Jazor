@@ -78,12 +78,10 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-after-child-runtime")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class BindAfterChild : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]
@@ -476,7 +474,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -573,7 +570,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             using System.Collections.Generic;
             using Demo.Models;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Models
             {
@@ -681,7 +677,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             using System.Collections.Generic;
             using Demo.Models;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Models
             {
@@ -783,7 +778,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -879,7 +873,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -961,12 +954,11 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/generic-selectable-runtime")]
-                [VueLibraryEmit(nameof(Selected), VueEmitKind.Normal, Name = "select")]
+                [VueLibraryEmit(nameof(Selected), Name = "select")]
                 public sealed class GenericSelectable<TItem> : ComponentBase, IVueComponent
                 {
                     [Parameter] public TItem Entry { get; set; }
@@ -1063,7 +1055,6 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

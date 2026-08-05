@@ -18,7 +18,6 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

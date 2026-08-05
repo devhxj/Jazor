@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify footer component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VFooter")]
-public sealed class VFooter : ComponentBase, IVueLibraryComponent
+public sealed class VFooter : ComponentBase
 {
     /// <summary>
     /// 是否作为应用布局的一部分。

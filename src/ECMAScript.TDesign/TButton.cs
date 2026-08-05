@@ -6,8 +6,6 @@ namespace ECMAScript.TDesign;
 /// TDesign button authoring proxy.
 /// </summary>
 [VueLibraryComponent("tdesign-vue-next", "Button")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TButton : TDesignContentComponentBase
 {
     [Parameter]

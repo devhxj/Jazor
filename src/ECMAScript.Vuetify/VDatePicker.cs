@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify date-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDatePicker")]
-public sealed class VDatePicker : ComponentBase, IVueLibraryComponent
+public sealed class VDatePicker : ComponentBase
 {
     /// <summary>
     /// 选中日期的绑定值。

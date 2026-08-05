@@ -17,12 +17,10 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/release-editor-generic-runtime")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class ReleaseEditor<TValue> : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]

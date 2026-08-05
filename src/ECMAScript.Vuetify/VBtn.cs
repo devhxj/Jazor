@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBtn")]
-public sealed class VBtn : ComponentBase, IVueLibraryComponent
+public sealed class VBtn : ComponentBase
 {
     /// <summary>
     /// 激活状态。

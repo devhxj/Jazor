@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify divider component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDivider")]
-public sealed class VDivider : ComponentBase, IVueLibraryComponent
+public sealed class VDivider : ComponentBase
 {
     /// <summary>
     /// 是否使用缩进样式。

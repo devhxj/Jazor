@@ -27,12 +27,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/authoring-child")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class AuthoringChild : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("heading")]
@@ -109,12 +107,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             """
             using System.Threading.Tasks;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-after-child")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class BindAfterChild : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]
@@ -176,12 +172,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             """
             using System.Threading.Tasks;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/bind-set-child")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class BindSetChild : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]

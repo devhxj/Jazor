@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify slider authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSlider")]
-public sealed class VSlider : ComponentBase, IVueLibraryComponent
+public sealed class VSlider : ComponentBase
 {
     /// <summary>
     /// 滑块标签文本。

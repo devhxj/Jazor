@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify layout component for managing page region layout structure.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLayout")]
-public sealed class VLayout : ComponentBase, IVueLibraryComponent
+public sealed class VLayout : ComponentBase
 {
     /// <summary>
     /// 允许重叠的区域名称数组。

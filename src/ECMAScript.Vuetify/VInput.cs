@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,9 +7,9 @@ namespace ECMAScript.Vuetify;
 /// Vuetify input authoring proxy for composing validation, messages, and control slots.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInput")]
-[VueLibraryEmit(nameof(PrependClick), VueEmitKind.LibrarySpecific, Name = "click:prepend")]
-[VueLibraryEmit(nameof(AppendClick), VueEmitKind.LibrarySpecific, Name = "click:append")]
-public sealed class VInput : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnPrependClick), Name = "click:prepend")]
+[VueLibraryEmit(nameof(OnAppendClick), Name = "click:append")]
+public sealed class VInput : ComponentBase
 {
     /// <summary>
     /// 输入控件的唯一标识符。
@@ -248,14 +247,14 @@ public sealed class VInput : ComponentBase, IVueLibraryComponent
     /// Callback invoked when the prepend icon is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> PrependClick { get; set; }
+    public EventCallback<MouseEvent> OnPrependClick { get; set; }
 
     /// <summary>
     /// 点击后置图标时触发的回调。
     /// Callback invoked when the append icon is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> AppendClick { get; set; }
+    public EventCallback<MouseEvent> OnAppendClick { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

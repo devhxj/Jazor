@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAlert")]
-[VueLibraryEmit(nameof(ClickClose), VueEmitKind.LibrarySpecific, Name = "click:close")]
+[VueLibraryEmit(nameof(OnClickClose), Name = "click:close")]
 /// <summary>
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.
 /// </summary>
-public sealed class VAlert : ComponentBase, IVueLibraryComponent
+public sealed class VAlert : ComponentBase
 {
     /// <summary>
     /// 组件的模型值。
@@ -227,7 +227,7 @@ public sealed class VAlert : ComponentBase, IVueLibraryComponent
     /// Event fired when close button is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClickClose { get; set; }
+    public EventCallback<MouseEvent> OnClickClose { get; set; }
 
     /// <summary>
     /// 传递给根元素的额外 HTML 属性。

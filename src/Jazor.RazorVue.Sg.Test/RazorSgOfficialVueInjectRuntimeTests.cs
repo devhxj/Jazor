@@ -33,7 +33,6 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
                 [@"D:\repo\Demo\Components\ContainerComponents.cs"] =
                 """
                 using ECMAScript.VueContract;
-                using ECMAScript.VueContract.Descriptor;
 
                 [assembly: VueInject(typeof(Demo.Components.ContractShell), typeof(Demo.Components.InjectedShell))]
 

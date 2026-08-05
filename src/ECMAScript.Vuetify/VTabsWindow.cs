@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs-window authoring proxy for tab panel content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindow")]
-public sealed class VTabsWindow : ComponentBase, IVueLibraryComponent
+public sealed class VTabsWindow : ComponentBase
 {
     /// <summary>
     /// 模型值。

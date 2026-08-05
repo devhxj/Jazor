@@ -17,7 +17,6 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

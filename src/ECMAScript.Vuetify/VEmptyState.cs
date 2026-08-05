@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,8 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VEmptyState")]
-[VueLibraryEmit(nameof(ActionClick), VueEmitKind.LibrarySpecific, Name = "click:action")]
-public sealed class VEmptyState : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnActionClick), Name = "click:action")]
+public sealed class VEmptyState : ComponentBase
 {
     /// <summary>
     /// 组件主题名称。
@@ -156,7 +155,7 @@ public sealed class VEmptyState : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the action button is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<Event> ActionClick { get; set; }
+    public EventCallback<Event> OnActionClick { get; set; }
 
     /// <summary>
     /// 附加到组件的额外 HTML 属性。

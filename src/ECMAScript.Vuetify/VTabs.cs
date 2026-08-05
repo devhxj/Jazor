@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabs")]
-public sealed class VTabs : ComponentBase, IVueLibraryComponent
+public sealed class VTabs : ComponentBase
 {
     /// <summary>
     /// 组件的主题颜色。

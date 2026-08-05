@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify switch authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSwitch")]
-public sealed class VSwitch : VSelectionControlComponentBase, IVueLibraryComponent
+public sealed class VSwitch : VSelectionControlComponentBase
 {
     /// <summary>
     /// 是否使用缩进样式。

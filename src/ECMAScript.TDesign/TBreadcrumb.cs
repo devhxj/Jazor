@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Breadcrumb")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TBreadcrumb : TDesignContentComponentBase
 {
     [Parameter]
@@ -30,8 +28,6 @@ public sealed class TBreadcrumb : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TBreadcrumbItem : TDesignContentComponentBase
 {
     [Parameter]

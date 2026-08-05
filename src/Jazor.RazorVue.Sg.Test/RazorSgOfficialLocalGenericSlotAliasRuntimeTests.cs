@@ -24,7 +24,6 @@ public sealed class RazorSgOfficialLocalGenericSlotAliasRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Pages;
 

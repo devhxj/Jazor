@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify no-SSR component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VNoSsr")]
-public sealed class VNoSsr : ComponentBase, IVueLibraryComponent
+public sealed class VNoSsr : ComponentBase
 {
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

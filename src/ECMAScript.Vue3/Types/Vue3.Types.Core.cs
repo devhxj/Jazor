@@ -17,15 +17,6 @@ public static partial class Vue3
 	}
 
 	/// <summary>
-	/// 外部 Vue 库组件存根的标记接口，参与描述符/注册流程但不作为普通用户组件处理。
-	/// Marker for external Vue library component stubs that participate in
-	/// descriptor/registry flows without being treated as ordinary user components.
-	/// </summary>
-	public interface IVueLibraryComponent : IVueComponent
-	{
-	}
-
-	/// <summary>
 	/// 声明类型化 props 的 Vue 组件。编译器使用此接口为仅有 props 的组件选择正确的 <c>h()</c> 重载。
 	/// A Vue component that declares typed props. The compiler uses this interface
 	/// to select the correct <c>h()</c> overload for props-only components.

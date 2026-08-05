@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify skeleton-loader authoring proxy for loading placeholders and deferred content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSkeletonLoader")]
-public sealed class VSkeletonLoader : ComponentBase, IVueLibraryComponent
+public sealed class VSkeletonLoader : ComponentBase
 {
     /// <summary>
     /// 组件主题名称。

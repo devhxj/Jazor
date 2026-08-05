@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify rating component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRating")]
-public sealed class VRating : ComponentBase, IVueLibraryComponent
+public sealed class VRating : ComponentBase
 {
     /// <summary>
     /// 当前评分值。

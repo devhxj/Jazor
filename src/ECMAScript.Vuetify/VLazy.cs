@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify lazy component that renders content on demand based on viewport visibility.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLazy")]
-public sealed class VLazy : ComponentBase, IVueLibraryComponent
+public sealed class VLazy : ComponentBase
 {
     /// <summary>
     /// 组件是否已激活（内容已渲染）。

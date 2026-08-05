@@ -14,8 +14,6 @@ namespace ECMAScript.ElementPlus;
 /// Fix the element to a specific visible area.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAffix")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
 public sealed class ElAffix : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -48,7 +46,6 @@ public sealed class ElAffix : ElementPlusContentComponentBase
 /// Displays important alert messages.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAlert")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElAlert : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -91,8 +88,6 @@ public sealed class ElAlert : ElementPlusContentComponentBase
 /// Through the anchor point, you can quickly find the position of the information content on the current page.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAnchor")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElAnchor : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -146,13 +141,6 @@ public sealed class ElAutoResizer : ElementPlusContentComponentBase
 /// Get some recommended tips based on the current input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAutocomplete")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnInput), Name = "input")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnSelect), Name = "select")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElAutocomplete : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -272,7 +260,6 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
 /// Avatars can be used to represent people or objects. It supports images, Icons, or characters.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElAvatar")]
-[VueLibraryEmit(nameof(OnError), Name = "error")]
 public sealed class ElAvatar : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -346,7 +333,6 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
 /// A button to back to top.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElBacktop")]
-[VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElBacktop : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -529,7 +515,6 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
 /// Display date.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCalendar")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Date")]
 public sealed class ElCalendar : ElementPlusComponentBase
 {
     [Parameter]
@@ -596,7 +581,6 @@ public sealed class ElCard : ElementPlusContentComponentBase
 /// Loop a series of images or texts in a limited space
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCarousel")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElCarousel : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -661,14 +645,6 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 /// If the options have a clear hierarchical structure, Cascader can be used to view and select them.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascader")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCascader : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -827,10 +803,6 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 /// el-cascader-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCascaderPanel")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
-[VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -872,7 +844,6 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 /// el-check-tag
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckTag")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElCheckTag : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -893,8 +864,6 @@ public sealed class ElCheckTag : ElementPlusContentComponentBase
 /// A group of options for multiple choices.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckbox")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCheckbox : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1001,8 +970,6 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 /// el-checkbox-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCheckboxGroup")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueStringNumberValue[]")]
 public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1097,8 +1064,6 @@ public sealed class ElCol : ElementPlusContentComponentBase
 /// Use Collapse to store contents.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCollapse")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCollapse : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1153,12 +1118,6 @@ public sealed class ElCollapseTransition : ElementPlusContentComponentBase
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPicker")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnActiveChange), Name = "active-change")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElColorPicker : ElementPlusComponentBase
 {
     [Parameter]
@@ -1242,7 +1201,6 @@ public sealed class ElColorPicker : ElementPlusComponentBase
 /// `ColorPickerPanel` is the core component of `ColorPicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPickerPanel")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElColorPickerPanel : ElementPlusComponentBase
 {
     [Parameter]
@@ -1348,8 +1306,6 @@ public sealed class ElContainer : ElementPlusContentComponentBase
 /// :::demo Countdown component, support to add other components control countdown.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElCountdown")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnFinish), Name = "finish")]
 public sealed class ElCountdown : ElementPlusComponentBase
 {
     [Parameter]
@@ -1373,14 +1329,6 @@ public sealed class ElCountdown : ElementPlusComponentBase
 /// Use Date Picker for date input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePicker")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
-[VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElDatePicker : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1546,10 +1494,6 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDatePickerPanel")]
-[VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
-[VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1718,13 +1662,6 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 /// Informs users while preserving the current page state.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDialog")]
-[VueLibraryEmit(nameof(OnOpen), Name = "open")]
-[VueLibraryEmit(nameof(OnOpened), Name = "opened")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
-[VueLibraryEmit(nameof(OnClosed), Name = "closed")]
-[VueLibraryEmit(nameof(OnOpenAutoFocus), Name = "open-auto-focus")]
-[VueLibraryEmit(nameof(OnCloseAutoFocus), Name = "close-auto-focus")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]")]
 public sealed class ElDialog : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1871,16 +1808,6 @@ public sealed class ElDivider : ElementPlusContentComponentBase
 /// Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDrawer")]
-[VueLibraryEmit(nameof(OnOpen), Name = "open")]
-[VueLibraryEmit(nameof(OnOpened), Name = "opened")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
-[VueLibraryEmit(nameof(OnClosed), Name = "closed")]
-[VueLibraryEmit(nameof(OnOpenAutoFocus), Name = "open-auto-focus")]
-[VueLibraryEmit(nameof(OnCloseAutoFocus), Name = "close-auto-focus")]
-[VueLibraryEmit(nameof(OnResizeStart), Name = "resize-start")]
-[VueLibraryEmit(nameof(OnResize), Name = "resize")]
-[VueLibraryEmit(nameof(OnResizeEnd), Name = "resize-end")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]")]
 public sealed class ElDrawer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2004,9 +1931,6 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
 /// Toggleable menu for displaying lists of links and actions.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElDropdown")]
-[VueLibraryEmit(nameof(OnClick), Name = "click")]
-[VueLibraryEmit(nameof(OnCommand), Name = "command")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 public sealed class ElDropdown : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2167,7 +2091,6 @@ public sealed class ElFooter : ElementPlusContentComponentBase
 /// Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElForm")]
-[VueLibraryEmit(nameof(OnValidate), Name = "validate")]
 public sealed class ElForm : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2304,11 +2227,6 @@ public sealed class ElIcon : ElementPlusContentComponentBase
 /// Besides the native features of img, support lazy load, custom placeholder and load failure, etc.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImage")]
-[VueLibraryEmit(nameof(OnLoad), Name = "load")]
-[VueLibraryEmit(nameof(OnError), Name = "error")]
-[VueLibraryEmit(nameof(OnSwitch), Name = "switch")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
-[VueLibraryEmit(nameof(OnShow), Name = "show")]
 public sealed class ElImage : ElementPlusComponentBase
 {
     [Parameter]
@@ -2398,10 +2316,6 @@ public sealed class ElImage : ElementPlusComponentBase
 /// el-image-viewer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElImageViewer")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
-[VueLibraryEmit(nameof(OnError), Name = "error")]
-[VueLibraryEmit(nameof(OnSwitch), Name = "switch")]
-[VueLibraryEmit(nameof(OnRotate), Name = "rotate")]
 public sealed class ElImageViewer : ElementPlusComponentBase
 {
     [Parameter]
@@ -2470,18 +2384,6 @@ public sealed class ElImageViewer : ElementPlusComponentBase
 /// Input data using mouse or keyboard.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInput")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnInput), Name = "input")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnKeydown), Name = "keydown")]
-[VueLibraryEmit(nameof(OnMouseleave), Name = "mouseleave")]
-[VueLibraryEmit(nameof(OnMouseenter), Name = "mouseenter")]
-[VueLibraryEmit(nameof(OnCompositionstart), Name = "compositionstart")]
-[VueLibraryEmit(nameof(OnCompositionupdate), Name = "compositionupdate")]
-[VueLibraryEmit(nameof(OnCompositionend), Name = "compositionend")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElInput : ElementPlusComponentBase
 {
     [Parameter]
@@ -2646,10 +2548,6 @@ public sealed class ElInput : ElementPlusComponentBase
 /// Input numerical values with a customizable range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputNumber")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Number, ECMAScript, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElInputNumber : ElementPlusComponentBase
 {
     [Parameter]
@@ -2754,11 +2652,6 @@ public sealed class ElInputNumber : ElementPlusComponentBase
 /// Used to enter a one-time password
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputOtp")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnFinish), Name = "finish")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 public sealed class ElInputOtp : ElementPlusComponentBase
 {
     [Parameter]
@@ -2825,15 +2718,6 @@ public sealed class ElInputOtp : ElementPlusComponentBase
 /// The InputTag component allows users to add content as tags.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElInputTag")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnInput), Name = "input")]
-[VueLibraryEmit(nameof(OnAddTag), Name = "add-tag")]
-[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(OnDragTag), Name = "drag-tag")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String[]")]
 public sealed class ElInputTag : ElementPlusComponentBase
 {
     [Parameter]
@@ -2994,10 +2878,6 @@ public sealed class ElMain : ElementPlusContentComponentBase
 /// Used to mention someone or something in an input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMention")]
-[VueLibraryEmit(nameof(OnSearch), Name = "search")]
-[VueLibraryEmit(nameof(OnSelect), Name = "select")]
-[VueLibraryEmit(nameof(OnWholeRemove), Name = "whole-remove")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElMention : ElementPlusComponentBase
 {
     [Parameter]
@@ -3076,9 +2956,6 @@ public sealed class ElMention : ElementPlusComponentBase
 /// Menu that provides navigation for your website.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenu")]
-[VueLibraryEmit(nameof(OnSelect), Name = "select")]
-[VueLibraryEmit(nameof(OnOpen), Name = "open")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElMenu : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3159,7 +3036,6 @@ public sealed class ElMenu : ElementPlusContentComponentBase
 /// el-menu-item
 /// </summary>
 [VueLibraryComponent("element-plus", "ElMenuItem")]
-[VueLibraryEmit(nameof(OnClick), Name = "click")]
 public sealed class ElMenuItem : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3229,7 +3105,6 @@ public sealed class ElOptionGroup : ElementPlusContentComponentBase
 /// If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPageHeader")]
-[VueLibraryEmit(nameof(OnBack), Name = "back")]
 public sealed class ElPageHeader : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3268,11 +3143,6 @@ public sealed class ElPageHeader : ElementPlusContentComponentBase
 /// If you have too much data to display in one page, use pagination.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPagination")]
-[VueLibraryEmit(nameof(OnSizeChange), Name = "size-change")]
-[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnPrevClick), Name = "prev-click")]
-[VueLibraryEmit(nameof(OnNextClick), Name = "next-click")]
 public sealed class ElPagination : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3362,8 +3232,6 @@ public sealed class ElPagination : ElementPlusContentComponentBase
 /// A simple confirmation dialog of an element click action.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopconfirm")]
-[VueLibraryEmit(nameof(OnConfirm), Name = "confirm")]
-[VueLibraryEmit(nameof(OnCancel), Name = "cancel")]
 public sealed class ElPopconfirm : ElementPlusComponentBase
 {
     [Parameter]
@@ -3423,12 +3291,6 @@ public sealed class ElPopconfirm : ElementPlusComponentBase
 /// el-popover
 /// </summary>
 [VueLibraryComponent("element-plus", "ElPopover")]
-[VueLibraryEmit(nameof(OnShow), Name = "show")]
-[VueLibraryEmit(nameof(OnBeforeEnter), Name = "before-enter")]
-[VueLibraryEmit(nameof(OnAfterEnter), Name = "after-enter")]
-[VueLibraryEmit(nameof(OnHide), Name = "hide")]
-[VueLibraryEmit(nameof(OnBeforeLeave), Name = "before-leave")]
-[VueLibraryEmit(nameof(OnAfterLeave), Name = "after-leave")]
 public sealed class ElPopover : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3591,8 +3453,6 @@ public sealed class ElProgress : ElementPlusContentComponentBase
 /// Single selection among multiple options.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadio")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadio : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3648,8 +3508,6 @@ public sealed class ElRadioButton : ElementPlusContentComponentBase
 /// el-radio-group
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRadioGroup")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadioGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3703,8 +3561,6 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
 /// Used for rating
 /// </summary>
 [VueLibraryComponent("element-plus", "ElRate")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Number, ECMAScript, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRate : ElementPlusComponentBase
 {
     [Parameter]
@@ -3837,8 +3693,6 @@ public sealed class ElRow : ElementPlusContentComponentBase
 /// Used to replace the browser's native scrollbar.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElScrollbar")]
-[VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
-[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
 public sealed class ElScrollbar : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3904,8 +3758,6 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 /// Display multiple options and allow users to select a single option.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSegmented")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSegmented : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -3953,15 +3805,6 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 /// When there are plenty of options, use a drop-down menu to display and select desired ones.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelect")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
-[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSelect : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4215,9 +4058,6 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 /// Drag the slider within a fixed range.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSlider")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnInput), Name = "input")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueNumberOrNumbersValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSlider : ElementPlusComponentBase
 {
     [Parameter]
@@ -4342,10 +4182,6 @@ public sealed class ElSpace : ElementPlusComponentBase
 /// el-splitter
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitter")]
-[VueLibraryEmit(nameof(OnResizeStart), Name = "resize-start")]
-[VueLibraryEmit(nameof(OnResize), Name = "resize")]
-[VueLibraryEmit(nameof(OnResizeEnd), Name = "resize-end")]
-[VueLibraryEmit(nameof(OnCollapse), Name = "collapse")]
 public sealed class ElSplitter : ElementPlusComponentBase
 {
     [Parameter]
@@ -4372,7 +4208,6 @@ public sealed class ElSplitter : ElementPlusComponentBase
 /// el-splitter-panel
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSplitterPanel")]
-[VueLibraryEmit(nameof(SizeChanged), VueEmitKind.ModelUpdate, Name = "update:size", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSplitterPanel : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4454,7 +4289,6 @@ public sealed class ElStep : ElementPlusComponentBase
 /// Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSteps")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
 public sealed class ElSteps : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4534,8 +4368,6 @@ public sealed class ElSubMenu : ElementPlusContentComponentBase
 /// Switch is used for switching between two opposing states.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSwitch")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSwitch : ElementPlusComponentBase
 {
     [Parameter]
@@ -4661,25 +4493,6 @@ public sealed class ElTabPane : ElementPlusContentComponentBase
 /// Display multiple data with similar format. You can sort, filter, compare your data in a table.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTable")]
-[VueLibraryEmit(nameof(OnSelect), Name = "select")]
-[VueLibraryEmit(nameof(OnSelectAll), Name = "select-all")]
-[VueLibraryEmit(nameof(OnSelectionChange), Name = "selection-change")]
-[VueLibraryEmit(nameof(OnCellMouseEnter), Name = "cell-mouse-enter")]
-[VueLibraryEmit(nameof(OnCellMouseLeave), Name = "cell-mouse-leave")]
-[VueLibraryEmit(nameof(OnCellClick), Name = "cell-click")]
-[VueLibraryEmit(nameof(OnCellDblclick), Name = "cell-dblclick")]
-[VueLibraryEmit(nameof(OnCellContextmenu), Name = "cell-contextmenu")]
-[VueLibraryEmit(nameof(OnRowClick), Name = "row-click")]
-[VueLibraryEmit(nameof(OnRowContextmenu), Name = "row-contextmenu")]
-[VueLibraryEmit(nameof(OnRowDblclick), Name = "row-dblclick")]
-[VueLibraryEmit(nameof(OnHeaderClick), Name = "header-click")]
-[VueLibraryEmit(nameof(OnHeaderContextmenu), Name = "header-contextmenu")]
-[VueLibraryEmit(nameof(OnSortChange), Name = "sort-change")]
-[VueLibraryEmit(nameof(OnFilterChange), Name = "filter-change")]
-[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
-[VueLibraryEmit(nameof(OnHeaderDragend), Name = "header-dragend")]
-[VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
-[VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
 public sealed class ElTable : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4990,12 +4803,6 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
 /// el-table-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTableV2")]
-[VueLibraryEmit(nameof(OnColumnSort), Name = "column-sort")]
-[VueLibraryEmit(nameof(OnExpandedRowsChange), Name = "expanded-rows-change")]
-[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(OnScroll), Name = "scroll")]
-[VueLibraryEmit(nameof(OnRowsRendered), Name = "rows-rendered")]
-[VueLibraryEmit(nameof(OnRowExpand), Name = "row-expand")]
 public sealed class ElTableV2 : ElementPlusComponentBase
 {
     [Parameter]
@@ -5133,12 +4940,6 @@ public sealed class ElTableV2 : ElementPlusComponentBase
 /// Divide data collections which are related yet belong to different types.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTabs")]
-[VueLibraryEmit(nameof(OnTabClick), Name = "tab-click")]
-[VueLibraryEmit(nameof(OnTabChange), Name = "tab-change")]
-[VueLibraryEmit(nameof(OnTabRemove), Name = "tab-remove")]
-[VueLibraryEmit(nameof(OnTabAdd), Name = "tab-add")]
-[VueLibraryEmit(nameof(OnEdit), Name = "edit")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElTabs : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5198,8 +4999,6 @@ public sealed class ElTabs : ElementPlusContentComponentBase
 /// Used for marking and selection.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTag")]
-[VueLibraryEmit(nameof(OnClick), Name = "click")]
-[VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElTag : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5261,12 +5060,6 @@ public sealed class ElText : ElementPlusContentComponentBase
 /// Use Time Picker for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimePicker")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElTimePicker : ElementPlusComponentBase
 {
     [Parameter]
@@ -5404,11 +5197,6 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 /// Use Time Select for time input.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTimeSelect")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElTimeSelect : ElementPlusComponentBase
 {
     [Parameter]
@@ -5547,10 +5335,6 @@ public sealed class ElTimelineItem : ElementPlusContentComponentBase
 /// Display prompt information for mouse hover.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTooltip")]
-[VueLibraryEmit(nameof(OnBeforeShow), Name = "before-show")]
-[VueLibraryEmit(nameof(OnShow), Name = "show")]
-[VueLibraryEmit(nameof(OnBeforeHide), Name = "before-hide")]
-[VueLibraryEmit(nameof(OnHide), Name = "hide")]
 public sealed class ElTooltip : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5672,10 +5456,6 @@ public sealed class ElTourStep : ElementPlusComponentBase
 /// el-transfer
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTransfer")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnLeftCheckChange), Name = "left-check-change")]
-[VueLibraryEmit(nameof(OnRightCheckChange), Name = "right-check-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueStringNumberValue[]")]
 public sealed class ElTransfer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5750,19 +5530,6 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
 /// Display a set of data with hierarchies.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTree")]
-[VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
-[VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
-[VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
-[VueLibraryEmit(nameof(OnCheck), Name = "check")]
-[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
-[VueLibraryEmit(nameof(OnNodeExpand), Name = "node-expand")]
-[VueLibraryEmit(nameof(OnNodeCollapse), Name = "node-collapse")]
-[VueLibraryEmit(nameof(OnNodeDragStart), Name = "node-drag-start")]
-[VueLibraryEmit(nameof(OnNodeDragEnter), Name = "node-drag-enter")]
-[VueLibraryEmit(nameof(OnNodeDragLeave), Name = "node-drag-leave")]
-[VueLibraryEmit(nameof(OnNodeDragOver), Name = "node-drag-over")]
-[VueLibraryEmit(nameof(OnNodeDragEnd), Name = "node-drag-end")]
-[VueLibraryEmit(nameof(OnNodeDrop), Name = "node-drop")]
 public sealed class ElTree : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5891,28 +5658,6 @@ public sealed class ElTree : ElementPlusContentComponentBase
 /// ElTreeSelect
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeSelect")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
-[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
-[VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
-[VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
-[VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
-[VueLibraryEmit(nameof(OnCheck), Name = "check")]
-[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
-[VueLibraryEmit(nameof(OnNodeExpand), Name = "node-expand")]
-[VueLibraryEmit(nameof(OnNodeCollapse), Name = "node-collapse")]
-[VueLibraryEmit(nameof(OnNodeDragStart), Name = "node-drag-start")]
-[VueLibraryEmit(nameof(OnNodeDragEnter), Name = "node-drag-enter")]
-[VueLibraryEmit(nameof(OnNodeDragLeave), Name = "node-drag-leave")]
-[VueLibraryEmit(nameof(OnNodeDragOver), Name = "node-drag-over")]
-[VueLibraryEmit(nameof(OnNodeDragEnd), Name = "node-drag-end")]
-[VueLibraryEmit(nameof(OnNodeDrop), Name = "node-drop")]
 public sealed class ElTreeSelect : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6246,14 +5991,6 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
 /// el-tree-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeV2")]
-[VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
-[VueLibraryEmit(nameof(OnNodeDrop), Name = "node-drop")]
-[VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
-[VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
-[VueLibraryEmit(nameof(OnCheck), Name = "check")]
-[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
-[VueLibraryEmit(nameof(OnNodeExpand), Name = "node-expand")]
-[VueLibraryEmit(nameof(OnNodeCollapse), Name = "node-collapse")]
 public sealed class ElTreeV2 : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6441,14 +6178,6 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 /// :::tip
 /// </summary>
 [VueLibraryComponent("element-plus", "ElSelectV2")]
-[VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
-[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.ElementPlus.ElementPlusSelectV2ModelValue, ECMAScript.ElementPlus, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
 {
     [Parameter]

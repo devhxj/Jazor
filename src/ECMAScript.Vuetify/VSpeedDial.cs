@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify speed-dial authoring proxy built on the VMenu/VOverlay surface.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSpeedDial")]
-public sealed class VSpeedDial : ComponentBase, IVueLibraryComponent
+public sealed class VSpeedDial : ComponentBase
 {
     /// <summary>
     /// 快速拨号的显示状态。

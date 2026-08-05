@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify defaults-provider authoring proxy for scoped component defaults.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDefaultsProvider")]
-public sealed class VDefaultsProvider : ComponentBase, IVueLibraryComponent
+public sealed class VDefaultsProvider : ComponentBase
 {
     /// <summary>
     /// 子组件的默认属性值。

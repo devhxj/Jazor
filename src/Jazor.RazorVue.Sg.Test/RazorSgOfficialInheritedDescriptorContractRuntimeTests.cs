@@ -18,7 +18,6 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             """
             using Microsoft.AspNetCore.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -84,7 +83,6 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             """
             using Microsoft.AspNetCore.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

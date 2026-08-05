@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify timeline authoring proxy for chronological vertical or horizontal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTimeline")]
-public sealed class VTimeline : ComponentBase, IVueLibraryComponent
+public sealed class VTimeline : ComponentBase
 {
     /// <summary>
     /// 主题名。

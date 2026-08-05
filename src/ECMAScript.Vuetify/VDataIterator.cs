@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -9,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data-iterator authoring proxy for filtered, sorted, grouped, paginated item rendering.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataIterator")]
-public sealed class VDataIterator : ComponentBase, IVueLibraryComponent
+public sealed class VDataIterator : ComponentBase
 {
     /// <summary>
     /// 选中项的绑定值。

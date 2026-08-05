@@ -19,7 +19,6 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
             using Demo.Components;
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

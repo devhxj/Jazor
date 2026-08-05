@@ -7,10 +7,10 @@ namespace ECMAScript.Vuetify;
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VField")]
-[VueLibraryEmit(nameof(ClearClick), VueEmitKind.LibrarySpecific, Name = "click:clear")]
-[VueLibraryEmit(nameof(AppendInnerClick), VueEmitKind.LibrarySpecific, Name = "click:appendInner")]
-[VueLibraryEmit(nameof(PrependInnerClick), VueEmitKind.LibrarySpecific, Name = "click:prependInner")]
-public sealed class VField : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnClearClick), Name = "click:clear")]
+[VueLibraryEmit(nameof(OnAppendInnerClick), Name = "click:appendInner")]
+[VueLibraryEmit(nameof(OnPrependInnerClick), Name = "click:prependInner")]
+public sealed class VField : ComponentBase
 {
     /// <summary>
     /// 字段的 HTML id 属性。
@@ -220,21 +220,21 @@ public sealed class VField : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the clear icon is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClearClick { get; set; }
+    public EventCallback<MouseEvent> OnClearClick { get; set; }
 
     /// <summary>
     /// 点击内部右侧追加图标时触发的事件回调。
     /// Event callback fired when the append-inner icon is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> AppendInnerClick { get; set; }
+    public EventCallback<MouseEvent> OnAppendInnerClick { get; set; }
 
     /// <summary>
     /// 点击内部左侧前置图标时触发的事件回调。
     /// Event callback fired when the prepend-inner icon is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> PrependInnerClick { get; set; }
+    public EventCallback<MouseEvent> OnPrependInnerClick { get; set; }
 
     /// <summary>
     /// 附加到根元素的自定义属性。

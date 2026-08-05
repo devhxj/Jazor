@@ -82,7 +82,6 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
     {
         var componentType = typeof(ECMAScript.VueRouterLink);
         Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(componentType));
-        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueLibraryComponent).IsAssignableFrom(componentType));
 
         var component = componentType.GetCustomAttribute<VueLibraryComponentAttribute>();
         Assert.IsNotNull(component);

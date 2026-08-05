@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sparkline authoring proxy for compact trend and bar visualizations.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSparkline")]
-public sealed class VSparkline : ComponentBase, IVueLibraryComponent
+public sealed class VSparkline : ComponentBase
 {
     /// <summary>
     /// 是否在挂载时自动绘制动画。

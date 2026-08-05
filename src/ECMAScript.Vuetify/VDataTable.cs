@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -9,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data table authoring proxy for RazorVue.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataTable")]
-public sealed class VDataTable : ComponentBase, IVueLibraryComponent
+public sealed class VDataTable : ComponentBase
 {
     /// <summary>
     /// 选中行的绑定值。

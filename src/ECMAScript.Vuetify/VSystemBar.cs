@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify system bar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSystemBar")]
-public sealed class VSystemBar : ComponentBase, IVueLibraryComponent
+public sealed class VSystemBar : ComponentBase
 {
     /// <summary>
     /// 系统栏的颜色。

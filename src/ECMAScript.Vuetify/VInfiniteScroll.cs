@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify infinite-scroll authoring proxy for incremental list loading.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInfiniteScroll")]
-public sealed class VInfiniteScroll : ComponentBase, IVueLibraryComponent
+public sealed class VInfiniteScroll : ComponentBase
 {
     /// <summary>
     /// 根元素使用的 HTML 标签。

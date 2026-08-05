@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 按钮组组件。
 /// Vuetify button group component.
 /// </summary>
-public sealed class VBtnGroup : ComponentBase, IVueLibraryComponent
+public sealed class VBtnGroup : ComponentBase
 {
     /// <summary>
     /// 基础颜色。

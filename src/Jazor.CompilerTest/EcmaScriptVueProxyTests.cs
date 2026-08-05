@@ -3155,7 +3155,7 @@ public sealed class EcmaScriptVueProxyTests
                 type.IsClass &&
                 !type.IsAbstract &&
                 typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(type) &&
-                typeof(IVueLibraryComponent).IsAssignableFrom(type))
+                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
@@ -3229,6 +3229,69 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vuetify_EventParameters_UseStandardNamesAndOnlyExceptionalEmitMetadata()
+    {
+        var componentTypes = typeof(Vuetify).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.Vuetify" &&
+                typeof(ComponentBase).IsAssignableFrom(type) &&
+                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+            .ToArray();
+
+        var eventProperties = componentTypes
+            .SelectMany(static type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            .Where(static property =>
+                property.PropertyType == typeof(EventCallback) ||
+                property.PropertyType.IsGenericType &&
+                property.PropertyType.GetGenericTypeDefinition() == typeof(EventCallback<>))
+            .ToArray();
+
+        Assert.IsTrue(eventProperties.Length > 0);
+        foreach (var property in eventProperties)
+        {
+            Assert.IsTrue(
+                property.Name.EndsWith("Changed", StringComparison.Ordinal) ||
+                property.Name.Length > 2 &&
+                property.Name.StartsWith("On", StringComparison.Ordinal) &&
+                char.IsUpper(property.Name[2]),
+                $"{property.DeclaringType?.Name}.{property.Name}");
+        }
+
+        var exceptionalEmits = componentTypes
+            .SelectMany(static type => type
+                .GetCustomAttributes<ECMAScript.VueContract.VueLibraryEmitAttribute>()
+                .Select(attribute => $"{type.Name}.{attribute.RazorAlias}={attribute.Name}"))
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray();
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "VAlert.OnClickClose=click:close",
+                "VChip.OnClickClose=click:close",
+                "VChip.OnGroupSelected=group:selected",
+                "VDialog.OnClickOutside=click:outside",
+                "VEmptyState.OnActionClick=click:action",
+                "VField.OnAppendInnerClick=click:appendInner",
+                "VField.OnClearClick=click:clear",
+                "VField.OnPrependInnerClick=click:prependInner",
+                "VImg.OnLoadStart=loadstart",
+                "VInput.OnAppendClick=click:append",
+                "VInput.OnPrependClick=click:prepend",
+                "VOverlay.OnClickOutside=click:outside",
+                "VSnackbar.OnClickOutside=click:outside",
+                "VTabsWindowItem.OnGroupSelected=group:selected",
+                "VTreeview.OnOpenClick=click:open",
+                "VTreeview.OnSelectClick=click:select"
+            },
+            exceptionalEmits);
+
+        Assert.IsNotNull(typeof(VDialog).GetProperty(nameof(VDialog.OnKeydown)));
+        Assert.IsNotNull(typeof(VImg).GetProperty(nameof(VImg.OnError)));
+    }
+
+    [TestMethod]
     public void TDesign_AuthoringComponents_ExposeOnlyAdditionalAttributesAsObjectSink()
     {
         var componentTypes = typeof(TDesign).Assembly
@@ -3238,7 +3301,7 @@ public sealed class EcmaScriptVueProxyTests
                 type.IsClass &&
                 !type.IsAbstract &&
                 typeof(ComponentBase).IsAssignableFrom(type) &&
-                typeof(IVueLibraryComponent).IsAssignableFrom(type))
+                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
@@ -3317,11 +3380,6 @@ public sealed class EcmaScriptVueProxyTests
                 type.Namespace == "ECMAScript.ElementPlus" &&
                 typeof(ComponentBase).IsAssignableFrom(type))
             .ToArray();
-
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VueLibraryStyleAttribute>(inherit: false).Any()));
-        Assert.IsFalse(componentTypes.Any(static type =>
-            type.GetCustomAttributes<ECMAScript.VueContract.VueLibraryPluginRequirementAttribute>(inherit: false).Any()));
 
         Assert.AreEqual(
             "class",

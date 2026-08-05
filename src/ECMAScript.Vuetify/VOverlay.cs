@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,9 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify overlay component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VOverlay")]
-[VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
-[VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-public sealed class VOverlay : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
+public sealed class VOverlay : ComponentBase
 {
     /// <summary>
     /// 遮罩层是否可见。
@@ -276,14 +274,14 @@ public sealed class VOverlay : ComponentBase, IVueLibraryComponent
     /// Event callback fired when clicking outside the overlay.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClickOutside { get; set; }
+    public EventCallback<MouseEvent> OnClickOutside { get; set; }
 
     /// <summary>
     /// 遮罩层上按键时触发的事件回调。
     /// Event callback fired on keydown within the overlay.
     /// </summary>
     [Parameter]
-    public EventCallback<KeyboardEvent> Keydown { get; set; }
+    public EventCallback<KeyboardEvent> OnKeydown { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

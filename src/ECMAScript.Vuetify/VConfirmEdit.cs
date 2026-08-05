@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify confirm-edit authoring proxy for editable value confirmation flows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VConfirmEdit")]
-public sealed class VConfirmEdit : ComponentBase, IVueLibraryComponent
+public sealed class VConfirmEdit : ComponentBase
 {
     /// <summary>
     /// 编辑绑定值。

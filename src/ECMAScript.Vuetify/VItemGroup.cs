@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify item group component for managing selection state across a group of items.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VItemGroup")]
-public sealed class VItemGroup : ComponentBase, IVueLibraryComponent
+public sealed class VItemGroup : ComponentBase
 {
     /// <summary>
     /// 条目组的绑定值。

@@ -18,7 +18,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """
             using Demo.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -127,7 +126,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """
             using Demo.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -233,7 +231,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """
             using Demo.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -340,7 +337,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """
             using Demo.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
@@ -440,7 +436,6 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """
             using Demo.Components;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

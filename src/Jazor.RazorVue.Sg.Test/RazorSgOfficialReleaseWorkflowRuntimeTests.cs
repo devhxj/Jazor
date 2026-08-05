@@ -38,14 +38,12 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {
                 public sealed record ReleaseEntry(int Id, string Name, bool IsReady);
 
                 [ECMAScriptModule("./components/release-panel-workflow")]
-                [VueLibraryEmit(nameof(SelectedIdChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
                     [ECMAScriptName("modelValue")]

@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 徽章组件。
 /// Vuetify badge component.
 /// </summary>
-public sealed class VBadge : ComponentBase, IVueLibraryComponent
+public sealed class VBadge : ComponentBase
 {
     /// <summary>
     /// 过渡动画。

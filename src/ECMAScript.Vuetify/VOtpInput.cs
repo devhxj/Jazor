@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify OTP input component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VOtpInput")]
-public sealed class VOtpInput : ComponentBase, IVueLibraryComponent
+public sealed class VOtpInput : ComponentBase
 {
     /// <summary>
     /// OTP 输入框的数量。

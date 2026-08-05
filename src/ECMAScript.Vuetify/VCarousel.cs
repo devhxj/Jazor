@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify carousel authoring proxy for grouped slide navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCarousel")]
-public sealed class VCarousel : ComponentBase, IVueLibraryComponent
+public sealed class VCarousel : ComponentBase
 {
     /// <summary>
     /// 当前轮播激活项的绑定值。

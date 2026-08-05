@@ -23,7 +23,6 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
             codeBehindSource:
             """
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
 
             namespace Demo.Components
             {

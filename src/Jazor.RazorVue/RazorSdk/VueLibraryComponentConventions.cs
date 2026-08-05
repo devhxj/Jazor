@@ -143,8 +143,11 @@ internal static class VueLibraryComponentConventions
             return descriptorName;
         }
 
-        return TryGetModelUpdateEventName(componentType, property, out var modelEventName)
-            ? modelEventName
+        if (TryGetModelUpdateEventName(componentType, property, out var modelEventName))
+            return modelEventName;
+
+        return TryGetConventionalEventName(property, out var eventName)
+            ? eventName
             : ToEmitName(Util.GetConfigOrSymbolName(property));
     }
 
@@ -154,8 +157,7 @@ internal static class VueLibraryComponentConventions
         out string eventName)
     {
         eventName = string.Empty;
-        if (!IsVueLibraryComponent(componentType) ||
-            !IsParameterProperty(property) ||
+        if (!IsParameterProperty(property) ||
             !IsEventCallback(property.Type) ||
             !property.Name.EndsWith("Changed", StringComparison.Ordinal))
         {
@@ -169,6 +171,24 @@ internal static class VueLibraryComponentConventions
             return false;
 
         eventName = "update:" + GetPropRuntimeName(model);
+        return true;
+    }
+
+    private static bool TryGetConventionalEventName(
+        IPropertySymbol property,
+        out string eventName)
+    {
+        eventName = string.Empty;
+        if (!IsParameterProperty(property) ||
+            !IsEventCallback(property.Type) ||
+            property.Name.Length <= 2 ||
+            !property.Name.StartsWith("On", StringComparison.Ordinal) ||
+            !char.IsUpper(property.Name[2]))
+        {
+            return false;
+        }
+
+        eventName = ToKebabCase(property.Name.Substring(2));
         return true;
     }
 

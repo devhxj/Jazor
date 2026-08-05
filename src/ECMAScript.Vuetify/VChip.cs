@@ -8,9 +8,9 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
-[VueLibraryEmit(nameof(ClickClose), VueEmitKind.LibrarySpecific, Name = "click:close")]
-[VueLibraryEmit(nameof(GroupSelected), VueEmitKind.LibrarySpecific, Name = "group:selected")]
-public sealed class VChip : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnClickClose), Name = "click:close")]
+[VueLibraryEmit(nameof(OnGroupSelected), Name = "group:selected")]
+public sealed class VChip : ComponentBase
 {
     /// <summary>
     /// 芯片的选中绑定值。
@@ -292,14 +292,14 @@ public sealed class VChip : ComponentBase, IVueLibraryComponent
     /// Callback invoked when the close button is clicked.
     /// </summary>
     [Parameter]
-    public EventCallback<MouseEvent> ClickClose { get; set; }
+    public EventCallback<MouseEvent> OnClickClose { get; set; }
 
     /// <summary>
     /// 组选中事件回调。
     /// Callback invoked when the chip is selected in a group.
     /// </summary>
     [Parameter]
-    public EventCallback<VuetifyGroupSelectedEvent> GroupSelected { get; set; }
+    public EventCallback<VuetifyGroupSelectedEvent> OnGroupSelected { get; set; }
 
     /// <summary>
     /// 附加的自定义属性。

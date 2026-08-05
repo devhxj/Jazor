@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify expansion-panel component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VExpansionPanel")]
-public sealed class VExpansionPanel : ComponentBase, IVueLibraryComponent
+public sealed class VExpansionPanel : ComponentBase
 {
     /// <summary>
     /// 面板的背景颜色。

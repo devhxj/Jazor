@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,8 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs-window-item authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindowItem")]
-[VueLibraryEmit(nameof(GroupSelected), VueEmitKind.LibrarySpecific, Name = "group:selected")]
-public sealed class VTabsWindowItem : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnGroupSelected), Name = "group:selected")]
+public sealed class VTabsWindowItem : ComponentBase
 {
     /// <summary>
     /// 值。
@@ -58,7 +57,7 @@ public sealed class VTabsWindowItem : ComponentBase, IVueLibraryComponent
     /// Group selected event.
     /// </summary>
     [Parameter]
-    public EventCallback<VuetifyGroupSelectedEvent> GroupSelected { get; set; }
+    public EventCallback<VuetifyGroupSelectedEvent> OnGroupSelected { get; set; }
 
     /// <summary>
     /// 额外属性。

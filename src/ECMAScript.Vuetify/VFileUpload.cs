@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs file-upload authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VFileUpload")]
-public sealed class VFileUpload : ComponentBase, IVueLibraryComponent
+public sealed class VFileUpload : ComponentBase
 {
     /// <summary>
     /// 组件使用的主题名称。

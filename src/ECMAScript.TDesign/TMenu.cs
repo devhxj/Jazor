@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.TDesign;
 
 [VueLibraryComponent("tdesign-vue-next", "Menu")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TMenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -48,8 +46,6 @@ public sealed class TMenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "HeadMenu")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class THeadMenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -84,8 +80,6 @@ public sealed class THeadMenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Submenu")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TSubmenu : TDesignContentComponentBase
 {
     [Parameter]
@@ -105,8 +99,6 @@ public sealed class TSubmenu : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "MenuItem")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TMenuItem : TDesignContentComponentBase
 {
     [Parameter]
@@ -142,8 +134,6 @@ public sealed class TMenuItem : TDesignContentComponentBase
 }
 
 [VueLibraryComponent("tdesign-vue-next", "MenuGroup")]
-[VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
-[VueLibraryPluginRequirement("tdesign")]
 public sealed class TMenuGroup : TDesignContentComponentBase
 {
     [Parameter]

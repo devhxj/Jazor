@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,9 +7,9 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
-[VueLibraryEmit(nameof(OpenClicked), VueEmitKind.LibrarySpecific, Name = "click:open")]
-[VueLibraryEmit(nameof(SelectClicked), VueEmitKind.LibrarySpecific, Name = "click:select")]
-public sealed class VTreeview : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnOpenClick), Name = "click:open")]
+[VueLibraryEmit(nameof(OnSelectClick), Name = "click:select")]
+public sealed class VTreeview : ComponentBase
 {
     /// <summary>
     /// 模型值。
@@ -446,14 +445,14 @@ public sealed class VTreeview : ComponentBase, IVueLibraryComponent
     /// Open click event.
     /// </summary>
     [Parameter]
-    public EventCallback<VuetifyTreeviewClickPayload> OpenClicked { get; set; }
+    public EventCallback<VuetifyTreeviewClickPayload> OnOpenClick { get; set; }
 
     /// <summary>
     /// 选中点击事件。
     /// Select click event.
     /// </summary>
     [Parameter]
-    public EventCallback<VuetifyTreeviewClickPayload> SelectClicked { get; set; }
+    public EventCallback<VuetifyTreeviewClickPayload> OnSelectClick { get; set; }
 
     /// <summary>
     /// 额外属性。

@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify text-field authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextField")]
-public sealed class VTextField : VInputComponentBase, IVueLibraryComponent
+public sealed class VTextField : VInputComponentBase
 {
     /// <summary>
     /// 输入类型。

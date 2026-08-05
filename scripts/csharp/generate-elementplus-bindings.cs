@@ -600,7 +600,7 @@ internal static class Program
             builder.AppendLine("/// </summary>");
             builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
 
-            foreach (var emit in component.Emits)
+            foreach (var emit in component.Emits.Where(RequiresExplicitEmitName))
             {
                 builder.AppendLine(RenderVueEmitAttribute(emit));
             }
@@ -711,6 +711,20 @@ internal static class Program
             StringComparison.Ordinal);
     }
 
+    private static bool RequiresExplicitEmitName(ElementPlusEmitMetadata emit)
+    {
+        if (emit.IsModelUpdate)
+            return false;
+
+        return emit.PropertyName.Length <= 2 ||
+               !emit.PropertyName.StartsWith("On", StringComparison.Ordinal) ||
+               !char.IsUpper(emit.PropertyName[2]) ||
+               !string.Equals(
+                   emit.RuntimeName,
+                   ToKebabCase(emit.PropertyName[2..]),
+                   StringComparison.Ordinal);
+    }
+
     private static string ToKebabCase(string name)
     {
         var result = new StringBuilder(name.Length + 4);
@@ -737,14 +751,7 @@ internal static class Program
     }
 
     private static string RenderVueEmitAttribute(ElementPlusEmitMetadata emit)
-    {
-        if (emit.IsModelUpdate)
-        {
-            return $"[VueLibraryEmit(nameof({emit.PropertyName}), VueEmitKind.ModelUpdate, Name = \"{emit.RuntimeName}\", PayloadTypeName = \"{EscapeCSharpString(emit.PayloadTypeRuntimeName ?? emit.PayloadTypeSourceText ?? "void")}\")]";
-        }
-
-        return $"[VueLibraryEmit(nameof({emit.PropertyName}), Name = \"{emit.RuntimeName}\")]";
-    }
+        => $"[VueLibraryEmit(nameof({emit.PropertyName}), Name = \"{emit.RuntimeName}\")]";
 
     private static ElementPlusAttributeCatalog ReadAttributeCatalog(string path)
     {

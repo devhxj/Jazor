@@ -7,9 +7,8 @@ namespace ECMAScript.Vuetify;
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
-[VueLibraryEmit(nameof(LoadStart), VueEmitKind.LibrarySpecific, Name = "loadstart")]
-[VueLibraryEmit(nameof(LoadError), VueEmitKind.LibrarySpecific, Name = "error")]
-public sealed class VImg : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(OnLoadStart), Name = "loadstart")]
+public sealed class VImg : ComponentBase
 {
     /// <summary>
     /// 图片的源地址或源对象。
@@ -223,7 +222,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the image starts loading.
     /// </summary>
     [Parameter]
-    public EventCallback<string?> LoadStart { get; set; }
+    public EventCallback<string?> OnLoadStart { get; set; }
 
     /// <summary>
     /// 图片加载完成时触发的事件回调。
@@ -237,7 +236,7 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// Event callback fired when the image fails to load.
     /// </summary>
     [Parameter]
-    public EventCallback<string?> LoadError { get; set; }
+    public EventCallback<string?> OnError { get; set; }
 
     /// <summary>
     /// 捕获未匹配的额外 HTML 属性。

@@ -1475,7 +1475,7 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [VueLibraryComponent("npm:demo-links@1.mjs", "DemoLink")]
-                public sealed class DemoLink : ComponentBase, IVueLibraryComponent
+                public sealed class DemoLink : ComponentBase
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -6289,7 +6289,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_RuntimeLowersComponentBindValuePair()
+    public async Task BuildVueComponentModule_RuntimeLowersComponentBindPairToUpdateEvent()
     {
         var fixture = CreateManualGeneratedFixture(
             """
@@ -6335,7 +6335,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addComponentParameter(\"Value\", state.text);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addComponentParameter(\"ValueChanged\", __value => state.text = __value);", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "{ value: state.text, valueChanged: __value => state.text = __value }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ value: state.text, \"onUpdate:value\": __value => state.text = __value }", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("modelValue", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -6400,23 +6400,25 @@ public sealed class RazorSgComponentMemberClosureTests
 
                 import component from "./components/parent.mjs";
 
-                test("component bind-X uses X and XChanged instead of modelValue", () => {
+                test("component bind-X uses X and the conventional update:X event", () => {
                     const render = component.setup({}, { slots: {} });
                     const first = render();
 
                     assert.equal(first.name.name, "Child");
                     assert.equal(first.props.value, "initial");
-                    assert.equal(typeof first.props.valueChanged, "function");
+                    assert.equal(typeof first.props["onUpdate:value"], "function");
+                    assert.equal(first.props.valueChanged, undefined);
                     assert.equal(first.props.modelValue, undefined);
                     assert.equal(first.props["onUpdate:modelValue"], undefined);
                     assert.equal(first.props.Value, undefined);
                     assert.equal(first.props.ValueChanged, undefined);
 
-                    first.props.valueChanged("updated");
+                    first.props["onUpdate:value"]("updated");
                     const second = render();
 
                     assert.equal(second.props.value, "updated");
-                    assert.equal(typeof second.props.valueChanged, "function");
+                    assert.equal(typeof second.props["onUpdate:value"], "function");
+                    assert.equal(second.props.valueChanged, undefined);
                     assert.equal(second.props.modelValue, undefined);
                     assert.equal(second.props["onUpdate:modelValue"], undefined);
                 });
@@ -6438,7 +6440,6 @@ public sealed class RazorSgComponentMemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -6446,7 +6447,6 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
@@ -6597,7 +6597,6 @@ public sealed class RazorSgComponentMemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -6605,8 +6604,6 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/child")]
-                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-                [VueLibraryEmit(nameof(OnAction), VueEmitKind.Normal, Name = "action")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
@@ -7234,7 +7231,6 @@ public sealed class RazorSgComponentMemberClosureTests
             using System.ComponentModel;
             using ECMAScript;
             using ECMAScript.VueContract;
-            using ECMAScript.VueContract.Descriptor;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -7253,7 +7249,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 }
 
                 [VueLibraryComponent("demo-components", "Child")]
-                public sealed class Child : ChildBase, IVueLibraryComponent
+                public sealed class Child : ChildBase
                 {
                     [Parameter]
                     [ECMAScriptName("derivedTitle")]
@@ -7337,7 +7333,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 }
 
                 [VueLibraryComponent("demo-components", "Child")]
-                public sealed class Counter : ChildBase, IVueLibraryComponent
+                public sealed class Counter : ChildBase
                 {
                     public new string Title { get; set; } = "local";
 
@@ -7379,7 +7375,7 @@ public sealed class RazorSgComponentMemberClosureTests
             namespace Demo.Pages
             {
                 [VueLibraryComponent("demo-components", "Counter")]
-                public sealed class Counter : ComponentBase, IVueLibraryComponent
+                public sealed class Counter : ComponentBase
                 {
                     [Parameter]
                     [ECMAScriptName("sameName")]

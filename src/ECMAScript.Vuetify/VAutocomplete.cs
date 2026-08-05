@@ -1,5 +1,4 @@
 using ECMAScript.VueContract;
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -9,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.
 /// </summary>
-public sealed class VAutocomplete : VSelectLikeComponentBase, IVueLibraryComponent
+public sealed class VAutocomplete : VSelectLikeComponentBase
 {
     /// <summary>
     /// 组件的模型值。

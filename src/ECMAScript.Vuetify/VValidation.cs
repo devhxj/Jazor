@@ -1,4 +1,3 @@
-using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
@@ -8,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify validation authoring proxy exposing the validation composable as a scoped slot.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VValidation")]
-public sealed class VValidation : ComponentBase, IVueLibraryComponent
+public sealed class VValidation : ComponentBase
 {
     /// <summary>
     /// 聚焦。

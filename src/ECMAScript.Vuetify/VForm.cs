@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify form component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VForm")]
-public sealed class VForm : ComponentBase, IVueLibraryComponent
+public sealed class VForm : ComponentBase
 {
     /// <summary>
     /// 是否禁用表单内所有输入控件。

@@ -260,7 +260,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 namespace Demo.Library;
 
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
-                public sealed class TButton : ComponentBase, IVueLibraryComponent
+                public sealed class TButton : ComponentBase
                 {
                     [Parameter]
                     public string Status { get; set; } = string.Empty;
