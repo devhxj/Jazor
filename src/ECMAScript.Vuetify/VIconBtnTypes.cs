@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VIconBtn size-map and text value contracts for RazorVue authoring.
+// 定义 VIconBtn 的尺寸映射和文本值合同；可安全擦除的多值域使用原生 union。
+
 /// <summary>
 /// 图标按钮尺寸名称枚举。
 /// Icon button size name enumeration.
@@ -46,30 +49,17 @@ public sealed record VIconBtnSizeEntry
 /// Icon button size map that maps size names to numeric values.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VIconBtnSizeMapCollectionBuilder), nameof(VIconBtnSizeMapCollectionBuilder.Create))]
-public readonly struct VIconBtnSizeMap : System.Runtime.CompilerServices.IUnion, IEnumerable<VIconBtnSizeEntry>
+public readonly union VIconBtnSizeMap(VIconBtnSizeEntry[]) : IEnumerable<VIconBtnSizeEntry>
 {
-    private readonly VIconBtnSizeEntry[]? _entries;
-
-    public VIconBtnSizeMap(VIconBtnSizeEntry[] entries)
-    {
-        _entries = entries;
-    }
-
-    public VIconBtnSizeEntry[]? AsArray => _entries;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VIconBtnSizeMap From(VIconBtnSizeEntry[] entries);
+    public VIconBtnSizeEntry[]? AsArray => Value as VIconBtnSizeEntry[];
 
     public static implicit operator VIconBtnSizeMap(VIconBtnSizeEntry[] entries)
         => new(entries);
 
     IEnumerator<VIconBtnSizeEntry> IEnumerable<VIconBtnSizeEntry>.GetEnumerator()
-        => ((IEnumerable<VIconBtnSizeEntry>)(_entries ?? [])).GetEnumerator();
+        => ((IEnumerable<VIconBtnSizeEntry>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VIconBtnSizeEntry>)this).GetEnumerator();
@@ -87,61 +77,14 @@ public static class VIconBtnSizeMapCollectionBuilder
 /// Icon button text value supporting boolean, numeric, or string types.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VIconBtnTextValue : System.Runtime.CompilerServices.IUnion
+public readonly union VIconBtnTextValue(bool, Number, string)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly Number? _number;
-    private readonly string? _string;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public VIconBtnTextValue(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _number = default;
-        _string = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VIconBtnTextValue(Number value)
-    {
-        _kind = 2;
-        _bool = default;
-        _number = value;
-        _string = default;
-    }
-
-    public VIconBtnTextValue(string value)
-    {
-        _kind = 3;
-        _bool = default;
-        _number = default;
-        _string = value;
-    }
-
-    public bool? AsBool => _kind == 1 ? _bool : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public string? AsString => _kind == 3 ? _string : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsBool,
-        2 => AsNumber,
-        3 => AsString,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VIconBtnTextValue From(bool value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VIconBtnTextValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VIconBtnTextValue From(string value);
+    public string? AsString => Value as string;
 
     public static implicit operator VIconBtnTextValue(bool value)
         => new(value);
