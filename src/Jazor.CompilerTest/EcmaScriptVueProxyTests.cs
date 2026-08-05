@@ -3308,6 +3308,43 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void VuetifyColorPickerValues_UseNativeUnionContracts()
+    {
+        var unionTypes = new[]
+        {
+            typeof(VuetifyColorPickerModes),
+            typeof(VuetifyColorValue),
+            typeof(VuetifyColorPickerSwatch),
+            typeof(VuetifyColorPickerSwatches)
+        };
+
+        AssertNet11UnionContract(typeof(VuetifyColorPickerModes), typeof(VuetifyColorPickerMode[]));
+        AssertNet11UnionContract(
+            typeof(VuetifyColorValue),
+            typeof(string),
+            typeof(Number),
+            typeof(VuetifyRgbColor),
+            typeof(VuetifyHsvColor),
+            typeof(VuetifyHslColor));
+        AssertNet11UnionContract(typeof(VuetifyColorPickerSwatch), typeof(VuetifyColorValue[]));
+        AssertNet11UnionContract(typeof(VuetifyColorPickerSwatches), typeof(VuetifyColorPickerSwatch[]));
+
+        foreach (var unionType in unionTypes)
+        {
+            Assert.IsNull(unionType.GetMethod("From", BindingFlags.Public | BindingFlags.Static), unionType.FullName);
+        }
+
+        Assert.IsNotNull(typeof(VuetifyColorValue).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(decimal)]));
+        Assert.IsNotNull(typeof(VuetifyColorPickerSwatches).GetMethod(
+            "op_Implicit",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(double[][])]));
+    }
+
+    [TestMethod]
     public void TDesign_TaggedUnions_ExposePublicCreationMembers()
         => AssertTaggedUnionsExposePublicCreationMembers(
             typeof(TDesignComponents).Assembly,

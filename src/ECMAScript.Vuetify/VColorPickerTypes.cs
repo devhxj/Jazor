@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+// Defines VColorPicker value domains, collection carriers, and structured color records.
+// 定义 VColorPicker 的值域、集合载体和结构化颜色 record；可安全擦除的多值域使用原生 union。
+
 /// <summary>
 /// Vuetify 颜色选择器模式枚举。
 /// Vuetify color picker mode enum.
@@ -34,30 +37,17 @@ public enum VuetifyColorPickerMode
 /// Collection of available Vuetify color picker modes.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerModesCollectionBuilder), nameof(VuetifyColorPickerModesCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerModes : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorPickerMode>
+public readonly union VuetifyColorPickerModes(VuetifyColorPickerMode[]) : IEnumerable<VuetifyColorPickerMode>
 {
-    private readonly VuetifyColorPickerMode[]? _modes;
-
-    public VuetifyColorPickerModes(VuetifyColorPickerMode[] modes)
-    {
-        _modes = modes;
-    }
-
-    public VuetifyColorPickerMode[]? AsArray => _modes;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorPickerModes From(VuetifyColorPickerMode[] modes);
+    public VuetifyColorPickerMode[]? AsArray => Value as VuetifyColorPickerMode[];
 
     public static implicit operator VuetifyColorPickerModes(VuetifyColorPickerMode[] modes)
         => new(modes);
 
     IEnumerator<VuetifyColorPickerMode> IEnumerable<VuetifyColorPickerMode>.GetEnumerator()
-        => ((IEnumerable<VuetifyColorPickerMode>)(_modes ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyColorPickerMode>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyColorPickerMode>)this).GetEnumerator();
@@ -138,101 +128,18 @@ public sealed record VuetifyHslColor : VueProps
 /// Vuetify color value union type supporting string, number, RGB, HSV, and HSL representations.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnion
+public readonly union VuetifyColorValue(string, Number, VuetifyRgbColor, VuetifyHsvColor, VuetifyHslColor)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Number? _number;
-    private readonly VuetifyRgbColor? _rgb;
-    private readonly VuetifyHsvColor? _hsv;
-    private readonly VuetifyHslColor? _hsl;
+    public string? AsString => Value as string;
 
-    public VuetifyColorValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _number = default;
-        _rgb = default;
-        _hsv = default;
-        _hsl = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    public VuetifyColorValue(Number value)
-    {
-        _kind = 2;
-        _string = default;
-        _number = value;
-        _rgb = default;
-        _hsv = default;
-        _hsl = default;
-    }
+    public VuetifyRgbColor? AsRgb => Value as VuetifyRgbColor;
 
-    public VuetifyColorValue(VuetifyRgbColor value)
-    {
-        _kind = 3;
-        _string = default;
-        _number = default;
-        _rgb = value;
-        _hsv = default;
-        _hsl = default;
-    }
+    public VuetifyHsvColor? AsHsv => Value as VuetifyHsvColor;
 
-    public VuetifyColorValue(VuetifyHsvColor value)
-    {
-        _kind = 4;
-        _string = default;
-        _number = default;
-        _rgb = default;
-        _hsv = value;
-        _hsl = default;
-    }
-
-    public VuetifyColorValue(VuetifyHslColor value)
-    {
-        _kind = 5;
-        _string = default;
-        _number = default;
-        _rgb = default;
-        _hsv = default;
-        _hsl = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public Number? AsNumber => _kind == 2 ? _number : default;
-
-    public VuetifyRgbColor? AsRgb => _kind == 3 ? _rgb : default;
-
-    public VuetifyHsvColor? AsHsv => _kind == 4 ? _hsv : default;
-
-    public VuetifyHslColor? AsHsl => _kind == 5 ? _hsl : default;
-
-    public object? Value => _kind switch
-    {
-        1 => AsString,
-        2 => AsNumber,
-        3 => AsRgb,
-        4 => AsHsv,
-        5 => AsHsl,
-        _ => default
-    };
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorValue From(Number value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorValue From(VuetifyRgbColor value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorValue From(VuetifyHsvColor value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorValue From(VuetifyHslColor value);
+    public VuetifyHslColor? AsHsl => Value as VuetifyHslColor;
 
     public static implicit operator VuetifyColorValue(string value)
         => new(value);
@@ -282,24 +189,11 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
 /// Vuetify color picker swatch row, representing a group of color values.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerSwatchCollectionBuilder), nameof(VuetifyColorPickerSwatchCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerSwatch : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorValue>
+public readonly union VuetifyColorPickerSwatch(VuetifyColorValue[]) : IEnumerable<VuetifyColorValue>
 {
-    private readonly VuetifyColorValue[]? _colors;
-
-    public VuetifyColorPickerSwatch(VuetifyColorValue[] colors)
-    {
-        _colors = colors;
-    }
-
-    public VuetifyColorValue[]? AsArray => _colors;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorPickerSwatch From(VuetifyColorValue[] colors);
+    public VuetifyColorValue[]? AsArray => Value as VuetifyColorValue[];
 
     public static implicit operator VuetifyColorPickerSwatch(VuetifyColorValue[] colors)
         => new(colors);
@@ -326,7 +220,7 @@ public readonly struct VuetifyColorPickerSwatch : System.Runtime.CompilerService
         => new(Array.ConvertAll(colors, static color => (VuetifyColorValue)color));
 
     IEnumerator<VuetifyColorValue> IEnumerable<VuetifyColorValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyColorValue>)(_colors ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyColorValue>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyColorValue>)this).GetEnumerator();
@@ -344,24 +238,11 @@ public static class VuetifyColorPickerSwatchCollectionBuilder
 /// Vuetify color picker swatches collection.
 /// </summary>
 [ECMAScript]
-[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerSwatchesCollectionBuilder), nameof(VuetifyColorPickerSwatchesCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerSwatches : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorPickerSwatch>
+public readonly union VuetifyColorPickerSwatches(VuetifyColorPickerSwatch[]) : IEnumerable<VuetifyColorPickerSwatch>
 {
-    private readonly VuetifyColorPickerSwatch[]? _swatches;
-
-    public VuetifyColorPickerSwatches(VuetifyColorPickerSwatch[] swatches)
-    {
-        _swatches = swatches;
-    }
-
-    public VuetifyColorPickerSwatch[]? AsArray => _swatches;
-
-    public object? Value => AsArray;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyColorPickerSwatches From(VuetifyColorPickerSwatch[] swatches);
+    public VuetifyColorPickerSwatch[]? AsArray => Value as VuetifyColorPickerSwatch[];
 
     public static implicit operator VuetifyColorPickerSwatches(VuetifyColorPickerSwatch[] swatches)
         => new(swatches);
@@ -379,7 +260,7 @@ public readonly struct VuetifyColorPickerSwatches : System.Runtime.CompilerServi
         => new(Array.ConvertAll(swatches, static swatch => (VuetifyColorPickerSwatch)swatch));
 
     IEnumerator<VuetifyColorPickerSwatch> IEnumerable<VuetifyColorPickerSwatch>.GetEnumerator()
-        => ((IEnumerable<VuetifyColorPickerSwatch>)(_swatches ?? [])).GetEnumerator();
+        => ((IEnumerable<VuetifyColorPickerSwatch>)(AsArray ?? [])).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VuetifyColorPickerSwatch>)this).GetEnumerator();
