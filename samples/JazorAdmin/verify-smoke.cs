@@ -992,7 +992,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 mainDisplay: mainStyle?.display ?? "",
                 navigationDisplay: navigationStyle?.display ?? "",
                 sidebarFillsShell: !!shellRect && !!sidebarRect && Math.abs(shellRect.width - sidebarRect.width) <= 1,
-                styleRuntimeLoaded: document.querySelector("style#jazor-css") !== null,
+                styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null,
                 documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
                 sidebarBeforeMain: sidebarRect && mainRect
                   ? sidebarRect.right <= mainRect.left + 1 || sidebarRect.bottom <= mainRect.top + 1

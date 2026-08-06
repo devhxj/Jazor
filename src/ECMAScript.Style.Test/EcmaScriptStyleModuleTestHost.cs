@@ -27,7 +27,7 @@ internal static class EcmaScriptStyleModuleTestHost
 
     public static async Task<ProcessResult> RunDenoAsync(string runnerSource)
     {
-        var root = Path.Combine(Path.GetTempPath(), "jazor-css-test-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Path.GetTempPath(), "ecmascript-style-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {

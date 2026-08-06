@@ -2889,66 +2889,20 @@ public readonly struct RouterScrollResult : IUnion
 /// Union type for the router scroll behavior handler, supporting both sync and async callbacks.
 /// </summary>
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct RouterScrollHandler : IUnion
+public readonly union RouterScrollHandler(RouterScrollBehavior, AsyncRouterScrollBehavior)
 {
-	private readonly byte _kind;
-	private readonly RouterScrollBehavior? _sync;
-	private readonly AsyncRouterScrollBehavior? _async;
-
-	public RouterScrollHandler(RouterScrollBehavior value)
-	{
-		_kind = 1;
-		_sync = value;
-		_async = default;
-	}
-
-	public RouterScrollHandler(AsyncRouterScrollBehavior value)
-	{
-		_kind = 2;
-		_sync = default;
-		_async = value;
-	}
-
 	/// <summary>
 	/// 以同步滚动行为回调形式获取处理器。
 	/// Gets the handler as a synchronous scroll behavior callback.
 	/// </summary>
-	public RouterScrollBehavior? AsSync => _kind == 1 ? _sync : default;
+	public RouterScrollBehavior? AsSync => Value as RouterScrollBehavior;
 
 	/// <summary>
 	/// 以异步滚动行为回调形式获取处理器。
 	/// Gets the handler as an asynchronous scroll behavior callback.
 	/// </summary>
-	public AsyncRouterScrollBehavior? AsAsync => _kind == 2 ? _async : default;
-
-	/// <summary>
-	/// 获取擦除后的 JavaScript 值。
-	/// Gets the erased JavaScript value.
-	/// </summary>
-	public object? Value => _kind switch
-	{
-		1 => _sync,
-		2 => _async,
-		_ => default
-	};
-
-	/// <summary>
-	/// 从同步滚动行为回调隐式转换为滚动处理器。
-	/// Implicit conversion from a synchronous scroll behavior callback to a scroll handler.
-	/// </summary>
-	/// <param name="value">同步滚动行为回调。The synchronous scroll behavior callback.</param>
-	public static implicit operator RouterScrollHandler(RouterScrollBehavior value)
-		=> new(value);
-
-	/// <summary>
-	/// 从异步滚动行为回调隐式转换为滚动处理器。
-	/// Implicit conversion from an asynchronous scroll behavior callback to a scroll handler.
-	/// </summary>
-	/// <param name="value">异步滚动行为回调。The asynchronous scroll behavior callback.</param>
-	public static implicit operator RouterScrollHandler(AsyncRouterScrollBehavior value)
-		=> new(value);
+	public AsyncRouterScrollBehavior? AsAsync => Value as AsyncRouterScrollBehavior;
 
 	/// <summary>
 	/// 从同步滚动行为回调创建滚动处理器。

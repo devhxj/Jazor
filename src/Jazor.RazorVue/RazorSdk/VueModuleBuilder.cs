@@ -395,15 +395,6 @@ internal static class VueModuleBuilder
             AddImportLocalNames(rebasedImport, emittedImportLocals);
         }
 
-        if (!directRender.LibraryStyleUrls.IsDefaultOrEmpty)
-        {
-            // CSS files are browser resources, not JavaScript modules. The runtime creates a
-            // de-duplicated link element so native ESM hosts do not need a CSS import transform.
-            moduleStatements.Add(CreateExpressionStatement(CreateCall(
-                "ensureLibraryStyles",
-                CreateLibraryStyleUrlArray(directRender.LibraryStyleUrls))));
-        }
-
         moduleStatements.Add(BuildSetupFactoryDeclaration(
             setupFactoryName,
             returnedMembers,
@@ -998,9 +989,6 @@ internal static class VueModuleBuilder
     private static FunctionBody CreateFunctionBody(IEnumerable<Statement> statements)
         => new(NodeList.From(statements), strict: true);
 
-    private static ArrayExpression CreateLibraryStyleUrlArray(IEnumerable<string> values)
-        => new(NodeList.From<Expression?>(values.Select(static value => (Expression?)StringLiteral(value))));
-
     private static NestedBlockStatement CreateBlock(params Statement[] statements)
         => new(NodeList.From(statements));
 
@@ -1128,7 +1116,6 @@ internal static class VueModuleBuilder
             operationResult.UsesProps,
             operationResult.UsesSlots,
             operationResult.ImportDeclarations,
-            operationResult.LibraryStyleUrls,
             operationResult.ReferenceCaptureStateMembers);
         return true;
     }
@@ -2667,7 +2654,6 @@ internal static class VueModuleBuilder
         bool UsesProps,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
-        ImmutableArray<string> LibraryStyleUrls,
         ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
     private sealed record StateSlot(

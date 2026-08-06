@@ -106,12 +106,36 @@ public readonly union CSSColorRGBComp(CSSNumberish, CSSKeywordish)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union CSSColorValueParseResult(CSSColorValue, CSSStyleValue)
+public readonly struct CSSColorValueParseResult : System.Runtime.CompilerServices.IUnion
 {
+    private readonly byte _kind;
+    private readonly CSSColorValue? _value1;
+    private readonly CSSStyleValue? _value2;
 
-    public CSSColorValue? AsCSSColorValue => Value is CSSColorValue value ? value : default(CSSColorValue?);
+    public CSSColorValueParseResult(CSSColorValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
 
-    public CSSStyleValue? AsCSSStyleValue => Value is CSSStyleValue value ? value : default(CSSStyleValue?);
+    public CSSColorValueParseResult(CSSStyleValue value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSColorValue? AsCSSColorValue => _kind == 1 ? _value1 : default;
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 2 ? _value2 : default;
+
+    public object? Value => _kind switch
+    {
+        1 => _value1,
+        2 => _value2,
+        _ => default
+    };
 
     public static implicit operator CSSColorValueParseResult(CSSColorValue value)
         => new(value);
@@ -345,12 +369,36 @@ public readonly union StructuralCacheValue(CSSStyleValue, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue2(CSSColorValue, CSSStyleValue)
+public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.IUnion
 {
+    private readonly byte _kind;
+    private readonly CSSColorValue? _value1;
+    private readonly CSSStyleValue? _value2;
 
-    public CSSColorValue? AsCSSColorValue => Value is CSSColorValue value ? value : default(CSSColorValue?);
+    public StructuralCacheValue2(CSSColorValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
 
-    public CSSStyleValue? AsCSSStyleValue => Value is CSSStyleValue value ? value : default(CSSStyleValue?);
+    public StructuralCacheValue2(CSSStyleValue value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSColorValue? AsCSSColorValue => _kind == 1 ? _value1 : default;
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 2 ? _value2 : default;
+
+    public object? Value => _kind switch
+    {
+        1 => _value1,
+        2 => _value2,
+        _ => default
+    };
 
     public static implicit operator StructuralCacheValue2(CSSColorValue value)
         => new(value);

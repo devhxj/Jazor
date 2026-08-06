@@ -10,7 +10,7 @@
 
 公共入口统一为小写静态类 `css`。消费方既可使用 `css.style(...)`、`css.px(...)`，也可通过 `using static ECMAScript.Style.css;` 直接调用 `style(...)`、`px(...)`。模型类型继续采用 `CssRule`、`CssContext`、`CssOptions` 等标准 PascalCase 名称。
 
-debug 运行时入口统一为 `style.mjs`。内部 `jazor-css:v1`、`jz-*`、`jz-k-*`、默认 StyleId 与 DOM 条目帧保持稳定，因此模块路径调整不会改变既有样式名称或 hydration 内容。
+debug 运行时入口统一为 `style.mjs`。内部 `ecmascript-style:v1`、`ecs-*`、`ecs-k-*`、默认 StyleId 与 DOM 条目帧保持稳定，因此模块路径调整不会改变既有样式名称或 hydration 内容。
 
 ## 已完成能力
 

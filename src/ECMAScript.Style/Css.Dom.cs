@@ -2,8 +2,8 @@ namespace ECMAScript.Style;
 
 public static partial class css
 {
-    private const string RootMarker = "/*jazor-css:v1*/";
-    private const string EntryMarkerPrefix = "/*jz:v1:";
+    private const string RootMarker = "/*ecmascript-style:v1*/";
+    private const string EntryMarkerPrefix = "/*ecs:v1:";
 
     private static void EnsureDomStyle(CssContext context)
     {

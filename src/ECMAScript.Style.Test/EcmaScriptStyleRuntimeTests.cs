@@ -6,6 +6,16 @@ namespace ECMAScript.Style.Tests;
 public sealed class EcmaScriptStyleRuntimeTests
 {
     [TestMethod]
+    public void RuntimeModule_UsesEcmaScriptStyleProtocol()
+    {
+        var module = EcmaScriptStyleModuleTestHost.GetRuntimeModule();
+        StringAssert.Contains(module.Content, "ecmascript-style:v1");
+        StringAssert.Contains(module.Content, ".__ecmascript_style_root__");
+        StringAssert.Contains(module.Content, "ecs-");
+        StringAssert.Contains(module.Content, "/*ecs:v1:");
+    }
+
+    [TestMethod]
     public async Task Runtime_TypedFactories_EmitPlainCssStringsAndComposeValues()
     {
         var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
@@ -129,7 +139,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             """);
 
         Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        Assert.AreEqual("jz-12qlzgy-2ugla2", result.StandardOutput.Trim());
+        Assert.AreEqual("ecs-48pape-1cqt43e", result.StandardOutput.Trim());
     }
 
     [TestMethod]
@@ -176,9 +186,9 @@ public sealed class EcmaScriptStyleRuntimeTests
 
         Assert.IsNotNull(first);
         Assert.AreEqual(first, second);
-        StringAssert.StartsWith(first, "jz-");
+        StringAssert.StartsWith(first, "ecs-");
         Assert.IsNotNull(animation);
-        StringAssert.StartsWith(animation, "jz-k-");
+        StringAssert.StartsWith(animation, "ecs-k-");
         StringAssert.Contains(css, "." + first + "{color:red;display:block;display:-webkit-box;display:flex!important;}");
         StringAssert.Contains(css, "." + first + ":hover,." + first + ":focus{color:blue;}");
         StringAssert.Contains(css, "@media (min-width: 40rem){." + first + "{display:grid;}}");
@@ -222,7 +232,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             const firstModule = await import("./runtime.mjs");
             firstModule.configure({ nonce: "nonce-1" });
             const firstName = firstModule.style({ color: "red", content: "'汉字'" });
-            const style = documentHost.getElementById("jazor-css");
+            const style = documentHost.getElementById("ecmascript-style");
             const beforeReload = style.textContent;
 
             const secondModule = await import("./runtime.mjs?reload=1");
@@ -235,7 +245,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               nonce: style.nonce,
               styleCount: documentHost.head.children.length,
               unchanged: beforeReload === style.textContent,
-              marker: style.textContent.startsWith("/*jazor-css:v1*//*jz:v1:"),
+              marker: style.textContent.startsWith("/*ecmascript-style:v1*//*ecs:v1:"),
               extracted: secondModule.extract(),
               text: style.textContent
             }));
@@ -250,7 +260,7 @@ public sealed class EcmaScriptStyleRuntimeTests
         Assert.IsTrue(root.GetProperty("unchanged").GetBoolean());
         Assert.IsTrue(root.GetProperty("marker").GetBoolean());
         StringAssert.Contains(root.GetProperty("extracted").GetString() ?? string.Empty, "content:'汉字';");
-        StringAssert.Contains(root.GetProperty("text").GetString() ?? string.Empty, "/*jz:v1:");
+        StringAssert.Contains(root.GetProperty("text").GetString() ?? string.Empty, "/*ecs:v1:");
     }
 
     [TestMethod]
@@ -368,8 +378,8 @@ public sealed class EcmaScriptStyleRuntimeTests
         Assert.AreEqual(first, root.GetProperty("reordered").GetString());
         Assert.AreNotEqual(first, root.GetProperty("reversedFallback").GetString());
         Assert.AreNotEqual(first, root.GetProperty("different").GetString());
-        StringAssert.StartsWith(first, "jz-");
-        StringAssert.StartsWith(root.GetProperty("animation").GetString(), "jz-k-");
+        StringAssert.StartsWith(first, "ecs-");
+        StringAssert.StartsWith(root.GetProperty("animation").GetString(), "ecs-k-");
         Assert.IsTrue(root.GetProperty("duplicateStable").GetBoolean());
 
         var css = root.GetProperty("css").GetString() ?? string.Empty;
@@ -443,19 +453,19 @@ public sealed class EcmaScriptStyleRuntimeTests
 
             globalThis.document = createDocument();
             const cachedName = memoryModule.style({ color: "red" });
-            const attached = document.getElementById("jazor-css");
+            const attached = document.getElementById("ecmascript-style");
 
             const messages = [];
             const foreignElementModule = await import("./runtime.mjs?foreign-element");
             const foreignStyleModule = await import("./runtime.mjs?foreign-style");
             const nonceMismatchModule = await import("./runtime.mjs?nonce-mismatch");
             for (const [query, module, existing] of [
-              ["foreign-element", foreignElementModule, { localName: "div", id: "jazor-css" }],
-              ["foreign-style", foreignStyleModule, { localName: "style", id: "jazor-css", nonce: "", textContent: "body{}" }],
-              ["nonce-mismatch", nonceMismatchModule, { localName: "style", id: "jazor-css", nonce: "old", textContent: "/*jazor-css:v1*/" }]
+              ["foreign-element", foreignElementModule, { localName: "div", id: "ecmascript-style" }],
+              ["foreign-style", foreignStyleModule, { localName: "style", id: "ecmascript-style", nonce: "", textContent: "body{}" }],
+              ["nonce-mismatch", nonceMismatchModule, { localName: "style", id: "ecmascript-style", nonce: "old", textContent: "/*ecmascript-style:v1*/" }]
             ]) {
               globalThis.document = createDocument();
-              document.byId.set("jazor-css", existing);
+              document.byId.set("ecmascript-style", existing);
               try {
                 if (query === "nonce-mismatch") module.configure({ nonce: "new" });
                 module.style({ color: "blue" });
@@ -477,7 +487,7 @@ public sealed class EcmaScriptStyleRuntimeTests
         using var json = JsonDocument.Parse(result.StandardOutput.Trim());
         var root = json.RootElement;
         Assert.AreEqual(root.GetProperty("name").GetString(), root.GetProperty("cachedName").GetString());
-        StringAssert.Contains(root.GetProperty("attachedText").GetString() ?? string.Empty, "/*jazor-css:v1*//*jz:v1:");
+        StringAssert.Contains(root.GetProperty("attachedText").GetString() ?? string.Empty, "/*ecmascript-style:v1*//*ecs:v1:");
         var messages = root.GetProperty("messages").EnumerateArray().Select(static item => item.GetString() ?? string.Empty).ToArray();
         Assert.HasCount(3, messages);
         StringAssert.Contains(messages[0], "non-style element");
@@ -517,7 +527,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               declarations: { margin: "0" },
               children: [{
                 name: "top-left",
-                declarations: { content: "'Jazor'" }
+                declarations: { content: "'Example'" }
               }]
             });
 
@@ -543,13 +553,13 @@ public sealed class EcmaScriptStyleRuntimeTests
         var firstCss = root.GetProperty("firstCss").GetString() ?? string.Empty;
         StringAssert.Contains(firstCss, "@keyframes " + root.GetProperty("animation").GetString());
         StringAssert.Contains(firstCss, "html,body{margin:0;}");
-        StringAssert.Contains(firstCss, "@page :first{margin:0;@top-left{content:'Jazor';}}");
+        StringAssert.Contains(firstCss, "@page :first{margin:0;@top-left{content:'Example';}}");
 
         var snapshot = root.GetProperty("snapshot");
         Assert.AreEqual("ssr-css", snapshot.GetProperty("styleId").GetString());
         Assert.AreEqual("nonce-ssr", snapshot.GetProperty("nonce").GetString());
         Assert.AreEqual(firstCss, snapshot.GetProperty("cssText").GetString());
-        StringAssert.StartsWith(snapshot.GetProperty("hydrationText").GetString(), "/*jazor-css:v1*//*jz:v1:");
+        StringAssert.StartsWith(snapshot.GetProperty("hydrationText").GetString(), "/*ecmascript-style:v1*//*ecs:v1:");
     }
 
     [TestMethod]

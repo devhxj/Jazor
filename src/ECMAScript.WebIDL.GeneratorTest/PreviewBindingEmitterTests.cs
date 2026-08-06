@@ -335,6 +335,42 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
+    public async Task EmitAsync_DerivedAndBaseUnionBranches_UseTaggedFallback()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("CSSStyleValue", "[]"),
+            Interface("CSSColorValue", "[]", inheritance: "CSSStyleValue"),
+            Interface("AnimationEffect", "[]"),
+            Typedef("CSSColorValueParseResult", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "CSSColorValue" },
+                    { "idlType": "CSSStyleValue" }
+                  ]
+                }
+                """),
+            Typedef("AnimationEffects", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "AnimationEffect" },
+                    {
+                      "generic": "sequence",
+                      "idlType": [ { "idlType": "AnimationEffect" } ]
+                    }
+                  ]
+                }
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public class CSSColorValue : CSSStyleValue");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct CSSColorValueParseResult : System.Runtime.CompilerServices.IUnion");
+        StringAssert.Contains(files["Unions.cs"], "public CSSColorValue? AsCSSColorValue => _kind == 1 ? _value1 : default;");
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly union CSSColorValueParseResult(", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly union AnimationEffects(AnimationEffect, AnimationEffect[])");
+    }
+
+    [TestMethod]
     public async Task EmitAsync_InterfaceUnionBranch_EmitsForwardingImplicitOperatorsForConcreteBufferTypes()
     {
         var files = await EmitGeneratedFilesAsync(

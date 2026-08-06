@@ -80,7 +80,7 @@ var className = style(new CssRule
 - 命名属性按最终 CSS 名进行 ordinal 排序，C# 初始化顺序不影响名称。
 - `Additional`、`Children`、关键帧和嵌套 at-rule 的顺序属于级联语义，必须进入规范内容与哈希。
 - 类、关键帧、全局规则与 at-rule 使用独立名称领域。
-- `jazor-css:v1`、`jz-*`、`jz-k-*` 与默认 StyleId `jazor-css` 是稳定协议值。
+- `ecmascript-style:v1`、`ecs-*`、`ecs-k-*` 与默认 StyleId `ecmascript-style` 是稳定协议值。
 - 内容到名称、名称到内容采用双向索引；哈希碰撞或 DOM 所有权冲突明确失败。
 - DOM 条目以 UTF-16 长度帧记录，避免 Unicode 内容使重载或水合边界漂移。
 

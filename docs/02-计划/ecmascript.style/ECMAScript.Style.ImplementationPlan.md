@@ -34,7 +34,7 @@ typed values + CssRule / CssAtRule
 - `ECMAScript.Style` 是独立 opt-in 包，并精确依赖同版本 `Jazor`；
 - 不增加 CSS 专用 Hook、RazorVue 分支、analyzer 例外或 MSBuild 属性；
 - `style(...)` 与 `keyframes(...)` 返回普通 `string`；
-- `jazor-css:v1`、类名、关键帧名、默认 StyleId 与 DOM 条目帧保持稳定；
+- `ecmascript-style:v1`、类名、关键帧名、默认 StyleId 与 DOM 条目帧保持稳定；
 - release 产物是包含运行时逻辑的 Bundle，不新增静态 CSS 构建管线；
 - 未建模语法通过显式 `raw(...)` 进入，不以隐式字符串放宽全部属性。
 

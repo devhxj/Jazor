@@ -264,6 +264,17 @@ public sealed class EcmaScriptVueRouteProxyTests
         AssertNet11UnionContract(typeof(RouteParamRaw), typeof(string), typeof(Array<RouteParamRaw>), typeof(Number));
         AssertNet11UnionContract(typeof(LocationQueryValue), typeof(string), typeof(Array<string>));
         AssertNet11UnionContract(typeof(LocationQueryValueRaw), typeof(string), typeof(Array<LocationQueryValueRaw?>), typeof(Number));
+        AssertNet11UnionContract(typeof(RouterScrollHandler), typeof(RouterScrollBehavior), typeof(AsyncRouterScrollBehavior));
+        AssertNet11UnionContract(
+            typeof(RouterErrorValue),
+            typeof(Error),
+            typeof(string),
+            typeof(Number),
+            typeof(bool),
+            typeof(BigInt),
+            typeof(Symbol),
+            typeof(IObject),
+            typeof(Array<RouterErrorValue?>));
     }
 
     [TestMethod]
@@ -1305,8 +1316,7 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         Assert.IsNotNull(syncFactory);
         Assert.IsNotNull(asyncFactory);
-        Assert.IsNotNull(typeof(RouterScrollHandler).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
-        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(RouterScrollHandler)));
+        AssertNet11UnionContract(typeof(RouterScrollHandler), typeof(RouterScrollBehavior), typeof(AsyncRouterScrollBehavior));
         Assert.AreEqual(typeof(RouterScrollHandler), syncFactory!.ReturnType);
         Assert.AreEqual(typeof(RouterScrollHandler), asyncFactory!.ReturnType);
         Assert.AreEqual("__arg1", syncFactory.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);

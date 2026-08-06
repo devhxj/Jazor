@@ -13,14 +13,9 @@ namespace ECMAScript.VueContract;
 /// <c>click:close</c>、<c>loadstart</c> 等异常原始名称。
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public sealed class VueLibraryEmitAttribute : Attribute
+public sealed class VueLibraryEmitAttribute(string razorAlias) : Attribute
 {
-    public VueLibraryEmitAttribute(string razorAlias)
-    {
-        RazorAlias = razorAlias;
-    }
-
-    public string RazorAlias { get; }
+    public string RazorAlias { get; } = razorAlias;
 
     public string? Name { get; set; }
 }

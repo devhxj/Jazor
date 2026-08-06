@@ -64,7 +64,6 @@ internal static class RenderEmitter
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
                 UsesSlots: lowered.UsesSlots,
                 lowered.ImportDeclarations,
-                lowered.LibraryStyleUrls,
                 lowered.ReferenceCaptureStateMembers);
             return true;
         }
@@ -98,7 +97,6 @@ internal static class RenderEmitter
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
         private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
-        private readonly HashSet<string> _libraryStyleUrls = new(StringComparer.Ordinal);
         private readonly Dictionary<ILocalSymbol, IOperation> _compileTimeFrameLocalValues = new(SymbolComparer);
         private readonly HashSet<ILocalSymbol> _erasedRenderObjectLocals = new(SymbolComparer);
         private string? _componentAttributeNormalizerName;
@@ -160,9 +158,6 @@ internal static class RenderEmitter
                 usesStaticVNode,
                 _usesSlots,
                 BuildImportDeclarations(),
-                _libraryStyleUrls
-                    .OrderBy(static url => url, StringComparer.Ordinal)
-                    .ToImmutableArray(),
                 _referenceCaptureStateMembers
                     .OrderBy(static member => member.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), StringComparer.Ordinal)
                     .ToImmutableArray());
@@ -2530,8 +2525,6 @@ internal static class RenderEmitter
         {
             var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
             var descriptor = ResolveComponentImport(runtimeComponentType);
-            foreach (var styleUrl in descriptor.StyleUrls)
-                _libraryStyleUrls.Add(styleUrl);
             return _argument
                 .BindImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
         }
@@ -2541,11 +2534,6 @@ internal static class RenderEmitter
             var groupedSpecifiers = new Dictionary<string, List<ImportDeclarationSpecifier>>(StringComparer.Ordinal);
             if (_usesMergeProps)
                 groupedSpecifiers["vue"] = [new ImportSpecifier(new Identifier("mergeProps"))];
-            if (_libraryStyleUrls.Count > 0)
-            {
-                groupedSpecifiers["@jazor/vue-runtime/library-styles.mjs"] =
-                    [new ImportSpecifier(new Identifier("ensureLibraryStyles"))];
-            }
 
             foreach (var pair in _argument.FlushImportSpecifiers())
             {
@@ -3066,7 +3054,7 @@ internal static class RenderEmitter
     {
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (!string.IsNullOrWhiteSpace(exportPath))
-            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default", []);
+            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default");
 
         foreach (var attribute in componentType.GetAttributes())
         {
@@ -3086,8 +3074,7 @@ internal static class RenderEmitter
             {
                 return new ComponentImportDescriptor(
                     importSpecifier.Trim(),
-                    exportName.Trim(),
-                    GetLibraryStyleUrls(attribute));
+                    exportName.Trim());
             }
         }
 
@@ -3111,27 +3098,6 @@ internal static class RenderEmitter
         }
 
         return null;
-    }
-
-    private static ImmutableArray<string> GetLibraryStyleUrls(AttributeData attribute)
-    {
-        var styleUrls = new SortedSet<string>(StringComparer.Ordinal);
-        foreach (var namedArgument in attribute.NamedArguments)
-        {
-            if (!string.Equals(namedArgument.Key, "StyleUrls", StringComparison.Ordinal) ||
-                namedArgument.Value.Kind != TypedConstantKind.Array)
-            {
-                continue;
-            }
-
-            foreach (var value in namedArgument.Value.Values)
-            {
-                if (value.Value is string styleUrl && !string.IsNullOrWhiteSpace(styleUrl))
-                    styleUrls.Add(styleUrl.Trim());
-            }
-        }
-
-        return styleUrls.ToImmutableArray();
     }
 
     private static ImmutableDictionary<string, string> BuildComponentParameterNameMap(INamedTypeSymbol componentType)
@@ -4080,13 +4046,11 @@ internal static class RenderEmitter
             bool UsesStaticVNode,
             bool UsesSlots,
             ImmutableArray<ImportDeclaration> ImportDeclarations,
-            ImmutableArray<string> LibraryStyleUrls,
             ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
     private readonly record struct ComponentImportDescriptor(
         string ImportSpecifier,
-        string ExportName,
-        ImmutableArray<string> StyleUrls);
+        string ExportName);
 
     private sealed record DirectAttribute(
         string Name,
@@ -4230,5 +4194,4 @@ internal sealed record RenderResult(
     bool UsesProps,
     bool UsesSlots,
     ImmutableArray<ImportDeclaration> ImportDeclarations,
-    ImmutableArray<string> LibraryStyleUrls,
     ImmutableArray<ISymbol> ReferenceCaptureStateMembers);

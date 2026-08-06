@@ -3,9 +3,9 @@ namespace ECMAScript.Style;
 [ECMAScriptModule("style.mjs")]
 public static partial class css
 {
-    private const string VersionPrefix = "jazor-css:v1\0";
-    private const string RootSelectorToken = ".__jazor_css_root__";
-    private const string DefaultStyleId = "jazor-css";
+    private const string VersionPrefix = "ecmascript-style:v1\0";
+    private const string RootSelectorToken = ".__ecmascript_style_root__";
+    private const string DefaultStyleId = "ecmascript-style";
     private const string AdditionalKey = "$additional";
     private const string ChildrenKey = "$children";
 
@@ -25,7 +25,7 @@ public static partial class css
             return context.NamesByCanonical.Get(canonical)!;
         }
 
-        var name = "jz-" + Hash(canonical);
+        var name = "ecs-" + Hash(canonical);
         var body = SerializeRule(rule, "." + name);
         Register(context, canonical, name, body);
         return name;
@@ -48,7 +48,7 @@ public static partial class css
             return context.NamesByCanonical.Get(canonical)!;
         }
 
-        var name = "jz-k-" + Hash(canonical);
+        var name = "ecs-k-" + Hash(canonical);
         Register(context, canonical, name, "@keyframes " + name + "{" + canonicalFrames + "}");
         return name;
     }
@@ -65,7 +65,7 @@ public static partial class css
 
         var body = SerializeRule(rule, normalizedSelector);
         var canonical = VersionPrefix + "global\0" + body;
-        var id = "jz-g-" + Hash(canonical);
+        var id = "ecs-g-" + Hash(canonical);
         Register(context, canonical, id, body);
     }
 
@@ -77,7 +77,7 @@ public static partial class css
     {
         var body = SerializeAtRule(rule);
         var canonical = VersionPrefix + "at-rule\0" + body;
-        var id = "jz-a-" + Hash(canonical);
+        var id = "ecs-a-" + Hash(canonical);
         Register(context, canonical, id, body);
     }
 

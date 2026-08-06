@@ -127,8 +127,8 @@ atRule(new CssAtRule(
     "font-face",
     new CssDeclarations
     {
-        FontFamily = str("Jazor Sans"),
-        ["src"] = raw("url('/fonts/jazor.woff2') format('woff2')"),
+        FontFamily = str("Example Sans"),
+        ["src"] = raw("url('/fonts/example.woff2') format('woff2')"),
         FontDisplay = keyword("swap")
     }));
 ```
@@ -196,7 +196,7 @@ The default output root is `$(MSBuildProjectDirectory)\wwwroot\jazor\`. Release 
 
 ## Stable Boundaries
 
-- `jazor-css:v1`, `jz-*`, `jz-k-*`, and the default style ID remain stable protocol values.
+- `ecmascript-style:v1`, `ecs-*`, `ecs-k-*`, and the default style ID remain stable protocol values.
 - `ECMAScript.Style` does not wrap Goober or ship third-party JavaScript.
 - It does not provide `styled(Component)`, a Vue wrapper, or a component-library adapter.
 - It does not parse raw CSS blocks or tagged templates.

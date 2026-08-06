@@ -909,10 +909,13 @@ public readonly union VuetifyFileModelValue(File, File[])
 
 [ECMAScript]
 [Description("@#")]
-public readonly union VuetifyRangeSliderModelValue(Number[])
+public readonly union VuetifyRangeSliderModelValue(Number[], string[])
 {
     public Number[]? AsArray
         => Value is Number[] value ? value : default(Number[]?);
+
+    public string[]? AsStrings
+        => Value as string[];
 
     public static implicit operator VuetifyRangeSliderModelValue(Number[] values)
         => new(values);

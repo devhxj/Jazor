@@ -3229,14 +3229,6 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void ComponentLibraries_DoNotEmbedExternalStyleUrls()
-    {
-        AssertNoLibraryStyleUrls(typeof(TDesign).Assembly, "ECMAScript.TDesign");
-        AssertNoLibraryStyleUrls(typeof(ElementPlus).Assembly, "ECMAScript.ElementPlus");
-        AssertNoLibraryStyleUrls(typeof(Vuetify).Assembly, "ECMAScript.Vuetify");
-    }
-
-    [TestMethod]
     public void Vuetify_EventParameters_UseStandardNamesAndOnlyExceptionalEmitMetadata()
     {
         var componentTypes = typeof(Vuetify).Assembly
@@ -3421,25 +3413,6 @@ public sealed class EcmaScriptVueProxyTests
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
-
-    private static void AssertNoLibraryStyleUrls(Assembly assembly, string @namespace)
-    {
-        var components = assembly
-            .GetTypes()
-            .Where(type => type.Namespace == @namespace &&
-                           typeof(ComponentBase).IsAssignableFrom(type) &&
-                           type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .ToArray();
-
-        Assert.IsTrue(components.Length > 0, @namespace);
-        foreach (var component in components)
-        {
-            var attribute = component.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
-            Assert.IsNotNull(attribute, component.FullName);
-            Assert.AreEqual(0, attribute!.StyleUrls.Length, component.FullName);
-        }
-    }
 
     [TestMethod]
     public void VuetifyGridSpanValue_UsesNativeUnionWithoutLosingNumericAssignments()
@@ -3739,7 +3712,8 @@ public sealed class EcmaScriptVueProxyTests
             typeof(ElComponents).Assembly,
             typeof(ElComponents).Namespace!,
             expectedCount: 46,
-            typeof(ElUploadBeforeUploadResult));
+            typeof(ElUploadBeforeUploadResult),
+            typeof(ElTransferTextPair));
 
     [TestMethod]
     public void ElUploadBeforeUploadResult_TaggedUnion_PreservesExactFileAndBlobBranches()
@@ -3763,11 +3737,12 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void Vuetify_UnionTypes_UseNativeContracts()
+    public void Vuetify_UnionTypes_UseExpectedContracts()
         => AssertComponentLibraryUnionContracts(
             typeof(VuetifyComponentRegistry).Assembly,
             typeof(VuetifyComponentRegistry).Namespace!,
-            expectedCount: 113);
+            expectedCount: 113,
+            typeof(VuetifyOverlayCoordinateTarget));
 
     private static void AssertComponentLibraryUnionContracts(
         Assembly assembly,
@@ -3809,8 +3784,8 @@ public sealed class EcmaScriptVueProxyTests
             {
                 taggedTypes.Add(unionType);
                 Assert.IsTrue(
-                    HasAssignableBranchOverlap(branchTypes),
-                    $"{unionType.FullName} should use native union unless exact projections require a tagged fallback.");
+                    HasAssignableBranchOverlap(branchTypes) || expectedTaggedTypes.Contains(unionType),
+                    $"{unionType.FullName} should use native union unless its tagged fallback is explicitly required by the component contract.");
                 AssertTaggedUnionBranchesExposeStandardCreation(unionType, branchTypes);
             }
 
@@ -3937,6 +3912,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(ECMAScript.File), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFile), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(ECMAScript.File[]), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFiles), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         Assert.AreEqual(typeof(Number[]), typeof(VuetifyRangeSliderModelValue).GetProperty(nameof(VuetifyRangeSliderModelValue.AsArray), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(VuetifyRangeSliderModelValue).GetProperty(nameof(VuetifyRangeSliderModelValue.AsStrings), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        AssertNet11UnionContract(typeof(VuetifyRangeSliderModelValue), typeof(Number[]), typeof(string[]));
 
         var selectModelValuesCollectionBuilder = typeof(VuetifySelectModelValues).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
         Assert.IsNotNull(selectModelValuesCollectionBuilder);

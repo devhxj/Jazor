@@ -246,16 +246,12 @@ public sealed class VueRenderCatalogReaderTests
             new ResourceDescription(
                 "Jazor.RazorVue.Runtime.render-context-core.mjs",
                 static () => new MemoryStream(Encoding.UTF8.GetBytes("export const RENDER_CONTEXT_PROTOCOL_VERSION = 1;\n")),
-                isPublic: true),
-            new ResourceDescription(
-                "Jazor.RazorVue.Runtime.library-styles.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function ensureLibraryStyles() {}\n")),
                 isPublic: true));
 
         var modules = CatalogReader.TryRead(assembly);
 
         Assert.IsNotNull(modules);
-        Assert.HasCount(3, modules);
+        Assert.HasCount(2, modules);
 
         var runtimeModule = modules.Single(static item => item.RelativePath == "@jazor/vue-runtime/render-context.mjs");
         Assert.AreEqual("Jazor.RazorVue.Runtime.Resource.Tests", runtimeModule.AssemblyName);
@@ -268,35 +264,6 @@ public sealed class VueRenderCatalogReaderTests
         StringAssert.Contains(coreModule.Content, "RENDER_CONTEXT_PROTOCOL_VERSION");
         StringAssert.StartsWith(coreModule.Hash, "sha256:");
 
-        var stylesModule = modules.Single(static item => item.RelativePath == "@jazor/vue-runtime/library-styles.mjs");
-        StringAssert.Contains(stylesModule.Content, "ensureLibraryStyles");
-        StringAssert.StartsWith(stylesModule.Hash, "sha256:");
-    }
-
-    [TestMethod]
-    public void ModuleCollector_RetainsOnlyReferencedRazorVueRuntimeModules()
-    {
-        var component = CreateModule(
-            "components/library-usage.mjs",
-            "import { ensureLibraryStyles } from \"@jazor/vue-runtime/library-styles.mjs\";\nensureLibraryStyles([]);\n");
-        var styles = CreateModule(
-            "@jazor/vue-runtime/library-styles.mjs",
-            "export function ensureLibraryStyles() {}\n");
-        var context = CreateModule(
-            "@jazor/vue-runtime/render-context.mjs",
-            "import { createRenderContextCore } from \"./render-context-core.mjs\";\nexport { createRenderContextCore };\n");
-        var core = CreateModule(
-            "@jazor/vue-runtime/render-context-core.mjs",
-            "export function createRenderContextCore() {}\n");
-
-        var retained = ModuleCollector.RetainReferencedRazorVueRuntimeModules(
-            [component, styles, context, core]);
-        var paths = retained.Select(static module => module.RelativePath).ToArray();
-
-        CollectionAssert.Contains(paths, "components/library-usage.mjs");
-        CollectionAssert.Contains(paths, "@jazor/vue-runtime/library-styles.mjs");
-        CollectionAssert.DoesNotContain(paths, "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.DoesNotContain(paths, "@jazor/vue-runtime/render-context-core.mjs");
     }
 
     [TestMethod]
@@ -311,18 +278,13 @@ public sealed class VueRenderCatalogReaderTests
         var core = CreateModule(
             "@jazor/vue-runtime/render-context-core.mjs",
             "export function createRenderContextCore() {}\n");
-        var styles = CreateModule(
-            "@jazor/vue-runtime/library-styles.mjs",
-            "export function ensureLibraryStyles() {}\n");
-
         var retained = ModuleCollector.RetainReferencedRazorVueRuntimeModules(
-            [component, context, core, styles]);
+            [component, context, core]);
         var paths = retained.Select(static module => module.RelativePath).ToArray();
 
         CollectionAssert.Contains(paths, "components/context-usage.mjs");
         CollectionAssert.Contains(paths, "@jazor/vue-runtime/render-context.mjs");
         CollectionAssert.Contains(paths, "@jazor/vue-runtime/render-context-core.mjs");
-        CollectionAssert.DoesNotContain(paths, "@jazor/vue-runtime/library-styles.mjs");
     }
 
     [TestMethod]

@@ -129,8 +129,8 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                         "font-face",
                         new CssDeclarations
                         {
-                            FontFamily = raw("Jazor Sans"),
-                            ["src"] = raw("url(jazor.woff2)")
+                            FontFamily = raw("Example Sans"),
+                            ["src"] = raw("url(example.woff2)")
                         }));
                     return snapshot(Context);
                 }
@@ -167,7 +167,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "detached: true");
         StringAssert.Contains(script, "kind: \"container\"");
         StringAssert.Contains(script, "name: \"font-face\"");
-        StringAssert.Contains(script, "\"font-family\": raw(\"Jazor Sans\")");
+        StringAssert.Contains(script, "\"font-family\": raw(\"Example Sans\")");
     }
 
     [TestMethod]

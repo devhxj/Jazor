@@ -1386,14 +1386,35 @@ public sealed record ElTransferPropsAlias : VueProps
 }
 
 [ECMAScript]
+[Union]
 [Description("@#")]
 [CollectionBuilder(typeof(ElTransferTextPairCollectionBuilder), nameof(ElTransferTextPairCollectionBuilder.Create))]
-public readonly union ElTransferTextPair(string[]) : IEnumerable<string>
+public readonly struct ElTransferTextPair : IUnion, IEnumerable<string>
 {
-    public string[]? AsValues => Value as string[];
+    private readonly string[]? _values;
+
+    public ElTransferTextPair(string[] values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        if (values.Length != 2)
+            throw new ArgumentException("Element Plus transfer text pairs require exactly two items.", nameof(values));
+
+        _values = values;
+    }
+
+    public string[]? AsValues => _values;
+
+    public string? First => _values is { Length: > 0 } values ? values[0] : null;
+
+    public string? Second => _values is { Length: > 1 } values ? values[1] : null;
+
+    public object? Value => _values;
+
+    public static implicit operator ElTransferTextPair(string[] values)
+        => new(values);
 
     IEnumerator<string> IEnumerable<string>.GetEnumerator()
-        => ((IEnumerable<string>)(AsValues ?? Array.Empty<string>())).GetEnumerator();
+        => ((IEnumerable<string>)(_values ?? Array.Empty<string>())).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<string>)this).GetEnumerator();
@@ -1403,12 +1424,7 @@ public readonly union ElTransferTextPair(string[]) : IEnumerable<string>
 public static class ElTransferTextPairCollectionBuilder
 {
     public static ElTransferTextPair Create(ReadOnlySpan<string> values)
-    {
-        if (values.Length != 2)
-            throw new ArgumentException("Element Plus transfer text pairs require exactly two items.", nameof(values));
-
-        return values.ToArray();
-    }
+        => values.ToArray();
 }
 
 [ECMAScript]

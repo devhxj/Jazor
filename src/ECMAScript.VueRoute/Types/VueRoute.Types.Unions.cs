@@ -621,284 +621,32 @@ public readonly union HistoryStateValue(string, Number, bool, HistoryState, Arra
 /// Router error value union accepting Error, string, Number, bool, BigInt, Symbol, IObject, or array.
 /// </summary>
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct RouterErrorValue : IUnion
+public readonly union RouterErrorValue(
+    Error,
+    string,
+    Number,
+    bool,
+    BigInt,
+    Symbol,
+    IObject,
+    Array<RouterErrorValue?>)
 {
-    private readonly byte _kind;
-    private readonly Error? _error;
-    private readonly string? _string;
-    private readonly Number? _number;
-    private readonly bool? _bool;
-    private readonly BigInt? _bigInt;
-    private readonly Symbol? _symbol;
-    private readonly IObject? _object;
-    private readonly Array<RouterErrorValue?>? _array;
+    public Error? AsError => Value as Error;
 
-    /// <summary>
-    /// 从 Error 值初始化。
-    /// Initializes from an Error value.
-    /// </summary>
-    /// <param name="value">错误对象。The error object.</param>
-    public RouterErrorValue(Error value)
-    {
-        _kind = 1;
-        _error = value;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _bigInt = default;
-        _symbol = default;
-        _object = default;
-        _array = default;
-    }
+    public string? AsString => Value as string;
 
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">错误字符串。The error string.</param>
-    public RouterErrorValue(string value)
-    {
-        _kind = 2;
-        _error = default;
-        _string = value;
-        _number = default;
-        _bool = default;
-        _bigInt = default;
-        _symbol = default;
-        _object = default;
-        _array = default;
-    }
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-    /// <summary>
-    /// 从 Number 值初始化。
-    /// Initializes from a Number value.
-    /// </summary>
-    /// <param name="value">错误数值。The error number value.</param>
-    public RouterErrorValue(Number value)
-    {
-        _kind = 3;
-        _error = default;
-        _string = default;
-        _number = value;
-        _bool = default;
-        _bigInt = default;
-        _symbol = default;
-        _object = default;
-        _array = default;
-    }
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">错误布尔值。The error bool value.</param>
-    public RouterErrorValue(bool value)
-    {
-        _kind = 4;
-        _error = default;
-        _string = default;
-        _number = default;
-        _bool = value;
-        _bigInt = default;
-        _symbol = default;
-        _object = default;
-        _array = default;
-    }
+    public BigInt? AsBigInt => Value is BigInt value ? value : default(BigInt?);
 
-    /// <summary>
-    /// 从 BigInt 值初始化。
-    /// Initializes from a BigInt value.
-    /// </summary>
-    /// <param name="value">错误 BigInt 值。The error BigInt value.</param>
-    public RouterErrorValue(BigInt value)
-    {
-        _kind = 5;
-        _error = default;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _bigInt = value;
-        _symbol = default;
-        _object = default;
-        _array = default;
-    }
+    public Symbol? AsSymbol => Value as Symbol;
 
-    /// <summary>
-    /// 从 Symbol 值初始化。
-    /// Initializes from a Symbol value.
-    /// </summary>
-    /// <param name="value">错误 Symbol 值。The error Symbol value.</param>
-    public RouterErrorValue(Symbol value)
-    {
-        _kind = 6;
-        _error = default;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _bigInt = default;
-        _symbol = value;
-        _object = default;
-        _array = default;
-    }
+    public IObject? AsObject => Value as IObject;
 
-    /// <summary>
-    /// 从 IObject 值初始化。
-    /// Initializes from an IObject value.
-    /// </summary>
-    /// <param name="value">错误对象。The error object.</param>
-    public RouterErrorValue(IObject value)
-    {
-        _kind = 7;
-        _error = default;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _bigInt = default;
-        _symbol = default;
-        _object = value;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从 RouterErrorValue 数组初始化。
-    /// Initializes from an array of RouterErrorValue.
-    /// </summary>
-    /// <param name="value">错误值数组。The array of error values.</param>
-    public RouterErrorValue(Array<RouterErrorValue?> value)
-    {
-        _kind = 8;
-        _error = default;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _bigInt = default;
-        _symbol = default;
-        _object = default;
-        _array = value;
-    }
-
-    /// <summary>
-    /// 以 Error 返回，如果不是 Error 变体则返回 default。
-    /// Returns as Error, or default if not an Error variant.
-    /// </summary>
-    public Error? AsError => _kind == 1 ? _error : default;
-
-    /// <summary>
-    /// 以字符串返回，如果不是字符串变体则返回 default。
-    /// Returns as string, or default if not a string variant.
-    /// </summary>
-    public string? AsString => _kind == 2 ? _string : default;
-
-    /// <summary>
-    /// 以 Number 返回，如果不是 Number 变体则返回 default。
-    /// Returns as Number, or default if not a Number variant.
-    /// </summary>
-    public Number? AsNumber => _kind == 3 ? _number : default;
-
-    /// <summary>
-    /// 以布尔值返回，如果不是布尔变体则返回 default。
-    /// Returns as bool, or default if not a bool variant.
-    /// </summary>
-    public bool? AsBool => _kind == 4 ? _bool : default;
-
-    /// <summary>
-    /// 以 BigInt 返回，如果不是 BigInt 变体则返回 default。
-    /// Returns as BigInt, or default if not a BigInt variant.
-    /// </summary>
-    public BigInt? AsBigInt => _kind == 5 ? _bigInt : default;
-
-    /// <summary>
-    /// 以 Symbol 返回，如果不是 Symbol 变体则返回 default。
-    /// Returns as Symbol, or default if not a Symbol variant.
-    /// </summary>
-    public Symbol? AsSymbol => _kind == 6 ? _symbol : default;
-
-    /// <summary>
-    /// 以 IObject 返回，如果不是 IObject 变体则返回 default。
-    /// Returns as IObject, or default if not an IObject variant.
-    /// </summary>
-    public IObject? AsObject => _kind == 7 ? _object : default;
-
-    /// <summary>
-    /// 以数组返回，如果不是数组变体则返回 default。
-    /// Returns as array, or default if not an array variant.
-    /// </summary>
-    public Array<RouterErrorValue?>? AsArray => _kind == 8 ? _array : default;
-
-    /// <summary>
-    /// 获取擦除后的 JavaScript 值。
-    /// Gets the erased JavaScript value.
-    /// </summary>
-    public object? Value => _kind switch
-    {
-        1 => _error,
-        2 => _string,
-        3 => _number,
-        4 => _bool,
-        5 => _bigInt,
-        6 => _symbol,
-        7 => _object,
-        8 => _array,
-        _ => default
-    };
-
-    /// <summary>
-    /// 从 Error 隐式转换。
-    /// Implicitly converts from an Error.
-    /// </summary>
-    /// <param name="value">要转换的错误对象。The Error to convert.</param>
-    public static implicit operator RouterErrorValue(Error value)
-        => new(value);
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator RouterErrorValue(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从 Number 隐式转换。
-    /// Implicitly converts from a Number.
-    /// </summary>
-    /// <param name="value">要转换的 Number 值。The Number value to convert.</param>
-    public static implicit operator RouterErrorValue(Number value)
-        => new(value);
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator RouterErrorValue(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 BigInt 隐式转换。
-    /// Implicitly converts from a BigInt.
-    /// </summary>
-    /// <param name="value">要转换的 BigInt 值。The BigInt value to convert.</param>
-    public static implicit operator RouterErrorValue(BigInt value)
-        => new(value);
-
-    /// <summary>
-    /// 从 Symbol 隐式转换。
-    /// Implicitly converts from a Symbol.
-    /// </summary>
-    /// <param name="value">要转换的 Symbol 值。The Symbol value to convert.</param>
-    public static implicit operator RouterErrorValue(Symbol value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouterErrorValue 数组隐式转换。
-    /// Implicitly converts from an Array of RouterErrorValue.
-    /// </summary>
-    /// <param name="value">要转换的 RouterErrorValue 数组。The Array of RouterErrorValue to convert.</param>
-    public static implicit operator RouterErrorValue(Array<RouterErrorValue?> value)
-        => new(value);
+    public Array<RouterErrorValue?>? AsArray => Value as Array<RouterErrorValue?>;
 
     /// <summary>
     /// 从可空 RouterErrorValue 数组隐式转换。

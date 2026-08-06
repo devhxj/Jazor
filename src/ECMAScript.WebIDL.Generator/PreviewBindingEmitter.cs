@@ -1712,6 +1712,7 @@ internal sealed class PreviewBindingEmitter
 
     private string EmitUnion(GeneratedUnionDefinition union)
     {
+        var supportsNativeUnionSyntax = SupportsNativeUnionSyntax(union.NamespaceName, union.Branches);
         var builder = new StringBuilder();
         builder.AppendLine("/// <summary>");
         builder.AppendLine($"/// {union.Name}");
@@ -1739,7 +1740,7 @@ internal sealed class PreviewBindingEmitter
             interfaces.Add($"IEnumerable<{union.CollectionElementType}>");
         }
 
-        if (union.SupportsSystemUnionContract && union.SupportsNativeUnionSyntax)
+        if (union.SupportsSystemUnionContract && supportsNativeUnionSyntax)
         {
             builder.Append($"public readonly union {union.Name}(");
             builder.Append(string.Join(", ", union.Branches.Select(static branch => branch.Type)));
@@ -1920,8 +1921,65 @@ internal sealed class PreviewBindingEmitter
     private static bool SupportsSystemUnionContract(IReadOnlyList<GeneratedUnionBranch> branches)
         => branches.All(static branch => branch.SupportsImplicitConversion);
 
-    private static bool SupportsNativeUnionSyntax(IReadOnlyList<GeneratedUnionBranch> branches)
-        => branches.All(static branch => !branch.Type.Contains('?', StringComparison.Ordinal));
+    private bool SupportsNativeUnionSyntax(string? namespaceName, IReadOnlyList<GeneratedUnionBranch> branches)
+        => branches.All(static branch => !branch.Type.Contains('?', StringComparison.Ordinal))
+           && !HasAssignableGeneratedInterfaceBranches(namespaceName, branches);
+
+    private bool HasAssignableGeneratedInterfaceBranches(string? namespaceName, IReadOnlyList<GeneratedUnionBranch> branches)
+    {
+        for (var leftIndex = 0; leftIndex < branches.Count; leftIndex++)
+        {
+            for (var rightIndex = leftIndex + 1; rightIndex < branches.Count; rightIndex++)
+            {
+                if (IsGeneratedInterfaceAssignable(namespaceName, branches[leftIndex].Type, branches[rightIndex].Type)
+                    || IsGeneratedInterfaceAssignable(namespaceName, branches[rightIndex].Type, branches[leftIndex].Type))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsGeneratedInterfaceAssignable(string? namespaceName, string sourceType, string targetType)
+    {
+        var sourceIsArray = sourceType.EndsWith("[]", StringComparison.Ordinal);
+        var targetIsArray = targetType.EndsWith("[]", StringComparison.Ordinal);
+        if (sourceIsArray || targetIsArray)
+        {
+            // An element is never assignable to its array; compare covariance only for two array branches.
+            return sourceIsArray
+                && targetIsArray
+                && IsGeneratedInterfaceAssignable(
+                    namespaceName,
+                    sourceType[..^2],
+                    targetType[..^2]);
+        }
+
+        var sourceKey = ResolveInterfaceKey(namespaceName, sourceType);
+        var targetKey = ResolveInterfaceKey(namespaceName, targetType);
+        if (sourceKey is null || targetKey is null)
+        {
+            return false;
+        }
+
+        while (true)
+        {
+            if (string.Equals(sourceKey, targetKey, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (!_interfaceCachesByKey.TryGetValue(sourceKey, out var sourceCache)
+                || string.IsNullOrWhiteSpace(sourceCache.ParentKey))
+            {
+                return false;
+            }
+
+            sourceKey = sourceCache.ParentKey;
+        }
+    }
 
     private static string GetUnionConstructorAccessibility(GeneratedUnionDefinition union)
         => union.SupportsSystemUnionContract ? "public" : "private";
@@ -2165,7 +2223,6 @@ internal sealed class PreviewBindingEmitter
         string? CollectionElementType)
     {
         public bool SupportsSystemUnionContract { get; } = PreviewBindingEmitter.SupportsSystemUnionContract(Branches);
-        public bool SupportsNativeUnionSyntax { get; } = PreviewBindingEmitter.SupportsNativeUnionSyntax(Branches);
     }
 
     private sealed record GeneratedUnionBranch(

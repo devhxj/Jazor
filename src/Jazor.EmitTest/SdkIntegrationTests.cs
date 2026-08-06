@@ -269,8 +269,8 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(File.Exists(manifestPath), "Release must not retain the debug manifest.");
 
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(bundle, "jazor-css:v1");
-        StringAssert.Contains(bundle, "jz-");
+        StringAssert.Contains(bundle, "ecmascript-style:v1");
+        StringAssert.Contains(bundle, "ecs-");
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
@@ -3247,8 +3247,8 @@ public sealed class SdkIntegrationTests
                         "font-face",
                         new CssDeclarations
                         {
-                            FontFamily = str("Jazor Sans"),
-                            ["src"] = raw("url(jazor.woff2)")
+                            FontFamily = str("Example Sans"),
+                            ["src"] = raw("url(example.woff2)")
                         }));
                     return css.snapshot(Context);
                 }

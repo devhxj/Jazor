@@ -141,10 +141,29 @@ public readonly union VuetifyOriginValue(VuetifyLocation, VuetifyOriginMode, str
 }
 
 [ECMAScript]
+[Union]
 [Description("@#")]
-public readonly union VuetifyOverlayCoordinateTarget(Number[])
+[CollectionBuilder(typeof(VuetifyOverlayCoordinateTargetCollectionBuilder), nameof(VuetifyOverlayCoordinateTargetCollectionBuilder.Create))]
+public readonly struct VuetifyOverlayCoordinateTarget : IUnion, IEnumerable<Number>
 {
-    public Number[]? AsArray => Value as Number[];
+    private readonly Number[]? _values;
+
+    public VuetifyOverlayCoordinateTarget(Number[] values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        if (values.Length != 2)
+            throw new ArgumentException("Vuetify overlay coordinate targets require exactly two items.", nameof(values));
+
+        _values = values;
+    }
+
+    public Number[]? AsArray => _values;
+
+    public Number? X => _values is { Length: > 0 } values ? values[0] : default(Number?);
+
+    public Number? Y => _values is { Length: > 1 } values ? values[1] : default(Number?);
+
+    public object? Value => _values;
 
     public static implicit operator VuetifyOverlayCoordinateTarget(Number[] values)
         => new(values);
@@ -154,6 +173,19 @@ public readonly union VuetifyOverlayCoordinateTarget(Number[])
 
     public static implicit operator VuetifyOverlayCoordinateTarget(double[] values)
         => new(Array.ConvertAll(values, static value => (Number)value));
+
+    IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
+        => ((IEnumerable<Number>)(_values ?? Array.Empty<Number>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<Number>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyOverlayCoordinateTargetCollectionBuilder
+{
+    public static VuetifyOverlayCoordinateTarget Create(ReadOnlySpan<Number> values)
+        => values.ToArray();
 }
 
 [ECMAScript]
