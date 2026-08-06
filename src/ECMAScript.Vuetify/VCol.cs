@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 网格列组件创作代理。
 /// Vuetify grid column component authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCol")]
+[VueLibraryComponent("vuetify/components", "VCol", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VCol : ComponentBase
 {
     /// <summary>

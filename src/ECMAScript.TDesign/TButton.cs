@@ -5,7 +5,7 @@ namespace ECMAScript.TDesign;
 /// <summary>
 /// TDesign button authoring proxy.
 /// </summary>
-[VueLibraryComponent("tdesign-vue-next", "Button")]
+[VueLibraryComponent("tdesign-vue-next", "Button", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TButton : TContentComponentBase
 {
     [Parameter]

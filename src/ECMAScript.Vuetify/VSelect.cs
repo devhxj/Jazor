@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 下拉选择组件的编写代理。
 /// Vuetify select component authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSelect")]
+[VueLibraryComponent("vuetify/components", "VSelect", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VSelect : VSelectLikeComponentBase
 {
     /// <summary>

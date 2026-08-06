@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VApp")]
+[VueLibraryComponent("vuetify/components", "VApp", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 /// <summary>
 /// Vuetify 应用根包装组件。
 /// Vuetify app root wrapper component.

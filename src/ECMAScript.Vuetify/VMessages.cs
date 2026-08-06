@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 消息提示组件。
 /// Vuetify messages component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VMessages")]
+[VueLibraryComponent("vuetify/components", "VMessages", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VMessages : ComponentBase
 {
     /// <summary>

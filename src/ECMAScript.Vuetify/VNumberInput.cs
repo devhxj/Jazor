@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 数字输入组件。
 /// Vuetify number input component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VNumberInput")]
+[VueLibraryComponent("vuetify/components", "VNumberInput", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VNumberInput : ComponentBase
 {
     /// <summary>

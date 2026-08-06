@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 确认编辑创作代理，用于可编辑值的确认流程。
 /// Vuetify confirm-edit authoring proxy for editable value confirmation flows.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VConfirmEdit")]
+[VueLibraryComponent("vuetify/components", "VConfirmEdit", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VConfirmEdit : ComponentBase
 {
     /// <summary>

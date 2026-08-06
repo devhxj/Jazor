@@ -7,6 +7,7 @@
 - All 113 Vuetify erased-value domains now use native C# unions. Existing `AsX` projections, scalar and array assignments, and collection expressions remain available, while handwritten tag/state wrappers and redundant `From(...)` factories are removed.
 - TDesign's 14 erased-value domains now use native C# unions, and ElementPlus uses native unions for 45 of 46 domains. The one required tagged contract preserves exact `File` versus `Blob` projections for upload callbacks; neither library requires `From(...)` factories.
 - Element Plus and TDesign component authoring types now follow their component names as `El*` and `T*`. The `ElementPlus` / `TDesign` root hosts and `IElementPlusComponent` / `ITDesignComponent` marker interfaces retain the package identities for clear cross-library references.
+- Vue library components now declare their official stylesheet URLs alongside their JavaScript imports. RazorVue loads the styles required by the components actually rendered through an idempotent browser runtime link, and TDesign, Element Plus, Vuetify, and JazorAdmin no longer require a separate application stylesheet declaration.
 
 ## 2026-08-05
 

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 标签页组组件的编写代理。
 /// Vuetify tabs authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTabs")]
+[VueLibraryComponent("vuetify/components", "VTabs", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VTabs : ComponentBase
 {
     /// <summary>

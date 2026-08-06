@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 图标创作代理。
 /// Vuetify icon authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VIcon")]
+[VueLibraryComponent("vuetify/components", "VIcon", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VIcon : ComponentBase
 {
     /// <summary>

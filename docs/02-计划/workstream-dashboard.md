@@ -27,6 +27,7 @@ official Razor SG generated C#
 | [路线与边界](./razorvue-transition/01-路线与边界.md) | 输入/输出/禁止事项 |
 | [Gate 与验收](./razorvue-transition/03-Gate与验收.md) | 功能 Gate、性能 Gate、测试入口 |
 | [工具链](./razorvue-transition/04-工具链.md) | Deno / Netpack 显式 lane |
+| [前端库资源自包含](./razorvue-transition/06-前端封装库资源自包含方案.md) | NuGet-owned browser assets 与双 lane 本地资源图 |
 | [状态快照](./razorvue-transition/05-状态快照.md) | 已完成、缺口、推迟项 |
 | [ECMAScript.Vue3 / Vuetify](../01-目标/ecmascript.vue3/README.md) | Vue3 与 Vuetify authoring 目标入口 |
 

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Link")]
+[VueLibraryComponent("tdesign-vue-next", "Link", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TLink : TContentComponentBase
 {
     [Parameter]

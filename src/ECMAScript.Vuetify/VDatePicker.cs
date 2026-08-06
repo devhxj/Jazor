@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 日期选择器创作代理。
 /// Vuetify date-picker authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VDatePicker")]
+[VueLibraryComponent("vuetify/components", "VDatePicker", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VDatePicker : ComponentBase
 {
     /// <summary>

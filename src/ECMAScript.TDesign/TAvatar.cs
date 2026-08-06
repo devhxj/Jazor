@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Avatar")]
+[VueLibraryComponent("tdesign-vue-next", "Avatar", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TAvatar : TContentComponentBase
 {
     [Parameter]
@@ -31,7 +31,7 @@ public sealed class TAvatar : TContentComponentBase
     public RenderFragment? Icon { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AvatarGroup")]
+[VueLibraryComponent("tdesign-vue-next", "AvatarGroup", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TAvatarGroup : TContentComponentBase
 {
     [Parameter]

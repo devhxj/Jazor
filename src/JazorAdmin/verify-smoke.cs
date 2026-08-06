@@ -143,7 +143,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertDoesNotContain(routesModule, "settings", "retired settings route in JazorAdmin routes module");
     AssertContains(adminLayoutModule, "data-shell-command", "sidebar toggle command in TDesign admin layout module");
     AssertContains(adminLayoutModule, "toggle-sidebar", "sidebar toggle command key in TDesign admin layout module");
-    AssertContains(adminLayoutModule, "collapsedChanged", "controlled collapsed callback in TDesign admin layout module");
+    AssertContains(adminLayoutModule, "onUpdate:collapsed", "controlled collapsed Vue listener in TDesign admin layout module");
     AssertContains(adminLayoutModule, "horizontal: true", "top navigation variant in TDesign admin layout module");
     AssertContains(headerBarModule, "jazor-admin-tdesign-header__navigation", "navigation slot region in TDesign header bar module");
     AssertContains(errorPageModule, "data-error-kind", "typed error kind marker in JazorAdmin error page module");

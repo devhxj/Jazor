@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 虚拟滚动组件的创作代理，用于大型项目集合。
 /// Vuetify virtual-scroll authoring proxy for large item collections.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VVirtualScroll")]
+[VueLibraryComponent("vuetify/components", "VVirtualScroll", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VVirtualScroll : ComponentBase
 {
     /// <summary>

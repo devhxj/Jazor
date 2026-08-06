@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 实验室图标按钮创作代理。
 /// Vuetify labs icon-btn authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VIconBtn")]
+[VueLibraryComponent("vuetify/labs/components", "VIconBtn", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VIconBtn : ComponentBase
 {
     /// <summary>

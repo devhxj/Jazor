@@ -3229,6 +3229,23 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void ComponentLibraries_DeclareOfficialStylesOnEveryLibraryComponent()
+    {
+        AssertLibraryStyleUrls(
+            typeof(TDesign).Assembly,
+            "ECMAScript.TDesign",
+            "https://cdn.jsdelivr.net/npm/tdesign-vue-next@1.20.5/dist/tdesign.min.css");
+        AssertLibraryStyleUrls(
+            typeof(ElementPlus).Assembly,
+            "ECMAScript.ElementPlus",
+            "https://cdn.jsdelivr.net/npm/element-plus@2.14.0/dist/index.css");
+        AssertLibraryStyleUrls(
+            typeof(Vuetify).Assembly,
+            "ECMAScript.Vuetify",
+            "https://cdn.jsdelivr.net/npm/vuetify@3.8.0/dist/vuetify.min.css");
+    }
+
+    [TestMethod]
     public void Vuetify_EventParameters_UseStandardNamesAndOnlyExceptionalEmitMetadata()
     {
         var componentTypes = typeof(Vuetify).Assembly
@@ -3413,6 +3430,25 @@ public sealed class EcmaScriptVueProxyTests
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
+
+    private static void AssertLibraryStyleUrls(Assembly assembly, string @namespace, string expectedStyleUrl)
+    {
+        var components = assembly
+            .GetTypes()
+            .Where(type => type.Namespace == @namespace &&
+                           typeof(ComponentBase).IsAssignableFrom(type) &&
+                           type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsTrue(components.Length > 0, @namespace);
+        foreach (var component in components)
+        {
+            var attribute = component.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
+            Assert.IsNotNull(attribute, component.FullName);
+            CollectionAssert.AreEqual(new[] { expectedStyleUrl }, attribute!.StyleUrls, component.FullName);
+        }
+    }
 
     [TestMethod]
     public void VuetifyGridSpanValue_UsesNativeUnionWithoutLosingNumericAssignments()

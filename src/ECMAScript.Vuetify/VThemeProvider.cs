@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 主题提供者组件的编写代理。
 /// Vuetify theme provider authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VThemeProvider")]
+[VueLibraryComponent("vuetify/components", "VThemeProvider", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VThemeProvider : ComponentBase
 {
     /// <summary>

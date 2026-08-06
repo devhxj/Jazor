@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 表格组件的编写代理。
 /// Vuetify table authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTable")]
+[VueLibraryComponent("vuetify/components", "VTable", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VTable : ComponentBase
 {
     /// <summary>

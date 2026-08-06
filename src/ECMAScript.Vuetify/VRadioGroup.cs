@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 单选按钮组组件。
 /// Vuetify radio group component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VRadioGroup")]
+[VueLibraryComponent("vuetify/components", "VRadioGroup", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VRadioGroup : ComponentBase
 {
     /// <summary>

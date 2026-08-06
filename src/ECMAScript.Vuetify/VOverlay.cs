@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 遮罩层组件。
 /// Vuetify overlay component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VOverlay")]
+[VueLibraryComponent("vuetify/components", "VOverlay", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 [VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
 public sealed class VOverlay : ComponentBase
 {

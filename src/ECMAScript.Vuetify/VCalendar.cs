@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify Labs 日历创作代理。
 /// Vuetify labs calendar authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VCalendar")]
+[VueLibraryComponent("vuetify/labs/components", "VCalendar", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VCalendar : ComponentBase
 {
     /// <summary>

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Badge")]
+[VueLibraryComponent("tdesign-vue-next", "Badge", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TBadge : TContentComponentBase
 {
     [Parameter]

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// 第一波 Vuetify 面包屑导航存根，用于 RazorVue 创作。
 /// First-wave Vuetify breadcrumbs stub for RazorVue authoring.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VBreadcrumbs")]
+[VueLibraryComponent("vuetify/components", "VBreadcrumbs", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VBreadcrumbs : ComponentBase
 {
     /// <summary>

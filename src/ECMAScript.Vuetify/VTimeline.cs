@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 时间线组件的编写代理，用于按时间顺序排列的垂直或水平内容。
 /// Vuetify timeline authoring proxy for chronological vertical or horizontal content.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTimeline")]
+[VueLibraryComponent("vuetify/components", "VTimeline", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VTimeline : ComponentBase
 {
     /// <summary>

@@ -598,7 +598,7 @@ internal static class Program
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
-            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
+            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]");
 
             foreach (var emit in component.Emits.Where(RequiresExplicitEmitName))
             {

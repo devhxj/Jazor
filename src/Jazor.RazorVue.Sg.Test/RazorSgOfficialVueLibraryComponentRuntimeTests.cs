@@ -122,6 +122,58 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorLibraryComponent_AllowsPropAndSlotWithSameVueName()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\TDesignSubmenuUsage.razor",
+            documentText:
+            """
+            @using Demo.Library
+
+            <TSubmenu Title="Menu title">
+                <TitleContent>Slot title</TitleContent>
+            </TSubmenu>
+            """,
+            codeBehindSource:
+            """
+            using Demo.Library;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/t-design-submenu-usage")]
+            public partial class TDesignSubmenuUsage : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.TDesignSubmenuUsage",
+            supportingSources: new Dictionary<string, string>
+            {
+                ["Library/TSubmenu.cs"] =
+                """
+                using ECMAScript.VueContract;
+
+                namespace Demo.Library;
+
+                [VueLibraryComponent("tdesign-vue-next", "Submenu")]
+                public sealed class TSubmenu : ComponentBase
+                {
+                    [Parameter]
+                    public string Title { get; set; } = string.Empty;
+
+                    [Parameter]
+                    public RenderFragment? TitleContent { get; set; }
+                }
+                """
+            });
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "title: \"Menu title\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "title: () =>", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("titleContent", StringComparison.Ordinal), observation.ModuleText);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorLibraryComponent_UsesOnPrefixForOrdinaryEvents()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(

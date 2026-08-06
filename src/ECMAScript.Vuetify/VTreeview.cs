@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 实验室树形视图组件的创作代理。
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VTreeview")]
+[VueLibraryComponent("vuetify/labs/components", "VTreeview", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 [VueLibraryEmit(nameof(OnOpenClick), Name = "click:open")]
 [VueLibraryEmit(nameof(OnSelectClick), Name = "click:select")]
 public sealed class VTreeview : ComponentBase

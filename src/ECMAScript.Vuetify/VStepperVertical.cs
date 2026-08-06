@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 实验室垂直步骤条组件的编写代理，基于展开面板工作流。
 /// Vuetify labs vertical stepper authoring proxy for expansion-panel based workflows.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VStepperVertical")]
+[VueLibraryComponent("vuetify/labs/components", "VStepperVertical", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VStepperVertical : ComponentBase
 {
     /// <summary>

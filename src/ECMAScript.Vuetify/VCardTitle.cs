@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VCardTitle")]
+[VueLibraryComponent("vuetify/components", "VCardTitle", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 /// <summary>
 /// Vuetify 卡片标题组件。
 /// Vuetify card title component.

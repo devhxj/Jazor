@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 区域提供者创作代理，用于作用域区域设置、回退、RTL 和消息。
 /// Vuetify locale-provider authoring proxy for scoped locale, fallback, RTL, and messages.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VLocaleProvider")]
+[VueLibraryComponent("vuetify/components", "VLocaleProvider", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VLocaleProvider : ComponentBase
 {
     /// <summary>

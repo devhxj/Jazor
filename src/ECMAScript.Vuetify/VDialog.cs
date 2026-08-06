@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 对话框创作代理，基于遮罩层的模态内容。
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VDialog")]
+[VueLibraryComponent("vuetify/components", "VDialog", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 [VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
 public sealed class VDialog : ComponentBase
 {

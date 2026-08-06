@@ -105,6 +105,20 @@ public sealed class LegacyRazorVueContractRetirementTests
         Assert.IsFalse(targets.Contains(".Contains('\\native\\')", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void SdkTargets_IncludeRazorVueRuntimeAnalyzerInEmit()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        const string analyzerCondition =
+            "'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'";
+
+        Assert.AreEqual(
+            2,
+            targets.Split(analyzerCondition, StringSplitOptions.None).Length - 1,
+            "Both debug and release emission must materialize RazorVue runtime assets from the analyzer assembly.");
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

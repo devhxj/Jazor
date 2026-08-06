@@ -62,15 +62,20 @@ internal static class VueLibraryComponentConventions
         INamedTypeSymbol componentType)
     {
         var names = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
-        var owners = new Dictionary<string, IPropertySymbol>(StringComparer.Ordinal);
+        // Vue slots are passed as the third h(...) argument, while props and listeners
+        // share its second argument. Prop/slot 同名是合法 Vue 契约；监听器仍须与 prop 共用冲突域。
+        var propOwners = new Dictionary<string, IPropertySymbol>(StringComparer.Ordinal);
+        var slotOwners = new Dictionary<string, IPropertySymbol>(StringComparer.Ordinal);
 
         foreach (var property in GetEffectiveParameterProperties(componentType))
         {
-            var runtimeName = IsRenderFragment(property.Type)
+            var isSlot = IsRenderFragment(property.Type);
+            var runtimeName = isSlot
                 ? GetSlotRuntimeName(componentType, property)
                 : IsEventCallback(property.Type)
                     ? GetEventListenerRuntimeName(componentType, property)
                     : GetPropRuntimeName(property);
+            var owners = isSlot ? slotOwners : propOwners;
 
             if (owners.TryGetValue(runtimeName, out var existing))
             {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Breadcrumb")]
+[VueLibraryComponent("tdesign-vue-next", "Breadcrumb", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TBreadcrumb : TContentComponentBase
 {
     [Parameter]
@@ -27,7 +27,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     public RenderFragment? Ellipsis { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem")]
+[VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TBreadcrumbItem : TContentComponentBase
 {
     [Parameter]

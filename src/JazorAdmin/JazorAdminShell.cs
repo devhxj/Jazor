@@ -11,7 +11,6 @@ internal static class JazorAdminShell
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <title>JazorAdmin</title>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tdesign-vue-next@1.20.5/dist/tdesign.min.css">
           <script type="importmap">
           {
             "imports": {

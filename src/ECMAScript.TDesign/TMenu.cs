@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Menu")]
+[VueLibraryComponent("tdesign-vue-next", "Menu", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TMenu : TContentComponentBase
 {
     [Parameter]
@@ -45,7 +45,7 @@ public sealed class TMenu : TContentComponentBase
     public RenderFragment? Operations { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "HeadMenu")]
+[VueLibraryComponent("tdesign-vue-next", "HeadMenu", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class THeadMenu : TContentComponentBase
 {
     [Parameter]
@@ -79,7 +79,7 @@ public sealed class THeadMenu : TContentComponentBase
     public RenderFragment? Operations { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Submenu")]
+[VueLibraryComponent("tdesign-vue-next", "Submenu", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TSubmenu : TContentComponentBase
 {
     [Parameter]
@@ -98,7 +98,7 @@ public sealed class TSubmenu : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "MenuItem")]
+[VueLibraryComponent("tdesign-vue-next", "MenuItem", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TMenuItem : TContentComponentBase
 {
     [Parameter]
@@ -133,7 +133,7 @@ public sealed class TMenuItem : TContentComponentBase
     public RenderFragment? Icon { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "MenuGroup")]
+[VueLibraryComponent("tdesign-vue-next", "MenuGroup", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
 public sealed class TMenuGroup : TContentComponentBase
 {
     [Parameter]

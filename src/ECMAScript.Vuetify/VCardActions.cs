@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VCardActions")]
+[VueLibraryComponent("vuetify/components", "VCardActions", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 /// <summary>
 /// Vuetify 卡片操作区域组件。
 /// Vuetify card actions section component.

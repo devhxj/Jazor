@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 列表组件，用于展示可交互的列表项集合。
 /// Vuetify list component for displaying interactive collections of list items.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VList")]
+[VueLibraryComponent("vuetify/components", "VList", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VList : ComponentBase
 {
     /// <summary>

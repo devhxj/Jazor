@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// 首批 Vuetify 分页组件桩，用于 RazorVue 编写。
 /// First-wave Vuetify pagination stub for RazorVue authoring.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VPagination")]
+[VueLibraryComponent("vuetify/components", "VPagination", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VPagination : ComponentBase
 {
     /// <summary>

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 表单组件。
 /// Vuetify form component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VForm")]
+[VueLibraryComponent("vuetify/components", "VForm", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VForm : ComponentBase
 {
     /// <summary>

@@ -4,6 +4,8 @@ namespace Jazor.Emit;
 
 internal sealed class ModuleCollector(EmitLoadContext loadContext)
 {
+    private const string RazorVueRuntimeRelativePathPrefix = "@jazor/vue-runtime/";
+
     private readonly EmitLoadContext _loadContext = loadContext;
     private readonly HashSet<string> _assemblyPaths = new(StringComparer.OrdinalIgnoreCase);
 
@@ -107,7 +109,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             }
         }
 
-        var orderedModules = byKey.Values
+        var orderedModules = RetainReferencedRazorVueRuntimeModules(byKey.Values)
             .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
             .ToArray();
@@ -117,6 +119,75 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             .ToArray();
 
         return CollectResult.Success(assemblies.Count, catalogCount, orderedModules, orderedAssets);
+    }
+
+    internal static IReadOnlyList<EmitModuleRecord> RetainReferencedRazorVueRuntimeModules(
+        IEnumerable<EmitModuleRecord> modules)
+    {
+        var allModules = modules.ToArray();
+        var runtimeModules = allModules
+            .Where(IsRazorVueRuntimeModule)
+            .ToArray();
+        if (runtimeModules.Length == 0)
+            return allModules;
+
+        // RazorVue ships these files through its analyzer assembly, not as normal runtime
+        // references. Materialize only the static ESM dependency closure so direct render
+        // remains free of its unused legacy bridge. RazorVue runtime 随 analyzer 提供，必须按
+        // 静态 ESM 依赖闭包物化，避免 direct render 输出未使用的 render-context bridge。
+        var selectedPaths = new HashSet<string>(StringComparer.Ordinal);
+        var pending = new Queue<EmitModuleRecord>();
+        foreach (var runtime in runtimeModules)
+        {
+            if (allModules.Any(module =>
+                    !IsRazorVueRuntimeModule(module) &&
+                    HasQuotedImport(module.Content, runtime.RelativePath)))
+            {
+                selectedPaths.Add(runtime.RelativePath);
+                pending.Enqueue(runtime);
+            }
+        }
+
+        while (pending.TryDequeue(out var importer))
+        {
+            foreach (var runtime in runtimeModules)
+            {
+                if (selectedPaths.Contains(runtime.RelativePath) ||
+                    !HasQuotedImport(
+                        importer.Content,
+                        GetRelativeImportSpecifier(importer.RelativePath, runtime.RelativePath)))
+                {
+                    continue;
+                }
+
+                selectedPaths.Add(runtime.RelativePath);
+                pending.Enqueue(runtime);
+            }
+        }
+
+        return allModules
+            .Where(module => !IsRazorVueRuntimeModule(module) || selectedPaths.Contains(module.RelativePath))
+            .ToArray();
+    }
+
+    private static bool IsRazorVueRuntimeModule(EmitModuleRecord module)
+        => module.RelativePath.StartsWith(RazorVueRuntimeRelativePathPrefix, StringComparison.Ordinal);
+
+    private static bool HasQuotedImport(string content, string specifier)
+        => content.Contains("\"" + specifier + "\"", StringComparison.Ordinal) ||
+           content.Contains("'" + specifier + "'", StringComparison.Ordinal);
+
+    private static string GetRelativeImportSpecifier(string importerPath, string importedPath)
+    {
+        var importerDirectory = Path.GetDirectoryName(importerPath.Replace('/', Path.DirectorySeparatorChar))
+            ?? string.Empty;
+        var relativePath = Path.GetRelativePath(
+                importerDirectory,
+                importedPath.Replace('/', Path.DirectorySeparatorChar))
+            .Replace(Path.DirectorySeparatorChar, '/');
+        return relativePath.StartsWith(".", StringComparison.Ordinal)
+            ? relativePath
+            : "./" + relativePath;
     }
 }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VBtnGroup")]
+[VueLibraryComponent("vuetify/components", "VBtnGroup", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 /// <summary>
 /// Vuetify 按钮组组件。
 /// Vuetify button group component.

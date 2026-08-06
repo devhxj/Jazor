@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 条目组组件，用于管理一组可选项的选中状态。
 /// Vuetify item group component for managing selection state across a group of items.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VItemGroup")]
+[VueLibraryComponent("vuetify/components", "VItemGroup", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
 public sealed class VItemGroup : ComponentBase
 {
     /// <summary>
