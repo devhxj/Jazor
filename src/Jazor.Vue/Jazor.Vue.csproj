@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="7.*" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="$(MinVerVersion)" PrivateAssets="All" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 

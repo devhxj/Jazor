@@ -2,6 +2,8 @@
   <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')" />
 
   <PropertyGroup>
+    <!-- Samples consume the latest released Jazor package set. Local smoke scripts override this value. -->
+    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.3.2</JazorPackageVersion>
     <!-- Samples exercise native-union public APIs directly and must compile in preview mode. -->
     <LangVersion>preview</LangVersion>
   </PropertyGroup>

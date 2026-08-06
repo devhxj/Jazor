@@ -24,7 +24,7 @@
   <Import Project="..\Jazor\buildTransitive\Jazor.props" />
 
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="7.*" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="$(MinVerVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
