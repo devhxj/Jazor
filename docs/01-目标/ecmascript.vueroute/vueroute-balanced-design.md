@@ -9,7 +9,7 @@
 
 1. 保持与 Vue Router 官方运行时 API 的直接映射关系，让 C# 表面能对应 `vue-router` 的真实 authoring path。
 2. 保持依赖方向清晰：`ECMAScript.VueRoute` 依赖 `ECMAScript.Vue3`，但不把路由语义反向污染回 `ECMAScript` 核心层。
-3. 对 compiler 保持“普通外部库”姿态：通过 `[ECMAScript("npm:vue-router@4")]`、`[Description("@#...")]`、`[ECMAScriptInline(...)]` 和普通 record/object lowering 完成映射。
+3. 对 compiler 保持“普通外部库”姿态：通过 `[ECMAScript("vue-router")]`、`[Description("@#...")]`、`[ECMAScriptInline(...)]` 和普通 record/object lowering 完成映射。
 4. 保持 public API 不暴露 `object`，优先使用 `VueProps`、union struct、delegate、`VueReadonlyRef<T>`、`RouteLocation*` 等桥接类型承接 JS 的 unknown-like 形态。
 5. 让测试和工程边界独立：`VueRoute` 的结构、导入、打包、脚本接线和 compiler-boundary 回归应在 `ECMAScript.VueRoute.Test` 中完成，而不是继续落在 `Jazor.CompilerTest`。
 
@@ -24,7 +24,7 @@
 
 ### 1. 模块导入边界
 
-- `VueRoute` 模块入口当前固定映射到 `npm:vue-router@4`。
+- `VueRoute` 模块入口当前固定映射到 `vue-router`。
 - import-map、bundler alias、无版本裸导入是否切换，不在 compiler 中硬编码，由 `ECMAScript.VueRoute` 自身文档和测试约束。
 - `VueRoute.cs` 只保留模块入口标记和共享委托/枚举声明，不承载静态 API 实现。
 
@@ -79,6 +79,6 @@ Vue Router 里的大多数 authoring payload，本质上都是普通对象：`Ro
 ## 后续补齐方向
 
 - 更完整的 Vue Router API 覆盖矩阵
-- 是否切换 `npm:vue-router@4` 到更统一的导入约定
+- 是否切换 `vue-router` 到更统一的导入约定
 - 更多导航失败、meta、命名视图、重定向回调边界测试
 - 文档与 Wiki 中的正式使用示例

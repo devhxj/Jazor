@@ -57,7 +57,7 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vuetify_ImportHosts_UseEcmaScriptImports_InsteadOfModuleEntryMarkers()
     {
-        AssertEcmaScriptImport(typeof(Vuetify), "npm:vuetify");
+        AssertEcmaScriptImport(typeof(Vuetify), "vuetify");
         AssertEcmaScriptImport(typeof(VuetifyComponents), "vuetify/components");
         AssertEcmaScriptImport(typeof(VuetifyLabsComponents), "vuetify/labs/components");
         AssertEcmaScriptImport(typeof(VuetifyDirectives), "vuetify/directives");
@@ -92,7 +92,7 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void TDesign_ImportHosts_UseEcmaScriptImports_InsteadOfModuleEntryMarkers()
     {
-        AssertEcmaScriptImport(typeof(TDesign), "npm:tdesign-vue-next");
+        AssertEcmaScriptImport(typeof(TDesign), "tdesign-vue-next");
         AssertEcmaScriptImport(typeof(TComponents), "tdesign-vue-next");
     }
 
@@ -3229,20 +3229,11 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void ComponentLibraries_DeclareOfficialStylesOnEveryLibraryComponent()
+    public void ComponentLibraries_DoNotEmbedExternalStyleUrls()
     {
-        AssertLibraryStyleUrls(
-            typeof(TDesign).Assembly,
-            "ECMAScript.TDesign",
-            "https://cdn.jsdelivr.net/npm/tdesign-vue-next@1.20.5/dist/tdesign.min.css");
-        AssertLibraryStyleUrls(
-            typeof(ElementPlus).Assembly,
-            "ECMAScript.ElementPlus",
-            "https://cdn.jsdelivr.net/npm/element-plus@2.14.0/dist/index.css");
-        AssertLibraryStyleUrls(
-            typeof(Vuetify).Assembly,
-            "ECMAScript.Vuetify",
-            "https://cdn.jsdelivr.net/npm/vuetify@3.8.0/dist/vuetify.min.css");
+        AssertNoLibraryStyleUrls(typeof(TDesign).Assembly, "ECMAScript.TDesign");
+        AssertNoLibraryStyleUrls(typeof(ElementPlus).Assembly, "ECMAScript.ElementPlus");
+        AssertNoLibraryStyleUrls(typeof(Vuetify).Assembly, "ECMAScript.Vuetify");
     }
 
     [TestMethod]
@@ -3431,7 +3422,7 @@ public sealed class EcmaScriptVueProxyTests
             .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
 
-    private static void AssertLibraryStyleUrls(Assembly assembly, string @namespace, string expectedStyleUrl)
+    private static void AssertNoLibraryStyleUrls(Assembly assembly, string @namespace)
     {
         var components = assembly
             .GetTypes()
@@ -3446,7 +3437,7 @@ public sealed class EcmaScriptVueProxyTests
         {
             var attribute = component.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
             Assert.IsNotNull(attribute, component.FullName);
-            CollectionAssert.AreEqual(new[] { expectedStyleUrl }, attribute!.StyleUrls, component.FullName);
+            Assert.AreEqual(0, attribute!.StyleUrls.Length, component.FullName);
         }
     }
 

@@ -3,7 +3,7 @@ namespace ECMAScript.TDesign;
 /// <summary>
 /// TDesign Vue Next root host.
 /// </summary>
-[ECMAScript("npm:tdesign-vue-next")]
+[ECMAScript("tdesign-vue-next")]
 [Description("@#")]
 public static class TDesign
 {

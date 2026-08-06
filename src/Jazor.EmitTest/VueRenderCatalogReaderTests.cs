@@ -218,11 +218,11 @@ public sealed class VueRenderCatalogReaderTests
         var modules = CatalogReader.TryRead(assembly);
 
         Assert.IsNotNull(modules);
-        var asset = modules.Single().FrontendAssets?.Single();
+        var asset = modules.Single().Assets?.Single();
         Assert.IsNotNull(asset);
         Assert.AreEqual("components/LocalCard.vue", asset.SourcePath);
         Assert.AreEqual("components/LocalCard.vue", asset.ArtifactPath);
-        Assert.AreEqual(ManifestAssetEntry.KindVueSfc, asset.Kind);
+        Assert.AreEqual(AssetEntry.KindVueSfc, asset.Kind);
         Assert.AreEqual(string.Empty, asset.Hash);
     }
 
@@ -414,7 +414,7 @@ public sealed class VueRenderCatalogReaderTests
             var modules = CatalogReader.TryRead(catalogAssembly)!
                 .Concat(CatalogReader.TryRead(runtimeAssembly)!)
                 .ToArray();
-            var result = new ModuleWriter().Write(
+            var result = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -542,7 +542,7 @@ public sealed class VueRenderCatalogReaderTests
                 .ToArray();
             var writer = new ModuleWriter();
 
-            var first = writer.Write(
+            var first = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -559,7 +559,7 @@ public sealed class VueRenderCatalogReaderTests
             var firstRuntimeCore = File.ReadAllBytes(runtimeCorePath);
             var firstManifest = File.ReadAllBytes(manifestPath);
 
-            var second = writer.Write(
+            var second = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -590,7 +590,7 @@ public sealed class VueRenderCatalogReaderTests
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.AssetManifest.Tests.dll");
-        var module = new EmitModuleRecord(
+        var module = new ModuleRecord(
             SourceAssemblyPath: rootAssemblyPath,
             AssemblyName: "VueRenderCatalog.AssetManifest.Tests",
             TypeName: "Demo.Pages.Counter",
@@ -598,18 +598,18 @@ public sealed class VueRenderCatalogReaderTests
             RelativePath: "components/counter.mjs",
             Content: "import LocalCard from \"./LocalCard.vue.mjs\";\nexport default {};\n",
             Hash: "sha256:counter",
-            FrontendAssets:
+            Assets:
             [
-                new ManifestAssetEntry(
+                new AssetEntry(
                     "components/LocalCard.vue",
                     "components/LocalCard.vue",
-                    ManifestAssetEntry.KindVueSfc,
+                    AssetEntry.KindVueSfc,
                     string.Empty)
             ]);
 
         try
         {
-            var result = new ModuleWriter().Write(
+            var result = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -622,7 +622,7 @@ public sealed class VueRenderCatalogReaderTests
             Assert.HasCount(1, manifest.Assets);
             Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].SourcePath);
             Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].ArtifactPath);
-            Assert.AreEqual(ManifestAssetEntry.KindVueSfc, manifest.Assets[0].Kind);
+            Assert.AreEqual(AssetEntry.KindVueSfc, manifest.Assets[0].Kind);
         }
         finally
         {
@@ -643,7 +643,7 @@ public sealed class VueRenderCatalogReaderTests
         var todoPath = Path.Combine(outputDirectory, "components", "todo.mjs");
         var todoMapPath = Path.Combine(outputDirectory, "components", "todo.mjs.map");
 
-        var counter = new EmitModuleRecord(
+        var counter = new ModuleRecord(
             SourceAssemblyPath: rootAssemblyPath,
             AssemblyName: "VueRenderCatalog.Stale.Tests",
             TypeName: "Demo.Pages.Counter",
@@ -654,7 +654,7 @@ public sealed class VueRenderCatalogReaderTests
             SourceMapRelativePath: "components/counter.mjs.map",
             SourceMapContent: "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Pages/Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
             MapHash: "sha256:counter-map");
-        var todo = new EmitModuleRecord(
+        var todo = new ModuleRecord(
             SourceAssemblyPath: rootAssemblyPath,
             AssemblyName: "VueRenderCatalog.Stale.Tests",
             TypeName: "Demo.Pages.Todo",
@@ -669,7 +669,7 @@ public sealed class VueRenderCatalogReaderTests
         try
         {
             var writer = new ModuleWriter();
-            var first = writer.Write(
+            var first = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -682,7 +682,7 @@ public sealed class VueRenderCatalogReaderTests
             Assert.IsTrue(File.Exists(todoPath));
             Assert.IsTrue(File.Exists(todoMapPath));
 
-            var second = writer.Write(
+            var second = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -791,7 +791,7 @@ public sealed class VueRenderCatalogReaderTests
         return Assembly.Load(stream.ToArray());
     }
 
-    private static EmitModuleRecord CreateModule(string relativePath, string content)
+    private static ModuleRecord CreateModule(string relativePath, string content)
         => new(
             SourceAssemblyPath: "test.dll",
             AssemblyName: "Test",

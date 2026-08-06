@@ -477,7 +477,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --package <jazor|jazor-vue|style|admin|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
     }
@@ -507,6 +507,7 @@ internal static class PackageCatalog
         "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute",
         "ECMAScript.Vuetify",
+        "ECMAScript.ElementPlus",
         "ECMAScript.TDesign"
     ];
 

@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 一次性密码输入组件。
 /// Vuetify OTP input component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VOtpInput", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VOtpInput")]
 public sealed class VOtpInput : ComponentBase
 {
     /// <summary>

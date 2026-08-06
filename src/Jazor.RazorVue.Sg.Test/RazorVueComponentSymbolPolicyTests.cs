@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorVueComponentSymbolPolicyTests
+public sealed class ComponentSymbolPolicyTests
 {
     [TestMethod]
     public void IsDeclaredOnComponentHierarchy_DistinguishesComponentBaseChainFromExternalSymbols()
@@ -27,7 +27,7 @@ public sealed class RazorVueComponentSymbolPolicyTests
             }
             """);
         var compilation = CSharpCompilation.Create(
-            "RazorVueComponentSymbolPolicyTests",
+            "ComponentSymbolPolicyTests",
             [syntaxTree],
             TestMetadataReferences.Net11,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -38,9 +38,9 @@ public sealed class RazorVueComponentSymbolPolicyTests
         Assert.IsNotNull(component);
         Assert.IsNotNull(baseType);
         Assert.IsNotNull(externalType);
-        Assert.IsTrue(RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, component));
-        Assert.IsTrue(RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, baseType));
-        Assert.IsFalse(RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, externalType));
-        Assert.IsFalse(RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, null));
+        Assert.IsTrue(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, component));
+        Assert.IsTrue(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, baseType));
+        Assert.IsFalse(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, externalType));
+        Assert.IsFalse(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, null));
     }
 }

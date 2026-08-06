@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace Jazor.Emit;
 
+/// <summary>Loads requested assemblies and gathers their module catalogs into one graph.</summary>
 internal sealed class ModuleCollector(EmitLoadContext loadContext)
 {
     private const string RazorVueRuntimeRelativePathPrefix = "@jazor/vue-runtime/";
@@ -34,14 +35,14 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             }
         }
 
-        var byKey = new Dictionary<string, EmitModuleRecord>(StringComparer.Ordinal);
-        var byRelativePath = new Dictionary<string, EmitModuleRecord>(StringComparer.OrdinalIgnoreCase);
-        var assetsByArtifactPath = new Dictionary<string, ManifestAssetEntry>(StringComparer.OrdinalIgnoreCase);
+        var byKey = new Dictionary<string, ModuleRecord>(StringComparer.Ordinal);
+        var byRelativePath = new Dictionary<string, ModuleRecord>(StringComparer.OrdinalIgnoreCase);
+        var assetsByArtifactPath = new Dictionary<string, AssetEntry>(StringComparer.OrdinalIgnoreCase);
         var catalogCount = 0;
 
         foreach (var assembly in assemblies)
         {
-            IReadOnlyList<EmitModuleRecord>? modules;
+            IReadOnlyList<ModuleRecord>? modules;
             try
             {
                 modules = CatalogReader.TryRead(assembly);
@@ -70,7 +71,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                     continue;
                 }
 
-                foreach (var asset in module.FrontendAssets ?? [])
+                foreach (var asset in module.Assets ?? [])
                 {
                     if (assetsByArtifactPath.TryGetValue(asset.ArtifactPath, out var existingAsset))
                     {
@@ -78,7 +79,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                             !StringComparer.Ordinal.Equals(existingAsset.Kind, asset.Kind) ||
                             !StringComparer.Ordinal.Equals(existingAsset.Hash, asset.Hash))
                         {
-                            return CollectResult.Fail(4, $"Conflicting frontend asset for '{asset.ArtifactPath}'.");
+                            return CollectResult.Fail(4, $"Conflicting asset for '{asset.ArtifactPath}'.");
                         }
 
                         continue;
@@ -121,8 +122,8 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         return CollectResult.Success(assemblies.Count, catalogCount, orderedModules, orderedAssets);
     }
 
-    internal static IReadOnlyList<EmitModuleRecord> RetainReferencedRazorVueRuntimeModules(
-        IEnumerable<EmitModuleRecord> modules)
+    internal static IReadOnlyList<ModuleRecord> RetainReferencedRazorVueRuntimeModules(
+        IEnumerable<ModuleRecord> modules)
     {
         var allModules = modules.ToArray();
         var runtimeModules = allModules
@@ -136,7 +137,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         // remains free of its unused legacy bridge. RazorVue runtime 随 analyzer 提供，必须按
         // 静态 ESM 依赖闭包物化，避免 direct render 输出未使用的 render-context bridge。
         var selectedPaths = new HashSet<string>(StringComparer.Ordinal);
-        var pending = new Queue<EmitModuleRecord>();
+        var pending = new Queue<ModuleRecord>();
         foreach (var runtime in runtimeModules)
         {
             if (allModules.Any(module =>
@@ -170,7 +171,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             .ToArray();
     }
 
-    private static bool IsRazorVueRuntimeModule(EmitModuleRecord module)
+    private static bool IsRazorVueRuntimeModule(ModuleRecord module)
         => module.RelativePath.StartsWith(RazorVueRuntimeRelativePathPrefix, StringComparison.Ordinal);
 
     private static bool HasQuotedImport(string content, string specifier)
@@ -191,7 +192,8 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
     }
 }
 
-internal sealed record EmitModuleRecord(
+/// <summary>In-memory module content and its manifest metadata before it is written.</summary>
+internal sealed record ModuleRecord(
     string SourceAssemblyPath,
     string AssemblyName,
     string TypeName,
@@ -202,22 +204,24 @@ internal sealed record EmitModuleRecord(
     string? SourceMapRelativePath = null,
     string? SourceMapContent = null,
     string? MapHash = null,
-    IReadOnlyList<ManifestAssetEntry>? FrontendAssets = null);
+    IReadOnlyList<AssetEntry>? Assets = null,
+    IReadOnlyList<string>? PackageImports = null);
 
+/// <summary>Outcome of catalog collection before files are materialized.</summary>
 internal sealed record CollectResult(
     bool IsSuccess,
     int ExitCode,
     string? Error,
     int AssemblyCount,
     int CatalogCount,
-    IReadOnlyList<EmitModuleRecord> Modules,
-    IReadOnlyList<ManifestAssetEntry> Assets)
+    IReadOnlyList<ModuleRecord> Modules,
+    IReadOnlyList<AssetEntry> Assets)
 {
     public static CollectResult Success(
         int assemblyCount,
         int catalogCount,
-        IReadOnlyList<EmitModuleRecord> modules,
-        IReadOnlyList<ManifestAssetEntry> assets)
+        IReadOnlyList<ModuleRecord> modules,
+        IReadOnlyList<AssetEntry> assets)
         => new(true, 0, null, assemblyCount, catalogCount, modules, assets);
 
     public static CollectResult Fail(int exitCode, string error)

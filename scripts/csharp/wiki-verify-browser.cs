@@ -6,7 +6,7 @@ using System.Text;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
-var sampleRoot = Path.Combine(repoRoot, "src", "Wiki");
+var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-browser-" + Environment.ProcessId);
 var browserScriptPath = Path.Combine(sampleRoot, "verify-browser.mjs");

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Wiki\WikiHostShell.cs" Link="Shared\WikiHostShell.cs" />
+    <Compile Include="..\..\samples\Wiki\WikiHostShell.cs" Link="Shared\WikiHostShell.cs" />
   </ItemGroup>
 
   <ItemGroup>

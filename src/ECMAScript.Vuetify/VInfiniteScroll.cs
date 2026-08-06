@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 无限滚动创作代理，用于增量列表加载。
 /// Vuetify infinite-scroll authoring proxy for incremental list loading.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VInfiniteScroll", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VInfiniteScroll")]
 public sealed class VInfiniteScroll : ComponentBase
 {
     /// <summary>

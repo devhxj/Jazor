@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSourceGeneratorTailOutputFallbackPathTests
+public sealed class RazorTailOutputFallbackPathTests
 {
     [TestMethod]
     public void TryBuildFinalCompilationCatalog_ModuleAttributeWithoutPath_UsesStableAssemblyAndNamespaceArtifactPaths()
@@ -51,7 +51,7 @@ public sealed class RazorSourceGeneratorTailOutputFallbackPathTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
 
-        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
             compilation,
             CancellationToken.None,
             out var catalogSource,
@@ -68,7 +68,7 @@ public sealed class RazorSourceGeneratorTailOutputFallbackPathTests
     }
 
     [TestMethod]
-    public void TryBuildFinalCompilationCatalog_SharedVueSfcInput_DeduplicatesAndOrdersFrontendAssets()
+    public void TryBuildFinalCompilationCatalog_SharedVueSfcInput_DeduplicatesAndOrdersAssets()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
@@ -127,7 +127,7 @@ public sealed class RazorSourceGeneratorTailOutputFallbackPathTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
 
-        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
             compilation,
             CancellationToken.None,
             out var catalogSource,

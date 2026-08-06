@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\tdesign-vue-next\manifest.json" />
+  </ItemGroup>
+</Project>

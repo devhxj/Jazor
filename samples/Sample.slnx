@@ -1,0 +1,15 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/JazorAdmin/">
+    <Project Path="JazorAdmin.Test/JazorAdmin.Test.csproj" />
+    <Project Path="JazorAdmin/JazorAdmin.csproj" />
+    <Project Path="JazorAdmin/InjectSmoke/JazorAdmin.InjectSmoke.csproj" />
+  </Folder>
+  <Folder Name="/Wiki/">
+    <Project Path="Wiki/Wiki.csproj" />
+  </Folder>
+</Solution>

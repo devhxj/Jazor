@@ -16,4 +16,13 @@
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\ECMAScript.Vue3.targets" Pack="true" PackagePath="buildTransitive\ECMAScript.Vue3.targets" />
+    <None Include="frontend\**\*"
+          Exclude="frontend\licenses\LICENSE"
+          Pack="true"
+          PackagePath="jazor\vue3\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="frontend\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+  </ItemGroup>
 </Project>

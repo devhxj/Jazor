@@ -26,5 +26,5 @@
     <ProjectReference Include="..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
+  <Import Project="..\Packaging\JazorPackage.targets" />
 </Project>

@@ -2,9 +2,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Generation;
 
-// The analyzer assembly installs the driver-completion hook. RazorVue must
-// consume the completed Compilation, because incremental generators cannot see
-// source emitted by another generator in the same driver pass.
+/// <summary>
+/// Registers RazorVue generation against the completed compilation exposed by the analyzer hook.
+/// Incremental generators cannot otherwise observe source produced by another generator in the same pass.
+/// </summary>
 [Generator]
 public sealed class RazorVueGenerator : IIncrementalGenerator
 {
@@ -12,20 +13,20 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     {
         // GeneratorDriver invokes Initialize from inside RunGeneratorsAndUpdateCompilation.
         // Revalidate here so a tiered-JIT replacement is repaired before that driver call.
-        RazorSourceGeneratorBootstrap.Initialize();
+        Bootstrap.Initialize();
     }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        RazorSourceGeneratorBootstrap.Initialize();
-        var failure = RazorSourceGeneratorInitializeHookInstaller.GetInstallFailure();
+        Bootstrap.Initialize();
+        var failure = InitializeHookInstaller.GetInstallFailure();
         if (string.IsNullOrEmpty(failure))
             return;
 
         context.RegisterSourceOutput(
             context.CompilationProvider,
             (output, _) => output.ReportDiagnostic(Diagnostic.Create(
-                RazorSourceGeneratorDiagnostics.RazorSgTailOutputFailed,
+                Diagnostics.TailOutputFailed,
                 Location.None,
                 failure)));
     }

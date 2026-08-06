@@ -6220,7 +6220,7 @@ export function create() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp, ref } from ""npm:vue@3"";
+@"import { createApp, ref } from ""vue"";
 export function mount(component) {
   let app = createApp(component);
   return app.mount(""#app"");
@@ -6336,7 +6336,7 @@ export function readRef() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   return createApp(component, { message: ""Hello"" });
 }
@@ -6394,7 +6394,7 @@ export function boot(component) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   return createApp(component, { message: ""Hello"" });
 }
@@ -6477,7 +6477,7 @@ export function boot(component) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render() {
   return h(""div"", {
     key: 42,
@@ -6558,7 +6558,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render() {
   return h(""div"", {
     style: { color: ""red"", width: ""100px"" },
@@ -6636,7 +6636,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render(raw) {
   return h(""div"", {
     id: ""before"",
@@ -6814,7 +6814,7 @@ export function render(raw) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h, withModifiers } from ""npm:vue@3"";
+@"import { h, withModifiers } from ""vue"";
 export function render() {
   return h(""button"", { onClick: onClick, onFocus: withModifiers(onFocus, [""stop""]) }, ""Save"");
 }
@@ -6888,7 +6888,7 @@ function onMouseMove(mouseEvent) { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function renderLabel() {
   return h(""label"", { for: ""cs-input"", class: ""editor-label"" }, ""C# Input"");
 }
@@ -6974,7 +6974,7 @@ function onInput(event) { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function renderInput() {
   return h(""input"", {
     name: ""source"",
@@ -7076,7 +7076,7 @@ export function renderImage() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function renderForm() {
   return h(""form"", {
     action: ""/submit"",
@@ -7939,7 +7939,7 @@ export function readPropDeclaration(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function renderNumberInput() {
   return h(""input"", {
     type: ""number"",
@@ -8014,7 +8014,7 @@ export function renderFileInput() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function renderCustomizedBuiltIn() {
   return h(""button"", { is: ""vue:primary-button"" }, ""Save"");
 }
@@ -8070,7 +8070,7 @@ export function renderCustomizedBuiltIn() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h, withModifiers } from ""npm:vue@3"";
+@"import { h, withModifiers } from ""vue"";
 export function render() {
   let modifiers = [""stop"", ""prevent""];
   return h(""button"", { onClick: withModifiers(onClick, modifiers) }, ""Save"");
@@ -8134,7 +8134,7 @@ function onClick() { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h, withDirectives } from ""npm:vue@3"";
+@"import { h, withDirectives } from ""vue"";
 let focus = { mounted: mountedDirective };
 export function render() {
   let directives = [new Array(focus)];
@@ -8193,7 +8193,7 @@ function mountedDirective(element, binding, vnode) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""Panel"",
   inheritAttrs: false,
@@ -8307,7 +8307,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ValidatedLabel"",
   props: { label: {
@@ -8399,7 +8399,7 @@ function validateSave(value) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""PropRegistryPanel"",
   props: { label: { type: String, required: true }, count: [Number, null] },
@@ -8632,7 +8632,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""LifecyclePanel"",
   beforeCreate: beforeCreate,
@@ -8730,7 +8730,7 @@ function prefetch() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ProviderPanel"",
   provide: { theme: ""dark"" },
@@ -8796,7 +8796,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ProviderPanel"",
   inject: { theme: ""theme"", label: { from: ""message"", default: ""fallback"" } },
@@ -8955,7 +8955,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let countKey = Symbol(""count"");
 export let component = defineComponent({
   name: ""TypedPanel"",
@@ -9061,7 +9061,7 @@ function onTotalChanged(value, oldValue) { }
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ProviderPanel"",
   provide: buildProvide,
@@ -9135,7 +9135,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let countKey = Symbol(""count"");
 export let component = defineComponent({
   name: ""ProviderPanel"",
@@ -9204,7 +9204,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ProviderPanel"",
   inject: { label: { from: ""message"", default: buildDefaultLabel } },
@@ -9284,7 +9284,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""MixedPanel"",
   extends: { name: ""BasePanel"", created: baseCreated },
@@ -9357,7 +9357,7 @@ function focusMounted() { }
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""DataPanel"",
   data: createState,
@@ -9435,7 +9435,7 @@ function createState() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""ComputedPanel"",
   computed: { doubled: readDoubled, plusOne: { get: readPlusOne, set: writePlusOne } },
@@ -9570,7 +9570,7 @@ function writePlusOne(value) { }
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""MethodsPanel"",
   methods: { reset: reset, focus: focus },
@@ -9729,7 +9729,7 @@ function focus() { }
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""WatchPanel"",
   watch: {
@@ -10004,7 +10004,7 @@ function onCountChangedAgain(value, oldValue) { }
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.config.errorHandler = onError;
@@ -10089,7 +10089,7 @@ function mergeRoute(parent, child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { title: ""Welcome"" });
@@ -10145,7 +10145,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, ref } from ""npm:vue@3"";
+@"import { defineComponent, h, ref } from ""vue"";
 export let component = defineComponent({ name: ""CounterView"", setup: setup });
 function setup() {
   let count = ref(1);
@@ -10208,7 +10208,7 @@ function setup() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
@@ -10274,7 +10274,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""CounterView"",
   emits: [""batch""],
@@ -10353,7 +10353,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+@"import { defineComponent, h, useModel } from ""vue"";
 export let component = defineComponent({
   name: ""CounterView"",
   props: [""modelValue""],
@@ -10432,7 +10432,7 @@ function normalize(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+@"import { defineComponent, h, useModel } from ""vue"";
 let counterModel = ""modelValue"";
 let counterUpdate = `update:${counterModel}`;
 export let component = defineComponent({
@@ -10516,7 +10516,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+@"import { defineComponent, h, useModel } from ""vue"";
 let countModel = ""count"";
 let countUpdate = `update:${countModel}`;
 export let component = defineComponent({
@@ -10597,7 +10597,7 @@ function normalize(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+@"import { defineComponent, h, useModel } from ""vue"";
 let countModel = ""count"";
 let countUpdate = `update:${countModel}`;
 export let component = defineComponent({
@@ -10679,7 +10679,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+@"import { defineComponent, h, useModel } from ""vue"";
 export let component = defineComponent({
   name: ""CounterView"",
   props: [""modelValue""],
@@ -10757,7 +10757,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useAttrs, useSlots } from ""npm:vue@3"";
+@"import { defineComponent, h, useAttrs, useSlots } from ""vue"";
 export let component = defineComponent({ name: ""PanelView"", setup: setup });
 function setup() {
   let attrs = useAttrs();
@@ -10827,7 +10827,7 @@ function setup() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useAttrs } from ""npm:vue@3"";
+@"import { defineComponent, h, useAttrs } from ""vue"";
 export let component = defineComponent({ name: ""PanelView"", setup: setup });
 function setup() {
   let attrs = useAttrs();
@@ -10914,7 +10914,7 @@ function setup() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h, useAttrs, useSlots } from ""npm:vue@3"";
+@"import { defineComponent, h, useAttrs, useSlots } from ""vue"";
 export let component = defineComponent({ name: ""PanelView"", setup: setup });
 function setup() {
   let attrs = useAttrs();
@@ -10974,7 +10974,7 @@ function setup() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""PanelView"",
   props: [""title"", ""active""],
@@ -11049,7 +11049,7 @@ function setup() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({ name: ""CounterView"", setup: setup });
 function setup(props, context) {
   context.emit(""ready"", props.message);
@@ -11129,7 +11129,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"", setup: setupChild });
 export function render() {
   return h(child, { title: ""Welcome"" }, { default: renderBody });
@@ -11194,7 +11194,7 @@ function setupChild(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({ name: ""EmptyView"", setup: setup });
 function setup(props, context) {
   return () => {
@@ -11260,7 +11260,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
@@ -11332,7 +11332,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let component = defineComponent({
   props: [""message""],
   emits: [""ready""],
@@ -11401,7 +11401,7 @@ function setup(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { default: renderBody });
@@ -11461,7 +11461,7 @@ function renderBody() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { default: renderBody });
@@ -11523,7 +11523,7 @@ function renderBody() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { default: renderBody });
@@ -11591,7 +11591,7 @@ function renderBody() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"", setup: setupChild });
 export function render() {
   return h(child, { title: ""Welcome"" }, { default: renderBody });
@@ -11670,7 +11670,7 @@ function setupChild(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"", setup: setupChild });
 export function render() {
   return h(child, { title: ""Welcome"" }, { header: renderHeader });
@@ -11749,7 +11749,7 @@ function setupChild(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({
   name: ""ChildView"",
   emits: [""ready""],
@@ -11833,7 +11833,7 @@ function setupChild(context) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"", setup: setupChild });
 export function render() {
   return h(child, { default: renderBody });
@@ -11926,7 +11926,7 @@ function setupChild(context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"", setup: setupChild });
 export function render() {
   return h(child, { title: ""Welcome"" }, { default: renderBody, header: renderHeader });
@@ -12058,8 +12058,8 @@ function setupChild(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
-import { createVuetify } from ""npm:vuetify"";
+@"import { createApp } from ""vue"";
+import { createVuetify } from ""vuetify"";
 import { VBtn } from ""vuetify/components"";
 import { Ripple } from ""vuetify/directives"";
 export function boot(component) {
@@ -12130,7 +12130,7 @@ export function boot(component) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent } from ""npm:vue@3"";
+@"import { defineComponent } from ""vue"";
 import { Ripple } from ""vuetify/directives"";
 export function create() {
   return defineComponent({
@@ -12191,7 +12191,7 @@ export function create() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.directive(""focus"", { mounted: mountedDirective });
@@ -12255,7 +12255,7 @@ function mountedDirective(element, binding, vnode) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent } from ""npm:vue@3"";
+@"import { defineComponent } from ""vue"";
 export function create() {
   return defineComponent({ name: ""PanelView"", directives: { Colorize: { mounted: applyColor } } });
 }
@@ -12311,7 +12311,7 @@ function applyColor(element, binding, vnode) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.directive(""focus"", applyFocus);
@@ -12368,7 +12368,7 @@ function applyFocus(element, binding) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.directive(""colorize"", applyColor);
@@ -12429,7 +12429,7 @@ function applyColor(element, binding) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent } from ""npm:vue@3"";
+@"import { defineComponent } from ""vue"";
 export function create() {
   return defineComponent({ name: ""PanelView"", directives: { Focus: applyFocus } });
 }
@@ -12567,7 +12567,7 @@ function applyFocus(element, binding) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { h, withDirectives, withModifiers } from ""npm:vue@3"";
+@"import { h, withDirectives, withModifiers } from ""vue"";
 let focus = { mounted: mountedDirective };
 let colorize = { mounted: applyColor };
 export function render() {
@@ -12634,7 +12634,7 @@ function onClick() { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent } from ""npm:vue@3"";
+@"import { defineComponent } from ""vue"";
 export function create() {
   return defineComponent({ name: ""PanelView"", directives: { Colorize: applyColor } });
 }
@@ -12692,7 +12692,7 @@ function applyColor(element, binding) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component, plugin) {
   let app = createApp(component);
   app.use(plugin, { feature: true, theme: { primary: ""jazor"" } });
@@ -12795,7 +12795,7 @@ export function boot(component, plugin) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.use({ install: installPlugin });
@@ -12860,7 +12860,7 @@ function installPlugin(app) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.use(installPlugin, { featureEnabled: true });
@@ -12928,7 +12928,7 @@ function installPlugin(app, options) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""npm:vue@3"";
+@"import { createApp } from ""vue"";
 export function boot(component) {
   let app = createApp(component);
   app.use({ install: installPlugin }, { featureEnabled: true });
@@ -13045,7 +13045,7 @@ function installPlugin(app, options) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { cloneVNode, createApp, hasInjectionContext, isProxy, isReactive, isReadonly, isRef, isVNode, markRaw, mergeProps, nextTick, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onRenderTracked, onRenderTriggered, onServerPrefetch, resolveComponent, resolveDirective, shallowReactive, shallowReadonly, toRaw, triggerRef, unref, useAttrs, useId, useSlots, useTemplateRef, version, watchPostEffect, watchSyncEffect } from ""npm:vue@3"";
+@"import { cloneVNode, createApp, hasInjectionContext, isProxy, isReactive, isReadonly, isRef, isVNode, markRaw, mergeProps, nextTick, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onRenderTracked, onRenderTriggered, onServerPrefetch, resolveComponent, resolveDirective, shallowReactive, shallowReadonly, toRaw, triggerRef, unref, useAttrs, useId, useSlots, useTemplateRef, version, watchPostEffect, watchSyncEffect } from ""vue"";
 export function boot(component, vnode, props, attrs, count) {
   let app = createApp(component);
   let runtimeVersion = version;
@@ -13181,7 +13181,7 @@ function prefetch() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineCustomElement, h, useHost, useShadowRoot } from ""npm:vue@3"";
+@"import { defineCustomElement, h, useHost, useShadowRoot } from ""vue"";
 export function boot() {
   let elementCtor = defineCustomElement({ name: ""UserBadge"", render: render }, {
     styles: ["":host { display: block; }""],
@@ -13287,7 +13287,7 @@ function configureElementApp(app) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { defineCustomElement, h, useHost } from ""npm:vue@3"";
+@"import { defineCustomElement, h, useHost } from ""vue"";
 export function boot() {
   let elementCtor = defineCustomElement({
     name: ""UserBadge"",
@@ -13498,7 +13498,7 @@ function configureElementApp(app) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { computed, customRef, defineAsyncComponent, effectScope, getCurrentScope, inject, onScopeDispose, onWatcherCleanup, provide, reactive, ref, toRef, toRefs, toValue, watch, watchEffect, watchPostEffect, watchSyncEffect } from ""npm:vue@3"";
+@"import { computed, customRef, defineAsyncComponent, effectScope, getCurrentScope, inject, onScopeDispose, onWatcherCleanup, provide, reactive, ref, toRef, toRefs, toValue, watch, watchEffect, watchPostEffect, watchSyncEffect } from ""vue"";
 export function boot() {
   let count = ref(1);
   let writable = computed({ get: read, set: write });

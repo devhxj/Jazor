@@ -97,7 +97,7 @@ public sealed class CurrentComponentHostScenarioTests
         var fixture = Compile(testCase.Source, testCase.Id);
         var walker = new SemanticWalker(true)
         {
-            Host = new RazorVueSemanticWalkerHost(fixture.Component)
+            Host = new VueSemanticWalkerHost(fixture.Component)
         };
 
         var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
@@ -122,11 +122,11 @@ public sealed class CurrentComponentHostScenarioTests
         var exception = testCase.Kind switch
         {
             CurrentComponentHostValidationKind.NullComponent => Assert.ThrowsExactly<ArgumentNullException>(() =>
-                new RazorVueSemanticWalkerHost(null!)),
+                new VueSemanticWalkerHost(null!)),
             CurrentComponentHostValidationKind.BlankStateIdentifier => Assert.ThrowsExactly<ArgumentException>(() =>
-                new RazorVueSemanticWalkerHost(fixture.Component, stateIdentifier: " ")),
+                new VueSemanticWalkerHost(fixture.Component, stateIdentifier: " ")),
             CurrentComponentHostValidationKind.BlankPropsIdentifier => Assert.ThrowsExactly<ArgumentException>(() =>
-                new RazorVueSemanticWalkerHost(fixture.Component, propsIdentifier: "\t")),
+                new VueSemanticWalkerHost(fixture.Component, propsIdentifier: "\t")),
             _ => throw new InvalidOperationException(
                 $"{testCase.Id}: unsupported validation kind '{testCase.Kind}'.")
         };
@@ -135,7 +135,7 @@ public sealed class CurrentComponentHostScenarioTests
         StringAssert.Contains(exception.Message, testCase.ExpectedMessageFragment, StringComparison.Ordinal, testCase.Id);
     }
 
-    private static RazorVueSemanticWalkerHost CreateHost(
+    private static VueSemanticWalkerHost CreateHost(
         ComponentFixture fixture,
         CurrentComponentHostConfigurationKind configuration)
     {
@@ -173,7 +173,7 @@ public sealed class CurrentComponentHostScenarioTests
                 throw new ArgumentOutOfRangeException(nameof(configuration), configuration, null);
         }
 
-        return new RazorVueSemanticWalkerHost(
+        return new VueSemanticWalkerHost(
             fixture.Component,
             stateIdentifier,
             propsIdentifier,

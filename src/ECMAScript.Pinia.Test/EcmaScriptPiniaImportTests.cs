@@ -1914,7 +1914,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "MultiStoreCookbookModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "import { computed, defineComponent, h } from \"npm:vue@3\";");
+		StringAssert.Contains(script, "import { computed, defineComponent, h } from \"vue\";");
 		StringAssert.Contains(script, "import { defineStore, mapStores, setMapStoreSuffix } from \"pinia\";");
 		StringAssert.Contains(script, "setMapStoreSuffix(\"\");");
 		StringAssert.Contains(script, "return mapStores(useCounterStore, useActivityStore);");
@@ -2307,7 +2307,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "import { ref } from \"npm:vue@3\";");
+		StringAssert.Contains(script, "import { ref } from \"vue\";");
 		StringAssert.Contains(script, "import { defineStore, shouldHydrate, skipHydrate } from \"pinia\";");
 		StringAssert.Contains(script, "return defineStore(\"counter\", {");
 		StringAssert.Contains(script, "hydrate: hydrateState");

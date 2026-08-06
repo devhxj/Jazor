@@ -53,8 +53,8 @@ public sealed class RazorVueModuleProjectionTests
             semanticModel,
             new AstConverterOptions(
                 AstConverterProfile.Standard,
-                Host: new RazorVueSemanticWalkerHost(componentType),
-                ModulePolicy: RazorVueModulePolicy.Instance));
+                Host: new VueSemanticWalkerHost(componentType),
+                ModulePolicy: VueModulePolicy.Instance));
 
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
@@ -109,8 +109,8 @@ public sealed class RazorVueModuleProjectionTests
                 MemberFilter: symbol =>
                     SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, baseMethod.OriginalDefinition) ||
                     SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, buildMethod.OriginalDefinition),
-                Host: new RazorVueSemanticWalkerHost(componentType),
-                ModulePolicy: RazorVueModulePolicy.Instance));
+                Host: new VueSemanticWalkerHost(componentType),
+                ModulePolicy: VueModulePolicy.Instance));
 
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();

@@ -46,7 +46,7 @@ Verified baseline:
 
 - Default registry resolution keeps `AdminLayout`, `SidebarMenu`, `HeaderBar`, and `PageContainer` on the native `Jazor.Admin` implementation path
 - `[VueInject]` replacement is regression-covered for all four public shell components
-- Injected runtime shape lowering is verified on the current RazorVue `.mjs` pipeline by `src/JazorAdmin/InjectSmoke`: the packaged build replaces `PageContainer`, emits a default implementation import, applies implementation prop/slot names, and mounts the result in a real browser
+- Injected runtime shape lowering is verified on the current RazorVue `.mjs` pipeline by `samples/JazorAdmin/InjectSmoke`: the packaged build replaces `PageContainer`, emits a default implementation import, applies implementation prop/slot names, and mounts the result in a real browser
 - Multi-shell composition is regression-covered on the current Vue render-function `.mjs` pipeline, including cross-container import aggregation, slot/prop/model mapping, and runtime stability
 - Native route-target semantics are regression-covered at the source/component contract level and by JazorAdmin's current render-function `.mjs` artifacts; the real-browser lane exercises nested Vue Router navigation, deep links, history traversal, and recovery navigation
 - Resolver normalization also regression-covers leading/trailing whitespace on non-empty `href/path/name/hash` values, so native shell output does not leak padded DOM `href` values or padded route-object fields

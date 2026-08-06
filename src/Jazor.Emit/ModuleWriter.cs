@@ -3,24 +3,25 @@ using System.Security.Cryptography;
 
 namespace Jazor.Emit;
 
+/// <summary>Writes collected modules, assets, maps, and the application manifest deterministically.</summary>
 internal sealed class ModuleWriter
 {
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
 
-    public WriteResult Write(
+    public static WriteResult Write(
         string rootAssemblyPath,
         string outputDirectory,
         string manifestPath,
-        IReadOnlyList<EmitModuleRecord> modules,
+        IReadOnlyList<ModuleRecord> modules,
         bool clean,
-        IReadOnlyList<ManifestAssetEntry>? assets = null)
+        IReadOnlyList<AssetEntry>? assets = null)
     {
         Directory.CreateDirectory(outputDirectory);
 
         var normalizedOutputDirectory = EnsureDirectorySeparator(Path.GetFullPath(outputDirectory));
         var existingManifest = ManifestModel.TryLoad(manifestPath);
         var existingByPath = existingManifest?.Modules.ToDictionary(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, ManifestModuleEntry>(StringComparer.OrdinalIgnoreCase);
+            ?? new Dictionary<string, ModuleEntry>(StringComparer.OrdinalIgnoreCase);
 
         var written = 0;
         var skipped = 0;
@@ -46,7 +47,7 @@ internal sealed class ModuleWriter
                 ? module.MapHash ?? ComputeSha256Hex(module.SourceMapContent!)
                 : null;
             var moduleContent = hasSourceMap
-                ? AppendSourceMappingUrl(module.Content, Path.GetFileName(sourceMapPath!))
+                ? AppendRazorSourceMapUrl(module.Content, Path.GetFileName(sourceMapPath!))
                 : module.Content;
             if (hasSourceMap)
             {
@@ -79,20 +80,21 @@ internal sealed class ModuleWriter
                 written++;
             }
 
-            nextManifest.Modules.Add(new ManifestModuleEntry(
+            nextManifest.Modules.Add(new ModuleEntry(
                 module.AssemblyName,
                 module.TypeName,
                 module.Id,
                 module.RelativePath,
                 module.Hash,
                 sourceMapRelativePath,
-                mapHash));
+                mapHash,
+                module.PackageImports));
         }
 
-        var nextAssetsByArtifactPath = new Dictionary<string, ManifestAssetEntry>(StringComparer.OrdinalIgnoreCase);
+        var nextAssetsByArtifactPath = new Dictionary<string, AssetEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var module in modules)
         {
-            foreach (var asset in module.FrontendAssets ?? [])
+            foreach (var asset in module.Assets ?? [])
                 nextAssetsByArtifactPath[asset.ArtifactPath] = asset;
         }
 
@@ -152,7 +154,7 @@ internal sealed class ModuleWriter
         deleted++;
     }
 
-    private static string AppendSourceMappingUrl(string content, string mapFileName)
+    private static string AppendRazorSourceMapUrl(string content, string mapFileName)
     {
         var normalized = (content ?? string.Empty).TrimEnd('\r', '\n');
         if (normalized.Length == 0)
@@ -173,6 +175,7 @@ internal sealed class ModuleWriter
     }
 }
 
+/// <summary>Counts files affected by one materialization operation.</summary>
 internal sealed record WriteResult(
     bool IsSuccess,
     int ExitCode,

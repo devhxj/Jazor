@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAlert", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VAlert")]
 [VueLibraryEmit(nameof(OnClickClose), Name = "click:close")]
 /// <summary>
 /// Vuetify 警告提示组件。

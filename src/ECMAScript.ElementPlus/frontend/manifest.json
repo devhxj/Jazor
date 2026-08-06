@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "element-plus",
+  "version": "2.9.8",
+  "imports": {
+    "element-plus": {
+      "development": "dist/index.full.min.mjs",
+      "production": "dist/index.full.min.mjs"
+    }
+  },
+  "requires": {
+    "vue3": "^3.5.0"
+  },
+  "styles": [
+    "dist/index.css"
+  ],
+  "files": [
+    "licenses/LICENSE"
+  ]
+}

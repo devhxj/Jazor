@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 复选框创作代理。
 /// Vuetify checkbox authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCheckbox", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VCheckbox")]
 public sealed class VCheckbox : VSelectionControlComponentBase
 {
     /// <summary>

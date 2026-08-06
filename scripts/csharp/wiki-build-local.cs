@@ -5,7 +5,7 @@ using System.Diagnostics;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
-var sampleRoot = Path.Combine(repoRoot, "src", "Wiki");
+var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
 var mainModulePath = Path.Combine(jazorRoot, "main.mjs");

@@ -2,7 +2,7 @@
 
 ## Objective
 
-把 `src/Wiki/` 从单页 sample 演进成一个真实可用的文档站 / wiki MVP，并明确采用 **C# + `ECMAScript.Vue3` + H 函数** 作为生产级前端 authoring 标准。
+把 `samples/Wiki/` 从单页 sample 演进成一个真实可用的文档站 / wiki MVP，并明确采用 **C# + `ECMAScript.Vue3` + H 函数** 作为生产级前端 authoring 标准。
 
 目标用户：
 
@@ -27,7 +27,7 @@
 
 ## Tech Stack
 
-- Host: ASP.NET Core (`src/Wiki/Program.cs`)
+- Host: ASP.NET Core (`samples/Wiki/Program.cs`)
 - Frontend authoring: `ECMAScript.Vue3`
 - UI bootstrap: `ECMAScript.Vuetify` runtime bootstrap retained
 - Output: `JazorMode=debug` -> `wwwroot/jazor`
@@ -35,19 +35,19 @@
 
 ## Commands
 
-- Build: `dotnet build .\src\Wiki\Wiki.csproj`
+- Build: `dotnet build .\samples\Wiki\Wiki.csproj`
 - Local build with emit verification: `dotnet run --file .\scripts\csharp\wiki-build-local.cs`
 - Local preview: `dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build`
 - Smoke verification: `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local`
 
 ## Project Structure
 
-- `src/Wiki/Program.cs` -> 静态宿主、`/health`、前端路由 fallback
-- `src/Wiki/AppModule.cs` -> Vue app bootstrap
-- `src/Wiki/WikiHomeModule*.cs` -> H 函数站点壳层、页面内容与导航逻辑
-- `src/Wiki/wwwroot/index.html` -> 静态入口与 import map
-- `src/Wiki/wwwroot/site.css` -> 真实文档站样式
-- `src/Wiki/README.md` -> 项目定位、运行方式、真实路由说明
+- `samples/Wiki/Program.cs` -> 静态宿主、`/health`、前端路由 fallback
+- `samples/Wiki/AppModule.cs` -> Vue app bootstrap
+- `samples/Wiki/WikiHomeModule*.cs` -> H 函数站点壳层、页面内容与导航逻辑
+- `samples/Wiki/wwwroot/index.html` -> 静态入口与 import map
+- `samples/Wiki/wwwroot/site.css` -> 真实文档站样式
+- `samples/Wiki/README.md` -> 项目定位、运行方式、真实路由说明
 - `docs/02-计划/wiki/` -> 活跃规格、计划与阶段说明
 
 ## Code Style

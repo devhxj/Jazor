@@ -4,7 +4,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 核心入口，提供 createVuetify 工厂方法。
 /// Vuetify core entry point providing the createVuetify factory.
 /// </summary>
-[ECMAScript("npm:vuetify")]
+[ECMAScript("vuetify")]
 [Description("@#")]
 public static class Vuetify
 {

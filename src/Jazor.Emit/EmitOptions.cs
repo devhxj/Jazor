@@ -1,5 +1,6 @@
 namespace Jazor.Emit;
 
+/// <summary>Parsed inputs for materializing catalog modules and their manifest.</summary>
 internal sealed record EmitOptions(
     string RootAssemblyPath,
     IReadOnlyList<string> AssemblyPaths,

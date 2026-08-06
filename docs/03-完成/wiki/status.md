@@ -1,7 +1,7 @@
 # Wiki 状态（2026-05-08）
 
 > Status: 当前状态快照（PathBase / 调试链路收口后更新）
-> Positioning: `src/Wiki/` 的仓库级状态页
+> Positioning: `samples/Wiki/` 的仓库级状态页
 > Scope: ASP.NET Core 传统宿主、子路径部署、开发时全页重载、首响应元数据、静态资产与 SourceMap 可达性
 
 ## 结论
@@ -115,11 +115,11 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local --pat
 
 ## 相关入口
 
-- `src/Wiki/README.md`
-- `src/Wiki/DEPLOY.md`
-- `src/Wiki/Program.cs`
-- `src/Wiki/WikiHostShell.cs`
-- `src/Wiki/WikiHomeModule.cs`
+- `samples/Wiki/README.md`
+- `samples/Wiki/DEPLOY.md`
+- `samples/Wiki/Program.cs`
+- `samples/Wiki/WikiHostShell.cs`
+- `samples/Wiki/WikiHomeModule.cs`
 - `scripts/csharp/wiki-verify-smoke.cs`
 - `scripts/csharp/wiki-verify-browser.cs`
 - `src/Jazor.AspNetCore.Dev/`

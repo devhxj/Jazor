@@ -22,3 +22,7 @@
 *.ttf binary
 *.eot binary
 *.pdf binary
+
+# Upstream browser ESM is copied byte-for-byte and can contain trailing whitespace.
+src/ECMAScript.Vue3/frontend/dist/*.js -whitespace
+src/Jazor.Emit/tooling/vue/*.js -whitespace

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VCardItem", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VCardItem")]
 /// <summary>
 /// Vuetify 卡片项分组组件，用于组织标题、副标题和前后缀。
 /// Vuetify card item grouping component for organizing title, subtitle, and prepend/append content.

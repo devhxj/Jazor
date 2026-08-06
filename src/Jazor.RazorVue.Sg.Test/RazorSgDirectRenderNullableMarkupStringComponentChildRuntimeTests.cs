@@ -49,7 +49,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
         var componentSymbol = compilation.GetTypeByMetadataName("Demo.Direct.DirectNullableMarkupParent");
         Assert.IsNotNull(componentSymbol);
         Assert.IsTrue(
-            RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
                 compilation,
                 ImmutableArray.Create(componentSymbol!),
                 out var binding,
@@ -59,7 +59,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
 
         var component = binding!.Components.Single();
         Assert.IsTrue(
-            RazorSgComponentMemberClosureBuilder.TryBuild(
+            MemberClosureBuilder.TryBuild(
                 binding,
                 component,
                 out var closure,
@@ -67,7 +67,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
             closureFailure);
         Assert.IsNotNull(closure);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(binding, component, closure!);
+        var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(artifact.ModuleText);
         StringAssert.Contains(artifact.ModuleText, "createStaticVNode", StringComparison.Ordinal);
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 纸张容器组件的编写代理。
 /// Vuetify sheet container authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSheet", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VSheet")]
 public sealed class VSheet : ComponentBase
 {
     /// <summary>

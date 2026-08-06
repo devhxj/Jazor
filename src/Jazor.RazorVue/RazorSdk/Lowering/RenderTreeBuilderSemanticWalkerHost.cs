@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Acornima.Ast;
@@ -832,7 +832,7 @@ internal sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static ObjectExpression? BuildComponentParameterNameMapExpression(INamedTypeSymbol componentType)
     {
-        var names = VueLibraryComponentConventions.BuildParameterRuntimeNameMap(componentType);
+        var names = LibraryComponentConventions.BuildParameterRuntimeNameMap(componentType);
 
         if (names.Count == 0)
             return null;

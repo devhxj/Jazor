@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 导航抽屉组件。
 /// Vuetify navigation drawer component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VNavigationDrawer", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VNavigationDrawer")]
 public sealed class VNavigationDrawer : ComponentBase
 {
     /// <summary>

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 网格行组件的编写代理。
 /// Vuetify grid row authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VRow", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VRow")]
 public sealed class VRow : ComponentBase
 {
     /// <summary>

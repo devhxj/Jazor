@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <None Update="tooling\**\*"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

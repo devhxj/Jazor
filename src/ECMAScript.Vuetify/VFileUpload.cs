@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs 文件上传创作代理。
 /// Vuetify labs file-upload authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VFileUpload", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/labs/components", "VFileUpload")]
 public sealed class VFileUpload : ComponentBase
 {
     /// <summary>

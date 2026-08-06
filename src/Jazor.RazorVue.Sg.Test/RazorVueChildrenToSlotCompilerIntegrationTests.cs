@@ -82,7 +82,7 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { KeepAlive, Suspense, Teleport, Transition, h } from ""npm:vue@3"";
+@"import { KeepAlive, Suspense, Teleport, Transition, h } from ""vue"";
 export function render() {
   let content = h(""main"", ""content"");
   let transitioned = ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Transition, {
@@ -151,7 +151,7 @@ function onFallback() { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -211,7 +211,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -281,7 +281,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export function render() {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(getChild(), createProps(), renderChild());
 }
@@ -341,7 +341,7 @@ function renderChild() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -394,7 +394,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { default: () => ""body"" });
@@ -446,7 +446,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { default: () => true });
@@ -498,7 +498,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -551,7 +551,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -615,7 +615,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(child, { title: ""Welcome"" }, [h(""span"", ""a""), h(""span"", ""b"")]);
@@ -674,7 +674,7 @@ export function render() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -693,7 +693,7 @@ export function render(child) {
 
             namespace Demo
             {
-                [ECMAScript("npm:vue@3")]
+                [ECMAScript("vue")]
                 [Description("@#")]
                 public static class VueLikeHost
                 {
@@ -752,7 +752,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render(component, child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(component, child);
 }
@@ -769,7 +769,7 @@ export function render(component, child) {
 
             namespace Demo
             {
-                [ECMAScript("npm:vue@3")]
+                [ECMAScript("vue")]
                 [Description("@#")]
                 public static class VueLikeHost
                 {
@@ -842,7 +842,7 @@ export function render(component, child) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render(component, child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(component, { title: ""Welcome"" }, child);
 }
@@ -859,7 +859,7 @@ export function render(component, child) {
 
             namespace Demo
             {
-                [ECMAScript("npm:vue@3")]
+                [ECMAScript("vue")]
                 [Description("@#")]
                 public static class VueLikeHost
                 {
@@ -918,7 +918,7 @@ export function render(component, child) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { h } from ""npm:vue@3"";
+@"import { h } from ""vue"";
 export function render(component, child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(component, child);
 }
@@ -976,7 +976,7 @@ export function render(component, child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -1042,7 +1042,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -1108,7 +1108,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 let Child = defineComponent({ name: ""ChildView"" });
 export { Child as child };
 export function render(child) {
@@ -1383,7 +1383,7 @@ export function render(child) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { defineComponent, h } from ""npm:vue@3"";
+@"import { defineComponent, h } from ""vue"";
 export let child = defineComponent({ name: ""ChildView"" });
 export function render() {
   return h(child, { title: ""Welcome"" }, { default: () => 1 });

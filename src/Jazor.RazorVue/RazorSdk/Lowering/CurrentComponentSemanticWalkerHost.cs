@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Acornima;
@@ -825,7 +825,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         };
 
     private bool IsComponentHierarchyType(ITypeSymbol? type)
-        => RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(
+        => ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(
             _componentType,
             type as INamedTypeSymbol);
 
@@ -860,7 +860,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            IsCurrentComponentInstance(property.IsStatic, instance);
 
     private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
-        => RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType);
+        => ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType);
 
     private bool IsCurrentComponentInstance(bool isStatic, IOperation? instance)
     {

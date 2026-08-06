@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("components/jazor-admin-nav-item-render-helper.mjs")]
+[ECMAScriptModule("components/admin/nav-item.mjs")]
 internal static class AdminNavItemRenderHelper
 {
     public static EffectiveNavItem[] BuildEffectiveItems(AdminNavItem[]? items)

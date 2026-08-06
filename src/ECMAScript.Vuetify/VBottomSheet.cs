@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VBottomSheet", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VBottomSheet")]
 /// <summary>
 /// Vuetify 底部抽屉组件。
 /// Vuetify bottom sheet component.

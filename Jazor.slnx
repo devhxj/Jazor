@@ -9,10 +9,6 @@
     <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
     <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
   </Folder>
-  <Folder Name="/sample/">
-    <Project Path="src/JazorAdmin/JazorAdmin.csproj" />
-    <Project Path="src/Wiki/Wiki.csproj" />
-  </Folder>
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj" />
     <Project Path="src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj" />
@@ -23,7 +19,6 @@
     <Project Path="src/ECMAScript.Style.Test/ECMAScript.Style.Test.csproj" />
     <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
     <Project Path="src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj" />
-    <Project Path="src/JazorAdmin.Test/JazorAdmin.Test.csproj" />
   </Folder>
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
   <Project Path="src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj" />

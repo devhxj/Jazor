@@ -11,7 +11,7 @@ public sealed class EcmaScriptVueRouteProxyTests
     [TestMethod]
     public void VueRoute_ImportHost_UsesVueRouterImport()
     {
-        AssertEcmaScriptImport(typeof(VueRoute), "npm:vue-router@4");
+        AssertEcmaScriptImport(typeof(VueRoute), "vue-router");
     }
 
     [TestMethod]

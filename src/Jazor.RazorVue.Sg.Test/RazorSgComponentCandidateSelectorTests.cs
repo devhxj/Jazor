@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgComponentCandidateSelectorTests
+public sealed class ComponentSelectorTests
 {
     [TestMethod]
     public void DiscoverCurrentComponents_UsesOnlyTheRoslynComponentEntryContract()
@@ -43,7 +43,7 @@ public sealed class RazorSgComponentCandidateSelectorTests
             references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var components = RazorSgComponentCandidateSelector.DiscoverCurrentComponents(compilation);
+        var components = ComponentSelector.DiscoverCurrentComponents(compilation);
 
         Assert.AreEqual(1, components.Length);
         Assert.AreEqual("Demo.Pages.ValidComponent", components[0].ToDisplayString());
@@ -80,7 +80,7 @@ public sealed class RazorSgComponentCandidateSelectorTests
             references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var components = RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation);
+        var components = ComponentSelector.DiscoverTailRequiredComponents(compilation);
 
         Assert.IsTrue(components.IsDefaultOrEmpty);
     }
@@ -112,15 +112,15 @@ public sealed class RazorSgComponentCandidateSelectorTests
             path: "Generated/LineMapped.cs");
         var compilation = CreateCompilation("RazorSg.LineMapped.Candidate", sourceTree);
 
-        var tailRequired = RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation);
-        var handwritten = RazorSgComponentCandidateSelector.DiscoverHandwrittenComponents(compilation);
-        var tailOutput = RazorSgComponentCandidateSelector.DiscoverTailOutputComponents(compilation);
+        var tailRequired = ComponentSelector.DiscoverTailRequiredComponents(compilation);
+        var handwritten = ComponentSelector.DiscoverHandwrittenComponents(compilation);
+        var tailOutput = ComponentSelector.DiscoverTailOutputComponents(compilation);
 
         Assert.AreEqual(1, tailRequired.Length);
         Assert.AreEqual("Demo.Pages.LineMapped", tailRequired[0].ToDisplayString());
         Assert.IsTrue(handwritten.IsDefaultOrEmpty);
         Assert.AreEqual(1, tailOutput.Length);
-        Assert.IsNull(RazorSgComponentCandidateSelector.FindHandwrittenBuildRenderTreeMethod(tailRequired[0]));
+        Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(tailRequired[0]));
     }
 
     [TestMethod]
@@ -159,8 +159,8 @@ public sealed class RazorSgComponentCandidateSelectorTests
             path: "Components/Child.razor.cs");
         var compilation = CreateCompilation("RazorSg.InheritedGenerated.Candidate", baseTree, childTree);
 
-        var tailRequired = RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation);
-        var tailOutput = RazorSgComponentCandidateSelector.DiscoverTailOutputComponents(compilation);
+        var tailRequired = ComponentSelector.DiscoverTailRequiredComponents(compilation);
+        var tailOutput = ComponentSelector.DiscoverTailOutputComponents(compilation);
         var child = compilation.GetTypeByMetadataName("Demo.Components.Child");
 
         Assert.IsNotNull(child);
@@ -170,8 +170,8 @@ public sealed class RazorSgComponentCandidateSelectorTests
         Assert.AreSame(child, tailOutput[0]);
         Assert.AreEqual(
             "Demo.Components.GeneratedBase",
-            RazorSgComponentCandidateSelector.FindBuildRenderTreeMethod(child!)!.ContainingType.ToDisplayString());
-        Assert.IsNull(RazorSgComponentCandidateSelector.FindHandwrittenBuildRenderTreeMethod(child!));
+            ComponentSelector.FindBuildRenderTreeMethod(child!)!.ContainingType.ToDisplayString());
+        Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(child!));
     }
 
     [TestMethod]
@@ -239,13 +239,13 @@ public sealed class RazorSgComponentCandidateSelectorTests
             compilation.GetTypeByMetadataName("Demo.Components.Selected")!,
             compilation.GetTypeByMetadataName("Demo.Components.MissingMarker")!);
 
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             components,
             out var binding,
             out var bindingFailure), bindingFailure);
         Assert.IsNotNull(binding);
-        Assert.IsTrue(RazorSgComponentCandidateSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure), selectionFailure);
+        Assert.IsTrue(ComponentSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure), selectionFailure);
 
         Assert.IsNotNull(selectedBinding);
         Assert.AreEqual(1, selectedBinding!.Components.Length);
@@ -295,13 +295,13 @@ public sealed class RazorSgComponentCandidateSelectorTests
         var generatedOnly = compilation.GetTypeByMetadataName("Demo.Components.GeneratedOnly");
 
         Assert.IsNotNull(generatedOnly);
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             ImmutableArray.Create(generatedOnly!),
             out var binding,
             out var bindingFailure), bindingFailure);
         Assert.IsNotNull(binding);
-        Assert.IsFalse(RazorSgComponentCandidateSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure));
+        Assert.IsFalse(ComponentSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure));
 
         Assert.IsNull(selectedBinding);
         Assert.IsNotNull(selectionFailure);
@@ -333,13 +333,13 @@ public sealed class RazorSgComponentCandidateSelectorTests
         var generatedOnly = compilation.GetTypeByMetadataName("Demo.Components.GeneratedOnly");
 
         Assert.IsNotNull(generatedOnly);
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             ImmutableArray.Create(generatedOnly!),
             out var binding,
             out var bindingFailure), bindingFailure);
         Assert.IsNotNull(binding);
-        Assert.IsFalse(RazorSgComponentCandidateSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure));
+        Assert.IsFalse(ComponentSelector.TrySelect(binding!, out var selectedBinding, out var selectionFailure));
 
         Assert.IsNull(selectedBinding);
         Assert.IsNotNull(selectionFailure);

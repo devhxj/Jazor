@@ -93,7 +93,7 @@ internal static class RazorSgOfficialAuthoringTestHost
         var componentSymbol = compilation.GetTypeByMetadataName(componentMetadataName);
         Assert.IsNotNull(componentSymbol, "Official Razor SG did not produce the requested component symbol.");
         Assert.IsTrue(
-            RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
                 compilation,
                 ImmutableArray.Create(componentSymbol!),
                 out var binding,
@@ -103,7 +103,7 @@ internal static class RazorSgOfficialAuthoringTestHost
 
         var component = binding!.Components.Single();
         Assert.IsTrue(
-            RazorSgComponentMemberClosureBuilder.TryBuild(
+            MemberClosureBuilder.TryBuild(
                 binding,
                 component,
                 out var closure,
@@ -111,7 +111,7 @@ internal static class RazorSgOfficialAuthoringTestHost
             closureFailure);
         Assert.IsNotNull(closure);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(binding, component, closure!);
+        var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         return new RazorSgOfficialAuthoringObservation(
             generatedSource.ReplaceLineEndings("\n"),
             artifact.ModuleText.ReplaceLineEndings("\n"),

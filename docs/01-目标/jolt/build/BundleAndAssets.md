@@ -373,8 +373,8 @@ import { baz } from '/__jazor_bundle/<guid>/src/qux.vue.js';
 ```json
 {
   "imports": {
-    "vue": "npm:vue@3",
-    "vue/": "npm:vue@3/",
+    "vue": "vue",
+    "vue/": "vue/",
     "pinia": "npm:pinia@2.1.7",
     "pinia/": "npm:pinia@2.1.7/",
     "axios": "npm:axios@1.6.2",

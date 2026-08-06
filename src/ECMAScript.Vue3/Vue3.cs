@@ -535,7 +535,7 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 /// in public callback signatures. This remains intentionally small until concrete host members
 /// are required by authoring or lowering.
 /// </summary>
-[ECMAScript("npm:dayjs")]
+[ECMAScript("dayjs")]
 [Description("@#")]
 /// <remarks>
 /// Dayjs 在这里仅作为生态库回调签名的最小 host contract；具体日期操作必须由实际导入的
@@ -620,7 +620,7 @@ public sealed class VueRenderHost
 	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.VueSlots slots);
 }
 
-[ECMAScript("npm:vue@3")]
+[ECMAScript("vue")]
 [Description("@#")]
 /// <remarks>
 /// Vue3 静态 partial surface 按 API、类型和结构分片维护，最终都映射到 Vue 3 runtime module。

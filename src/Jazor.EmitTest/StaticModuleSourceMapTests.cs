@@ -195,12 +195,12 @@ public sealed class StaticModuleSourceMapTests
         try
         {
             var writer = new ModuleWriter();
-            var result = writer.Write(
+            var result = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
                 [
-                    new EmitModuleRecord(
+                    new ModuleRecord(
                         SourceAssemblyPath: rootAssemblyPath,
                         AssemblyName: "Sample.Host",
                         TypeName: "Demo.Modules.Counter",
@@ -248,7 +248,7 @@ public sealed class StaticModuleSourceMapTests
         var rootAssemblyPath = Path.Combine(root, "bin", "Debug", "net11.0", "Sample.Host.dll");
         var modules = new[]
         {
-            new EmitModuleRecord(
+            new ModuleRecord(
                 SourceAssemblyPath: rootAssemblyPath,
                 AssemblyName: "Sample.Host",
                 TypeName: "Demo.Pages.Counter",
@@ -261,7 +261,7 @@ public sealed class StaticModuleSourceMapTests
         try
         {
             var writer = new ModuleWriter();
-            var first = writer.Write(
+            var first = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -271,7 +271,7 @@ public sealed class StaticModuleSourceMapTests
             Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
             var firstManifest = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
 
-            var second = writer.Write(
+            var second = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
@@ -315,12 +315,12 @@ public sealed class StaticModuleSourceMapTests
         try
         {
             var writer = new ModuleWriter();
-            var first = writer.Write(
+            var first = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
                 [
-                    new EmitModuleRecord(
+                    new ModuleRecord(
                         SourceAssemblyPath: rootAssemblyPath,
                         AssemblyName: "Sample.Host",
                         TypeName: "Demo.Modules.Counter",
@@ -337,12 +337,12 @@ public sealed class StaticModuleSourceMapTests
             Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
             Assert.IsTrue(File.Exists(mapPath));
 
-            var second = writer.Write(
+            var second = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
                 [
-                    new EmitModuleRecord(
+                    new ModuleRecord(
                         SourceAssemblyPath: rootAssemblyPath,
                         AssemblyName: "Sample.Host",
                         TypeName: "Demo.Modules.Counter",
@@ -405,12 +405,12 @@ public sealed class StaticModuleSourceMapTests
                 """);
 
             var writer = new ModuleWriter();
-            var result = writer.Write(
+            var result = ModuleWriter.Write(
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
                 [
-                    new EmitModuleRecord(
+                    new ModuleRecord(
                         SourceAssemblyPath: rootAssemblyPath,
                         AssemblyName: "Sample.Host",
                         TypeName: "Demo.Modules.WikiHome",

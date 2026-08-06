@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgComponentMemberClosureTests
+public sealed class MemberClosureTests
 {
     private static readonly Lazy<string> DenoExecutable = new(ResolveDenoExecutable);
 
@@ -24,7 +24,7 @@ public sealed class RazorSgComponentMemberClosureTests
     {
         var fixture = CreateOfficialCounterFixture();
 
-        var built = RazorSgComponentMemberClosureBuilder.TryBuild(
+        var built = MemberClosureBuilder.TryBuild(
             fixture.Binding,
             fixture.Component,
             out var closure,
@@ -194,7 +194,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 .OrderBy(static name => name, StringComparer.Ordinal)
                 .ToArray());
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -263,7 +263,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -326,8 +326,8 @@ public sealed class RazorSgComponentMemberClosureTests
 
         Assert.AreEqual(AstConverterProfile.Standard, options.Profile);
         Assert.IsNotNull(options.MemberFilter);
-        Assert.IsInstanceOfType(options.Host, typeof(RazorVueSemanticWalkerHost));
-        Assert.AreSame(RazorVueModulePolicy.Instance, options.ModulePolicy);
+        Assert.IsInstanceOfType(options.Host, typeof(VueSemanticWalkerHost));
+        Assert.AreSame(VueModulePolicy.Instance, options.ModulePolicy);
 
         var converter = new AstConverter(fixture.Component.ComponentSymbol, semanticModel, options);
         var module = await converter.Convert();
@@ -413,7 +413,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(script.Contains("from \"./components/child\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("new RenderTreeBuilder", StringComparison.Ordinal), script);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -457,7 +457,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -577,7 +577,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -694,7 +694,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -826,7 +826,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -954,7 +954,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1091,7 +1091,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1201,7 +1201,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1343,7 +1343,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1450,7 +1450,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1495,7 +1495,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1570,7 +1570,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1587,7 +1587,7 @@ public sealed class RazorSgComponentMemberClosureTests
         var injectedComponent = fixture.Binding.Components.Single(static component =>
             component.ComponentSymbol.Name == "InjectedShell");
         var injectedClosure = BuildClosure(fixture, "InjectedShell");
-        var injectedArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var injectedArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             injectedComponent,
             injectedClosure);
@@ -1636,7 +1636,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1744,7 +1744,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1853,7 +1853,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -1969,7 +1969,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2088,7 +2088,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2200,7 +2200,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2291,17 +2291,17 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture, "Counter");
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter"),
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "from \"../widgets/LocalCard.vue.mjs\";", StringComparison.Ordinal);
-        Assert.HasCount(1, artifact.FrontendAssets);
-        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.FrontendAssets[0].SourcePath);
-        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.FrontendAssets[0].ArtifactPath);
-        Assert.AreEqual("vue-sfc", artifact.FrontendAssets[0].Kind);
+        Assert.HasCount(1, artifact.Assets);
+        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].SourcePath);
+        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].ArtifactPath);
+        Assert.AreEqual("vue-sfc", artifact.Assets[0].Kind);
     }
 
     [TestMethod]
@@ -2341,7 +2341,7 @@ public sealed class RazorSgComponentMemberClosureTests
         OperationTransformationException? exception = null;
         try
         {
-            _ = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            _ = await VueModuleBuilder.BuildAsync(
                 fixture.Binding,
                 fixture.Component,
                 closure);
@@ -2414,7 +2414,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2560,7 +2560,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2661,7 +2661,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2793,7 +2793,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -2905,7 +2905,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3024,7 +3024,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3161,13 +3161,13 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
         var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             childClosure);
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             parentClosure);
@@ -3617,11 +3617,11 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
-        var rebuilt = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var rebuilt = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3705,7 +3705,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3758,7 +3758,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3805,7 +3805,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3853,7 +3853,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -3919,7 +3919,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4083,7 +4083,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4139,7 +4139,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4273,7 +4273,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture, "Counter");
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4413,7 +4413,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4464,7 +4464,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4604,7 +4604,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4755,7 +4755,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4815,7 +4815,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -4961,7 +4961,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5019,7 +5019,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5174,7 +5174,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5223,7 +5223,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var childClosure = BuildClosure(childFixture);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             childFixture.Binding,
             childFixture.Component,
             childClosure);
@@ -5268,7 +5268,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var parentClosure = BuildClosure(parentFixture);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             parentFixture.Binding,
             parentFixture.Component,
             parentClosure);
@@ -5415,7 +5415,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var childClosure = BuildClosure(childFixture);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             childFixture.Binding,
             childFixture.Component,
             childClosure);
@@ -5461,7 +5461,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var parentClosure = BuildClosure(parentFixture);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             parentFixture.Binding,
             parentFixture.Component,
             parentClosure);
@@ -5613,7 +5613,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
         var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             childClosure);
@@ -5626,7 +5626,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             parentClosure);
@@ -5685,7 +5685,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
         var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             childClosure);
@@ -5697,7 +5697,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             parentClosure);
@@ -5739,7 +5739,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5759,7 +5759,7 @@ public sealed class RazorSgComponentMemberClosureTests
         var fixture = CreateOfficialCounterFixture();
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5778,7 +5778,7 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_SourceMapPreservesMultipleRazorSourceMappingSegments()
+    public async Task BuildVueComponentModule_SourceMapPreservesMultipleRazorRazorSourceMapSegments()
     {
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
         const string generatedSource = """
@@ -5810,7 +5810,7 @@ public sealed class RazorSgComponentMemberClosureTests
         var titleGeneratedLine = GetLineIndexContaining(generatedSource, "builder.AddContent(1, Title);");
         var countGeneratedLine = GetLineIndexContaining(generatedSource, "builder.AddContent(2, count);");
         var sourceMappings = ImmutableArray.Create(
-            CreateSourceMapping(
+            CreateRazorSourceMap(
                 documentPath,
                 originalLine: 0,
                 originalColumn: 4,
@@ -5818,7 +5818,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 titleGeneratedLine,
                 GetColumnIndexContaining(generatedSource, titleGeneratedLine, "builder.AddContent"),
                 "builder.AddContent(1, Title);".Length),
-            CreateSourceMapping(
+            CreateRazorSourceMap(
                 documentPath,
                 originalLine: 1,
                 originalColumn: 3,
@@ -5832,7 +5832,7 @@ public sealed class RazorSgComponentMemberClosureTests
             sourceMappings);
         var closure = BuildClosure(fixture);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -5890,7 +5890,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -6047,7 +6047,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -6191,7 +6191,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -6326,7 +6326,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -6479,7 +6479,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
         var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             childClosure);
@@ -6492,7 +6492,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             parentClosure);
@@ -6675,7 +6675,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
         var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             childClosure);
@@ -6688,7 +6688,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
         var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             parentClosure);
@@ -6843,7 +6843,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -6902,7 +6902,7 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
         var closure = BuildClosure(fixture);
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             closure);
@@ -7284,7 +7284,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
 
         var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
-        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var childArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             child,
             BuildClosure(fixture, child.ComponentSymbol.Name));
@@ -7298,7 +7298,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(childScript.Contains("legacy.header", StringComparison.Ordinal), childScript);
 
         var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
-        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var parentArtifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             parent,
             BuildClosure(fixture, parent.ComponentSymbol.Name));
@@ -7345,16 +7345,16 @@ public sealed class RazorSgComponentMemberClosureTests
             }
             """);
 
-        var effectiveParameters = VueLibraryComponentConventions
+        var effectiveParameters = LibraryComponentConventions
             .GetEffectiveParameterProperties(fixture.Component.ComponentSymbol);
         var parameter = effectiveParameters.Single(property => property.Name == "Title");
 
         Assert.AreEqual("ChildBase", parameter.ContainingType.Name);
         Assert.AreEqual(
             "baseTitle",
-            VueLibraryComponentConventions.GetPropRuntimeName(parameter));
+            LibraryComponentConventions.GetPropRuntimeName(parameter));
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+        var artifact = await VueModuleBuilder.BuildAsync(
             fixture.Binding,
             fixture.Component,
             BuildClosure(fixture));
@@ -7395,7 +7395,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """);
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            VueLibraryComponentConventions.BuildParameterRuntimeNameMap(
+            LibraryComponentConventions.BuildParameterRuntimeNameMap(
                 fixture.Component.ComponentSymbol));
 
         StringAssert.Contains(exception.Message, "duplicate Vue name 'sameName'", StringComparison.Ordinal);
@@ -7403,9 +7403,9 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(exception.Message, "Second", StringComparison.Ordinal);
     }
 
-    private static RazorSgComponentMemberClosure BuildClosure(ClosureFixture fixture)
+    private static MemberClosure BuildClosure(ClosureFixture fixture)
     {
-        var built = RazorSgComponentMemberClosureBuilder.TryBuild(
+        var built = MemberClosureBuilder.TryBuild(
             fixture.Binding,
             fixture.Component,
             out var closure,
@@ -7416,11 +7416,11 @@ public sealed class RazorSgComponentMemberClosureTests
         return closure!;
     }
 
-    private static RazorSgComponentMemberClosure BuildClosure(ClosureFixture fixture, string componentName)
+    private static MemberClosure BuildClosure(ClosureFixture fixture, string componentName)
     {
         var component = fixture.Binding.Components.Single(component =>
             string.Equals(component.ComponentSymbol.Name, componentName, StringComparison.Ordinal));
-        var built = RazorSgComponentMemberClosureBuilder.TryBuild(
+        var built = MemberClosureBuilder.TryBuild(
             fixture.Binding,
             component,
             out var closure,
@@ -7431,12 +7431,12 @@ public sealed class RazorSgComponentMemberClosureTests
         return closure!;
     }
 
-    private static void AssertHasField(RazorSgComponentMemberClosure closure, string name)
+    private static void AssertHasField(MemberClosure closure, string name)
         => Assert.IsTrue(
             closure.StateFields.Any(field => Util.GetConfigOrSymbolName(field) == name),
             $"Expected field '{name}' in closure: {Describe(closure)}");
 
-    private static void AssertHasProperty(RazorSgComponentMemberClosure closure, string name)
+    private static void AssertHasProperty(MemberClosure closure, string name)
         => Assert.IsTrue(
             closure.StateProperties
                 .Concat(closure.ParameterProperties)
@@ -7444,17 +7444,17 @@ public sealed class RazorSgComponentMemberClosureTests
                 .Any(property => Util.GetConfigOrSymbolName(property) == name),
             $"Expected property '{name}' in closure: {Describe(closure)}");
 
-    private static void AssertHasMethod(RazorSgComponentMemberClosure closure, string name)
+    private static void AssertHasMethod(MemberClosure closure, string name)
         => Assert.IsTrue(
             closure.ReachableMethods.Any(method => method.Name == name),
             $"Expected method '{name}' in closure: {Describe(closure)}");
 
-    private static void AssertNoMember(RazorSgComponentMemberClosure closure, string name)
+    private static void AssertNoMember(MemberClosure closure, string name)
         => Assert.IsFalse(
             closure.OrderedMembers.Any(member => member.Name == name),
             $"Did not expect member '{name}' in closure: {Describe(closure)}");
 
-    private static string Describe(RazorSgComponentMemberClosure closure)
+    private static string Describe(MemberClosure closure)
         => string.Join(", ", closure.OrderedMembers.Select(static member => member.ToDisplayString()));
 
     private static ClosureFixture CreateOfficialCounterFixture()
@@ -7519,9 +7519,9 @@ public sealed class RazorSgComponentMemberClosureTests
         var compilation = baseCompilation.AddSyntaxTrees(generatedTree);
         AssertNoCompilationErrors(compilation);
 
-        var bound = RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        var bound = GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
-            RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation),
+            ComponentSelector.DiscoverTailRequiredComponents(compilation),
             out var binding,
             out var bindingFailure);
         Assert.IsTrue(bound, bindingFailure);
@@ -7533,7 +7533,7 @@ public sealed class RazorSgComponentMemberClosureTests
     private static ClosureFixture CreateManualGeneratedFixture(
         string source,
         string documentSourcePath = @"D:\repo\Demo\Pages\Counter.razor",
-        ImmutableArray<RazorSgSourceMapping> sourceMappings = default)
+        ImmutableArray<RazorSourceMap> sourceMappings = default)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var generatedTree = CSharpSyntaxTree.ParseText(source, parseOptions, "Counter.razor.g.cs");
@@ -7550,11 +7550,11 @@ public sealed class RazorSgComponentMemberClosureTests
             .OfType<MethodDeclarationSyntax>()
             .Where(static method => method.Identifier.ValueText == "BuildRenderTree")
             .ToArray();
-        var document = new RazorSgGeneratedDocument(
+        var document = new GeneratedDocument(
             "Counter.razor.g.cs",
             documentSourcePath,
             SourceText.From(source),
-            sourceMappings.IsDefault ? ImmutableArray<RazorSgSourceMapping>.Empty : sourceMappings);
+            sourceMappings.IsDefault ? ImmutableArray<RazorSourceMap>.Empty : sourceMappings);
         var components = buildRenderTreeDeclarations
             .Select(declaration =>
             {
@@ -7562,14 +7562,14 @@ public sealed class RazorSgComponentMemberClosureTests
                     ?? throw new InvalidOperationException("BuildRenderTree symbol was not available.");
                 var body = semanticModel.GetOperation(declaration.Body!) as IBlockOperation
                     ?? throw new InvalidOperationException("BuildRenderTree body operation was not available.");
-                return new RazorSgBoundComponent(document, method.ContainingType, method, body);
+                return new BoundComponent(document, method.ContainingType, method, body);
             })
             .ToImmutableArray();
         var component = components.FirstOrDefault(static candidate => candidate.ComponentSymbol.Name == "Counter")
             ?? components.Single();
-        var binding = new RazorSgGeneratedCSharpBinding(
+        var binding = new GeneratedCSharpBinding(
             compilation,
-            RazorSgCompilationBindingMode.ReusedHookCompilation,
+            CompilationBindingMode.ReusedHookCompilation,
             ImmutableArray.Create(document),
             components,
             ReusedGeneratedTreeCount: 1,
@@ -7578,7 +7578,7 @@ public sealed class RazorSgComponentMemberClosureTests
         return new ClosureFixture(binding, component);
     }
 
-    private static RazorSgSourceMapping CreateSourceMapping(
+    private static RazorSourceMap CreateRazorSourceMap(
         string originalPath,
         int originalLine,
         int originalColumn,
@@ -7587,13 +7587,13 @@ public sealed class RazorSgComponentMemberClosureTests
         int generatedColumn,
         int generatedLength)
         => new(
-            new RazorSgSourceSpan(
+            new RazorSourceSpan(
                 originalPath,
                 AbsoluteIndex: 0,
                 Length: 1,
                 originalLine,
                 originalColumn),
-            new RazorSgSourceSpan(
+            new RazorSourceSpan(
                 "Counter.razor.g.cs",
                 GetAbsoluteIndex(generatedSource, generatedLine, generatedColumn),
                 generatedLength,
@@ -7653,6 +7653,6 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     private sealed record ClosureFixture(
-        RazorSgGeneratedCSharpBinding Binding,
-        RazorSgBoundComponent Component);
+        GeneratedCSharpBinding Binding,
+        BoundComponent Component);
 }

@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 布局组件，用于管理页面区域的布局结构。
 /// Vuetify layout component for managing page region layout structure.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VLayout", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VLayout")]
 public sealed class VLayout : ComponentBase
 {
     /// <summary>

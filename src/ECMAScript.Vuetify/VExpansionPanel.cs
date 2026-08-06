@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 展开面板组件。
 /// Vuetify expansion-panel component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VExpansionPanel", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VExpansionPanel")]
 public sealed class VExpansionPanel : ComponentBase
 {
     /// <summary>

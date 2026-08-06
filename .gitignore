@@ -457,3 +457,5 @@ jazor/
 src/vben/
 .golutra
 dist-prod-optimized/
+
+.playwright-cli/

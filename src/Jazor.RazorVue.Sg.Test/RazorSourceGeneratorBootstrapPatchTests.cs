@@ -10,7 +10,7 @@ namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 [DoNotParallelize] // Verifies a process-wide native hook; the test itself exercises concurrent drivers.
-public sealed class RazorSourceGeneratorBootstrapPatchTests
+public sealed class BootstrapPatchTests
 {
     [TestMethod]
     public void DriverCompletionHook_BindsOfficialGeneratedCSharpWithoutRazorHostOutputs()

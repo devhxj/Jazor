@@ -2,6 +2,7 @@ using System.Text;
 
 namespace Jazor.RazorVue.RazorSdk;
 
+/// <summary>Produces stable Vue descriptor property names from runtime event names.</summary>
 internal static class VueDescriptorNaming
 {
     public static string ToListenerPropertyName(string eventName)

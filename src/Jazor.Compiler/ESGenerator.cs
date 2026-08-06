@@ -163,6 +163,13 @@ public sealed class ESGenerator : IIncrementalGenerator
                     candidate.SemanticModel,
                     new AstConverterOptions(AstConverterProfile.ClrRuntime));
                 var module = converter.Convert().GetAwaiter().GetResult();
+                var packageImports = module?.Body
+                    .OfType<ImportDeclaration>()
+                    .Select(static declaration => declaration.Source.Value)
+                    .Where(ECMAScriptModulePath.IsPackageSpecifier)
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(static specifier => specifier, StringComparer.Ordinal)
+                    .ToArray() ?? [];
                 GeneratedJavaScriptArtifact? artifact = null;
                 string content;
 
@@ -201,6 +208,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                     plan.RelativePath,
                     content,
                     artifact?.JsHash ?? ComputeSha256Hex(content),
+                    packageImports,
                     artifact is null ? null : BuildSourceMapRelativePath(plan.RelativePath),
                     artifact?.SourceMapContent,
                     artifact?.MapHash));
@@ -292,7 +300,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedModule");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)");
+        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash, string[] packageImports)");
         builder.AppendLine("            {");
         builder.AppendLine("                AssemblyName = assemblyName;");
         builder.AppendLine("                TypeName = typeName;");
@@ -300,6 +308,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("                RelativePath = relativePath;");
         builder.AppendLine("                Content = content;");
         builder.AppendLine("                Hash = hash;");
+        builder.AppendLine("                PackageImports = packageImports;");
         builder.AppendLine("            }");
         builder.AppendLine();
         builder.AppendLine("            public string AssemblyName { get; }");
@@ -308,6 +317,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("            public string RelativePath { get; }");
         builder.AppendLine("            public string Content { get; }");
         builder.AppendLine("            public string Hash { get; }");
+        builder.AppendLine("            public string[] PackageImports { get; }");
         builder.AppendLine("        }");
         builder.AppendLine();
         builder.AppendLine("        private static readonly GeneratedModule[] _modules = new GeneratedModule[]");
@@ -321,7 +331,10 @@ public sealed class ESGenerator : IIncrementalGenerator
             builder.Append("                id: ").Append(EscapeCSharpString(module.Id)).AppendLine(",");
             builder.Append("                relativePath: ").Append(EscapeCSharpString(module.RelativePath)).AppendLine(",");
             builder.Append("                content: ").Append(EscapeCSharpString(module.Content)).AppendLine(",");
-            builder.Append("                hash: ").Append(EscapeCSharpString(module.Hash)).AppendLine("),");
+            builder.Append("                hash: ").Append(EscapeCSharpString(module.Hash)).AppendLine(",");
+            builder.Append("                packageImports: new string[] { ");
+            builder.Append(string.Join(", ", module.PackageImports.Select(EscapeCSharpString)));
+            builder.AppendLine(" }),");
         }
 
         builder.AppendLine("        };");
@@ -553,6 +566,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         string RelativePath,
         string Content,
         string Hash,
+        IReadOnlyList<string> PackageImports,
         string? SourceMapRelativePath,
         string? SourceMapContent,
         string? MapHash);

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "vue3",
+  "version": "3.5.13",
+  "imports": {
+    "vue": {
+      "development": "dist/vue.runtime.esm-browser.js",
+      "production": "dist/vue.runtime.esm-browser.prod.js"
+    }
+  },
+  "requires": {},
+  "styles": [],
+  "files": [
+    "licenses/LICENSE"
+  ]
+}

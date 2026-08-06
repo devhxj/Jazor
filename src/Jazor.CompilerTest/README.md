@@ -93,7 +93,7 @@
 | `AstConverter` | module export/import、runtime member class、继承、构造函数 dispatcher、`yield`/async iterator artifact、命名冲突 | `AstConverterBoundaryScenarioTests.cs`、`AstConverterRuntimeClassScenarioTests.cs`、`AstConverterExportPolicyScenarioTests.cs` | 模块 AST、导出边界、真实 sync/async generator、稳定 helper/alias 名 |
 | compiler -> catalog -> emit | import/source-map catalog、路径冲突、manifest、外部 Razor consumer 的 DOM 与 descriptor 子组件显式 async `@bind:set` | `ESGeneratorSourceMapCatalogTest.cs`、`ESGeneratorModulePathCollisionTests.cs`、`SdkIntegrationTests.cs` | catalog carrier、source map、materialized relative import、model update 经 setter 回写；setter 内部先规范化 state 再完成后续持久化，且由 DenoHost artifact 验证 |
 | RazorVue official authoring | `.razor` 的事件、bind、callback、组件组合、当前组件调度 | `Jazor.RazorVue.Sg.Test/RazorSgOfficial*AuthoringTests.cs` | 官方 Razor SG C# 输入到 `defineComponent` render module |
-| Runtime-only semantics | `InvokeAsync`、async event、unmount、浏览器 mount 和真实 artifact 交互 | `RazorSgComponentMemberClosureTests.cs`、`src/JazorAdmin/verify-smoke.cs` | bundled DenoHost 执行和浏览器 smoke；不启动 Node 进程 |
+| Runtime-only semantics | `InvokeAsync`、async event、unmount、浏览器 mount 和真实 artifact 交互 | `RazorSgComponentMemberClosureTests.cs`、`samples/JazorAdmin/verify-smoke.cs` | bundled DenoHost 执行和浏览器 smoke；不启动 Node 进程 |
 
 测试模型固定如下：
 

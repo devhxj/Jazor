@@ -285,17 +285,17 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         var fixture = SharedFixture.Value;
         var component = fixture.Components[testCase.TypeName];
         Assert.IsTrue(
-            RazorSgComponentMemberClosureBuilder.TryBuild(fixture.Binding, component, out var closure, out var closureFailure),
+            MemberClosureBuilder.TryBuild(fixture.Binding, component, out var closure, out var closureFailure),
             closureFailure);
         Assert.IsNotNull(closure);
 
-        var emitted = RazorSgDirectRenderOperationEmitter.TryEmit(
+        var emitted = RenderEmitter.TryEmit(
             fixture.Binding.Compilation,
             component.ComponentSymbol,
             component.BuildRenderTreeMethod,
             component.BuildRenderTreeBody,
             declaredNames: null,
-            RazorSgVueInjectRegistry.ForCompilation(fixture.Binding.Compilation),
+            VueInjectRegistry.ForCompilation(fixture.Binding.Compilation),
             out var result,
             out var failure);
 
@@ -334,7 +334,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
             .ToArray();
         Assert.IsFalse(componentSymbols.Any(static symbol => symbol is null));
         Assert.IsTrue(
-            RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
                 compilation,
                 componentSymbols.Cast<INamedTypeSymbol>().ToImmutableArray(),
                 out var binding,
@@ -413,6 +413,6 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         """;
 
     private sealed record Fixture(
-        RazorSgGeneratedCSharpBinding Binding,
-        ImmutableDictionary<string, RazorSgBoundComponent> Components);
+        GeneratedCSharpBinding Binding,
+        ImmutableDictionary<string, BoundComponent> Components);
 }

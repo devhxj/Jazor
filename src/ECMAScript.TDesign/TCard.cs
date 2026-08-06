@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Card", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
+[VueLibraryComponent("tdesign-vue-next", "Card")]
 public sealed class TCard : TContentComponentBase
 {
     [Parameter]

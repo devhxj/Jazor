@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("./components/jazor-admin-sidebar-menu")]
+[ECMAScriptModule("./components/admin/sidebar")]
 public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
 {
     [Parameter]

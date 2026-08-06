@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 消息条组件的编写代理。
 /// Vuetify snackbar authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSnackbar", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VSnackbar")]
 [VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
 public sealed class VSnackbar : ComponentBase
 {

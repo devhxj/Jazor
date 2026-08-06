@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "tdesign-vue-next",
+  "version": "1.20.5",
+  "imports": {
+    "tdesign-vue-next": {
+      "development": "dist/tdesign.mjs",
+      "production": "dist/tdesign.mjs"
+    }
+  },
+  "requires": {
+    "vue3": "^3.5.0"
+  },
+  "styles": [
+    "dist/tdesign.css"
+  ],
+  "files": [
+    "licenses/LICENSE"
+  ]
+}

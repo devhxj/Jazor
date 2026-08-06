@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgVueInjectRegistryMatrixTests
+public sealed class VueInjectRegistryMatrixTests
 {
     public static IEnumerable<TestDataRow<VueInjectCase>> Cases
         => VueInjectCase.All.Select(static testCase => new TestDataRow<VueInjectCase>(testCase)
@@ -21,14 +21,14 @@ public sealed class RazorSgVueInjectRegistryMatrixTests
         if (testCase.ExpectedFailureFragment is not null)
         {
             var exception = Assert.Throws<InvalidOperationException>(
-                () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+                () => VueInjectRegistry.ForCompilation(compilation));
             StringAssert.Contains(exception.Message, testCase.ExpectedFailureFragment, StringComparison.Ordinal);
             StringAssert.Contains(exception.Message, "Demo.ContractShell", StringComparison.Ordinal);
             return;
         }
 
-        var first = RazorSgVueInjectRegistry.ForCompilation(compilation);
-        var second = RazorSgVueInjectRegistry.ForCompilation(compilation);
+        var first = VueInjectRegistry.ForCompilation(compilation);
+        var second = VueInjectRegistry.ForCompilation(compilation);
         Assert.AreSame(first, second);
 
         var contract = compilation.GetTypeByMetadataName("Demo.ContractShell");

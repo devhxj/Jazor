@@ -3,6 +3,7 @@ using Acornima.Ast;
 
 namespace Jazor.RazorVue.RazorSdk;
 
+/// <summary>Builds Vue-only slot AST framing after component expressions have been compiler-lowered.</summary>
 internal static class VueSlotAstFactory
 {
     public static Expression NormalizeContent(Expression expression)

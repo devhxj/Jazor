@@ -50,7 +50,7 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
         var componentSymbol = compilation.GetTypeByMetadataName("Demo.Direct.DirectGenericSlotAlias");
         Assert.IsNotNull(componentSymbol);
         Assert.IsTrue(
-            RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
                 compilation,
                 ImmutableArray.Create(componentSymbol!),
                 out var binding,
@@ -60,7 +60,7 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
 
         var component = binding!.Components.Single();
         Assert.IsTrue(
-            RazorSgComponentMemberClosureBuilder.TryBuild(
+            MemberClosureBuilder.TryBuild(
                 binding,
                 component,
                 out var closure,
@@ -68,7 +68,7 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
             closureFailure);
         Assert.IsNotNull(closure);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(binding, component, closure!);
+        var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(artifact.ModuleText);
         StringAssert.Contains(artifact.ModuleText, "slots.item", StringComparison.Ordinal);
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);

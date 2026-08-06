@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("./components/jazor-admin-admin-layout")]
+[ECMAScriptModule("./components/admin/layout")]
 public partial class AdminLayout : AdminContentComponentBase, IVueContainerComponent
 {
     [Parameter]

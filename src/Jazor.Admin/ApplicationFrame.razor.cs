@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("./components/jazor-admin-application-frame")]
+[ECMAScriptModule("./components/admin/frame")]
 public partial class ApplicationFrame : AdminContentComponentBase, IVueContainerComponent
 {
     [Parameter]

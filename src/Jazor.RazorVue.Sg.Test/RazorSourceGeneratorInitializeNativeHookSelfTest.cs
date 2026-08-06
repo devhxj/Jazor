@@ -3,13 +3,13 @@ using Jazor.RazorVue.Generation;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSourceGeneratorInitializeNativeHookSelfTest
+public sealed class InitializeNativeHookSelfTest
 {
     [TestMethod]
     public void TryValidateCurrentPlatform_ValidatesNativeInstallInvokeAndRestoreProtocol()
     {
-        var supported = RazorSourceGeneratorInitializeNativeHook.IsCurrentPlatformSupported(out var supportedFailure);
-        var validated = RazorSourceGeneratorInitializeNativeHook.TryValidateCurrentPlatform(out var validationFailure);
+        var supported = InitializeNativeHook.IsCurrentPlatformSupported(out var supportedFailure);
+        var validated = InitializeNativeHook.TryValidateCurrentPlatform(out var validationFailure);
 
         Assert.AreEqual(supported, validated, validationFailure);
         if (supported)

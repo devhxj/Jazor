@@ -41,7 +41,7 @@ public sealed class EcmaScriptVue3LayoutGuardTests
         var shellPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Vue3.cs");
         var source = File.ReadAllText(shellPath);
 
-        StringAssert.Contains(source, "[ECMAScript(\"npm:vue@3\")]");
+        StringAssert.Contains(source, "[ECMAScript(\"vue\")]");
         StringAssert.Contains(source, "[Description(\"@#\")]");
         StringAssert.Contains(source, "public static partial class Vue3");
         Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "Vue3 shell file should not contain static API members.");

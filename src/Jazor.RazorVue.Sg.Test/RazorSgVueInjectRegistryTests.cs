@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgVueInjectRegistryTests
+public sealed class VueInjectRegistryTests
 {
     [TestMethod]
     public void ForCompilation_ValidRegistration_ResolvesImplementation()
     {
         var compilation = CreateCompilation(RegistrationSource());
-        var registry = RazorSgVueInjectRegistry.ForCompilation(compilation);
+        var registry = VueInjectRegistry.ForCompilation(compilation);
         var contract = compilation.GetTypeByMetadataName("Demo.ContractShell");
         var implementation = compilation.GetTypeByMetadataName("Demo.InjectedShell");
 
@@ -31,7 +31,7 @@ public sealed class RazorSgVueInjectRegistryTests
             "[assembly: VueInject(typeof(Demo.ContractShell), typeof(Demo.InjectedShell))]"));
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+            () => VueInjectRegistry.ForCompilation(compilation));
 
         StringAssert.Contains(exception.Message, "duplicate implementations", StringComparison.Ordinal);
         StringAssert.Contains(exception.Message, "Demo.ContractShell", StringComparison.Ordinal);
@@ -44,7 +44,7 @@ public sealed class RazorSgVueInjectRegistryTests
             implementationInterface: "IVueContainerImplementation<OtherContract>"));
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+            () => VueInjectRegistry.ForCompilation(compilation));
 
         StringAssert.Contains(exception.Message, "must implement IVueContainerImplementation<Demo.ContractShell>", StringComparison.Ordinal);
     }
@@ -57,7 +57,7 @@ public sealed class RazorSgVueInjectRegistryTests
             implementationParameter: string.Empty));
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+            () => VueInjectRegistry.ForCompilation(compilation));
 
         StringAssert.Contains(exception.Message, "is missing parameter 'Title'", StringComparison.Ordinal);
     }
@@ -70,7 +70,7 @@ public sealed class RazorSgVueInjectRegistryTests
             implementationParameter: "[Parameter] public int Title { get; set; }"));
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+            () => VueInjectRegistry.ForCompilation(compilation));
 
         StringAssert.Contains(exception.Message, "has type 'int'", StringComparison.Ordinal);
         StringAssert.Contains(exception.Message, "requires 'string?'", StringComparison.Ordinal);
@@ -86,7 +86,7 @@ public sealed class RazorSgVueInjectRegistryTests
             "[Parameter] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }"));
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => RazorSgVueInjectRegistry.ForCompilation(compilation));
+            () => VueInjectRegistry.ForCompilation(compilation));
 
         StringAssert.Contains(exception.Message, "CaptureUnmatchedValues", StringComparison.Ordinal);
     }

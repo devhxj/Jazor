@@ -78,7 +78,7 @@ public sealed class ProductionRazorCompilerReferenceTests
     [TestMethod]
     public void RazorVueProductionAssemblies_DoNotReferenceRazorCompiler()
     {
-        var razorVueAssembly = typeof(Jazor.RazorVue.RazorSdk.RazorSgGeneratedCSharpBinder).Assembly;
+        var razorVueAssembly = typeof(Jazor.RazorVue.RazorSdk.GeneratedCSharpBinder).Assembly;
         Assert.AreSame(
             razorVueAssembly,
             typeof(Jazor.RazorVue.Generation.RazorVueGenerator).Assembly,
@@ -165,7 +165,7 @@ public sealed class ProductionRazorCompilerReferenceTests
             "RebaseRootRelativeImportLine",
             "CompilerScriptParts",
             "CompiledSourceLine",
-            "DirectSourceMapping",
+            "DirectRazorSourceMap",
             "ImportLines",
             "PreludeLines",
             "SetupBodyLines",
@@ -196,14 +196,14 @@ public sealed class ProductionRazorCompilerReferenceTests
         Assert.AreEqual(2, razorVueSerialization.Length, DescribeSourceLines(razorVueSerialization));
         Assert.IsTrue(
             razorVueSerialization.All(static sourceLine =>
-                sourceLine.Path.EndsWith("RazorSgVueComponentModuleBuilder.cs", StringComparison.OrdinalIgnoreCase)),
+                sourceLine.Path.EndsWith("VueModuleBuilder.cs", StringComparison.OrdinalIgnoreCase)),
             "Only the audited compiler-layout and final Vue-module boundaries may serialize RazorVue AST nodes.\n" +
             DescribeSourceLines(razorVueSerialization));
 
         var moduleBuilderText = File.ReadAllText(Path.Combine(
             razorVueRoot,
             "RazorSdk",
-            "RazorSgVueComponentModuleBuilder.cs"));
+            "VueModuleBuilder.cs"));
         Assert.IsFalse(
             moduleBuilderText.Contains("AppendLine(", StringComparison.Ordinal),
             "The Vue module builder must compose JavaScript as Acornima AST and serialize the completed Module once.");
@@ -228,7 +228,7 @@ public sealed class ProductionRazorCompilerReferenceTests
             "src",
             "Jazor.RazorVue",
             "RazorSdk",
-            "RazorSgVueComponentModuleBuilder.cs");
+            "VueModuleBuilder.cs");
         var moduleBuilderText = File.ReadAllText(moduleBuilderPath);
         var retiredFallbackTokens = new[]
         {

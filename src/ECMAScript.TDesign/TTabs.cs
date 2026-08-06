@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
-[VueLibraryComponent("tdesign-vue-next", "Tabs", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
+[VueLibraryComponent("tdesign-vue-next", "Tabs")]
 [VueLibraryEmit(nameof(ValueChanged), Name = "change")]
 public sealed class TTabs : TContentComponentBase
 {
@@ -49,7 +49,7 @@ public sealed class TTabs : TContentComponentBase
     public RenderFragment? Action { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TabPanel", StyleUrls = [TDesignLibraryAssets.StyleUrl])]
+[VueLibraryComponent("tdesign-vue-next", "TabPanel")]
 public sealed class TTabPanel : TContentComponentBase
 {
     [Parameter]

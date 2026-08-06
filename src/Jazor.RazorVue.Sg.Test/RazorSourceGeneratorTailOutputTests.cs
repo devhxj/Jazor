@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSourceGeneratorTailOutputTests
+public sealed class RazorTailOutputTests
 {
     [TestMethod]
     public void TryBuildFinalCompilationCatalog_MixedRazorAndHandwrittenComponents_EmitsBothModules()
@@ -59,7 +59,7 @@ public sealed class RazorSourceGeneratorTailOutputTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
 
-        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
             compilation,
             CancellationToken.None,
             out var catalogSource,
@@ -83,7 +83,7 @@ public sealed class RazorSourceGeneratorTailOutputTests
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
             compilation,
             CancellationToken.None,
             out var catalogSource,
@@ -127,7 +127,7 @@ public sealed class RazorSourceGeneratorTailOutputTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
 
-        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
             compilation,
             CancellationToken.None,
             out var catalogSource,

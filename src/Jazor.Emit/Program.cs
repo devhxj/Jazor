@@ -10,6 +10,11 @@ if (args.Length > 0 && string.Equals(args[0], "toolchain", StringComparison.Ordi
     return await RunToolchainAsync(args[1..]);
 }
 
+if (args.Length > 1 && string.Equals(args[0], "manifest", StringComparison.OrdinalIgnoreCase) && string.Equals(args[1], "materialize", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunManifestMaterializeAsync(args[2..]);
+}
+
 return await RunEmitAsync(args);
 
 static async Task<int> RunEmitAsync(string[] args)
@@ -37,7 +42,7 @@ static async Task<int> RunEmitAsync(string[] args)
         }
 
         var writer = new ModuleWriter();
-        var writeResult = writer.Write(
+        var writeResult = ModuleWriter.Write(
             options.RootAssemblyPath,
             options.OutputDirectory,
             options.ManifestPath,
@@ -72,7 +77,7 @@ static async Task<int> RunBundleAsync(string[] args)
 
     try
     {
-        var bundler = new ModuleBundler();
+        var bundler = new DenoBundler();
         var result = await bundler.BundleAsync(options);
         if (!result.IsSuccess)
         {
@@ -92,7 +97,7 @@ static async Task<int> RunBundleAsync(string[] args)
 
 static async Task<int> RunToolchainAsync(string[] args)
 {
-    if (!FrontendToolchainCommand.TryParse(args, out var command, out var error) || command is null)
+    if (!ToolchainCommand.TryParse(args, out var command, out var error) || command is null)
     {
         Console.Error.WriteLine(error);
         return 1;
@@ -100,7 +105,7 @@ static async Task<int> RunToolchainAsync(string[] args)
 
     try
     {
-        var runner = new FrontendToolchainRunner();
+        var runner = new Toolchain();
         var result = await runner.BuildAsync(command.Request);
         if (!result.IsSuccess)
         {
@@ -114,6 +119,95 @@ static async Task<int> RunToolchainAsync(string[] args)
     catch (Exception ex)
     {
         Console.Error.WriteLine(ex);
+        return 5;
+    }
+}
+
+static async Task<int> RunManifestMaterializeAsync(string[] args)
+{
+    var outputRoot = string.Empty;
+    var manifestPath = string.Empty;
+    var mode = BuildMode.Development;
+    var manifests = new List<string>();
+    for (var index = 0; index < args.Length; index++)
+    {
+        if (index + 1 >= args.Length)
+        {
+            Console.Error.WriteLine($"Missing value for argument '{args[index]}'.");
+            return 1;
+        }
+
+        var value = args[++index];
+        switch (args[index - 1])
+        {
+            case "--out-root":
+                outputRoot = value;
+                break;
+            case "--manifest":
+                manifestPath = value;
+                break;
+            case "--mode" when Enum.TryParse<BuildMode>(value, ignoreCase: true, out var parsedMode):
+                mode = parsedMode;
+                break;
+            case "--library-manifest":
+                manifests.Add(value);
+                break;
+            default:
+                Console.Error.WriteLine($"Unknown manifest materialize argument '{args[index - 1]}'.");
+                return 1;
+        }
+    }
+
+    if (string.IsNullOrWhiteSpace(outputRoot))
+    {
+        Console.Error.WriteLine("Missing required argument --out-root.");
+        return 1;
+    }
+
+    try
+    {
+        outputRoot = Path.GetFullPath(outputRoot);
+        Directory.CreateDirectory(outputRoot);
+        var requiredImports = string.IsNullOrWhiteSpace(manifestPath)
+            ? []
+            : (ManifestModel.TryLoad(Path.GetFullPath(manifestPath))
+                ?? throw new FileNotFoundException("Manifest was not found.", manifestPath))
+                .Modules
+                .SelectMany(static module => module.PackageImports ?? [])
+                .ToArray();
+        var materialization = new LibraryMaterializer().Materialize(manifests, outputRoot, mode, requiredImports);
+        var imports = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["style.mjs"] = "/jazor/style.mjs",
+            ["@jazor/vue-runtime/"] = "/jazor/@jazor/vue-runtime/",
+            ["components/"] = "/jazor/components/",
+            ["System/"] = "/jazor/System/"
+        };
+        foreach (var (specifier, path) in materialization.ImportPaths)
+            imports[specifier] = "/jazor/" + path.Replace('\\', '/');
+
+        var importMap = new { imports };
+        var assets = new
+        {
+            styles = materialization.StylePaths
+                .Distinct(StringComparer.Ordinal)
+                .Select(static path => "/jazor/" + path.Replace('\\', '/'))
+                .ToArray()
+        };
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+        await File.WriteAllTextAsync(Path.Combine(outputRoot, "importmap.json"), System.Text.Json.JsonSerializer.Serialize(importMap, jsonOptions));
+        await File.WriteAllTextAsync(Path.Combine(outputRoot, "manifest.json"), System.Text.Json.JsonSerializer.Serialize(assets, jsonOptions));
+        Console.WriteLine($"manifests={materialization.ManifestPaths.Count} imports={materialization.ImportPaths.Count} out={outputRoot}");
+        return 0;
+    }
+    catch (LibraryException ex)
+    {
+        Console.Error.WriteLine($"{ex.Code}: {ex.Message}");
+        return 5;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine(ex.Message);
         return 5;
     }
 }

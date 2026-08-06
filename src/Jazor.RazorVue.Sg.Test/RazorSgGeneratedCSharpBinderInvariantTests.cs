@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgGeneratedCSharpBinderInvariantTests
+public sealed class GeneratedCSharpBinderInvariantTests
 {
     [TestMethod]
     public void TryBindFinalCompilation_ReusesGeneratedRazorTreeWithoutParsingItAgain()
@@ -48,9 +48,9 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
             [authoredTree, generatedTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var candidates = RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation);
+        var candidates = ComponentSelector.DiscoverTailRequiredComponents(compilation);
 
-        var result = RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        var result = GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             candidates,
             out var binding,
@@ -59,7 +59,7 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
         Assert.IsTrue(result, failure);
         Assert.IsNotNull(binding);
         Assert.AreSame(compilation, binding!.Compilation);
-        Assert.AreEqual(RazorSgCompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
+        Assert.AreEqual(CompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
         Assert.AreEqual(1, binding.Components.Length);
         Assert.AreSame(generatedTree, binding.Components[0].BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree);
         Assert.AreEqual(0, binding.DerivedGeneratedTreeCount);
@@ -131,7 +131,7 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
 
         Assert.IsNotNull(alpha);
         Assert.IsNotNull(zebra);
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             ImmutableArray.Create(zebra!, alpha!),
             out var binding,

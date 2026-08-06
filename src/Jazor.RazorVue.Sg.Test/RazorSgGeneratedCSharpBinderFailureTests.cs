@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgGeneratedCSharpBinderFailureTests
+public sealed class GeneratedCSharpBinderFailureTests
 {
     [TestMethod]
     public void TryBindFinalCompilation_RejectsCandidateWithoutGeneratedBuildRenderTree()
@@ -28,7 +28,7 @@ public sealed class RazorSgGeneratedCSharpBinderFailureTests
         var component = compilation.GetTypeByMetadataName("Demo.Pages.MissingRender");
 
         Assert.IsNotNull(component);
-        Assert.IsFalse(RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
+        Assert.IsFalse(GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
             ImmutableArray.Create(component!),
             out var binding,
@@ -61,7 +61,7 @@ public sealed class RazorSgGeneratedCSharpBinderFailureTests
         var component = compilation.GetTypeByMetadataName("Demo.Pages.ExpressionBodiedRender");
 
         Assert.IsNotNull(component);
-        Assert.IsFalse(RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+        Assert.IsFalse(GeneratedCSharpBinder.TryBindHandwritten(
             compilation,
             ImmutableArray.Create(component!),
             out var binding,

@@ -237,7 +237,7 @@ internal sealed class CurrentComponentMemberClosure
 
         private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
             => symbol.ContainingType is not null &&
-               RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType) &&
+               ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, symbol.ContainingType) &&
                symbol.ContainingType.DeclaringSyntaxReferences.Length > 0;
 
         private bool CanInclude(ISymbol symbol)
@@ -261,7 +261,7 @@ internal sealed class CurrentComponentMemberClosure
             // become accidental artifact declarations.
             for (var current = namedType.ContainingType; current is not null; current = current.ContainingType)
             {
-                if (RazorVueComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, current))
+                if (ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(_componentType, current))
                     return true;
 
                 if (current.TypeKind != TypeKind.Class || current.IsRecord || current.IsStatic)

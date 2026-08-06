@@ -31,5 +31,5 @@
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
+  <Import Project="..\Packaging\JazorPackage.targets" />
 </Project>

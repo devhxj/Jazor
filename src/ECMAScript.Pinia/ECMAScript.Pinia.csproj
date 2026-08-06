@@ -25,5 +25,5 @@
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
+  <Import Project="..\Packaging\JazorPackage.targets" />
 </Project>

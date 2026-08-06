@@ -23,7 +23,7 @@
 
 ### ECMAScript.Vue3
 
-- `src/ECMAScript.Vue3/` 已独立为外部库项目，`RootNamespace=ECMAScript`，并通过 `ECMAScript("npm:vue@3")` 暴露 Vue 3 runtime 绑定。
+- `src/ECMAScript.Vue3/` 已独立为外部库项目，`RootNamespace=ECMAScript`，并通过 `ECMAScript("vue")` 暴露 Vue 3 runtime 绑定。
 - API 与类型文件已按 `Api/`、`Types/` 分层，`H(...)`、`CreateApp(...)`、`DefineComponent(...)`、reactivity、composition、lifecycle、directive、props、slots、component contract 等主要 surface 已成形。
 - 文档域已拆分到 `docs/01-目标/ecmascript.vue3/`、`docs/02-计划/ecmascript.vue3/`、`docs/03-完成/ecmascript.vue3/`。
 - 独立项目构建通过，说明当前源码本体可编译。

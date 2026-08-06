@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 开关组件的编写代理。
 /// Vuetify switch authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSwitch", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VSwitch")]
 public sealed class VSwitch : VSelectionControlComponentBase
 {
     /// <summary>

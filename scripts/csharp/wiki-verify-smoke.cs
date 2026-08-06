@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
-var sampleRoot = Path.Combine(repoRoot, "src", "Wiki");
+var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-smoke-" + Environment.ProcessId);
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");

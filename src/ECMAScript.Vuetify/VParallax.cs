@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 视差滚动组件的编写代理。
 /// Vuetify parallax authoring proxy for image-backed parallax sections.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VParallax", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VParallax")]
 public sealed class VParallax : ComponentBase
 {
     /// <summary>

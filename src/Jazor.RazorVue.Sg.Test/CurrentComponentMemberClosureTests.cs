@@ -138,8 +138,8 @@ public sealed class CurrentComponentMemberClosureTests
             new AstConverterOptions(
                 AstConverterProfile.Standard,
                 MemberFilter: closure.ShouldInclude,
-                Host: new RazorVueSemanticWalkerHost(fixture.ComponentType),
-                ModulePolicy: RazorVueModulePolicy.Instance));
+                Host: new VueSemanticWalkerHost(fixture.ComponentType),
+                ModulePolicy: VueModulePolicy.Instance));
 
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");

@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("./components/jazor-admin-header-bar")]
+[ECMAScriptModule("./components/admin/header")]
 public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
 {
     [Parameter]

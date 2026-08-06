@@ -3,7 +3,7 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Element Plus root host.
 /// </summary>
-[ECMAScript("npm:element-plus")]
+[ECMAScript("element-plus")]
 [Description("@#")]
 public static class ElementPlus
 {

@@ -8,7 +8,7 @@ namespace ECMAScript;
 /// <summary>
 /// Razor authoring proxy for Vue Router's <c>RouterLink</c> component.
 /// </summary>
-[VueLibraryComponent("npm:vue-router@4.mjs", "RouterLink")]
+[VueLibraryComponent("vue-router", "RouterLink")]
 public sealed class VueRouterLink : ComponentBase
 {
     [Parameter]

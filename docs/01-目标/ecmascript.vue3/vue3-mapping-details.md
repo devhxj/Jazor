@@ -31,7 +31,7 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 
 | 能力 | 输入 | 输出 | 是否 Vue 专属 |
 |------|------|------|----------------|
-| module import | `[ECMAScript("npm:vue@3")]` + `[Description("@#name")]` | `import { name } from "npm:vue@3"` | 否，基础绑定 |
+| module import | `[ECMAScript("vue")]` + `[Description("@#name")]` | `import { name } from "vue"` | 否，基础绑定 |
 | record structural lowering | 任意 `record` object creation | object literal | 否 |
 | static null omission | record 构造实参 / initializer 值为静态 `null` | 不生成该成员 | 否 |
 | `[Spread]` | record 实例属性 | inline object members 或 `...expr` | 否 |
@@ -50,7 +50,7 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 
 ## 3. Module 与导入映射
 
-`Vue3` 静态类本身不应生成运行时对象。它是 `npm:vue@3` 的 C# host 投影。
+`Vue3` 静态类本身不应生成运行时对象。它是 `vue` 的 C# host 投影。
 
 | C# | JS |
 |----|----|
@@ -874,7 +874,7 @@ Vue built-in components 在 render function 中按普通 component binding 使�
 - `VueKeepAliveProps` 覆盖 `include` / `exclude` / `max`。
 - `VueTeleportProps` 覆盖 `to` / `disabled` / `defer`。
 - `VueSuspenseProps` + `VueSuspenseSlots` 覆盖 `timeout`、events、`default` / `fallback` slots。
-- built-in component property 只是 `npm:vue@3` import binding，类型只用于 C# props/slots 智能感知。
+- built-in component property 只是 `vue` import binding，类型只用于 C# props/slots 智能感知。
 
 ## 8. Slots 映射
 

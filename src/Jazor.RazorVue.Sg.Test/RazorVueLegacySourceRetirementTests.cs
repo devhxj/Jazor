@@ -8,7 +8,7 @@ public sealed class RazorVueLegacySourceRetirementTests
     [TestMethod]
     public void RazorVueAssembly_DoesNotExposeRetiredRazorToSfcOrIrPipelineTypes()
     {
-        var assembly = typeof(RazorSgGeneratedCSharpBinder).Assembly;
+        var assembly = typeof(GeneratedCSharpBinder).Assembly;
 
         var retiredTypeNames = new[]
         {

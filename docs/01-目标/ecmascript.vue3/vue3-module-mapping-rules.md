@@ -20,7 +20,7 @@ Vue3 映射的目标不是把 Vue 官方示例逐字翻译成 C# API，而是让
 外部 host module binding 是对已有 JavaScript module 的 C# 投影。例如：
 
 ```csharp
-[ECMAScript("npm:vue@3")]
+[ECMAScript("vue")]
 [Description("@#")]
 public static class Vue3
 {
@@ -31,7 +31,7 @@ public static class Vue3
 
 规则：
 
-- `[ECMAScript("npm:vue@3")]` 声明 import source；
+- `[ECMAScript("vue")]` 声明 import source；
 - 静态成员通过 runtime name 映射为 named import；
 - `Vue3` 静态类本身不生成运行时对象；
 - 嵌套 marker type、interface、delegate 主要服务 C# 类型检查，不生成 JS 声明。
@@ -45,7 +45,7 @@ Vue3.H("div");
 应生成：
 
 ```js
-import { h } from "npm:vue@3";
+import { h } from "vue";
 h("div");
 ```
 
@@ -322,7 +322,7 @@ new VueDictionary
 `ECMAScript.Vue3` 采用“壳文件 + 分层 partial”目录规范：
 
 - `src/ECMAScript.Vue3/Vue3.cs`
-  - 仅保留 host module 映射入口（例如 `[ECMAScript("npm:vue@3")]`）。
+  - 仅保留 host module 映射入口（例如 `[ECMAScript("vue")]`）。
   - 保留顶层共享 delegate / handle 等公共契约类型。
 - `src/ECMAScript.Vue3/Api/`
   - 放 `Vue3.Api*.cs`，只承载 `Vue3` 静态 API 成员（`extern static`）。

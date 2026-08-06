@@ -8,7 +8,7 @@ public sealed class RazorSgLibraryStylesRuntimeTests
     [TestMethod]
     public async Task LibraryStylesRuntime_DeduplicatesExistingAndRepeatedStylesheets()
     {
-        var runtimeAssembly = typeof(Jazor.RazorVue.RazorSdk.RazorSgGeneratedCSharpBinder).Assembly;
+        var runtimeAssembly = typeof(Jazor.RazorVue.RazorSdk.GeneratedCSharpBinder).Assembly;
         await using var stream = runtimeAssembly.GetManifestResourceStream(
             "Jazor.RazorVue.Runtime.library-styles.mjs");
         Assert.IsNotNull(stream);

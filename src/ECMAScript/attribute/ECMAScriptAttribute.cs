@@ -11,8 +11,8 @@ public sealed class ECMAScriptAttribute : Attribute
 {
 	/// <summary>
 	/// 目标类依赖的 ECMAScript module 文件路径
-	/// 首选方式是从 JSR 中导入特定版本的 Vue 包，如 jsr:@denovue/create-vue
-	/// 如果你需要使用 npm 生态中特定的 Vue 相关库（如 vue-router），可以直接使用 npm: 前缀导入。
+	/// 浏览器库使用 manifest 声明的逻辑模块名，例如 vue 或 vue-router；
+	/// 包版本与物理资源路径不属于该特性的职责。
 	/// </summary>
 	public string? Import { get; }
 

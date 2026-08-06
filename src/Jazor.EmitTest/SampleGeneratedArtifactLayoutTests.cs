@@ -71,7 +71,7 @@ public sealed class SampleGeneratedArtifactLayoutTests
         }
     }
 
-    private static string GetModuleDescription(ManifestModuleEntry module, string manifestRelativePath)
+    private static string GetModuleDescription(ModuleEntry module, string manifestRelativePath)
         => manifestRelativePath + " :: " + (!string.IsNullOrWhiteSpace(module.Id) ? module.Id : module.RelativePath);
 
     private static string ResolveManifestRelativePath(

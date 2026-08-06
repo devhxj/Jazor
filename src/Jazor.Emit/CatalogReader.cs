@@ -4,14 +4,15 @@ using System.Text;
 
 namespace Jazor.Emit;
 
+/// <summary>Reads compiler and RazorVue module catalogs from an emitted assembly.</summary>
 internal static class CatalogReader
 {
     private const string RazorVueRuntimeResourcePrefix = "Jazor.RazorVue.Runtime.";
     private const string RazorVueRuntimeRelativePathPrefix = "@jazor/vue-runtime/";
 
-    public static IReadOnlyList<EmitModuleRecord>? TryRead(Assembly assembly)
+    public static IReadOnlyList<ModuleRecord>? TryRead(Assembly assembly)
     {
-        var modules = new List<EmitModuleRecord>();
+        var modules = new List<ModuleRecord>();
         var catalogType = ResolveModuleCatalogType(assembly);
         if (catalogType is not null)
             modules.AddRange(ReadModuleCatalog(assembly, catalogType));
@@ -27,7 +28,7 @@ internal static class CatalogReader
             : modules;
     }
 
-    private static IReadOnlyList<EmitModuleRecord> ReadModuleCatalog(Assembly assembly, Type catalogType)
+    private static IReadOnlyList<ModuleRecord> ReadModuleCatalog(Assembly assembly, Type catalogType)
     {
         var sourceMapsById = TryReadSourceMapsById(assembly);
 
@@ -36,7 +37,7 @@ internal static class CatalogReader
 		if (getModules.Invoke(null, null) is not System.Collections.IEnumerable items)
             throw new InvalidOperationException($"GetModules returned null in '{assembly.Location}'.");
 
-        var modules = new List<EmitModuleRecord>();
+        var modules = new List<ModuleRecord>();
         foreach (var item in items)
         {
             if (item is null)
@@ -45,7 +46,7 @@ internal static class CatalogReader
             var itemType = item.GetType();
             var moduleId = ReadString(itemType, item, "Id");
             sourceMapsById.TryGetValue(moduleId, out var sourceMap);
-            modules.Add(new EmitModuleRecord(
+            modules.Add(new ModuleRecord(
                 assembly.Location,
                 ReadString(itemType, item, "AssemblyName"),
                 ReadString(itemType, item, "TypeName"),
@@ -55,7 +56,8 @@ internal static class CatalogReader
                 ReadString(itemType, item, "Hash"),
                 sourceMap?.SourceMapRelativePath,
                 sourceMap?.SourceMapContent,
-                sourceMap?.MapHash));
+                sourceMap?.MapHash,
+                PackageImports: TryReadStrings(itemType, item, "PackageImports")));
         }
 
         return modules;
@@ -71,7 +73,7 @@ internal static class CatalogReader
         return assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false);
     }
 
-    private static IReadOnlyList<EmitModuleRecord> ReadVueRenderCatalog(Assembly assembly, Type catalogType)
+    private static IReadOnlyList<ModuleRecord> ReadVueRenderCatalog(Assembly assembly, Type catalogType)
     {
         var schemaVersion = ReadStaticInt(catalogType, "SchemaVersion");
         if (schemaVersion != 1)
@@ -94,7 +96,7 @@ internal static class CatalogReader
 
         var assets = ReadVueRenderCatalogAssets(assembly, catalogType);
         var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
-        var modules = new List<EmitModuleRecord>();
+        var modules = new List<ModuleRecord>();
         var assetCarrierWritten = false;
         foreach (var item in items)
         {
@@ -118,7 +120,7 @@ internal static class CatalogReader
                     $"VueRenderCatalog module '{componentId}' must provide SourceMapRelativePath, SourceMapContent, and MapHash together.");
             }
 
-            modules.Add(new EmitModuleRecord(
+            modules.Add(new ModuleRecord(
                 assembly.Location,
                 assemblyName,
                 componentId,
@@ -129,14 +131,15 @@ internal static class CatalogReader
                 hasSourceMap ? NormalizeRelativePath(sourceMapRelativePath!) : null,
                 hasSourceMap ? sourceMapContent : null,
                 hasSourceMap ? mapHash : null,
-                assetCarrierWritten ? null : assets));
+                Assets: assetCarrierWritten ? null : assets,
+                PackageImports: TryReadStrings(itemType, item, "PackageImports")));
             assetCarrierWritten = true;
         }
 
         return modules;
     }
 
-    private static IReadOnlyList<ManifestAssetEntry> ReadVueRenderCatalogAssets(Assembly assembly, Type catalogType)
+    private static IReadOnlyList<AssetEntry> ReadVueRenderCatalogAssets(Assembly assembly, Type catalogType)
     {
         var getAssets = catalogType.GetMethod("GetAssets", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
         if (getAssets is null)
@@ -145,17 +148,17 @@ internal static class CatalogReader
         if (getAssets.Invoke(null, null) is not System.Collections.IEnumerable items)
             throw new InvalidOperationException($"GetAssets returned null in VueRenderCatalog '{assembly.Location}'.");
 
-        var assets = new List<ManifestAssetEntry>();
+        var assets = new List<AssetEntry>();
         foreach (var item in items)
         {
             if (item is null)
                 continue;
 
             var itemType = item.GetType();
-            assets.Add(new ManifestAssetEntry(
+            assets.Add(new AssetEntry(
                 NormalizeRelativePath(ReadString(itemType, item, "SourcePath")),
                 NormalizeRelativePath(ReadString(itemType, item, "ArtifactPath")),
-                TryReadString(itemType, item, "Kind") ?? ManifestAssetEntry.KindStatic,
+                TryReadString(itemType, item, "Kind") ?? AssetEntry.KindStatic,
                 TryReadString(itemType, item, "ContentHash") ?? TryReadString(itemType, item, "Hash") ?? string.Empty));
         }
 
@@ -167,7 +170,7 @@ internal static class CatalogReader
             .ToArray();
     }
 
-    private static IReadOnlyList<EmitModuleRecord> ReadRazorVueRuntimeResources(Assembly assembly)
+    private static IReadOnlyList<ModuleRecord> ReadRazorVueRuntimeResources(Assembly assembly)
     {
         var resourceNames = assembly
             .GetManifestResourceNames()
@@ -179,7 +182,7 @@ internal static class CatalogReader
             return [];
 
         var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
-        var modules = new List<EmitModuleRecord>(resourceNames.Length);
+        var modules = new List<ModuleRecord>(resourceNames.Length);
         foreach (var resourceName in resourceNames)
         {
             var fileName = resourceName.Substring(RazorVueRuntimeResourcePrefix.Length);
@@ -190,7 +193,7 @@ internal static class CatalogReader
             var content = reader.ReadToEnd().ReplaceLineEndings("\n");
             var moduleId = RazorVueRuntimeResourcePrefix + Path.GetFileNameWithoutExtension(fileName);
 
-            modules.Add(new EmitModuleRecord(
+            modules.Add(new ModuleRecord(
                 assembly.Location,
                 assemblyName,
                 moduleId,
@@ -260,6 +263,20 @@ internal static class CatalogReader
     {
         var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         return property?.GetValue(item) as string;
+    }
+
+    private static IReadOnlyList<string> TryReadStrings(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        if (property?.GetValue(item) is not System.Collections.IEnumerable values)
+            return [];
+
+        return values.Cast<object?>()
+            .OfType<string>()
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static string NormalizeRelativePath(string relativePath)

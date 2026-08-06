@@ -1,4 +1,9 @@
 <Project>
+  <ItemGroup>
+    <!-- The umbrella package carries Vue3's runtime assets as well as its binding DLL. -->
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json"
+                          Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json')" />
+  </ItemGroup>
   <Target Name="_ResolveJazorEmitTool">
     <PropertyGroup>
       <_JazorPackagedToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorPackagedToolPath>
@@ -51,6 +56,7 @@
     <MakeDir Directories="$(_JazorDebugOutputDir)" />
 
     <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --clean true --fail-on-path-conflict true @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; manifest materialize --manifest &quot;$(_JazorDebugManifestPath)&quot; --out-root &quot;$(_JazorDebugOutputDir)&quot; --mode Development @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
   <Target Name="JazorRelease"
@@ -80,7 +86,7 @@
     <MakeDir Directories="$(_JazorReleaseArtifactDir);$(_JazorReleaseOutputDir)" />
 
     <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseArtifactDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --clean true --fail-on-path-conflict true @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; toolchain build --toolchain &quot;$(JazorTool)&quot; --manifest &quot;$(_JazorReleaseManifestPath)&quot; --artifacts &quot;$(_JazorReleaseArtifactDir)&quot; --source-root &quot;$(_JazorToolSourceRoot)&quot; --out-root &quot;$(_JazorReleaseOutputDir)&quot;" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; toolchain build --toolchain &quot;$(JazorTool)&quot; --manifest &quot;$(_JazorReleaseManifestPath)&quot; --artifacts &quot;$(_JazorReleaseArtifactDir)&quot; --source-root &quot;$(_JazorToolSourceRoot)&quot; --out-root &quot;$(_JazorReleaseOutputDir)&quot; @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
 </Project>

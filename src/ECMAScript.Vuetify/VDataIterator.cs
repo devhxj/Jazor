@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 数据迭代器创作代理，用于过滤、排序、分组和分页的项渲染。
 /// Vuetify data-iterator authoring proxy for filtered, sorted, grouped, paginated item rendering.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VDataIterator", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VDataIterator")]
 public sealed class VDataIterator : ComponentBase
 {
     /// <summary>

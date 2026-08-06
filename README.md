@@ -93,13 +93,14 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Vuetify's 113 and TDesign's 14 erased-value domains now use native C# unions. ElementPlus uses native unions for 45 of 46 domains; its single `File` versus `Blob` overlap retains a tagged contract for exact projections. None of the three libraries requires `From(...)` factories.
 - Element Plus and TDesign component binding types now use the same concise `El*` and `T*` prefixes as their components. Root package hosts and library-specific marker interfaces retain full names for clear cross-library references.
 - Vue library components now declare their official styles together with their JavaScript imports. RazorVue loads only the styles used by rendered library components, and JazorAdmin no longer needs a duplicate TDesign stylesheet declaration.
+- Vue 3, Vue Router, Pinia, Vuetify, Element Plus, and TDesign now ship their browser ESM, styles, and licenses inside their NuGet packages. Application builds materialize only local package resources, so they no longer require a project `node_modules`, CDN imports, npm downloads, or network access.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.1.48
+dotnet add package Jazor --version 0.3.0
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -108,8 +109,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.48" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.48" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.3.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.3.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -117,11 +118,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.48" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.48" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.48" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.48" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.48" />
+  <PackageReference Include="Jazor" Version="0.3.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.3.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.3.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.0" />
 </ItemGroup>
 ```
 

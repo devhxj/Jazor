@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("components/jazor-admin-navigation-target-resolver.mjs")]
+[ECMAScriptModule("components/admin/navigation-target.mjs")]
 internal static class AdminNavigationTargetResolver
 {
     public static ResolvedNavigationTarget Resolve(

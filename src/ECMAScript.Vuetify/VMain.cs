@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 主内容区域组件。
 /// Vuetify main content area component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VMain", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VMain")]
 public sealed class VMain : ComponentBase
 {
     /// <summary>

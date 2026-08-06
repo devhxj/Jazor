@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "vuetify",
+  "version": "3.8.0",
+  "imports": {
+    "vuetify": {
+      "development": "dist/vuetify.esm.js",
+      "production": "dist/vuetify.esm.js"
+    },
+    "vuetify/components": {
+      "development": "dist/components.mjs",
+      "production": "dist/components.mjs"
+    },
+    "vuetify/labs/components": {
+      "development": "dist/labs.mjs",
+      "production": "dist/labs.mjs"
+    },
+    "vuetify/directives": {
+      "development": "dist/directives.mjs",
+      "production": "dist/directives.mjs"
+    }
+  },
+  "requires": {
+    "vue3": "^3.5.0"
+  },
+  "styles": [
+    "dist/vuetify.min.css"
+  ],
+  "files": [
+    "licenses/LICENSE.md"
+  ]
+}

@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/Wiki/**'
+      - 'samples/Wiki/**'
+      - 'samples/Sample.slnx'
       - 'src/ECMAScript/**'
       - 'src/ECMAScript.Vue3/**'
       - 'src/ECMAScript.Contract/**'
@@ -21,7 +22,8 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'src/Wiki/**'
+      - 'samples/Wiki/**'
+      - 'samples/Sample.slnx'
       - 'src/ECMAScript/**'
       - 'src/ECMAScript.Vue3/**'
       - 'src/ECMAScript.Contract/**'

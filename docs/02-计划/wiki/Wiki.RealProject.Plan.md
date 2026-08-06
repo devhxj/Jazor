@@ -2,7 +2,7 @@
 
 ## Overview
 
-本计划把 `src/Wiki/` 从 sample 改造成真实文档站 MVP。第一阶段不追求 CMS，而是先完成真实文档站闭环：真实路由、多页面内容、导航壳层、目录、部署说明和可验证的构建入口。
+本计划把 `samples/Wiki/` 从 sample 改造成真实文档站 MVP。第一阶段不追求 CMS，而是先完成真实文档站闭环：真实路由、多页面内容、导航壳层、目录、部署说明和可验证的构建入口。
 
 ## Architecture Decisions
 
@@ -23,15 +23,15 @@
 - [x] Task 2: 切换静态宿主到真实 docs 路由
   - Acceptance: 宿主支持 `/` 之外的文档路径直接进入
   - Verify: `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local`
-  - Files: `src/Wiki/Program.cs`, `scripts/csharp/wiki-verify-smoke.cs`
+  - Files: `samples/Wiki/Program.cs`, `scripts/csharp/wiki-verify-smoke.cs`
 
 - [x] Task 3: 实现多页面 H-function docs shell
   - Acceptance:
     - 首页不再是 sample playground
     - 至少 4 个真实页面可访问
     - 存在左侧导航、正文区、右侧目录、上下页导航
-  - Verify: `dotnet build .\src\Wiki\Wiki.csproj`
-  - Files: `src/Wiki/WikiHomeModule*.cs`, `src/Wiki/wwwroot/site.css`
+  - Verify: `dotnet build .\samples\Wiki\Wiki.csproj`
+  - Files: `samples/Wiki/WikiHomeModule*.cs`, `samples/Wiki/wwwroot/site.css`
 
 ### Checkpoint: Product Foundation
 
@@ -44,7 +44,7 @@
 - [x] Task 4: 更新 README 到真实项目视角
   - Acceptance: README 不再把 Wiki 描述成单页 sample，命令与路由说明正确
   - Verify: 人工审阅 README 与实现一致
-  - Files: `src/Wiki/README.md`
+  - Files: `samples/Wiki/README.md`
 
 - [x] Task 5: 扩充 smoke verification 到真实 route
   - Acceptance: smoke 覆盖至少一个真实文档路由，并验证 emitted 文档内容标识

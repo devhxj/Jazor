@@ -30,6 +30,24 @@ public static class ECMAScriptModulePath
     public static string NormalizeRootRelativeImportSpecifier(string path)
         => NormalizeCore(path, includeRelativePrefix: true);
 
+    /// <summary>
+    /// Returns whether an import is resolved by a package manifest rather than Jazor's
+    /// generated-module namespaces.
+    /// </summary>
+    public static bool IsPackageSpecifier(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        var normalized = path.Replace('\\', '/').Trim();
+        return !normalized.StartsWith(".", StringComparison.Ordinal) &&
+               !normalized.StartsWith("/", StringComparison.Ordinal) &&
+               !normalized.StartsWith("System/", StringComparison.Ordinal) &&
+               !normalized.StartsWith("components/", StringComparison.Ordinal) &&
+               !normalized.StartsWith("@jazor/", StringComparison.Ordinal) &&
+               !string.Equals(normalized, "style.mjs", StringComparison.Ordinal);
+    }
+
     private static string NormalizeCore(string path, bool includeRelativePrefix)
     {
         var normalized = path.Replace('\\', '/').Trim();

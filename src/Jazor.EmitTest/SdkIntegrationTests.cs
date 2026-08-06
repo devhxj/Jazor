@@ -123,6 +123,62 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task CreateLocalPackage_IncludesSelfContainedBrowserAssets()
+    {
+        var package = await LocalPackage.Value;
+
+        AssertPackageEntries(
+            package.PackagePath,
+            "lib/net11.0/ECMAScript.Vue3.dll",
+            "jazor/vue3/manifest.json",
+            "jazor/vue3/dist/vue.runtime.esm-browser.js",
+            "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
+            "jazor/vue3/licenses/LICENSE",
+            "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js",
+            "tools/net11.0/tooling/vue/licenses/LICENSE");
+        AssertPackageEntries(
+            package.VuetifyPackagePath,
+            "lib/net11.0/ECMAScript.Vuetify.dll",
+            "buildTransitive/ECMAScript.Vuetify.targets",
+            "jazor/vuetify/manifest.json",
+            "jazor/vuetify/dist/vuetify.esm.js",
+            "jazor/vuetify/dist/components.mjs",
+            "jazor/vuetify/dist/directives.mjs",
+            "jazor/vuetify/dist/vuetify.min.css",
+            "jazor/vuetify/licenses/LICENSE.md");
+        AssertPackageEntries(
+            package.VueRoutePackagePath,
+            "lib/net11.0/ECMAScript.VueRoute.dll",
+            "buildTransitive/ECMAScript.VueRoute.targets",
+            "jazor/vue-router/manifest.json",
+            "jazor/vue-router/dist/vue-router.esm-browser.prod.js",
+            "jazor/vue-router/licenses/LICENSE");
+        AssertPackageEntries(
+            package.PiniaPackagePath,
+            "lib/net11.0/ECMAScript.Pinia.dll",
+            "buildTransitive/ECMAScript.Pinia.targets",
+            "jazor/pinia/manifest.json",
+            "jazor/pinia/dist/pinia.mjs",
+            "jazor/pinia/licenses/LICENSE");
+        AssertPackageEntries(
+            package.TDesignPackagePath,
+            "lib/net11.0/ECMAScript.TDesign.dll",
+            "buildTransitive/ECMAScript.TDesign.targets",
+            "jazor/tdesign-vue-next/manifest.json",
+            "jazor/tdesign-vue-next/dist/tdesign.mjs",
+            "jazor/tdesign-vue-next/dist/tdesign.css",
+            "jazor/tdesign-vue-next/licenses/LICENSE");
+        AssertPackageEntries(
+            package.ElementPlusPackagePath,
+            "lib/net11.0/ECMAScript.ElementPlus.dll",
+            "buildTransitive/ECMAScript.ElementPlus.targets",
+            "jazor/element-plus/manifest.json",
+            "jazor/element-plus/dist/index.full.min.mjs",
+            "jazor/element-plus/dist/index.css",
+            "jazor/element-plus/licenses/LICENSE");
+    }
+
+    [TestMethod]
     public async Task CreateLocalPackage_IncludesEcmaScriptStyleAsIndependentOptInPackage()
     {
         var package = await LocalStylePackage.Value;
@@ -1223,8 +1279,8 @@ public sealed class SdkIntegrationTests
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
 
         Assert.AreEqual(
-            "import { createRouter, createWebHistory, useRouter } from \"npm:vue-router@4\";",
-            GetImportLine(module, "npm:vue-router@4"));
+            "import { createRouter, createWebHistory, useRouter } from \"vue-router\";",
+            GetImportLine(module, "vue-router"));
         StringAssert.Contains(module, "export function createAppRouter()");
         StringAssert.Contains(module, "history: createWebHistory()");
         StringAssert.Contains(module, "redirect: \"/home\"");
@@ -1354,9 +1410,9 @@ public sealed class SdkIntegrationTests
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
 
         Assert.AreEqual(
-            "import { computed, inject, provide, shallowRef, toRef, triggerRef } from \"npm:vue@3\";",
-            GetImportLine(module, "npm:vue@3"));
-        var vueRouterImport = GetImportLine(module, "npm:vue-router@4");
+            "import { computed, inject, provide, shallowRef, toRef, triggerRef } from \"vue\";",
+            GetImportLine(module, "vue"));
+        var vueRouterImport = GetImportLine(module, "vue-router");
         StringAssert.Contains(vueRouterImport, "loadRouteLocation");
         StringAssert.Contains(vueRouterImport, "matchedRouteKey");
         StringAssert.Contains(vueRouterImport, "routeLocationKey");
@@ -1541,10 +1597,10 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "bundle-user");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
         Assert.IsFalse(
-            bundle.Contains("from \"npm:vue-router@4\"", StringComparison.Ordinal),
+            bundle.Contains("from \"vue-router\"", StringComparison.Ordinal),
             "Bundle should not keep unresolved vue-router imports.");
         Assert.IsFalse(
-            bundle.Contains("from \"npm:vue@3\"", StringComparison.Ordinal),
+            bundle.Contains("from \"vue\"", StringComparison.Ordinal),
             "Bundle should not keep unresolved vue imports.");
 
         StringAssert.Contains(bundleSourceMap, "\"sources\"");
@@ -2457,6 +2513,14 @@ public sealed class SdkIntegrationTests
             packageBuildIntermediateRoot,
             packageOutputDirectory,
             packageVersion);
+        await PackProjectAndAssertOutputAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.ElementPlus", "bin", "Debug", "net11.0", "ECMAScript.ElementPlus.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
 
         return new LocalPackageFixture(
             repoRoot,
@@ -2470,7 +2534,18 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", packageVersion),
             GetBundledDenoPath(emitPublishDirectory));
+    }
+
+    private static void AssertPackageEntries(string packagePath, params string[] expectedPaths)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var entries = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var expectedPath in expectedPaths)
+            Assert.IsTrue(entries.Contains(expectedPath), $"Package '{packagePath}' is missing '{expectedPath}'.");
     }
 
     private static void AssertPackageArtifactOutputs(
@@ -2714,7 +2789,7 @@ public sealed class SdkIntegrationTests
             """
             {
               "imports": {
-                "vue": "npm:vue@3.5.13/dist/vue.runtime.esm-browser.prod.js",
+                "vue": "vue.5.13/dist/vue.runtime.esm-browser.prod.js",
                 "@jazor/vue-runtime/": "./jazor/@jazor/vue-runtime/"
               }
             }
@@ -3473,6 +3548,7 @@ public sealed class SdkIntegrationTests
         string PiniaPackagePath,
         string PiniaTestingPackagePath,
         string TDesignPackagePath,
+        string ElementPlusPackagePath,
         string DenoExePath);
 
     private sealed record LocalStylePackageFixture(

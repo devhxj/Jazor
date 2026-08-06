@@ -7,7 +7,7 @@ namespace Jazor.Admin;
 /// Registers the native admin shell styles through ECMAScript.Style.
 /// 通过 ECMAScript.Style 注册原生管理端框架样式，不再要求应用提供静态 CSS 文件。
 /// </summary>
-[ECMAScriptModule("./components/jazor-admin-style-sheet")]
+[ECMAScriptModule("./components/admin/styles")]
 internal static class AdminStyleSheet
 {
     private static readonly bool IsRegistered = Register();

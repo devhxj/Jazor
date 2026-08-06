@@ -38,7 +38,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var shellPath = System.IO.Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "VueRoute.cs");
         var source = System.IO.File.ReadAllText(shellPath);
 
-        StringAssert.Contains(source, "[ECMAScript(\"npm:vue-router@4\")]");
+        StringAssert.Contains(source, "[ECMAScript(\"vue-router\")]");
         StringAssert.Contains(source, "[Description(\"@#\")]");
         StringAssert.Contains(source, "public static partial class VueRoute");
         Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "VueRoute shell file should not contain static API members.");
@@ -85,7 +85,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
 
         var component = componentType.GetCustomAttribute<VueLibraryComponentAttribute>();
         Assert.IsNotNull(component);
-        Assert.AreEqual("npm:vue-router@4.mjs", component!.ImportSpecifier);
+        Assert.AreEqual("vue-router", component!.ImportSpecifier);
         Assert.AreEqual("RouterLink", component.ExportName);
 
         Assert.AreEqual(

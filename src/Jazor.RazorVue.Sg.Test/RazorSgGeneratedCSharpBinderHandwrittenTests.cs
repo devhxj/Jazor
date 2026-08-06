@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
+public sealed class GeneratedCSharpBinderHandwrittenTests
 {
     [TestMethod]
     public void TryBindHandwritten_ReusesCurrentCompilationBuildRenderTreeBody()
@@ -38,9 +38,9 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
             [sourceTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var components = RazorSgComponentCandidateSelector.DiscoverHandwrittenComponents(compilation);
+        var components = ComponentSelector.DiscoverHandwrittenComponents(compilation);
 
-        var result = RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+        var result = GeneratedCSharpBinder.TryBindHandwritten(
             compilation,
             components,
             out var binding,
@@ -49,7 +49,7 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
         Assert.IsTrue(result, failure);
         Assert.IsNotNull(binding);
         Assert.AreSame(compilation, binding!.Compilation);
-        Assert.AreEqual(RazorSgCompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
+        Assert.AreEqual(CompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
         Assert.AreEqual(1, binding.Documents.Length);
         Assert.AreSame(sourceTree, binding.Components.Single().BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree);
         Assert.AreSame(binding.Documents.Single(), binding.Components.Single().Document);
@@ -100,7 +100,7 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
 
         Assert.IsNotNull(alpha);
         Assert.IsNotNull(zebra);
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindHandwritten(
             compilation,
             ImmutableArray.Create(zebra!, alpha!),
             out var binding,
@@ -155,9 +155,9 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
             [sourceTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var components = RazorSgComponentCandidateSelector.DiscoverHandwrittenComponents(compilation);
+        var components = ComponentSelector.DiscoverHandwrittenComponents(compilation);
 
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindHandwritten(
             compilation,
             components,
             out var binding,
@@ -165,7 +165,7 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
         Assert.IsNotNull(binding);
         var component = binding!.Components.Single();
 
-        Assert.IsTrue(RazorSgComponentMemberClosureBuilder.TryBuild(
+        Assert.IsTrue(MemberClosureBuilder.TryBuild(
             binding,
             component,
             out var closure,
@@ -216,23 +216,23 @@ public sealed class RazorSgGeneratedCSharpBinderHandwrittenTests
             [sourceTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var components = RazorSgComponentCandidateSelector.DiscoverHandwrittenComponents(compilation);
+        var components = ComponentSelector.DiscoverHandwrittenComponents(compilation);
 
-        Assert.IsTrue(RazorSgGeneratedCSharpBinder.TryBindHandwritten(
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindHandwritten(
             compilation,
             components,
             out var binding,
             out var bindingFailure), bindingFailure);
         Assert.IsNotNull(binding);
         var component = binding!.Components.Single();
-        Assert.IsTrue(RazorSgComponentMemberClosureBuilder.TryBuild(
+        Assert.IsTrue(MemberClosureBuilder.TryBuild(
             binding,
             component,
             out var closure,
             out var closureFailure), closureFailure);
         Assert.IsNotNull(closure);
 
-        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(binding, component, closure!);
+        var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "function label()", StringComparison.Ordinal);

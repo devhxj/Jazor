@@ -1,10 +1,12 @@
 namespace Jazor.Emit;
 
+/// <summary>File-system inputs shared by both bundle engines.</summary>
 internal sealed record BundleOptions(
     string InputDirectory,
     string ManifestPath,
     string OutputPath,
-    string? SourceRoot = null)
+    string? SourceRoot = null,
+    IReadOnlyList<string>? LibraryManifests = null)
 {
     public static bool TryParse(string[] args, out BundleOptions? options, out string? error)
     {

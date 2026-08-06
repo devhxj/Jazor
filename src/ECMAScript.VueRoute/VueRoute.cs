@@ -378,7 +378,7 @@ public enum ErrorTypes
 	NAVIGATION_DUPLICATED = 16
 }
 
-[ECMAScript("npm:vue-router@4")]
+[ECMAScript("vue-router")]
 [Description("@#")]
 public static partial class VueRoute
 {

@@ -29,7 +29,7 @@ public sealed class RazorSgComponentCandidateMatrixTests
         Assert.AreEqual(testCase.IsHandwritten, fixture.Handwritten.Contains(symbol!, SymbolEqualityComparer.Default));
         Assert.AreEqual(
             testCase.HasHandwrittenMethod,
-            RazorSgComponentCandidateSelector.FindHandwrittenBuildRenderTreeMethod(symbol!) is not null);
+            ComponentSelector.FindHandwrittenBuildRenderTreeMethod(symbol!) is not null);
     }
 
     private static CandidateFixture CreateFixture()
@@ -51,9 +51,9 @@ public sealed class RazorSgComponentCandidateMatrixTests
 
         return new CandidateFixture(
             compilation,
-            RazorSgComponentCandidateSelector.DiscoverCurrentComponents(compilation),
-            RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation),
-            RazorSgComponentCandidateSelector.DiscoverHandwrittenComponents(compilation));
+            ComponentSelector.DiscoverCurrentComponents(compilation),
+            ComponentSelector.DiscoverTailRequiredComponents(compilation),
+            ComponentSelector.DiscoverHandwrittenComponents(compilation));
     }
 
     private static string BuildSource(ComponentCandidateCase testCase)

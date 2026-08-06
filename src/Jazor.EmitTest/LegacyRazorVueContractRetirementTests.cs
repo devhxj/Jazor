@@ -60,7 +60,7 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_InvokeExplicitFrontendToolchainContractForBundles()
+    public void SdkTargets_InvokeExplicitToolchainContractForBundles()
     {
         var repositoryRoot = FindRepositoryRoot();
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));

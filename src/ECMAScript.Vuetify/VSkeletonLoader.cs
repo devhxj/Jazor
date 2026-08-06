@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 骨架加载器组件的编写代理，用于加载占位符和延迟内容。
 /// Vuetify skeleton-loader authoring proxy for loading placeholders and deferred content.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSkeletonLoader", StyleUrls = [VuetifyLibraryAssets.StyleUrl])]
+[VueLibraryComponent("vuetify/components", "VSkeletonLoader")]
 public sealed class VSkeletonLoader : ComponentBase
 {
     /// <summary>

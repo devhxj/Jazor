@@ -28,7 +28,7 @@
 
 - 必要的组件 import 和异常 Vue 名称元数据由 `ECMAScript.VueContract` 项目提供。退役中的 marker、kind 和无 consumer 元数据不得成为新组件库的设计模板。
 - `ECMAScript.Vuetify` 不承载 RazorVue 生成器或分析逻辑；那些逻辑位于 `Jazor.Analyzer`。
-- Deno / npm 导入地址通过 `ECMAScript` 特性声明，例如 `npm:vuetify`。
+- Deno / npm 导入地址通过 `ECMAScript` 特性声明，例如 `vuetify`。
 
 ## Key Areas
 

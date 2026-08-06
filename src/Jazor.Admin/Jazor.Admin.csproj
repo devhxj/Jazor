@@ -49,5 +49,5 @@
     <Analyzer Include="$(JazorRazorVueOutputRoot)Acornima.Extras.dll" />
   </ItemGroup>
 
-  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
+  <Import Project="..\Packaging\JazorPackage.targets" />
 </Project>

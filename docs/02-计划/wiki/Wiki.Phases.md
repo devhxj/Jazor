@@ -2,11 +2,11 @@
 
 > Status: Phase 1–5 已完成
 > Updated: 2026-05-08
-> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 24 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化、部署契约，以及 ASP.NET Core `PathBase` / 开发重载链路收口。
+> Positioning: `samples/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 24 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化、部署契约，以及 ASP.NET Core `PathBase` / 开发重载链路收口。
 
 ## 1. 当前定位
 
-`src/Wiki/` 是已完成的真实文档站 MVP：
+`samples/Wiki/` 是已完成的真实文档站 MVP：
 
 - 用 C# + `ECMAScript.Vue3` 的 `H(...)` authoring 构建全部 24 个页面；
 - 通过 `JazorMode=debug` 在构建时把模块发射到 `wwwroot/jazor`；
@@ -33,7 +33,7 @@
 - `Wiki:PathBase` / `Wiki__PathBase` 子路径部署支持已打通；
 - 开发时 injected client、reload websocket、静态资源 URL、discovery documents、SourceMap 服务链路都已在根路径和 `/docs` 子路径下通过验证。
 
-因此 `src/Wiki/` 当前应视为：
+因此 `samples/Wiki/` 当前应视为：
 
 - **Phase 1–5 complete**
 - **Docs-site MVP**
@@ -41,7 +41,7 @@
 
 ## 3. 阶段总路线
 
-建议把 `src/Wiki/` 拆成五个阶段，避免“样例站”和“产品 wiki”混成一条线，并把传统 ASP.NET Core 宿主硬化单独收口。
+建议把 `samples/Wiki/` 拆成五个阶段，避免“样例站”和“产品 wiki”混成一条线，并把传统 ASP.NET Core 宿主硬化单独收口。
 
 ### Phase 0: Baseline（已完成）
 
@@ -107,7 +107,7 @@
 
 ### 路径 A：长期作为 sample
 
-如果 `src/Wiki/` 的长期目标仍然是样例站，推荐顺序是：
+如果 `samples/Wiki/` 的长期目标仍然是样例站，推荐顺序是：
 
 1. Phase 1
 2. Phase 2
@@ -186,15 +186,15 @@ Phase 5 的进入条件已经全部满足并完成收口：
 
 ## 8. 参考
 
-- `src/Wiki/README.md`
-- `src/Wiki/Wiki.csproj`
-- `src/Wiki/Program.cs`
-- `src/Wiki/AppModule.cs`
-- `src/Wiki/WikiHomeModule.cs`（主壳层，2014 行）
-- `src/Wiki/WikiHomeModule.RouteContract.cs`（路由目录，1108 行）
-- `src/Wiki/WikiHomeModule.Elements.cs`（元素工具，413 行）
-- `src/Wiki/WikiCatalogGuard.cs`（启动校验）
-- `src/Wiki/wwwroot/site.css`（样式，1377 行）
+- `samples/Wiki/README.md`
+- `samples/Wiki/Wiki.csproj`
+- `samples/Wiki/Program.cs`
+- `samples/Wiki/AppModule.cs`
+- `samples/Wiki/WikiHomeModule.cs`（主壳层，2014 行）
+- `samples/Wiki/WikiHomeModule.RouteContract.cs`（路由目录，1108 行）
+- `samples/Wiki/WikiHomeModule.Elements.cs`（元素工具，413 行）
+- `samples/Wiki/WikiCatalogGuard.cs`（启动校验）
+- `samples/Wiki/wwwroot/site.css`（样式，1377 行）
 - `scripts/csharp/wiki-build-local.cs`
 - `scripts/csharp/wiki-serve.cs`
 - `scripts/csharp/wiki-verify-smoke.cs`

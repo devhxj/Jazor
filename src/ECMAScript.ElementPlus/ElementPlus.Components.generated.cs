@@ -13,7 +13,7 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Fix the element to a specific visible area.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAffix", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAffix")]
 public sealed class ElAffix : ElContentComponentBase
 {
     [Parameter]
@@ -45,7 +45,7 @@ public sealed class ElAffix : ElContentComponentBase
 /// <summary>
 /// Displays important alert messages.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAlert", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAlert")]
 public sealed class ElAlert : ElContentComponentBase
 {
     [Parameter]
@@ -87,7 +87,7 @@ public sealed class ElAlert : ElContentComponentBase
 /// <summary>
 /// Through the anchor point, you can quickly find the position of the information content on the current page.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAnchor", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAnchor")]
 public sealed class ElAnchor : ElContentComponentBase
 {
     [Parameter]
@@ -101,7 +101,7 @@ public sealed class ElAnchor : ElContentComponentBase
 /// <summary>
 /// el-anchor-link
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAnchorLink", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAnchorLink")]
 public sealed class ElAnchorLink : ElContentComponentBase
 {
     [Parameter]
@@ -112,7 +112,7 @@ public sealed class ElAnchorLink : ElContentComponentBase
 /// <summary>
 /// el-aside
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAside", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAside")]
 public sealed class ElAside : ElContentComponentBase
 {
     [Parameter]
@@ -123,7 +123,7 @@ public sealed class ElAside : ElContentComponentBase
 /// <summary>
 /// ElAutoResizer
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAutoResizer", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAutoResizer")]
 public sealed class ElAutoResizer : ElContentComponentBase
 {
     [Parameter]
@@ -140,7 +140,7 @@ public sealed class ElAutoResizer : ElContentComponentBase
 /// <summary>
 /// Get some recommended tips based on the current input.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAutocomplete", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAutocomplete")]
 public sealed class ElAutocomplete : ElContentComponentBase
 {
     [Parameter]
@@ -259,7 +259,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
 /// <summary>
 /// Avatars can be used to represent people or objects. It supports images, Icons, or characters.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAvatar", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAvatar")]
 public sealed class ElAvatar : ElContentComponentBase
 {
     [Parameter]
@@ -291,7 +291,7 @@ public sealed class ElAvatar : ElContentComponentBase
 /// <summary>
 /// el-avatar-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElAvatarGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElAvatarGroup")]
 public sealed class ElAvatarGroup : ElComponentBase
 {
     [Parameter]
@@ -332,7 +332,7 @@ public sealed class ElAvatarGroup : ElComponentBase
 /// <summary>
 /// A button to back to top.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElBacktop", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElBacktop")]
 public sealed class ElBacktop : ElContentComponentBase
 {
     [Parameter]
@@ -355,7 +355,7 @@ public sealed class ElBacktop : ElContentComponentBase
 /// <summary>
 /// A number or status mark on buttons and icons.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElBadge", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElBadge")]
 public sealed class ElBadge : ElContentComponentBase
 {
     [Parameter]
@@ -396,7 +396,7 @@ public sealed class ElBadge : ElContentComponentBase
 /// <summary>
 /// Displays the location of the current page, making it easier to browser back.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElBreadcrumb", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElBreadcrumb")]
 public sealed class ElBreadcrumb : ElContentComponentBase
 {
     [Parameter]
@@ -410,7 +410,7 @@ public sealed class ElBreadcrumb : ElContentComponentBase
 /// <summary>
 /// el-breadcrumb-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElBreadcrumbItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElBreadcrumbItem")]
 public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
     [Parameter]
@@ -424,7 +424,7 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
 /// <summary>
 /// Commonly used button.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElButton", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElButton")]
 public sealed class ElButton : ElContentComponentBase
 {
     [Parameter]
@@ -497,7 +497,7 @@ public sealed class ElButton : ElContentComponentBase
 /// <summary>
 /// el-button-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElButtonGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElButtonGroup")]
 public sealed class ElButtonGroup : ElContentComponentBase
 {
     [Parameter]
@@ -514,7 +514,7 @@ public sealed class ElButtonGroup : ElContentComponentBase
 /// <summary>
 /// Display date.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCalendar", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCalendar")]
 public sealed class ElCalendar : ElComponentBase
 {
     [Parameter]
@@ -543,7 +543,7 @@ public sealed class ElCalendar : ElComponentBase
 /// <summary>
 /// Integrate information in a card container.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCard", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCard")]
 public sealed class ElCard : ElContentComponentBase
 {
     [Parameter]
@@ -580,7 +580,7 @@ public sealed class ElCard : ElContentComponentBase
 /// <summary>
 /// Loop a series of images or texts in a limited space
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCarousel", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCarousel")]
 public sealed class ElCarousel : ElContentComponentBase
 {
     [Parameter]
@@ -630,7 +630,7 @@ public sealed class ElCarousel : ElContentComponentBase
 /// <summary>
 /// el-carousel-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCarouselItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCarouselItem")]
 public sealed class ElCarouselItem : ElContentComponentBase
 {
     [Parameter]
@@ -644,7 +644,7 @@ public sealed class ElCarouselItem : ElContentComponentBase
 /// <summary>
 /// If the options have a clear hierarchical structure, Cascader can be used to view and select them.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCascader", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCascader")]
 public sealed class ElCascader : ElContentComponentBase
 {
     [Parameter]
@@ -802,7 +802,7 @@ public sealed class ElCascader : ElContentComponentBase
 /// <summary>
 /// el-cascader-panel
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCascaderPanel", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCascaderPanel")]
 public sealed class ElCascaderPanel : ElContentComponentBase
 {
     [Parameter]
@@ -843,7 +843,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
 /// <summary>
 /// el-check-tag
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCheckTag", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCheckTag")]
 public sealed class ElCheckTag : ElContentComponentBase
 {
     [Parameter]
@@ -863,7 +863,7 @@ public sealed class ElCheckTag : ElContentComponentBase
 /// <summary>
 /// A group of options for multiple choices.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCheckbox", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCheckbox")]
 public sealed class ElCheckbox : ElContentComponentBase
 {
     [Parameter]
@@ -934,7 +934,7 @@ public sealed class ElCheckbox : ElContentComponentBase
 /// <summary>
 /// el-checkbox-button
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCheckboxButton", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCheckboxButton")]
 public sealed class ElCheckboxButton : ElContentComponentBase
 {
     [Parameter]
@@ -969,7 +969,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
 /// <summary>
 /// el-checkbox-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCheckboxGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCheckboxGroup")]
 public sealed class ElCheckboxGroup : ElContentComponentBase
 {
     [Parameter]
@@ -1025,7 +1025,7 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
 /// <summary>
 /// el-col
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCol", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCol")]
 public sealed class ElCol : ElContentComponentBase
 {
     [Parameter]
@@ -1063,7 +1063,7 @@ public sealed class ElCol : ElContentComponentBase
 /// <summary>
 /// Use Collapse to store contents.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCollapse", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCollapse")]
 public sealed class ElCollapse : ElContentComponentBase
 {
     [Parameter]
@@ -1089,7 +1089,7 @@ public sealed class ElCollapse : ElContentComponentBase
 /// <summary>
 /// el-collapse-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCollapseItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCollapseItem")]
 public sealed class ElCollapseItem : ElComponentBase
 {
     [Parameter]
@@ -1109,7 +1109,7 @@ public sealed class ElCollapseItem : ElComponentBase
 /// <summary>
 /// ElCollapseTransition
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCollapseTransition", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCollapseTransition")]
 public sealed class ElCollapseTransition : ElContentComponentBase
 {
 }
@@ -1117,7 +1117,7 @@ public sealed class ElCollapseTransition : ElContentComponentBase
 /// <summary>
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElColorPicker", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElColorPicker")]
 public sealed class ElColorPicker : ElComponentBase
 {
     [Parameter]
@@ -1200,7 +1200,7 @@ public sealed class ElColorPicker : ElComponentBase
 /// <summary>
 /// `ColorPickerPanel` is the core component of `ColorPicker`.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElColorPickerPanel", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElColorPickerPanel")]
 public sealed class ElColorPickerPanel : ElComponentBase
 {
     [Parameter]
@@ -1241,7 +1241,7 @@ public sealed class ElColorPickerPanel : ElComponentBase
 /// <summary>
 /// Config Provider is used for providing global configurations, which enables your entire application to access these configurations everywhere.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElConfigProvider", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElConfigProvider")]
 public sealed class ElConfigProvider : ElContentComponentBase
 {
     [Parameter]
@@ -1294,7 +1294,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
 /// <summary>
 /// Container components for scaffolding basic structure of the page:
 /// </summary>
-[VueLibraryComponent("element-plus", "ElContainer", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElContainer")]
 public sealed class ElContainer : ElContentComponentBase
 {
     [Parameter]
@@ -1305,7 +1305,7 @@ public sealed class ElContainer : ElContentComponentBase
 /// <summary>
 /// :::demo Countdown component, support to add other components control countdown.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElCountdown", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElCountdown")]
 public sealed class ElCountdown : ElComponentBase
 {
     [Parameter]
@@ -1328,7 +1328,7 @@ public sealed class ElCountdown : ElComponentBase
 /// <summary>
 /// Use Date Picker for date input.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDatePicker", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDatePicker")]
 public sealed class ElDatePicker : ElContentComponentBase
 {
     [Parameter]
@@ -1493,7 +1493,7 @@ public sealed class ElDatePicker : ElContentComponentBase
 /// <summary>
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDatePickerPanel", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDatePickerPanel")]
 public sealed class ElDatePickerPanel : ElContentComponentBase
 {
     [Parameter]
@@ -1582,7 +1582,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
 /// <summary>
 /// Display multiple fields in list form.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDescriptions", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDescriptions")]
 public sealed class ElDescriptions : ElContentComponentBase
 {
     [Parameter]
@@ -1619,7 +1619,7 @@ public sealed class ElDescriptions : ElContentComponentBase
 /// <summary>
 /// el-descriptions-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDescriptionsItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDescriptionsItem")]
 public sealed class ElDescriptionsItem : ElContentComponentBase
 {
     [Parameter]
@@ -1661,7 +1661,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
 /// <summary>
 /// Informs users while preserving the current page state.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDialog", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDialog")]
 public sealed class ElDialog : ElContentComponentBase
 {
     [Parameter]
@@ -1790,7 +1790,7 @@ public sealed class ElDialog : ElContentComponentBase
 /// <summary>
 /// The dividing line that separates the content.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDivider", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDivider")]
 public sealed class ElDivider : ElContentComponentBase
 {
     [Parameter]
@@ -1807,7 +1807,7 @@ public sealed class ElDivider : ElContentComponentBase
 /// <summary>
 /// Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDrawer", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDrawer")]
 public sealed class ElDrawer : ElContentComponentBase
 {
     [Parameter]
@@ -1930,7 +1930,7 @@ public sealed class ElDrawer : ElContentComponentBase
 /// <summary>
 /// Toggleable menu for displaying lists of links and actions.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDropdown", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDropdown")]
 public sealed class ElDropdown : ElContentComponentBase
 {
     [Parameter]
@@ -2022,7 +2022,7 @@ public sealed class ElDropdown : ElContentComponentBase
 /// <summary>
 /// el-dropdown-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDropdownItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDropdownItem")]
 public sealed class ElDropdownItem : ElContentComponentBase
 {
     [Parameter]
@@ -2046,7 +2046,7 @@ public sealed class ElDropdownItem : ElContentComponentBase
 /// <summary>
 /// el-dropdown-menu
 /// </summary>
-[VueLibraryComponent("element-plus", "ElDropdownMenu", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElDropdownMenu")]
 public sealed class ElDropdownMenu : ElContentComponentBase
 {
 }
@@ -2054,7 +2054,7 @@ public sealed class ElDropdownMenu : ElContentComponentBase
 /// <summary>
 /// Placeholder hints for empty states.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElEmpty", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElEmpty")]
 public sealed class ElEmpty : ElContentComponentBase
 {
     [Parameter]
@@ -2079,7 +2079,7 @@ public sealed class ElEmpty : ElContentComponentBase
 /// <summary>
 /// el-footer
 /// </summary>
-[VueLibraryComponent("element-plus", "ElFooter", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElFooter")]
 public sealed class ElFooter : ElContentComponentBase
 {
     [Parameter]
@@ -2090,7 +2090,7 @@ public sealed class ElFooter : ElContentComponentBase
 /// <summary>
 /// Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElForm", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElForm")]
 public sealed class ElForm : ElContentComponentBase
 {
     [Parameter]
@@ -2149,7 +2149,7 @@ public sealed class ElForm : ElContentComponentBase
 /// <summary>
 /// el-form-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElFormItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElFormItem")]
 public sealed class ElFormItem : ElContentComponentBase
 {
     [Parameter]
@@ -2201,7 +2201,7 @@ public sealed class ElFormItem : ElContentComponentBase
 /// <summary>
 /// el-header
 /// </summary>
-[VueLibraryComponent("element-plus", "ElHeader", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElHeader")]
 public sealed class ElHeader : ElContentComponentBase
 {
     [Parameter]
@@ -2212,7 +2212,7 @@ public sealed class ElHeader : ElContentComponentBase
 /// <summary>
 /// Element Plus provides a set of common icons.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElIcon", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElIcon")]
 public sealed class ElIcon : ElContentComponentBase
 {
     [Parameter]
@@ -2226,7 +2226,7 @@ public sealed class ElIcon : ElContentComponentBase
 /// <summary>
 /// Besides the native features of img, support lazy load, custom placeholder and load failure, etc.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElImage", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElImage")]
 public sealed class ElImage : ElComponentBase
 {
     [Parameter]
@@ -2315,7 +2315,7 @@ public sealed class ElImage : ElComponentBase
 /// <summary>
 /// el-image-viewer
 /// </summary>
-[VueLibraryComponent("element-plus", "ElImageViewer", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElImageViewer")]
 public sealed class ElImageViewer : ElComponentBase
 {
     [Parameter]
@@ -2383,7 +2383,7 @@ public sealed class ElImageViewer : ElComponentBase
 /// <summary>
 /// Input data using mouse or keyboard.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElInput", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElInput")]
 public sealed class ElInput : ElComponentBase
 {
     [Parameter]
@@ -2547,7 +2547,7 @@ public sealed class ElInput : ElComponentBase
 /// <summary>
 /// Input numerical values with a customizable range.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElInputNumber", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElInputNumber")]
 public sealed class ElInputNumber : ElComponentBase
 {
     [Parameter]
@@ -2651,7 +2651,7 @@ public sealed class ElInputNumber : ElComponentBase
 /// <summary>
 /// Used to enter a one-time password
 /// </summary>
-[VueLibraryComponent("element-plus", "ElInputOtp", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElInputOtp")]
 public sealed class ElInputOtp : ElComponentBase
 {
     [Parameter]
@@ -2717,7 +2717,7 @@ public sealed class ElInputOtp : ElComponentBase
 /// <summary>
 /// The InputTag component allows users to add content as tags.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElInputTag", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElInputTag")]
 public sealed class ElInputTag : ElComponentBase
 {
     [Parameter]
@@ -2839,7 +2839,7 @@ public sealed class ElInputTag : ElComponentBase
 /// <summary>
 /// Text hyperlink
 /// </summary>
-[VueLibraryComponent("element-plus", "ElLink", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElLink")]
 public sealed class ElLink : ElContentComponentBase
 {
     [Parameter]
@@ -2869,7 +2869,7 @@ public sealed class ElLink : ElContentComponentBase
 /// <summary>
 /// el-main
 /// </summary>
-[VueLibraryComponent("element-plus", "ElMain", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElMain")]
 public sealed class ElMain : ElContentComponentBase
 {
 }
@@ -2877,7 +2877,7 @@ public sealed class ElMain : ElContentComponentBase
 /// <summary>
 /// Used to mention someone or something in an input.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElMention", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElMention")]
 public sealed class ElMention : ElComponentBase
 {
     [Parameter]
@@ -2955,7 +2955,7 @@ public sealed class ElMention : ElComponentBase
 /// <summary>
 /// Menu that provides navigation for your website.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElMenu", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElMenu")]
 public sealed class ElMenu : ElContentComponentBase
 {
     [Parameter]
@@ -3035,7 +3035,7 @@ public sealed class ElMenu : ElContentComponentBase
 /// <summary>
 /// el-menu-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElMenuItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElMenuItem")]
 public sealed class ElMenuItem : ElContentComponentBase
 {
     [Parameter]
@@ -3058,7 +3058,7 @@ public sealed class ElMenuItem : ElContentComponentBase
 /// <summary>
 /// el-menu-item-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElMenuItemGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElMenuItemGroup")]
 public sealed class ElMenuItemGroup : ElContentComponentBase
 {
     [Parameter]
@@ -3073,7 +3073,7 @@ public sealed class ElMenuItemGroup : ElContentComponentBase
 /// <summary>
 /// el-option
 /// </summary>
-[VueLibraryComponent("element-plus", "ElOption", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElOption")]
 public sealed class ElOption : ElContentComponentBase
 {
     [Parameter]
@@ -3090,7 +3090,7 @@ public sealed class ElOption : ElContentComponentBase
 /// <summary>
 /// el-option-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElOptionGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElOptionGroup")]
 public sealed class ElOptionGroup : ElContentComponentBase
 {
     [Parameter]
@@ -3104,7 +3104,7 @@ public sealed class ElOptionGroup : ElContentComponentBase
 /// <summary>
 /// If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElPageHeader", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElPageHeader")]
 public sealed class ElPageHeader : ElContentComponentBase
 {
     [Parameter]
@@ -3142,7 +3142,7 @@ public sealed class ElPageHeader : ElContentComponentBase
 /// <summary>
 /// If you have too much data to display in one page, use pagination.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElPagination", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElPagination")]
 public sealed class ElPagination : ElContentComponentBase
 {
     [Parameter]
@@ -3231,7 +3231,7 @@ public sealed class ElPagination : ElContentComponentBase
 /// <summary>
 /// A simple confirmation dialog of an element click action.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElPopconfirm", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElPopconfirm")]
 public sealed class ElPopconfirm : ElComponentBase
 {
     [Parameter]
@@ -3290,7 +3290,7 @@ public sealed class ElPopconfirm : ElComponentBase
 /// <summary>
 /// el-popover
 /// </summary>
-[VueLibraryComponent("element-plus", "ElPopover", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElPopover")]
 public sealed class ElPopover : ElContentComponentBase
 {
     [Parameter]
@@ -3391,7 +3391,7 @@ public sealed class ElPopover : ElContentComponentBase
 /// <summary>
 /// ElPopper
 /// </summary>
-[VueLibraryComponent("element-plus", "ElPopper", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElPopper")]
 public sealed class ElPopper : ElContentComponentBase
 {
     [Parameter]
@@ -3402,7 +3402,7 @@ public sealed class ElPopper : ElContentComponentBase
 /// <summary>
 /// Progress is used to show the progress of current operation, and inform the user the current status.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElProgress", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElProgress")]
 public sealed class ElProgress : ElContentComponentBase
 {
     [Parameter]
@@ -3452,7 +3452,7 @@ public sealed class ElProgress : ElContentComponentBase
 /// <summary>
 /// Single selection among multiple options.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElRadio", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElRadio")]
 public sealed class ElRadio : ElContentComponentBase
 {
     [Parameter]
@@ -3487,7 +3487,7 @@ public sealed class ElRadio : ElContentComponentBase
 /// <summary>
 /// el-radio-button
 /// </summary>
-[VueLibraryComponent("element-plus", "ElRadioButton", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElRadioButton")]
 public sealed class ElRadioButton : ElContentComponentBase
 {
     [Parameter]
@@ -3507,7 +3507,7 @@ public sealed class ElRadioButton : ElContentComponentBase
 /// <summary>
 /// el-radio-group
 /// </summary>
-[VueLibraryComponent("element-plus", "ElRadioGroup", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElRadioGroup")]
 public sealed class ElRadioGroup : ElContentComponentBase
 {
     [Parameter]
@@ -3560,7 +3560,7 @@ public sealed class ElRadioGroup : ElContentComponentBase
 /// <summary>
 /// Used for rating
 /// </summary>
-[VueLibraryComponent("element-plus", "ElRate", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElRate")]
 public sealed class ElRate : ElComponentBase
 {
     [Parameter]
@@ -3640,7 +3640,7 @@ public sealed class ElRate : ElComponentBase
 /// <summary>
 /// Used to give feedback on the result of user's operation or access exception.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElResult", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElResult")]
 public sealed class ElResult : ElComponentBase
 {
     [Parameter]
@@ -3672,7 +3672,7 @@ public sealed class ElResult : ElComponentBase
 /// <summary>
 /// el-row
 /// </summary>
-[VueLibraryComponent("element-plus", "ElRow", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElRow")]
 public sealed class ElRow : ElContentComponentBase
 {
     [Parameter]
@@ -3692,7 +3692,7 @@ public sealed class ElRow : ElContentComponentBase
 /// <summary>
 /// Used to replace the browser's native scrollbar.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElScrollbar", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElScrollbar")]
 public sealed class ElScrollbar : ElContentComponentBase
 {
     [Parameter]
@@ -3757,7 +3757,7 @@ public sealed class ElScrollbar : ElContentComponentBase
 /// <summary>
 /// Display multiple options and allow users to select a single option.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSegmented", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSegmented")]
 public sealed class ElSegmented : ElContentComponentBase
 {
     [Parameter]
@@ -3804,7 +3804,7 @@ public sealed class ElSegmented : ElContentComponentBase
 /// <summary>
 /// When there are plenty of options, use a drop-down menu to display and select desired ones.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSelect", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSelect")]
 public sealed class ElSelect : ElContentComponentBase
 {
     [Parameter]
@@ -4020,7 +4020,7 @@ public sealed class ElSelect : ElContentComponentBase
 /// <summary>
 /// When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSkeleton", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSkeleton")]
 public sealed class ElSkeleton : ElContentComponentBase
 {
     [Parameter]
@@ -4046,7 +4046,7 @@ public sealed class ElSkeleton : ElContentComponentBase
 /// <summary>
 /// el-skeleton-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSkeletonItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSkeletonItem")]
 public sealed class ElSkeletonItem : ElComponentBase
 {
     [Parameter]
@@ -4057,7 +4057,7 @@ public sealed class ElSkeletonItem : ElComponentBase
 /// <summary>
 /// Drag the slider within a fixed range.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSlider", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSlider")]
 public sealed class ElSlider : ElComponentBase
 {
     [Parameter]
@@ -4149,7 +4149,7 @@ public sealed class ElSlider : ElComponentBase
 /// <summary>
 /// Even though we have [Divider]
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSpace", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSpace")]
 public sealed class ElSpace : ElComponentBase
 {
     [Parameter]
@@ -4181,7 +4181,7 @@ public sealed class ElSpace : ElComponentBase
 /// <summary>
 /// el-splitter
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSplitter", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSplitter")]
 public sealed class ElSplitter : ElComponentBase
 {
     [Parameter]
@@ -4207,7 +4207,7 @@ public sealed class ElSplitter : ElComponentBase
 /// <summary>
 /// el-splitter-panel
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSplitterPanel", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSplitterPanel")]
 public sealed class ElSplitterPanel : ElContentComponentBase
 {
     [Parameter]
@@ -4239,7 +4239,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
 /// <summary>
 /// Display statistics.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElStatistic", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElStatistic")]
 public sealed class ElStatistic : ElComponentBase
 {
     [Parameter]
@@ -4256,7 +4256,7 @@ public sealed class ElStatistic : ElComponentBase
 /// <summary>
 /// el-step
 /// </summary>
-[VueLibraryComponent("element-plus", "ElStep", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElStep")]
 public sealed class ElStep : ElComponentBase
 {
     [Parameter]
@@ -4288,7 +4288,7 @@ public sealed class ElStep : ElComponentBase
 /// <summary>
 /// Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSteps", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSteps")]
 public sealed class ElSteps : ElContentComponentBase
 {
     [Parameter]
@@ -4320,7 +4320,7 @@ public sealed class ElSteps : ElContentComponentBase
 /// <summary>
 /// el-sub-menu
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSubMenu", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSubMenu")]
 public sealed class ElSubMenu : ElContentComponentBase
 {
     [Parameter]
@@ -4367,7 +4367,7 @@ public sealed class ElSubMenu : ElContentComponentBase
 /// <summary>
 /// Switch is used for switching between two opposing states.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSwitch", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSwitch")]
 public sealed class ElSwitch : ElComponentBase
 {
     [Parameter]
@@ -4465,7 +4465,7 @@ public sealed class ElSwitch : ElComponentBase
 /// <summary>
 /// el-tab-pane
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTabPane", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTabPane")]
 public sealed class ElTabPane : ElContentComponentBase
 {
     [Parameter]
@@ -4492,7 +4492,7 @@ public sealed class ElTabPane : ElContentComponentBase
 /// <summary>
 /// Display multiple data with similar format. You can sort, filter, compare your data in a table.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTable", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTable")]
 public sealed class ElTable : ElContentComponentBase
 {
     [Parameter]
@@ -4698,7 +4698,7 @@ public sealed class ElTable : ElContentComponentBase
 /// <summary>
 /// el-table-column
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTableColumn", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTableColumn")]
 public sealed class ElTableColumn : ElContentComponentBase
 {
     [Parameter]
@@ -4802,7 +4802,7 @@ public sealed class ElTableColumn : ElContentComponentBase
 /// <summary>
 /// el-table-v2
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTableV2", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTableV2")]
 public sealed class ElTableV2 : ElComponentBase
 {
     [Parameter]
@@ -4939,7 +4939,7 @@ public sealed class ElTableV2 : ElComponentBase
 /// <summary>
 /// Divide data collections which are related yet belong to different types.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTabs", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTabs")]
 public sealed class ElTabs : ElContentComponentBase
 {
     [Parameter]
@@ -4998,7 +4998,7 @@ public sealed class ElTabs : ElContentComponentBase
 /// <summary>
 /// Used for marking and selection.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTag", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTag")]
 public sealed class ElTag : ElContentComponentBase
 {
     [Parameter]
@@ -5036,7 +5036,7 @@ public sealed class ElTag : ElContentComponentBase
 /// <summary>
 /// Used for text.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElText", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElText")]
 public sealed class ElText : ElContentComponentBase
 {
     [Parameter]
@@ -5059,7 +5059,7 @@ public sealed class ElText : ElContentComponentBase
 /// <summary>
 /// Use Time Picker for time input.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTimePicker", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTimePicker")]
 public sealed class ElTimePicker : ElComponentBase
 {
     [Parameter]
@@ -5196,7 +5196,7 @@ public sealed class ElTimePicker : ElComponentBase
 /// <summary>
 /// Use Time Select for time input.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTimeSelect", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTimeSelect")]
 public sealed class ElTimeSelect : ElComponentBase
 {
     [Parameter]
@@ -5282,7 +5282,7 @@ public sealed class ElTimeSelect : ElComponentBase
 /// <summary>
 /// Visually display timeline.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTimeline", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTimeline")]
 public sealed class ElTimeline : ElContentComponentBase
 {
     [Parameter]
@@ -5296,7 +5296,7 @@ public sealed class ElTimeline : ElContentComponentBase
 /// <summary>
 /// el-timeline-item
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTimelineItem", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTimelineItem")]
 public sealed class ElTimelineItem : ElContentComponentBase
 {
     [Parameter]
@@ -5334,7 +5334,7 @@ public sealed class ElTimelineItem : ElContentComponentBase
 /// <summary>
 /// Display prompt information for mouse hover.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTooltip", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTooltip")]
 public sealed class ElTooltip : ElContentComponentBase
 {
     [Parameter]
@@ -5439,7 +5439,7 @@ public sealed class ElTooltip : ElContentComponentBase
 /// <summary>
 /// A popup component for guiding users through a product. Use when you want to guide users through a product.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTour", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTour")]
 public sealed class ElTour : ElComponentBase
 {
 }
@@ -5447,7 +5447,7 @@ public sealed class ElTour : ElComponentBase
 /// <summary>
 /// el-tour-step
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTourStep", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTourStep")]
 public sealed class ElTourStep : ElComponentBase
 {
 }
@@ -5455,7 +5455,7 @@ public sealed class ElTourStep : ElComponentBase
 /// <summary>
 /// el-transfer
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTransfer", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTransfer")]
 public sealed class ElTransfer : ElContentComponentBase
 {
     [Parameter]
@@ -5529,7 +5529,7 @@ public sealed class ElTransfer : ElContentComponentBase
 /// <summary>
 /// Display a set of data with hierarchies.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTree", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTree")]
 public sealed class ElTree : ElContentComponentBase
 {
     [Parameter]
@@ -5657,7 +5657,7 @@ public sealed class ElTree : ElContentComponentBase
 /// <summary>
 /// ElTreeSelect
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTreeSelect", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTreeSelect")]
 public sealed class ElTreeSelect : ElContentComponentBase
 {
     [Parameter]
@@ -5990,7 +5990,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
 /// <summary>
 /// el-tree-v2
 /// </summary>
-[VueLibraryComponent("element-plus", "ElTreeV2", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElTreeV2")]
 public sealed class ElTreeV2 : ElContentComponentBase
 {
     [Parameter]
@@ -6079,7 +6079,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
 /// <summary>
 /// Upload files by clicking or drag-and-drop.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElUpload", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElUpload")]
 public sealed class ElUpload : ElContentComponentBase
 {
     [Parameter]
@@ -6177,7 +6177,7 @@ public sealed class ElUpload : ElContentComponentBase
 /// <summary>
 /// :::tip
 /// </summary>
-[VueLibraryComponent("element-plus", "ElSelectV2", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElSelectV2")]
 public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
     [Parameter]
@@ -6402,7 +6402,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
 /// <summary>
 /// Add specific text or patterns to the page.
 /// </summary>
-[VueLibraryComponent("element-plus", "ElWatermark", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]
+[VueLibraryComponent("element-plus", "ElWatermark")]
 public sealed class ElWatermark : ElContentComponentBase
 {
     [Parameter]

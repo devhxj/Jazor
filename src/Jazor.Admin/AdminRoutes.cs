@@ -26,7 +26,7 @@ public sealed record AdminRouteDefinition : VueProps
     public AdminRouteDefinition[]? Children { get; init; }
 }
 
-[ECMAScriptModule("components/jazor-admin-admin-route-catalog.mjs")]
+[ECMAScriptModule("components/admin/routes.mjs")]
 public static class AdminRouteCatalog
 {
     private const string CatchAllPath = "/:pathMatch(.*)*";

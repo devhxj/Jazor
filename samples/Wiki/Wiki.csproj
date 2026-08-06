@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <JazorMode>debug</JazorMode>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.props" />
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\jazor\**" />
+    <Content Remove="wwwroot\jazor\**" />
+    <EmbeddedResource Remove="wwwroot\jazor\**" />
+    <None Remove="wwwroot\jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="host\index.template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Source builds do not import ECMAScript.Vue3's packaged buildTransitive target. -->
+    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue3\frontend\manifest.json" />
+    <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
+    </ItemGroup>
+  </Target>
+  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.targets" />
+</Project>

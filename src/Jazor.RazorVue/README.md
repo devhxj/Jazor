@@ -7,13 +7,13 @@
 
 ## Responsibilities
 
-- `RazorSgGeneratedCSharpBinder` 直接复用最终 compilation 中的官方 generated tree，绑定组件类型与 `BuildRenderTree(RenderTreeBuilder)` block operation。
-- `RazorSgComponentCandidateSelector` 发现并选择最终 compilation 中的 RazorVue 组件。
-- `RazorSgComponentMemberClosureBuilder` 选择 `BuildRenderTree` / supported lifecycle roots，并使用本项目的 `CurrentComponentMemberClosure` 建立可达成员闭包；它以 `AstConverterOptions(Standard, MemberFilter, RazorVueSemanticWalkerHost, RazorVueModulePolicy)` 进入核心转译器。
-- `RazorSdk/Lowering/` 拥有 current-component、RenderTreeBuilder、children-to-slot、组件 state 默认值和 module projection；`RazorVueSemanticWalkerHost` 以组合而非继承 `SemanticWalker` 的方式协调这些 projection。
+- `GeneratedCSharpBinder` 直接复用最终 compilation 中的官方 generated tree，绑定组件类型与 `BuildRenderTree(RenderTreeBuilder)` block operation。
+- `ComponentSelector` 发现并选择最终 compilation 中的 RazorVue 组件。
+- `MemberClosureBuilder` 选择 `BuildRenderTree` / supported lifecycle roots，并使用本项目的 `CurrentComponentMemberClosure` 建立可达成员闭包；它以 `AstConverterOptions(Standard, MemberFilter, VueSemanticWalkerHost, VueModulePolicy)` 进入核心转译器。
+- `RazorSdk/Lowering/` 拥有 current-component、RenderTreeBuilder、children-to-slot、组件 state 默认值和 module projection；`VueSemanticWalkerHost` 以组合而非继承 `SemanticWalker` 的方式协调这些 projection。
 - `RazorSdk/Catalog/` 拥有 EventCallback、RenderTreeBuilder 和 WebRenderTreeBuilderExtensions 的 ASP.NET Components `Op.Allowed` 声明；`Jazor.Compiler.Generator` 从该明确目录生成 compiler 消费的统一 whitelist。
-- `RazorSgVueComponentModuleBuilder` 提供最小内存 `.mjs` framing：将 compiler 产出的可达方法包入 `defineComponent` / `setup(props)` / reactive state / render-context 调用，并生成 deterministic component id、relative path、content hash 与 `.mjs.map` payload；source map 首切片已串联 wrapper map、compiler origin map 与 Razor SG source mappings，避免停在 `.razor.g.cs`。
-- `RazorSourceGeneratorTailOutput` 将 successful binding 后的 `.mjs` artifact 编码为版本化 `Jazor.Generated.VueRenderCatalog` carrier，并在 driver 返回前追加为 syntax tree；`Jazor.Emit` 在 build 成功后负责写盘。
+- `VueModuleBuilder` 提供最小内存 `.mjs` framing：将 compiler 产出的可达方法包入 `defineComponent` / `setup(props)` / reactive state / render-context 调用，并生成 deterministic component id、relative path、content hash 与 `.mjs.map` payload；source map 首切片已串联 wrapper map、compiler origin map 与 Razor SG source mappings，避免停在 `.razor.g.cs`。
+- `RazorTailOutput` 将 successful binding 后的 `.mjs` artifact 编码为版本化 `Jazor.Generated.VueRenderCatalog` carrier，并在 driver 返回前追加为 syntax tree；`Jazor.Emit` 在 build 成功后负责写盘。
 - 组件选择和 artifact 排序必须保持确定性，并在绑定失败时返回可定位诊断。
 
 ## Boundaries
@@ -32,13 +32,13 @@
 ## Current Layout
 
 - `Generation/RazorVueGenerator.cs`: analyzer generator 入口与 driver hook 初始化。
-- `Generation/RazorSourceGeneratorTailOutput.cs`: final compilation -> render catalog carrier。
-- `RazorSdk/RazorSgGeneratedCSharpBinder.cs`: final generated C# 与 `BuildRenderTree` 语义绑定。
-- `RazorSdk/RazorSgComponentCandidateSelector.cs`: RazorVue 组件发现、筛选与唯一匹配。
-- `RazorSdk/RazorSgComponentMemberClosureBuilder.cs`: SG binding -> compiler current-component closure/options 适配。
+- `Generation/RazorTailOutput.cs`: final compilation -> render catalog carrier。
+- `RazorSdk/GeneratedCSharpBinder.cs`: final generated C# 与 `BuildRenderTree` 语义绑定。
+- `RazorSdk/ComponentSelector.cs`: RazorVue 组件发现、筛选与唯一匹配。
+- `RazorSdk/MemberClosureBuilder.cs`: SG binding -> compiler current-component closure/options 适配。
 - `RazorSdk/Lowering/`: RazorVue product host、member closure、state defaults 与 direct render lowering。
 - `RazorSdk/Catalog/`: RazorVue-owned ASP.NET Components whitelist catalog 与同目录文档。
-- `RazorSdk/RazorSgVueComponentModuleBuilder.cs`: compiler output -> minimal in-memory Vue render-function module framing。
+- `RazorSdk/VueModuleBuilder.cs`: compiler output -> minimal in-memory Vue render-function module framing。
 
 ## Verification
 

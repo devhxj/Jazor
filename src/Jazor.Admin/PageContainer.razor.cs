@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("./components/jazor-admin-page-container")]
+[ECMAScriptModule("./components/admin/page")]
 public partial class PageContainer : AdminContentComponentBase, IVueContainerComponent
 {
     [Parameter]

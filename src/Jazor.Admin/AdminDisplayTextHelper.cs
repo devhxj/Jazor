@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("components/jazor-admin-display-text-helper.mjs")]
+[ECMAScriptModule("components/admin/display-text.mjs")]
 internal static class AdminDisplayTextHelper
 {
     public static string? Normalize(string? value)

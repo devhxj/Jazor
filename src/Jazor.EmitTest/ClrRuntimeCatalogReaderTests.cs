@@ -395,7 +395,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(dateTimeOffsetModule.Content.Contains("createRoundedTicksFromDouble(days * 864000000000)", StringComparison.Ordinal), dateTimeOffsetModule.Content);
     }
 
-    private static void AssertContainsModule(IReadOnlyList<EmitModuleRecord> modules, string relativePath)
+    private static void AssertContainsModule(IReadOnlyList<ModuleRecord> modules, string relativePath)
     {
         var module = modules.SingleOrDefault(module => string.Equals(module.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase));
 
