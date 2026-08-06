@@ -92,7 +92,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - RazorVue now infers conventional `XChanged` model updates and `OnX` events directly. Vuetify callbacks consistently use `OnX`, while explicit emit metadata is limited to raw Vue names that C# naming cannot reconstruct.
 - Vuetify's 113 and TDesign's 14 erased-value domains now use native C# unions. ElementPlus uses native unions for 45 of 46 domains; its single `File` versus `Blob` overlap retains a tagged contract for exact projections. None of the three libraries requires `From(...)` factories.
 - Element Plus and TDesign component binding types now use the same concise `El*` and `T*` prefixes as their components. Root package hosts and library-specific marker interfaces retain full names for clear cross-library references.
-- Vue library components now declare their official styles together with their JavaScript imports. RazorVue loads only the styles used by rendered library components, and JazorAdmin no longer needs a duplicate TDesign stylesheet declaration.
+- Vue binding packages keep their browser modules, styles, and licenses as local manifest-owned resources. RazorVue materializes them directly, so component contracts carry no stylesheet URL metadata and applications need no duplicate library stylesheet declaration.
+- Element Plus, Vuetify, and TDesign binding maintenance now uses one reproducible generator with deterministic validation commands. Frozen upstream inputs remain in that maintenance project, outside the published binding packages.
 - Vue 3, Vue Router, Pinia, Vuetify, Element Plus, and TDesign now ship their browser ESM, styles, and licenses inside their NuGet packages. Application builds materialize only local package resources, so they no longer require a project `node_modules`, CDN imports, npm downloads, or network access.
 
 See [release notes](docs/releases/release-notes.md) for the full history.

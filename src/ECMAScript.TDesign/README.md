@@ -12,7 +12,7 @@ from the restored NuGet packages into the generated application's local `vendor/
 directory. No `node_modules` lookup is part of the consumer path.
 
 The component binding input is driven by the versioned upstream snapshot under
-`upstream/tdesign-vue-next/1.20.5`. `components.json` lists the 120 documented entries
+`../ECMAScript.Vue.Generator/upstream/tdesign-vue-next/1.20.5`. `components.json` lists the 120 documented entries
 whose exports exist in the current browser ESM, while `bindings.json` maps each entry to
 its real module, named export, and TypeScript Props declaration. `contracts.json` resolves
 each documented prop to its current TypeScript type and declaration source, including the
@@ -22,13 +22,13 @@ only tags without a current runtime export are not binding inputs.
 Update the upstream input with:
 
 ```text
-dotnet run --file scripts/csharp/generate-tdesign.cs
-dotnet run --file scripts/csharp/generate-tdesign-bindings.cs
-dotnet run --file scripts/csharp/generate-tdesign-components.cs
-dotnet run --file scripts/csharp/generate-tdesign.cs -- --check
-dotnet run --file scripts/csharp/generate-tdesign-bindings.cs -- --check
-dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --report
-dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ```
 
 These are package-maintainer tools. They use .NET to snapshot the locked upstream
@@ -36,7 +36,7 @@ version and Tree-sitter to read its TypeScript syntax, then generate audited bin
 Props-contract catalogs. They are never invoked by application build or publish, and do
 not create a consumer dependency on Node.js, npm, or Tree-sitter.
 
-`generate-tdesign-components.cs` is a full-coverage verification gate. It emits the
+`ECMAScript.Vue.Generator tdesign components` is a full-coverage verification gate. It emits the
 118 current runtime components only when every declared prop has a concrete C# type;
 the generated catalog and `--report` must remain `118/118`. It never substitutes
 `object`, `VueValue`, or placeholder contracts to preserve component coverage.

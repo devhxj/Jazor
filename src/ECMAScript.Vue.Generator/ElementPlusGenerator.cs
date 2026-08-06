@@ -1,7 +1,3 @@
-#!/usr/bin/env dotnet run
-#:project ../../src/ECMAScript.Vue3/ECMAScript.Vue3.csproj
-#:project ../../src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj
-
 #nullable enable
 
 using System;
@@ -13,9 +9,11 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using ECMAScript.ElementPlus;
 using static ECMAScript.Vue3;
+using File = global::System.IO.File;
 
-internal static class Program
+internal static class ElementPlusGenerator
 {
+    private static bool _check;
     private const string CssClassPropertyName = "CssClass";
     private const string CssStylePropertyName = "CssStyle";
     private const string AdditionalAttributesPropertyName = "AdditionalAttributes";
@@ -451,11 +449,21 @@ internal static class Program
         ]
     };
 
-    private static void Main()
+    public static void Run(string[] args)
     {
+        _check = args is ["--check"];
+        if (!_check && args.Length != 0)
+            throw new ArgumentException("Supported arguments: --check.");
+
         var repositoryRoot = ResolveRepositoryRoot();
         var packageRoot = Path.Combine(repositoryRoot, "src", "ECMAScript.ElementPlus");
-        var metadataRoot = Path.Combine(repositoryRoot, ".tmp", "elementplus-inspect", "package");
+        var metadataRoot = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.Vue.Generator",
+            "upstream",
+            "element-plus",
+            "2.9.8");
 
         var webTypesPath = Path.Combine(metadataRoot, "web-types.json");
         var attributesPath = Path.Combine(metadataRoot, "attributes.json");
@@ -519,7 +527,10 @@ internal static class Program
             Path.Combine(packageRoot, "ElementPlusDirectiveRegistry.cs"),
             RenderDirectiveRegistry(directives));
 
-        Console.WriteLine($"Generated {components.Length} Element Plus components and {directives.Length} directives.");
+        Console.WriteLine(
+            _check
+                ? $"Element Plus bindings are current: {components.Length} components and {directives.Length} directives."
+                : $"Generated {components.Length} Element Plus components and {directives.Length} directives.");
     }
 
     private static string RenderComponentExports(ElementPlusComponentMetadata[] components)
@@ -598,7 +609,7 @@ internal static class Program
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
-            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\", StyleUrls = [ElementPlusLibraryAssets.StyleUrl])]");
+            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
 
             foreach (var emit in component.Emits.Where(RequiresExplicitEmitName))
             {
@@ -850,6 +861,16 @@ internal static class Program
     {
         var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
             .Replace("\n", Environment.NewLine, StringComparison.Ordinal);
+
+        if (_check)
+        {
+            if (!File.Exists(path) || !string.Equals(File.ReadAllText(path), normalized, StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    $"Element Plus binding is stale: {GetRepositoryRelativePath(path)}. Run `dotnet run --project src/ECMAScript.Vue.Generator -- elementplus`.");
+
+            return;
+        }
+
         File.WriteAllText(path, normalized, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 

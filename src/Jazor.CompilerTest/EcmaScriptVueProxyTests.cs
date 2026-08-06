@@ -4169,7 +4169,7 @@ public sealed class EcmaScriptVueProxyTests
         var path = Path.Combine(
             repositoryRoot,
             "src",
-            "ECMAScript.TDesign",
+            "ECMAScript.Vue.Generator",
             "upstream",
             "tdesign-vue-next",
             "1.20.5",
@@ -4178,7 +4178,7 @@ public sealed class EcmaScriptVueProxyTests
         var bindingsPath = Path.Combine(
             repositoryRoot,
             "src",
-            "ECMAScript.TDesign",
+            "ECMAScript.Vue.Generator",
             "upstream",
             "tdesign-vue-next",
             "1.20.5",

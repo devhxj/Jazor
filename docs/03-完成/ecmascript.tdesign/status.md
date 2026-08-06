@@ -5,7 +5,7 @@
 
 ## 交付边界
 
-- npm registry 的 `latest` 为 `tdesign-vue-next@1.20.5`；本仓库的版本化上游快照位于 `upstream/tdesign-vue-next/1.20.5`。
+- npm registry 的 `latest` 为 `tdesign-vue-next@1.20.5`；本仓库的版本化上游快照位于 `src/ECMAScript.Vue.Generator/upstream/tdesign-vue-next/1.20.5`。
 - `components.json` 记录 120 个文档条目，生成链将别名归并为 118 个唯一运行时组件；`contracts.json`、`bindings.json` 与 `TBasic.g.cs`、`TComponents.cs`、`TRegistry.cs` 由同一冻结输入生成。
 - 每个组件的 prop 使用 `[Parameter]`，仅在原始 Vue 名称不同才使用 `[ECMAScriptName]`；slot 使用 `RenderFragment` / `RenderFragment<T>`；event 使用 `EventCallback` / `EventCallback<T>`，异常原始事件名使用 `VueLibraryEmit`。
 - authoring contract 不引入额外的 prop/slot 元数据特性。
@@ -20,13 +20,13 @@
 
 ## 可重复生成
 
-维护者通过以下三个单文件 C# 工具更新或验证绑定。Tree-sitter 仅在维护者生成时解析冻结的 TypeScript 声明，不进入消费者运行时或构建依赖。
+维护者通过独立的 `ECMAScript.Vue.Generator` 项目更新或验证绑定。Tree-sitter 仅在维护者生成时解析冻结的 TypeScript 声明，不进入消费者运行时或构建依赖。
 
 ```text
-dotnet run --file scripts/csharp/generate-tdesign.cs -- --check
-dotnet run --file scripts/csharp/generate-tdesign-bindings.cs -- --check
-dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --report
-dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings --check
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ```
 
 当前检查结果：上游快照有效，940 个导出的 TypeScript 声明已索引，120/120 个文档组件均找到 Props 定义，118/118 个运行时组件均生成并映射到 authoring surface。

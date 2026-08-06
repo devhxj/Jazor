@@ -1,0 +1,181 @@
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace ECMAScript.Vue.Generator;
+
+/// <summary>
+/// 从现有组件契约生成 Vuetify 的导出和注册目录。
+/// Props 仍由每个组件源文件维护，避免把不完整的上游类型伪装为完整生成结果。
+/// </summary>
+internal static class VuetifyCatalogGenerator
+{
+    private const string StableModule = "vuetify/components";
+    private const string LabsModule = "vuetify/labs/components";
+
+    public static void Run(string[] args)
+    {
+        var check = args is ["--check"];
+        if (!check && args.Length != 0)
+            throw new ArgumentException("Supported arguments: --check.");
+
+        var repositoryRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
+        var projectRoot = Path.Combine(repositoryRoot, "src", "ECMAScript.Vuetify");
+        var outputPath = Path.Combine(projectRoot, "VuetifyCatalog.g.cs");
+        var components = ReadComponents(projectRoot);
+        var source = Render(components);
+
+        if (check)
+        {
+            if (!global::System.IO.File.Exists(outputPath) || !string.Equals(global::System.IO.File.ReadAllText(outputPath), source, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "Vuetify export and registry catalogs are stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- vuetify`.");
+            }
+
+            Console.WriteLine($"Vuetify catalogs are current: {components.Count} components.");
+            return;
+        }
+
+        global::System.IO.File.WriteAllText(outputPath, source, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        Console.WriteLine($"Generated Vuetify catalogs: {components.Count} components.");
+    }
+
+    private static IReadOnlyList<Component> ReadComponents(string projectRoot)
+    {
+        var components = new List<Component>();
+        var seenExports = new HashSet<(string Module, string Export)>();
+
+        foreach (var path in Directory.EnumerateFiles(projectRoot, "*.cs", SearchOption.AllDirectories)
+                     .Where(static path => !path.EndsWith(".g.cs", StringComparison.Ordinal))
+                     .OrderBy(static path => path, StringComparer.Ordinal))
+        {
+            var root = CSharpSyntaxTree.ParseText(global::System.IO.File.ReadAllText(path), path: path).GetRoot();
+            foreach (var declaration in root.DescendantNodes().OfType<ClassDeclarationSyntax>())
+            {
+                var attribute = declaration.AttributeLists
+                    .SelectMany(static list => list.Attributes)
+                    .SingleOrDefault(IsVueLibraryComponent);
+                if (attribute is null)
+                    continue;
+
+                var arguments = attribute.ArgumentList?.Arguments;
+                if (arguments is not { Count: 2 } ||
+                    !TryReadString(arguments.Value[0], out var module) ||
+                    !TryReadString(arguments.Value[1], out var export))
+                {
+                    throw new InvalidOperationException(
+                        $"VueLibraryComponent on {Path.GetFileName(path)} must declare module and export string literals.");
+                }
+
+                if (module is not StableModule and not LabsModule)
+                    throw new InvalidOperationException($"Unsupported Vuetify component module '{module}' on {declaration.Identifier.ValueText}.");
+
+                if (!seenExports.Add((module, export)))
+                    throw new InvalidOperationException($"Duplicate Vuetify component export '{module}:{export}'.");
+
+                components.Add(new Component(module, export, declaration.Identifier.ValueText));
+            }
+        }
+
+        if (components.Count == 0)
+            throw new InvalidOperationException("No [VueLibraryComponent] declarations were found in ECMAScript.Vuetify.");
+
+        return components
+            .OrderBy(static component => component.Module, StringComparer.Ordinal)
+            .ThenBy(static component => component.Export, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static bool IsVueLibraryComponent(AttributeSyntax attribute)
+        => attribute.Name.ToString() is "VueLibraryComponent" or "VueLibraryComponentAttribute";
+
+    private static bool TryReadString(AttributeArgumentSyntax argument, out string value)
+    {
+        if (argument.Expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
+        {
+            value = literal.Token.ValueText;
+            return true;
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static string Render(IReadOnlyList<Component> components)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
+        builder.AppendLine("// <auto-generated />");
+        builder.AppendLine();
+        builder.AppendLine("namespace ECMAScript.Vuetify;");
+        builder.AppendLine();
+
+        RenderExports(builder, components.Where(static component => component.Module == StableModule), "VuetifyComponents");
+        builder.AppendLine();
+        RenderExports(builder, components.Where(static component => component.Module == LabsModule), "VuetifyLabsComponents");
+        builder.AppendLine();
+        RenderRegistry(builder, components.Where(static component => component.Module == StableModule), "VuetifyComponentRegistry", "stable Vuetify components");
+        builder.AppendLine();
+        RenderRegistry(builder, components.Where(static component => component.Module == LabsModule), "VuetifyLabsComponentRegistry", "Vuetify labs components");
+
+        return builder.ToString();
+    }
+
+    private static void RenderExports(StringBuilder builder, IEnumerable<Component> components, string catalogName)
+    {
+        var materialized = components.ToArray();
+        var module = materialized[0].Module;
+        builder.AppendLine($"[ECMAScript(\"{module}\")]");
+        builder.AppendLine($"public static class {catalogName}");
+        builder.AppendLine("{");
+        foreach (var component in materialized)
+        {
+            builder.AppendLine($"    [ECMAScriptName(\"{component.Export}\")]");
+            builder.AppendLine($"    public extern static IVuetifyComponent {component.Export} {{ get; }}");
+            builder.AppendLine();
+        }
+
+        builder.Length -= Environment.NewLine.Length;
+        builder.AppendLine("}");
+    }
+
+    private static void RenderRegistry(
+        StringBuilder builder,
+        IEnumerable<Component> components,
+        string catalogName,
+        string description)
+    {
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// Registry of {description}.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[ECMAScript]");
+        builder.AppendLine($"[Description(\"@#{catalogName}\")]");
+        builder.AppendLine($"public sealed record {catalogName} : VueComponentRegistry");
+        builder.AppendLine("{");
+        foreach (var component in components)
+        {
+            builder.AppendLine($"    [Description(\"@#{component.Export}\")]");
+            builder.AppendLine($"    public IVuetifyComponent? {component.Export} {{ get; init; }}");
+            builder.AppendLine();
+        }
+
+        builder.Length -= Environment.NewLine.Length;
+        builder.AppendLine("}");
+    }
+
+    private static string FindRepositoryRoot(string startDirectory)
+    {
+        for (var directory = new DirectoryInfo(Path.GetFullPath(startDirectory)); directory is not null; directory = directory.Parent)
+        {
+            if (global::System.IO.File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+        }
+
+        throw new InvalidOperationException("Unable to locate Jazor.slnx.");
+    }
+
+    private sealed record Component(string Module, string Export, string TypeName);
+}

@@ -25,5 +25,5 @@
 
 # Upstream assets and frozen declarations are copied byte-for-byte.
 src/ECMAScript.*/dist/** -whitespace
-src/ECMAScript.TDesign/upstream/** -whitespace
+src/ECMAScript.Vue.Generator/upstream/** -whitespace
 src/Jazor.Emit/tooling/vue/*.js -whitespace

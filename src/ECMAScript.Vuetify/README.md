@@ -89,8 +89,8 @@
 - `VWindow.cs`, `VTabsWindow.cs`, `VTabsWindowItem.cs`: window/tabs panel 组件的 group model、navigation、touch handlers、transition 和 group:selected 合同。
 - `VWindowSlotContexts.cs`: window default/additional/prev/next scoped slot、touch directive 和 group provide 合同。
 - `VuetifyObserverTypes.cs`: `VLazy` intersection observer options 合同。
-- `VuetifyComponentRegistry.cs`, `VuetifyLabsComponentRegistry`, `VuetifyDirectiveRegistry.cs`: normal/labs 组件与指令注册表。
-- `VuetifyComponentExports.cs`, `VuetifyDirectiveExports.cs`: normal/labs 导出聚合。
+- `VuetifyCatalog.g.cs`, `VuetifyDirectiveRegistry.cs`: normal/labs 组件与指令注册表。
+- `VuetifyCatalog.g.cs`, `VuetifyDirectiveExports.cs`: normal/labs 导出聚合；前者从当前 `[VueLibraryComponent]` 契约生成。
 
 ## Read Next
 

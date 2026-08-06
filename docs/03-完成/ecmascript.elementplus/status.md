@@ -8,11 +8,11 @@
 
 `ECMAScript.ElementPlus` 当前已经完成从“元数据驱动生成已落地”到“首批高风险弱面已系统收口”的阶段推进：
 
-- 生成入口已统一为 `scripts/csharp/generate-elementplus-bindings.cs`；
+- 生成入口已统一为 `src/ECMAScript.Vue.Generator` 的 `elementplus` 命令；
 - 生成数据源已固定为本地官方元数据：
-  - `.tmp/elementplus-inspect/package/web-types.json`
-  - `.tmp/elementplus-inspect/package/attributes.json`
-  - `.tmp/elementplus-inspect/package/es/component.mjs`
+  - `src/ECMAScript.Vue.Generator/upstream/element-plus/2.9.8/web-types.json`
+  - `src/ECMAScript.Vue.Generator/upstream/element-plus/2.9.8/attributes.json`
+  - `src/ECMAScript.Vue.Generator/upstream/element-plus/2.9.8/es/component.mjs`
   - 相关组件 `.d.ts`
 - `ElementPlusComponentExports` / `ElementPlusComponentRegistry` / `ElementPlus.Components.generated.cs` 已由同一生成链产出；
 - authoring export 与 runtime export 已支持分离映射，当前已覆盖 `ElVirtualizedSelect -> ElSelectV2`；
