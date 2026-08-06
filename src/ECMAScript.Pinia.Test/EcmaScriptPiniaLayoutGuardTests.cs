@@ -88,7 +88,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
 		StringAssert.Contains(source, "case \"--package-version\"");
@@ -98,6 +98,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "[\"jazor-vue\"] = \"Jazor.Vue\"");
 		StringAssert.Contains(source, "[\"style\"] = \"ECMAScript.Style\"");
 		StringAssert.Contains(source, "[\"admin\"] = \"Jazor.Admin\"");
+		StringAssert.Contains(source, "[\"elementplus\"] = \"ECMAScript.ElementPlus\"");
 		StringAssert.Contains(source, "[\"tdesign\"] = \"ECMAScript.TDesign\"");
 		StringAssert.Contains(source, "RequiresJazorEmitPublishOutput: true");
 		StringAssert.Contains(source, "DisableJazorPreparePackageArtifactsOnNoBuild: true");
@@ -169,6 +170,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--package pinia-testing `");
 		StringAssert.Contains(source, "--package vueroute `");
 		StringAssert.Contains(source, "--package vuetify `");
+		StringAssert.Contains(source, "--package elementplus `");
 		StringAssert.Contains(source, "--package tdesign `");
 		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia/'");
 		StringAssert.Contains(source, "--base-intermediate-output-path 'artifacts/obj/pinia/'");
@@ -201,6 +203,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--package pinia-testing `");
 		StringAssert.Contains(source, "--package vueroute `");
 		StringAssert.Contains(source, "--package vuetify `");
+		StringAssert.Contains(source, "--package elementplus `");
 		StringAssert.Contains(source, "--package tdesign `");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");

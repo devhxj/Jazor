@@ -100,7 +100,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.3.1
+dotnet add package Jazor --version 0.3.2
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -109,8 +109,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.1" />
-  <PackageReference Include="Jazor.Vue" Version="0.3.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.3.2" />
+  <PackageReference Include="Jazor.Vue" Version="0.3.2" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -118,11 +118,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.1" />
-  <PackageReference Include="ECMAScript.Style" Version="0.3.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.3.1" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.1" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.1" />
+  <PackageReference Include="Jazor" Version="0.3.2" />
+  <PackageReference Include="ECMAScript.Style" Version="0.3.2" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.3.2" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.2" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.2" />
 </ItemGroup>
 ```
 

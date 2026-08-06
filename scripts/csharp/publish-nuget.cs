@@ -276,11 +276,36 @@ static void AssertNuspecNoBuildPackInputsExist(
         }
 
         var resolvedPath = ResolvePackInputPath(roots, src, configuration, packageReadmeFile);
-        if (!File.Exists(resolvedPath) && !Directory.Exists(resolvedPath))
+        if (ContainsGlob(src))
+        {
+            var globRoot = ResolvePackInputGlobRoot(roots, src, configuration, packageReadmeFile);
+            if (!Directory.Exists(globRoot) || !Directory.EnumerateFileSystemEntries(globRoot).Any())
+            {
+                missingInputs.Add(globRoot);
+            }
+        }
+        else if (!File.Exists(resolvedPath) && !Directory.Exists(resolvedPath))
         {
             missingInputs.Add(resolvedPath);
         }
     }
+}
+
+static bool ContainsGlob(string include)
+    => include.Contains('*', StringComparison.Ordinal) ||
+       include.Contains('?', StringComparison.Ordinal);
+
+static string ResolvePackInputGlobRoot(
+    NoBuildPackInputRoots roots,
+    string include,
+    string configuration,
+    string packageReadmeFile)
+{
+    var wildcardIndex = include.IndexOfAny(['*', '?']);
+    var prefix = wildcardIndex < 0 ? include : include.Substring(0, wildcardIndex);
+    var separatorIndex = prefix.LastIndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '\\', '/']);
+    var rootInclude = separatorIndex < 0 ? "." : prefix.Substring(0, separatorIndex);
+    return ResolvePackInputPath(roots, rootInclude, configuration, packageReadmeFile);
 }
 
 static NoBuildPackInputRoots GetNoBuildPackInputRoots(

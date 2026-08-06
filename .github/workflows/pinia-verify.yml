@@ -121,6 +121,7 @@ jobs:
             --package pinia-testing `
             --package vueroute `
             --package vuetify `
+            --package elementplus `
             --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
@@ -138,6 +139,7 @@ jobs:
             --package pinia-testing `
             --package vueroute `
             --package vuetify `
+            --package elementplus `
             --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
