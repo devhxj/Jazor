@@ -1,10 +1,10 @@
 // Owns the editable projection of one OpenIddict application descriptor.
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
 
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/oidc-app.mjs")]
-public partial class OidcAppPage : AppComponentBase, IVueContainerComponent
+[ECMAScriptModule("components/sso-app")]
+public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
 {
     private bool loading = true;
     private string? error;

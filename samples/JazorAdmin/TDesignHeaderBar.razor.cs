@@ -23,5 +23,5 @@ public partial class TDesignHeaderBar : AdminComponentBase
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
-    private const string RootCssClass = "jazor-admin-tdesign-header";
+    private const string RootCssClass = "ja-tdesign-header";
 }

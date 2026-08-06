@@ -20,7 +20,7 @@ public partial class IconBar : AdminComponentBase
     [Parameter]
     public string? AriaLabel { get; set; }
 
-    private const string RootCssClass = "jazor-admin-iconbar";
+    private const string RootCssClass = "ja-iconbar";
 
     private AdminNavItem[] EffectiveItems => Items?.AsArray ?? [];
 
@@ -54,7 +54,7 @@ public partial class IconBar : AdminComponentBase
         builder.AddComponentParameter(
             2,
             nameof(VueRouterLink.CssClass),
-            (VueClassValue)(selected ? "jazor-admin-iconbar__link is-selected" : "jazor-admin-iconbar__link"));
+            (VueClassValue)(selected ? "ja-iconbar__link is-selected" : "ja-iconbar__link"));
         builder.AddComponentParameter(3, "data-iconbar-key", item.Key);
         builder.AddComponentParameter(4, "data-iconbar-selected", selected);
         builder.AddComponentParameter(5, "aria-label", item.Title ?? item.Key);
@@ -66,7 +66,7 @@ public partial class IconBar : AdminComponentBase
             (RenderFragment)(childBuilder =>
             {
                 childBuilder.OpenElement(0, "span");
-                childBuilder.AddAttribute(1, "class", "jazor-admin-iconbar__icon");
+                childBuilder.AddAttribute(1, "class", "ja-iconbar__icon");
                 childBuilder.AddAttribute(2, "data-iconbar-icon", item.Icon ?? item.Key);
                 childBuilder.AddAttribute(3, "aria-hidden", "true");
                 childBuilder.CloseElement();

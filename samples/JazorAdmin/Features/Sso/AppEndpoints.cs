@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using OpenIddict.Abstractions;
 
-namespace JazorAdmin.Features.Configuration;
+namespace JazorAdmin.Features.Sso;
 
 internal static class AppEndpoints
 {
@@ -84,7 +84,7 @@ internal static class AppEndpoints
 
         var application = await applications.CreateAsync(descriptor, cancellationToken);
         var view = await ToViewAsync(application, applications, cancellationToken);
-        return Results.Created("/api/configuration/applications/" + view.Id, new AppSaved(view, secret));
+        return Results.Created("/api/sso/applications/" + view.Id, new AppSaved(view, secret));
     }
 
     private static async Task<IResult> UpdateAsync(

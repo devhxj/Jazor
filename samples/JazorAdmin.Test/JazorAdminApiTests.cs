@@ -9,7 +9,9 @@ using System.Text.Json;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
+using JazorAdmin.Features.Scheduling;
+using JazorAdmin.Features.Settings;
 using JazorAdmin.Features.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace JazorAdmin.Test;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class JazorAdminApiTests
 {
     [TestMethod]
@@ -33,10 +36,12 @@ public sealed class JazorAdminApiTests
                      "/",
                      "/organizations/structure",
                      "/accounts",
-                     "/configuration/applications",
-                     "/configuration/scopes",
-                     "/configuration/authorizations",
-                     "/configuration/tokens"
+                     "/sso/applications",
+                     "/sso/scopes",
+                     "/sso/authorizations",
+                     "/sso/tokens",
+                     "/settings",
+                     "/schedules"
                  })
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, path);
@@ -174,7 +179,7 @@ public sealed class JazorAdminApiTests
         Assert.IsNotNull(accounts);
         Assert.IsFalse(accounts.Single(item => item.Id == account.Id).Enabled);
 
-        using var createdScope = await administratorClient.PostAsJsonAsync("/api/configuration/scopes", new
+        using var createdScope = await administratorClient.PostAsJsonAsync("/api/sso/scopes", new
         {
             name = "reports",
             displayName = "Reporting access",
@@ -186,7 +191,7 @@ public sealed class JazorAdminApiTests
         Assert.IsNotNull(scope);
         CollectionAssert.Contains(scope.Resources.ToArray(), "reports-api");
 
-        using var updatedScope = await administratorClient.PutAsJsonAsync("/api/configuration/scopes/" + scope.Id, new
+        using var updatedScope = await administratorClient.PutAsJsonAsync("/api/sso/scopes/" + scope.Id, new
         {
             displayName = "Reporting API access",
             description = "Updated scope description.",
@@ -198,7 +203,7 @@ public sealed class JazorAdminApiTests
         Assert.AreEqual("Updated scope description.", savedScope.Description);
         CollectionAssert.Contains(savedScope.Resources.ToArray(), "audit-api");
 
-        using var createdMachine = await administratorClient.PostAsJsonAsync("/api/configuration/applications", new
+        using var createdMachine = await administratorClient.PostAsJsonAsync("/api/sso/applications", new
         {
             clientId = "reports-worker",
             displayName = "Reports worker",
@@ -220,7 +225,7 @@ public sealed class JazorAdminApiTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(machine.Secret));
 
         using var updatedMachine = await administratorClient.PutAsJsonAsync(
-            "/api/configuration/applications/" + machine.App.Id,
+            "/api/sso/applications/" + machine.App.Id,
             new
             {
                 displayName = "Reports background worker",
@@ -243,7 +248,7 @@ public sealed class JazorAdminApiTests
 
         var accessToken = await ExchangeClientCredentialsAsync(machine.Secret!);
 
-        using var createdApi = await administratorClient.PostAsJsonAsync("/api/configuration/applications", new
+        using var createdApi = await administratorClient.PostAsJsonAsync("/api/sso/applications", new
         {
             clientId = "reports-api",
             displayName = "Reports API",
@@ -274,7 +279,7 @@ public sealed class JazorAdminApiTests
             Assert.IsTrue(payload.RootElement.GetProperty("active").GetBoolean());
 
         using var rotated = await administratorClient.PostAsync(
-            "/api/configuration/applications/" + machine.App.Id + "/secret",
+            "/api/sso/applications/" + machine.App.Id + "/secret",
             content: null);
         Assert.AreEqual(HttpStatusCode.OK, rotated.StatusCode);
         var secret = await rotated.Content.ReadFromJsonAsync<SecretView>();
@@ -285,17 +290,17 @@ public sealed class JazorAdminApiTests
         Assert.AreEqual(HttpStatusCode.Unauthorized, oldSecretExchange.StatusCode);
         _ = await ExchangeClientCredentialsAsync(secret.Secret);
 
-        using var applicationList = await administratorClient.GetAsync("/api/configuration/applications");
+        using var applicationList = await administratorClient.GetAsync("/api/sso/applications");
         var applications = await applicationList.Content.ReadFromJsonAsync<AppView[]>();
         Assert.IsNotNull(applications);
         Assert.IsTrue(applications.Any(item => item.ClientId == "reports-worker"));
         Assert.IsTrue(applications.Any(item => item.ClientId == "reports-api"));
 
-        using var deletedApi = await administratorClient.DeleteAsync("/api/configuration/applications/" + api.App.Id);
+        using var deletedApi = await administratorClient.DeleteAsync("/api/sso/applications/" + api.App.Id);
         Assert.AreEqual(HttpStatusCode.NoContent, deletedApi.StatusCode);
-        using var deletedMachine = await administratorClient.DeleteAsync("/api/configuration/applications/" + machine.App.Id);
+        using var deletedMachine = await administratorClient.DeleteAsync("/api/sso/applications/" + machine.App.Id);
         Assert.AreEqual(HttpStatusCode.NoContent, deletedMachine.StatusCode);
-        using var deletedScope = await administratorClient.DeleteAsync("/api/configuration/scopes/" + scope.Id);
+        using var deletedScope = await administratorClient.DeleteAsync("/api/sso/scopes/" + scope.Id);
         Assert.AreEqual(HttpStatusCode.NoContent, deletedScope.StatusCode);
 
         async Task<string> ExchangeClientCredentialsAsync(string clientSecret)
@@ -317,6 +322,96 @@ public sealed class JazorAdminApiTests
     }
 
     [TestMethod]
+    public async Task PlatformAdministration_ManagesTypedSettingsAndQuartzSchedules()
+    {
+        await using var factory = new JazorAdminFactory();
+        var administrator = await factory.CreateUserAsync("centers@example.test", platformAdministrator: true);
+        var operatorUser = await factory.CreateUserAsync("centers-member@example.test", platformAdministrator: false);
+        using var administratorClient = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+        using var operatorClient = await factory.CreateAuthenticatedClientAsync(operatorUser.Email, operatorUser.Password);
+
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await operatorClient.GetAsync("/api/settings/")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await operatorClient.GetAsync("/api/schedules/")).StatusCode);
+
+        using var created = await administratorClient.PostAsJsonAsync("/api/settings/", new
+        {
+            key = "feature.audit.enabled",
+            group = "feature",
+            label = "Audit log",
+            description = "Enables the audit log pipeline.",
+            kind = "boolean",
+            value = "true"
+        });
+        Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
+        var setting = await created.Content.ReadFromJsonAsync<SettingView>();
+        Assert.IsNotNull(setting);
+        Assert.AreEqual("boolean", setting.Kind);
+
+        using var invalidSetting = await administratorClient.PostAsJsonAsync("/api/settings/", new
+        {
+            key = "feature.audit.invalid",
+            group = "feature",
+            label = "Invalid audit log",
+            kind = "boolean",
+            value = "enabled"
+        });
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalidSetting.StatusCode);
+
+        using var updated = await administratorClient.PutAsJsonAsync("/api/settings/feature.audit.enabled", new
+        {
+            group = "feature",
+            label = "Audit log",
+            description = "Enables and configures the audit log pipeline.",
+            kind = "json",
+            value = "{\"retentionDays\":30}"
+        });
+        Assert.AreEqual(HttpStatusCode.OK, updated.StatusCode);
+        var saved = await updated.Content.ReadFromJsonAsync<SettingView>();
+        Assert.IsNotNull(saved);
+        Assert.AreEqual("json", saved.Kind);
+
+        using var listed = await administratorClient.GetAsync("/api/settings/");
+        var settings = await listed.Content.ReadFromJsonAsync<SettingView[]>();
+        Assert.IsNotNull(settings);
+        Assert.AreEqual("{\"retentionDays\":30}", settings.Single(item => item.Key == "feature.audit.enabled").Value);
+
+        using var deleted = await administratorClient.DeleteAsync("/api/settings/feature.audit.enabled");
+        Assert.AreEqual(HttpStatusCode.NoContent, deleted.StatusCode);
+
+        using var scheduleList = await administratorClient.GetAsync("/api/schedules/");
+        Assert.AreEqual(HttpStatusCode.OK, scheduleList.StatusCode);
+        var schedules = await scheduleList.Content.ReadFromJsonAsync<ScheduleView[]>();
+        Assert.IsNotNull(schedules);
+        var schedule = schedules.Single(item => item.Key == "openid-prune");
+        Assert.IsTrue(schedule.Enabled);
+
+        using var invalidCron = await administratorClient.PutAsJsonAsync("/api/schedules/openid-prune", new
+        {
+            cron = "not a cron",
+            enabled = true
+        });
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalidCron.StatusCode);
+
+        using var paused = await administratorClient.PutAsJsonAsync("/api/schedules/openid-prune", new
+        {
+            cron = "0 0 3 * * ?",
+            enabled = false
+        });
+        Assert.AreEqual(HttpStatusCode.OK, paused.StatusCode);
+        var pausedSchedule = await paused.Content.ReadFromJsonAsync<ScheduleView>();
+        Assert.IsNotNull(pausedSchedule);
+        Assert.IsFalse(pausedSchedule.Enabled);
+        Assert.IsNull(pausedSchedule.NextRunAt);
+
+        using var triggered = await administratorClient.PostAsync("/api/schedules/openid-prune/run", content: null);
+        Assert.AreEqual(HttpStatusCode.Accepted, triggered.StatusCode);
+        var run = await WaitForRunAsync(administratorClient, "openid-prune");
+        Assert.AreEqual("manual", run.Trigger);
+        Assert.AreEqual("succeeded", run.Status);
+        StringAssert.Contains(run.Message, "Pruned");
+    }
+
+    [TestMethod]
     public async Task ExplicitConsent_RendersConfirmationAndCreatesPermanentAuthorization()
     {
         await using var factory = new JazorAdminFactory();
@@ -326,7 +421,7 @@ public sealed class JazorAdminApiTests
             user.Password,
             allowAutoRedirect: false);
 
-        using var created = await client.PostAsJsonAsync("/api/configuration/applications", new
+        using var created = await client.PostAsJsonAsync("/api/sso/applications", new
         {
             clientId = "consent-web",
             displayName = "Consent web application",
@@ -370,7 +465,7 @@ public sealed class JazorAdminApiTests
         Assert.AreEqual(HttpStatusCode.Redirect, accepted.StatusCode);
         Assert.IsFalse(string.IsNullOrWhiteSpace(GetQueryValue(accepted.Headers.Location, "code")));
 
-        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        using var authorizationsResponse = await client.GetAsync("/api/sso/authorizations");
         var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
         Assert.IsNotNull(authorizations);
         Assert.IsTrue(authorizations.Any(value =>
@@ -390,7 +485,7 @@ public sealed class JazorAdminApiTests
             user.Password,
             allowAutoRedirect: false);
 
-        using var created = await client.PostAsJsonAsync("/api/configuration/applications", new
+        using var created = await client.PostAsJsonAsync("/api/sso/applications", new
         {
             clientId = "systematic-web",
             displayName = "Systematic web application",
@@ -430,7 +525,7 @@ public sealed class JazorAdminApiTests
         Assert.AreEqual(HttpStatusCode.OK, repeated.StatusCode);
         StringAssert.Contains(await repeated.Content.ReadAsStringAsync(), "data-access-page=\"consent\"");
 
-        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        using var authorizationsResponse = await client.GetAsync("/api/sso/authorizations");
         var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
         Assert.IsNotNull(authorizations);
         Assert.IsTrue(authorizations.Any(value =>
@@ -478,13 +573,13 @@ public sealed class JazorAdminApiTests
         Assert.IsTrue(token.RootElement.TryGetProperty("refresh_token", out var refreshToken));
         Assert.IsFalse(string.IsNullOrWhiteSpace(refreshToken.GetString()));
 
-        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        using var authorizationsResponse = await client.GetAsync("/api/sso/authorizations");
         Assert.AreEqual(HttpStatusCode.OK, authorizationsResponse.StatusCode);
         var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
         Assert.IsNotNull(authorizations);
         var authorizationRecord = authorizations.First(item => item.ClientId == "jazoradmin-spa" && item.Status == "valid");
 
-        using var tokensResponse = await client.GetAsync("/api/configuration/tokens");
+        using var tokensResponse = await client.GetAsync("/api/sso/tokens");
         Assert.AreEqual(HttpStatusCode.OK, tokensResponse.StatusCode);
         var tokens = await tokensResponse.Content.ReadFromJsonAsync<TokenView[]>();
         Assert.IsNotNull(tokens);
@@ -493,17 +588,17 @@ public sealed class JazorAdminApiTests
             item.Type == "access_token" &&
             item.Status == "valid");
 
-        using var revokedToken = await client.PostAsync("/api/configuration/tokens/" + accessTokenRecord.Id + "/revoke", content: null);
+        using var revokedToken = await client.PostAsync("/api/sso/tokens/" + accessTokenRecord.Id + "/revoke", content: null);
         Assert.AreEqual(HttpStatusCode.NoContent, revokedToken.StatusCode);
-        using var revokedAuthorization = await client.PostAsync("/api/configuration/authorizations/" + authorizationRecord.Id + "/revoke", content: null);
+        using var revokedAuthorization = await client.PostAsync("/api/sso/authorizations/" + authorizationRecord.Id + "/revoke", content: null);
         Assert.AreEqual(HttpStatusCode.NoContent, revokedAuthorization.StatusCode);
 
-        using var updatedTokensResponse = await client.GetAsync("/api/configuration/tokens");
+        using var updatedTokensResponse = await client.GetAsync("/api/sso/tokens");
         var updatedTokens = await updatedTokensResponse.Content.ReadFromJsonAsync<TokenView[]>();
         Assert.IsNotNull(updatedTokens);
         Assert.AreEqual("revoked", updatedTokens.Single(item => item.Id == accessTokenRecord.Id).Status);
 
-        using var updatedAuthorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        using var updatedAuthorizationsResponse = await client.GetAsync("/api/sso/authorizations");
         var updatedAuthorizations = await updatedAuthorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
         Assert.IsNotNull(updatedAuthorizations);
         Assert.AreEqual("revoked", updatedAuthorizations.Single(item => item.Id == authorizationRecord.Id).Status);
@@ -560,12 +655,37 @@ public sealed class JazorAdminApiTests
     private static string Base64Url(byte[] value)
         => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
+    private static async Task<ScheduleRunView> WaitForRunAsync(HttpClient client, string key)
+    {
+        for (var attempt = 0; attempt < 50; attempt++)
+        {
+            using var response = await client.GetAsync("/api/schedules/" + key + "/runs");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var runs = await response.Content.ReadFromJsonAsync<ScheduleRunView[]>();
+            var run = runs?.FirstOrDefault();
+            if (run is not null && run.Status != "running")
+                return run;
+
+            await Task.Delay(100);
+        }
+
+        Assert.Fail("Quartz did not finish the manual task run in time.");
+        return null!;
+    }
+
     private sealed class JazorAdminFactory : WebApplicationFactory<Program>, IAsyncDisposable
     {
         private readonly string databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            // Quartz DI owns a process-global log provider. Reset it before each short-lived test host starts,
+            // otherwise the next host can observe the previous host's disposed ILoggerFactory.
+            // Quartz DI 使用进程级日志 Provider；短生命周期测试宿主启动前必须重置，避免访问上一个宿主
+            // 已释放的 ILoggerFactory。该全局限制也是此测试类不能并行执行的原因。
+            Quartz.Logging.LogContext.SetCurrentLogProvider(
+                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+
             builder.UseEnvironment("Testing");
             builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {

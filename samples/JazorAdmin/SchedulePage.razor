@@ -1,0 +1,74 @@
+@* Presents Quartz schedule configuration and execution history for registered administration tasks. *@
+@inherits AppComponentBase
+
+<section class="ja-management ja-schedules" data-management-area="schedules">
+    @if (loading)
+    {
+        <p class="ja-management__loading" aria-live="polite">Loading scheduled tasks</p>
+    }
+    else
+    {
+        @if (error is not null)
+        {
+            <p class="ja-management__error" role="alert">@error</p>
+        }
+
+        <div class="ja-management__split ja-management__split--editor">
+            <section class="ja-management__panel" aria-labelledby="schedule-list-title">
+                <header class="ja-management__panel-header"><div><h2 id="schedule-list-title">Scheduled tasks</h2><p>Quartz triggers registered application maintenance tasks</p></div></header>
+                <div class="ja-management__table-wrap">
+                    <table class="ja-management__table">
+                        <thead><tr><th>Task</th><th>Schedule</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var schedule in schedules)
+                            {
+                                <tr class="@(schedule.Key == selectedKey ? "is-selected" : string.Empty)" data-schedule-key="@schedule.Key">
+                                    <td><strong>@schedule.Name</strong><span>@schedule.Description</span></td>
+                                    <td><code>@schedule.Cron</code></td>
+                                    <td><span class="@(schedule.Enabled ? "ja-schedules__status is-enabled" : "ja-schedules__status is-disabled")">@(schedule.Enabled ? "Enabled" : "Paused")</span></td>
+                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(schedule)">Manage</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ja-management__panel" aria-labelledby="schedule-editor-title">
+                <header class="ja-management__panel-header"><div><h2 id="schedule-editor-title">@name</h2><p>@description</p></div></header>
+                <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
+                    <label><span>Quartz Cron (UTC)</span><input required autocomplete="off" @bind="cron" @bind:event="oninput" /></label>
+                    <label class="ja-management__check"><input type="checkbox" @bind="enabled" /><span>Enable scheduled execution</span></label>
+                    <dl class="ja-schedules__summary">
+                        <div><dt>Next run</dt><dd>@(nextRunAt ?? "Paused")</dd></div>
+                        <div><dt>Last result</dt><dd>@(lastStatus ?? "Not run")</dd></div>
+                        @if (lastMessage is not null)
+                        {
+                            <div><dt>Last message</dt><dd>@lastMessage</dd></div>
+                        }
+                    </dl>
+                    <div class="ja-management__commands">
+                        <button type="submit" data-schedule-command="save">Save schedule</button>
+                        <button type="button" class="ja-management__text-button" data-schedule-command="run" @onclick="RunNow">Run now</button>
+                        <button type="button" class="ja-management__text-button" data-schedule-command="refresh-runs" @onclick="LoadRuns">Refresh history</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <section class="ja-management__panel ja-schedules__runs" aria-labelledby="schedule-runs-title">
+            <header class="ja-management__panel-header"><div><h2 id="schedule-runs-title">Execution history</h2><p>Most recent 100 runs for the selected task</p></div></header>
+            <div class="ja-management__table-wrap">
+                <table class="ja-management__table">
+                    <thead><tr><th>Started</th><th>Trigger</th><th>Status</th><th>Message</th></tr></thead>
+                    <tbody>
+                        @foreach (var run in runs)
+                        {
+                            <tr data-schedule-run="@run.Id"><td>@run.StartedAt</td><td>@run.Trigger</td><td>@run.Status</td><td>@(run.Message ?? "-")</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</section>

@@ -1,9 +1,9 @@
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
 
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/oidc-scope.mjs")]
-public partial class OidcScopePage : AppComponentBase, IVueContainerComponent
+[ECMAScriptModule("components/sso-scope")]
+public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
 {
     private bool loading = true;
     private string? error;

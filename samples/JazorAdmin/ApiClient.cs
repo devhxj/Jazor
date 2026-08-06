@@ -1,8 +1,10 @@
 using ECMAScript;
 using JazorAdmin.Features.Accounts;
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Organizations;
+using JazorAdmin.Features.Scheduling;
+using JazorAdmin.Features.Settings;
 using static ECMAScript.Global;
 
 namespace JazorAdmin;
@@ -120,43 +122,67 @@ public static class ApiClient
         => Send("/api/accounts/" + userId + "/password", "PUT", new ResetAccountPasswordRequest(password));
 
     public static IPromise<ApiOutcome> GetApps()
-        => Get("/api/configuration/applications");
+        => Get("/api/sso/applications");
 
     public static IPromise<ApiOutcome> CreateApp(AppCreate request)
-        => Send("/api/configuration/applications", "POST", request);
+        => Send("/api/sso/applications", "POST", request);
 
     public static IPromise<ApiOutcome> UpdateApp(string id, AppUpdate request)
-        => Send("/api/configuration/applications/" + id, "PUT", request);
+        => Send("/api/sso/applications/" + id, "PUT", request);
 
     public static IPromise<ApiOutcome> DeleteApp(string id)
-        => Send("/api/configuration/applications/" + id, "DELETE");
+        => Send("/api/sso/applications/" + id, "DELETE");
 
     public static IPromise<ApiOutcome> RotateAppSecret(string id)
-        => Send("/api/configuration/applications/" + id + "/secret", "POST");
+        => Send("/api/sso/applications/" + id + "/secret", "POST");
 
     public static IPromise<ApiOutcome> GetScopes()
-        => Get("/api/configuration/scopes");
+        => Get("/api/sso/scopes");
 
     public static IPromise<ApiOutcome> CreateScope(ScopeCreate request)
-        => Send("/api/configuration/scopes", "POST", request);
+        => Send("/api/sso/scopes", "POST", request);
 
     public static IPromise<ApiOutcome> UpdateScope(string id, ScopeUpdate request)
-        => Send("/api/configuration/scopes/" + id, "PUT", request);
+        => Send("/api/sso/scopes/" + id, "PUT", request);
 
     public static IPromise<ApiOutcome> DeleteScope(string id)
-        => Send("/api/configuration/scopes/" + id, "DELETE");
+        => Send("/api/sso/scopes/" + id, "DELETE");
 
     public static IPromise<ApiOutcome> GetAuthorizations()
-        => Get("/api/configuration/authorizations");
+        => Get("/api/sso/authorizations");
 
     public static IPromise<ApiOutcome> RevokeAuthorization(string id)
-        => Send("/api/configuration/authorizations/" + id + "/revoke", "POST");
+        => Send("/api/sso/authorizations/" + id + "/revoke", "POST");
 
     public static IPromise<ApiOutcome> GetTokens()
-        => Get("/api/configuration/tokens");
+        => Get("/api/sso/tokens");
 
     public static IPromise<ApiOutcome> RevokeToken(string id)
-        => Send("/api/configuration/tokens/" + id + "/revoke", "POST");
+        => Send("/api/sso/tokens/" + id + "/revoke", "POST");
+
+    public static IPromise<ApiOutcome> GetSettings()
+        => Get("/api/settings/");
+
+    public static IPromise<ApiOutcome> CreateSetting(SettingCreate request)
+        => Send("/api/settings/", "POST", request);
+
+    public static IPromise<ApiOutcome> UpdateSetting(string key, SettingUpdate request)
+        => Send("/api/settings/" + key, "PUT", request);
+
+    public static IPromise<ApiOutcome> DeleteSetting(string key)
+        => Send("/api/settings/" + key, "DELETE");
+
+    public static IPromise<ApiOutcome> GetSchedules()
+        => Get("/api/schedules/");
+
+    public static IPromise<ApiOutcome> UpdateSchedule(string key, ScheduleUpdate request)
+        => Send("/api/schedules/" + key, "PUT", request);
+
+    public static IPromise<ApiOutcome> TriggerSchedule(string key)
+        => Send("/api/schedules/" + key + "/run", "POST");
+
+    public static IPromise<ApiOutcome> GetScheduleRuns(string key)
+        => Get("/api/schedules/" + key + "/runs");
 
     public static SessionResponse ToSession(object data)
         => new(
@@ -338,6 +364,67 @@ public static class ApiClient
         return tokens;
     }
 
+    public static SettingView[] ToSettings(object? data)
+    {
+        var values = ReadArray(data);
+        var settings = new SettingView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            settings[index] = new SettingView(
+                ReadString(value, "key"),
+                ReadString(value, "group"),
+                ReadString(value, "label"),
+                ReadOptionalString(Reflect.Get(value, "description")),
+                ReadString(value, "kind"),
+                ReadString(value, "value"),
+                ReadString(value, "updatedAt"));
+        }
+
+        return settings;
+    }
+
+    public static ScheduleView[] ToSchedules(object? data)
+    {
+        var values = ReadArray(data);
+        var schedules = new ScheduleView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            schedules[index] = new ScheduleView(
+                ReadString(value, "key"),
+                ReadString(value, "name"),
+                ReadString(value, "description"),
+                ReadString(value, "cron"),
+                BooleanFn(Reflect.Get(value, "enabled")),
+                ReadOptionalString(Reflect.Get(value, "nextRunAt")),
+                ReadOptionalString(Reflect.Get(value, "lastRunAt")),
+                ReadOptionalString(Reflect.Get(value, "lastStatus")),
+                ReadOptionalString(Reflect.Get(value, "lastMessage")));
+        }
+
+        return schedules;
+    }
+
+    public static ScheduleRunView[] ToScheduleRuns(object? data)
+    {
+        var values = ReadArray(data);
+        var runs = new ScheduleRunView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            runs[index] = new ScheduleRunView(
+                ReadString(value, "id"),
+                ReadString(value, "trigger"),
+                ReadString(value, "status"),
+                ReadString(value, "startedAt"),
+                ReadOptionalString(Reflect.Get(value, "finishedAt")),
+                ReadOptionalString(Reflect.Get(value, "message")));
+        }
+
+        return runs;
+    }
+
     private static IPromise<ApiOutcome> Get(string path)
         => Send(path, "GET");
 
@@ -364,7 +451,7 @@ public static class ApiClient
         // Empty and authorization responses intentionally skip JSON parsing. ASP.NET Core commonly
         // returns no body for those statuses, while other errors can still expose ProblemDetails.
         // 204/401/403 响应不解析 JSON；其余错误保留 ProblemDetails 文本供页面呈现。
-        if (response.Status is 204 or 401 or 403)
+        if (response.Status is 202 or 204 or 401 or 403)
         {
             return Promise<ApiOutcome>.Resolve(new ApiOutcome
             {

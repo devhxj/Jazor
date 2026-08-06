@@ -1,6 +1,6 @@
 using OpenIddict.Abstractions;
 
-namespace JazorAdmin.Features.Configuration;
+namespace JazorAdmin.Features.Sso;
 
 internal static class ScopeEndpoints
 {
@@ -47,7 +47,7 @@ internal static class ScopeEndpoints
 
         var scope = await scopes.CreateAsync(descriptor, cancellationToken);
         var view = await ToViewAsync(scope, scopes, cancellationToken);
-        return Results.Created("/api/configuration/scopes/" + view.Id, view);
+        return Results.Created("/api/sso/scopes/" + view.Id, view);
     }
 
     private static async Task<IResult> UpdateAsync(

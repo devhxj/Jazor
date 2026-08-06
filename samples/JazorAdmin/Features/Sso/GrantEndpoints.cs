@@ -1,6 +1,6 @@
 using OpenIddict.Abstractions;
 
-namespace JazorAdmin.Features.Configuration;
+namespace JazorAdmin.Features.Sso;
 
 internal static class GrantEndpoints
 {

@@ -19,7 +19,7 @@ internal static class AdminStyleSheet
 
     private static bool Register()
     {
-        global(".jazor-admin-application", new CssRule
+        global(".ja-application", new CssRule
         {
             ["--app-bg"] = raw("#f5f7fa"),
             ["--surface"] = raw("#ffffff"),
@@ -66,24 +66,24 @@ internal static class AdminStyleSheet
             ["--info-soft"] = raw("#24364c"),
             ["--shadow"] = raw("0 1px 2px rgb(0 0 0 / 28%), 0 10px 28px rgb(0 0 0 / 20%)")
         };
-        global(".jazor-admin-application--dark", darkTheme);
-        Media(".jazor-admin-application--system", "(prefers-color-scheme: dark)", darkTheme);
-        global(".jazor-admin-application--grayscale", new CssRule
+        global(".ja-application--dark", darkTheme);
+        Media(".ja-application--system", "(prefers-color-scheme: dark)", darkTheme);
+        global(".ja-application--grayscale", new CssRule
         {
             Filter = raw("grayscale(1)")
         });
 
-        global(".jazor-admin-shell", new CssRule
+        global(".ja-shell", new CssRule
         {
             Display = raw("grid"),
             GridTemplateColumns = raw("232px minmax(0, 1fr)"),
             MinHeight = raw("100vh")
         });
-        global(".jazor-admin-shell--top", new CssRule
+        global(".ja-shell--top", new CssRule
         {
             Display = raw("block")
         });
-        global(".jazor-admin-shell__sidebar", new CssRule
+        global(".ja-shell__sidebar", new CssRule
         {
             Position = raw("sticky"),
             Top = raw("0"),
@@ -94,21 +94,21 @@ internal static class AdminStyleSheet
             Color = raw("#eef7f3"),
             BorderRight = raw("1px solid #293a33")
         });
-        global(".jazor-admin-shell--collapsed", new CssRule
+        global(".ja-shell--collapsed", new CssRule
         {
             GridTemplateColumns = raw("0 minmax(0, 1fr)")
         });
-        global(".jazor-admin-shell--collapsed .jazor-admin-shell__sidebar", new CssRule
+        global(".ja-shell--collapsed .ja-shell__sidebar", new CssRule
         {
             Display = raw("none"),
             Width = raw("0"),
             BorderRight = raw("0")
         });
-        global(".jazor-admin-shell__main", new CssRule
+        global(".ja-shell__main", new CssRule
         {
             MinWidth = raw("0")
         });
-        global(".jazor-admin-shell__header", new CssRule
+        global(".ja-shell__header", new CssRule
         {
             Display = raw("flex"),
             AlignItems = raw("center"),
@@ -120,7 +120,7 @@ internal static class AdminStyleSheet
             BorderBottom = raw("1px solid var(--border)"),
             BackdropFilter = raw("blur(12px)")
         });
-        global(".jazor-admin-shell__sidebar-toggle", new CssRule
+        global(".ja-shell__sidebar-toggle", new CssRule
         {
             Position = raw("relative"),
             Flex = raw("0 0 36px"),
@@ -133,27 +133,27 @@ internal static class AdminStyleSheet
             Border = raw("1px solid var(--border)"),
             BorderRadius = raw("5px")
         });
-        global(".jazor-admin-shell__sidebar-toggle::before", new CssRule
+        global(".ja-shell__sidebar-toggle::before", new CssRule
         {
             FontSize = raw("20px"),
             LineHeight = raw("1"),
             Content = raw("\"\\2630\"")
         });
-        global(".jazor-admin-shell__sidebar-toggle:hover", new CssRule
+        global(".ja-shell__sidebar-toggle:hover", new CssRule
         {
             Background = raw("var(--surface-strong)")
         });
-        global(".jazor-admin-shell__content", new CssRule
+        global(".ja-shell__content", new CssRule
         {
             Width = raw("100%")
         });
 
-        global(".jazor-admin-sidebar", new CssRule
+        global(".ja-sidebar", new CssRule
         {
             MinHeight = raw("100%"),
             Padding = raw("20px 14px")
         });
-        global(".jazor-admin-sidebar__logo", new CssRule
+        global(".ja-sidebar__logo", new CssRule
         {
             Display = raw("flex"),
             AlignItems = raw("center"),
@@ -163,21 +163,21 @@ internal static class AdminStyleSheet
             FontSize = raw("18px"),
             FontWeight = raw("750")
         });
-        global(".jazor-admin-sidebar__list, .jazor-admin-sidebar__children", new CssRule
+        global(".ja-sidebar__list, .ja-sidebar__children", new CssRule
         {
             Padding = raw("0"),
             Margin = raw("0"),
             ListStyle = raw("none")
         });
-        global(".jazor-admin-sidebar__item", new CssRule
+        global(".ja-sidebar__item", new CssRule
         {
             Margin = raw("3px 0")
         });
-        global(".jazor-admin-sidebar__item-content", new CssRule
+        global(".ja-sidebar__item-content", new CssRule
         {
             Position = raw("relative")
         });
-        global(".jazor-admin-sidebar__link, .jazor-admin-sidebar__button", new CssRule
+        global(".ja-sidebar__link, .ja-sidebar__button", new CssRule
         {
             Display = raw("flex"),
             AlignItems = raw("center"),
@@ -191,27 +191,27 @@ internal static class AdminStyleSheet
             Border = raw("0"),
             BorderRadius = raw("6px")
         });
-        global(".jazor-admin-sidebar__link:hover, .jazor-admin-sidebar__button:hover, .jazor-admin-sidebar__item.is-ancestor-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button", new CssRule
+        global(".ja-sidebar__link:hover, .ja-sidebar__button:hover, .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button", new CssRule
         {
             Color = raw("#ffffff"),
             Background = raw("#243a31")
         });
-        global(".jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__link, .jazor-admin-sidebar__item.is-selected > .jazor-admin-sidebar__item-content > .jazor-admin-sidebar__button", new CssRule
+        global(".ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button", new CssRule
         {
             Color = raw("#ffffff"),
             Background = raw("#087f5b")
         });
-        global(".jazor-admin-sidebar__toggle", new CssRule
+        global(".ja-sidebar__toggle", new CssRule
         {
             MarginLeft = raw("auto"),
             FontSize = raw("12px")
         });
-        global(".jazor-admin-sidebar__children", new CssRule
+        global(".ja-sidebar__children", new CssRule
         {
             Padding = raw("4px 0 4px 12px")
         });
 
-        global(".jazor-admin-header", new CssRule
+        global(".ja-header", new CssRule
         {
             Display = raw("flex"),
             Flex = raw("1 1 auto"),
@@ -222,26 +222,26 @@ internal static class AdminStyleSheet
             Padding = raw("8px 24px"),
             Gap = raw("20px")
         });
-        global(".jazor-admin-header__main, .jazor-admin-header__actions, .jazor-admin-header__toolbar, .jazor-admin-header__user-region", new CssRule
+        global(".ja-header__main, .ja-header__actions, .ja-header__toolbar, .ja-header__user-region", new CssRule
         {
             Display = raw("flex"),
             AlignItems = raw("center")
         });
-        global(".jazor-admin-header__main", new CssRule
+        global(".ja-header__main", new CssRule
         {
             MinWidth = raw("0"),
             Gap = raw("12px")
         });
-        global(".jazor-admin-header__logo", new CssRule
+        global(".ja-header__logo", new CssRule
         {
             Color = raw("var(--accent)"),
             FontWeight = raw("750")
         });
-        global(".jazor-admin-header__titles", new CssRule
+        global(".ja-header__titles", new CssRule
         {
             MinWidth = raw("0")
         });
-        global(".jazor-admin-header__title", new CssRule
+        global(".ja-header__title", new CssRule
         {
             Overflow = raw("hidden"),
             FontSize = raw("16px"),
@@ -249,31 +249,31 @@ internal static class AdminStyleSheet
             TextOverflow = raw("ellipsis"),
             WhiteSpace = raw("nowrap")
         });
-        global(".jazor-admin-header__subtitle", new CssRule
+        global(".ja-header__subtitle", new CssRule
         {
             MarginTop = raw("2px"),
             Color = raw("var(--text-muted)"),
             FontSize = raw("12px")
         });
-        global(".jazor-admin-header__actions", new CssRule
+        global(".ja-header__actions", new CssRule
         {
             JustifyContent = raw("flex-end"),
             MinWidth = raw("0"),
             Gap = raw("16px")
         });
-        global(".jazor-admin-header__navigation", new CssRule
+        global(".ja-header__navigation", new CssRule
         {
             Flex = raw("1 1 auto"),
             MinWidth = raw("0")
         });
 
-        global(".jazor-admin-page", new CssRule
+        global(".ja-page", new CssRule
         {
             Width = raw("min(100%, 1480px)"),
             Margin = raw("0 auto"),
             Padding = raw("24px")
         });
-        global(".jazor-admin-page__header", new CssRule
+        global(".ja-page__header", new CssRule
         {
             Display = raw("flex"),
             AlignItems = raw("flex-end"),
@@ -281,41 +281,41 @@ internal static class AdminStyleSheet
             MarginBottom = raw("20px"),
             Gap = raw("20px")
         });
-        global(".jazor-admin-page__titles", new CssRule
+        global(".ja-page__titles", new CssRule
         {
             MinWidth = raw("0")
         });
-        global(".jazor-admin-page__title", new CssRule
+        global(".ja-page__title", new CssRule
         {
             Margin = raw("0"),
             FontSize = raw("26px"),
             LineHeight = raw("1.25")
         });
-        global(".jazor-admin-page__subtitle", new CssRule
+        global(".ja-page__subtitle", new CssRule
         {
             MaxWidth = raw("760px"),
             Margin = raw("7px 0 0"),
             Color = raw("var(--text-muted)"),
             LineHeight = raw("1.5")
         });
-        global(".jazor-admin-page__actions", new CssRule
+        global(".ja-page__actions", new CssRule
         {
             Display = raw("flex"),
             FlexWrap = raw("wrap"),
             JustifyContent = raw("flex-end"),
             Gap = raw("8px")
         });
-        global(".jazor-admin-page__body > * + *", new CssRule
+        global(".ja-page__body > * + *", new CssRule
         {
             MarginTop = raw("20px")
         });
 
-        Media(".jazor-admin-shell", "(max-width: 760px)", new CssRule
+        Media(".ja-shell", "(max-width: 760px)", new CssRule
         {
             Display = raw("block"),
             MinWidth = raw("0")
         });
-        Media(".jazor-admin-shell__sidebar", "(max-width: 760px)", new CssRule
+        Media(".ja-shell__sidebar", "(max-width: 760px)", new CssRule
         {
             Position = raw("static"),
             Height = raw("auto"),
@@ -323,12 +323,12 @@ internal static class AdminStyleSheet
             BorderRight = raw("0"),
             BorderBottom = raw("1px solid #293a33")
         });
-        Media(".jazor-admin-sidebar", "(max-width: 760px)", new CssRule
+        Media(".ja-sidebar", "(max-width: 760px)", new CssRule
         {
             MinHeight = raw("0"),
             Padding = raw("10px 12px")
         });
-        Media(".jazor-admin-page", "(max-width: 760px)", new CssRule
+        Media(".ja-page", "(max-width: 760px)", new CssRule
         {
             Padding = raw("18px 14px 28px")
         });

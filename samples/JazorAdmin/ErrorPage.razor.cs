@@ -32,13 +32,13 @@ public partial class ErrorPage : AppComponentBase, IVueComponent
         => Kind == ErrorKind.InternalServerError ? "500" : "404";
 
     private VueClassValue RootCssClass
-        => BuildCssClass("jazor-admin-error", GetKindCssClass(Kind));
+        => BuildCssClass("ja-error", GetKindCssClass(Kind));
 
     private Task OnAction()
         => Action.InvokeAsync();
 
     private static string GetKindCssClass(ErrorKind kind)
         => kind == ErrorKind.InternalServerError
-            ? "jazor-admin-error--internal-server-error"
-            : "jazor-admin-error--not-found";
+            ? "ja-error--internal-server-error"
+            : "ja-error--not-found";
 }

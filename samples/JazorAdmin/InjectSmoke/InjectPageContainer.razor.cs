@@ -51,18 +51,18 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
         var actions = FilterActions(Actions);
 
         builder.OpenElement(0, "section");
-        builder.AddAttribute(1, "class", BuildCssClass("jazor-admin-inject-page"));
+        builder.AddAttribute(1, "class", BuildCssClass("ja-inject-page"));
         builder.AddAttribute(2, "style", CssStyle);
         builder.AddAttribute(3, "data-vue-inject", "page-container");
         builder.AddMultipleAttributes(4, AdditionalAttributes);
 
         builder.OpenElement(5, "header");
-        builder.AddAttribute(6, "class", "jazor-admin-inject-page__header");
+        builder.AddAttribute(6, "class", "ja-inject-page__header");
         if (breadcrumbs.Length > 0)
         {
             builder.OpenElement(7, "nav");
             builder.AddAttribute(8, "aria-label", "Breadcrumb");
-            builder.AddAttribute(9, "class", "jazor-admin-inject-page__breadcrumbs");
+            builder.AddAttribute(9, "class", "ja-inject-page__breadcrumbs");
             foreach (var breadcrumb in breadcrumbs)
                 builder.AddContent(10, RenderBreadcrumb(breadcrumb));
             builder.CloseElement();
@@ -71,7 +71,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
         if (title is not null)
         {
             builder.OpenElement(11, "h1");
-            builder.AddAttribute(12, "class", "jazor-admin-inject-page__title");
+            builder.AddAttribute(12, "class", "ja-inject-page__title");
             builder.AddContent(13, title);
             builder.CloseElement();
         }
@@ -79,7 +79,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
         if (subtitle is not null)
         {
             builder.OpenElement(14, "p");
-            builder.AddAttribute(15, "class", "jazor-admin-inject-page__subtitle");
+            builder.AddAttribute(15, "class", "ja-inject-page__subtitle");
             builder.AddContent(16, subtitle);
             builder.CloseElement();
         }
@@ -87,7 +87,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
         if (actions.Length > 0 || Extra is not null)
         {
             builder.OpenElement(17, "div");
-            builder.AddAttribute(18, "class", "jazor-admin-inject-page__actions");
+            builder.AddAttribute(18, "class", "ja-inject-page__actions");
             foreach (var action in actions)
                 builder.AddContent(19, RenderAction(action));
             builder.AddContent(20, Extra);
@@ -96,7 +96,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
         builder.CloseElement();
 
         builder.OpenElement(21, "div");
-        builder.AddAttribute(22, "class", "jazor-admin-inject-page__body");
+        builder.AddAttribute(22, "class", "ja-inject-page__body");
         builder.AddContent(23, ChildContent);
         builder.CloseElement();
         builder.CloseElement();
@@ -142,7 +142,7 @@ public sealed class InjectPageContainer : ComponentBase, IVueComponent,
             return;
 
         var disabled = action.Disabled ?? false;
-        var cssClass = "jazor-admin-inject-page__action jazor-admin-inject-page__action--" +
+        var cssClass = "ja-inject-page__action ja-inject-page__action--" +
                        MapActionKind(action.Kind);
         if (!disabled && action.RouteTarget.HasValue)
         {

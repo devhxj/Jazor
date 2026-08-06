@@ -31,7 +31,7 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
         => NormalizedTitle is not null || NormalizedSubtitle is not null;
 
     private VueClassValue RootCssClass
-        => BuildCssClass("jazor-admin-header");
+        => BuildCssClass("ja-header");
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -54,12 +54,12 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
         if (hasMainRegion)
         {
             builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", "jazor-admin-header__main");
+            builder.AddAttribute(5, "class", "ja-header__main");
 
             if (logo is not null)
             {
                 builder.OpenElement(6, "div");
-                builder.AddAttribute(7, "class", "jazor-admin-header__logo");
+                builder.AddAttribute(7, "class", "ja-header__logo");
                 builder.AddContent(8, logo);
                 builder.CloseElement();
             }
@@ -67,11 +67,11 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
             if (HasTitles)
             {
                 builder.OpenElement(9, "div");
-                builder.AddAttribute(10, "class", "jazor-admin-header__titles");
+                builder.AddAttribute(10, "class", "ja-header__titles");
                 if (NormalizedTitle is not null)
                 {
                     builder.OpenElement(11, "div");
-                    builder.AddAttribute(12, "class", "jazor-admin-header__title");
+                    builder.AddAttribute(12, "class", "ja-header__title");
                     builder.AddContent(13, NormalizedTitle);
                     builder.CloseElement();
                 }
@@ -79,7 +79,7 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
                 if (NormalizedSubtitle is not null)
                 {
                     builder.OpenElement(14, "div");
-                    builder.AddAttribute(15, "class", "jazor-admin-header__subtitle");
+                    builder.AddAttribute(15, "class", "ja-header__subtitle");
                     builder.AddContent(16, NormalizedSubtitle);
                     builder.CloseElement();
                 }
@@ -93,7 +93,7 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
         if (navigation is not null)
         {
             builder.OpenElement(17, "div");
-            builder.AddAttribute(18, "class", "jazor-admin-header__navigation");
+            builder.AddAttribute(18, "class", "ja-header__navigation");
             builder.AddContent(19, navigation);
             builder.CloseElement();
         }
@@ -101,12 +101,12 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
         if (hasRightRegion)
         {
             builder.OpenElement(20, "div");
-            builder.AddAttribute(21, "class", "jazor-admin-header__actions");
+            builder.AddAttribute(21, "class", "ja-header__actions");
 
             if (actions is not null)
             {
                 builder.OpenElement(22, "div");
-                builder.AddAttribute(23, "class", "jazor-admin-header__toolbar");
+                builder.AddAttribute(23, "class", "ja-header__toolbar");
                 builder.AddContent(24, actions);
                 builder.CloseElement();
             }
@@ -114,7 +114,7 @@ public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
             if (userRegion is not null)
             {
                 builder.OpenElement(25, "div");
-                builder.AddAttribute(26, "class", "jazor-admin-header__user-region");
+                builder.AddAttribute(26, "class", "ja-header__user-region");
                 builder.AddContent(27, userRegion);
                 builder.CloseElement();
             }

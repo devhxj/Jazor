@@ -1,0 +1,69 @@
+@* Manages typed runtime settings without coupling configuration storage to OpenIddict protocol configuration. *@
+@inherits AppComponentBase
+
+<section class="ja-management ja-settings" data-management-area="settings">
+    @if (loading)
+    {
+        <p class="ja-management__loading" aria-live="polite">Loading system settings</p>
+    }
+    else
+    {
+        @if (error is not null)
+        {
+            <p class="ja-management__error" role="alert">@error</p>
+        }
+
+        <div class="ja-management__split ja-management__split--editor">
+            <section class="ja-management__panel" aria-labelledby="settings-title">
+                <header class="ja-management__panel-header">
+                    <div><h2 id="settings-title">System settings</h2><p>Typed values grouped for application runtime use</p></div>
+                    <button type="button" data-settings-command="new" @onclick="NewSetting">New</button>
+                </header>
+                @if (settings.Length == 0)
+                {
+                    <p class="ja-management__empty">No system settings are defined.</p>
+                }
+                else
+                {
+                    <div class="ja-management__table-wrap">
+                        <table class="ja-management__table">
+                            <thead><tr><th>Setting</th><th>Group</th><th>Type</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var setting in settings)
+                                {
+                                    <tr class="@(setting.Key == selectedKey ? "is-selected" : string.Empty)" data-setting-key="@setting.Key">
+                                        <td><strong>@setting.Label</strong><span>@setting.Key</span></td>
+                                        <td>@setting.Group</td>
+                                        <td><code>@setting.Kind</code></td>
+                                        <td><button type="button" class="ja-management__text-button" @onclick="() => Select(setting)">Edit</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+
+            <section class="ja-management__panel" aria-labelledby="setting-editor-title">
+                <header class="ja-management__panel-header"><div><h2 id="setting-editor-title">@(IsNew ? "Create setting" : "Setting details")</h2><p>Keys are immutable after creation</p></div></header>
+                <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
+                    <div class="ja-management__field-grid">
+                        <label><span>Key</span><input required readonly="@(!IsNew)" autocomplete="off" placeholder="feature.audit.enabled" @bind="key" @bind:event="oninput" /></label>
+                        <label><span>Group</span><input required autocomplete="off" placeholder="feature" @bind="group" @bind:event="oninput" /></label>
+                        <label><span>Label</span><input required autocomplete="off" @bind="label" @bind:event="oninput" /></label>
+                        <label><span>Type</span><select @bind="kind"><option value="text">Text</option><option value="boolean">Boolean</option><option value="number">Number</option><option value="json">JSON</option></select></label>
+                    </div>
+                    <label><span>Description</span><input autocomplete="off" @bind="description" @bind:event="oninput" /></label>
+                    <label><span>Value</span><textarea rows="7" required @bind="value" @bind:event="oninput"></textarea></label>
+                    <div class="ja-management__commands">
+                        <button type="submit" data-settings-command="save">@(IsNew ? "Create" : "Save changes")</button>
+                        @if (!IsNew)
+                        {
+                            <button type="button" class="ja-management__danger-button" data-settings-command="delete" @onclick="DeleteSetting">@(deleteArmed ? "Confirm delete" : "Delete")</button>
+                        }
+                    </div>
+                </form>
+            </section>
+        </div>
+    }
+</section>

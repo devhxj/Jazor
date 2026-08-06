@@ -25,7 +25,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
         => AdminDisplayTextHelper.Normalize(Subtitle);
 
     private VueClassValue RootCssClass
-        => BuildCssClass("jazor-admin-page");
+        => BuildCssClass("ja-page");
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -39,17 +39,17 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
         if (header.HasHeader)
         {
             builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", "jazor-admin-page__header");
+            builder.AddAttribute(5, "class", "ja-page__header");
 
             if (header.HasTitleRegion)
             {
                 builder.OpenElement(6, "div");
-                builder.AddAttribute(7, "class", "jazor-admin-page__titles");
+                builder.AddAttribute(7, "class", "ja-page__titles");
 
                 if (header.BreadcrumbItems.Length > 0)
                 {
                     builder.OpenElement(8, "nav");
-                    builder.AddAttribute(9, "class", "jazor-admin-page__breadcrumb");
+                    builder.AddAttribute(9, "class", "ja-page__breadcrumb");
                     foreach (var item in header.BreadcrumbItems)
                     {
                         builder.AddContent(10, RenderBreadcrumbItem(item));
@@ -60,7 +60,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
                 if (NormalizedTitle is not null)
                 {
                     builder.OpenElement(11, "h1");
-                    builder.AddAttribute(12, "class", "jazor-admin-page__title");
+                    builder.AddAttribute(12, "class", "ja-page__title");
                     builder.AddContent(13, NormalizedTitle);
                     builder.CloseElement();
                 }
@@ -68,7 +68,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
                 if (NormalizedSubtitle is not null)
                 {
                     builder.OpenElement(14, "p");
-                    builder.AddAttribute(15, "class", "jazor-admin-page__subtitle");
+                    builder.AddAttribute(15, "class", "ja-page__subtitle");
                     builder.AddContent(16, NormalizedSubtitle);
                     builder.CloseElement();
                 }
@@ -79,7 +79,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
             if (header.HasActionsRegion)
             {
                 builder.OpenElement(17, "div");
-                builder.AddAttribute(18, "class", "jazor-admin-page__actions");
+                builder.AddAttribute(18, "class", "ja-page__actions");
                 foreach (var action in header.Actions)
                 {
                     builder.AddContent(19, RenderAction(action));
@@ -92,7 +92,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
         }
 
         builder.OpenElement(21, "div");
-        builder.AddAttribute(22, "class", "jazor-admin-page__body");
+        builder.AddAttribute(22, "class", "ja-page__body");
         builder.AddContent(23, ChildContent);
         builder.CloseElement();
 
@@ -217,7 +217,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
     {
         var classes = new List<string>(4)
         {
-            "jazor-admin-page__breadcrumb-item"
+            "ja-page__breadcrumb-item"
         };
 
         if (hasHref)
@@ -242,8 +242,8 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
     {
         var classes = new List<string>(4)
         {
-            "jazor-admin-page__action",
-            $"jazor-admin-page__action--{MapActionKindSuffix(action.Kind)}"
+            "ja-page__action",
+            $"ja-page__action--{MapActionKindSuffix(action.Kind)}"
         };
 
         if (action.Disabled ?? false)

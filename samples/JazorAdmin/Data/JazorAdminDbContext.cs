@@ -1,5 +1,5 @@
-// Configures the shared SQLite store for Identity, OpenIddict, organizations, and operation grants.
-// 配置由 Identity、OpenIddict、组织机构和操作授权共同使用的 SQLite 存储模型。
+// Configures the shared SQLite store for identity, SSO, administration, settings, and schedule history.
+// 配置 Identity、SSO、后台授权、配置项与任务历史共用的 SQLite 存储模型。
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +21,12 @@ public sealed class JazorAdminDbContext(DbContextOptions<JazorAdminDbContext> op
     public DbSet<AuthorizationOperation> AuthorizationOperations => Set<AuthorizationOperation>();
 
     public DbSet<ResourceOperationGrant> ResourceOperationGrants => Set<ResourceOperationGrant>();
+
+    public DbSet<Setting> Settings => Set<Setting>();
+
+    public DbSet<Schedule> Schedules => Set<Schedule>();
+
+    public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -97,6 +103,42 @@ public sealed class JazorAdminDbContext(DbContextOptions<JazorAdminDbContext> op
             entity.HasOne(grant => grant.Operation)
                 .WithMany(operation => operation.Grants)
                 .HasForeignKey(grant => new { grant.ResourceKey, grant.OperationKey })
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Setting>(entity =>
+        {
+            entity.HasKey(setting => setting.Key);
+            entity.Property(setting => setting.Key).HasMaxLength(128);
+            entity.Property(setting => setting.Group).HasMaxLength(64);
+            entity.Property(setting => setting.Label).HasMaxLength(128);
+            entity.Property(setting => setting.Description).HasMaxLength(512);
+            entity.Property(setting => setting.Kind).HasMaxLength(16);
+            entity.Property(setting => setting.Value).HasMaxLength(8_000);
+            entity.HasIndex(setting => new { setting.Group, setting.Key });
+        });
+
+        builder.Entity<Schedule>(entity =>
+        {
+            entity.HasKey(schedule => schedule.Key);
+            entity.Property(schedule => schedule.Key).HasMaxLength(64);
+            entity.Property(schedule => schedule.Name).HasMaxLength(128);
+            entity.Property(schedule => schedule.Description).HasMaxLength(512);
+            entity.Property(schedule => schedule.Cron).HasMaxLength(128);
+            entity.Property(schedule => schedule.LastStatus).HasMaxLength(32);
+            entity.Property(schedule => schedule.LastMessage).HasMaxLength(1_000);
+        });
+
+        builder.Entity<ScheduleRun>(entity =>
+        {
+            entity.Property(run => run.ScheduleKey).HasMaxLength(64);
+            entity.Property(run => run.Trigger).HasMaxLength(16);
+            entity.Property(run => run.Status).HasMaxLength(32);
+            entity.Property(run => run.Message).HasMaxLength(1_000);
+            entity.HasIndex(run => new { run.ScheduleKey, run.StartedAt });
+            entity.HasOne(run => run.Schedule)
+                .WithMany(schedule => schedule.Runs)
+                .HasForeignKey(run => run.ScheduleKey)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

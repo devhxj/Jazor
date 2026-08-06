@@ -16,11 +16,13 @@ public static class Routes
     public const string AuthorizationRolesKey = "authorization.roles";
     public const string AuthorizationResourcesKey = "authorization.resources";
     public const string AccountsKey = "accounts";
-    public const string ConfigurationKey = "configuration";
-    public const string ConfigurationApplicationsKey = "configuration.applications";
-    public const string ConfigurationScopesKey = "configuration.scopes";
-    public const string ConfigurationAuthorizationsKey = "configuration.authorizations";
-    public const string ConfigurationTokensKey = "configuration.tokens";
+    public const string SsoKey = "sso";
+    public const string SsoApplicationsKey = "sso.applications";
+    public const string SsoScopesKey = "sso.scopes";
+    public const string SsoAuthorizationsKey = "sso.authorizations";
+    public const string SsoTokensKey = "sso.tokens";
+    public const string SettingsKey = "settings";
+    public const string SchedulesKey = "schedules";
     public const string LoginKey = "login";
     public const string LockKey = "lock";
     public const string InternalErrorKey = "error.500";
@@ -126,40 +128,56 @@ public static class Routes
         },
         new()
         {
-            Key = ConfigurationKey,
-            Icon = "configuration",
-            Title = Localization.Get(language, TextKey.Configuration),
+            Key = SsoKey,
+            Icon = "sso",
+            Title = Localization.Get(language, TextKey.Sso),
             Children =
             [
                 new()
                 {
-                    Key = ConfigurationApplicationsKey,
-                    Path = "/configuration/applications",
+                    Key = SsoApplicationsKey,
+                    Path = "/sso/applications",
                     Title = Localization.Get(language, TextKey.OpenIdApplications),
                     Subtitle = Localization.Get(language, TextKey.OpenIdApplicationsSubtitle)
                 },
                 new()
                 {
-                    Key = ConfigurationScopesKey,
-                    Path = "/configuration/scopes",
+                    Key = SsoScopesKey,
+                    Path = "/sso/scopes",
                     Title = Localization.Get(language, TextKey.OpenIdScopes),
                     Subtitle = Localization.Get(language, TextKey.OpenIdScopesSubtitle)
                 },
                 new()
                 {
-                    Key = ConfigurationAuthorizationsKey,
-                    Path = "/configuration/authorizations",
+                    Key = SsoAuthorizationsKey,
+                    Path = "/sso/authorizations",
                     Title = Localization.Get(language, TextKey.OpenIdAuthorizations),
                     Subtitle = Localization.Get(language, TextKey.OpenIdAuthorizationsSubtitle)
                 },
                 new()
                 {
-                    Key = ConfigurationTokensKey,
-                    Path = "/configuration/tokens",
+                    Key = SsoTokensKey,
+                    Path = "/sso/tokens",
                     Title = Localization.Get(language, TextKey.OpenIdTokens),
                     Subtitle = Localization.Get(language, TextKey.OpenIdTokensSubtitle)
                 }
             ]
+        },
+        new()
+        {
+            Key = SettingsKey,
+            Path = "/settings",
+            Icon = "settings",
+            Title = Localization.Get(language, TextKey.Settings),
+            Subtitle = Localization.Get(language, TextKey.SettingsSubtitle)
+        },
+        new()
+        {
+            Key = SchedulesKey,
+            Path = "/schedules",
+            Icon = "schedules",
+            Title = Localization.Get(language, TextKey.Schedules),
+            Subtitle = Localization.Get(language, TextKey.SchedulesSubtitle)
         },
         ];
 

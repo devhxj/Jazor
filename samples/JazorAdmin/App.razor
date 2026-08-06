@@ -5,17 +5,17 @@
 <ApplicationFrame Theme="@Theme" Language="@languageTag" Grayscale="@grayscale">
     @if (sessionRestoring && currentRoute.Path != "/login" && currentRoute.Path != "/lock")
     {
-        <main class="jazor-admin-session-state" data-session-state="restoring" aria-live="polite">
-            <span class="jazor-admin-session-state__spinner" aria-hidden="true"></span>
+        <main class="ja-session-state" data-session-state="restoring" aria-live="polite">
+            <span class="ja-session-state__spinner" aria-hidden="true"></span>
             <span>Restoring session</span>
         </main>
     }
     else if (currentRoute.Path == "/login" || currentRoute.Path == "/lock")
     {
-        <main class="@(IsLoginPage ? "jazor-admin-access jazor-admin-access--login" : "jazor-admin-access jazor-admin-access--lock")"
+        <main class="@(IsLoginPage ? "ja-access ja-access--login" : "ja-access ja-access--lock")"
               data-access-page="@(IsLoginPage ? "login" : "lock")">
-            <section class="jazor-admin-access__panel">
-                <strong class="jazor-admin-access__brand">JazorAdmin</strong>
+            <section class="ja-access__panel">
+                <strong class="ja-access__brand">JazorAdmin</strong>
                 <h1>@Localization.Get(Language, IsLoginPage ? TextKey.LoginTitle : TextKey.LockTitle)</h1>
                 <p>@Localization.Get(Language, IsLoginPage ? TextKey.LoginSubtitle : TextKey.LockSubtitle)</p>
 
@@ -46,7 +46,7 @@
                     </button>
                     @if (accessError is not null)
                     {
-                        <p class="jazor-admin-access__error" role="alert">@accessError</p>
+                        <p class="ja-access__error" role="alert">@accessError</p>
                     }
                 </form>
             </section>
@@ -54,7 +54,7 @@
     }
     else if (!HasSession)
     {
-        <main class="jazor-admin-session-state" data-session-state="anonymous" aria-live="polite">
+        <main class="ja-session-state" data-session-state="anonymous" aria-live="polite">
             <span>Redirecting to sign in</span>
         </main>
     }
@@ -80,10 +80,10 @@
                           ExpandedKeys="@EffectiveExpandedKeys"
                           ExpandedKeysChanged="@(value => expandedKeys = value)">
             <HeaderActions>
-                <div class="jazor-admin__header-context">
+                <div class="ja-header-context">
                     @if (organizations.Length > 0)
                     {
-                        <label class="jazor-admin__organization-picker">
+                        <label class="ja-organization-picker">
                             <span>Organization</span>
                             <select data-organization-picker=""
                                     @bind="selectedOrganizationId">
@@ -94,7 +94,7 @@
                             </select>
                         </label>
                     }
-                    <label class="jazor-admin__preference">
+                    <label class="ja-preference">
                         @Localization.Get(Language, TextKey.Theme)
                         <select data-preference="theme" @bind="themeKey">
                             <option value="system">System</option>
@@ -102,26 +102,26 @@
                             <option value="dark">Dark</option>
                         </select>
                     </label>
-                    <label class="jazor-admin__preference">
+                    <label class="ja-preference">
                         @Localization.Get(Language, TextKey.Language)
                         <select data-preference="language" @bind="languageTag">
                             <option value="en-US">English</option>
                             <option value="zh-CN">中文</option>
                         </select>
                     </label>
-                    <label class="jazor-admin__preference-toggle">
+                    <label class="ja-preference-toggle">
                         <input type="checkbox" data-preference="grayscale" @bind="grayscale" />
                         @Localization.Get(Language, TextKey.Grayscale)
                     </label>
                 </div>
             </HeaderActions>
             <UserRegion>
-                <div class="jazor-admin__user-region" data-user-menu="">
-                    <span class="jazor-admin__user">@CurrentUserLabel</span>
-                    <button type="button" class="jazor-admin__access-command" data-access-command="lock" @onclick="OpenLockScreen">
+                <div class="ja-user-region" data-user-menu="">
+                    <span class="ja-user">@CurrentUserLabel</span>
+                    <button type="button" class="ja-access-command" data-access-command="lock" @onclick="OpenLockScreen">
                         @Localization.Get(Language, TextKey.Lock)
                     </button>
-                    <button type="button" class="jazor-admin__access-command" data-access-command="sign-out" @onclick="SignOut">
+                    <button type="button" class="ja-access-command" data-access-command="sign-out" @onclick="SignOut">
                         @Localization.Get(Language, TextKey.SignOut)
                     </button>
                 </div>
@@ -146,20 +146,28 @@
                     {
                         <AccountPage />
                     }
-                    else if (IsConfigurationPage)
+                    else if (IsSsoPage)
                     {
-                        @if (IsConfigurationApplicationsPage)
+                        @if (IsSsoApplicationsPage)
                         {
-                            <OidcAppPage />
+                            <SsoAppPage />
                         }
-                        else if (IsConfigurationScopesPage)
+                        else if (IsSsoScopesPage)
                         {
-                            <OidcScopePage />
+                            <SsoScopePage />
                         }
                         else
                         {
-                            <OidcGrantPage View="@(IsConfigurationAuthorizationsPage ? GrantView.Authorizations : GrantView.Tokens)" />
+                            <SsoGrantPage View="@(IsSsoAuthorizationsPage ? GrantView.Authorizations : GrantView.Tokens)" />
                         }
+                    }
+                    else if (IsSettingsPage)
+                    {
+                        <SettingsPage />
+                    }
+                    else if (IsSchedulesPage)
+                    {
+                        <SchedulePage />
                     }
                     else
                     {

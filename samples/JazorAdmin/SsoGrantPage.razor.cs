@@ -1,4 +1,4 @@
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
 
 namespace JazorAdmin;
 
@@ -12,8 +12,8 @@ public enum GrantView
     Tokens
 }
 
-[ECMAScriptModule("components/oidc-grant.mjs")]
-public partial class OidcGrantPage : AppComponentBase, IVueContainerComponent
+[ECMAScriptModule("components/sso-grant")]
+public partial class SsoGrantPage : AppComponentBase, IVueContainerComponent
 {
     [Parameter]
     public GrantView View { get; set; }

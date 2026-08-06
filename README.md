@@ -89,6 +89,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 ### 2026-08-07
 
 - JazorAdmin now provides OpenIddict application, scope, authorization, and token management with public/confidential and interactive/machine/API profiles, one-time secret rotation, Consent/PKCE, endpoint/grant/response permissions, API resource audiences, and authorization/token revocation. Its local-package browser smoke covers those management flows and mobile editor containment.
+- JazorAdmin now separates its SSO center from a typed configuration center and a Quartz.NET task center. Administrators can manage `text`, `boolean`, `number`, and `json` settings, schedule catalogued operational tasks with Cron expressions, pause or manually run them, and inspect execution history without exposing arbitrary script execution.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
@@ -257,7 +258,6 @@ Jazor/
 │   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
 │   ├── Jazor.Admin/                 # UI-neutral admin shell contracts and Razor components
-│   ├── JazorAdmin/                  # TDesign integration sample and package-consumer smoke
 │   ├── ECMAScript.Style/            # Strongly typed, deterministic CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
@@ -267,6 +267,7 @@ Jazor/
 │   └── *Test/                       # MSTest regression projects
 ├── samples/
 │   ├── Jazor.MultiProject/          # Baseline multi-project module emission
+│   ├── JazorAdmin/                  # Formal administration product and package-consumer smoke
 │   ├── ECMAScript.Pinia.Counter/    # Vue 3 + Pinia sample
 │   └── RazorVue.TodoList/           # Legacy sample pending transformation
 ├── docs/                            # Goals, plans, status snapshots, supplements, retired material

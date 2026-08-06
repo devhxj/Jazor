@@ -59,11 +59,11 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
     private VueClassValue RootCssClass
         => Mode switch
         {
-            AdminLayoutMode.Top => BuildCssClass("jazor-admin-shell", "jazor-admin-shell--top"),
-            AdminLayoutMode.Mixed when Collapsed => BuildCssClass("jazor-admin-shell", "jazor-admin-shell--mixed", "jazor-admin-shell--collapsed"),
-            AdminLayoutMode.Mixed => BuildCssClass("jazor-admin-shell", "jazor-admin-shell--mixed"),
-            _ when Collapsed => BuildCssClass("jazor-admin-shell", "jazor-admin-shell--sidebar", "jazor-admin-shell--collapsed"),
-            _ => BuildCssClass("jazor-admin-shell", "jazor-admin-shell--sidebar")
+            AdminLayoutMode.Top => BuildCssClass("ja-shell", "ja-shell--top"),
+            AdminLayoutMode.Mixed when Collapsed => BuildCssClass("ja-shell", "ja-shell--mixed", "ja-shell--collapsed"),
+            AdminLayoutMode.Mixed => BuildCssClass("ja-shell", "ja-shell--mixed"),
+            _ when Collapsed => BuildCssClass("ja-shell", "ja-shell--sidebar", "ja-shell--collapsed"),
+            _ => BuildCssClass("ja-shell", "ja-shell--sidebar")
         };
 
     private string SidebarToggleLabel
@@ -99,7 +99,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
         if (hasSidebarRegion)
         {
             builder.OpenElement(4, "aside");
-            builder.AddAttribute(5, "class", "jazor-admin-shell__sidebar");
+            builder.AddAttribute(5, "class", "ja-shell__sidebar");
             if (sidebar is not null)
             {
                 builder.AddContent(6, sidebar);
@@ -120,12 +120,12 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
         }
 
         builder.OpenElement(15, "div");
-        builder.AddAttribute(16, "class", "jazor-admin-shell__main");
+        builder.AddAttribute(16, "class", "ja-shell__main");
 
         if (hasHeaderRegion)
         {
             builder.OpenElement(17, "header");
-            builder.AddAttribute(18, "class", "jazor-admin-shell__header");
+            builder.AddAttribute(18, "class", "ja-shell__header");
             if (header is not null)
             {
                 builder.AddContent(19, header);
@@ -136,7 +136,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                 {
                     builder.OpenElement(20, "button");
                     builder.AddAttribute(21, "type", "button");
-                    builder.AddAttribute(22, "class", "jazor-admin-shell__sidebar-toggle");
+                    builder.AddAttribute(22, "class", "ja-shell__sidebar-toggle");
                     builder.AddAttribute(23, "data-shell-command", "toggle-sidebar");
                     builder.AddAttribute(24, "aria-label", SidebarToggleLabel);
                     builder.AddAttribute(25, "title", SidebarToggleLabel);
@@ -155,7 +155,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                     builder.AddComponentParameter(32, nameof(HeaderBar.Navigation), (RenderFragment)(navigationBuilder =>
                     {
                         navigationBuilder.OpenComponent<SidebarMenu>(0);
-                        navigationBuilder.AddComponentParameter(1, nameof(AdminComponentBase.CssClass), (VueClassValue)"jazor-admin-sidebar--horizontal");
+                        navigationBuilder.AddComponentParameter(1, nameof(AdminComponentBase.CssClass), (VueClassValue)"ja-sidebar--horizontal");
                         navigationBuilder.AddComponentParameter(2, nameof(SidebarMenu.Items), NavItems);
                         navigationBuilder.AddComponentParameter(3, nameof(SidebarMenu.SelectedKey), SelectedKey);
                         navigationBuilder.AddComponentParameter(4, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
@@ -183,7 +183,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
         }
 
         builder.OpenElement(41, "main");
-        builder.AddAttribute(42, "class", "jazor-admin-shell__content");
+        builder.AddAttribute(42, "class", "ja-shell__content");
         builder.AddContent(43, ChildContent);
         builder.CloseElement();
 

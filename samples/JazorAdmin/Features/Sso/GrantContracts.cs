@@ -1,4 +1,4 @@
-namespace JazorAdmin.Features.Configuration;
+namespace JazorAdmin.Features.Sso;
 
 public sealed record AuthorizationView(
     string Id,

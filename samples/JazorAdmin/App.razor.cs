@@ -69,20 +69,23 @@ public partial class App : ComponentBase, IVueComponent
 
     private bool IsAccountsPage => SelectedKey == AccountsKey;
 
-    private bool IsConfigurationPage
-        => SelectedKey is ConfigurationApplicationsKey or ConfigurationScopesKey or
-            ConfigurationAuthorizationsKey or ConfigurationTokensKey;
+    private bool IsSsoPage
+        => SelectedKey is SsoApplicationsKey or SsoScopesKey or SsoAuthorizationsKey or SsoTokensKey;
 
-    private bool IsConfigurationApplicationsPage => SelectedKey == ConfigurationApplicationsKey;
+    private bool IsSsoApplicationsPage => SelectedKey == SsoApplicationsKey;
 
-    private bool IsConfigurationScopesPage => SelectedKey == ConfigurationScopesKey;
+    private bool IsSsoScopesPage => SelectedKey == SsoScopesKey;
 
-    private bool IsConfigurationAuthorizationsPage => SelectedKey == ConfigurationAuthorizationsKey;
+    private bool IsSsoAuthorizationsPage => SelectedKey == SsoAuthorizationsKey;
+
+    private bool IsSettingsPage => SelectedKey == SettingsKey;
+
+    private bool IsSchedulesPage => SelectedKey == SchedulesKey;
 
     private bool IsDashboardPage => SelectedKey == DashboardKey;
 
     private string DashboardContainerClass
-        => IsDashboardPage ? "jazor-admin-tdesign-page-container--dashboard" : string.Empty;
+        => IsDashboardPage ? "ja-tdesign-page-container--dashboard" : string.Empty;
 
     private string GetSelectedPageTitle() => SelectedRoute.Title ?? string.Empty;
 

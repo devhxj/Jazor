@@ -20,7 +20,7 @@ public partial class TDesignPageContainer : AdminContentComponentBase
     [Parameter]
     public RenderFragment? Extra { get; set; }
 
-    private const string RootCssClass = "jazor-admin-tdesign-page-container";
+    private const string RootCssClass = "ja-tdesign-page-container";
 
     private static TButtonThemeValue? MapTheme(AdminPageActionKind? kind) => kind switch
     {

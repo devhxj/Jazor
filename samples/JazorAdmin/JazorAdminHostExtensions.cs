@@ -4,14 +4,17 @@ using JazorAdmin.Authentication;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
-using JazorAdmin.Features.Configuration;
+using JazorAdmin.Features.Sso;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Organizations;
+using JazorAdmin.Features.Scheduling;
+using JazorAdmin.Features.Settings;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
+using Quartz;
 
 namespace JazorAdmin;
 
@@ -133,7 +136,12 @@ public static class JazorAdminHostExtensions
                 options.UseAspNetCore();
             });
 
+        services.AddQuartz();
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+        services.AddScoped<IManagedTask, OpenIddictPruneTask>();
+        services.AddSingleton<ScheduleService>();
         services.AddHostedService<JazorAdminDatabaseInitializer>();
+        services.AddHostedService<ScheduleInitializer>();
         return services;
     }
 
@@ -160,7 +168,9 @@ public static class JazorAdminHostExtensions
         app.MapAccountEndpoints();
         app.MapOpenIddictEndpoints();
         app.MapOrganizationEndpoints();
-        app.MapConfigurationEndpoints();
+        app.MapSsoEndpoints();
+        app.MapSettingEndpoints();
+        app.MapScheduleEndpoints();
         return app;
     }
 }

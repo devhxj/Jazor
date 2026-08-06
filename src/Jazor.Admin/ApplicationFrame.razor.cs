@@ -14,8 +14,8 @@ public partial class ApplicationFrame : AdminContentComponentBase, IVueContainer
 
     private VueClassValue RootCssClass
         => Grayscale
-            ? BuildCssClass("jazor-admin-application", GetThemeCssClass(Theme), "jazor-admin-application--grayscale")
-            : BuildCssClass("jazor-admin-application", GetThemeCssClass(Theme));
+            ? BuildCssClass("ja-application", GetThemeCssClass(Theme), "ja-application--grayscale")
+            : BuildCssClass("ja-application", GetThemeCssClass(Theme));
 
     private VueStyleValue RootStyle
     {
@@ -54,8 +54,8 @@ public partial class ApplicationFrame : AdminContentComponentBase, IVueContainer
     private static string GetThemeCssClass(AdminThemeMode theme)
         => theme switch
         {
-            AdminThemeMode.Light => "jazor-admin-application--light",
-            AdminThemeMode.Dark => "jazor-admin-application--dark",
-            _ => "jazor-admin-application--system"
+            AdminThemeMode.Light => "ja-application--light",
+            AdminThemeMode.Dark => "ja-application--dark",
+            _ => "ja-application--system"
         };
 }

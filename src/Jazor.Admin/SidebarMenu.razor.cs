@@ -29,8 +29,8 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
 
     private VueClassValue RootCssClass
         => Collapsed
-            ? BuildCssClass("jazor-admin-sidebar", "jazor-admin-sidebar--collapsed")
-            : BuildCssClass("jazor-admin-sidebar");
+            ? BuildCssClass("ja-sidebar", "ja-sidebar--collapsed")
+            : BuildCssClass("ja-sidebar");
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -49,7 +49,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         if (logo is not null)
         {
             builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", "jazor-admin-sidebar__logo");
+            builder.AddAttribute(5, "class", "ja-sidebar__logo");
             builder.AddContent(6, logo);
             builder.CloseElement();
         }
@@ -57,7 +57,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         if (items.Length > 0)
         {
             builder.OpenElement(7, "ul");
-            builder.AddAttribute(8, "class", "jazor-admin-sidebar__list");
+            builder.AddAttribute(8, "class", "ja-sidebar__list");
             foreach (var item in items)
             {
                 builder.AddContent(9, RenderEffectiveItem(item));
@@ -93,13 +93,13 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         builder.AddAttribute(2, "data-key", item.Key);
 
         builder.OpenElement(3, "div");
-        builder.AddAttribute(4, "class", "jazor-admin-sidebar__item-content");
+        builder.AddAttribute(4, "class", "ja-sidebar__item-content");
 
         if (hasChildren && !canNavigate)
         {
             builder.OpenElement(5, "button");
             builder.AddAttribute(6, "type", "button");
-            builder.AddAttribute(7, "class", "jazor-admin-sidebar__button jazor-admin-sidebar__button--branch");
+            builder.AddAttribute(7, "class", "ja-sidebar__button ja-sidebar__button--branch");
             builder.AddAttribute(8, "disabled", isDisabled || !hasNavigableChildren);
             builder.AddAttribute(9, "aria-expanded", isExpanded);
             builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
@@ -115,7 +115,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         {
             builder.OpenElement(20, "button");
             builder.AddAttribute(21, "type", "button");
-            builder.AddAttribute(22, "class", "jazor-admin-sidebar__toggle");
+            builder.AddAttribute(22, "class", "ja-sidebar__toggle");
             builder.AddAttribute(23, "disabled", isDisabled);
             builder.AddAttribute(24, "aria-expanded", isExpanded);
             builder.AddAttribute(25, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
@@ -128,7 +128,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         if (hasChildren && isExpanded)
         {
             builder.OpenElement(30, "ul");
-            builder.AddAttribute(31, "class", "jazor-admin-sidebar__children");
+            builder.AddAttribute(31, "class", "ja-sidebar__children");
             foreach (var child in item.Children)
             {
                 RenderEffectiveItem(child)(builder);
@@ -239,7 +239,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         if (!isDisabled && navigationTarget.HasRoute)
         {
             builder.OpenComponent<VueRouterLink>(0);
-            builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)"jazor-admin-sidebar__link");
+            builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)"ja-sidebar__link");
             builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
             builder.AddAttribute(3, nameof(VueRouterLink.OnClick), EventCallback.Factory.Create<MouseEvent>(this, _ => OnItemSelectedCore(item)));
             builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, item.Title)));
@@ -250,7 +250,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         if (!isDisabled && navigationTarget.HasHref)
         {
             builder.OpenElement(10, "a");
-            builder.AddAttribute(11, "class", "jazor-admin-sidebar__link");
+            builder.AddAttribute(11, "class", "ja-sidebar__link");
             builder.AddAttribute(12, "href", navigationTarget.Href);
             builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
             builder.AddContent(14, item.Title);
@@ -260,7 +260,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
 
         builder.OpenElement(20, "button");
         builder.AddAttribute(21, "type", "button");
-        builder.AddAttribute(22, "class", "jazor-admin-sidebar__button");
+        builder.AddAttribute(22, "class", "ja-sidebar__button");
         builder.AddAttribute(23, "disabled", isDisabled);
         builder.AddAttribute(24, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
         if (navigationTarget.IsNavigable)
@@ -326,7 +326,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
     {
         var classes = new List<string>(6)
         {
-            "jazor-admin-sidebar__item"
+            "ja-sidebar__item"
         };
 
         if (item.Children.Length > 0)

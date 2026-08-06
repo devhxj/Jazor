@@ -69,9 +69,9 @@ public partial class TDesignLayout : AdminContentComponentBase
 
     private string RootCssClass => Mode switch
     {
-        AdminLayoutMode.Top => "jazor-admin-tdesign-layout jazor-admin-tdesign-layout--top",
-        AdminLayoutMode.Mixed => "jazor-admin-tdesign-layout jazor-admin-tdesign-layout--mixed",
-        _ => "jazor-admin-tdesign-layout jazor-admin-tdesign-layout--sidebar"
+        AdminLayoutMode.Top => "ja-tdesign-layout ja-tdesign-layout--top",
+        AdminLayoutMode.Mixed => "ja-tdesign-layout ja-tdesign-layout--mixed",
+        _ => "ja-tdesign-layout ja-tdesign-layout--sidebar"
     };
 
     private string EffectiveCollapseLabel

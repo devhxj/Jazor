@@ -8,3 +8,4 @@
 | 文件 | 说明 |
 |------|------|
 | `Jazor.Admin.Phase1.ImplementationPlan.md` | `Jazor.Admin` 第一阶段实施计划、切片顺序与非目标边界 |
+| `JazorAdmin.产品中心计划.md` | JazorAdmin 正式管理产品的 SSO、配置与 Quartz 任务中心边界及验收计划 |

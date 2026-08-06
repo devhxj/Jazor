@@ -4,8 +4,8 @@
          style="@CssStyle"
          data-page-container=""
          @attributes="AdditionalAttributes">
-    <div class='@("jazor-admin-tdesign-page-container__header")'>
-        <div class='@("jazor-admin-tdesign-page-container__titles")'>
+    <div class='@("ja-tdesign-page-container__header")'>
+        <div class='@("ja-tdesign-page-container__titles")'>
             @if (BreadcrumbItems is { Length: > 0 })
             {
                 <TBreadcrumb data-page-region="breadcrumb">
@@ -21,13 +21,13 @@
 
             @if (!string.IsNullOrWhiteSpace(Title))
             {
-                <div class='@("jazor-admin-tdesign-page-container__title")'
+                <div class='@("ja-tdesign-page-container__title")'
                      data-page-region="title">@Title</div>
             }
 
             @if (!string.IsNullOrWhiteSpace(Subtitle))
             {
-                <div class='@("jazor-admin-tdesign-page-container__subtitle")'>@Subtitle</div>
+                <div class='@("ja-tdesign-page-container__subtitle")'>@Subtitle</div>
             }
         </div>
 
@@ -51,7 +51,7 @@
         }
     </div>
 
-    <div class='@("jazor-admin-tdesign-page-container__body")'
+    <div class='@("ja-tdesign-page-container__body")'
          data-page-region="body">
         @ChildContent
     </div>

@@ -242,9 +242,9 @@ public static class OpenIddictEndpoints
               {{styles}}
             </head>
             <body>
-              <main class="jazor-admin-access jazor-admin-access--login" data-access-page="consent">
-                <section class="jazor-admin-access__panel">
-                  <strong class="jazor-admin-access__brand">JazorAdmin</strong>
+              <main class="ja-access ja-access--login" data-access-page="consent">
+                <section class="ja-access__panel">
+                  <strong class="ja-access__brand">JazorAdmin</strong>
                   <h1>Authorize {{name}}</h1>
                   <p>The application is requesting: {{requestedScopes}}</p>
                   <form method="post" action="{{action}}">

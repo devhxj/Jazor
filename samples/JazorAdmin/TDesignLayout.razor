@@ -17,15 +17,15 @@
             }
             else
             {
-                <div class="jazor-admin-tdesign-sidebar-shell">
+                <div class="ja-tdesign-sidebar-shell">
                     <IconBar Items="@NavItems"
                              SelectedKey="@SelectedKey" />
 
                     @if (!Collapsed)
                     {
-                        <div class="jazor-admin-tdesign-sidebar-shell__menu">
-                            <div class="jazor-admin-tdesign-sidebar-shell__brand">
-                                <span class="jazor-admin-tdesign-sidebar-shell__brand-mark" aria-hidden="true"></span>
+                        <div class="ja-tdesign-sidebar-shell__menu">
+                            <div class="ja-tdesign-sidebar-shell__brand">
+                                <span class="ja-tdesign-sidebar-shell__brand-mark" aria-hidden="true"></span>
                                 <span>@SecondaryTitle</span>
                             </div>
                             <TDesignSidebarMenu Items="@SecondaryNavItems"
@@ -44,7 +44,7 @@
 
     <TLayout data-shell-region="main">
         <THeader Height="64px" data-shell-region="header">
-            <div class='@("jazor-admin-tdesign-layout__header")'>
+            <div class='@("ja-tdesign-layout__header")'>
                 @if (IsSidebarLayout)
                 {
                     <TButton ContentValue="@EffectiveCollapseLabel"

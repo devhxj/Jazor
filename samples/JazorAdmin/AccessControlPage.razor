@@ -1,35 +1,35 @@
 @* Maintains organization roles and their resource-operation grants. 管理组织角色及其资源操作授权。 *@
 @inherits AppComponentBase
 
-<section class="jazor-admin-management" data-management-area="authorization">
+<section class="ja-management" data-management-area="authorization">
     @if (OrganizationId is null)
     {
-        <p class="jazor-admin-management__empty">Select an organization from the header to inspect authorization.</p>
+        <p class="ja-management__empty">Select an organization from the header to inspect authorization.</p>
     }
     else if (loading)
     {
-        <p class="jazor-admin-management__loading" aria-live="polite">Loading authorization data</p>
+        <p class="ja-management__loading" aria-live="polite">Loading authorization data</p>
     }
     else if (error is not null)
     {
-        <p class="jazor-admin-management__error" role="alert">@error</p>
+        <p class="ja-management__error" role="alert">@error</p>
     }
     else if (View == AccessControlView.Roles)
     {
-        <div class="jazor-admin-management__split jazor-admin-management__split--authorization">
-            <section class="jazor-admin-management__panel" aria-labelledby="organization-roles-title">
-                <header class="jazor-admin-management__panel-header">
+        <div class="ja-management__split ja-management__split--authorization">
+            <section class="ja-management__panel" aria-labelledby="organization-roles-title">
+                <header class="ja-management__panel-header">
                     <div>
                         <h2 id="organization-roles-title">Organization roles</h2>
                         <p>Select a role to edit its resource operations</p>
                     </div>
                 </header>
-                <form class="jazor-admin-management__form jazor-admin-management__form--inline" @onsubmit="CreateRole" @onsubmit:preventDefault>
+                <form class="ja-management__form ja-management__form--inline" @onsubmit="CreateRole" @onsubmit:preventDefault>
                     <input required placeholder="Role code" autocomplete="off" @bind="roleCode" @bind:event="oninput" />
                     <input required placeholder="Display name" autocomplete="off" @bind="roleDisplayName" @bind:event="oninput" />
                     <button type="submit">Add role</button>
                 </form>
-                <ul class="jazor-admin-management__role-list">
+                <ul class="ja-management__role-list">
                     @foreach (var role in roles)
                     {
                         <li class="@(role.Id == selectedRoleId ? "is-selected" : string.Empty)">
@@ -42,8 +42,8 @@
                 </ul>
             </section>
 
-            <section class="jazor-admin-management__panel" aria-labelledby="role-grants-title">
-                <header class="jazor-admin-management__panel-header">
+            <section class="ja-management__panel" aria-labelledby="role-grants-title">
+                <header class="ja-management__panel-header">
                     <div>
                         <h2 id="role-grants-title">Resource operations</h2>
                         <p>@(SelectedRole?.DisplayName ?? "Select a role")</p>
@@ -51,10 +51,10 @@
                 </header>
                 @if (SelectedRole is not null)
                 {
-                    <div class="jazor-admin-management__grant-list">
+                    <div class="ja-management__grant-list">
                         @foreach (var operation in resourceOperations)
                         {
-                            <label class="jazor-admin-management__check">
+                            <label class="ja-management__check">
                                 <input type="checkbox" checked="@HasGrant(operation)" @onclick="() => ToggleGrant(operation)" />
                                 <span>@operation.DisplayName</span>
                                 <small>@operation.Resource / @operation.Operation</small>
@@ -65,22 +65,22 @@
                 }
                 else
                 {
-                    <p class="jazor-admin-management__empty">No role is selected.</p>
+                    <p class="ja-management__empty">No role is selected.</p>
                 }
             </section>
         </div>
     }
     else
     {
-        <section class="jazor-admin-management__panel" aria-labelledby="available-operations-title">
-            <header class="jazor-admin-management__panel-header">
+        <section class="ja-management__panel" aria-labelledby="available-operations-title">
+            <header class="ja-management__panel-header">
                 <div>
                     <h2 id="available-operations-title">Available resource operations</h2>
                     <p>These operations can be assigned to organization roles</p>
                 </div>
             </header>
-            <div class="jazor-admin-management__table-wrap">
-                <table class="jazor-admin-management__table">
+            <div class="ja-management__table-wrap">
+                <table class="ja-management__table">
                     <thead><tr><th>Resource</th><th>Operation</th><th>Display name</th></tr></thead>
                     <tbody>
                         @foreach (var operation in resourceOperations)

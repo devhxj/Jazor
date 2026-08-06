@@ -1,0 +1,57 @@
+@* Manages OpenIddict scope metadata and its target API resources. *@
+@inherits AppComponentBase
+
+<section class="ja-management" data-management-area="sso" data-sso-view="scopes">
+    @if (loading)
+    {
+        <p class="ja-management__loading" aria-live="polite">Loading OpenID scopes</p>
+    }
+    else
+    {
+        @if (error is not null)
+        {
+            <p class="ja-management__error" role="alert">@error</p>
+        }
+
+        <div class="ja-management__split">
+            <section class="ja-management__panel" aria-labelledby="sso-scopes-title">
+                <header class="ja-management__panel-header">
+                    <div><h2 id="sso-scopes-title">OpenID scopes</h2><p>Claims are issued to the selected API resources</p></div>
+                    <button type="button" data-sso-command="new-scope" @onclick="NewScope">New</button>
+                </header>
+                <div class="ja-management__table-wrap">
+                    <table class="ja-management__table">
+                        <thead><tr><th>Scope</th><th>Resources</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var scope in scopes)
+                            {
+                                <tr class="@(scope.Id == selectedId ? "is-selected" : string.Empty)" data-sso-scope="@scope.Name">
+                                    <td><strong>@scope.DisplayName</strong><span>@scope.Name</span></td>
+                                    <td>@Display(scope.Resources)</td>
+                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(scope)">Manage</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ja-management__panel" aria-labelledby="sso-scope-editor-title">
+                <header class="ja-management__panel-header"><div><h2 id="sso-scope-editor-title">@(IsNew ? "Create scope" : "Scope settings")</h2><p>Name is immutable after creation</p></div></header>
+                <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
+                    <label><span>Name</span><input required readonly="@(!IsNew)" autocomplete="off" @bind="name" @bind:event="oninput" /></label>
+                    <label><span>Display name</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
+                    <label><span>Description</span><textarea rows="3" @bind="description"></textarea></label>
+                    <label><span>API resources</span><input autocomplete="off" placeholder="orders-api reporting-api" @bind="resources" @bind:event="oninput" /></label>
+                    <div class="ja-management__commands">
+                        <button type="submit" data-sso-command="save-scope">@(IsNew ? "Create" : "Save changes")</button>
+                        @if (!IsNew)
+                        {
+                            <button type="button" class="ja-management__danger-button" data-sso-command="delete-scope" @onclick="DeleteScope">@(deleteArmed ? "Confirm delete" : "Delete")</button>
+                        }
+                    </div>
+                </form>
+            </section>
+        </div>
+    }
+</section>

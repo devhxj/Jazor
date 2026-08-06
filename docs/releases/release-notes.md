@@ -5,6 +5,8 @@
 - JazorAdmin now covers the active OpenIddict administration surface: applications, scopes, authorizations, and tokens. Application profiles model interactive, machine, and API clients with public/confidential client types, one-time secret creation and rotation, consent and PKCE, URI and scope assignment, plus endpoint, grant, and response permissions. Scope resources determine token audiences; authorization and token records can be inspected and revoked.
 - Explicit and systematic consent requests now render a local confirmation page that posts every validated OAuth parameter as form data, which preserves authorization-code, state, PKCE, nonce, prompt, and custom request values across the browser consent step.
 - JazorAdmin's local-package browser smoke now exercises Machine/API registration, one-time secret display, Scope edits, authorization/token revocation, and mobile application-page viewport containment. It also catches RazorVue output that would use ECMAScript reserved words as local function names.
+- JazorAdmin now has three independent operating centers: SSO management, typed configuration, and task scheduling. The configuration center supports text, boolean, number, and JSON values. The task center uses Quartz.NET for Cron triggers, misfire handling, and single-task concurrency; administrators can enable, pause, manually run, and inspect catalogued tasks, without submitting arbitrary executable code. The initial task safely prunes expired OpenIddict records.
+- JazorAdmin uses the concise `ja-*` CSS namespace consistently across its shell, pages, generated modules, and browser verification.
 
 ## 2026-08-06
 
