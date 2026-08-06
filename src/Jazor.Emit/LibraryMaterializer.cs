@@ -14,7 +14,8 @@ internal sealed class LibraryMaterializer
         IEnumerable<string> manifestPaths,
         string destinationRoot,
         BuildMode mode,
-        IEnumerable<string>? requiredImports = null)
+        IEnumerable<string>? requiredImports = null,
+        IEnumerable<string>? providedModulePaths = null)
     {
         var manifests = manifestPaths
             .Where(static path => !string.IsNullOrWhiteSpace(path))
@@ -126,6 +127,9 @@ internal sealed class LibraryMaterializer
 
         var missingImports = (requiredImports ?? [])
             .Where(ECMAScriptModulePath.IsPackageSpecifier)
+            // Generated application modules may use bare catalog paths (for example host/app.mjs).
+            // Only paths absent from the application manifest must be supplied by a library package.
+            .Where(specifier => !IsProvidedModule(specifier, providedModulePaths))
             .Distinct(StringComparer.Ordinal)
             .Where(specifier => !importPaths.ContainsKey(specifier))
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
@@ -138,6 +142,18 @@ internal sealed class LibraryMaterializer
         }
 
         return new LibraryAssets(importPaths, stylePaths, manifests.Select(static item => item.SourcePath).ToArray());
+    }
+
+    private static bool IsProvidedModule(string specifier, IEnumerable<string>? modulePaths)
+    {
+        if (modulePaths is null)
+            return false;
+
+        return modulePaths.Any(path =>
+            string.Equals(
+                path.Replace('\\', '/').TrimStart('.').TrimStart('/'),
+                specifier.Replace('\\', '/').TrimStart('.').TrimStart('/'),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private static LibraryManifest[] OrderByDependencies(

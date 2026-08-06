@@ -188,6 +188,14 @@ Parallel test stability rules:
 - When running multiple `dotnet test` lanes concurrently, isolate build outputs with distinct `BaseOutputPath` values. After a successful build, prefer focused `--no-build` reruns for verification.
 - Keep targeted regression verification fast. As a default budget, the focused suite for a change should stay around 2 minutes or less unless the user explicitly asks for broader coverage.
 
+## Release Publishing
+
+Official NuGet publishing is performed only by `.github/workflows/nuget-publish-ref.yml`.
+Push a `v*` tag or use `workflow_dispatch`; GitHub Actions owns trusted publishing
+and any required credentials. Local `scripts/csharp/publish-nuget.cs` runs must use
+`--skip-push` for package verification. Do not require or probe a local `NUGET_API_KEY`
+when preparing or completing a repository release.
+
 ## Commit & Pull Request Guidelines
 
 Recent history uses Conventional Commit-style prefixes, often with an emoji, for example `♻️ refactor(compiler): ...`, `✅ test(razorvue): ...`, and `🐛 fix(emit): ...`. Keep scopes specific (`compiler`, `razorvue`, `clr`, `emit`, `test`, `docs`) and subjects imperative. Pull requests should summarize the affected module, describe behavior changes, list the commands you ran, and include sample output or screenshots when the change affects generated code or developer-facing tooling.

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "pinia-testing",
+  "version": "1.0.3",
+  "imports": {
+    "@pinia/testing": {
+      "development": "dist/index.mjs",
+      "production": "dist/index.mjs"
+    }
+  },
+  "requires": {
+    "pinia": "^3.0.4",
+    "vue3": "^3.5.0"
+  },
+  "styles": [],
+  "files": [
+    "licenses/LICENSE"
+  ]
+}

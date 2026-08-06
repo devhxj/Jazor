@@ -102,6 +102,10 @@ public sealed class SdkIntegrationTests
         var piniaTestingNuspec = ReadPackageEntryText(package.PiniaTestingPackagePath, "ECMAScript.Pinia.Testing.nuspec");
         CollectionAssert.Contains(piniaTestingEntryNames, "lib/net11.0/ECMAScript.Pinia.Testing.dll");
         CollectionAssert.Contains(piniaTestingEntryNames, "ECMAScript.Pinia.Testing.nuspec");
+        CollectionAssert.Contains(piniaTestingEntryNames, "buildTransitive/ECMAScript.Pinia.Testing.targets");
+        CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/manifest.json");
+        CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/dist/index.mjs");
+        CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/licenses/LICENSE");
         StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Pinia\"");
     }
 
@@ -160,6 +164,13 @@ public sealed class SdkIntegrationTests
             "jazor/pinia/manifest.json",
             "jazor/pinia/dist/pinia.mjs",
             "jazor/pinia/licenses/LICENSE");
+        AssertPackageEntries(
+            package.PiniaTestingPackagePath,
+            "lib/net11.0/ECMAScript.Pinia.Testing.dll",
+            "buildTransitive/ECMAScript.Pinia.Testing.targets",
+            "jazor/pinia-testing/manifest.json",
+            "jazor/pinia-testing/dist/index.mjs",
+            "jazor/pinia-testing/licenses/LICENSE");
         AssertPackageEntries(
             package.TDesignPackagePath,
             "lib/net11.0/ECMAScript.TDesign.dll",

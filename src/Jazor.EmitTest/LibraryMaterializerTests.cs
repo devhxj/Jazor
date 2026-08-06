@@ -154,6 +154,23 @@ public sealed class LibraryMaterializerTests
         StringAssert.Contains(exception.Message, "vuetify/components", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void Materialize_IgnoresImportsProvidedByApplicationManifest()
+    {
+        using var workspace = new LibraryWorkspace();
+        var manifestPath = workspace.WriteManifest("pinia", "3.0.4", "pinia", "dist/pinia.mjs", "dist/pinia.mjs");
+        workspace.WriteFile("dist/pinia.mjs", "export const version = '3.0.4';");
+
+        var result = new LibraryMaterializer().Materialize(
+            [manifestPath],
+            Path.Combine(workspace.Root, "out"),
+            BuildMode.Production,
+            ["pinia", "host/app.mjs", "stores/counter-store.mjs"],
+            ["host/app.mjs", "stores/counter-store.mjs"]);
+
+        Assert.AreEqual("vendor/pinia/3.0.4/dist/pinia.mjs", result.ImportPaths["pinia"]);
+    }
+
     private sealed class LibraryWorkspace : IDisposable
     {
         public LibraryWorkspace()

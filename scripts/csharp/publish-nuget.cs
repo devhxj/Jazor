@@ -480,6 +480,11 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
+        Console.WriteLine();
+        Console.WriteLine("Release note:");
+        Console.WriteLine("  Local use of this script should stay on --skip-push for package verification.");
+        Console.WriteLine("  Official NuGet publishing is performed by .github/workflows/nuget-publish-ref.yml from a pushed v* tag or workflow_dispatch run.");
+        Console.WriteLine("  Do not require a local NUGET_API_KEY for the repository release workflow.");
     }
 }
 

@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\pinia-testing\manifest.json" />
+  </ItemGroup>
+</Project>

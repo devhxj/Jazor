@@ -68,7 +68,8 @@ internal sealed class NetpackBundler
                 options.LibraryManifests ?? [],
                 bundleWorkspace,
                 BuildMode.Production,
-                manifest.Modules.SelectMany(static module => module.PackageImports ?? []));
+                manifest.Modules.SelectMany(static module => module.PackageImports ?? []),
+                relativePaths);
             var assets = CopyAssets(manifest, options, bundleWorkspace);
             // Keep package ESM external to Netpack. Its printer is not a lossless pass-through
             // for modern nullish/async syntax; the assets remain local and are relinked below.

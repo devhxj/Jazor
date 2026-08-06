@@ -77,7 +77,8 @@ internal sealed class DenoBundler
                 options.LibraryManifests ?? [],
                 bundleWorkspace,
                 BuildMode.Production,
-                manifest.Modules.SelectMany(static module => module.PackageImports ?? []));
+                manifest.Modules.SelectMany(static module => module.PackageImports ?? []),
+                relativePaths);
             foreach (var (specifier, path) in libraries.ImportPaths)
                 knownPaths[specifier] = path;
             assetPreparation = await PrepareAssetsAsync(manifest, options, bundleWorkspace);

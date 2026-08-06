@@ -168,14 +168,22 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
     {
         outputRoot = Path.GetFullPath(outputRoot);
         Directory.CreateDirectory(outputRoot);
-        var requiredImports = string.IsNullOrWhiteSpace(manifestPath)
-            ? []
-            : (ManifestModel.TryLoad(Path.GetFullPath(manifestPath))
-                ?? throw new FileNotFoundException("Manifest was not found.", manifestPath))
-                .Modules
-                .SelectMany(static module => module.PackageImports ?? [])
-                .ToArray();
-        var materialization = new LibraryMaterializer().Materialize(manifests, outputRoot, mode, requiredImports);
+        var manifest = string.IsNullOrWhiteSpace(manifestPath)
+            ? null
+            : ManifestModel.TryLoad(Path.GetFullPath(manifestPath))
+                ?? throw new FileNotFoundException("Manifest was not found.", manifestPath);
+        var requiredImports = manifest?.Modules
+            .SelectMany(static module => module.PackageImports ?? [])
+            .ToArray() ?? [];
+        var providedModulePaths = manifest?.Modules
+            .Select(static module => module.RelativePath)
+            .ToArray() ?? [];
+        var materialization = new LibraryMaterializer().Materialize(
+            manifests,
+            outputRoot,
+            mode,
+            requiredImports,
+            providedModulePaths);
         var imports = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["style.mjs"] = "/jazor/style.mjs",

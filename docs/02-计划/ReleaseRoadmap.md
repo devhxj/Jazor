@@ -25,6 +25,7 @@
 - `1.0` 的性能结论必须来自可复现的基准、回归阈值和真实应用验证，而不是主观的“感觉足够快”。
 - `0.3` 至 `0.8` 的 JazorAdmin 开发、集成测试和 smoke 必须消费当前源码打出的本地 NuGet 包，不能用远程包替代当前源码验证。`0.8` 完成后，从 `0.9` 开始再把公开 NuGet 源消费纳入正式验收。
 - `0.1.x` 是路线确立前的历史补丁线。后续公开里程碑从 `0.3.0` 开始，`0.2` 不单独占用版本阶段。
+- 正式 NuGet 上传只通过 `.github/workflows/nuget-publish-ref.yml` 执行：推送 `v*` 标签或手动 `workflow_dispatch` 会在 GitHub Actions 中打包、上传 nuget.org / GitHub Packages 并创建或更新 GitHub Release。本地 `scripts/csharp/publish-nuget.cs` 仅用于 `--skip-push` 打包验证，不应把本机 `NUGET_API_KEY` 作为发布前提。
 
 ## 当前定位
 
