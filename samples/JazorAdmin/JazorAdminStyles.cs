@@ -345,7 +345,7 @@ internal static class JazorAdminStyles
                 Background = raw("var(--surface)")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail",
+        global(".jazor-admin-iconbar",
             new CssRule
             {
                 Display = raw("flex"),
@@ -355,11 +355,18 @@ internal static class JazorAdminStyles
                 Width = raw("64px"),
                 MinHeight = raw("100vh"),
                 Padding = raw("14px 8px"),
-                Gap = raw("10px"),
                 Background = raw("#20415d")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__link",
+        global(".jazor-admin-iconbar__items",
+            new CssRule
+            {
+                Display = raw("flex"),
+                FlexDirection = raw("column"),
+                Gap = raw("10px")
+            });
+
+        global(".jazor-admin-iconbar__link",
             new CssRule
             {
                 Display = raw("grid"),
@@ -371,14 +378,14 @@ internal static class JazorAdminStyles
                 BorderRadius = raw("6px")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__link:hover, .jazor-admin-tdesign-sidebar-rail__link.is-selected",
+        global(".jazor-admin-iconbar__link:hover, .jazor-admin-iconbar__link.is-selected",
             new CssRule
             {
                 Color = raw("#ffffff"),
                 Background = raw("#2f6fed")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon",
+        global(".jazor-admin-iconbar__icon",
             new CssRule
             {
                 Position = raw("relative"),
@@ -387,7 +394,7 @@ internal static class JazorAdminStyles
                 Height = raw("18px")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon::before, .jazor-admin-tdesign-sidebar-rail__icon::after",
+        global(".jazor-admin-iconbar__icon::before, .jazor-admin-iconbar__icon::after",
             new CssRule
             {
                 Position = raw("absolute"),
@@ -396,7 +403,7 @@ internal static class JazorAdminStyles
                 Content = raw("\"\"")
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"dashboard\"]::before",
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"dashboard\"]::before",
             new CssRule
             {
                 Width = raw("6px"),
@@ -408,7 +415,7 @@ internal static class JazorAdminStyles
                     new CssShadow(px(10), px(10), Color: currentColor))
             });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"organizations\"]::before", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"organizations\"]::before", new CssRule
         {
             Top = px(1),
             Left = px(5),
@@ -420,7 +427,7 @@ internal static class JazorAdminStyles
             BorderRadius = percent(50)
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"organizations\"]::after", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"organizations\"]::after", new CssRule
         {
             Right = px(1),
             Bottom = px(1),
@@ -432,7 +439,7 @@ internal static class JazorAdminStyles
             BorderRadius = raw("8px 8px 3px 3px")
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"authorization\"]::before", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"authorization\"]::before", new CssRule
         {
             Top = px(1),
             Left = px(3),
@@ -444,7 +451,7 @@ internal static class JazorAdminStyles
             BorderRadius = raw("3px 3px 7px 7px")
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"authorization\"]::after", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"authorization\"]::after", new CssRule
         {
             Top = px(5),
             Left = px(7),
@@ -459,7 +466,7 @@ internal static class JazorAdminStyles
             Transform = rotate(deg(45))
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"accounts\"]::before", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"accounts\"]::before", new CssRule
         {
             Top = px(1),
             Left = px(5),
@@ -471,7 +478,7 @@ internal static class JazorAdminStyles
             BorderRadius = percent(50)
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"accounts\"]::after", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"accounts\"]::after", new CssRule
         {
             Right = px(1),
             Bottom = px(1),
@@ -483,7 +490,7 @@ internal static class JazorAdminStyles
             BorderRadius = raw("6px 6px 2px 2px")
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"configuration\"]::before", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"configuration\"]::before", new CssRule
         {
             Top = px(2),
             Left = px(1),
@@ -495,7 +502,7 @@ internal static class JazorAdminStyles
                 new CssShadow(px(0), px(12), Color: currentColor))
         });
 
-        global(".jazor-admin-tdesign-sidebar-rail__icon[data-rail-icon=\"configuration\"]::after", new CssRule
+        global(".jazor-admin-iconbar__icon[data-iconbar-icon=\"configuration\"]::after", new CssRule
         {
             Top = px(0),
             Left = px(4),
@@ -1281,6 +1288,49 @@ internal static class JazorAdminStyles
             {
                 AlignItems = raw("flex-start"),
                 FlexWrap = raw("wrap")
+            });
+
+        Media(".jazor-admin-tdesign-sidebar-shell", "(max-width: 760px)",
+            new CssRule
+            {
+                FlexDirection = raw("column"),
+                Width = raw("100%"),
+                MinHeight = raw("0")
+            });
+
+        Media(".jazor-admin-iconbar", "(max-width: 760px)",
+            new CssRule
+            {
+                Flex = raw("0 0 auto"),
+                FlexDirection = raw("row"),
+                Width = raw("100%"),
+                MinHeight = raw("58px"),
+                Padding = raw("8px 12px"),
+                OverflowX = raw("auto"),
+                OverscrollBehaviorInline = raw("contain")
+            });
+
+        Media(".jazor-admin-iconbar__items", "(max-width: 760px)",
+            new CssRule
+            {
+                FlexDirection = raw("row"),
+                Gap = raw("6px")
+            });
+
+        Media(".jazor-admin-tdesign-sidebar-shell__menu", "(max-width: 760px)",
+            new CssRule
+            {
+                Width = raw("100%"),
+                Padding = raw("10px 12px"),
+                BorderTop = raw("1px solid var(--border)"),
+                BorderLeft = raw("0")
+            });
+
+        Media(".jazor-admin-tdesign-sidebar-shell__brand", "(max-width: 760px)",
+            new CssRule
+            {
+                MinHeight = raw("28px"),
+                Margin = raw("0 4px 8px")
             });
 
         Media("[data-navigation-orientation=\"vertical\"]", "(max-width: 760px)",

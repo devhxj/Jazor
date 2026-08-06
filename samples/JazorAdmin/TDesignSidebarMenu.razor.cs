@@ -64,7 +64,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
         else
         {
             var href = TDesignRouteMapper.MapHref(item.Href, item.RouteTarget);
-            var route = TDesignRouteMapper.MapRoute(item.RouteTarget);
+            var route = TDesignRouteMapper.MapMenuRoute(item.RouteTarget);
 
             builder.OpenComponent<TMenuItem>(10);
             builder.AddAttribute(11, nameof(TMenuItem.Value), (TMenuValue)item.Key);
@@ -92,7 +92,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
 
     private async Task OnMenuChanged(TMenuValue value)
     {
-        if (value.AsString is string key)
+        if (value.Value is string key)
         {
             await SelectedKeyChanged.InvokeAsync(key);
         }
@@ -103,8 +103,7 @@ public partial class TDesignSidebarMenu : AdminComponentBase
         var expandedKeys = new List<string>();
         foreach (var value in values)
         {
-            var key = value.AsString;
-            if (!string.IsNullOrWhiteSpace(key))
+            if (value.Value is string key && !string.IsNullOrWhiteSpace(key))
                 expandedKeys.Add(key);
         }
 

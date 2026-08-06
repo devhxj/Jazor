@@ -1,4 +1,4 @@
-@* Renders the fixed primary rail plus its scoped secondary navigation. 渲染固定一级 rail 与范围化二级导航。 *@
+@* Composes the Starter-style IconBar and the active work area's TDesign menu. *@
 @inherits AdminContentComponentBase
 
 <TLayout CssClass="@RootCssClass"
@@ -18,7 +18,8 @@
             else
             {
                 <div class="jazor-admin-tdesign-sidebar-shell">
-                    @SidebarRail
+                    <IconBar Items="@NavItems"
+                             SelectedKey="@SelectedKey" />
 
                     @if (!Collapsed)
                     {
@@ -46,8 +47,8 @@
             <div class='@("jazor-admin-tdesign-layout__header")'>
                 @if (IsSidebarLayout)
                 {
-                    <TButton Text="@EffectiveCollapseLabel"
-                             Variant="@TButtonVariant.Text"
+                    <TButton ContentValue="@EffectiveCollapseLabel"
+                             Variant="@TButtonVariantValue.Text"
                              data-shell-command="toggle-sidebar"
                              aria-label="@EffectiveCollapseLabel"
                              title="@EffectiveCollapseLabel"

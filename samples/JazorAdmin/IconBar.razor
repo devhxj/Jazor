@@ -1,0 +1,16 @@
+@* Provides the top-level work-area navigation used by the mixed TDesign shell. *@
+@inherits AdminComponentBase
+
+<nav class="@RootCssClass"
+     style="@CssStyle"
+     data-iconbar=""
+     data-iconbar-selected-key="@SelectedSectionKey"
+     aria-label="@EffectiveAriaLabel"
+     @attributes="AdditionalAttributes">
+    <div class="jazor-admin-iconbar__items">
+        @foreach (var item in EffectiveItems)
+        {
+            @RenderItem(item)
+        }
+    </div>
+</nav>

@@ -22,20 +22,20 @@ public partial class TDesignPageContainer : AdminContentComponentBase
 
     private const string RootCssClass = "jazor-admin-tdesign-page-container";
 
-    private static TButtonTheme? MapTheme(AdminPageActionKind? kind) => kind switch
+    private static TButtonThemeValue? MapTheme(AdminPageActionKind? kind) => kind switch
     {
-        AdminPageActionKind.Primary => TButtonTheme.Primary,
-        AdminPageActionKind.Danger => TButtonTheme.Danger,
-        AdminPageActionKind.Secondary => TButtonTheme.Default,
-        AdminPageActionKind.Link => TButtonTheme.Default,
-        _ => TButtonTheme.Default
+        AdminPageActionKind.Primary => TButtonThemeValue.Primary,
+        AdminPageActionKind.Danger => TButtonThemeValue.Danger,
+        AdminPageActionKind.Secondary => TButtonThemeValue.Default,
+        AdminPageActionKind.Link => TButtonThemeValue.Default,
+        _ => TButtonThemeValue.Default
     };
 
     private static string? MapHref(string? href, RouteLocationRaw? routeTarget)
         => TDesignRouteMapper.MapHref(href, routeTarget);
 
-    private static TMenuRouteTarget? MapRoute(RouteLocationRaw? routeTarget)
-        => TDesignRouteMapper.MapRoute(routeTarget);
+    private static TBreadcrumbItemToValue? MapRoute(RouteLocationRaw? routeTarget)
+        => TDesignRouteMapper.MapBreadcrumbRoute(routeTarget);
 
     private static string? MapActionHref(AdminPageAction action)
         => TDesignRouteMapper.MapActionHref(action.Href, action.RouteTarget);

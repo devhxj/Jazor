@@ -47,7 +47,9 @@ named value/callback contracts. A source type that cannot be expressed directly 
 receive a documented, dedicated C# contract; it must not be silently reduced to
 `object` or `VueValue` to make generation pass.
 
-Public authoring types follow TDesign component naming: use `T*` (`TMenuValue`, `TButtonTheme`, `TComponents`). Only the package root host remains `TDesign`.
+Public authoring types follow TDesign component naming: use `T*` (`TMenuValue`, `TButtonThemeValue`, `TComponents`). Only the package root host remains `TDesign`.
+
+String-literal domains are emitted as `[String]` enums. Values such as `TButtonThemeValue.Primary` therefore lower to the authored TDesign literal (`"primary"`), never to a numeric enum ordinal.
 
 ## Boundary
 

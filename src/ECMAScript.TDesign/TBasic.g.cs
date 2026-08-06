@@ -28,6 +28,7 @@ public record TActiveChangeContextActiveRowListItem<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TActiveChangeContextType
 {
     [Description("@#active")]
@@ -54,6 +55,7 @@ public record TActiveRowActionContextActiveRowListItem<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TActiveRowActionType
 {
     [Description("@#shift-area-selection")]
@@ -113,6 +115,7 @@ public record TAlertConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TAlertThemeValue
 {
     [Description("@#success")]
@@ -163,6 +166,7 @@ public record TAnchorConfig : VueProps
 public delegate string TAnchorGetCurrentAnchorValue(string activeLink);
 
 [ECMAScript]
+[String]
 public enum TAnchorItemTargetValue
 {
     [Description("@#_self")]
@@ -176,6 +180,7 @@ public enum TAnchorItemTargetValue
 }
 
 [ECMAScript]
+[String]
 public enum TAnchorSizeValue
 {
     [Description("@#small")]
@@ -187,6 +192,7 @@ public enum TAnchorSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TAnimationType
 {
     [Description("@#ripple")]
@@ -391,6 +397,7 @@ public readonly union TAutoCompleteSelectEventContextE<T>(MouseEvent, KeyboardEv
 }
 
 [ECMAScript]
+[String]
 public enum TAutoCompleteStatusValue
 {
     [Description("@#default")]
@@ -423,6 +430,7 @@ public readonly union TBackTopOffsetValueItem(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TBackTopShapeEnum
 {
     [Description("@#circle")]
@@ -432,6 +440,7 @@ public enum TBackTopShapeEnum
 }
 
 [ECMAScript]
+[String]
 public enum TBackTopSizeValue
 {
     [Description("@#medium")]
@@ -441,6 +450,7 @@ public enum TBackTopSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TBackTopThemeValue
 {
     [Description("@#light")]
@@ -467,6 +477,7 @@ public readonly union TBadgeOffsetValueItem(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TBadgeShapeValue
 {
     [Description("@#circle")]
@@ -476,6 +487,7 @@ public enum TBadgeShapeValue
 }
 
 [ECMAScript]
+[String]
 public enum TBadgeSizeValue
 {
     [Description("@#small")]
@@ -517,6 +529,7 @@ public readonly union TBaseTableActiveRowKeysValueItem(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TBaseTableActiveRowTypeValue
 {
     [Description("@#single")]
@@ -597,6 +610,7 @@ public record TBaseTableCol<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TBaseTableColAlign
 {
     [Description("@#left")]
@@ -648,6 +662,7 @@ public record TBaseTableColEllipsisTitleOption4<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TBaseTableColFixed
 {
     [Description("@#left")]
@@ -811,6 +826,7 @@ public record TBaseTableScrollYEventParams : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TBaseTableTableLayoutValue
 {
     [Description("@#auto")]
@@ -820,6 +836,7 @@ public enum TBaseTableTableLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TBaseTableVerticalAlignValue
 {
     [Description("@#top")]
@@ -845,6 +862,7 @@ public readonly union TBreadcrumbEllipsisSlotContextSeparator(string, RenderFrag
 }
 
 [ECMAScript]
+[String]
 public enum TBreadcrumbItemTargetValue
 {
     [Description("@#_blank")]
@@ -863,6 +881,7 @@ public readonly union TBreadcrumbItemToValue(string, TRoute)
 }
 
 [ECMAScript]
+[String]
 public enum TBreadcrumbThemeValue
 {
     [Description("@#light")]
@@ -870,6 +889,7 @@ public enum TBreadcrumbThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TButtonShapeValue
 {
     [Description("@#rectangle")]
@@ -883,6 +903,7 @@ public enum TButtonShapeValue
 }
 
 [ECMAScript]
+[String]
 public enum TButtonTagValue
 {
     [Description("@#button")]
@@ -894,6 +915,7 @@ public enum TButtonTagValue
 }
 
 [ECMAScript]
+[String]
 public enum TButtonThemeValue
 {
     [Description("@#default")]
@@ -909,6 +931,7 @@ public enum TButtonThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TButtonTypeValue
 {
     [Description("@#submit")]
@@ -920,6 +943,7 @@ public enum TButtonTypeValue
 }
 
 [ECMAScript]
+[String]
 public enum TButtonVariantValue
 {
     [Description("@#base")]
@@ -1099,6 +1123,7 @@ public record TCalendarControllerYear : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TCalendarModeValue
 {
     [Description("@#month")]
@@ -1123,6 +1148,7 @@ public readonly union TCalendarMonthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TCalendarThemeValue
 {
     [Description("@#full")]
@@ -1156,6 +1182,7 @@ public readonly union TCalendarYearValue(string, Number)
 public delegate void TCallback();
 
 [ECMAScript]
+[String]
 public enum TCardSizeValue
 {
     [Description("@#medium")]
@@ -1165,6 +1192,7 @@ public enum TCardSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TCardThemeValue
 {
     [Description("@#normal")]
@@ -1212,6 +1240,7 @@ public sealed record TCascaderChangeEvent<CascaderOption> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TCascaderChangeSource
 {
     [Description("@#invalid-value")]
@@ -1314,6 +1343,7 @@ public sealed record TCascaderPopupVisibleChangeEvent<CascaderOption> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TCascaderStatusValue
 {
     [Description("@#default")]
@@ -1327,6 +1357,7 @@ public enum TCascaderStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TCascaderTriggerValue
 {
     [Description("@#click")]
@@ -1358,6 +1389,7 @@ public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
 public delegate void TCascaderValueDisplaySlotContextOnClose<CascaderOption>(Number index);
 
 [ECMAScript]
+[String]
 public enum TCascaderValueModeValue
 {
     [Description("@#onlyLeaf")]
@@ -1369,6 +1401,7 @@ public enum TCascaderValueModeValue
 }
 
 [ECMAScript]
+[String]
 public enum TCascaderValueTypeValue
 {
     [Description("@#single")]
@@ -1378,6 +1411,7 @@ public enum TCascaderValueTypeValue
 }
 
 [ECMAScript]
+[String]
 public enum TCascadingValue
 {
     [Description("@#left-up")]
@@ -1402,6 +1436,7 @@ public record TCellData<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TCellDataType
 {
     [Description("@#th")]
@@ -1424,6 +1459,7 @@ public readonly union TChangeContextE(InputEvent, MouseEvent, FocusEvent, Keyboa
 }
 
 [ECMAScript]
+[String]
 public enum TChangeSource
 {
     [Description("@#add")]
@@ -1555,6 +1591,7 @@ public readonly union TCheckTagGroupChangeContextE(MouseEvent, KeyboardEvent)
 }
 
 [ECMAScript]
+[String]
 public enum TCheckTagGroupChangeContextType
 {
     [Description("@#check")]
@@ -1688,6 +1725,7 @@ public readonly union TCheckboxGroupChangeContextOption(TCheckboxOption, TdCheck
 }
 
 [ECMAScript]
+[String]
 public enum TCheckboxGroupChangeContextType
 {
     [Description("@#check")]
@@ -1839,6 +1877,7 @@ public readonly union TColXxlValue(Number, TBaseColProps)
 }
 
 [ECMAScript]
+[String]
 public enum TCollapseExpandIconPlacementValue
 {
     [Description("@#left")]
@@ -1916,6 +1955,7 @@ public record TColorPickerChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TColorPickerChangeTrigger
 {
     [Description("@#palette-saturation-brightness")]
@@ -1944,6 +1984,7 @@ public record TColorPickerClearEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TColorPickerColorModesValueItem
 {
     [Description("@#monochrome")]
@@ -1963,6 +2004,7 @@ public record TColorPickerConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TColorPickerFormatValue
 {
     [Description("@#HEX")]
@@ -2019,6 +2061,7 @@ public record TColorPickerPanelClearEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TColorPickerPanelColorModesValueItem
 {
     [Description("@#monochrome")]
@@ -2028,6 +2071,7 @@ public enum TColorPickerPanelColorModesValueItem
 }
 
 [ECMAScript]
+[String]
 public enum TColorPickerPanelFormatValue
 {
     [Description("@#HEX")]
@@ -2114,6 +2158,7 @@ public record TCustomValidateObj : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TCustomValidateObjType
 {
     [Description("@#error")]
@@ -2330,6 +2375,7 @@ public readonly union TDatePickerFocusEventContextValue(TDateValue, TDateValue[]
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerModeValue
 {
     [Description("@#year")]
@@ -2358,6 +2404,7 @@ public record TDatePickerMonthChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerMonthChangeTrigger
 {
     [Description("@#month-select")]
@@ -2428,6 +2475,7 @@ public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerPanelModeValue
 {
     [Description("@#year")]
@@ -2473,6 +2521,7 @@ public record TDatePickerPanelPresetClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerPanelPresetsPlacementValue
 {
     [Description("@#left")]
@@ -2528,6 +2577,7 @@ public record TDatePickerPresetClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerPresetsPlacementValue
 {
     [Description("@#left")]
@@ -2541,6 +2591,7 @@ public enum TDatePickerPresetsPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerStatusValue
 {
     [Description("@#default")]
@@ -2554,6 +2605,7 @@ public enum TDatePickerStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerTimeChangeTrigger
 {
     [Description("@#time-hour")]
@@ -2565,6 +2617,7 @@ public enum TDatePickerTimeChangeTrigger
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerTriggerSource
 {
     [Description("@#confirm")]
@@ -2590,6 +2643,7 @@ public record TDatePickerValueDisplaySlotContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerValueType
 {
     [Description("@#time-stamp")]
@@ -2631,6 +2685,7 @@ public record TDatePickerYearChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDatePickerYearChangeTrigger
 {
     [Description("@#year-select")]
@@ -2738,6 +2793,7 @@ public record TDateRangePickerInputEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerModeValue
 {
     [Description("@#year")]
@@ -2810,6 +2866,7 @@ public record TDateRangePickerPanelConfirmEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerPanelModeValue
 {
     [Description("@#year")]
@@ -2857,6 +2914,7 @@ public record TDateRangePickerPanelPresetClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerPanelPresetsPlacementValue
 {
     [Description("@#left")]
@@ -2901,6 +2959,7 @@ public record TDateRangePickerPanelYearChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerPartial
 {
     [Description("@#start")]
@@ -2933,6 +2992,7 @@ public record TDateRangePickerPresetClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerPresetsPlacementValue
 {
     [Description("@#left")]
@@ -2946,6 +3006,7 @@ public enum TDateRangePickerPresetsPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerStatusValue
 {
     [Description("@#default")]
@@ -2959,6 +3020,7 @@ public enum TDateRangePickerStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TDateRangePickerValueTypeValue
 {
     [Description("@#time-stamp")]
@@ -3013,6 +3075,7 @@ public record TDescriptionsConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDescriptionsItemLayoutValue
 {
     [Description("@#horizontal")]
@@ -3022,6 +3085,7 @@ public enum TDescriptionsItemLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TDescriptionsLayoutValue
 {
     [Description("@#horizontal")]
@@ -3031,6 +3095,7 @@ public enum TDescriptionsLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TDescriptionsTableLayoutValue
 {
     [Description("@#fixed")]
@@ -3097,6 +3162,7 @@ public readonly union TDialogCardHeaderValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TDialogCardThemeValue
 {
     [Description("@#default")]
@@ -3184,6 +3250,7 @@ public record TDialogConfigConfirmBtnTheme : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDialogConfigPlacement
 {
     [Description("@#top")]
@@ -3216,6 +3283,7 @@ public record TDialogEscKeydownEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDialogEventSource
 {
     [Description("@#esc")]
@@ -3234,6 +3302,7 @@ public readonly union TDialogHeaderValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TDialogModeValue
 {
     [Description("@#modal")]
@@ -3254,6 +3323,7 @@ public record TDialogOverlayClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDialogPlacementValue
 {
     [Description("@#top")]
@@ -3263,6 +3333,7 @@ public enum TDialogPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TDialogThemeValue
 {
     [Description("@#default")]
@@ -3288,6 +3359,7 @@ public readonly union TDialogWidthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TDirection
 {
     [Description("@#vertical")]
@@ -3334,6 +3406,7 @@ public record TDisableRangeDateOption3Context : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDividerAlignValue
 {
     [Description("@#left")]
@@ -3345,6 +3418,7 @@ public enum TDividerAlignValue
 }
 
 [ECMAScript]
+[String]
 public enum TDividerLayoutValue
 {
     [Description("@#horizontal")]
@@ -3354,6 +3428,7 @@ public enum TDividerLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TDividerThemeValue
 {
     [Description("@#horizontal")]
@@ -3388,6 +3463,7 @@ public record TDragSortContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDragSortContextSort
 {
     [Description("@#row")]
@@ -3467,6 +3543,7 @@ public record TDrawerEscKeydownEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDrawerEventSource
 {
     [Description("@#esc")]
@@ -3485,6 +3562,7 @@ public readonly union TDrawerHeaderValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TDrawerModeValue
 {
     [Description("@#overlay")]
@@ -3501,6 +3579,7 @@ public record TDrawerOverlayClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDrawerPlacementValue
 {
     [Description("@#left")]
@@ -3543,6 +3622,7 @@ public record TDropdownClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDropdownDirectionValue
 {
     [Description("@#left")]
@@ -3567,6 +3647,7 @@ public record TDropdownItemClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDropdownItemTheme
 {
     [Description("@#default")]
@@ -3617,6 +3698,7 @@ public record TDropdownOption : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TDropdownPlacementValue
 {
     [Description("@#top")]
@@ -3646,6 +3728,7 @@ public enum TDropdownPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TDropdownTriggerValue
 {
     [Description("@#hover")]
@@ -3718,6 +3801,7 @@ public readonly union TEmptyType(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TEmptyTypeValue
 {
     [Description("@#empty")]
@@ -3752,6 +3836,7 @@ public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TEnhancedTableAsyncLoadingClickEventContextStatus
 {
     [Description("@#loading")]
@@ -3786,6 +3871,7 @@ public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VuePr
 }
 
 [ECMAScript]
+[String]
 public enum TEnhancedTableColumnControllerVisibleChangeEventContextTrigger
 {
     [Description("@#cancel")]
@@ -3914,6 +4000,7 @@ public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TEnhancedTableTreeExpandAndFoldIconSlotContextType
 {
     [Description("@#expand")]
@@ -3945,6 +4032,7 @@ public readonly union TFilterProps(TdRadioProps<TRadioValue>, TdCheckboxProps, T
 }
 
 [ECMAScript]
+[String]
 public enum TFilterType
 {
     [Description("@#input")]
@@ -3973,6 +4061,7 @@ public record TFormConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TFormConfigRequiredMarkPosition
 {
     [Description("@#left")]
@@ -4014,6 +4103,7 @@ public record TFormErrorMessage : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TFormItemLabelAlignValue
 {
     [Description("@#left")]
@@ -4030,6 +4120,7 @@ public readonly union TFormItemLabelWidthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TFormItemStatusValue
 {
     [Description("@#error")]
@@ -4041,6 +4132,7 @@ public enum TFormItemStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TFormLabelAlignValue
 {
     [Description("@#left")]
@@ -4057,6 +4149,7 @@ public readonly union TFormLabelWidthValue<FormData>(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TFormLayoutValue
 {
     [Description("@#vertical")]
@@ -4066,6 +4159,7 @@ public enum TFormLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TFormRequiredMarkPositionValue
 {
     [Description("@#left")]
@@ -4081,6 +4175,7 @@ public record TFormResetEventContext<FormData> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TFormResetTypeValue
 {
     [Description("@#empty")]
@@ -4160,6 +4255,7 @@ public readonly union TFormRulePattern(RegExp, string)
 }
 
 [ECMAScript]
+[String]
 public enum TFormRuleType
 {
     [Description("@#error")]
@@ -4179,6 +4275,7 @@ public record TFormRules<T> : VueDictionary<TFormRule[]>
 }
 
 [ECMAScript]
+[String]
 public enum TFormScrollToFirstErrorValue
 {
     [Description("@#")]
@@ -11384,6 +11481,7 @@ public readonly union TGroupOptionsCheckPutOption1Result(bool, string, TGroupOpt
 }
 
 [ECMAScript]
+[String]
 public enum TGroupOptionsCheckPutOption1ResultOption3
 {
     [Description("@#clone")]
@@ -11455,6 +11553,7 @@ public record TGuideFinishEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TGuideModeValue
 {
     [Description("@#popup")]
@@ -11540,6 +11639,7 @@ public readonly union TGuideStepBody(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TGuideStepMode
 {
     [Description("@#popup")]
@@ -11580,6 +11680,7 @@ public record THTMLElementAttributes : VueDictionary<string>
 }
 
 [ECMAScript]
+[String]
 public enum THeadMenuExpandTypeValue
 {
     [Description("@#normal")]
@@ -11589,6 +11690,7 @@ public enum THeadMenuExpandTypeValue
 }
 
 [ECMAScript]
+[String]
 public enum THeadMenuThemeValue
 {
     [Description("@#light")]
@@ -11630,6 +11732,7 @@ public record TImageErrorEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TImageFitValue
 {
     [Description("@#contain")]
@@ -11674,6 +11777,7 @@ public record TImageLoadEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TImageOverlayTriggerValue
 {
     [Description("@#always")]
@@ -11683,6 +11787,7 @@ public enum TImageOverlayTriggerValue
 }
 
 [ECMAScript]
+[String]
 public enum TImageReferrerpolicyValue
 {
     [Description("@#no-referrer")]
@@ -11716,6 +11821,7 @@ public record TImageScale : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TImageShapeValue
 {
     [Description("@#circle")]
@@ -11757,6 +11863,7 @@ public readonly union TImageViewerCloseEventContextE(MouseEvent, KeyboardEvent)
 }
 
 [ECMAScript]
+[String]
 public enum TImageViewerCloseEventContextTrigger
 {
     [Description("@#close-btn")]
@@ -11787,6 +11894,7 @@ public readonly union TImageViewerDownloadEventUrl(string, File)
 }
 
 [ECMAScript]
+[String]
 public enum TImageViewerImageReferrerpolicyValue
 {
     [Description("@#no-referrer")]
@@ -11827,6 +11935,7 @@ public record TImageViewerIndexChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TImageViewerIndexChangeEventContextTrigger
 {
     [Description("@#prev")]
@@ -11838,6 +11947,7 @@ public enum TImageViewerIndexChangeEventContextTrigger
 }
 
 [ECMAScript]
+[String]
 public enum TImageViewerModeValue
 {
     [Description("@#modal")]
@@ -11855,6 +11965,7 @@ public record TImageViewerScale : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputAlignValue
 {
     [Description("@#left")]
@@ -11902,6 +12013,7 @@ public readonly union TInputChangeEventContextE<T>(InputEvent, MouseEvent, Compo
 }
 
 [ECMAScript]
+[String]
 public enum TInputChangeEventContextTrigger
 {
     [Description("@#input")]
@@ -12062,6 +12174,7 @@ public record TInputMouseleaveEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputNumberAlignValue
 {
     [Description("@#left")]
@@ -12193,6 +12306,7 @@ public record TInputNumberKeyupEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputNumberSizeValue
 {
     [Description("@#small")]
@@ -12204,6 +12318,7 @@ public enum TInputNumberSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TInputNumberStatusValue
 {
     [Description("@#default")]
@@ -12217,6 +12332,7 @@ public enum TInputNumberStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TInputNumberThemeValue
 {
     [Description("@#column")]
@@ -12234,6 +12350,7 @@ public record TInputNumberValidateEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputNumberValidateEventContextError
 {
     [Description("@#exceed-maximum")]
@@ -12258,6 +12375,7 @@ public record TInputPasteEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputStatusValue
 {
     [Description("@#default")]
@@ -12271,6 +12389,7 @@ public enum TInputStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TInputTypeValue
 {
     [Description("@#text")]
@@ -12298,6 +12417,7 @@ public record TInputValidateEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TInputValidateEventContextError
 {
     [Description("@#exceed-maximum")]
@@ -12325,6 +12445,7 @@ public readonly union TInputValueChangeContextE(InputEvent, MouseEvent, Composit
 }
 
 [ECMAScript]
+[String]
 public enum TInputValueChangeContextTrigger
 {
     [Description("@#input")]
@@ -12476,6 +12597,7 @@ public record TJumperTipsConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TJumperTrigger
 {
     [Description("@#prev")]
@@ -12497,6 +12619,7 @@ public record TKeysType : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TLayoutDirectionValue
 {
     [Description("@#vertical")]
@@ -12511,6 +12634,7 @@ public readonly union TLinkDownloadValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TLinkHoverValue
 {
     [Description("@#color")]
@@ -12520,6 +12644,7 @@ public enum TLinkHoverValue
 }
 
 [ECMAScript]
+[String]
 public enum TLinkThemeValue
 {
     [Description("@#default")]
@@ -12543,6 +12668,7 @@ public record TListConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TListLayoutValue
 {
     [Description("@#horizontal")]
@@ -12611,6 +12737,7 @@ public readonly struct TListScrollEventOptionsE : IUnion
 }
 
 [ECMAScript]
+[String]
 public enum TListSizeValue
 {
     [Description("@#small")]
@@ -12652,6 +12779,7 @@ public record TLoadingConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TMenuExpandTypeValue
 {
     [Description("@#normal")]
@@ -12670,6 +12798,7 @@ public record TMenuItemClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TMenuItemTargetValue
 {
     [Description("@#_blank")]
@@ -12712,6 +12841,7 @@ public record TMenuRoute : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TMenuThemeValue
 {
     [Description("@#light")]
@@ -12756,6 +12886,7 @@ public record TMessageCloseEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TMessageCloseEventContextTrigger
 {
     [Description("@#close-click")]
@@ -12838,6 +12969,7 @@ public record TMessageConfigOnCloseContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TMessageConfigOnCloseContextTrigger
 {
     [Description("@#close-click")]
@@ -12850,6 +12982,7 @@ public enum TMessageConfigOnCloseContextTrigger
 public delegate void TMessageConfigOnDurationEnd();
 
 [ECMAScript]
+[String]
 public enum TMessagePlacementList
 {
     [Description("@#center")]
@@ -12873,6 +13006,7 @@ public enum TMessagePlacementList
 }
 
 [ECMAScript]
+[String]
 public enum TMessageThemeList
 {
     [Description("@#info")]
@@ -12926,6 +13060,7 @@ public readonly union TNotificationCloseBtnValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TNotificationThemeList
 {
     [Description("@#info")]
@@ -13001,6 +13136,7 @@ public readonly union TPaginationMiniDisabledValue(bool, TJumperDisabledConfig)
 }
 
 [ECMAScript]
+[String]
 public enum TPaginationMiniLayoutValue
 {
     [Description("@#horizontal")]
@@ -13015,6 +13151,7 @@ public readonly union TPaginationMiniTipsValue(bool, TJumperTipsConfig)
 }
 
 [ECMAScript]
+[String]
 public enum TPaginationMiniVariantValue
 {
     [Description("@#text")]
@@ -13024,6 +13161,7 @@ public enum TPaginationMiniVariantValue
 }
 
 [ECMAScript]
+[String]
 public enum TPaginationPageEllipsisModeValue
 {
     [Description("@#mid")]
@@ -13055,6 +13193,7 @@ public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPaginationSizeValue
 {
     [Description("@#small")]
@@ -13064,6 +13203,7 @@ public enum TPaginationSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TPaginationThemeValue
 {
     [Description("@#default")]
@@ -13144,6 +13284,7 @@ public record TPopconfirmConfirmEventOptions : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPopconfirmPlacementValue
 {
     [Description("@#top")]
@@ -13173,6 +13314,7 @@ public enum TPopconfirmPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TPopconfirmThemeValue
 {
     [Description("@#default")]
@@ -13228,6 +13370,7 @@ public readonly union TPopupOverlayStyleValue(TStyles, TPopupOverlayStyleValueOp
 public delegate TStyles TPopupOverlayStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 [ECMAScript]
+[String]
 public enum TPopupPlacement
 {
     [Description("@#top")]
@@ -13276,6 +13419,7 @@ public readonly union TPopupTriggerEvent(MouseEvent, FocusEvent, KeyboardEvent)
 }
 
 [ECMAScript]
+[String]
 public enum TPopupTriggerSource
 {
     [Description("@#document")]
@@ -13299,6 +13443,7 @@ public enum TPopupTriggerSource
 }
 
 [ECMAScript]
+[String]
 public enum TPopupTriggerValue
 {
     [Description("@#hover")]
@@ -13397,6 +13542,7 @@ public readonly union TPrimaryTableActiveRowKeysValueItem<T>(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableActiveRowTypeValue
 {
     [Description("@#single")]
@@ -13412,6 +13558,7 @@ public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableAsyncLoadingClickEventContextStatus
 {
     [Description("@#loading")]
@@ -13421,6 +13568,7 @@ public enum TPrimaryTableAsyncLoadingClickEventContextStatus
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableAsyncLoadingValue
 {
     [Description("@#loading")]
@@ -13592,6 +13740,7 @@ public record TPrimaryTableColTitleOption2Context<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableColType
 {
     [Description("@#single")]
@@ -13613,6 +13762,7 @@ public record TPrimaryTableColumnChange<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableColumnChangeType
 {
     [Description("@#check")]
@@ -13636,6 +13786,7 @@ public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VuePro
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableColumnControllerVisibleChangeEventContextTrigger
 {
     [Description("@#cancel")]
@@ -13667,6 +13818,7 @@ public sealed record TPrimaryTableDataChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableDragSortValue
 {
     [Description("@#row")]
@@ -13823,6 +13975,7 @@ public record TPrimaryTableRowEditContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableRowSelectionTypeValue
 {
     [Description("@#single")]
@@ -13888,6 +14041,7 @@ public sealed record TPrimaryTableSortChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableTableLayoutValue
 {
     [Description("@#auto")]
@@ -13904,6 +14058,7 @@ public record TPrimaryTableValidateContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TPrimaryTableVerticalAlignValue
 {
     [Description("@#top")]
@@ -13948,6 +14103,7 @@ public readonly union TProgressSizeValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TProgressStatus
 {
     [Description("@#success")]
@@ -13966,6 +14122,7 @@ public readonly union TProgressStrokeWidthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TProgressTheme
 {
     [Description("@#line")]
@@ -13982,6 +14139,7 @@ public readonly union TPullResult(string[], bool, TPullResultOption3)
 }
 
 [ECMAScript]
+[String]
 public enum TPullResultOption3
 {
     [Description("@#clone")]
@@ -14017,6 +14175,7 @@ public record TQRCodeIconSizeValueOption2 : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TQRCodeLevelValue
 {
     [Description("@#L")]
@@ -14030,6 +14189,7 @@ public enum TQRCodeLevelValue
 }
 
 [ECMAScript]
+[String]
 public enum TQRCodeTypeValue
 {
     [Description("@#canvas")]
@@ -14039,6 +14199,7 @@ public enum TQRCodeTypeValue
 }
 
 [ECMAScript]
+[String]
 public enum TQRStatus
 {
     [Description("@#active")]
@@ -14113,6 +14274,7 @@ public record TRadioGroupChangeEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TRadioGroupThemeValue
 {
     [Description("@#radio")]
@@ -14122,6 +14284,7 @@ public enum TRadioGroupThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TRadioGroupVariantValue
 {
     [Description("@#outline")]
@@ -14202,6 +14365,7 @@ public readonly union TRangeInputChangeEventContextE(InputEvent, MouseEvent, Com
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputChangeEventContextTrigger
 {
     [Description("@#input")]
@@ -14320,6 +14484,7 @@ public sealed record TRangeInputPopupPopupVisibleChangeEvent : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputPopupStatusValue
 {
     [Description("@#default")]
@@ -14333,6 +14498,7 @@ public enum TRangeInputPopupStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputPosition
 {
     [Description("@#first")]
@@ -14344,6 +14510,7 @@ public enum TRangeInputPosition
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputSizeValue
 {
     [Description("@#small")]
@@ -14355,6 +14522,7 @@ public enum TRangeInputSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputStatusValue
 {
     [Description("@#default")]
@@ -14383,6 +14551,7 @@ public readonly union TRangeInputValueChangeContextE(InputEvent, MouseEvent)
 }
 
 [ECMAScript]
+[String]
 public enum TRangeInputValueChangeContextTrigger
 {
     [Description("@#input")]
@@ -14427,6 +14596,7 @@ public readonly union TRemoveOptionsValue<T>(string, Number, TJsonObject)
 }
 
 [ECMAScript]
+[String]
 public enum TRenderType
 {
     [Description("@#cell")]
@@ -14455,6 +14625,7 @@ public record TRequestMethodResponseResponse : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TRequestMethodResponseStatus
 {
     [Description("@#success")]
@@ -14476,6 +14647,7 @@ public record TResponseType : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TResponseTypeStatus
 {
     [Description("@#fail")]
@@ -14509,6 +14681,7 @@ public readonly union TRouteDataIndex(string, string[])
 }
 
 [ECMAScript]
+[String]
 public enum TRowAlignValue
 {
     [Description("@#start")]
@@ -14542,6 +14715,7 @@ public record TRowClassNameParams<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TRowClassNameParamsType
 {
     [Description("@#body")]
@@ -14576,6 +14750,7 @@ public readonly union TRowGutterValueOption3Item(TGutterObject, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TRowJustifyValue
 {
     [Description("@#start")]
@@ -14626,6 +14801,7 @@ public readonly union TScrollContainerElement(Window, HTMLElement)
 public delegate TScrollContainerElement TScrollContainerOption1();
 
 [ECMAScript]
+[String]
 public enum TScrollType
 {
     [Description("@#lazy")]
@@ -14653,6 +14829,7 @@ public readonly union TSearchContextE(InputEvent, KeyboardEvent)
 }
 
 [ECMAScript]
+[String]
 public enum TSearchContextTrigger
 {
     [Description("@#input")]
@@ -14941,6 +15118,7 @@ public sealed record TSelectInputPopupVisibleChangeEvent : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSelectInputStatusValue
 {
     [Description("@#default")]
@@ -15104,6 +15282,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
 }
 
 [ECMAScript]
+[String]
 public enum TSelectInputValueChangeContextTrigger
 {
     [Description("@#input")]
@@ -15166,6 +15345,7 @@ public record TSelectOptions<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSelectOptionsLayoutValue
 {
     [Description("@#vertical")]
@@ -15175,6 +15355,7 @@ public enum TSelectOptionsLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TSelectOptionsType
 {
     [Description("@#uncheck")]
@@ -15227,6 +15408,7 @@ public record TSelectSearchEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSelectStatusValue
 {
     [Description("@#default")]
@@ -15245,6 +15427,7 @@ public readonly union TSelectValue<T>(string, Number, bool, BigInt, T, TSelectVa
 }
 
 [ECMAScript]
+[String]
 public enum TSelectValueChangeTrigger
 {
     [Description("@#clear")]
@@ -15281,6 +15464,7 @@ public readonly union TSelectValueDisplayValue<T>(string, TSelectValue<TSelectOp
 }
 
 [ECMAScript]
+[String]
 public enum TSelectValueTypeValue
 {
     [Description("@#value")]
@@ -15290,6 +15474,7 @@ public enum TSelectValueTypeValue
 }
 
 [ECMAScript]
+[String]
 public enum TShapeEnum
 {
     [Description("@#circle")]
@@ -15307,6 +15492,7 @@ public record TSizeDragLimit : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSizeEnum
 {
     [Description("@#small")]
@@ -15328,6 +15514,7 @@ public record TSizeLimitObj : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSizeUnit
 {
     [Description("@#B")]
@@ -15341,6 +15528,7 @@ public enum TSizeUnit
 }
 
 [ECMAScript]
+[String]
 public enum TSkeletonAnimationValue
 {
     [Description("@#gradient")]
@@ -15382,6 +15570,7 @@ public readonly union TSkeletonRowColObjContent(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TSkeletonRowColObjType
 {
     [Description("@#rect")]
@@ -15393,6 +15582,7 @@ public enum TSkeletonRowColObjType
 }
 
 [ECMAScript]
+[String]
 public enum TSkeletonThemeValue
 {
     [Description("@#text")]
@@ -15423,6 +15613,7 @@ public record TSliderLabelSlotContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSliderLabelSlotContextPosition
 {
     [Description("@#start")]
@@ -15437,6 +15628,7 @@ public readonly union TSliderLabelValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TSliderLayoutValue
 {
     [Description("@#vertical")]
@@ -15490,6 +15682,7 @@ public record TSortOptions<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSortType
 {
     [Description("@#desc")]
@@ -15570,6 +15763,7 @@ public readonly union TSortableEventPullMode(TSortableEventPullModeOption1, bool
 }
 
 [ECMAScript]
+[String]
 public enum TSortableEventPullModeOption1
 {
     [Description("@#clone")]
@@ -15803,6 +15997,7 @@ public delegate void TSortableOptionsStoreOption1Set(TSortable sortable);
 public delegate Number TSorterFun<T>(T a, T b);
 
 [ECMAScript]
+[String]
 public enum TSpaceAlignValue
 {
     [Description("@#start")]
@@ -15816,6 +16011,7 @@ public enum TSpaceAlignValue
 }
 
 [ECMAScript]
+[String]
 public enum TSpaceDirectionValue
 {
     [Description("@#vertical")]
@@ -15838,6 +16034,7 @@ public readonly union TSpaceSizeValue(TSpaceSize, TSpaceSize[])
 public delegate Number TStatisticFormatValue(Number @value);
 
 [ECMAScript]
+[String]
 public enum TStatisticTrendPlacementValue
 {
     [Description("@#left")]
@@ -15847,6 +16044,7 @@ public enum TStatisticTrendPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TStatisticTrendValue
 {
     [Description("@#increase")]
@@ -15867,6 +16065,7 @@ public record TStatusRenderInfo : VueProps
 public delegate void TStatusRenderInfoOnRefresh();
 
 [ECMAScript]
+[String]
 public enum TStepDialogPlacement
 {
     [Description("@#top")]
@@ -15881,6 +16080,7 @@ public readonly union TStepItemValueValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TStepPopupPlacement
 {
     [Description("@#top")]
@@ -15910,6 +16110,7 @@ public enum TStepPopupPlacement
 }
 
 [ECMAScript]
+[String]
 public enum TStepStatus
 {
     [Description("@#default")]
@@ -15962,6 +16163,7 @@ public readonly union TStepsCurrentValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TStepsLayoutValue
 {
     [Description("@#horizontal")]
@@ -15971,6 +16173,7 @@ public enum TStepsLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TStepsSeparatorValue
 {
     [Description("@#line")]
@@ -15982,6 +16185,7 @@ public enum TStepsSeparatorValue
 }
 
 [ECMAScript]
+[String]
 public enum TStepsSequenceValue
 {
     [Description("@#positive")]
@@ -15991,6 +16195,7 @@ public enum TStepsSequenceValue
 }
 
 [ECMAScript]
+[String]
 public enum TStepsThemeValue
 {
     [Description("@#default")]
@@ -16000,6 +16205,7 @@ public enum TStepsThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TStickyItemTriggerValue
 {
     [Description("@#hover")]
@@ -16034,6 +16240,7 @@ public readonly union TStickyToolOffsetValueItem(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TStickyToolPlacementValue
 {
     [Description("@#right-top")]
@@ -16051,6 +16258,7 @@ public enum TStickyToolPlacementValue
 }
 
 [ECMAScript]
+[String]
 public enum TStickyToolShapeValue
 {
     [Description("@#square")]
@@ -16060,6 +16268,7 @@ public enum TStickyToolShapeValue
 }
 
 [ECMAScript]
+[String]
 public enum TStickyToolTypeValue
 {
     [Description("@#normal")]
@@ -16115,6 +16324,7 @@ public record TSuccessContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperAnimationValue
 {
     [Description("@#slide")]
@@ -16138,6 +16348,7 @@ public record TSwiperChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperChangeSource
 {
     [Description("@#autoplay")]
@@ -16149,6 +16360,7 @@ public enum TSwiperChangeSource
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperDirectionValue
 {
     [Description("@#horizontal")]
@@ -16158,6 +16370,7 @@ public enum TSwiperDirectionValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperItemAnimationValue
 {
     [Description("@#slide")]
@@ -16181,6 +16394,7 @@ public record TSwiperItemChangeEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperItemDirectionValue
 {
     [Description("@#horizontal")]
@@ -16190,6 +16404,7 @@ public enum TSwiperItemDirectionValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperItemThemeValue
 {
     [Description("@#light")]
@@ -16199,6 +16414,7 @@ public enum TSwiperItemThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperItemTriggerValue
 {
     [Description("@#hover")]
@@ -16208,6 +16424,7 @@ public enum TSwiperItemTriggerValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperItemTypeValue
 {
     [Description("@#default")]
@@ -16229,6 +16446,7 @@ public record TSwiperNavigation : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperNavigationPlacement
 {
     [Description("@#inside")]
@@ -16238,6 +16456,7 @@ public enum TSwiperNavigationPlacement
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperNavigationShowSlideBtn
 {
     [Description("@#always")]
@@ -16249,6 +16468,7 @@ public enum TSwiperNavigationShowSlideBtn
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperNavigationSize
 {
     [Description("@#small")]
@@ -16260,6 +16480,7 @@ public enum TSwiperNavigationSize
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperNavigationType
 {
     [Description("@#dots")]
@@ -16273,6 +16494,7 @@ public enum TSwiperNavigationType
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperThemeValue
 {
     [Description("@#light")]
@@ -16282,6 +16504,7 @@ public enum TSwiperThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperTriggerValue
 {
     [Description("@#hover")]
@@ -16291,6 +16514,7 @@ public enum TSwiperTriggerValue
 }
 
 [ECMAScript]
+[String]
 public enum TSwiperTypeValue
 {
     [Description("@#default")]
@@ -16334,6 +16558,7 @@ public readonly union TSwitchLabelValueItem<T>(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TSwitchSizeValue
 {
     [Description("@#small")]
@@ -16391,6 +16616,7 @@ public readonly union TTableActiveRowKeysValueItem<T>(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTableActiveRowTypeValue
 {
     [Description("@#single")]
@@ -16406,6 +16632,7 @@ public record TTableAsyncLoadingClickEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableAsyncLoadingClickEventContextStatus
 {
     [Description("@#loading")]
@@ -16415,6 +16642,7 @@ public enum TTableAsyncLoadingClickEventContextStatus
 }
 
 [ECMAScript]
+[String]
 public enum TTableAsyncLoadingValue
 {
     [Description("@#loading")]
@@ -16450,6 +16678,7 @@ public sealed record TTableChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableChangeTrigger
 {
     [Description("@#filter")]
@@ -16493,6 +16722,7 @@ public record TTableColumnController : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableColumnControllerDisplayType
 {
     [Description("@#fixed-width")]
@@ -16502,6 +16732,7 @@ public enum TTableColumnControllerDisplayType
 }
 
 [ECMAScript]
+[String]
 public enum TTableColumnControllerPlacement
 {
     [Description("@#top-left")]
@@ -16529,6 +16760,7 @@ public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableColumnControllerVisibleChangeEventContextTrigger
 {
     [Description("@#cancel")]
@@ -16667,6 +16899,7 @@ public record TTableConfigTreeExpandAndFoldIconContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableConfigTreeExpandAndFoldIconContextType
 {
     [Description("@#expand")]
@@ -16682,6 +16915,7 @@ public record TTableDataChangeContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableDataChangeContextTrigger
 {
     [Description("@#sort")]
@@ -16697,6 +16931,7 @@ public sealed record TTableDataChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableDragSortValue
 {
     [Description("@#row")]
@@ -16747,6 +16982,7 @@ public record TTableEditableCellConfigOnResult<T> : VueDictionary<TCallback>
 }
 
 [ECMAScript]
+[String]
 public enum TTableEditableCellConfigValidateTrigger
 {
     [Description("@#exit")]
@@ -16862,6 +17098,7 @@ public record TTableFilterChangeContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableFilterChangeContextTrigger
 {
     [Description("@#filter-change")]
@@ -16953,6 +17190,7 @@ public record TTableRowAttributesOption2Params<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableRowAttributesOption2ParamsType
 {
     [Description("@#body")]
@@ -16976,6 +17214,7 @@ public record TTableRowData : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableRowSelectionTypeValue
 {
     [Description("@#single")]
@@ -17085,6 +17324,7 @@ public sealed record TTableSortChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableTableLayoutValue
 {
     [Description("@#auto")]
@@ -17123,6 +17363,7 @@ public record TTableTreeExpandChangeContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableTreeExpandChangeContextTrigger
 {
     [Description("@#expand-fold-icon")]
@@ -17147,6 +17388,7 @@ public record TTableTreeNodeExpandOptions<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTableTreeNodeExpandOptionsTrigger
 {
     [Description("@#expand-fold-icon")]
@@ -17162,6 +17404,7 @@ public enum TTableTreeNodeExpandOptionsTrigger
 }
 
 [ECMAScript]
+[String]
 public enum TTableTreeNodeExpandOptionsType
 {
     [Description("@#fold")]
@@ -17171,6 +17414,7 @@ public enum TTableTreeNodeExpandOptionsType
 }
 
 [ECMAScript]
+[String]
 public enum TTableValidateTrigger
 {
     [Description("@#self")]
@@ -17180,6 +17424,7 @@ public enum TTableValidateTrigger
 }
 
 [ECMAScript]
+[String]
 public enum TTableVerticalAlignValue
 {
     [Description("@#top")]
@@ -17210,6 +17455,7 @@ public record TTabsDragSortContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTabsPlacementValue
 {
     [Description("@#left")]
@@ -17234,6 +17480,7 @@ public record TTabsRemoveEventOptions : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTabsScrollPositionValue
 {
     [Description("@#auto")]
@@ -17247,6 +17494,7 @@ public enum TTabsScrollPositionValue
 }
 
 [ECMAScript]
+[String]
 public enum TTabsSizeValue
 {
     [Description("@#medium")]
@@ -17256,6 +17504,7 @@ public enum TTabsSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTabsThemeValue
 {
     [Description("@#normal")]
@@ -17416,6 +17665,7 @@ public record TTagInputEnterEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTagInputExcessTagsDisplayTypeValue
 {
     [Description("@#scroll")]
@@ -17500,6 +17750,7 @@ public readonly union TTagInputRemoveContextItem(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTagInputRemoveTrigger
 {
     [Description("@#tag-remove")]
@@ -17509,6 +17760,7 @@ public enum TTagInputRemoveTrigger
 }
 
 [ECMAScript]
+[String]
 public enum TTagInputStatusValue
 {
     [Description("@#default")]
@@ -17533,6 +17785,7 @@ public readonly union TTagInputTagSlotContextValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTagInputTriggerSource
 {
     [Description("@#enter")]
@@ -17569,6 +17822,7 @@ public readonly union TTagMaxWidthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTagShapeValue
 {
     [Description("@#square")]
@@ -17580,6 +17834,7 @@ public enum TTagShapeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTagThemeValue
 {
     [Description("@#default")]
@@ -17600,6 +17855,7 @@ public readonly union TTagTitleValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TTagVariantValue
 {
     [Description("@#dark")]
@@ -17637,6 +17893,7 @@ public readonly union TTextMarkValue(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TTextThemeValue
 {
     [Description("@#primary")]
@@ -17759,6 +18016,7 @@ public readonly union TTextareaMaxlengthValue(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTextareaStatusValue
 {
     [Description("@#default")]
@@ -17778,6 +18036,7 @@ public record TTextareaValidateEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTextareaValidateEventContextError
 {
     [Description("@#exceed-maximum")]
@@ -17904,6 +18163,7 @@ public record TTimePickerPickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTimePickerSizeValue
 {
     [Description("@#small")]
@@ -17915,6 +18175,7 @@ public enum TTimePickerSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimePickerStatusValue
 {
     [Description("@#default")]
@@ -18000,6 +18261,7 @@ public record TTimeRangePickerInputEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTimeRangePickerPartial
 {
     [Description("@#start")]
@@ -18031,6 +18293,7 @@ public readonly union TTimeRangePickerPlaceholderValue(string, string[])
 }
 
 [ECMAScript]
+[String]
 public enum TTimeRangePickerSizeValue
 {
     [Description("@#small")]
@@ -18042,6 +18305,7 @@ public enum TTimeRangePickerSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimeRangePickerStatusValue
 {
     [Description("@#default")]
@@ -18070,6 +18334,7 @@ public record TTimelineItemClickEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTimelineItemLabelAlignValue
 {
     [Description("@#left")]
@@ -18083,6 +18348,7 @@ public enum TTimelineItemLabelAlignValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimelineLabelAlignValue
 {
     [Description("@#left")]
@@ -18098,6 +18364,7 @@ public enum TTimelineLabelAlignValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimelineLayoutValue
 {
     [Description("@#horizontal")]
@@ -18107,6 +18374,7 @@ public enum TTimelineLayoutValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimelineModeValue
 {
     [Description("@#alternate")]
@@ -18116,6 +18384,7 @@ public enum TTimelineModeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTimelineThemeValue
 {
     [Description("@#default")]
@@ -18130,6 +18399,7 @@ public readonly union TTitleEllipsisValue(bool, TTypographyEllipsis)
 }
 
 [ECMAScript]
+[String]
 public enum TTitleLevelValue
 {
     [Description("@#h1")]
@@ -18180,6 +18450,7 @@ public readonly union TTooltipPlacementValue(TTooltipPlacementValueOption1, TPop
 }
 
 [ECMAScript]
+[String]
 public enum TTooltipPlacementValueOption1
 {
     [Description("@#mouse")]
@@ -18201,6 +18472,7 @@ public record TTooltipScrollToBottomEventContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTooltipThemeValue
 {
     [Description("@#default")]
@@ -18218,6 +18490,7 @@ public enum TTooltipThemeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTooltipTriggerValue
 {
     [Description("@#hover")]
@@ -18259,6 +18532,7 @@ public record TTransferConfig : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTransferDirectionValue
 {
     [Description("@#left")]
@@ -18301,6 +18575,7 @@ public record TTransferItem<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTransferListType
 {
     [Description("@#source")]
@@ -18316,6 +18591,7 @@ public record TTransferOperationSlotContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTransferOperationSlotContextDirection
 {
     [Description("@#left")]
@@ -18370,6 +18646,7 @@ public readonly union TTransferShowCheckAllValue<T>(bool, bool[])
 }
 
 [ECMAScript]
+[String]
 public enum TTransferTargetSortValue
 {
     [Description("@#original")]
@@ -18414,6 +18691,7 @@ public record TTreeActiveEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTreeActiveEventContextTrigger
 {
     [Description("@#node-click")]
@@ -18460,6 +18738,7 @@ public record TTreeChangeEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTreeChangeEventContextTrigger
 {
     [Description("@#node-click")]
@@ -18569,6 +18848,7 @@ public record TTreeExpandEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TTreeExpandEventContextTrigger
 {
     [Description("@#node-click")]
@@ -19073,6 +19353,7 @@ public sealed record TTreeSelectPopupVisibleChangeEvent<DataOption, TreeValueTyp
 }
 
 [ECMAScript]
+[String]
 public enum TTreeSelectSizeValue
 {
     [Description("@#small")]
@@ -19084,6 +19365,7 @@ public enum TTreeSelectSizeValue
 }
 
 [ECMAScript]
+[String]
 public enum TTreeSelectStatusValue
 {
     [Description("@#default")]
@@ -19102,6 +19384,7 @@ public readonly union TTreeSelectValue(string, Number, TJsonObject, TTreeSelectV
 }
 
 [ECMAScript]
+[String]
 public enum TTreeSelectValueChangeTrigger
 {
     [Description("@#clear")]
@@ -19130,6 +19413,7 @@ public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : Vu
 public delegate void TTreeSelectValueDisplaySlotContextOnClose<DataOption, TreeValueType>();
 
 [ECMAScript]
+[String]
 public enum TTreeSelectValueTypeValue
 {
     [Description("@#value")]
@@ -19149,6 +19433,7 @@ public readonly union TTreeTDefaultTDefault(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TTreeValueModeValue
 {
     [Description("@#onlyLeaf")]
@@ -19174,6 +19459,7 @@ public record TTriggerContext : VueProps
 public delegate void TTriggerContextTriggerUpload(MouseEvent e);
 
 [ECMAScript]
+[String]
 public enum TTriggerSource
 {
     [Description("@#cancel")]
@@ -19315,6 +19601,7 @@ public sealed record TUploadChangeEvent<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TUploadChangeTrigger
 {
     [Description("@#add")]
@@ -19490,6 +19777,7 @@ public record TUploadFileListDisplaySlotContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TUploadFileStatus
 {
     [Description("@#success")]
@@ -19517,6 +19805,7 @@ public record TUploadHeadersValue<T> : VueDictionary<string>
 }
 
 [ECMAScript]
+[String]
 public enum TUploadMethodValue
 {
     [Description("@#POST")]
@@ -19567,6 +19856,7 @@ public record TUploadPreviewEventOptions<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TUploadProgressType
 {
     [Description("@#real")]
@@ -19615,6 +19905,7 @@ public readonly union TUploadSizeLimitValue<T>(Number, TSizeLimitObj)
 }
 
 [ECMAScript]
+[String]
 public enum TUploadStatusValue
 {
     [Description("@#default")]
@@ -19628,6 +19919,7 @@ public enum TUploadStatusValue
 }
 
 [ECMAScript]
+[String]
 public enum TUploadThemeValue
 {
     [Description("@#custom")]
@@ -19687,6 +19979,7 @@ public record TUploadValidateEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TUploadValidateType
 {
     [Description("@#FILE_OVER_SIZE_LIMIT")]
@@ -19711,6 +20004,7 @@ public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TUploadWaitingUploadFilesChangeEventContextTrigger
 {
     [Description("@#validate")]
@@ -19814,6 +20108,7 @@ public readonly union TValidateResultTypePattern(RegExp, string)
 }
 
 [ECMAScript]
+[String]
 public enum TValidateResultTypeType
 {
     [Description("@#error")]
@@ -19828,6 +20123,7 @@ public readonly union TValidateResultTypeUrl(bool, TIsURLOptions)
 }
 
 [ECMAScript]
+[String]
 public enum TValidateTriggerType
 {
     [Description("@#blur")]
@@ -19863,6 +20159,7 @@ public record TWatermarkText : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TWatermarkTextFontWeight
 {
     [Description("@#normal")]
@@ -20014,6 +20311,7 @@ public readonly union TdBreadcrumbItemPropsDefault(string, RenderFragment)
 public delegate void TdBreadcrumbItemPropsOnClick(MouseEvent e);
 
 [ECMAScript]
+[String]
 public enum TdBreadcrumbItemPropsTarget
 {
     [Description("@#_blank")]
@@ -20085,6 +20383,7 @@ public readonly union TdButtonPropsDefault(string, RenderFragment)
 public delegate void TdButtonPropsOnClick(MouseEvent e);
 
 [ECMAScript]
+[String]
 public enum TdButtonPropsShape
 {
     [Description("@#rectangle")]
@@ -20098,6 +20397,7 @@ public enum TdButtonPropsShape
 }
 
 [ECMAScript]
+[String]
 public enum TdButtonPropsTag
 {
     [Description("@#button")]
@@ -20109,6 +20409,7 @@ public enum TdButtonPropsTag
 }
 
 [ECMAScript]
+[String]
 public enum TdButtonPropsTheme
 {
     [Description("@#default")]
@@ -20124,6 +20425,7 @@ public enum TdButtonPropsTheme
 }
 
 [ECMAScript]
+[String]
 public enum TdButtonPropsType
 {
     [Description("@#submit")]
@@ -20135,6 +20437,7 @@ public enum TdButtonPropsType
 }
 
 [ECMAScript]
+[String]
 public enum TdButtonPropsVariant
 {
     [Description("@#base")]
@@ -20428,6 +20731,7 @@ public readonly union TdDialogPropsHeader(string, bool, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdDialogPropsMode
 {
     [Description("@#modal")]
@@ -20510,6 +20814,7 @@ public record TdDialogPropsOnOverlayClickContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdDialogPropsPlacement
 {
     [Description("@#top")]
@@ -20519,6 +20824,7 @@ public enum TdDialogPropsPlacement
 }
 
 [ECMAScript]
+[String]
 public enum TdDialogPropsTheme
 {
     [Description("@#default")]
@@ -20624,6 +20930,7 @@ public readonly union TdFormItemPropsLabel(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdFormItemPropsLabelAlign
 {
     [Description("@#left")]
@@ -20640,6 +20947,7 @@ public readonly union TdFormItemPropsLabelWidth(string, Number)
 }
 
 [ECMAScript]
+[String]
 public enum TdFormItemPropsStatus
 {
     [Description("@#error")]
@@ -20704,6 +21012,7 @@ public readonly union TdImagePropsError(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdImagePropsFit
 {
     [Description("@#contain")]
@@ -20749,6 +21058,7 @@ public readonly union TdImagePropsOverlayContent(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdImagePropsOverlayTrigger
 {
     [Description("@#always")]
@@ -20763,6 +21073,7 @@ public readonly union TdImagePropsPlaceholder(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdImagePropsReferrerpolicy
 {
     [Description("@#no-referrer")]
@@ -20784,6 +21095,7 @@ public enum TdImagePropsReferrerpolicy
 }
 
 [ECMAScript]
+[String]
 public enum TdImagePropsShape
 {
     [Description("@#circle")]
@@ -20855,6 +21167,7 @@ public readonly union TdImageViewerPropsCloseBtn(bool, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdImageViewerPropsImageReferrerpolicy
 {
     [Description("@#no-referrer")]
@@ -20881,6 +21194,7 @@ public readonly union TdImageViewerPropsImagesItem(string, File, TImageInfo)
 }
 
 [ECMAScript]
+[String]
 public enum TdImageViewerPropsMode
 {
     [Description("@#modal")]
@@ -20911,6 +21225,7 @@ public readonly union TdImageViewerPropsOnCloseContextE(MouseEvent, KeyboardEven
 }
 
 [ECMAScript]
+[String]
 public enum TdImageViewerPropsOnCloseContextTrigger
 {
     [Description("@#close-btn")]
@@ -20939,6 +21254,7 @@ public record TdImageViewerPropsOnIndexChangeContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdImageViewerPropsOnIndexChangeContextTrigger
 {
     [Description("@#prev")]
@@ -21036,6 +21352,7 @@ public record TdInputNumberProps<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdInputNumberPropsAlign
 {
     [Description("@#left")]
@@ -21133,6 +21450,7 @@ public record TdInputNumberPropsOnValidateContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdInputNumberPropsOnValidateContextError
 {
     [Description("@#exceed-maximum")]
@@ -21142,6 +21460,7 @@ public enum TdInputNumberPropsOnValidateContextError
 }
 
 [ECMAScript]
+[String]
 public enum TdInputNumberPropsSize
 {
     [Description("@#small")]
@@ -21153,6 +21472,7 @@ public enum TdInputNumberPropsSize
 }
 
 [ECMAScript]
+[String]
 public enum TdInputNumberPropsStatus
 {
     [Description("@#default")]
@@ -21171,6 +21491,7 @@ public readonly union TdInputNumberPropsSuffix<T>(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdInputNumberPropsTheme
 {
     [Description("@#column")]
@@ -21281,6 +21602,7 @@ public record TdInputProps<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdInputPropsAlign
 {
     [Description("@#left")]
@@ -21328,6 +21650,7 @@ public readonly union TdInputPropsOnChangeContextE<T>(InputEvent, MouseEvent, Co
 }
 
 [ECMAScript]
+[String]
 public enum TdInputPropsOnChangeContextTrigger
 {
     [Description("@#input")]
@@ -21471,6 +21794,7 @@ public record TdInputPropsOnValidateContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdInputPropsOnValidateContextError
 {
     [Description("@#exceed-maximum")]
@@ -21490,6 +21814,7 @@ public record TdInputPropsOnWheelContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdInputPropsStatus
 {
     [Description("@#default")]
@@ -21513,6 +21838,7 @@ public readonly union TdInputPropsTips<T>(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdInputPropsType
 {
     [Description("@#text")]
@@ -21676,6 +22002,7 @@ public delegate void TdPaginationPropsOnCurrentChange(Number current, TPageInfo 
 public delegate void TdPaginationPropsOnPageSizeChange(Number pageSize, TPageInfo pageInfo);
 
 [ECMAScript]
+[String]
 public enum TdPaginationPropsPageEllipsisMode
 {
     [Description("@#mid")]
@@ -21699,6 +22026,7 @@ public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdPaginationPropsSize
 {
     [Description("@#small")]
@@ -21708,6 +22036,7 @@ public enum TdPaginationPropsSize
 }
 
 [ECMAScript]
+[String]
 public enum TdPaginationPropsTheme
 {
     [Description("@#default")]
@@ -21838,6 +22167,7 @@ public readonly union TdPopupPropsOverlayStyle(TStyles, TdPopupPropsOverlayStyle
 public delegate TStyles TdPopupPropsOverlayStyleOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 [ECMAScript]
+[String]
 public enum TdPopupPropsTrigger
 {
     [Description("@#hover")]
@@ -21888,6 +22218,7 @@ public record TdRadioGroupProps<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdRadioGroupPropsDirection
 {
     [Description("@#horizontal")]
@@ -21909,6 +22240,7 @@ public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdRadioGroupPropsTheme
 {
     [Description("@#radio")]
@@ -21918,6 +22250,7 @@ public enum TdRadioGroupPropsTheme
 }
 
 [ECMAScript]
+[String]
 public enum TdRadioGroupPropsVariant
 {
     [Description("@#outline")]
@@ -22096,6 +22429,7 @@ public readonly union TdRangeInputPropsOnChangeContextE(InputEvent, MouseEvent, 
 }
 
 [ECMAScript]
+[String]
 public enum TdRangeInputPropsOnChangeContextTrigger
 {
     [Description("@#input")]
@@ -22185,6 +22519,7 @@ public readonly union TdRangeInputPropsSeparator(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdRangeInputPropsSize
 {
     [Description("@#small")]
@@ -22196,6 +22531,7 @@ public enum TdRangeInputPropsSize
 }
 
 [ECMAScript]
+[String]
 public enum TdRangeInputPropsStatus
 {
     [Description("@#default")]
@@ -22416,6 +22752,7 @@ public readonly union TdSelectInputPropsPanel(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdSelectInputPropsStatus
 {
     [Description("@#default")]
@@ -22751,6 +23088,7 @@ public readonly union TdSelectPropsPanelTopContent<T>(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdSelectPropsStatus
 {
     [Description("@#default")]
@@ -22798,6 +23136,7 @@ public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
 public delegate void TdSelectPropsValueDisplayOption2ContextOption1OnClose<T>(Number index);
 
 [ECMAScript]
+[String]
 public enum TdSelectPropsValueType
 {
     [Description("@#value")]
@@ -22879,6 +23218,7 @@ public readonly union TdStickyItemPropsPopup(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdStickyItemPropsTrigger
 {
     [Description("@#hover")]
@@ -23042,6 +23382,7 @@ public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTagInputPropsExcessTagsDisplayType
 {
     [Description("@#scroll")]
@@ -23160,6 +23501,7 @@ public record TdTagInputPropsOnPasteContext : VueProps
 public delegate void TdTagInputPropsOnRemove(TTagInputRemoveContext context);
 
 [ECMAScript]
+[String]
 public enum TdTagInputPropsStatus
 {
     [Description("@#default")]
@@ -23284,6 +23626,7 @@ public record TdTagPropsOnCloseContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTagPropsShape
 {
     [Description("@#square")]
@@ -23295,6 +23638,7 @@ public enum TdTagPropsShape
 }
 
 [ECMAScript]
+[String]
 public enum TdTagPropsTheme
 {
     [Description("@#default")]
@@ -23315,6 +23659,7 @@ public readonly union TdTagPropsTitle(string, bool)
 }
 
 [ECMAScript]
+[String]
 public enum TdTagPropsVariant
 {
     [Description("@#dark")]
@@ -23460,6 +23805,7 @@ public record TdTextareaPropsOnValidateContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTextareaPropsOnValidateContextError
 {
     [Description("@#exceed-maximum")]
@@ -23469,6 +23815,7 @@ public enum TdTextareaPropsOnValidateContextError
 }
 
 [ECMAScript]
+[String]
 public enum TdTextareaPropsStatus
 {
     [Description("@#default")]
@@ -23679,6 +24026,7 @@ public record TdTimePickerPropsOnPickContext : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTimePickerPropsSize
 {
     [Description("@#small")]
@@ -23690,6 +24038,7 @@ public enum TdTimePickerPropsSize
 }
 
 [ECMAScript]
+[String]
 public enum TdTimePickerPropsStatus
 {
     [Description("@#default")]
@@ -23753,6 +24102,7 @@ public readonly union TdTimelineItemPropsLabel(string, RenderFragment)
 }
 
 [ECMAScript]
+[String]
 public enum TdTimelineItemPropsLabelAlign
 {
     [Description("@#left")]
@@ -23890,6 +24240,7 @@ public readonly union TdTooltipPropsPlacement(TdTooltipPropsPlacementOption1, TP
 }
 
 [ECMAScript]
+[String]
 public enum TdTooltipPropsPlacementOption1
 {
     [Description("@#mouse")]
@@ -23897,6 +24248,7 @@ public enum TdTooltipPropsPlacementOption1
 }
 
 [ECMAScript]
+[String]
 public enum TdTooltipPropsTheme
 {
     [Description("@#default")]
@@ -24092,6 +24444,7 @@ public record TdTreePropsOnActiveContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTreePropsOnActiveContextTrigger
 {
     [Description("@#node-click")]
@@ -24115,6 +24468,7 @@ public record TdTreePropsOnChangeContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTreePropsOnChangeContextTrigger
 {
     [Description("@#node-click")]
@@ -24221,6 +24575,7 @@ public record TdTreePropsOnExpandContext<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTreePropsOnExpandContextTrigger
 {
     [Description("@#node-click")]
@@ -24252,6 +24607,7 @@ public record TdTreePropsOnScrollParams<T> : VueProps
 }
 
 [ECMAScript]
+[String]
 public enum TdTreePropsValueMode
 {
     [Description("@#onlyLeaf")]

@@ -16,18 +16,20 @@ internal static class TDesignRouteMapper
         return routeTarget.Value.AsString;
     }
 
-    public static TMenuRouteTarget? MapRoute(RouteLocationRaw? routeTarget)
+    // TDesign exposes separate menu and breadcrumb route records. Keep both mappings exact
+    // even though their current JavaScript shapes match.
+    public static TMenuItemToValue? MapMenuRoute(RouteLocationRaw? routeTarget)
     {
         if (!routeTarget.HasValue)
             return null;
 
         var route = routeTarget.Value;
         if (route.AsString is { } routeString)
-            return (TMenuRouteTarget)routeString;
+            return (TMenuItemToValue)routeString;
 
         if (route.AsPath is { } pathRoute)
         {
-            return (TMenuRouteTarget)new TMenuRoute
+            return (TMenuItemToValue)new TMenuRoute
             {
                 Path = pathRoute.Path,
                 Hash = pathRoute.Hash
@@ -36,7 +38,37 @@ internal static class TDesignRouteMapper
 
         if (route.AsRelative is { } relativeRoute)
         {
-            return (TMenuRouteTarget)new TMenuRoute
+            return (TMenuItemToValue)new TMenuRoute
+            {
+                Name = relativeRoute.Name.HasValue ? relativeRoute.Name.Value.AsString : null,
+                Hash = relativeRoute.Hash
+            };
+        }
+
+        return null;
+    }
+
+    public static TBreadcrumbItemToValue? MapBreadcrumbRoute(RouteLocationRaw? routeTarget)
+    {
+        if (!routeTarget.HasValue)
+            return null;
+
+        var route = routeTarget.Value;
+        if (route.AsString is { } routeString)
+            return (TBreadcrumbItemToValue)routeString;
+
+        if (route.AsPath is { } pathRoute)
+        {
+            return (TBreadcrumbItemToValue)new TRoute
+            {
+                Path = pathRoute.Path,
+                Hash = pathRoute.Hash
+            };
+        }
+
+        if (route.AsRelative is { } relativeRoute)
+        {
+            return (TBreadcrumbItemToValue)new TRoute
             {
                 Name = relativeRoute.Name.HasValue ? relativeRoute.Name.Value.AsString : null,
                 Hash = relativeRoute.Hash

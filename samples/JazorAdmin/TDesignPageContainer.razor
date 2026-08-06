@@ -11,7 +11,7 @@
                 <TBreadcrumb data-page-region="breadcrumb">
                     @foreach (var item in BreadcrumbItems)
                     {
-                        <TBreadcrumbItem Text="@item.Title"
+                        <TBreadcrumbItem ContentValue="@item.Title"
                                          Disabled="@(item.Disabled ?? false)"
                                          Href="@MapHref(item.Href, item.RouteTarget)"
                                          To="@MapRoute(item.RouteTarget)" />
@@ -33,7 +33,7 @@
 
         @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
         {
-            <TSpace Align="@TSpaceAlign.Center">
+            <TSpace Align="@TSpaceAlignValue.Center">
                 @if (Actions is not null)
                 {
                     @foreach (var action in Actions)
@@ -41,7 +41,7 @@
                         <TButton Theme="@MapTheme(action.Kind)"
                                  Disabled="@(action.Disabled ?? false)"
                                  Href="@MapActionHref(action)"
-                                 Text="@action.Text"
+                                 ContentValue="@action.Text"
                                  data-action-key="@action.Key"
                                  OnClick="@(_ => InvokeAction(action))" />
                     }

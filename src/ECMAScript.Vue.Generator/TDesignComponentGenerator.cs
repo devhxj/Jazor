@@ -2551,6 +2551,7 @@ internal static class TDesignComponentGenerator
         {
             var builder = new StringBuilder();
             builder.AppendLine("[ECMAScript]");
+            builder.AppendLine("[String]");
             // String literal domains do not depend on an enclosing generic parameter.
             // Emitting enum<T> is illegal C# and would invent a runtime distinction.
             builder.AppendLine($"public enum {name}");

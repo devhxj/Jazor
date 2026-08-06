@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <!-- Source builds do not import ECMAScript.Vue3's packaged buildTransitive target. -->
-    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue3\frontend\manifest.json" />
+    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue3\manifest.json" />
     <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\..\src\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />

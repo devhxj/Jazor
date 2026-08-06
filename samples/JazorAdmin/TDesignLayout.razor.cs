@@ -1,8 +1,6 @@
-// Extends the TDesign layout hierarchy with a fixed icon rail and scoped secondary navigation.
-// 在 TDesign 布局层级上增加固定图标 rail 与范围化二级导航。
-using ECMAScript;
+// Composes a Starter-style IconBar with a scoped TDesign secondary menu.
+// IconBar 与二级菜单共享导航目录，Layout 只负责布局和折叠状态。
 using Microsoft.AspNetCore.Components;
-using static ECMAScript.VueRoute;
 
 namespace JazorAdmin;
 
@@ -79,86 +77,7 @@ public partial class TDesignLayout : AdminContentComponentBase
     private string EffectiveCollapseLabel
         => Collapsed ? ExpandLabel ?? "Expand sidebar" : CollapseLabel ?? "Collapse sidebar";
 
-    private static RouteLocationRaw DashboardRoute => (RouteLocationRaw)"/";
-
-    private static RouteLocationRaw OrganizationsRoute => (RouteLocationRaw)"/organizations/structure";
-
-    private static RouteLocationRaw AuthorizationRoute => (RouteLocationRaw)"/authorization/roles";
-
-    private static RouteLocationRaw AccountsRoute => (RouteLocationRaw)"/accounts";
-
-    private static RouteLocationRaw ConfigurationRoute => (RouteLocationRaw)"/configuration/clients";
-
-    private string DashboardRailClass => GetRailItemClass("dashboard");
-
-    private string OrganizationsRailClass => GetRailItemClass("organizations");
-
-    private string AuthorizationRailClass => GetRailItemClass("authorization");
-
-    private string AccountsRailClass => GetRailItemClass("accounts");
-
-    private string ConfigurationRailClass => GetRailItemClass("configuration");
-
-    // RouterLink is emitted through the component builder because Razor's tag parser
-    // does not bind this proxy consistently in the package-consumer compilation.
-    private RenderFragment SidebarRail => builder =>
-    {
-        builder.OpenElement(0, "nav");
-        builder.AddAttribute(1, "class", "jazor-admin-tdesign-sidebar-rail");
-        builder.AddAttribute(2, "aria-label", "Primary navigation");
-        builder.AddContent(3, RenderRailItem(DashboardRoute, DashboardRailClass, "dashboard", "Dashboard"));
-        builder.AddContent(4, RenderRailItem(OrganizationsRoute, OrganizationsRailClass, "organizations", "Organizations"));
-        builder.AddContent(5, RenderRailItem(AuthorizationRoute, AuthorizationRailClass, "authorization", "Authorization"));
-        builder.AddContent(6, RenderRailItem(AccountsRoute, AccountsRailClass, "accounts", "Accounts"));
-        builder.AddContent(7, RenderRailItem(ConfigurationRoute, ConfigurationRailClass, "configuration", "Configuration"));
-        builder.CloseElement();
-    };
-
-    private static RenderFragment RenderRailItem(
-        RouteLocationRaw route,
-        string cssClass,
-        string section,
-        string label) => builder =>
-    {
-        builder.OpenComponent<VueRouterLink>(0);
-        builder.AddComponentParameter(1, nameof(VueRouterLink.To), route);
-        builder.AddComponentParameter(2, nameof(VueRouterLink.CssClass), (VueClassValue)cssClass);
-        builder.AddComponentParameter(3, "data-rail-section", section);
-        builder.AddComponentParameter(4, "aria-label", label);
-        builder.AddComponentParameter(5, "title", label);
-        builder.AddComponentParameter(
-            6,
-            nameof(VueRouterLink.ChildContent),
-            (RenderFragment)(childBuilder =>
-            {
-                childBuilder.OpenElement(0, "span");
-                childBuilder.AddAttribute(1, "class", "jazor-admin-tdesign-sidebar-rail__icon");
-                childBuilder.AddAttribute(2, "data-rail-icon", section);
-                childBuilder.AddAttribute(3, "aria-hidden", "true");
-                childBuilder.CloseElement();
-            }));
-        builder.CloseComponent();
-    };
-
-    private string PrimarySection => SelectedKey switch
-    {
-        "organizations.structure" or "organizations.members" => "organizations",
-        "authorization.roles" or "authorization.resources" => "authorization",
-        "accounts" => "accounts",
-        "configuration.clients" or "configuration.scopes" => "configuration",
-        _ => "dashboard"
-    };
-
-    private string SecondaryTitle => PrimarySection switch
-    {
-        "organizations" => "Organizations",
-        "authorization" => "Authorization",
-        "accounts" => "Accounts",
-        "configuration" => "Configuration",
-        _ => "Overview"
-    };
-
-    private AdminNavItems? SecondaryNavItems
+    private AdminNavItem? ActivePrimaryItem
     {
         get
         {
@@ -167,35 +86,52 @@ public partial class TDesignLayout : AdminContentComponentBase
 
             foreach (var item in items)
             {
-                if (item.Key != PrimarySection)
-                    continue;
-
-                return item.Children?.AsArray is { Length: > 0 } children
-                    ? children
-                    : new AdminNavItem[] { item };
+                if (ContainsSelectedItem(item, SelectedKey))
+                    return item;
             }
 
-            return NavItems;
+            return items[0];
         }
     }
 
-    // The rail selects a complete work area. Its menu is deliberately derived from the same
-    // route catalog so the two navigation layers cannot drift into incompatible targets.
-    // rail 选择完整工作域；二级菜单同源于路由目录，避免两层导航出现不一致的目标。
-    private string GetRailItemClass(string section)
-    {
-        var isSelected = section == PrimarySection;
+    private string SecondaryTitle => ActivePrimaryItem?.Title ?? Title ?? string.Empty;
 
-        return isSelected
-            ? "jazor-admin-tdesign-sidebar-rail__link is-selected"
-            : "jazor-admin-tdesign-sidebar-rail__link";
+    private AdminNavItems? SecondaryNavItems
+    {
+        get
+        {
+            var item = ActivePrimaryItem;
+            if (item is null)
+                return null;
+
+            return item.Children?.AsArray is { Length: > 0 } children
+                ? children
+                : new AdminNavItem[] { item };
+        }
+    }
+
+    private static bool ContainsSelectedItem(AdminNavItem item, string? selectedKey)
+    {
+        if (item.Key == selectedKey)
+            return true;
+
+        if (item.Children?.AsArray is not { Length: > 0 } children)
+            return false;
+
+        foreach (var child in children)
+        {
+            if (ContainsSelectedItem(child, selectedKey))
+                return true;
+        }
+
+        return false;
     }
 
     private RenderFragment? HeaderNavigation => Mode == AdminLayoutMode.Top
         ? builder =>
         {
             builder.OpenComponent<TDesignSidebarMenu>(0);
-            builder.AddComponentParameter(1, nameof(TDesignSidebarMenu.Items), SecondaryNavItems);
+            builder.AddComponentParameter(1, nameof(TDesignSidebarMenu.Items), NavItems);
             builder.AddComponentParameter(2, nameof(TDesignSidebarMenu.SelectedKey), SelectedKey);
             builder.AddComponentParameter(3, nameof(TDesignSidebarMenu.ExpandedKeys), ExpandedKeys);
             builder.AddComponentParameter(4, nameof(TDesignSidebarMenu.SelectedKeyChanged), SelectedKeyChanged);

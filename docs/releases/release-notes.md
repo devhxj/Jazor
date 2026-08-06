@@ -11,6 +11,8 @@
 - Vue binding packages now keep their browser modules, styles, and licenses as local manifest-owned resources. RazorVue materializes those package resources directly; component contracts no longer carry stylesheet URL metadata, and applications need no duplicate library stylesheet declaration.
 - Element Plus, Vuetify, and TDesign binding maintenance now uses one reproducible generator with deterministic validation commands. Frozen upstream inputs are maintained only with that generator, while published binding packages retain their contracts and local runtime resources.
 - Jazor 0.3.0 packages Vue 3, Vue Router, Pinia, Vuetify, Element Plus, and TDesign browser ESM, styles, licenses, and resource manifests locally. Applications build and bundle from restored NuGet resources without a project `node_modules`, CDN imports, npm downloads, or network access.
+- JazorAdmin now follows the TDesign Starter navigation hierarchy with an independent IconBar for primary work areas and a scoped TDesign secondary menu. Both tiers share one route catalog; desktop collapse retains the 64px IconBar, and mobile reflows the IconBar and secondary menu above the work surface without horizontal overflow.
+- TDesign string-literal props now emit their authored values such as `"light"`, `"text"`, and `"primary"` instead of numeric enum ordinals, so generated menus, buttons, layouts, and other components receive the runtime values their typed C# contracts represent.
 
 ## 2026-08-05
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using HostFile = System.IO.File;
 
 // Provides the host-rendered document shell for the generated RazorVue application.
 // 提供 RazorVue 生成应用的宿主文档壳；库资源由 JazorDebug 物化到本地，不保留 CDN 映射。
@@ -39,14 +40,14 @@ internal static class JazorAdminShell
     }
 
     private static string ReadJson(string path, string fallback)
-        => File.Exists(path) ? File.ReadAllText(path) : fallback;
+        => HostFile.Exists(path) ? HostFile.ReadAllText(path) : fallback;
 
     private static string ReadStyles(string path)
     {
-        if (!File.Exists(path))
+        if (!HostFile.Exists(path))
             return string.Empty;
 
-        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        using var document = JsonDocument.Parse(HostFile.ReadAllText(path));
         if (!document.RootElement.TryGetProperty("styles", out var styles) || styles.ValueKind != JsonValueKind.Array)
             return string.Empty;
 

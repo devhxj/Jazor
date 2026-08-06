@@ -77,6 +77,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var accessControlModulePath = RequireModulePath(modulePaths, "JazorAdmin.AccessControlPage");
     var accountModulePath = RequireModulePath(modulePaths, "JazorAdmin.AccountPage");
     var configModulePath = RequireModulePath(modulePaths, "JazorAdmin.ConfigPage");
+    var iconBarModulePath = RequireModulePath(modulePaths, "JazorAdmin.IconBar");
     var componentModules = new[]
     {
         (appModulePath, "JazorAdmin app module"),
@@ -94,7 +95,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         (organizationModulePath, "organization management module"),
         (accessControlModulePath, "access control management module"),
         (accountModulePath, "account management module"),
-        (configModulePath, "OpenIddict configuration module")
+        (configModulePath, "OpenIddict configuration module"),
+        (iconBarModulePath, "JazorAdmin IconBar module")
     };
     foreach (var (relativePath, description) in componentModules)
         AssertPathExists(Path.Combine(generatedOutputRoot, relativePath), "generated " + description);
@@ -120,6 +122,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var routesModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routesModulePath));
     var routeCatalogModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeCatalogModulePath));
     var adminLayoutModule = File.ReadAllText(Path.Combine(generatedOutputRoot, adminLayoutModulePath));
+    var sidebarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, sidebarModulePath));
+    var pageContainerModule = File.ReadAllText(Path.Combine(generatedOutputRoot, pageContainerModulePath));
     var headerBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, headerBarModulePath));
     var errorPageModule = File.ReadAllText(Path.Combine(generatedOutputRoot, errorPageModulePath));
     var apiClientModule = File.ReadAllText(Path.Combine(generatedOutputRoot, apiClientModulePath));
@@ -127,6 +131,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var accessControlModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accessControlModulePath));
     var accountModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accountModulePath));
     var configModule = File.ReadAllText(Path.Combine(generatedOutputRoot, configModulePath));
+    var iconBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, iconBarModulePath));
     var manifest = File.ReadAllText(manifestPath);
 
     AssertContains(appModule, "defineComponent", "Vue component wrapper in JazorAdmin app module");
@@ -152,6 +157,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(adminLayoutModule, "toggle-sidebar", "sidebar toggle command key in TDesign admin layout module");
     AssertContains(adminLayoutModule, "onUpdate:collapsed", "controlled collapsed Vue listener in TDesign admin layout module");
     AssertContains(adminLayoutModule, "horizontal: true", "top navigation variant in TDesign admin layout module");
+    AssertContains(adminLayoutModule, "variant: \"text\"", "TDesign text button variant in admin layout module");
+    AssertContains(sidebarModule, "theme: \"light\"", "TDesign light menu theme in sidebar module");
+    AssertContains(pageContainerModule, "return \"primary\";", "TDesign primary button theme in page container module");
+    AssertContains(pageContainerModule, "align: \"center\"", "TDesign centered action layout in page container module");
+    AssertContains(iconBarModule, "data-iconbar", "IconBar root marker in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "data-iconbar-key", "IconBar item marker in JazorAdmin IconBar module");
     AssertContains(headerBarModule, "jazor-admin-tdesign-header__navigation", "navigation slot region in TDesign header bar module");
     AssertContains(errorPageModule, "data-error-kind", "typed error kind marker in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-labelledby", "error title accessibility relation in JazorAdmin error page module");
@@ -250,10 +261,10 @@ static async Task VerifyBrowserSmokeAsync(
 
     var denoPath = ResolveDenoExecutable(repoRoot);
 
-    var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "frontend", "dist", "vue.runtime.esm-browser.prod.js");
-    var vueRouterRuntime = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "frontend", "dist", "vue-router.esm-browser.prod.js");
-    var tDesignRuntime = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "frontend", "dist", "tdesign.mjs");
-    var tDesignStyle = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "frontend", "dist", "tdesign.css");
+    var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "dist", "vue.runtime.esm-browser.prod.js");
+    var vueRouterRuntime = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "dist", "vue-router.esm-browser.prod.js");
+    var tDesignRuntime = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.mjs");
+    var tDesignStyle = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.css");
     AssertPathExists(vueRuntime, "packaged Vue runtime");
     AssertPathExists(vueRouterRuntime, "packaged Vue Router runtime");
     AssertPathExists(tDesignRuntime, "packaged TDesign runtime");
@@ -287,7 +298,7 @@ static async Task VerifyBrowserSmokeAsync(
         var indexPath = Path.Combine(harnessRoot, "index.html");
         await File.WriteAllTextAsync(
             indexPath,
-            """
+            $$"""
             <!doctype html>
             <html>
               <head>
@@ -502,7 +513,7 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(() => document.querySelectorAll(".jazor-admin-overview__metric").length === 4, "administration overview");
                       const dashboardText = document.querySelector('[data-page-region="body"]')?.textContent ?? "";
                       const metricCount = document.querySelectorAll(".jazor-admin-overview__metric").length;
-                      const railSectionCount = document.querySelectorAll("[data-rail-section]").length;
+                      const iconBarItemCount = document.querySelectorAll("[data-iconbar-key]").length;
                       const userText = document.querySelector(".jazor-admin__user")?.textContent ?? "";
                       const organizationPickerValue = document.querySelector("[data-organization-picker]")?.value ?? "";
 
@@ -523,7 +534,7 @@ static async Task VerifyBrowserSmokeAsync(
                         () => document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "false",
                         "expanded shell");
 
-                      await click('[data-rail-section="organizations"]', "organizations rail item");
+                      await click('[data-iconbar-key="organizations"]', "organizations IconBar item");
                       await waitForTitle("组织架构");
                       await waitFor(() => document.querySelector(".jazor-admin-management__details") !== null, "organization details");
                       const organizationPathname = location.pathname;
@@ -539,7 +550,7 @@ static async Task VerifyBrowserSmokeAsync(
                       await click(".jazor-admin-management__text-button", "member role editor command");
                       const memberRoleEditorVisible = document.querySelector(".jazor-admin-management__role-editor") !== null;
 
-                      await click('[data-rail-section="authorization"]', "authorization rail item");
+                      await click('[data-iconbar-key="authorization"]', "authorization IconBar item");
                       await waitForTitle("角色与授权");
                       await waitFor(() => document.querySelector(".jazor-admin-management__grant-list") !== null, "role grants");
                       const accessPathname = location.pathname;
@@ -553,13 +564,13 @@ static async Task VerifyBrowserSmokeAsync(
                       const resourceOperationCount = document.querySelectorAll(".jazor-admin-management__table tbody tr").length;
                       const resourceText = document.querySelector('[data-management-area="authorization"]')?.textContent ?? "";
 
-                      await click('[data-rail-section="accounts"]', "accounts rail item");
+                      await click('[data-iconbar-key="accounts"]', "accounts IconBar item");
                       await waitForTitle("账户管理");
                       await waitFor(() => document.querySelectorAll('[data-management-area="accounts"] .jazor-admin-management__table tbody tr').length === 1, "account table");
                       const accountsPathname = location.pathname;
                       const accountRowText = document.querySelector('[data-management-area="accounts"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
-                      await click('[data-rail-section="configuration"]', "configuration rail item");
+                      await click('[data-iconbar-key="configuration"]', "configuration IconBar item");
                       await waitForTitle("OpenID 客户端");
                       await waitFor(() => document.querySelectorAll('[data-management-area="configuration"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict client table");
                       const clientsPathname = location.pathname;
@@ -571,7 +582,7 @@ static async Task VerifyBrowserSmokeAsync(
                       const scopesPathname = location.pathname;
                       const scopeRowText = document.querySelector('[data-management-area="configuration"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
-                      await click('[data-rail-section="dashboard"]', "dashboard rail item");
+                      await click('[data-iconbar-key="dashboard"]', "dashboard IconBar item");
                       await waitForTitle("仪表盘");
                       const dashboardReturnPathname = location.pathname;
 
@@ -581,7 +592,7 @@ static async Task VerifyBrowserSmokeAsync(
                         pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
                         dashboardText,
                         metricCount,
-                        railSectionCount,
+                        iconBarItemCount,
                         userText,
                         organizationPickerValue,
                         initialSidebarExpanded,
@@ -657,11 +668,11 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "仪表盘", "JazorAdmin browser dashboard title", root.GetRawText());
         AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "Organization access", "JazorAdmin browser administration overview", root.GetRawText());
         AssertJsonInt(root, "metricCount", 4, "JazorAdmin administration metric count", root.GetRawText());
-        AssertJsonInt(root, "railSectionCount", 5, "JazorAdmin primary rail section count", root.GetRawText());
+        AssertJsonInt(root, "iconBarItemCount", 5, "JazorAdmin IconBar item count", root.GetRawText());
         AssertContains(root.GetProperty("userText").GetString() ?? string.Empty, "Smoke operator", "JazorAdmin browser session account", root.GetRawText());
         AssertContains(root.GetProperty("organizationPickerValue").GetString() ?? string.Empty, "5e1246c9", "JazorAdmin browser organization selection", root.GetRawText());
         AssertContains(root.GetProperty("initialSidebarExpanded").GetString() ?? string.Empty, "true", "JazorAdmin initial sidebar state", root.GetRawText());
-        AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed rail width", root.GetRawText());
+        AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed IconBar width", root.GetRawText());
 
         AssertContains(root.GetProperty("organizationPathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin organization structure navigation", root.GetRawText());
         AssertContains(root.GetProperty("organizationTitle").GetString() ?? string.Empty, "组织架构", "JazorAdmin organization structure title", root.GetRawText());
@@ -684,9 +695,28 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("clientRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict client row", root.GetRawText());
         AssertContains(root.GetProperty("scopesPathname").GetString() ?? string.Empty, "/configuration/scopes", "JazorAdmin OpenIddict scope navigation", root.GetRawText());
         AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "JazorAdmin API", "JazorAdmin OpenIddict scope row", root.GetRawText());
-        AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard rail return", root.GetRawText());
+        AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard IconBar return", root.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
+
+        var desktopLayout = root.GetProperty("desktopLayout");
+        AssertContains(desktopLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "row", "JazorAdmin desktop shell direction", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("iconBarDirection").GetString() ?? string.Empty, "column", "JazorAdmin desktop IconBar direction", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "iconBarBeforeSecondary", true, "JazorAdmin desktop IconBar order", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "sidebarBeforeMain", true, "JazorAdmin desktop sidebar order", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "documentFitsViewport", true, "JazorAdmin desktop viewport fit", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "styleRuntimeLoaded", true, "JazorAdmin desktop style runtime", desktopLayout.GetRawText());
+
+        var mobileLayout = root.GetProperty("mobileLayout");
+        AssertContains(mobileLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "column", "JazorAdmin mobile shell direction", mobileLayout.GetRawText());
+        AssertContains(mobileLayout.GetProperty("iconBarDirection").GetString() ?? string.Empty, "row", "JazorAdmin mobile IconBar direction", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "sidebarFillsShell", true, "JazorAdmin mobile sidebar width", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "iconBarFillsSidebar", true, "JazorAdmin mobile IconBar width", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "secondaryMenuFillsSidebar", true, "JazorAdmin mobile secondary menu width", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "iconBarBeforeSecondary", true, "JazorAdmin mobile IconBar order", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "sidebarBeforeMain", true, "JazorAdmin mobile sidebar order", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "documentFitsViewport", true, "JazorAdmin mobile viewport fit", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "styleRuntimeLoaded", true, "JazorAdmin mobile style runtime", mobileLayout.GetRawText());
 
         var deepLink = root.GetProperty("deepLink");
         AssertContains(deepLink.GetProperty("mode").GetString() ?? string.Empty, "deep-link", "JazorAdmin deep-link smoke mode", deepLink.GetRawText());
@@ -976,24 +1006,35 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               const shell = document.querySelector('[data-shell-region="layout"]');
               const sidebar = document.querySelector('[data-shell-region="sidebar"]');
               const main = document.querySelector('[data-shell-region="main"]');
+              const iconBar = document.querySelector('[data-iconbar]');
+              const secondaryMenu = document.querySelector('.jazor-admin-tdesign-sidebar-shell__menu');
               const navigation = document.querySelector('[data-navigation-orientation="vertical"]');
               const shellStyle = shell ? getComputedStyle(shell) : null;
               const sidebarStyle = sidebar ? getComputedStyle(sidebar) : null;
               const mainStyle = main ? getComputedStyle(main) : null;
+              const iconBarStyle = iconBar ? getComputedStyle(iconBar) : null;
               const navigationStyle = navigation ? getComputedStyle(navigation) : null;
               const shellRect = shell?.getBoundingClientRect();
               const sidebarRect = sidebar?.getBoundingClientRect();
               const mainRect = main?.getBoundingClientRect();
+              const iconBarRect = iconBar?.getBoundingClientRect();
+              const secondaryMenuRect = secondaryMenu?.getBoundingClientRect();
               return {
                 viewportWidth: innerWidth,
                 shellDisplay: shellStyle?.display ?? "",
                 shellDirection: shellStyle?.flexDirection ?? "",
                 sidebarWidth: sidebarStyle?.width ?? "",
                 mainDisplay: mainStyle?.display ?? "",
+                iconBarDirection: iconBarStyle?.flexDirection ?? "",
                 navigationDisplay: navigationStyle?.display ?? "",
                 sidebarFillsShell: !!shellRect && !!sidebarRect && Math.abs(shellRect.width - sidebarRect.width) <= 1,
+                iconBarFillsSidebar: !!sidebarRect && !!iconBarRect && Math.abs(sidebarRect.width - iconBarRect.width) <= 1,
+                secondaryMenuFillsSidebar: !!sidebarRect && !!secondaryMenuRect && Math.abs(sidebarRect.width - secondaryMenuRect.width) <= 1,
                 styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null,
                 documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
+                iconBarBeforeSecondary: iconBarRect && secondaryMenuRect
+                  ? iconBarRect.right <= secondaryMenuRect.left + 1 || iconBarRect.bottom <= secondaryMenuRect.top + 1
+                  : false,
                 sidebarBeforeMain: sidebarRect && mainRect
                   ? sidebarRect.right <= mainRect.left + 1 || sidebarRect.bottom <= mainRect.top + 1
                   : false

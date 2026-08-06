@@ -64,12 +64,14 @@ public static class Routes
         {
             Key = DashboardKey,
             Path = "/",
+            Icon = "dashboard",
             Title = Localization.Get(language, TextKey.Dashboard),
             Subtitle = Localization.Get(language, TextKey.DashboardSubtitle)
         },
         new()
         {
             Key = OrganizationsKey,
+            Icon = "organizations",
             Title = Localization.Get(language, TextKey.Organizations),
             Children =
             [
@@ -92,6 +94,7 @@ public static class Routes
         new()
         {
             Key = AuthorizationKey,
+            Icon = "authorization",
             Title = Localization.Get(language, TextKey.Authorization),
             Children =
             [
@@ -115,12 +118,14 @@ public static class Routes
         {
             Key = AccountsKey,
             Path = "/accounts",
+            Icon = "accounts",
             Title = Localization.Get(language, TextKey.Accounts),
             Subtitle = Localization.Get(language, TextKey.AccountsSubtitle)
         },
         new()
         {
             Key = ConfigurationKey,
+            Icon = "configuration",
             Title = Localization.Get(language, TextKey.Configuration),
             Children =
             [

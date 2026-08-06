@@ -95,6 +95,8 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 - Vue binding packages keep their browser modules, styles, and licenses as local manifest-owned resources. RazorVue materializes them directly, so component contracts carry no stylesheet URL metadata and applications need no duplicate library stylesheet declaration.
 - Element Plus, Vuetify, and TDesign binding maintenance now uses one reproducible generator with deterministic validation commands. Frozen upstream inputs remain in that maintenance project, outside the published binding packages.
 - Vue 3, Vue Router, Pinia, Vuetify, Element Plus, and TDesign now ship their browser ESM, styles, and licenses inside their NuGet packages. Application builds materialize only local package resources, so they no longer require a project `node_modules`, CDN imports, npm downloads, or network access.
+- JazorAdmin now follows the TDesign Starter navigation hierarchy with an independent IconBar for primary work areas and a scoped TDesign secondary menu. Desktop collapse retains the 64px IconBar, while mobile reflows both navigation tiers above the work surface without horizontal overflow.
+- TDesign string-literal props now emit their authored values such as `"light"`, `"text"`, and `"primary"` instead of numeric enum ordinals, preserving the runtime contract represented by their generated C# enums.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
