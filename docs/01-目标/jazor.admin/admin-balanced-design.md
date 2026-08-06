@@ -240,12 +240,7 @@
 1. `Vben` 的原生壳层组件不是 `IVueLibraryComponent`，也不依赖 `VueLibraryComponent` 这条 stub 描述链。
 2. RazorVue 需要保证**被引用程序集里的原生 `IVueComponent` 组件**也能进入组件注册解析；否则 `Vben` 作为独立包时会失去消费能力。
 
-另外，通用 authoring 元数据已经进一步收敛到：
-
-- `VueProp`
-- `VueSlot`
-
-旧的 `VueLibraryProp` / `VueLibrarySlot` 已被整体替换，不再保留兼容层。
+通用 authoring 契约直接使用 Razor 和 Vue 的现行类型系统：prop 使用 `[Parameter]`，只有 Vue 原始名称不同才使用 `[ECMAScriptName]`；slot 使用 `RenderFragment` / `RenderFragment<T>`，事件使用 `EventCallback` / `EventCallback<T>`。
 
 ### 与 `ECMAScript.TDesign`
 

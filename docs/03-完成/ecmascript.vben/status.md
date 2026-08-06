@@ -15,7 +15,7 @@
 - 原生组件继续走 RazorVue 用户组件路径：`ComponentBase + IVueComponent + [ECMAScriptModule(...)]`；
 - 公开壳层组件现在同时承担 `IVueContainerComponent` 容器契约角色，可被应用层通过 `[VueInject]` 编译期替换到具体实现；
 - `CssClass` / `CssStyle` / `AdditionalAttributes` 等 authoring 基底统一建立在 `ECMAScript.Vue3` 与通用 Vue contract 上；
-- 通用 prop/slot 元数据已经收口到 `VueProp` / `VueSlot`，不再把 `VueLibraryProp` / `VueLibrarySlot` 兼容别名当作现行契约；
+- props 使用 `[Parameter]` 与按需的 `[ECMAScriptName]`，slots 使用 `RenderFragment` / `RenderFragment<T>`，事件使用 `EventCallback` / `EventCallback<T>`；
 - 早期设想的 `IVbenUiAdapter` 空接口已被移除，Vben 不再维护与 `VueContract` 平行的第二套 adapter 协议；
 - `src/ECMAScript.Vben.Test/` 已建立独立聚焦测试，不再把 Vben 演进绑死在其他外部库线的在制状态上。
 - `samples/ECMAScript.Vben.ElementPlusInject/` 已建立真实 sample，验证 `ECMAScript.Vben` 容器 contract 在应用层通过 `[VueInject]` 切换到 sample-local Element Plus 实现，同时维持 Deno consumer 主链。
@@ -149,9 +149,10 @@
 
 ### 4. Vue authoring contract 已完成一次关键收口
 
-当前 Vben 线与 RazorVue/VueContract 的关系已经从“库专属元数据”收口为“通用 authoring metadata”：
+当前 Vben 线与 RazorVue/VueContract 的关系已经收口为通用 authoring contract：
 
-- 组件 prop/slot 覆盖走 `VueProp` / `VueSlot`
+- 组件 prop 使用 `[Parameter]`，仅在 Vue 名称不同时使用 `[ECMAScriptName]`
+- 组件 slot 使用 `RenderFragment` / `RenderFragment<T>`，事件使用 `EventCallback` / `EventCallback<T>`
 - `CssClass` / `CssStyle` 走 Vue3 通用值域
 - `AdditionalAttributes` 是唯一允许的宽口透传入口
 
@@ -286,9 +287,7 @@
   - `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 的默认 native import 路径、slot 映射与 typed callback 透传已进入回归；
   - `VbenPageContainer` 在“仅 `Extra`、无标题区”场景下不会 lower 出空的 titles wrapper；
   - 默认 native 主链不会意外引入第三方 style/plugin requirement；
-- `VueAuthoringMetadataTests` 校验：
-  - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
-  - `ECMAScript.VueContract` 当前只保留 canonical 的 `VuePropAttribute` / `VueSlotAttribute`。
+- Vue authoring 回归覆盖 `[Parameter]`、按需的 `[ECMAScriptName]`、`RenderFragment` 和 `EventCallback` 的 descriptor extraction。
 
 2026-05-17 当前基线复核：
 

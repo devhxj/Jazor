@@ -2,15 +2,50 @@
 
 > Purpose: standalone TDesign Vue Next binding and RazorVue authoring surface.
 
-Conservative first-slice bindings for `tdesign-vue-next`.
+The published package is self-contained: it ships the browser ESM, CSS, license, and
+`manifest.json` for `tdesign-vue-next` 1.20.5. Consumers restore NuGet only; they do
+not install Node.js packages or resolve resources from a CDN.
 
-Scope of this package:
+The frozen ESM has one bare runtime dependency, `vue`. The package manifest declares
+that dependency as `vue3: ^3.5.0`, so Jazor materializes the TDesign and Vue resources
+from the restored NuGet packages into the generated application's local `vendor/`
+directory. No `node_modules` lookup is part of the consumer path.
 
-- Root plugin/runtime host: `TDesign`
-- Stable admin-shell component proxies: layout, menu, button, card, space, divider, config provider
-- Strongly typed RazorVue authoring surface without `object` catch-all props
+The component binding input is driven by the versioned upstream snapshot under
+`upstream/tdesign-vue-next/1.20.5`. `components.json` lists the 120 documented entries
+whose exports exist in the current browser ESM, while `bindings.json` maps each entry to
+its real module, named export, and TypeScript Props declaration. `contracts.json` resolves
+each documented prop to its current TypeScript type and declaration source, including the
+small set of Vue-mixin properties represented only in upstream `web-types`. Documentation-
+only tags without a current runtime export are not binding inputs.
 
-Current package contract intentionally avoids weak `TNode`-as-prop abstractions. Rich content is surfaced through verified slots, while plain text use cases stay on string props.
+Update the upstream input with:
+
+```text
+dotnet run --file scripts/csharp/generate-tdesign.cs
+dotnet run --file scripts/csharp/generate-tdesign-bindings.cs
+dotnet run --file scripts/csharp/generate-tdesign-components.cs
+dotnet run --file scripts/csharp/generate-tdesign.cs -- --check
+dotnet run --file scripts/csharp/generate-tdesign-bindings.cs -- --check
+dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --report
+dotnet run --file scripts/csharp/generate-tdesign-components.cs -- --check
+```
+
+These are package-maintainer tools. They use .NET to snapshot the locked upstream
+version and Tree-sitter to read its TypeScript syntax, then generate audited binding and
+Props-contract catalogs. They are never invoked by application build or publish, and do
+not create a consumer dependency on Node.js, npm, or Tree-sitter.
+
+`generate-tdesign-components.cs` is a full-coverage verification gate. It emits the
+118 current runtime components only when every declared prop has a concrete C# type;
+the generated catalog and `--report` must remain `118/118`. It never substitutes
+`object`, `VueValue`, or placeholder contracts to preserve component coverage.
+
+Component contracts remain strongly typed: `object` is only permitted for Razor's
+`AdditionalAttributes` sink. Rich TDesign content is represented by verified slots and
+named value/callback contracts. A source type that cannot be expressed directly must
+receive a documented, dedicated C# contract; it must not be silently reduced to
+`object` or `VueValue` to make generation pass.
 
 Public authoring types follow TDesign component naming: use `T*` (`TMenuValue`, `TButtonTheme`, `TComponents`). Only the package root host remains `TDesign`.
 

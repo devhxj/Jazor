@@ -23,7 +23,9 @@
     <file src="$buildOutputDir$ECMAScript.ElementPlus.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.ElementPlus.pdb" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.ElementPlus.targets" target="buildTransitive\ECMAScript.ElementPlus.targets" />
-    <file src="$projectDir$frontend\**\*" target="jazor\element-plus" />
+    <file src="$projectDir$manifest.json" target="jazor\element-plus" />
+    <file src="$projectDir$dist\**\*" target="jazor\element-plus\dist" />
+    <file src="$projectDir$licenses\**\*" target="jazor\element-plus\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>
 </package>

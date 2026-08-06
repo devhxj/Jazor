@@ -35,7 +35,7 @@
 
 ### RVT-003 P2: 缺少 authoring metadata 的 lowering 回归矩阵
 
-现有 `EcmaScriptVueProxyTests` 主要断言公开 C# 类型，浏览器 smoke 只验证直接导入 `VBtn`。Razor SG 测试工程目前没有直接引用 `ECMAScript.Vuetify`，因此 `VueLibraryComponent`、`VueProp`、`VueLibraryEmit` 和 `VueSlot` 的实际降级行为缺少组件库级回归守护。
+现有 `EcmaScriptVueProxyTests` 主要断言公开 C# 类型，浏览器 smoke 只验证直接导入 `VBtn`。Razor SG 测试工程目前没有直接引用 `ECMAScript.Vuetify`，因此 `VueLibraryComponent`、`[Parameter]`/`[ECMAScriptName]`、`VueLibraryEmit` 和 `RenderFragment` 的实际降级行为缺少组件库级回归守护。
 
 处理要求：
 
@@ -238,7 +238,7 @@
 
 - Razor 组件标签上的 lowercase `class` / `style` 走 `AdditionalAttributes` fallthrough
 - 需要强类型 C# 表达式时，已显式建模组件提供 `CssClass` / `CssStyle`
-- `CssClass` / `CssStyle` 通过 `VueProp` 映射到 Vue runtime 的 `class` / `style`
+- `CssClass` / `CssStyle` 以 `[Parameter]` 声明，并通过 `[ECMAScriptName]` 映射到 Vue runtime 的 `class` / `style`
 
 不要在 top-level Vuetify authoring component 上提供 `[Parameter] Class` / `[Parameter] Style`。这些名称会与官方 Razor SG 对 lowercase `class` / `style` 的组件参数绑定规则冲突，导致 raw attribute 不能自然 fallthrough。
 

@@ -734,7 +734,7 @@ public sealed class ToolchainTests
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            var candidate = Path.Combine(directory.FullName, "src", projectName, "frontend", "manifest.json");
+            var candidate = Path.Combine(directory.FullName, "src", projectName, "manifest.json");
             if (File.Exists(candidate))
                 return candidate;
 

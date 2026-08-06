@@ -10,7 +10,7 @@
 
 - `Jazor.Admin` 必须回到“抽象层 + 自有原生实现”主线
 - `class/style` 这类通用 authoring 值域继续下沉到 `ECMAScript.Vue3`
-- `prop/slot` 元数据进一步上提为通用 `VueProp` / `VueSlot`，旧 `VueLibraryProp` / `VueLibrarySlot` 已不再保留
+- prop 使用 `[Parameter]` 和按需的 `[ECMAScriptName]`，slot 使用 `RenderFragment` / `RenderFragment<T>`，不再引入额外 prop/slot 特性
 - `samples/JazorAdmin/` 不是正确产品方向，只能视为临时 spike
 - Phase 1 不再把任何 `Jazor.Admin.*第三方库名*` 项目作为正式交付物
 

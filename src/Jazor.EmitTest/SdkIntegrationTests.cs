@@ -190,6 +190,40 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task CreateLocalPackage_TDesignManifest_DeclaresOnlyPackagedAssetsAndVue3()
+    {
+        var package = await LocalPackage.Value;
+        using var manifest = JsonDocument.Parse(ReadPackageEntryText(
+            package.TDesignPackagePath,
+            "jazor/tdesign-vue-next/manifest.json"));
+
+        var root = manifest.RootElement;
+        Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
+        Assert.AreEqual("1.20.5", root.GetProperty("version").GetString());
+        var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next");
+        Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("development").GetString());
+        Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("production").GetString());
+        Assert.AreEqual("^3.5.0", root.GetProperty("requires").GetProperty("vue3").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "dist/tdesign.css" },
+            root.GetProperty("styles").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "licenses/LICENSE" },
+            root.GetProperty("files").EnumerateArray().Select(static value => value.GetString()).ToArray());
+
+        var esm = ReadPackageEntryText(package.TDesignPackagePath, "jazor/tdesign-vue-next/dist/tdesign.mjs");
+        var imports = Regex.Matches(esm, "\\b(?:from|import)\\s+[\\\"'](?<specifier>[^\\\"']+)[\\\"']", RegexOptions.CultureInvariant)
+            .Select(static match => match.Groups["specifier"].Value)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "vue" }, imports);
+
+        var css = ReadPackageEntryText(package.TDesignPackagePath, "jazor/tdesign-vue-next/dist/tdesign.css");
+        Assert.IsFalse(Regex.IsMatch(css, "https?://", RegexOptions.CultureInvariant), "TDesign CSS must not fetch remote assets.");
+    }
+
+    [TestMethod]
     public async Task CreateLocalPackage_IncludesEcmaScriptStyleAsIndependentOptInPackage()
     {
         var package = await LocalStylePackage.Value;
@@ -2345,8 +2379,10 @@ public sealed class SdkIntegrationTests
 
         var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
         var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
-        CopyDirectory(outputRoot, harnessJazorRoot);
-        CreateCounterBrowserHarness(harnessRoot);
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+        var harnessImportMapPath = Path.Combine(harnessJazorRoot, "importmap.json");
+        Assert.IsTrue(File.Exists(harnessImportMapPath), $"Import map was not materialized: {harnessImportMapPath}");
+        CreateCounterBrowserHarness(harnessRoot, harnessImportMapPath);
 
         var distRoot = Path.Combine(harnessRoot, "dist");
         Directory.CreateDirectory(distRoot);
@@ -2793,18 +2829,29 @@ public sealed class SdkIntegrationTests
         return denoPath;
     }
 
-    private static void CreateCounterBrowserHarness(string harnessRoot)
+    private static void CreateCounterBrowserHarness(string harnessRoot, string importMapPath)
     {
+        using var importMap = JsonDocument.Parse(File.ReadAllText(importMapPath));
+        var vuePath = importMap.RootElement
+            .GetProperty("imports")
+            .GetProperty("vue")
+            .GetString();
+        if (string.IsNullOrWhiteSpace(vuePath) || !vuePath.StartsWith("/jazor/", StringComparison.Ordinal))
+            throw new InvalidOperationException($"Materialized import map does not provide a local Vue path: {vuePath}");
+
+        // Debug and release select different Vue files. Reuse the generated import map
+        // instead of duplicating a versioned vendor path in the browser harness.
+        var denoConfig = new
+        {
+            imports = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["vue"] = "." + vuePath,
+                ["@jazor/vue-runtime/"] = "./jazor/@jazor/vue-runtime/"
+            }
+        };
         WriteFile(
             Path.Combine(harnessRoot, "deno.json"),
-            """
-            {
-              "imports": {
-                "vue": "vue.5.13/dist/vue.runtime.esm-browser.prod.js",
-                "@jazor/vue-runtime/": "./jazor/@jazor/vue-runtime/"
-              }
-            }
-            """);
+            JsonSerializer.Serialize(denoConfig, new JsonSerializerOptions { WriteIndented = true }));
 
         WriteFile(
             Path.Combine(harnessRoot, "index.html"),
@@ -3043,14 +3090,14 @@ public sealed class SdkIntegrationTests
         return reader.ReadToEnd();
     }
 
-    private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
+    private static void CopyDirectory(string sourceDirectory, string destinationDirectory, bool includeGeneratedAssets = false)
     {
         Directory.CreateDirectory(destinationDirectory);
 
         foreach (var directory in Directory.EnumerateDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
         {
             var relativePath = Path.GetRelativePath(sourceDirectory, directory);
-            if (ShouldSkip(relativePath))
+            if (!includeGeneratedAssets && ShouldSkip(relativePath))
                 continue;
 
             Directory.CreateDirectory(Path.Combine(destinationDirectory, relativePath));
@@ -3059,7 +3106,7 @@ public sealed class SdkIntegrationTests
         foreach (var file in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
         {
             var relativePath = Path.GetRelativePath(sourceDirectory, file);
-            if (ShouldSkip(relativePath))
+            if (!includeGeneratedAssets && ShouldSkip(relativePath))
                 continue;
 
             var destinationPath = Path.Combine(destinationDirectory, relativePath);
@@ -3576,6 +3623,12 @@ public sealed class SdkIntegrationTests
             RootPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
             SampleRoot = Path.Combine(RootPath, "Jazor.MultiProject");
             Directory.CreateDirectory(SampleRoot);
+
+            // The copied sample imports ../Directory.Build.props; preserve that layout
+            // so every parallel test owns a complete, isolated MSBuild tree.
+            File.Copy(
+                Path.Combine(repoRoot, "Directory.Build.props"),
+                Path.Combine(RootPath, "Directory.Build.props"));
         }
 
         public string RootPath { get; }

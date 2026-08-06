@@ -7542,7 +7542,7 @@ export function readValue(value) {
                 {
                     public static TMenuValue CreateMenuValue(Number value) => value;
 
-                    public static TMenuWidthValue CreateMenuWidth(TDimensionValue[] values) => values;
+                    public static TMenuWidthValue CreateMenuWidth(TMenuWidthValueOption3Item[] values) => values;
 
                     public static ElUploadBeforeUploadResult CreateUploadFile(File value) => value;
 

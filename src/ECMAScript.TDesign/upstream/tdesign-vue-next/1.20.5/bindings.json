@@ -1,0 +1,4137 @@
+{
+  "package": "tdesign-vue-next",
+  "version": "1.20.5",
+  "componentCount": 120,
+  "declarationCount": 940,
+  "components": [
+    {
+      "tag": "icon",
+      "sourceExport": "IconSVG",
+      "runtimeExport": "Icon",
+      "authoringType": "TIcon",
+      "module": "icon",
+      "propsDeclaration": "icon:TdIconSVGProps",
+      "propsSource": "es/icon/type.d.ts",
+      "props": [
+        "load-default-icons",
+        "name",
+        "size",
+        "style",
+        "url"
+      ],
+      "slots": [],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "icon-font",
+      "sourceExport": "IconFont",
+      "runtimeExport": "Icon",
+      "authoringType": "TIcon",
+      "module": "icon",
+      "propsDeclaration": "icon:TdIconfontProps",
+      "propsSource": "es/icon/type.d.ts",
+      "props": [
+        "load-default-icons",
+        "name",
+        "size",
+        "style",
+        "tag",
+        "url"
+      ],
+      "slots": [],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-affix",
+      "sourceExport": "Affix",
+      "runtimeExport": "Affix",
+      "authoringType": "TAffix",
+      "module": "affix",
+      "propsDeclaration": "affix:TdAffixProps",
+      "propsSource": "es/affix/type.d.ts",
+      "props": [
+        "container",
+        "content",
+        "default",
+        "offset-bottom",
+        "offset-top",
+        "z-index"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": [
+        "fixed-change"
+      ]
+    },
+    {
+      "tag": "t-alert",
+      "sourceExport": "Alert",
+      "runtimeExport": "Alert",
+      "authoringType": "TAlert",
+      "module": "alert",
+      "propsDeclaration": "alert:TdAlertProps",
+      "propsSource": "es/alert/type.d.ts",
+      "props": [
+        "close",
+        "close-btn",
+        "default",
+        "icon",
+        "max-line",
+        "message",
+        "operation",
+        "theme",
+        "title"
+      ],
+      "slots": [
+        "close",
+        "closeBtn",
+        "close-btn",
+        "default",
+        "icon",
+        "message",
+        "operation",
+        "title"
+      ],
+      "events": [
+        "close",
+        "closed"
+      ]
+    },
+    {
+      "tag": "t-anchor",
+      "sourceExport": "Anchor",
+      "runtimeExport": "Anchor",
+      "authoringType": "TAnchor",
+      "module": "anchor",
+      "propsDeclaration": "anchor:TdAnchorProps",
+      "propsSource": "es/anchor/type.d.ts",
+      "props": [
+        "affix-props",
+        "bounds",
+        "container",
+        "cursor",
+        "get-current-anchor",
+        "size",
+        "target-offset"
+      ],
+      "slots": [
+        "cursor"
+      ],
+      "events": [
+        "change",
+        "click"
+      ]
+    },
+    {
+      "tag": "t-anchor-item",
+      "sourceExport": "AnchorItem",
+      "runtimeExport": "AnchorItem",
+      "authoringType": "TAnchorItem",
+      "module": "anchor",
+      "propsDeclaration": "anchor:TdAnchorItemProps",
+      "propsSource": "es/anchor/type.d.ts",
+      "props": [
+        "custom-scroll",
+        "href",
+        "target",
+        "title"
+      ],
+      "slots": [
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-anchor-target",
+      "sourceExport": "AnchorTarget",
+      "runtimeExport": "AnchorTarget",
+      "authoringType": "TAnchorTarget",
+      "module": "anchor",
+      "propsDeclaration": "anchor:TdAnchorTargetProps",
+      "propsSource": "es/anchor/type.d.ts",
+      "props": [
+        "id",
+        "tag"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-aside",
+      "sourceExport": "Aside",
+      "runtimeExport": "Aside",
+      "authoringType": "TAside",
+      "module": "layout",
+      "propsDeclaration": "layout:TdAsideProps",
+      "propsSource": "es/layout/type.d.ts",
+      "props": [
+        "width"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-auto-complete",
+      "sourceExport": "AutoComplete",
+      "runtimeExport": "AutoComplete",
+      "authoringType": "TAutoComplete",
+      "module": "auto-complete",
+      "propsDeclaration": "auto-complete:TdAutoCompleteProps",
+      "propsSource": "es/auto-complete/type.d.ts",
+      "props": [
+        "autofocus",
+        "borderless",
+        "clearable",
+        "default",
+        "disabled",
+        "empty",
+        "filter",
+        "filterable",
+        "highlight-keyword",
+        "input-props",
+        "options",
+        "panel-bottom-content",
+        "panel-top-content",
+        "placeholder",
+        "popup-props",
+        "readonly",
+        "size",
+        "status",
+        "textarea-props",
+        "tips",
+        "trigger-element",
+        "value"
+      ],
+      "slots": [
+        "default",
+        "empty",
+        "panelBottomContent",
+        "panel-bottom-content",
+        "panelTopContent",
+        "panel-top-content",
+        "tips",
+        "triggerElement",
+        "trigger-element"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "compositionend",
+        "compositionstart",
+        "enter",
+        "focus",
+        "select"
+      ]
+    },
+    {
+      "tag": "t-avatar",
+      "sourceExport": "Avatar",
+      "runtimeExport": "Avatar",
+      "authoringType": "TAvatar",
+      "module": "avatar",
+      "propsDeclaration": "avatar:TdAvatarProps",
+      "propsSource": "es/avatar/type.d.ts",
+      "props": [
+        "alt",
+        "content",
+        "default",
+        "hide-on-load-failed",
+        "icon",
+        "image",
+        "image-props",
+        "shape",
+        "size"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon"
+      ],
+      "events": [
+        "click",
+        "contextmenu",
+        "error",
+        "hover"
+      ]
+    },
+    {
+      "tag": "t-avatar-group",
+      "sourceExport": "AvatarGroup",
+      "runtimeExport": "AvatarGroup",
+      "authoringType": "TAvatarGroup",
+      "module": "avatar",
+      "propsDeclaration": "avatar:TdAvatarGroupProps",
+      "propsSource": "es/avatar/type.d.ts",
+      "props": [
+        "cascading",
+        "collapse-avatar",
+        "max",
+        "popup-props",
+        "shape",
+        "size"
+      ],
+      "slots": [
+        "collapseAvatar",
+        "collapse-avatar"
+      ],
+      "events": [
+        "collapsed-item-click"
+      ]
+    },
+    {
+      "tag": "t-back-top",
+      "sourceExport": "BackTop",
+      "runtimeExport": "BackTop",
+      "authoringType": "TBackTop",
+      "module": "back-top",
+      "propsDeclaration": "back-top:TdBackTopProps",
+      "propsSource": "es/back-top/type.d.ts",
+      "props": [
+        "container",
+        "content",
+        "default",
+        "duration",
+        "offset",
+        "shape",
+        "size",
+        "target",
+        "theme",
+        "visible-height"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-badge",
+      "sourceExport": "Badge",
+      "runtimeExport": "Badge",
+      "authoringType": "TBadge",
+      "module": "badge",
+      "propsDeclaration": "badge:TdBadgeProps",
+      "propsSource": "es/badge/type.d.ts",
+      "props": [
+        "color",
+        "content",
+        "count",
+        "default",
+        "dot",
+        "max-count",
+        "offset",
+        "shape",
+        "show-zero",
+        "size"
+      ],
+      "slots": [
+        "content",
+        "count",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-base-table",
+      "sourceExport": "BaseTable",
+      "runtimeExport": "BaseTable",
+      "authoringType": "TBaseTable",
+      "module": "table",
+      "propsDeclaration": "table:BaseTableProps",
+      "propsSource": "es/table/types.d.ts",
+      "props": [
+        "active-row-keys",
+        "active-row-type",
+        "allow-resize-column-width",
+        "attach",
+        "bordered",
+        "bottom-content",
+        "cell-empty-content",
+        "columns",
+        "data",
+        "disable-data-page",
+        "disable-space-inactive-row",
+        "empty",
+        "first-full-row",
+        "fixed-rows",
+        "foot-data",
+        "footer-affix-props",
+        "footer-affixed-bottom",
+        "footer-summary",
+        "header-affix-props",
+        "header-affixed-top",
+        "height",
+        "horizontal-scroll-affixed-bottom",
+        "hover",
+        "keyboard-row-hover",
+        "last-full-row",
+        "lazy-load",
+        "loading",
+        "loading-props",
+        "locale",
+        "max-height",
+        "pagination",
+        "pagination-affixed-bottom",
+        "resizable",
+        "row-attributes",
+        "row-class-name",
+        "row-key",
+        "rowspan-and-colspan",
+        "rowspan-and-colspan-in-footer",
+        "scroll",
+        "show-header",
+        "size",
+        "stripe",
+        "table-content-width",
+        "table-layout",
+        "top-content",
+        "vertical-align"
+      ],
+      "slots": [
+        "bottomContent",
+        "bottom-content",
+        "cellEmptyContent",
+        "cell-empty-content",
+        "empty",
+        "firstFullRow",
+        "first-full-row",
+        "footerSummary",
+        "footer-summary",
+        "lastFullRow",
+        "last-full-row",
+        "loading",
+        "topContent",
+        "top-content"
+      ],
+      "events": [
+        "active-change",
+        "active-row-action",
+        "cell-click",
+        "column-resize-change",
+        "page-change",
+        "row-click",
+        "row-dblclick",
+        "row-mousedown",
+        "row-mouseenter",
+        "row-mouseleave",
+        "row-mouseover",
+        "row-mouseup",
+        "scroll",
+        "scroll-x",
+        "scroll-y"
+      ]
+    },
+    {
+      "tag": "t-breadcrumb",
+      "sourceExport": "Breadcrumb",
+      "runtimeExport": "Breadcrumb",
+      "authoringType": "TBreadcrumb",
+      "module": "breadcrumb",
+      "propsDeclaration": "breadcrumb:TdBreadcrumbProps",
+      "propsSource": "es/breadcrumb/type.d.ts",
+      "props": [
+        "ellipsis",
+        "items-after-collapse",
+        "items-before-collapse",
+        "max-item-width",
+        "max-items",
+        "options",
+        "separator",
+        "theme"
+      ],
+      "slots": [
+        "ellipsis",
+        "separator"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-breadcrumb-item",
+      "sourceExport": "BreadcrumbItem",
+      "runtimeExport": "BreadcrumbItem",
+      "authoringType": "TBreadcrumbItem",
+      "module": "breadcrumb",
+      "propsDeclaration": "breadcrumb:TdBreadcrumbItemProps",
+      "propsSource": "es/breadcrumb/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "disabled",
+        "href",
+        "icon",
+        "max-width",
+        "replace",
+        "router",
+        "target",
+        "to"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-button",
+      "sourceExport": "Button",
+      "runtimeExport": "Button",
+      "authoringType": "TButton",
+      "module": "button",
+      "propsDeclaration": "button:TdButtonProps",
+      "propsSource": "es/button/type.d.ts",
+      "props": [
+        "block",
+        "content",
+        "default",
+        "disabled",
+        "form",
+        "ghost",
+        "href",
+        "icon",
+        "loading",
+        "loading-props",
+        "shape",
+        "size",
+        "suffix",
+        "tag",
+        "theme",
+        "type",
+        "variant"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon",
+        "suffix"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-calendar",
+      "sourceExport": "Calendar",
+      "runtimeExport": "Calendar",
+      "authoringType": "TCalendar",
+      "module": "calendar",
+      "propsDeclaration": "calendar:TdCalendarProps",
+      "propsSource": "es/calendar/type.d.ts",
+      "props": [
+        "cell",
+        "cell-append",
+        "controller-config",
+        "fill-with-zero",
+        "first-day-of-week",
+        "format",
+        "head",
+        "is-show-weekend-default",
+        "mode",
+        "month",
+        "multiple",
+        "prevent-cell-contextmenu",
+        "range",
+        "theme",
+        "value",
+        "week",
+        "year"
+      ],
+      "slots": [
+        "cell",
+        "cellAppend",
+        "cell-append",
+        "head",
+        "week"
+      ],
+      "events": [
+        "cell-click",
+        "cell-double-click",
+        "cell-right-click",
+        "controller-change",
+        "month-change"
+      ]
+    },
+    {
+      "tag": "t-card",
+      "sourceExport": "Card",
+      "runtimeExport": "Card",
+      "authoringType": "TCard",
+      "module": "card",
+      "propsDeclaration": "card:TdCardProps",
+      "propsSource": "es/card/type.d.ts",
+      "props": [
+        "actions",
+        "avatar",
+        "bordered",
+        "content",
+        "cover",
+        "default",
+        "description",
+        "footer",
+        "header",
+        "header-bordered",
+        "hover-shadow",
+        "loading",
+        "loading-props",
+        "shadow",
+        "size",
+        "status",
+        "subtitle",
+        "theme",
+        "title"
+      ],
+      "slots": [
+        "actions",
+        "avatar",
+        "content",
+        "cover",
+        "default",
+        "description",
+        "footer",
+        "header",
+        "loading",
+        "subtitle",
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-cascader",
+      "sourceExport": "Cascader",
+      "runtimeExport": "Cascader",
+      "authoringType": "TCascader",
+      "module": "cascader",
+      "propsDeclaration": "cascader:TdCascaderProps",
+      "propsSource": "es/cascader/type.d.ts",
+      "props": [
+        "autofocus",
+        "borderless",
+        "check-props",
+        "check-strictly",
+        "clearable",
+        "collapsed-items",
+        "disabled",
+        "empty",
+        "filter",
+        "filterable",
+        "input-props",
+        "keys",
+        "label",
+        "lazy",
+        "load",
+        "loading",
+        "loading-text",
+        "max",
+        "min-collapsed-num",
+        "multiple",
+        "option",
+        "options",
+        "panel-bottom-content",
+        "panel-top-content",
+        "placeholder",
+        "popup-props",
+        "popup-visible",
+        "prefix-icon",
+        "readonly",
+        "reserve-keyword",
+        "select-input-props",
+        "show-all-levels",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tag-input-props",
+        "tag-props",
+        "tips",
+        "trigger",
+        "value",
+        "value-display",
+        "value-mode",
+        "value-type"
+      ],
+      "slots": [
+        "collapsedItems",
+        "collapsed-items",
+        "empty",
+        "label",
+        "loadingText",
+        "loading-text",
+        "option",
+        "panelBottomContent",
+        "panel-bottom-content",
+        "panelTopContent",
+        "panel-top-content",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "focus",
+        "popup-visible-change",
+        "remove"
+      ]
+    },
+    {
+      "tag": "t-check-tag",
+      "sourceExport": "CheckTag",
+      "runtimeExport": "CheckTag",
+      "authoringType": "TCheckTag",
+      "module": "tag",
+      "propsDeclaration": "tag:TdCheckTagProps",
+      "propsSource": "es/tag/type.d.ts",
+      "props": [
+        "checked",
+        "checked-props",
+        "content",
+        "default",
+        "disabled",
+        "size",
+        "unchecked-props",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": [
+        "change",
+        "click"
+      ]
+    },
+    {
+      "tag": "t-check-tag-group",
+      "sourceExport": "CheckTagGroup",
+      "runtimeExport": "CheckTagGroup",
+      "authoringType": "TCheckTagGroup",
+      "module": "tag",
+      "propsDeclaration": "tag:TdCheckTagGroupProps",
+      "propsSource": "es/tag/type.d.ts",
+      "props": [
+        "checked-props",
+        "multiple",
+        "options",
+        "unchecked-props",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-checkbox",
+      "sourceExport": "Checkbox",
+      "runtimeExport": "Checkbox",
+      "authoringType": "TCheckbox",
+      "module": "checkbox",
+      "propsDeclaration": "checkbox:TdCheckboxProps",
+      "propsSource": "es/checkbox/type.d.ts",
+      "props": [
+        "check-all",
+        "checked",
+        "default",
+        "disabled",
+        "indeterminate",
+        "label",
+        "lazy-load",
+        "name",
+        "readonly",
+        "title",
+        "value"
+      ],
+      "slots": [
+        "default",
+        "label"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-checkbox-group",
+      "sourceExport": "CheckboxGroup",
+      "runtimeExport": "CheckboxGroup",
+      "authoringType": "TCheckboxGroup",
+      "module": "checkbox",
+      "propsDeclaration": "checkbox:TdCheckboxGroupProps",
+      "propsSource": "es/checkbox/type.d.ts",
+      "props": [
+        "disabled",
+        "lazy-load",
+        "max",
+        "name",
+        "options",
+        "readonly",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-col",
+      "sourceExport": "Col",
+      "runtimeExport": "Col",
+      "authoringType": "TCol",
+      "module": "grid",
+      "propsDeclaration": "grid:TdColProps",
+      "propsSource": "es/grid/type.d.ts",
+      "props": [
+        "flex",
+        "lg",
+        "md",
+        "offset",
+        "order",
+        "pull",
+        "push",
+        "sm",
+        "span",
+        "tag",
+        "xl",
+        "xs",
+        "xxl"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-collapse",
+      "sourceExport": "Collapse",
+      "runtimeExport": "Collapse",
+      "authoringType": "TCollapse",
+      "module": "collapse",
+      "propsDeclaration": "collapse:TdCollapseProps",
+      "propsSource": "es/collapse/type.d.ts",
+      "props": [
+        "borderless",
+        "default-expand-all",
+        "disabled",
+        "expand-icon",
+        "expand-icon-placement",
+        "expand-mutex",
+        "expand-on-row-click",
+        "value"
+      ],
+      "slots": [
+        "expandIcon",
+        "expand-icon"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-collapse-panel",
+      "sourceExport": "CollapsePanel",
+      "runtimeExport": "CollapsePanel",
+      "authoringType": "TCollapsePanel",
+      "module": "collapse",
+      "propsDeclaration": "collapse:TdCollapsePanelProps",
+      "propsSource": "es/collapse/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "destroy-on-collapse",
+        "disabled",
+        "expand-icon",
+        "header",
+        "header-right-content",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "expandIcon",
+        "expand-icon",
+        "header",
+        "headerRightContent",
+        "header-right-content"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-color-picker",
+      "sourceExport": "ColorPicker",
+      "runtimeExport": "ColorPicker",
+      "authoringType": "TColorPicker",
+      "module": "color-picker",
+      "propsDeclaration": "color-picker:TdColorPickerProps",
+      "propsSource": "es/color-picker/type.d.ts",
+      "props": [
+        "borderless",
+        "clearable",
+        "color-modes",
+        "disabled",
+        "enable-alpha",
+        "enable-multiple-gradient",
+        "format",
+        "input-props",
+        "popup-props",
+        "recent-colors",
+        "select-input-props",
+        "show-primary-color-preview",
+        "size",
+        "swatch-colors",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "change",
+        "clear",
+        "palette-bar-change",
+        "recent-colors-change"
+      ]
+    },
+    {
+      "tag": "t-color-picker-panel",
+      "sourceExport": "ColorPickerPanel",
+      "runtimeExport": "ColorPickerPanel",
+      "authoringType": "TColorPickerPanel",
+      "module": "color-picker",
+      "propsDeclaration": "color-picker:TdColorPickerProps",
+      "propsSource": "es/color-picker/type.d.ts",
+      "props": [
+        "color-modes",
+        "disabled",
+        "enable-alpha",
+        "enable-multiple-gradient",
+        "format",
+        "recent-colors",
+        "show-primary-color-preview",
+        "swatch-colors",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "change",
+        "palette-bar-change",
+        "recent-colors-change"
+      ]
+    },
+    {
+      "tag": "t-comment",
+      "sourceExport": "Comment",
+      "runtimeExport": "Comment",
+      "authoringType": "TComment",
+      "module": "comment",
+      "propsDeclaration": "comment:TdCommentProps",
+      "propsSource": "es/comment/type.d.ts",
+      "props": [
+        "actions",
+        "author",
+        "avatar",
+        "content",
+        "datetime",
+        "quote",
+        "reply"
+      ],
+      "slots": [
+        "author",
+        "avatar",
+        "content",
+        "datetime",
+        "quote",
+        "reply"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-config-provider",
+      "sourceExport": "ConfigProvider",
+      "runtimeExport": "ConfigProvider",
+      "authoringType": "TConfigProvider",
+      "module": "config-provider",
+      "propsDeclaration": "config-provider:TdConfigProviderProps",
+      "propsSource": "es/config-provider/type.d.ts",
+      "props": [
+        "global-config"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-content",
+      "sourceExport": "Content",
+      "runtimeExport": "Content",
+      "authoringType": "TContent",
+      "module": "layout",
+      "propsDeclaration": "layout:TdContentProps",
+      "propsSource": "es/layout/type.d.ts",
+      "props": [
+        "content",
+        "default"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-date-picker",
+      "sourceExport": "DatePicker",
+      "runtimeExport": "DatePicker",
+      "authoringType": "TDatePicker",
+      "module": "date-picker",
+      "propsDeclaration": "date-picker:TdDatePickerProps",
+      "propsSource": "es/date-picker/type.d.ts",
+      "props": [
+        "allow-input",
+        "borderless",
+        "clearable",
+        "default-time",
+        "disable-date",
+        "disable-time",
+        "disabled",
+        "enable-time-picker",
+        "first-day-of-week",
+        "format",
+        "input-props",
+        "label",
+        "mode",
+        "multiple",
+        "need-confirm",
+        "placeholder",
+        "popup-props",
+        "prefix-icon",
+        "presets",
+        "presets-placement",
+        "readonly",
+        "select-input-props",
+        "size",
+        "status",
+        "suffix-icon",
+        "time-picker-props",
+        "tips",
+        "value",
+        "value-display",
+        "value-type"
+      ],
+      "slots": [
+        "label",
+        "prefixIcon",
+        "prefix-icon",
+        "suffixIcon",
+        "suffix-icon",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "confirm",
+        "focus",
+        "pick",
+        "preset-click"
+      ]
+    },
+    {
+      "tag": "t-date-picker-panel",
+      "sourceExport": "DatePickerPanel",
+      "runtimeExport": "DatePickerPanel",
+      "authoringType": "TDatePickerPanel",
+      "module": "date-picker",
+      "propsDeclaration": "date-picker:TdDatePickerPanelProps",
+      "propsSource": "es/date-picker/type.d.ts",
+      "props": [
+        "default-time",
+        "disable-date",
+        "disable-time",
+        "enable-time-picker",
+        "first-day-of-week",
+        "format",
+        "mode",
+        "need-confirm",
+        "presets",
+        "presets-placement",
+        "time-picker-props",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "cell-click",
+        "change",
+        "confirm",
+        "month-change",
+        "panel-click",
+        "preset-click",
+        "time-change",
+        "year-change"
+      ]
+    },
+    {
+      "tag": "t-date-range-picker",
+      "sourceExport": "DateRangePicker",
+      "runtimeExport": "DateRangePicker",
+      "authoringType": "TDateRangePicker",
+      "module": "date-picker",
+      "propsDeclaration": "date-picker:TdDateRangePickerProps",
+      "propsSource": "es/date-picker/type.d.ts",
+      "props": [
+        "allow-input",
+        "borderless",
+        "cancel-range-select-limit",
+        "clearable",
+        "default-time",
+        "disable-date",
+        "disable-time",
+        "disabled",
+        "enable-time-picker",
+        "first-day-of-week",
+        "format",
+        "label",
+        "mode",
+        "need-confirm",
+        "panel-preselection",
+        "placeholder",
+        "popup-props",
+        "prefix-icon",
+        "presets",
+        "presets-placement",
+        "range-input-props",
+        "readonly",
+        "separator",
+        "size",
+        "status",
+        "suffix-icon",
+        "time-picker-props",
+        "tips",
+        "value",
+        "value-type"
+      ],
+      "slots": [
+        "label",
+        "prefixIcon",
+        "prefix-icon",
+        "suffixIcon",
+        "suffix-icon",
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "confirm",
+        "focus",
+        "input",
+        "pick",
+        "preset-click"
+      ]
+    },
+    {
+      "tag": "t-date-range-picker-panel",
+      "sourceExport": "DateRangePickerPanel",
+      "runtimeExport": "DateRangePickerPanel",
+      "authoringType": "TDateRangePickerPanel",
+      "module": "date-picker",
+      "propsDeclaration": "date-picker:TdDateRangePickerPanelProps",
+      "propsSource": "es/date-picker/type.d.ts",
+      "props": [
+        "default-time",
+        "disable-date",
+        "enable-time-picker",
+        "first-day-of-week",
+        "format",
+        "mode",
+        "panel-preselection",
+        "presets",
+        "presets-placement",
+        "time-picker-props",
+        "value"
+      ],
+      "slots": [],
+      "events": [
+        "cell-click",
+        "change",
+        "confirm",
+        "month-change",
+        "panel-click",
+        "preset-click",
+        "time-change",
+        "year-change"
+      ]
+    },
+    {
+      "tag": "t-descriptions",
+      "sourceExport": "Descriptions",
+      "runtimeExport": "Descriptions",
+      "authoringType": "TDescriptions",
+      "module": "descriptions",
+      "propsDeclaration": "descriptions:TdDescriptionsProps",
+      "propsSource": "es/descriptions/type.d.ts",
+      "props": [
+        "bordered",
+        "colon",
+        "column",
+        "content-style",
+        "item-layout",
+        "items",
+        "label-style",
+        "layout",
+        "size",
+        "table-layout",
+        "title"
+      ],
+      "slots": [
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-descriptions-item",
+      "sourceExport": "DescriptionsItem",
+      "runtimeExport": "DescriptionsItem",
+      "authoringType": "TDescriptionsItem",
+      "module": "descriptions",
+      "propsDeclaration": "descriptions:TdDescriptionsItemProps",
+      "propsSource": "es/descriptions/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "label",
+        "span"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "label"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-dialog",
+      "sourceExport": "Dialog",
+      "runtimeExport": "Dialog",
+      "authoringType": "TDialog",
+      "module": "dialog",
+      "propsDeclaration": "dialog:TdDialogProps",
+      "propsSource": "es/dialog/type.d.ts",
+      "props": [
+        "attach",
+        "body",
+        "cancel-btn",
+        "close-btn",
+        "close-on-esc-keydown",
+        "close-on-overlay-click",
+        "confirm-btn",
+        "confirm-loading",
+        "confirm-on-enter",
+        "default",
+        "destroy-on-close",
+        "dialog-class-name",
+        "dialog-style",
+        "draggable",
+        "footer",
+        "header",
+        "lazy",
+        "mode",
+        "placement",
+        "prevent-scroll-through",
+        "show-in-attached-element",
+        "show-overlay",
+        "theme",
+        "top",
+        "visible",
+        "width",
+        "z-index"
+      ],
+      "slots": [
+        "body",
+        "cancelBtn",
+        "cancel-btn",
+        "closeBtn",
+        "close-btn",
+        "confirmBtn",
+        "confirm-btn",
+        "default",
+        "footer",
+        "header"
+      ],
+      "events": [
+        "before-close",
+        "before-open",
+        "cancel",
+        "close",
+        "close-btn-click",
+        "closed",
+        "confirm",
+        "esc-keydown",
+        "opened",
+        "overlay-click"
+      ]
+    },
+    {
+      "tag": "t-dialog-card",
+      "sourceExport": "DialogCard",
+      "runtimeExport": "DialogCard",
+      "authoringType": "TDialogCard",
+      "module": "dialog",
+      "propsDeclaration": "dialog:TdDialogCardProps",
+      "propsSource": "es/dialog/type.d.ts",
+      "props": [
+        "body",
+        "cancel-btn",
+        "close-btn",
+        "confirm-btn",
+        "confirm-loading",
+        "footer",
+        "header",
+        "theme",
+        "body",
+        "cancel-btn",
+        "close-btn",
+        "confirm-btn",
+        "confirm-loading",
+        "footer",
+        "header",
+        "theme"
+      ],
+      "slots": [
+        "body",
+        "cancelBtn",
+        "cancel-btn",
+        "closeBtn",
+        "close-btn",
+        "confirmBtn",
+        "confirm-btn",
+        "footer",
+        "header",
+        "body",
+        "cancelBtn",
+        "cancel-btn",
+        "closeBtn",
+        "close-btn",
+        "confirmBtn",
+        "confirm-btn",
+        "footer",
+        "header"
+      ],
+      "events": [
+        "cancel",
+        "close-btn-click",
+        "confirm"
+      ]
+    },
+    {
+      "tag": "t-divider",
+      "sourceExport": "Divider",
+      "runtimeExport": "Divider",
+      "authoringType": "TDivider",
+      "module": "divider",
+      "propsDeclaration": "divider:TdDividerProps",
+      "propsSource": "es/divider/type.d.ts",
+      "props": [
+        "align",
+        "content",
+        "dashed",
+        "default",
+        "layout",
+        "theme"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-drawer",
+      "sourceExport": "Drawer",
+      "runtimeExport": "Drawer",
+      "authoringType": "TDrawer",
+      "module": "drawer",
+      "propsDeclaration": "drawer:TdDrawerProps",
+      "propsSource": "es/drawer/type.d.ts",
+      "props": [
+        "attach",
+        "body",
+        "cancel-btn",
+        "close-btn",
+        "close-on-esc-keydown",
+        "close-on-overlay-click",
+        "confirm-btn",
+        "default",
+        "destroy-on-close",
+        "drawer-class-name",
+        "footer",
+        "header",
+        "lazy",
+        "mode",
+        "placement",
+        "prevent-scroll-through",
+        "show-in-attached-element",
+        "show-overlay",
+        "size",
+        "size-draggable",
+        "visible",
+        "z-index"
+      ],
+      "slots": [
+        "body",
+        "cancelBtn",
+        "cancel-btn",
+        "closeBtn",
+        "close-btn",
+        "confirmBtn",
+        "confirm-btn",
+        "default",
+        "footer",
+        "header"
+      ],
+      "events": [
+        "before-close",
+        "before-open",
+        "cancel",
+        "close",
+        "close-btn-click",
+        "confirm",
+        "esc-keydown",
+        "overlay-click",
+        "size-drag-end"
+      ]
+    },
+    {
+      "tag": "t-dropdown",
+      "sourceExport": "Dropdown",
+      "runtimeExport": "Dropdown",
+      "authoringType": "TDropdown",
+      "module": "dropdown",
+      "propsDeclaration": "dropdown:TdDropdownProps",
+      "propsSource": "es/dropdown/type.d.ts",
+      "props": [
+        "direction",
+        "disabled",
+        "hide-after-item-click",
+        "max-column-width",
+        "max-height",
+        "min-column-width",
+        "options",
+        "panel-bottom-content",
+        "panel-top-content",
+        "placement",
+        "popup-props",
+        "trigger"
+      ],
+      "slots": [
+        "panelBottomContent",
+        "panel-bottom-content",
+        "panelTopContent",
+        "panel-top-content"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-dropdown-item",
+      "sourceExport": "DropdownItem",
+      "runtimeExport": "DropdownItem",
+      "authoringType": "TDropdownItem",
+      "module": "dropdown",
+      "propsDeclaration": "dropdown:TdDropdownItemProps",
+      "propsSource": "es/dropdown/type.d.ts",
+      "props": [
+        "active",
+        "content",
+        "disabled",
+        "divider",
+        "prefix-icon",
+        "theme",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "prefixIcon",
+        "prefix-icon"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-empty",
+      "sourceExport": "Empty",
+      "runtimeExport": "Empty",
+      "authoringType": "TEmpty",
+      "module": "empty",
+      "propsDeclaration": "empty:TdEmptyProps",
+      "propsSource": "es/empty/type.d.ts",
+      "props": [
+        "action",
+        "description",
+        "image",
+        "image-style",
+        "size",
+        "title",
+        "type"
+      ],
+      "slots": [
+        "action",
+        "description",
+        "image",
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-enhanced-table",
+      "sourceExport": "EnhancedTable",
+      "runtimeExport": "EnhancedTable",
+      "authoringType": "TEnhancedTable",
+      "module": "table",
+      "propsDeclaration": "table:EnhancedTableProps",
+      "propsSource": "es/table/types.d.ts",
+      "props": [
+        "before-drag-sort",
+        "expanded-tree-nodes",
+        "tree",
+        "tree-expand-and-fold-icon"
+      ],
+      "slots": [],
+      "events": [
+        "abnormal-drag-sort",
+        "expanded-tree-nodes-change",
+        "tree-expand-change"
+      ]
+    },
+    {
+      "tag": "t-footer",
+      "sourceExport": "Footer",
+      "runtimeExport": "Footer",
+      "authoringType": "TFooter",
+      "module": "layout",
+      "propsDeclaration": "layout:TdFooterProps",
+      "propsSource": "es/layout/type.d.ts",
+      "props": [
+        "height"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-form",
+      "sourceExport": "Form",
+      "runtimeExport": "Form",
+      "authoringType": "TForm",
+      "module": "form",
+      "propsDeclaration": "form:TdFormProps",
+      "propsSource": "es/form/type.d.ts",
+      "props": [
+        "colon",
+        "data",
+        "disabled",
+        "error-message",
+        "form-controlled-components",
+        "id",
+        "label-align",
+        "label-width",
+        "layout",
+        "prevent-submit-default",
+        "readonly",
+        "required-mark",
+        "required-mark-position",
+        "reset-type",
+        "rules",
+        "scroll-to-first-error",
+        "show-error-message",
+        "status-icon",
+        "submit-with-warning-message"
+      ],
+      "slots": [
+        "statusIcon",
+        "status-icon"
+      ],
+      "events": [
+        "reset",
+        "submit",
+        "validate"
+      ]
+    },
+    {
+      "tag": "t-form-item",
+      "sourceExport": "FormItem",
+      "runtimeExport": "FormItem",
+      "authoringType": "TFormItem",
+      "module": "form",
+      "propsDeclaration": "form:TdFormItemProps",
+      "propsSource": "es/form/type.d.ts",
+      "props": [
+        "for",
+        "help",
+        "label",
+        "label-align",
+        "label-width",
+        "name",
+        "required-mark",
+        "rules",
+        "show-error-message",
+        "status",
+        "status-icon",
+        "success-border",
+        "tips"
+      ],
+      "slots": [
+        "help",
+        "label",
+        "statusIcon",
+        "status-icon",
+        "tips"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-guide",
+      "sourceExport": "Guide",
+      "runtimeExport": "Guide",
+      "authoringType": "TGuide",
+      "module": "guide",
+      "propsDeclaration": "guide:TdGuideProps",
+      "propsSource": "es/guide/type.d.ts",
+      "props": [
+        "counter",
+        "current",
+        "finish-button-props",
+        "hide-counter",
+        "hide-prev",
+        "hide-skip",
+        "highlight-padding",
+        "mode",
+        "next-button-props",
+        "prev-button-props",
+        "show-overlay",
+        "skip-button-props",
+        "steps",
+        "z-index"
+      ],
+      "slots": [
+        "counter"
+      ],
+      "events": [
+        "change",
+        "finish",
+        "next-step-click",
+        "prev-step-click",
+        "skip"
+      ]
+    },
+    {
+      "tag": "t-head-menu",
+      "sourceExport": "HeadMenu",
+      "runtimeExport": "HeadMenu",
+      "authoringType": "THeadMenu",
+      "module": "menu",
+      "propsDeclaration": "menu:TdHeadMenuProps",
+      "propsSource": "es/menu/type.d.ts",
+      "props": [
+        "expand-type",
+        "expanded",
+        "logo",
+        "operations",
+        "theme",
+        "value"
+      ],
+      "slots": [
+        "logo",
+        "operations"
+      ],
+      "events": [
+        "change",
+        "expand"
+      ]
+    },
+    {
+      "tag": "t-header",
+      "sourceExport": "Header",
+      "runtimeExport": "Header",
+      "authoringType": "THeader",
+      "module": "layout",
+      "propsDeclaration": "layout:TdHeaderProps",
+      "propsSource": "es/layout/type.d.ts",
+      "props": [
+        "height"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-icon",
+      "sourceExport": "IconSVG",
+      "runtimeExport": "Icon",
+      "authoringType": "TIcon",
+      "module": "icon",
+      "propsDeclaration": "icon:TdIconSVGProps",
+      "propsSource": "es/icon/type.d.ts",
+      "props": [
+        "load-default-icons",
+        "name",
+        "size",
+        "style",
+        "url"
+      ],
+      "slots": [],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-image",
+      "sourceExport": "Image",
+      "runtimeExport": "Image",
+      "authoringType": "TImage",
+      "module": "image",
+      "propsDeclaration": "image:TdImageProps",
+      "propsSource": "es/image/type.d.ts",
+      "props": [
+        "alt",
+        "error",
+        "fallback",
+        "fit",
+        "gallery",
+        "lazy",
+        "loading",
+        "overlay-content",
+        "overlay-trigger",
+        "placeholder",
+        "position",
+        "referrerpolicy",
+        "shape",
+        "src",
+        "srcset"
+      ],
+      "slots": [
+        "error",
+        "loading",
+        "overlayContent",
+        "overlay-content",
+        "placeholder"
+      ],
+      "events": [
+        "error",
+        "load"
+      ]
+    },
+    {
+      "tag": "t-image-viewer",
+      "sourceExport": "ImageViewer",
+      "runtimeExport": "ImageViewer",
+      "authoringType": "TImageViewer",
+      "module": "image-viewer",
+      "propsDeclaration": "image-viewer:TdImageViewerProps",
+      "propsSource": "es/image-viewer/type.d.ts",
+      "props": [
+        "attach",
+        "close-btn",
+        "close-on-esc-keydown",
+        "close-on-overlay",
+        "draggable",
+        "image-referrerpolicy",
+        "image-scale",
+        "images",
+        "index",
+        "mode",
+        "navigation-arrow",
+        "show-overlay",
+        "title",
+        "trigger",
+        "viewer-scale",
+        "visible",
+        "z-index"
+      ],
+      "slots": [
+        "closeBtn",
+        "close-btn",
+        "navigationArrow",
+        "navigation-arrow",
+        "title",
+        "trigger"
+      ],
+      "events": [
+        "close",
+        "download",
+        "index-change"
+      ]
+    },
+    {
+      "tag": "t-input",
+      "sourceExport": "Input",
+      "runtimeExport": "Input",
+      "authoringType": "TInput",
+      "module": "input",
+      "propsDeclaration": "input:TdInputProps",
+      "propsSource": "es/input/type.d.ts",
+      "props": [
+        "align",
+        "allow-input-over-max",
+        "auto-width",
+        "autocomplete",
+        "autofocus",
+        "borderless",
+        "clearable",
+        "disabled",
+        "format",
+        "input-class",
+        "label",
+        "maxcharacter",
+        "maxlength",
+        "name",
+        "placeholder",
+        "prefix-icon",
+        "readonly",
+        "show-clear-icon-on-empty",
+        "show-limit-number",
+        "size",
+        "spell-check",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tips",
+        "type",
+        "value"
+      ],
+      "slots": [
+        "label",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "click",
+        "compositionend",
+        "compositionstart",
+        "enter",
+        "focus",
+        "keydown",
+        "keypress",
+        "keyup",
+        "mouseenter",
+        "mouseleave",
+        "paste",
+        "validate",
+        "wheel"
+      ]
+    },
+    {
+      "tag": "t-input-adornment",
+      "sourceExport": "InputAdornment",
+      "runtimeExport": "InputAdornment",
+      "authoringType": "TInputAdornment",
+      "module": "input-adornment",
+      "propsDeclaration": "input-adornment:TdInputAdornmentProps",
+      "propsSource": "es/input-adornment/type.d.ts",
+      "props": [
+        "append",
+        "prepend"
+      ],
+      "slots": [
+        "append",
+        "prepend"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-input-group",
+      "sourceExport": "InputGroup",
+      "runtimeExport": "InputGroup",
+      "authoringType": "TInputGroup",
+      "module": "input",
+      "propsDeclaration": "input:TdInputGroupProps",
+      "propsSource": "es/input/type.d.ts",
+      "props": [
+        "separate"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-input-number",
+      "sourceExport": "InputNumber",
+      "runtimeExport": "InputNumber",
+      "authoringType": "TInputNumber",
+      "module": "input-number",
+      "propsDeclaration": "input-number:TdInputNumberProps",
+      "propsSource": "es/input-number/type.d.ts",
+      "props": [
+        "align",
+        "allow-input-over-limit",
+        "auto-width",
+        "decimal-places",
+        "disabled",
+        "format",
+        "input-props",
+        "label",
+        "large-number",
+        "max",
+        "min",
+        "placeholder",
+        "readonly",
+        "size",
+        "status",
+        "step",
+        "suffix",
+        "theme",
+        "tips",
+        "value"
+      ],
+      "slots": [
+        "label",
+        "suffix",
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "enter",
+        "focus",
+        "keydown",
+        "keypress",
+        "keyup",
+        "validate"
+      ]
+    },
+    {
+      "tag": "t-layout",
+      "sourceExport": "Layout",
+      "runtimeExport": "Layout",
+      "authoringType": "TLayout",
+      "module": "layout",
+      "propsDeclaration": "layout:TdLayoutProps",
+      "propsSource": "es/layout/type.d.ts",
+      "props": [
+        "direction"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-link",
+      "sourceExport": "Link",
+      "runtimeExport": "Link",
+      "authoringType": "TLink",
+      "module": "link",
+      "propsDeclaration": "link:TdLinkProps",
+      "propsSource": "es/link/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "disabled",
+        "download",
+        "hover",
+        "href",
+        "prefix-icon",
+        "size",
+        "suffix-icon",
+        "target",
+        "theme",
+        "underline"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "prefixIcon",
+        "prefix-icon",
+        "suffixIcon",
+        "suffix-icon"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-list",
+      "sourceExport": "List",
+      "runtimeExport": "List",
+      "authoringType": "TList",
+      "module": "list",
+      "propsDeclaration": "list:TdListProps",
+      "propsSource": "es/list/type.d.ts",
+      "props": [
+        "async-loading",
+        "footer",
+        "header",
+        "layout",
+        "scroll",
+        "scroll",
+        "size",
+        "split",
+        "stripe"
+      ],
+      "slots": [
+        "asyncLoading",
+        "async-loading",
+        "footer",
+        "header"
+      ],
+      "events": [
+        "load-more",
+        "scroll"
+      ]
+    },
+    {
+      "tag": "t-list-item",
+      "sourceExport": "ListItem",
+      "runtimeExport": "ListItem",
+      "authoringType": "TListItem",
+      "module": "list",
+      "propsDeclaration": "list:TdListItemProps",
+      "propsSource": "es/list/type.d.ts",
+      "props": [
+        "action",
+        "content",
+        "default"
+      ],
+      "slots": [
+        "action",
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-list-item-meta",
+      "sourceExport": "ListItemMeta",
+      "runtimeExport": "ListItemMeta",
+      "authoringType": "TListItemMeta",
+      "module": "list",
+      "propsDeclaration": "list:TdListItemMetaProps",
+      "propsSource": "es/list/type.d.ts",
+      "props": [
+        "avatar",
+        "description",
+        "image",
+        "title"
+      ],
+      "slots": [
+        "avatar",
+        "description",
+        "image",
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-loading",
+      "sourceExport": "Loading",
+      "runtimeExport": "Loading",
+      "authoringType": "TLoading",
+      "module": "loading",
+      "propsDeclaration": "loading:TdLoadingProps",
+      "propsSource": "es/loading/type.d.ts",
+      "props": [
+        "attach",
+        "content",
+        "default",
+        "delay",
+        "fullscreen",
+        "indicator",
+        "inherit-color",
+        "loading",
+        "prevent-scroll-through",
+        "show-overlay",
+        "size",
+        "text",
+        "z-index"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "indicator",
+        "text"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-menu",
+      "sourceExport": "Menu",
+      "runtimeExport": "Menu",
+      "authoringType": "TMenu",
+      "module": "menu",
+      "propsDeclaration": "menu:TdMenuProps",
+      "propsSource": "es/menu/type.d.ts",
+      "props": [
+        "collapsed",
+        "expand-mutex",
+        "expand-type",
+        "expanded",
+        "logo",
+        "operations",
+        "theme",
+        "value",
+        "width"
+      ],
+      "slots": [
+        "logo",
+        "operations"
+      ],
+      "events": [
+        "change",
+        "expand"
+      ]
+    },
+    {
+      "tag": "t-menu-group",
+      "sourceExport": "MenuGroup",
+      "runtimeExport": "MenuGroup",
+      "authoringType": "TMenuGroup",
+      "module": "menu",
+      "propsDeclaration": "menu:TdMenuGroupProps",
+      "propsSource": "es/menu/type.d.ts",
+      "props": [
+        "title"
+      ],
+      "slots": [
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-menu-item",
+      "sourceExport": "MenuItem",
+      "runtimeExport": "MenuItem",
+      "authoringType": "TMenuItem",
+      "module": "menu",
+      "propsDeclaration": "menu:TdMenuItemProps",
+      "propsSource": "es/menu/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "disabled",
+        "href",
+        "icon",
+        "replace",
+        "router",
+        "router-link",
+        "target",
+        "to",
+        "tooltip-props",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-message",
+      "sourceExport": "Message",
+      "runtimeExport": "Message",
+      "authoringType": "TMessage",
+      "module": "message",
+      "propsDeclaration": "message:TdMessageProps",
+      "propsSource": "es/message/type.d.ts",
+      "props": [
+        "close-btn",
+        "content",
+        "duration",
+        "icon",
+        "theme"
+      ],
+      "slots": [
+        "closeBtn",
+        "close-btn",
+        "content",
+        "icon"
+      ],
+      "events": [
+        "close",
+        "close-btn-click",
+        "duration-end"
+      ]
+    },
+    {
+      "tag": "t-notification",
+      "sourceExport": "Notification",
+      "runtimeExport": "Notification",
+      "authoringType": "TNotification",
+      "module": "notification",
+      "propsDeclaration": "notification:TdNotificationProps",
+      "propsSource": "es/notification/type.d.ts",
+      "props": [
+        "close-btn",
+        "content",
+        "default",
+        "duration",
+        "footer",
+        "icon",
+        "theme",
+        "title"
+      ],
+      "slots": [
+        "closeBtn",
+        "close-btn",
+        "content",
+        "default",
+        "footer",
+        "icon",
+        "title"
+      ],
+      "events": [
+        "close-btn-click",
+        "duration-end"
+      ]
+    },
+    {
+      "tag": "t-option",
+      "sourceExport": "Option",
+      "runtimeExport": "Option",
+      "authoringType": "TOption",
+      "module": "select",
+      "propsDeclaration": "select:TdOptionProps",
+      "propsSource": "es/select/type.d.ts",
+      "props": [
+        "check-all",
+        "content",
+        "default",
+        "disabled",
+        "label",
+        "title",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-option-group",
+      "sourceExport": "OptionGroup",
+      "runtimeExport": "OptionGroup",
+      "authoringType": "TOptionGroup",
+      "module": "select",
+      "propsDeclaration": "select:TdOptionGroupProps",
+      "propsSource": "es/select/type.d.ts",
+      "props": [
+        "divider",
+        "label"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-pagination",
+      "sourceExport": "Pagination",
+      "runtimeExport": "Pagination",
+      "authoringType": "TPagination",
+      "module": "pagination",
+      "propsDeclaration": "pagination:TdPaginationProps",
+      "propsSource": "es/pagination/type.d.ts",
+      "props": [
+        "current",
+        "disabled",
+        "folded-max-page-btn",
+        "max-page-btn",
+        "page-ellipsis-mode",
+        "page-size",
+        "page-size-options",
+        "select-props",
+        "show-first-and-last-page-btn",
+        "show-jumper",
+        "show-page-number",
+        "show-page-size",
+        "show-previous-and-next-btn",
+        "size",
+        "theme",
+        "total",
+        "total-content"
+      ],
+      "slots": [
+        "totalContent",
+        "total-content"
+      ],
+      "events": [
+        "change",
+        "current-change",
+        "page-size-change"
+      ]
+    },
+    {
+      "tag": "t-pagination-mini",
+      "sourceExport": "PaginationMini",
+      "runtimeExport": "PaginationMini",
+      "authoringType": "TPaginationMini",
+      "module": "pagination",
+      "propsDeclaration": "pagination:TdPaginationMiniProps",
+      "propsSource": "es/pagination/type.d.ts",
+      "props": [
+        "disabled",
+        "layout",
+        "show-current",
+        "size",
+        "tips",
+        "variant"
+      ],
+      "slots": [],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-popconfirm",
+      "sourceExport": "Popconfirm",
+      "runtimeExport": "Popconfirm",
+      "authoringType": "TPopconfirm",
+      "module": "popconfirm",
+      "propsDeclaration": "popconfirm:TdPopconfirmProps",
+      "propsSource": "es/popconfirm/type.d.ts",
+      "props": [
+        "cancel-btn",
+        "confirm-btn",
+        "default",
+        "destroy-on-close",
+        "icon",
+        "placement",
+        "popup-props",
+        "show-arrow",
+        "theme",
+        "trigger-element"
+      ],
+      "slots": [
+        "cancelBtn",
+        "cancel-btn",
+        "confirmBtn",
+        "confirm-btn",
+        "default",
+        "icon",
+        "triggerElement",
+        "trigger-element"
+      ],
+      "events": [
+        "cancel",
+        "confirm",
+        "visible-change"
+      ]
+    },
+    {
+      "tag": "t-popup",
+      "sourceExport": "Popup",
+      "runtimeExport": "Popup",
+      "authoringType": "TPopup",
+      "module": "popup",
+      "propsDeclaration": "popup:TdPopupProps",
+      "propsSource": "es/popup/type.d.ts",
+      "props": [
+        "attach",
+        "content",
+        "default",
+        "delay",
+        "destroy-on-close",
+        "disabled",
+        "hide-empty-popup",
+        "overlay-class-name",
+        "overlay-inner-class-name",
+        "overlay-inner-style",
+        "overlay-style",
+        "placement",
+        "popper-options",
+        "show-arrow",
+        "trigger",
+        "trigger-element",
+        "visible",
+        "z-index"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "triggerElement",
+        "trigger-element"
+      ],
+      "events": [
+        "overlay-click",
+        "scroll",
+        "scroll-to-bottom",
+        "visible-change"
+      ]
+    },
+    {
+      "tag": "t-primary-table",
+      "sourceExport": "PrimaryTable",
+      "runtimeExport": "PrimaryTable",
+      "authoringType": "TPrimaryTable",
+      "module": "table",
+      "propsDeclaration": "table:PrimaryTableProps",
+      "propsSource": "es/table/types.d.ts",
+      "props": [
+        "async-loading",
+        "column-controller",
+        "column-controller-visible",
+        "columns",
+        "display-columns",
+        "drag-sort",
+        "drag-sort-options",
+        "editable-cell-state",
+        "editable-row-keys",
+        "expand-icon",
+        "expand-on-row-click",
+        "expanded-row",
+        "expanded-row-keys",
+        "filter-icon",
+        "filter-row",
+        "filter-value",
+        "hide-sort-tips",
+        "indeterminate-selected-row-keys",
+        "multiple-sort",
+        "reserve-selected-row-on-paginate",
+        "row-selection-allow-uncheck",
+        "row-selection-type",
+        "select-on-row-click",
+        "selected-row-keys",
+        "show-sort-column-bg-color",
+        "sort",
+        "sort-icon",
+        "sort-on-row-draggable",
+        "active-row-keys",
+        "active-row-type",
+        "allow-resize-column-width",
+        "attach",
+        "bordered",
+        "bottom-content",
+        "cell-empty-content",
+        "data",
+        "disable-data-page",
+        "disable-space-inactive-row",
+        "empty",
+        "first-full-row",
+        "fixed-rows",
+        "foot-data",
+        "footer-affix-props",
+        "footer-affixed-bottom",
+        "footer-summary",
+        "header-affix-props",
+        "header-affixed-top",
+        "height",
+        "horizontal-scroll-affixed-bottom",
+        "hover",
+        "keyboard-row-hover",
+        "last-full-row",
+        "lazy-load",
+        "loading",
+        "loading-props",
+        "locale",
+        "max-height",
+        "pagination",
+        "pagination-affixed-bottom",
+        "resizable",
+        "row-attributes",
+        "row-class-name",
+        "row-key",
+        "rowspan-and-colspan",
+        "rowspan-and-colspan-in-footer",
+        "scroll",
+        "show-header",
+        "size",
+        "stripe",
+        "table-content-width",
+        "table-layout",
+        "top-content",
+        "vertical-align"
+      ],
+      "slots": [
+        "asyncLoading",
+        "async-loading",
+        "expandIcon",
+        "expand-icon",
+        "expandedRow",
+        "expanded-row",
+        "filterIcon",
+        "filter-icon",
+        "filterRow",
+        "filter-row",
+        "sortIcon",
+        "sort-icon",
+        "bottomContent",
+        "bottom-content",
+        "cellEmptyContent",
+        "cell-empty-content",
+        "empty",
+        "firstFullRow",
+        "first-full-row",
+        "footerSummary",
+        "footer-summary",
+        "lastFullRow",
+        "last-full-row",
+        "loading",
+        "topContent",
+        "top-content"
+      ],
+      "events": [
+        "async-loading-click",
+        "cell-click",
+        "change",
+        "column-change",
+        "column-controller-visible-change",
+        "data-change",
+        "display-columns-change",
+        "drag-sort",
+        "expand-change",
+        "filter-change",
+        "row-edit",
+        "row-validate",
+        "select-change",
+        "sort-change",
+        "validate",
+        "active-change",
+        "active-row-action",
+        "cell-click",
+        "column-resize-change",
+        "page-change",
+        "row-click",
+        "row-dblclick",
+        "row-mousedown",
+        "row-mouseenter",
+        "row-mouseleave",
+        "row-mouseover",
+        "row-mouseup",
+        "scroll",
+        "scroll-x",
+        "scroll-y"
+      ]
+    },
+    {
+      "tag": "t-progress",
+      "sourceExport": "Progress",
+      "runtimeExport": "Progress",
+      "authoringType": "TProgress",
+      "module": "progress",
+      "propsDeclaration": "progress:TdProgressProps",
+      "propsSource": "es/progress/type.d.ts",
+      "props": [
+        "color",
+        "label",
+        "percentage",
+        "size",
+        "status",
+        "stroke-width",
+        "theme",
+        "track-color"
+      ],
+      "slots": [
+        "label"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-qrcode",
+      "sourceExport": "QRCode",
+      "runtimeExport": "QRCode",
+      "authoringType": "TQRCode",
+      "module": "qrcode",
+      "propsDeclaration": "qrcode:TdQRCodeProps",
+      "propsSource": "es/qrcode/type.d.ts",
+      "props": [
+        "bg-color",
+        "borderless",
+        "color",
+        "icon",
+        "icon-size",
+        "level",
+        "size",
+        "status",
+        "status-render",
+        "type",
+        "value"
+      ],
+      "slots": [
+        "statusRender",
+        "status-render"
+      ],
+      "events": [
+        "refresh"
+      ]
+    },
+    {
+      "tag": "t-radio",
+      "sourceExport": "Radio",
+      "runtimeExport": "Radio",
+      "authoringType": "TRadio",
+      "module": "radio",
+      "propsDeclaration": "radio:TdRadioProps",
+      "propsSource": "es/radio/type.d.ts",
+      "props": [
+        "allow-uncheck",
+        "checked",
+        "default",
+        "disabled",
+        "label",
+        "name",
+        "readonly",
+        "value"
+      ],
+      "slots": [
+        "default",
+        "label"
+      ],
+      "events": [
+        "change",
+        "click"
+      ]
+    },
+    {
+      "tag": "t-radio-button",
+      "sourceExport": "Radio",
+      "runtimeExport": "RadioButton",
+      "authoringType": "TRadioButton",
+      "module": "radio",
+      "propsDeclaration": "radio:TdRadioProps",
+      "propsSource": "es/radio/type.d.ts",
+      "props": [
+        "allow-uncheck",
+        "checked",
+        "default",
+        "disabled",
+        "label",
+        "name",
+        "readonly",
+        "value"
+      ],
+      "slots": [
+        "default",
+        "label"
+      ],
+      "events": [
+        "change",
+        "click"
+      ]
+    },
+    {
+      "tag": "t-radio-group",
+      "sourceExport": "RadioGroup",
+      "runtimeExport": "RadioGroup",
+      "authoringType": "TRadioGroup",
+      "module": "radio",
+      "propsDeclaration": "radio:TdRadioGroupProps",
+      "propsSource": "es/radio/type.d.ts",
+      "props": [
+        "allow-uncheck",
+        "disabled",
+        "name",
+        "options",
+        "readonly",
+        "size",
+        "theme",
+        "value",
+        "variant"
+      ],
+      "slots": [],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-range-input",
+      "sourceExport": "RangeInput",
+      "runtimeExport": "RangeInput",
+      "authoringType": "TRangeInput",
+      "module": "range-input",
+      "propsDeclaration": "range-input:TdRangeInputProps",
+      "propsSource": "es/range-input/type.d.ts",
+      "props": [
+        "active-index",
+        "borderless",
+        "clearable",
+        "disabled",
+        "format",
+        "input-props",
+        "label",
+        "placeholder",
+        "prefix-icon",
+        "readonly",
+        "separator",
+        "show-clear-icon-on-empty",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tips",
+        "value"
+      ],
+      "slots": [
+        "label",
+        "prefixIcon",
+        "prefix-icon",
+        "separator",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "click",
+        "enter",
+        "focus",
+        "mouseenter",
+        "mouseleave"
+      ]
+    },
+    {
+      "tag": "t-range-input-popup",
+      "sourceExport": "RangeInputPopup",
+      "runtimeExport": "RangeInputPopup",
+      "authoringType": "TRangeInputPopup",
+      "module": "range-input",
+      "propsDeclaration": "range-input:TdRangeInputPopupProps",
+      "propsSource": "es/range-input/type.d.ts",
+      "props": [
+        "auto-width",
+        "disabled",
+        "input-value",
+        "label",
+        "panel",
+        "popup-props",
+        "popup-visible",
+        "range-input-props",
+        "readonly",
+        "status",
+        "tips"
+      ],
+      "slots": [
+        "label",
+        "panel",
+        "tips"
+      ],
+      "events": [
+        "input-change",
+        "popup-visible-change"
+      ]
+    },
+    {
+      "tag": "t-rate",
+      "sourceExport": "Rate",
+      "runtimeExport": "Rate",
+      "authoringType": "TRate",
+      "module": "rate",
+      "propsDeclaration": "rate:TdRateProps",
+      "propsSource": "es/rate/type.d.ts",
+      "props": [
+        "allow-half",
+        "clearable",
+        "color",
+        "count",
+        "disabled",
+        "gap",
+        "icon",
+        "show-text",
+        "size",
+        "texts",
+        "value"
+      ],
+      "slots": [
+        "icon"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-row",
+      "sourceExport": "Row",
+      "runtimeExport": "Row",
+      "authoringType": "TRow",
+      "module": "grid",
+      "propsDeclaration": "grid:TdRowProps",
+      "propsSource": "es/grid/type.d.ts",
+      "props": [
+        "align",
+        "gutter",
+        "justify",
+        "tag"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-select",
+      "sourceExport": "Select",
+      "runtimeExport": "Select",
+      "authoringType": "TSelect",
+      "module": "select",
+      "propsDeclaration": "select:TdSelectProps",
+      "propsSource": "es/select/type.d.ts",
+      "props": [
+        "auto-width",
+        "autofocus",
+        "borderless",
+        "clearable",
+        "collapsed-items",
+        "creatable",
+        "disabled",
+        "empty",
+        "filter",
+        "filterable",
+        "input-props",
+        "input-value",
+        "keys",
+        "label",
+        "loading",
+        "loading-text",
+        "max",
+        "min-collapsed-num",
+        "multiple",
+        "options",
+        "options-layout",
+        "panel-bottom-content",
+        "panel-top-content",
+        "placeholder",
+        "popup-props",
+        "popup-visible",
+        "prefix-icon",
+        "readonly",
+        "reserve-keyword",
+        "scroll",
+        "select-input-props",
+        "show-arrow",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tag-input-props",
+        "tag-props",
+        "tips",
+        "value",
+        "value-display",
+        "value-type"
+      ],
+      "slots": [
+        "collapsedItems",
+        "collapsed-items",
+        "empty",
+        "label",
+        "loadingText",
+        "loading-text",
+        "panelBottomContent",
+        "panel-bottom-content",
+        "panelTopContent",
+        "panel-top-content",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "create",
+        "enter",
+        "focus",
+        "input-change",
+        "popup-visible-change",
+        "remove",
+        "search"
+      ]
+    },
+    {
+      "tag": "t-select-input",
+      "sourceExport": "SelectInput",
+      "runtimeExport": "SelectInput",
+      "authoringType": "TSelectInput",
+      "module": "select-input",
+      "propsDeclaration": "select-input:TdSelectInputProps",
+      "propsSource": "es/select-input/type.d.ts",
+      "props": [
+        "allow-input",
+        "auto-width",
+        "autofocus",
+        "borderless",
+        "clearable",
+        "collapsed-items",
+        "disabled",
+        "input-props",
+        "input-value",
+        "keys",
+        "label",
+        "loading",
+        "min-collapsed-num",
+        "multiple",
+        "panel",
+        "placeholder",
+        "popup-props",
+        "popup-visible",
+        "prefix-icon",
+        "readonly",
+        "reserve-keyword",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tag",
+        "tag-input-props",
+        "tag-props",
+        "tips",
+        "value",
+        "value-display"
+      ],
+      "slots": [
+        "collapsedItems",
+        "collapsed-items",
+        "label",
+        "panel",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tag",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "clear",
+        "enter",
+        "focus",
+        "input-change",
+        "mouseenter",
+        "mouseleave",
+        "paste",
+        "popup-visible-change",
+        "tag-change"
+      ]
+    },
+    {
+      "tag": "t-skeleton",
+      "sourceExport": "Skeleton",
+      "runtimeExport": "Skeleton",
+      "authoringType": "TSkeleton",
+      "module": "skeleton",
+      "propsDeclaration": "skeleton:TdSkeletonProps",
+      "propsSource": "es/skeleton/type.d.ts",
+      "props": [
+        "animation",
+        "content",
+        "default",
+        "delay",
+        "loading",
+        "row-col",
+        "theme"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-slider",
+      "sourceExport": "Slider",
+      "runtimeExport": "Slider",
+      "authoringType": "TSlider",
+      "module": "slider",
+      "propsDeclaration": "slider:TdSliderProps",
+      "propsSource": "es/slider/type.d.ts",
+      "props": [
+        "disabled",
+        "input-number-props",
+        "label",
+        "layout",
+        "marks",
+        "max",
+        "min",
+        "range",
+        "show-step",
+        "step",
+        "tooltip-props",
+        "value"
+      ],
+      "slots": [
+        "label"
+      ],
+      "events": [
+        "change",
+        "change-end"
+      ]
+    },
+    {
+      "tag": "t-space",
+      "sourceExport": "Space",
+      "runtimeExport": "Space",
+      "authoringType": "TSpace",
+      "module": "space",
+      "propsDeclaration": "space:TdSpaceProps",
+      "propsSource": "es/space/type.d.ts",
+      "props": [
+        "align",
+        "break-line",
+        "direction",
+        "separator",
+        "size"
+      ],
+      "slots": [
+        "separator"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-statistic",
+      "sourceExport": "Statistic",
+      "runtimeExport": "Statistic",
+      "authoringType": "TStatistic",
+      "module": "statistic",
+      "propsDeclaration": "statistic:TdStatisticProps",
+      "propsSource": "es/statistic/type.d.ts",
+      "props": [
+        "animation",
+        "animation-start",
+        "color",
+        "decimal-places",
+        "extra",
+        "format",
+        "loading",
+        "prefix",
+        "separator",
+        "suffix",
+        "title",
+        "trend",
+        "trend-placement",
+        "unit",
+        "value"
+      ],
+      "slots": [
+        "extra",
+        "prefix",
+        "suffix",
+        "title",
+        "unit"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-step-item",
+      "sourceExport": "StepItem",
+      "runtimeExport": "StepItem",
+      "authoringType": "TStepItem",
+      "module": "steps",
+      "propsDeclaration": "steps:TdStepItemProps",
+      "propsSource": "es/steps/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "extra",
+        "icon",
+        "status",
+        "title",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "extra",
+        "icon",
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-steps",
+      "sourceExport": "Steps",
+      "runtimeExport": "Steps",
+      "authoringType": "TSteps",
+      "module": "steps",
+      "propsDeclaration": "steps:TdStepsProps",
+      "propsSource": "es/steps/type.d.ts",
+      "props": [
+        "current",
+        "layout",
+        "options",
+        "readonly",
+        "separator",
+        "sequence",
+        "theme"
+      ],
+      "slots": [],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-sticky-item",
+      "sourceExport": "StickyItem",
+      "runtimeExport": "StickyItem",
+      "authoringType": "TStickyItem",
+      "module": "sticky-tool",
+      "propsDeclaration": "sticky-tool:TdStickyItemProps",
+      "propsSource": "es/sticky-tool/type.d.ts",
+      "props": [
+        "icon",
+        "label",
+        "popup",
+        "popup-props",
+        "trigger"
+      ],
+      "slots": [
+        "icon",
+        "label",
+        "popup"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-sticky-tool",
+      "sourceExport": "StickyTool",
+      "runtimeExport": "StickyTool",
+      "authoringType": "TStickyTool",
+      "module": "sticky-tool",
+      "propsDeclaration": "sticky-tool:TdStickyToolProps",
+      "propsSource": "es/sticky-tool/type.d.ts",
+      "props": [
+        "list",
+        "offset",
+        "placement",
+        "popup-props",
+        "shape",
+        "type",
+        "width"
+      ],
+      "slots": [],
+      "events": [
+        "click",
+        "hover"
+      ]
+    },
+    {
+      "tag": "t-submenu",
+      "sourceExport": "Submenu",
+      "runtimeExport": "Submenu",
+      "authoringType": "TSubmenu",
+      "module": "menu",
+      "propsDeclaration": "menu:TdSubmenuProps",
+      "propsSource": "es/menu/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "disabled",
+        "icon",
+        "popup-props",
+        "title",
+        "value"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon",
+        "title"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-swiper",
+      "sourceExport": "Swiper",
+      "runtimeExport": "Swiper",
+      "authoringType": "TSwiper",
+      "module": "swiper",
+      "propsDeclaration": "swiper:TdSwiperProps",
+      "propsSource": "es/swiper/type.d.ts",
+      "props": [
+        "animation",
+        "autoplay",
+        "card-scale",
+        "current",
+        "direction",
+        "duration",
+        "height",
+        "interval",
+        "loop",
+        "navigation",
+        "stop-on-hover",
+        "theme",
+        "trigger",
+        "type"
+      ],
+      "slots": [
+        "navigation"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-swiper-item",
+      "sourceExport": "Swiper",
+      "runtimeExport": "SwiperItem",
+      "authoringType": "TSwiperItem",
+      "module": "swiper",
+      "propsDeclaration": "swiper:TdSwiperProps",
+      "propsSource": "es/swiper/type.d.ts",
+      "props": [
+        "animation",
+        "autoplay",
+        "card-scale",
+        "current",
+        "direction",
+        "duration",
+        "height",
+        "interval",
+        "loop",
+        "navigation",
+        "stop-on-hover",
+        "theme",
+        "trigger",
+        "type"
+      ],
+      "slots": [
+        "navigation"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-switch",
+      "sourceExport": "Switch",
+      "runtimeExport": "Switch",
+      "authoringType": "TSwitch",
+      "module": "switch",
+      "propsDeclaration": "switch:TdSwitchProps",
+      "propsSource": "es/switch/type.d.ts",
+      "props": [
+        "before-change",
+        "custom-value",
+        "disabled",
+        "label",
+        "loading",
+        "size",
+        "value"
+      ],
+      "slots": [
+        "label"
+      ],
+      "events": [
+        "change"
+      ]
+    },
+    {
+      "tag": "t-tab-panel",
+      "sourceExport": "TabPanel",
+      "runtimeExport": "TabPanel",
+      "authoringType": "TTabPanel",
+      "module": "tabs",
+      "propsDeclaration": "tabs:TdTabPanelProps",
+      "propsSource": "es/tabs/type.d.ts",
+      "props": [
+        "default",
+        "destroy-on-hide",
+        "disabled",
+        "draggable",
+        "label",
+        "lazy",
+        "panel",
+        "removable",
+        "value"
+      ],
+      "slots": [
+        "default",
+        "label",
+        "panel"
+      ],
+      "events": [
+        "remove"
+      ]
+    },
+    {
+      "tag": "t-table",
+      "sourceExport": "PrimaryTable",
+      "runtimeExport": "Table",
+      "authoringType": "TTable",
+      "module": "table",
+      "propsDeclaration": "table:TdPrimaryTableProps",
+      "propsSource": "es/table/type.d.ts",
+      "props": [
+        "async-loading",
+        "column-controller",
+        "column-controller-visible",
+        "columns",
+        "display-columns",
+        "drag-sort",
+        "drag-sort-options",
+        "editable-cell-state",
+        "editable-row-keys",
+        "expand-icon",
+        "expand-on-row-click",
+        "expanded-row",
+        "expanded-row-keys",
+        "filter-icon",
+        "filter-row",
+        "filter-value",
+        "hide-sort-tips",
+        "indeterminate-selected-row-keys",
+        "multiple-sort",
+        "reserve-selected-row-on-paginate",
+        "row-selection-allow-uncheck",
+        "row-selection-type",
+        "select-on-row-click",
+        "selected-row-keys",
+        "show-sort-column-bg-color",
+        "sort",
+        "sort-icon",
+        "sort-on-row-draggable",
+        "active-row-keys",
+        "active-row-type",
+        "allow-resize-column-width",
+        "attach",
+        "bordered",
+        "bottom-content",
+        "cell-empty-content",
+        "data",
+        "disable-data-page",
+        "disable-space-inactive-row",
+        "empty",
+        "first-full-row",
+        "fixed-rows",
+        "foot-data",
+        "footer-affix-props",
+        "footer-affixed-bottom",
+        "footer-summary",
+        "header-affix-props",
+        "header-affixed-top",
+        "height",
+        "horizontal-scroll-affixed-bottom",
+        "hover",
+        "keyboard-row-hover",
+        "last-full-row",
+        "lazy-load",
+        "loading",
+        "loading-props",
+        "locale",
+        "max-height",
+        "pagination",
+        "pagination-affixed-bottom",
+        "resizable",
+        "row-attributes",
+        "row-class-name",
+        "row-key",
+        "rowspan-and-colspan",
+        "rowspan-and-colspan-in-footer",
+        "scroll",
+        "show-header",
+        "size",
+        "stripe",
+        "table-content-width",
+        "table-layout",
+        "top-content",
+        "vertical-align"
+      ],
+      "slots": [
+        "asyncLoading",
+        "async-loading",
+        "expandIcon",
+        "expand-icon",
+        "expandedRow",
+        "expanded-row",
+        "filterIcon",
+        "filter-icon",
+        "filterRow",
+        "filter-row",
+        "sortIcon",
+        "sort-icon",
+        "bottomContent",
+        "bottom-content",
+        "cellEmptyContent",
+        "cell-empty-content",
+        "empty",
+        "firstFullRow",
+        "first-full-row",
+        "footerSummary",
+        "footer-summary",
+        "lastFullRow",
+        "last-full-row",
+        "loading",
+        "topContent",
+        "top-content"
+      ],
+      "events": [
+        "async-loading-click",
+        "cell-click",
+        "change",
+        "column-change",
+        "column-controller-visible-change",
+        "data-change",
+        "display-columns-change",
+        "drag-sort",
+        "expand-change",
+        "filter-change",
+        "row-edit",
+        "row-validate",
+        "select-change",
+        "sort-change",
+        "validate",
+        "active-change",
+        "active-row-action",
+        "cell-click",
+        "column-resize-change",
+        "page-change",
+        "row-click",
+        "row-dblclick",
+        "row-mousedown",
+        "row-mouseenter",
+        "row-mouseleave",
+        "row-mouseover",
+        "row-mouseup",
+        "scroll",
+        "scroll-x",
+        "scroll-y"
+      ]
+    },
+    {
+      "tag": "t-tabs",
+      "sourceExport": "Tabs",
+      "runtimeExport": "Tabs",
+      "authoringType": "TTabs",
+      "module": "tabs",
+      "propsDeclaration": "tabs:TdTabsProps",
+      "propsSource": "es/tabs/type.d.ts",
+      "props": [
+        "action",
+        "addable",
+        "disabled",
+        "drag-sort",
+        "list",
+        "placement",
+        "scroll-position",
+        "size",
+        "theme",
+        "value"
+      ],
+      "slots": [
+        "action"
+      ],
+      "events": [
+        "add",
+        "change",
+        "drag-sort",
+        "remove"
+      ]
+    },
+    {
+      "tag": "t-tag",
+      "sourceExport": "Tag",
+      "runtimeExport": "Tag",
+      "authoringType": "TTag",
+      "module": "tag",
+      "propsDeclaration": "tag:TdTagProps",
+      "propsSource": "es/tag/type.d.ts",
+      "props": [
+        "closable",
+        "color",
+        "content",
+        "default",
+        "disabled",
+        "icon",
+        "max-width",
+        "shape",
+        "size",
+        "theme",
+        "title",
+        "variant"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "icon"
+      ],
+      "events": [
+        "click",
+        "close"
+      ]
+    },
+    {
+      "tag": "t-tag-input",
+      "sourceExport": "TagInput",
+      "runtimeExport": "TagInput",
+      "authoringType": "TTagInput",
+      "module": "tag-input",
+      "propsDeclaration": "tag-input:TdTagInputProps",
+      "propsSource": "es/tag-input/type.d.ts",
+      "props": [
+        "auto-width",
+        "borderless",
+        "clearable",
+        "collapsed-items",
+        "disabled",
+        "drag-sort",
+        "excess-tags-display-type",
+        "input-props",
+        "input-value",
+        "label",
+        "max",
+        "min-collapsed-num",
+        "placeholder",
+        "prefix-icon",
+        "readonly",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tag",
+        "tag-props",
+        "tips",
+        "value",
+        "value-display"
+      ],
+      "slots": [
+        "collapsedItems",
+        "collapsed-items",
+        "label",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tag",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "click",
+        "drag-sort",
+        "enter",
+        "focus",
+        "input-change",
+        "mouseenter",
+        "mouseleave",
+        "paste",
+        "remove"
+      ]
+    },
+    {
+      "tag": "t-textarea",
+      "sourceExport": "Textarea",
+      "runtimeExport": "Textarea",
+      "authoringType": "TTextarea",
+      "module": "textarea",
+      "propsDeclaration": "textarea:TdTextareaProps",
+      "propsSource": "es/textarea/type.d.ts",
+      "props": [
+        "allow-input-over-max",
+        "autofocus",
+        "autosize",
+        "disabled",
+        "maxcharacter",
+        "maxlength",
+        "name",
+        "placeholder",
+        "readonly",
+        "status",
+        "tips",
+        "value"
+      ],
+      "slots": [
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "focus",
+        "keydown",
+        "keypress",
+        "keyup",
+        "validate"
+      ]
+    },
+    {
+      "tag": "t-time-picker",
+      "sourceExport": "TimePicker",
+      "runtimeExport": "TimePicker",
+      "authoringType": "TTimePicker",
+      "module": "time-picker",
+      "propsDeclaration": "time-picker:TdTimePickerProps",
+      "propsSource": "es/time-picker/type.d.ts",
+      "props": [
+        "allow-input",
+        "borderless",
+        "clearable",
+        "disable-time",
+        "disabled",
+        "format",
+        "hide-disabled-time",
+        "input-props",
+        "label",
+        "placeholder",
+        "popup-props",
+        "presets",
+        "readonly",
+        "select-input-props",
+        "size",
+        "status",
+        "steps",
+        "tips",
+        "value",
+        "value-display"
+      ],
+      "slots": [
+        "label",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "close",
+        "confirm",
+        "focus",
+        "input",
+        "open",
+        "pick"
+      ]
+    },
+    {
+      "tag": "t-time-range-picker",
+      "sourceExport": "TimeRangePicker",
+      "runtimeExport": "TimeRangePicker",
+      "authoringType": "TTimeRangePicker",
+      "module": "time-picker",
+      "propsDeclaration": "time-picker:TdTimeRangePickerProps",
+      "propsSource": "es/time-picker/type.d.ts",
+      "props": [
+        "allow-input",
+        "auto-swap",
+        "borderless",
+        "clearable",
+        "disable-time",
+        "disabled",
+        "format",
+        "hide-disabled-time",
+        "label",
+        "placeholder",
+        "popup-props",
+        "presets",
+        "range-input-props",
+        "readonly",
+        "size",
+        "status",
+        "steps",
+        "tips",
+        "value"
+      ],
+      "slots": [
+        "label",
+        "tips"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "focus",
+        "input",
+        "pick"
+      ]
+    },
+    {
+      "tag": "t-timeline",
+      "sourceExport": "Timeline",
+      "runtimeExport": "Timeline",
+      "authoringType": "TTimeline",
+      "module": "timeline",
+      "propsDeclaration": "timeline:TdTimelineProps",
+      "propsSource": "es/timeline/type.d.ts",
+      "props": [
+        "label-align",
+        "layout",
+        "mode",
+        "reverse",
+        "theme"
+      ],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-timeline-item",
+      "sourceExport": "TimelineItem",
+      "runtimeExport": "TimelineItem",
+      "authoringType": "TTimelineItem",
+      "module": "timeline",
+      "propsDeclaration": "timeline:TdTimelineItemProps",
+      "propsSource": "es/timeline/type.d.ts",
+      "props": [
+        "content",
+        "dot",
+        "dot-color",
+        "label",
+        "label-align",
+        "loading"
+      ],
+      "slots": [
+        "content",
+        "dot",
+        "label"
+      ],
+      "events": [
+        "click"
+      ]
+    },
+    {
+      "tag": "t-tooltip",
+      "sourceExport": "Tooltip",
+      "runtimeExport": "Tooltip",
+      "authoringType": "TTooltip",
+      "module": "tooltip",
+      "propsDeclaration": "tooltip:TdTooltipProps",
+      "propsSource": "es/tooltip/type.d.ts",
+      "props": [
+        "delay",
+        "destroy-on-close",
+        "duration",
+        "placement",
+        "show-arrow",
+        "theme",
+        "attach",
+        "content",
+        "default",
+        "disabled",
+        "hide-empty-popup",
+        "overlay-class-name",
+        "overlay-inner-class-name",
+        "overlay-inner-style",
+        "overlay-style",
+        "popper-options",
+        "trigger",
+        "trigger-element",
+        "visible",
+        "z-index"
+      ],
+      "slots": [
+        "content",
+        "default",
+        "triggerElement",
+        "trigger-element"
+      ],
+      "events": [
+        "overlay-click",
+        "scroll",
+        "scroll-to-bottom",
+        "visible-change"
+      ]
+    },
+    {
+      "tag": "t-transfer",
+      "sourceExport": "Transfer",
+      "runtimeExport": "Transfer",
+      "authoringType": "TTransfer",
+      "module": "transfer",
+      "propsDeclaration": "transfer:TdTransferProps",
+      "propsSource": "es/transfer/type.d.ts",
+      "props": [
+        "checkbox-props",
+        "checked",
+        "data",
+        "direction",
+        "disabled",
+        "empty",
+        "footer",
+        "keys",
+        "operation",
+        "pagination",
+        "search",
+        "show-check-all",
+        "target-draggable",
+        "target-sort",
+        "title",
+        "transfer-item",
+        "tree",
+        "value"
+      ],
+      "slots": [
+        "empty",
+        "footer",
+        "operation",
+        "title",
+        "transferItem",
+        "transfer-item",
+        "tree"
+      ],
+      "events": [
+        "change",
+        "checked-change",
+        "page-change",
+        "scroll",
+        "search"
+      ]
+    },
+    {
+      "tag": "t-tree",
+      "sourceExport": "Tree",
+      "runtimeExport": "Tree",
+      "authoringType": "TTree",
+      "module": "tree",
+      "propsDeclaration": "tree:TdTreeProps",
+      "propsSource": "es/tree/type.d.ts",
+      "props": [
+        "activable",
+        "active-multiple",
+        "actived",
+        "allow-drop",
+        "allow-fold-node-on-filter",
+        "check-props",
+        "check-strictly",
+        "checkable",
+        "data",
+        "disable-check",
+        "disabled",
+        "draggable",
+        "empty",
+        "expand-all",
+        "expand-level",
+        "expand-mutex",
+        "expand-on-click-node",
+        "expand-parent",
+        "expanded",
+        "filter",
+        "height",
+        "hover",
+        "icon",
+        "keys",
+        "label",
+        "lazy",
+        "line",
+        "load",
+        "max-height",
+        "operations",
+        "scroll",
+        "transition",
+        "value",
+        "value-mode"
+      ],
+      "slots": [
+        "empty",
+        "icon",
+        "label",
+        "line",
+        "operations"
+      ],
+      "events": [
+        "active",
+        "change",
+        "click",
+        "drag-end",
+        "drag-leave",
+        "drag-over",
+        "drag-start",
+        "drop",
+        "expand",
+        "load",
+        "scroll"
+      ]
+    },
+    {
+      "tag": "t-tree-select",
+      "sourceExport": "TreeSelect",
+      "runtimeExport": "TreeSelect",
+      "authoringType": "TTreeSelect",
+      "module": "tree-select",
+      "propsDeclaration": "tree-select:TdTreeSelectProps",
+      "propsSource": "es/tree-select/type.d.ts",
+      "props": [
+        "auto-width",
+        "autofocus",
+        "borderless",
+        "clearable",
+        "collapsed-items",
+        "data",
+        "disabled",
+        "empty",
+        "filter",
+        "filterable",
+        "input-props",
+        "input-value",
+        "keys",
+        "label",
+        "loading",
+        "loading-text",
+        "max",
+        "min-collapsed-num",
+        "multiple",
+        "panel-bottom-content",
+        "panel-top-content",
+        "placeholder",
+        "popup-props",
+        "popup-visible",
+        "prefix-icon",
+        "readonly",
+        "reserve-keyword",
+        "select-input-props",
+        "size",
+        "status",
+        "suffix",
+        "suffix-icon",
+        "tag-props",
+        "tips",
+        "tree-props",
+        "value",
+        "value-display",
+        "value-type"
+      ],
+      "slots": [
+        "collapsedItems",
+        "collapsed-items",
+        "empty",
+        "label",
+        "loadingText",
+        "loading-text",
+        "panelBottomContent",
+        "panel-bottom-content",
+        "panelTopContent",
+        "panel-top-content",
+        "prefixIcon",
+        "prefix-icon",
+        "suffix",
+        "suffixIcon",
+        "suffix-icon",
+        "tips",
+        "valueDisplay",
+        "value-display"
+      ],
+      "events": [
+        "blur",
+        "change",
+        "clear",
+        "enter",
+        "focus",
+        "input-change",
+        "popup-visible-change",
+        "remove",
+        "search"
+      ]
+    },
+    {
+      "tag": "t-typography",
+      "sourceExport": "Typography",
+      "runtimeExport": "Typography",
+      "authoringType": "TTypography",
+      "module": "typography",
+      "propsDeclaration": null,
+      "propsSource": null,
+      "props": [],
+      "slots": [],
+      "events": []
+    },
+    {
+      "tag": "t-typography-paragraph",
+      "sourceExport": "Paragraph",
+      "runtimeExport": "Paragraph",
+      "authoringType": "TParagraph",
+      "module": "typography",
+      "propsDeclaration": "typography:TdParagraphProps",
+      "propsSource": "es/typography/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "ellipsis"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-typography-text",
+      "sourceExport": "Text",
+      "runtimeExport": "Text",
+      "authoringType": "TText",
+      "module": "typography",
+      "propsDeclaration": "typography:TdTextProps",
+      "propsSource": "es/typography/type.d.ts",
+      "props": [
+        "code",
+        "content",
+        "copyable",
+        "default",
+        "delete",
+        "disabled",
+        "ellipsis",
+        "italic",
+        "keyboard",
+        "mark",
+        "strong",
+        "theme",
+        "underline"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-typography-title",
+      "sourceExport": "Title",
+      "runtimeExport": "Title",
+      "authoringType": "TTitle",
+      "module": "typography",
+      "propsDeclaration": "typography:TdTitleProps",
+      "propsSource": "es/typography/type.d.ts",
+      "props": [
+        "content",
+        "default",
+        "ellipsis",
+        "level"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    },
+    {
+      "tag": "t-upload",
+      "sourceExport": "Upload",
+      "runtimeExport": "Upload",
+      "authoringType": "TUpload",
+      "module": "upload",
+      "propsDeclaration": "upload:TdUploadProps",
+      "propsSource": "es/upload/type.d.ts",
+      "props": [
+        "abridge-name",
+        "accept",
+        "action",
+        "allow-upload-duplicate-file",
+        "auto-upload",
+        "before-all-files-upload",
+        "before-upload",
+        "cancel-upload-button",
+        "data",
+        "default",
+        "disabled",
+        "drag-content",
+        "draggable",
+        "file-list-display",
+        "files",
+        "format",
+        "format-request",
+        "format-response",
+        "headers",
+        "image-props",
+        "image-viewer-props",
+        "input-attributes",
+        "is-batch-upload",
+        "locale",
+        "max",
+        "method",
+        "mock-progress-duration",
+        "multiple",
+        "name",
+        "placeholder",
+        "request-method",
+        "show-image-file-name",
+        "show-thumbnail",
+        "show-upload-progress",
+        "size-limit",
+        "status",
+        "theme",
+        "tips",
+        "trigger",
+        "trigger-button-props",
+        "upload-all-files-in-one-request",
+        "upload-button",
+        "upload-pasted-files",
+        "use-mock-progress",
+        "value",
+        "with-credentials"
+      ],
+      "slots": [
+        "cancelUploadButton",
+        "cancel-upload-button",
+        "default",
+        "dragContent",
+        "drag-content",
+        "fileListDisplay",
+        "file-list-display",
+        "tips",
+        "trigger",
+        "uploadButton",
+        "upload-button"
+      ],
+      "events": [
+        "cancel-upload",
+        "change",
+        "dragenter",
+        "dragleave",
+        "drop",
+        "fail",
+        "one-file-fail",
+        "one-file-success",
+        "preview",
+        "progress",
+        "remove",
+        "select-change",
+        "success",
+        "validate",
+        "waiting-upload-files-change"
+      ]
+    },
+    {
+      "tag": "t-watermark",
+      "sourceExport": "Watermark",
+      "runtimeExport": "Watermark",
+      "authoringType": "TWatermark",
+      "module": "watermark",
+      "propsDeclaration": "watermark:TdWatermarkProps",
+      "propsSource": "es/watermark/type.d.ts",
+      "props": [
+        "alpha",
+        "content",
+        "default",
+        "height",
+        "is-repeat",
+        "line-space",
+        "movable",
+        "move-interval",
+        "offset",
+        "removable",
+        "rotate",
+        "watermark-content",
+        "width",
+        "x",
+        "y",
+        "z-index"
+      ],
+      "slots": [
+        "content",
+        "default"
+      ],
+      "events": []
+    }
+  ]
+}

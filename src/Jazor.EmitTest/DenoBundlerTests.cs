@@ -525,7 +525,6 @@ public sealed class DenoBundlerTests
                 directory.FullName,
                 "src",
                 "ECMAScript.Vue3",
-                "frontend",
                 "manifest.json");
             if (File.Exists(candidate))
                 return candidate;

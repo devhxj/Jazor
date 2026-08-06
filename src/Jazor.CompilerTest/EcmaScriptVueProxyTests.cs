@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using ECMAScript;
 using ECMAScript.Contract;
 using ECMAScript.ElementPlus;
@@ -109,12 +111,7 @@ public sealed class EcmaScriptVueProxyTests
             typeof(TStyles),
             typeof(TMenuQueryData),
             typeof(TMenuRoute),
-            typeof(TMenuItemClickContext),
-            typeof(TTabAddContext),
-            typeof(TTabRemoveContext),
-            typeof(TTabPanelRemoveContext),
-            typeof(TTabsDragSortContext),
-            typeof(TAvatarErrorContext)
+            typeof(TTabsDragSortContext)
         };
 
         foreach (var type in runtimeShapes)
@@ -3292,32 +3289,87 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void TDesign_AuthoringComponents_ExposeOnlyAdditionalAttributesAsObjectSink()
+    public void TDesign_CurrentCatalog_MapsEveryRuntimeComponentAndUsesCurrentMemberProtocol()
     {
-        var componentTypes = typeof(TDesign).Assembly
-            .GetTypes()
-            .Where(static type =>
-                type.Namespace == "ECMAScript.TDesign" &&
-                type.IsClass &&
-                !type.IsAbstract &&
-                typeof(ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        var repositoryRoot = FindRepositoryRoot();
+        var catalog = ReadTDesignCatalog(repositoryRoot);
+        var runtimeExports = ReadTDesignRuntimeExports(repositoryRoot);
+        var componentTypes = GetTDesignComponentTypes();
+        var componentExports = typeof(TComponents)
+            .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .OrderBy(static property => property.Name, StringComparer.Ordinal)
+            .ToArray();
+        var registryProperties = typeof(TComponentRegistry)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .OrderBy(static property => property.Name, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.IsTrue(componentTypes.Length > 0);
-        CollectionAssert.AreEquivalent(
-            GetTDesignRuntimeComponentNames()
-                .OrderBy(static name => name, StringComparer.Ordinal)
-                .ToArray(),
-            componentTypes
-                .Select(static type => type.Name)
-                .OrderBy(static name => name, StringComparer.Ordinal)
-                .ToArray());
+        Assert.AreEqual(120, catalog.SourceEntryCount);
+        Assert.AreEqual(118, catalog.Components.Count);
+        Assert.AreEqual(118, componentTypes.Length);
+        Assert.AreEqual(118, componentExports.Length);
+        Assert.AreEqual(118, registryProperties.Length);
+        CollectionAssert.AreEqual(
+            catalog.Components.Keys.OrderBy(static name => name, StringComparer.Ordinal).ToArray(),
+            componentTypes.Select(static type => type.Name).ToArray());
+        CollectionAssert.AreEqual(
+            componentTypes.Select(static type => type.Name).ToArray(),
+            componentExports.Select(static property => property.Name).ToArray());
+        CollectionAssert.AreEqual(
+            componentTypes.Select(static type => type.Name).ToArray(),
+            registryProperties.Select(static property => property.Name).ToArray());
 
         foreach (var componentType in componentTypes)
         {
-            var additionalAttributes = componentType.GetProperty("AdditionalAttributes", BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+            var contract = catalog.Components[componentType.Name];
+            var component = componentType.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
+            Assert.IsNotNull(component, componentType.FullName);
+            Assert.AreEqual("tdesign-vue-next", component!.ImportSpecifier, componentType.FullName);
+            Assert.AreEqual(contract.RuntimeExport, component.ExportName, componentType.FullName);
+            CollectionAssert.Contains(runtimeExports, component.ExportName, componentType.FullName);
+
+            var componentExport = componentExports.Single(property => property.Name == componentType.Name);
+            Assert.AreEqual(typeof(ITDesignComponent), componentExport.PropertyType, componentType.FullName);
+            Assert.AreEqual(
+                component.ExportName,
+                componentExport.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name,
+                componentType.FullName);
+
+            var registryProperty = registryProperties.Single(property => property.Name == componentType.Name);
+            Assert.AreEqual(typeof(ITDesignComponent), registryProperty.PropertyType.UnwrapNullable(), componentType.FullName);
+            Assert.AreEqual(
+                $"@#{component.ExportName}",
+                registryProperty.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description,
+                componentType.FullName);
+
+            var authoringProperties = componentType
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(static property =>
+                    property.DeclaringType is not null &&
+                    typeof(TComponentBase).IsAssignableFrom(property.DeclaringType))
+                .ToArray();
+            foreach (var property in authoringProperties)
+                Assert.IsNotNull(property.GetCustomAttribute<ParameterAttribute>(inherit: true), $"{componentType.Name}.{property.Name}");
+
+            var parameterNames = authoringProperties
+                .Where(static property => property.Name != nameof(TComponentBase.AdditionalAttributes))
+                .Where(static property => !IsEventCallback(property.PropertyType))
+                .Select(GetTDesignMemberName)
+                .ToHashSet(StringComparer.Ordinal);
+            var slotNames = authoringProperties
+                .Where(static property => IsRenderFragment(property.PropertyType))
+                .Select(GetTDesignMemberName)
+                .ToHashSet(StringComparer.Ordinal);
+            var eventNames = authoringProperties
+                .Where(static property => IsEventCallback(property.PropertyType))
+                .Select(GetTDesignEventName)
+                .ToHashSet(StringComparer.Ordinal);
+
+            Assert.IsTrue(contract.Props.IsSubsetOf(parameterNames), $"{componentType.Name} missing props: {string.Join(", ", contract.Props.Except(parameterNames))}");
+            Assert.IsTrue(contract.Slots.IsSubsetOf(slotNames), $"{componentType.Name} missing slots: {string.Join(", ", contract.Slots.Except(slotNames))}");
+            Assert.IsTrue(contract.Events.SetEquals(eventNames), $"{componentType.Name} events differ: expected [{string.Join(", ", contract.Events)}], actual [{string.Join(", ", eventNames)}]");
+
+            var additionalAttributes = componentType.GetProperty(nameof(TComponentBase.AdditionalAttributes), BindingFlags.Public | BindingFlags.Instance);
             Assert.IsNotNull(additionalAttributes, componentType.FullName);
             Assert.AreEqual(
                 typeof(IReadOnlyDictionary<string, object?>),
@@ -3327,48 +3379,15 @@ public sealed class EcmaScriptVueProxyTests
             var parameter = additionalAttributes.GetCustomAttribute<ParameterAttribute>(inherit: true);
             Assert.IsNotNull(parameter, componentType.FullName);
             Assert.IsTrue(parameter!.CaptureUnmatchedValues, componentType.FullName);
-
-            foreach (var property in componentType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            {
-                if (property.Name == "AdditionalAttributes")
-                    continue;
-
-                AssertNotObject(property.PropertyType, $"{componentType.Name}.{property.Name}");
-            }
         }
-    }
 
-    [TestMethod]
-    public void TDesign_ComponentNames_UseMemberLevelGeneralMetadata()
-    {
-        var componentTypes = typeof(TDesign).Assembly
-            .GetTypes()
-            .Where(static type =>
-                type.Namespace == "ECMAScript.TDesign" &&
-                typeof(ComponentBase).IsAssignableFrom(type))
-            .ToArray();
-
-        var names = new (Type Type, string Property, string RuntimeName)[]
+        var legacyMetadataTypeNames = new[]
         {
-            (typeof(TButton), nameof(TButton.CssClass), "class"),
-            (typeof(TButton), nameof(TButton.CssStyle), "style"),
-            (typeof(TButton), nameof(TButton.Text), "content"),
-            (typeof(TCard), nameof(TCard.BodyCssClass), "bodyClassName"),
-            (typeof(TCard), nameof(TCard.HeaderCssStyle), "headerStyle"),
-            (typeof(TAvatarGroup), nameof(TAvatarGroup.CollapseAvatar), "collapseAvatar"),
-            (typeof(TLink), nameof(TLink.PrefixIcon), "prefixIcon"),
-            (typeof(TLink), nameof(TLink.SuffixIcon), "suffixIcon")
+            "ECMAScript.VueContract.VuePropAttribute",
+            "ECMAScript.VueContract.VueSlotAttribute"
         };
-
-        foreach (var (type, propertyName, runtimeName) in names)
-        {
-            var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            Assert.IsNotNull(property, $"{type.Name}.{propertyName}");
-            Assert.AreEqual(
-                runtimeName,
-                property!.GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name,
-                $"{type.Name}.{propertyName}");
-        }
+        foreach (var typeName in legacyMetadataTypeNames)
+            Assert.IsNull(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.GetType(typeName), typeName);
     }
 
     [TestMethod]
@@ -3406,12 +3425,6 @@ public sealed class EcmaScriptVueProxyTests
         => exportHost
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static property => property.PropertyType == typeof(IVuetifyComponent))
-            .Select(static property => property.Name);
-
-    private static IEnumerable<string> GetTDesignRuntimeComponentNames()
-        => typeof(TComponents)
-            .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
 
     [TestMethod]
@@ -3684,10 +3697,41 @@ public sealed class EcmaScriptVueProxyTests
 
     [TestMethod]
     public void TDesign_UnionTypes_UseNativeContracts()
-        => AssertComponentLibraryUnionContracts(
-            typeof(TComponents).Assembly,
-            typeof(TComponents).Namespace!,
-            expectedCount: 14);
+    {
+        var unionTypes = typeof(TComponents).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.TDesign" &&
+                type.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>() is not null &&
+                typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(type))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsTrue(unionTypes.Length > 0);
+        foreach (var unionType in unionTypes)
+        {
+            var branchTypes = GetUnionConstructorBranchTypes(unionType);
+            Assert.IsTrue(branchTypes.Length > 0, unionType.FullName);
+            foreach (var branchType in branchTypes)
+                AssertTDesignStrongType(branchType, unionType.FullName!);
+
+            var storageFields = unionType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+            var isNative = storageFields.Length == 1 &&
+                storageFields[0].FieldType == typeof(object) &&
+                storageFields[0].GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() is not null;
+            if (isNative)
+            {
+                AssertNoAssignableBranchOverlap(unionType, branchTypes);
+            }
+            else
+            {
+                Assert.IsTrue(
+                    HasAssignableBranchOverlap(branchTypes),
+                    $"{unionType.FullName} should use a native union unless exact tagged projections require a fallback.");
+                AssertTaggedUnionBranchesExposeStandardCreation(unionType, branchTypes);
+            }
+        }
+    }
 
     [TestMethod]
     public void ComponentLibraries_UseShortComponentTypes_AndLibraryQualifiedMarkers()
@@ -4034,112 +4078,233 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void TDesign_ValueAndUnionTypes_ExposeStronglyTypedContracts()
+    public void TDesign_PublicContracts_AreStronglyTyped_AndPickOmitRemainExact()
     {
-        CollectionAssert.AreEqual(
-            new[] { "button", "reset", "submit" },
-            GetStringEnumRuntimeValues(typeof(TButtonType)));
-        CollectionAssert.AreEqual(
-            new[] { "base", "dashed", "outline", "text" },
-            GetStringEnumRuntimeValues(typeof(TButtonVariant)));
-        CollectionAssert.AreEqual(
-            new[] { "dark", "light" },
-            GetStringEnumRuntimeValues(typeof(TMenuTheme)));
-        CollectionAssert.AreEqual(
-            new[] { "horizontal", "vertical" },
-            GetStringEnumRuntimeValues(typeof(TDividerLayout)));
-        CollectionAssert.AreEqual(
-            new[] { "light" },
-            GetStringEnumRuntimeValues(typeof(TBreadcrumbTheme)));
-        CollectionAssert.AreEqual(
-            new[] { "color", "underline" },
-            GetStringEnumRuntimeValues(typeof(TLinkHover)));
-        CollectionAssert.AreEqual(
-            new[] { "danger", "default", "primary", "success", "warning" },
-            GetStringEnumRuntimeValues(typeof(TLinkTheme)));
-        CollectionAssert.AreEqual(
-            new[] { "bottom", "left", "right", "top" },
-            GetStringEnumRuntimeValues(typeof(TTabsPlacement)));
-        CollectionAssert.AreEqual(
-            new[] { "auto", "center", "end", "start" },
-            GetStringEnumRuntimeValues(typeof(TTabsScrollPosition)));
-        CollectionAssert.AreEqual(
-            new[] { "large", "medium" },
-            GetStringEnumRuntimeValues(typeof(TTabsSize)));
-        CollectionAssert.AreEqual(
-            new[] { "card", "normal" },
-            GetStringEnumRuntimeValues(typeof(TTabsTheme)));
-        CollectionAssert.AreEqual(
-            new[] { "circle", "round" },
-            GetStringEnumRuntimeValues(typeof(TAvatarShape)));
-        CollectionAssert.AreEqual(
-            new[] { "left-up", "right-up" },
-            GetStringEnumRuntimeValues(typeof(TAvatarGroupCascading)));
-        CollectionAssert.AreEqual(
-            new[] { "circle", "round" },
-            GetStringEnumRuntimeValues(typeof(TBadgeShape)));
-        CollectionAssert.AreEqual(
-            new[] { "medium", "small" },
-            GetStringEnumRuntimeValues(typeof(TBadgeSize)));
+        var publicTypes = typeof(TDesign).Assembly
+            .GetExportedTypes()
+            .Where(static type => type.Namespace == "ECMAScript.TDesign")
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
 
-        Assert.AreEqual(typeof(VueStyleValue), typeof(TComponentBase).GetProperty(nameof(TComponentBase.CssStyle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(TDimensionValue), typeof(TMenuWidthValue).GetProperty(nameof(TMenuWidthValue.AsValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(TDimensionValues), typeof(TMenuWidthValue).GetProperty(nameof(TMenuWidthValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Number), typeof(TMenuValue).GetProperty(nameof(TMenuValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TMenuValue).GetProperty(nameof(TMenuValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TMenuRouteTarget).GetProperty(nameof(TMenuRouteTarget.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(TMenuRoute), typeof(TMenuRouteTarget).GetProperty(nameof(TMenuRouteTarget.AsRoute), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(MouseEvent), typeof(TMenuItemClickContext).GetProperty(nameof(TMenuItemClickContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(TMenuValue), typeof(TMenuItemClickContext).GetProperty(nameof(TMenuItemClickContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(bool), typeof(TLinkDownloadValue).GetProperty(nameof(TLinkDownloadValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TLinkDownloadValue).GetProperty(nameof(TLinkDownloadValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(double), typeof(TTabValue).GetProperty(nameof(TTabValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TTabValue).GetProperty(nameof(TTabValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(double), typeof(TBadgeCountValue).GetProperty(nameof(TBadgeCountValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TBadgeCountValue).GetProperty(nameof(TBadgeCountValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(double), typeof(TBadgeOffsetValue).GetProperty(nameof(TBadgeOffsetValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), typeof(TBadgeOffsetValue).GetProperty(nameof(TBadgeOffsetValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(TBadgeOffsetValue[]), typeof(TBadgeOffset).GetProperty(nameof(TBadgeOffset.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(MouseEvent), typeof(TTabAddContext).GetProperty(nameof(TTabAddContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(TTabValue), typeof(TTabRemoveContext).GetProperty(nameof(TTabRemoveContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(int), typeof(TTabRemoveContext).GetProperty(nameof(TTabRemoveContext.Index), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(MouseEvent), typeof(TTabRemoveContext).GetProperty(nameof(TTabRemoveContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(TTabValue), typeof(TTabPanelRemoveContext).GetProperty(nameof(TTabPanelRemoveContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(MouseEvent), typeof(TTabPanelRemoveContext).GetProperty(nameof(TTabPanelRemoveContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(int), typeof(TTabsDragSortContext).GetProperty(nameof(TTabsDragSortContext.CurrentIndex), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(TTabValue), typeof(TTabsDragSortContext).GetProperty(nameof(TTabsDragSortContext.Current), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(int), typeof(TTabsDragSortContext).GetProperty(nameof(TTabsDragSortContext.TargetIndex), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(TTabValue), typeof(TTabsDragSortContext).GetProperty(nameof(TTabsDragSortContext.Target), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
-        Assert.AreEqual(typeof(Event), typeof(TAvatarErrorContext).GetProperty(nameof(TAvatarErrorContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        foreach (var type in publicTypes)
+        {
+            AssertTDesignStrongType(type, type.FullName!);
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                if (IsUnionValueProperty(property))
+                    continue;
 
-        AssertNoPublicMemberUsesObject(
-            typeof(TDimensionValue),
-            typeof(TDimensionValues),
-            typeof(TMenuWidthValue),
-            typeof(TSpaceSizeValue),
-            typeof(TSpaceSizeValues),
-            typeof(TSpaceSize),
-            typeof(TMenuValue),
-            typeof(TMenuQueryValue),
-            typeof(TMenuRouteTarget),
-            typeof(TLinkDownloadValue),
-            typeof(TTabValue),
-            typeof(TBadgeCountValue),
-            typeof(TBadgeOffsetValue),
-            typeof(TBadgeOffset));
+                if (property.Name == nameof(TComponentBase.AdditionalAttributes))
+                {
+                    Assert.AreEqual(typeof(TComponentBase), property.DeclaringType);
+                    continue;
+                }
 
-        AssertNotObject(typeof(TGlobalConfig), nameof(TGlobalConfig));
-        AssertNotObject(typeof(TComponentRegistry), nameof(TComponentRegistry));
-        AssertNotObject(typeof(TStyles), nameof(TStyles));
-        AssertNotObject(typeof(TMenuQueryData), nameof(TMenuQueryData));
-        AssertNotObject(typeof(TMenuRoute), nameof(TMenuRoute));
-        AssertNotObject(typeof(TMenuItemClickContext), nameof(TMenuItemClickContext));
-        AssertNotObject(typeof(TTabAddContext), nameof(TTabAddContext));
-        AssertNotObject(typeof(TTabRemoveContext), nameof(TTabRemoveContext));
-        AssertNotObject(typeof(TTabPanelRemoveContext), nameof(TTabPanelRemoveContext));
-        AssertNotObject(typeof(TTabsDragSortContext), nameof(TTabsDragSortContext));
-        AssertNotObject(typeof(TAvatarErrorContext), nameof(TAvatarErrorContext));
+                AssertTDesignStrongType(property.PropertyType, $"{type.Name}.{property.Name}");
+            }
+
+            if (!typeof(Delegate).IsAssignableFrom(type))
+            {
+                foreach (var constructor in type.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                    foreach (var parameter in constructor.GetParameters())
+                        AssertTDesignStrongType(parameter.ParameterType, $"{type.Name}.ctor({parameter.Name})");
+            }
+
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                         .Where(method =>
+                             !typeof(Delegate).IsAssignableFrom(type) &&
+                             !method.IsSpecialName &&
+                             !IsRecordRuntimeMethod(method) &&
+                             method.Name is not nameof(object.Equals) and not nameof(object.GetHashCode) and not nameof(ToString)))
+            {
+                AssertTDesignStrongType(method.ReturnType, $"{type.Name}.{method.Name} return");
+                foreach (var parameter in method.GetParameters())
+                    AssertTDesignStrongType(parameter.ParameterType, $"{type.Name}.{method.Name}({parameter.Name})");
+            }
+        }
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Fields", "FirstError", "ValidateResult" },
+            typeof(TValidateResultContext<>).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(static property => property.Name)
+                .ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "E", "File", "Response", "XMLHttpRequest" },
+            typeof(TUploadOneFileSuccessEventContext<>).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(static property => property.Name)
+                .ToArray());
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Col", "ColIndex", "Row", "RowIndex", "Type" },
+            typeof(TCellData<>).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(static property => property.Name)
+                .ToArray());
+        CollectionAssert.IsSubsetOf(
+            new[] { "FilterDate", "FormattedFilterDate", "Mode" },
+            typeof(TCalendarCell).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(static property => property.Name)
+                .ToArray());
+        CollectionAssert.IsSubsetOf(
+            new[] { "Actived", "Checked", "Disabled", "Expanded", "Indeterminate", "Loading" },
+            typeof(TTreeNodeModel<>).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(static property => property.Name)
+                .ToArray());
     }
+
+    private static Type[] GetTDesignComponentTypes()
+        => typeof(TDesign).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.TDesign" &&
+                type.IsClass &&
+                !type.IsAbstract &&
+                !type.ContainsGenericParameters &&
+                typeof(ComponentBase).IsAssignableFrom(type) &&
+                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+            .OrderBy(static type => type.Name, StringComparer.Ordinal)
+            .ToArray();
+
+    private static TDesignCatalog ReadTDesignCatalog(string repositoryRoot)
+    {
+        var path = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.TDesign",
+            "upstream",
+            "tdesign-vue-next",
+            "1.20.5",
+            "contracts.json");
+        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(path));
+        var bindingsPath = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.TDesign",
+            "upstream",
+            "tdesign-vue-next",
+            "1.20.5",
+            "bindings.json");
+        using var bindings = JsonDocument.Parse(System.IO.File.ReadAllText(bindingsPath));
+        var runtimeExports = bindings.RootElement.GetProperty("components").EnumerateArray()
+            .GroupBy(static element => element.GetProperty("authoringType").GetString()!, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static element => element.GetProperty("runtimeExport").GetString()!)
+                    .Distinct(StringComparer.Ordinal)
+                    .Single(),
+                StringComparer.Ordinal);
+        var sourceEntries = document.RootElement.GetProperty("components").EnumerateArray().ToArray();
+        var components = sourceEntries
+            .GroupBy(static element => element.GetProperty("authoringType").GetString()!, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                group => new TDesignCatalogComponent(
+                    runtimeExports[group.Key],
+                    group.SelectMany(static element => GetNames(element, "props")).ToHashSet(StringComparer.Ordinal),
+                    group.SelectMany(static element => GetNames(element, "slots")).ToHashSet(StringComparer.Ordinal),
+                    group.SelectMany(static element => GetNames(element, "events")).ToHashSet(StringComparer.Ordinal)),
+                StringComparer.Ordinal);
+
+        return new TDesignCatalog(sourceEntries.Length, components);
+    }
+
+    private static IEnumerable<string> GetNames(JsonElement component, string member)
+        => component.TryGetProperty(member, out var items)
+            ? items.EnumerateArray().Select(static item => item.GetProperty("name").GetString()!)
+            : Array.Empty<string>();
+
+    private static string[] ReadTDesignRuntimeExports(string repositoryRoot)
+    {
+        var source = System.IO.File.ReadAllText(Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.TDesign",
+            "dist",
+            "tdesign.mjs"));
+        var match = Regex.Match(source, @"export\s*\{(?<members>[\s\S]*?)\};\s*/\*! Bundled license", RegexOptions.CultureInvariant);
+        Assert.IsTrue(match.Success, "Cannot locate the terminal TDesign ESM export declaration.");
+
+        return match.Groups["members"].Value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(static member => member.Split(" as ", StringSplitOptions.TrimEntries).Last())
+            .OrderBy(static member => member, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static bool IsEventCallback(Type type)
+        => type == typeof(EventCallback) ||
+           type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>);
+
+    private static bool IsRenderFragment(Type type)
+        => type == typeof(RenderFragment) ||
+           type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RenderFragment<>);
+
+    private static string GetTDesignMemberName(PropertyInfo property)
+        => property.GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name ??
+           property.Name switch
+           {
+               nameof(TContentComponentBase.ChildContent) => "default",
+               _ => char.ToLowerInvariant(property.Name[0]) + property.Name[1..]
+           };
+
+    private static string GetTDesignEventName(PropertyInfo property)
+    {
+        var emittedName = property.DeclaringType?
+            .GetCustomAttributes<ECMAScript.VueContract.VueLibraryEmitAttribute>(inherit: false)
+            .SingleOrDefault(attribute => attribute.RazorAlias == property.Name)
+            ?.Name;
+        return emittedName ?? ToKebabCase(property.Name[2..]);
+    }
+
+    private static string ToKebabCase(string value)
+        => Regex.Replace(
+            Regex.Replace(value, "([a-z0-9])([A-Z])", "$1-$2", RegexOptions.CultureInvariant),
+            "([A-Z])([A-Z][a-z])",
+            "$1-$2",
+            RegexOptions.CultureInvariant)
+            .ToLowerInvariant();
+
+    private static void AssertTDesignStrongType(Type type, string message)
+    {
+        if (type.IsGenericParameter)
+            return;
+
+        var unwrapped = type.UnwrapNullable();
+        Assert.AreNotEqual(typeof(object), unwrapped, message);
+        Assert.AreNotEqual(typeof(VueValue), unwrapped, message);
+
+        if (unwrapped.IsArray)
+        {
+            AssertTDesignStrongType(unwrapped.GetElementType()!, message);
+            return;
+        }
+
+        if (!unwrapped.IsGenericType)
+            return;
+
+        foreach (var argument in unwrapped.GetGenericArguments())
+            AssertTDesignStrongType(argument, message);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (System.IO.File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+        }
+
+        throw new InvalidOperationException("Could not locate the repository root from " + AppContext.BaseDirectory);
+    }
+
+    private sealed record TDesignCatalog(
+        int SourceEntryCount,
+        IReadOnlyDictionary<string, TDesignCatalogComponent> Components);
+
+    private sealed record TDesignCatalogComponent(
+        string RuntimeExport,
+        HashSet<string> Props,
+        HashSet<string> Slots,
+        HashSet<string> Events);
 
     private static string[] GetStringEnumRuntimeValues(Type enumType)
         => enumType

@@ -19,10 +19,8 @@
 
   <ItemGroup>
     <None Include="buildTransitive\ECMAScript.Vue3.targets" Pack="true" PackagePath="buildTransitive\ECMAScript.Vue3.targets" />
-    <None Include="frontend\**\*"
-          Exclude="frontend\licenses\LICENSE"
-          Pack="true"
-          PackagePath="jazor\vue3\%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="frontend\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
+    <None Include="dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
   </ItemGroup>
 </Project>

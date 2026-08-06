@@ -25,7 +25,7 @@ Authoring notes:
 - Native Admin shell components stay on the RazorVue user-component path: `ComponentBase + IVueComponent + [ECMAScriptModule(...)]`
 - Public shell components also act as container contracts through `IVueContainerComponent`
 - Concrete replacements implement `IVueContainerImplementation<TContainer>` and are selected through assembly-level `[VueInject]`
-- Shared metadata such as prop/slot overrides belongs to the general Vue authoring layer via `VueProp` / `VueSlot`
+- Props use `[Parameter]` with `[ECMAScriptName]` only when a Vue name override is needed; slots use `RenderFragment` / `RenderFragment<T>` and events use `EventCallback`
 - The shared `Logo` slot follows layout semantics in the native shell: `Top` mode feeds the default header, while `Sidebar` / `Mixed` modes feed the default sidebar and do not duplicate the same branding fragment into the default header
 - Navigation destinations use two explicit, non-overlapping properties: `Href` emits a raw anchor, while the strongly typed `ECMAScript.VueRoute.RouteLocationRaw` `RouteTarget` emits native `<router-link :to="...">` navigation
 - `RouteTarget` takes precedence when both properties are supplied. Non-empty `Href` values are trimmed before emission, and whitespace-only `Href` values are ignored rather than emitted as navigable links
