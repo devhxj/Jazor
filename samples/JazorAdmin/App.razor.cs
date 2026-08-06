@@ -70,9 +70,14 @@ public partial class App : ComponentBase, IVueComponent
     private bool IsAccountsPage => SelectedKey == AccountsKey;
 
     private bool IsConfigurationPage
-        => SelectedKey is ConfigurationClientsKey or ConfigurationScopesKey;
+        => SelectedKey is ConfigurationApplicationsKey or ConfigurationScopesKey or
+            ConfigurationAuthorizationsKey or ConfigurationTokensKey;
+
+    private bool IsConfigurationApplicationsPage => SelectedKey == ConfigurationApplicationsKey;
 
     private bool IsConfigurationScopesPage => SelectedKey == ConfigurationScopesKey;
+
+    private bool IsConfigurationAuthorizationsPage => SelectedKey == ConfigurationAuthorizationsKey;
 
     private bool IsDashboardPage => SelectedKey == DashboardKey;
 

@@ -86,17 +86,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-06
+### 2026-08-07
 
-- Vue component-library authoring now uses ordinary `[Parameter]`, `EventCallback<T>`, `RenderFragment`, and member-level naming contracts. The redundant `VueProp`, `VueSlot`, library marker, style/plugin declaration, component flags, and emit-kind APIs have been removed.
-- RazorVue now infers conventional `XChanged` model updates and `OnX` events directly. Vuetify callbacks consistently use `OnX`, while explicit emit metadata is limited to raw Vue names that C# naming cannot reconstruct.
-- Vuetify's 113 and TDesign's 14 erased-value domains now use native C# unions. ElementPlus uses native unions for 45 of 46 domains; its single `File` versus `Blob` overlap retains a tagged contract for exact projections. None of the three libraries requires `From(...)` factories.
-- Element Plus and TDesign component binding types now use the same concise `El*` and `T*` prefixes as their components. Root package hosts and library-specific marker interfaces retain full names for clear cross-library references.
-- Vue binding packages keep their browser modules, styles, and licenses as local manifest-owned resources. RazorVue materializes them directly, so component contracts carry no stylesheet URL metadata and applications need no duplicate library stylesheet declaration.
-- Element Plus, Vuetify, and TDesign binding maintenance now uses one reproducible generator with deterministic validation commands. Frozen upstream inputs remain in that maintenance project, outside the published binding packages.
-- Vue 3, Vue Router, Pinia, Vuetify, Element Plus, and TDesign now ship their browser ESM, styles, and licenses inside their NuGet packages. Application builds materialize only local package resources, so they no longer require a project `node_modules`, CDN imports, npm downloads, or network access.
-- JazorAdmin now follows the TDesign Starter navigation hierarchy with an independent IconBar for primary work areas and a scoped TDesign secondary menu. Desktop collapse retains the 64px IconBar, while mobile reflows both navigation tiers above the work surface without horizontal overflow.
-- TDesign string-literal props now emit their authored values such as `"light"`, `"text"`, and `"primary"` instead of numeric enum ordinals, preserving the runtime contract represented by their generated C# enums.
+- JazorAdmin now provides OpenIddict application, scope, authorization, and token management with public/confidential and interactive/machine/API profiles, one-time secret rotation, Consent/PKCE, endpoint/grant/response permissions, API resource audiences, and authorization/token revocation. Its local-package browser smoke covers those management flows and mobile editor containment.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

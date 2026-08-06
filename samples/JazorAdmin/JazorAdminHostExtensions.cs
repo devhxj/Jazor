@@ -91,11 +91,13 @@ public static class JazorAdminHostExtensions
             {
                 options.SetConfigurationEndpointUris(".well-known/openid-configuration")
                     .SetAuthorizationEndpointUris("connect/authorize")
+                    .SetIntrospectionEndpointUris("connect/introspect")
+                    .SetRevocationEndpointUris("connect/revoke")
                     .SetTokenEndpointUris("connect/token")
                     .SetEndSessionEndpointUris("connect/logout")
                     .AllowAuthorizationCodeFlow()
+                    .AllowClientCredentialsFlow()
                     .AllowRefreshTokenFlow()
-                    .RequireProofKeyForCodeExchange()
                     .RegisterScopes(
                         OpenIddictConstants.Scopes.Email,
                         OpenIddictConstants.Scopes.Profile,

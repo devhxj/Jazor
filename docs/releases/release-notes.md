@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2026-08-07
+
+- JazorAdmin now covers the active OpenIddict administration surface: applications, scopes, authorizations, and tokens. Application profiles model interactive, machine, and API clients with public/confidential client types, one-time secret creation and rotation, consent and PKCE, URI and scope assignment, plus endpoint, grant, and response permissions. Scope resources determine token audiences; authorization and token records can be inspected and revoked.
+- Explicit and systematic consent requests now render a local confirmation page that posts every validated OAuth parameter as form data, which preserves authorization-code, state, PKCE, nonce, prompt, and custom request values across the browser consent step.
+- JazorAdmin's local-package browser smoke now exercises Machine/API registration, one-time secret display, Scope edits, authorization/token revocation, and mobile application-page viewport containment. It also catches RazorVue output that would use ECMAScript reserved words as local function names.
+
 ## 2026-08-06
 
 - Jazor 0.3.2 corrects the first 0.3 package release: `ECMAScript.Pinia.Testing` now carries its `@pinia/testing` browser ESM, manifest, and MIT license; Pinia is updated to 3.0.4 to satisfy that upstream dependency. Manifest materialization now distinguishes application modules such as `host/app.mjs` from external library imports, so package consumers do not need npm or a CDN.

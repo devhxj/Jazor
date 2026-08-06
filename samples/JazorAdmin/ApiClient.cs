@@ -119,25 +119,44 @@ public static class ApiClient
     public static IPromise<ApiOutcome> ResetAccountPassword(string userId, string password)
         => Send("/api/accounts/" + userId + "/password", "PUT", new ResetAccountPasswordRequest(password));
 
-    public static IPromise<ApiOutcome> GetClients()
-        => Get("/api/configuration/clients");
+    public static IPromise<ApiOutcome> GetApps()
+        => Get("/api/configuration/applications");
 
-    public static IPromise<ApiOutcome> CreateClient(
-        string clientId,
-        string displayName,
-        string[] redirectUris,
-        string[] postLogoutRedirectUris,
-        string[] scopes)
-        => Send(
-            "/api/configuration/clients",
-            "POST",
-            new CreateClientRequest(clientId, displayName, redirectUris, postLogoutRedirectUris, scopes));
+    public static IPromise<ApiOutcome> CreateApp(AppCreate request)
+        => Send("/api/configuration/applications", "POST", request);
+
+    public static IPromise<ApiOutcome> UpdateApp(string id, AppUpdate request)
+        => Send("/api/configuration/applications/" + id, "PUT", request);
+
+    public static IPromise<ApiOutcome> DeleteApp(string id)
+        => Send("/api/configuration/applications/" + id, "DELETE");
+
+    public static IPromise<ApiOutcome> RotateAppSecret(string id)
+        => Send("/api/configuration/applications/" + id + "/secret", "POST");
 
     public static IPromise<ApiOutcome> GetScopes()
         => Get("/api/configuration/scopes");
 
-    public static IPromise<ApiOutcome> CreateScope(string name, string displayName)
-        => Send("/api/configuration/scopes", "POST", new CreateScopeRequest(name, displayName));
+    public static IPromise<ApiOutcome> CreateScope(ScopeCreate request)
+        => Send("/api/configuration/scopes", "POST", request);
+
+    public static IPromise<ApiOutcome> UpdateScope(string id, ScopeUpdate request)
+        => Send("/api/configuration/scopes/" + id, "PUT", request);
+
+    public static IPromise<ApiOutcome> DeleteScope(string id)
+        => Send("/api/configuration/scopes/" + id, "DELETE");
+
+    public static IPromise<ApiOutcome> GetAuthorizations()
+        => Get("/api/configuration/authorizations");
+
+    public static IPromise<ApiOutcome> RevokeAuthorization(string id)
+        => Send("/api/configuration/authorizations/" + id + "/revoke", "POST");
+
+    public static IPromise<ApiOutcome> GetTokens()
+        => Get("/api/configuration/tokens");
+
+    public static IPromise<ApiOutcome> RevokeToken(string id)
+        => Send("/api/configuration/tokens/" + id + "/revoke", "POST");
 
     public static SessionResponse ToSession(object data)
         => new(
@@ -239,40 +258,84 @@ public static class ApiClient
         return accounts;
     }
 
-    public static OpenIdClientResponse[] ToClients(object? data)
+    public static AppView[] ToApps(object? data)
     {
         var values = ReadArray(data);
-        var clients = new OpenIdClientResponse[values.Length];
+        var applications = new AppView[values.Length];
         for (var index = 0; index < values.Length; index++)
-        {
-            var value = values[index]!;
-            clients[index] = new OpenIdClientResponse(
-                ReadString(value, "id"),
-                ReadString(value, "clientId"),
-                ReadString(value, "displayName"),
-                ReadStringArray(Reflect.Get(value, "redirectUris")),
-                ReadStringArray(Reflect.Get(value, "postLogoutRedirectUris")),
-                ReadStringArray(Reflect.Get(value, "scopes")));
-        }
+            applications[index] = ReadApp(values[index]!);
 
-        return clients;
+        return applications;
     }
 
-    public static OpenIdScopeResponse[] ToScopes(object? data)
+    public static AppSaved ToAppSaved(object data)
+        => new(
+            ReadApp(Reflect.Get(data, "app")!),
+            ReadOptionalString(Reflect.Get(data, "secret")));
+
+    public static string ReadSecret(object data)
+        => ReadString(data, "secret");
+
+    public static ScopeView[] ToScopes(object? data)
     {
         var values = ReadArray(data);
-        var scopes = new OpenIdScopeResponse[values.Length];
+        var scopes = new ScopeView[values.Length];
         for (var index = 0; index < values.Length; index++)
         {
             var value = values[index]!;
-            scopes[index] = new OpenIdScopeResponse(
+            scopes[index] = new ScopeView(
                 ReadString(value, "id"),
                 ReadString(value, "name"),
                 ReadString(value, "displayName"),
+                ReadOptionalString(Reflect.Get(value, "description")),
                 ReadStringArray(Reflect.Get(value, "resources")));
         }
 
         return scopes;
+    }
+
+    public static AuthorizationView[] ToAuthorizations(object? data)
+    {
+        var values = ReadArray(data);
+        var authorizations = new AuthorizationView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            authorizations[index] = new AuthorizationView(
+                ReadString(value, "id"),
+                ReadOptionalString(Reflect.Get(value, "applicationId")),
+                ReadOptionalString(Reflect.Get(value, "clientId")),
+                ReadOptionalString(Reflect.Get(value, "subject")),
+                ReadString(value, "status"),
+                ReadString(value, "type"),
+                ReadStringArray(Reflect.Get(value, "scopes")),
+                ReadOptionalString(Reflect.Get(value, "createdAt")));
+        }
+
+        return authorizations;
+    }
+
+    public static TokenView[] ToTokens(object? data)
+    {
+        var values = ReadArray(data);
+        var tokens = new TokenView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            tokens[index] = new TokenView(
+                ReadString(value, "id"),
+                ReadOptionalString(Reflect.Get(value, "applicationId")),
+                ReadOptionalString(Reflect.Get(value, "clientId")),
+                ReadOptionalString(Reflect.Get(value, "authorizationId")),
+                ReadOptionalString(Reflect.Get(value, "subject")),
+                ReadString(value, "status"),
+                ReadString(value, "type"),
+                ReadOptionalString(Reflect.Get(value, "createdAt")),
+                ReadOptionalString(Reflect.Get(value, "expiresAt")),
+                ReadOptionalString(Reflect.Get(value, "redeemedAt")));
+        }
+
+        return tokens;
     }
 
     private static IPromise<ApiOutcome> Get(string path)
@@ -347,6 +410,23 @@ public static class ApiClient
 
         return organizations;
     }
+
+    private static AppView ReadApp(object value)
+        => new(
+            ReadString(value, "id"),
+            ReadString(value, "clientId"),
+            ReadString(value, "displayName"),
+            ReadString(value, "profile"),
+            ReadString(value, "applicationType"),
+            ReadString(value, "clientType"),
+            ReadString(value, "consentType"),
+            BooleanFn(Reflect.Get(value, "requirePkce")),
+            ReadStringArray(Reflect.Get(value, "redirectUris")),
+            ReadStringArray(Reflect.Get(value, "postLogoutRedirectUris")),
+            ReadStringArray(Reflect.Get(value, "endpoints")),
+            ReadStringArray(Reflect.Get(value, "grantTypes")),
+            ReadStringArray(Reflect.Get(value, "responseTypes")),
+            ReadStringArray(Reflect.Get(value, "scopes")));
 
     private static object?[] ReadArray(object? value)
         => value as object?[] ?? [];

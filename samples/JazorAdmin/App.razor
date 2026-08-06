@@ -148,7 +148,18 @@
                     }
                     else if (IsConfigurationPage)
                     {
-                        <ConfigPage View="@(IsConfigurationScopesPage ? ConfigView.Scopes : ConfigView.Clients)" />
+                        @if (IsConfigurationApplicationsPage)
+                        {
+                            <OidcAppPage />
+                        }
+                        else if (IsConfigurationScopesPage)
+                        {
+                            <OidcScopePage />
+                        }
+                        else
+                        {
+                            <OidcGrantPage View="@(IsConfigurationAuthorizationsPage ? GrantView.Authorizations : GrantView.Tokens)" />
+                        }
                     }
                     else
                     {

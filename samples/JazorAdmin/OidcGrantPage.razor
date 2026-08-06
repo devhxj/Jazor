@@ -1,0 +1,53 @@
+@* Lists operational OpenIddict grants and revokes them through manager-owned state transitions. *@
+@inherits AppComponentBase
+
+<section class="jazor-admin-management" data-management-area="configuration" data-config-view="@(View == GrantView.Authorizations ? "authorizations" : "tokens")">
+    @if (loading)
+    {
+        <p class="jazor-admin-management__loading" aria-live="polite">Loading @(View == GrantView.Authorizations ? "authorizations" : "tokens")</p>
+    }
+    else if (error is not null)
+    {
+        <p class="jazor-admin-management__error" role="alert">@error</p>
+    }
+    else if (View == GrantView.Authorizations)
+    {
+        <section class="jazor-admin-management__panel" aria-labelledby="oidc-authorizations-title">
+            <header class="jazor-admin-management__panel-header"><div><h2 id="oidc-authorizations-title">Authorizations</h2><p>Persistent grants created by OpenIddict protocol flows</p></div></header>
+            <div class="jazor-admin-management__table-wrap">
+                <table class="jazor-admin-management__table">
+                    <thead><tr><th>Application</th><th>Subject</th><th>Type</th><th>Status</th><th>Scopes</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var authorization in authorizations)
+                        {
+                            <tr data-oidc-authorization="@authorization.Id">
+                                <td>@(authorization.ClientId ?? "-")</td><td>@(authorization.Subject ?? "-")</td><td>@authorization.Type</td><td>@authorization.Status</td><td>@Join(authorization.Scopes)</td>
+                                <td><button type="button" class="jazor-admin-management__text-button" disabled="@(authorization.Status == "revoked")" @onclick="() => RevokeAuthorization(authorization.Id)">Revoke</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="jazor-admin-management__panel" aria-labelledby="oidc-tokens-title">
+            <header class="jazor-admin-management__panel-header"><div><h2 id="oidc-tokens-title">Tokens</h2><p>Latest 200 tokens stored by OpenIddict</p></div></header>
+            <div class="jazor-admin-management__table-wrap">
+                <table class="jazor-admin-management__table">
+                    <thead><tr><th>Application</th><th>Subject</th><th>Type</th><th>Status</th><th>Expires</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var token in tokens)
+                        {
+                            <tr data-oidc-token="@token.Id">
+                                <td>@(token.ClientId ?? "-")</td><td>@(token.Subject ?? "-")</td><td>@token.Type</td><td>@token.Status</td><td>@(token.ExpiresAt ?? "-")</td>
+                                <td><button type="button" class="jazor-admin-management__text-button" disabled="@(token.Status == "revoked")" @onclick="() => RevokeToken(token.Id)">Revoke</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</section>

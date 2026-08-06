@@ -17,8 +17,10 @@ public static class Routes
     public const string AuthorizationResourcesKey = "authorization.resources";
     public const string AccountsKey = "accounts";
     public const string ConfigurationKey = "configuration";
-    public const string ConfigurationClientsKey = "configuration.clients";
+    public const string ConfigurationApplicationsKey = "configuration.applications";
     public const string ConfigurationScopesKey = "configuration.scopes";
+    public const string ConfigurationAuthorizationsKey = "configuration.authorizations";
+    public const string ConfigurationTokensKey = "configuration.tokens";
     public const string LoginKey = "login";
     public const string LockKey = "lock";
     public const string InternalErrorKey = "error.500";
@@ -131,10 +133,10 @@ public static class Routes
             [
                 new()
                 {
-                    Key = ConfigurationClientsKey,
-                    Path = "/configuration/clients",
-                    Title = Localization.Get(language, TextKey.OpenIdClients),
-                    Subtitle = Localization.Get(language, TextKey.OpenIdClientsSubtitle)
+                    Key = ConfigurationApplicationsKey,
+                    Path = "/configuration/applications",
+                    Title = Localization.Get(language, TextKey.OpenIdApplications),
+                    Subtitle = Localization.Get(language, TextKey.OpenIdApplicationsSubtitle)
                 },
                 new()
                 {
@@ -142,6 +144,20 @@ public static class Routes
                     Path = "/configuration/scopes",
                     Title = Localization.Get(language, TextKey.OpenIdScopes),
                     Subtitle = Localization.Get(language, TextKey.OpenIdScopesSubtitle)
+                },
+                new()
+                {
+                    Key = ConfigurationAuthorizationsKey,
+                    Path = "/configuration/authorizations",
+                    Title = Localization.Get(language, TextKey.OpenIdAuthorizations),
+                    Subtitle = Localization.Get(language, TextKey.OpenIdAuthorizationsSubtitle)
+                },
+                new()
+                {
+                    Key = ConfigurationTokensKey,
+                    Path = "/configuration/tokens",
+                    Title = Localization.Get(language, TextKey.OpenIdTokens),
+                    Subtitle = Localization.Get(language, TextKey.OpenIdTokensSubtitle)
                 }
             ]
         },

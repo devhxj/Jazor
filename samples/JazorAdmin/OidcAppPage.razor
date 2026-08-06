@@ -1,0 +1,109 @@
+@* Manages every OpenIddict application profile through one exact permission surface. *@
+@inherits AppComponentBase
+
+<section class="jazor-admin-management" data-management-area="configuration" data-config-view="applications">
+    @if (loading)
+    {
+        <p class="jazor-admin-management__loading" aria-live="polite">Loading OpenID applications</p>
+    }
+    else
+    {
+        @if (error is not null)
+        {
+            <p class="jazor-admin-management__error" role="alert">@error</p>
+        }
+
+        <div class="jazor-admin-management__split jazor-admin-management__split--configuration">
+            <section class="jazor-admin-management__panel" aria-labelledby="oidc-apps-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div><h2 id="oidc-apps-title">OpenID applications</h2><p>Interactive clients, machine clients, and API resources</p></div>
+                    <button type="button" data-config-command="new-application" @onclick="NewInteractive">New</button>
+                </header>
+                <div class="jazor-admin-management__table-wrap">
+                    <table class="jazor-admin-management__table">
+                        <thead><tr><th>Application</th><th>Profile</th><th>Client type</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var application in applications)
+                            {
+                                <tr class="@(application.Id == selectedId ? "is-selected" : string.Empty)" data-oidc-application="@application.ClientId">
+                                    <td><strong>@application.DisplayName</strong><span>@application.ClientId</span></td>
+                                    <td>@application.Profile</td>
+                                    <td>@application.ClientType</td>
+                                    <td><button type="button" class="jazor-admin-management__text-button" @onclick="() => Select(application)">Manage</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="jazor-admin-management__panel" aria-labelledby="oidc-app-editor-title">
+                <header class="jazor-admin-management__panel-header">
+                    <div><h2 id="oidc-app-editor-title">@(IsNew ? "Register application" : "Application settings")</h2><p>Protocol permissions are stored directly by OpenIddict</p></div>
+                </header>
+
+                @if (issuedSecret is not null)
+                {
+                    <div class="jazor-admin-management__secret" role="status" data-issued-secret="">
+                        <strong>Client secret</strong>
+                        <code>@issuedSecret</code>
+                        <span>This value is shown once. Store it before leaving this view.</span>
+                    </div>
+                }
+
+                @if (IsNew)
+                {
+                    <div class="jazor-admin-management__profiles" role="group" aria-label="New application preset">
+                        <button type="button" class="@(profile == "interactive" ? "is-selected" : string.Empty)" @onclick="NewInteractive">Interactive</button>
+                        <button type="button" class="@(profile == "machine" ? "is-selected" : string.Empty)" @onclick="NewMachine">Machine</button>
+                        <button type="button" class="@(profile == "api" ? "is-selected" : string.Empty)" @onclick="NewApi">API</button>
+                    </div>
+                }
+
+                <form class="jazor-admin-management__form" @onsubmit="Save" @onsubmit:preventDefault>
+                    <div class="jazor-admin-management__field-grid">
+                        <label><span>Client ID</span><input required readonly="@(!IsNew)" autocomplete="off" @bind="clientId" @bind:event="oninput" /></label>
+                        <label><span>Display name</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
+                        <label><span>Application type</span><select @bind="applicationType"><option value="web">Web</option><option value="native">Native</option></select></label>
+                        <label><span>Client type</span><select @bind="clientType"><option value="public">Public</option><option value="confidential">Confidential</option></select></label>
+                        <label><span>Consent</span><select @bind="consentType"><option value="implicit">Implicit</option><option value="explicit">Explicit</option><option value="systematic">Systematic</option></select></label>
+                    </div>
+
+                    <label><span>Redirect URIs</span><textarea rows="3" placeholder="https://client.example/auth/callback" @bind="redirectUris"></textarea></label>
+                    <label><span>Post-logout URIs</span><textarea rows="2" placeholder="https://client.example/logout" @bind="postLogoutRedirectUris"></textarea></label>
+                    <label><span>Allowed scopes</span><input autocomplete="off" placeholder="openid profile api" @bind="scopeValues" @bind:event="oninput" /></label>
+
+                    <fieldset class="jazor-admin-management__options">
+                        <legend>Endpoint access</legend>
+                        <label><input type="checkbox" @bind="endpointAuthorization" />Authorization</label>
+                        <label><input type="checkbox" @bind="endpointToken" />Token</label>
+                        <label><input type="checkbox" @bind="endpointEndSession" />End session</label>
+                        <label><input type="checkbox" @bind="endpointIntrospection" />Introspection</label>
+                        <label><input type="checkbox" @bind="endpointRevocation" />Revocation</label>
+                    </fieldset>
+
+                    <fieldset class="jazor-admin-management__options">
+                        <legend>Grant and response types</legend>
+                        <label><input type="checkbox" @bind="grantAuthorizationCode" />Authorization code</label>
+                        <label><input type="checkbox" @bind="grantClientCredentials" />Client credentials</label>
+                        <label><input type="checkbox" @bind="grantRefreshToken" />Refresh token</label>
+                        <label><input type="checkbox" @bind="responseCode" />Code response</label>
+                        <label><input type="checkbox" @bind="requirePkce" />Require PKCE</label>
+                    </fieldset>
+
+                    <div class="jazor-admin-management__commands">
+                        <button type="submit" data-config-command="save-application">@(IsNew ? "Register" : "Save changes")</button>
+                        @if (!IsNew && IsConfidential)
+                        {
+                            <button type="button" class="jazor-admin-management__secondary-button" data-config-command="rotate-secret" @onclick="RotateSecret">Rotate secret</button>
+                        }
+                        @if (!IsNew)
+                        {
+                            <button type="button" class="jazor-admin-management__danger-button" data-config-command="delete-application" @onclick="DeleteApp">@(deleteArmed ? "Confirm delete" : "Delete")</button>
+                        }
+                    </div>
+                </form>
+            </section>
+        </div>
+    }
+</section>

@@ -33,8 +33,10 @@ public sealed class JazorAdminApiTests
                      "/",
                      "/organizations/structure",
                      "/accounts",
-                     "/configuration/clients",
-                     "/configuration/scopes"
+                     "/configuration/applications",
+                     "/configuration/scopes",
+                     "/configuration/authorizations",
+                     "/configuration/tokens"
                  })
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, path);
@@ -174,38 +176,272 @@ public sealed class JazorAdminApiTests
 
         using var createdScope = await administratorClient.PostAsJsonAsync("/api/configuration/scopes", new
         {
-            name = "jazoradmin_reports",
-            displayName = "Reporting API"
+            name = "reports",
+            displayName = "Reporting access",
+            description = "Read reports from the reporting API.",
+            resources = new[] { "reports-api" }
         });
         Assert.AreEqual(HttpStatusCode.Created, createdScope.StatusCode);
-        var scope = await createdScope.Content.ReadFromJsonAsync<OpenIdScopeResponse>();
+        var scope = await createdScope.Content.ReadFromJsonAsync<ScopeView>();
         Assert.IsNotNull(scope);
-        CollectionAssert.Contains(scope.Resources.ToArray(), JazorAdminScopes.Api);
+        CollectionAssert.Contains(scope.Resources.ToArray(), "reports-api");
 
-        using var createdClient = await administratorClient.PostAsJsonAsync("/api/configuration/clients", new
+        using var updatedScope = await administratorClient.PutAsJsonAsync("/api/configuration/scopes/" + scope.Id, new
         {
-            clientId = "reports-spa",
-            displayName = "Reports SPA",
-            redirectUris = new[] { "https://reports.example.test/auth/callback" },
-            postLogoutRedirectUris = new[] { "https://reports.example.test/logout" },
-            scopes = new[] { "jazoradmin_reports" }
+            displayName = "Reporting API access",
+            description = "Updated scope description.",
+            resources = new[] { "reports-api", "audit-api" }
         });
-        Assert.AreEqual(HttpStatusCode.Created, createdClient.StatusCode);
-        var client = await createdClient.Content.ReadFromJsonAsync<OpenIdClientResponse>();
-        Assert.IsNotNull(client);
-        CollectionAssert.Contains(client.Scopes.ToArray(), "jazoradmin_reports");
+        Assert.AreEqual(HttpStatusCode.OK, updatedScope.StatusCode);
+        var savedScope = await updatedScope.Content.ReadFromJsonAsync<ScopeView>();
+        Assert.IsNotNull(savedScope);
+        Assert.AreEqual("Updated scope description.", savedScope.Description);
+        CollectionAssert.Contains(savedScope.Resources.ToArray(), "audit-api");
 
-        using var clientList = await administratorClient.GetAsync("/api/configuration/clients");
-        var clients = await clientList.Content.ReadFromJsonAsync<OpenIdClientResponse[]>();
-        Assert.IsNotNull(clients);
-        Assert.IsTrue(clients.Any(item => item.ClientId == "reports-spa"));
+        using var createdMachine = await administratorClient.PostAsJsonAsync("/api/configuration/applications", new
+        {
+            clientId = "reports-worker",
+            displayName = "Reports worker",
+            applicationType = "web",
+            clientType = "confidential",
+            consentType = "implicit",
+            requirePkce = false,
+            redirectUris = Array.Empty<string>(),
+            postLogoutRedirectUris = Array.Empty<string>(),
+            endpoints = new[] { "token", "revocation" },
+            grantTypes = new[] { "client_credentials" },
+            responseTypes = Array.Empty<string>(),
+            scopes = new[] { "reports" }
+        });
+        Assert.AreEqual(HttpStatusCode.Created, createdMachine.StatusCode);
+        var machine = await createdMachine.Content.ReadFromJsonAsync<AppSaved>();
+        Assert.IsNotNull(machine);
+        Assert.AreEqual("machine", machine.App.Profile);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(machine.Secret));
+
+        using var updatedMachine = await administratorClient.PutAsJsonAsync(
+            "/api/configuration/applications/" + machine.App.Id,
+            new
+            {
+                displayName = "Reports background worker",
+                applicationType = "web",
+                clientType = "confidential",
+                consentType = "implicit",
+                requirePkce = false,
+                redirectUris = Array.Empty<string>(),
+                postLogoutRedirectUris = Array.Empty<string>(),
+                endpoints = new[] { "token", "revocation" },
+                grantTypes = new[] { "client_credentials" },
+                responseTypes = Array.Empty<string>(),
+                scopes = new[] { "reports" }
+            });
+        Assert.AreEqual(HttpStatusCode.OK, updatedMachine.StatusCode);
+        var savedMachine = await updatedMachine.Content.ReadFromJsonAsync<AppSaved>();
+        Assert.IsNotNull(savedMachine);
+        Assert.AreEqual("Reports background worker", savedMachine.App.DisplayName);
+        Assert.IsNull(savedMachine.Secret, "Normal edits must not replace an existing client secret.");
+
+        var accessToken = await ExchangeClientCredentialsAsync(machine.Secret!);
+
+        using var createdApi = await administratorClient.PostAsJsonAsync("/api/configuration/applications", new
+        {
+            clientId = "reports-api",
+            displayName = "Reports API",
+            applicationType = "web",
+            clientType = "confidential",
+            consentType = "implicit",
+            requirePkce = false,
+            redirectUris = Array.Empty<string>(),
+            postLogoutRedirectUris = Array.Empty<string>(),
+            endpoints = new[] { "introspection" },
+            grantTypes = Array.Empty<string>(),
+            responseTypes = Array.Empty<string>(),
+            scopes = Array.Empty<string>()
+        });
+        Assert.AreEqual(HttpStatusCode.Created, createdApi.StatusCode);
+        var api = await createdApi.Content.ReadFromJsonAsync<AppSaved>();
+        Assert.IsNotNull(api);
+        Assert.AreEqual("api", api.App.Profile);
+
+        using var introspection = await administratorClient.PostAsync("/connect/introspect", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["client_id"] = "reports-api",
+            ["client_secret"] = api.Secret!,
+            ["token"] = accessToken
+        }));
+        Assert.AreEqual(HttpStatusCode.OK, introspection.StatusCode);
+        using (var payload = JsonDocument.Parse(await introspection.Content.ReadAsStringAsync()))
+            Assert.IsTrue(payload.RootElement.GetProperty("active").GetBoolean());
+
+        using var rotated = await administratorClient.PostAsync(
+            "/api/configuration/applications/" + machine.App.Id + "/secret",
+            content: null);
+        Assert.AreEqual(HttpStatusCode.OK, rotated.StatusCode);
+        var secret = await rotated.Content.ReadFromJsonAsync<SecretView>();
+        Assert.IsNotNull(secret);
+        Assert.AreNotEqual(machine.Secret, secret.Secret);
+
+        using var oldSecretExchange = await administratorClient.PostAsync("/connect/token", ClientCredentialsForm(machine.Secret!));
+        Assert.AreEqual(HttpStatusCode.Unauthorized, oldSecretExchange.StatusCode);
+        _ = await ExchangeClientCredentialsAsync(secret.Secret);
+
+        using var applicationList = await administratorClient.GetAsync("/api/configuration/applications");
+        var applications = await applicationList.Content.ReadFromJsonAsync<AppView[]>();
+        Assert.IsNotNull(applications);
+        Assert.IsTrue(applications.Any(item => item.ClientId == "reports-worker"));
+        Assert.IsTrue(applications.Any(item => item.ClientId == "reports-api"));
+
+        using var deletedApi = await administratorClient.DeleteAsync("/api/configuration/applications/" + api.App.Id);
+        Assert.AreEqual(HttpStatusCode.NoContent, deletedApi.StatusCode);
+        using var deletedMachine = await administratorClient.DeleteAsync("/api/configuration/applications/" + machine.App.Id);
+        Assert.AreEqual(HttpStatusCode.NoContent, deletedMachine.StatusCode);
+        using var deletedScope = await administratorClient.DeleteAsync("/api/configuration/scopes/" + scope.Id);
+        Assert.AreEqual(HttpStatusCode.NoContent, deletedScope.StatusCode);
+
+        async Task<string> ExchangeClientCredentialsAsync(string clientSecret)
+        {
+            using var response = await administratorClient.PostAsync("/connect/token", ClientCredentialsForm(clientSecret));
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync());
+            using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            return payload.RootElement.GetProperty("access_token").GetString()!;
+        }
+
+        static FormUrlEncodedContent ClientCredentialsForm(string clientSecret)
+            => new(new Dictionary<string, string>
+            {
+                ["client_id"] = "reports-worker",
+                ["client_secret"] = clientSecret,
+                ["grant_type"] = "client_credentials",
+                ["scope"] = "reports"
+            });
+    }
+
+    [TestMethod]
+    public async Task ExplicitConsent_RendersConfirmationAndCreatesPermanentAuthorization()
+    {
+        await using var factory = new JazorAdminFactory();
+        var user = await factory.CreateUserAsync("consent@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(
+            user.Email,
+            user.Password,
+            allowAutoRedirect: false);
+
+        using var created = await client.PostAsJsonAsync("/api/configuration/applications", new
+        {
+            clientId = "consent-web",
+            displayName = "Consent web application",
+            applicationType = "web",
+            clientType = "public",
+            consentType = "explicit",
+            requirePkce = false,
+            redirectUris = new[] { "http://localhost/consent/callback" },
+            postLogoutRedirectUris = Array.Empty<string>(),
+            endpoints = new[] { "authorization", "token" },
+            grantTypes = new[] { "authorization_code" },
+            responseTypes = new[] { "code" },
+            scopes = new[] { "openid" }
+        });
+        Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
+
+        var authorizationPath = "/connect/authorize?client_id=consent-web"
+                                + "&response_type=code"
+                                + "&redirect_uri=" + Uri.EscapeDataString("http://localhost/consent/callback")
+                                + "&scope=openid"
+                                + "&state=consent-test";
+        using var confirmation = await client.GetAsync(authorizationPath);
+        Assert.AreEqual(HttpStatusCode.OK, confirmation.StatusCode);
+        var confirmationHtml = await confirmation.Content.ReadAsStringAsync();
+        StringAssert.Contains(confirmationHtml, "data-access-page=\"consent\"");
+        StringAssert.Contains(confirmationHtml, "Consent web application");
+        StringAssert.Contains(confirmationHtml, "name=\"client_id\" value=\"consent-web\"");
+        StringAssert.Contains(confirmationHtml, "name=\"state\" value=\"consent-test\"");
+
+        using var accepted = await client.PostAsync(
+            "/connect/authorize",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["client_id"] = "consent-web",
+                ["response_type"] = "code",
+                ["redirect_uri"] = "http://localhost/consent/callback",
+                ["scope"] = "openid",
+                ["state"] = "consent-test",
+                ["decision"] = "accept"
+            }));
+        Assert.AreEqual(HttpStatusCode.Redirect, accepted.StatusCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(GetQueryValue(accepted.Headers.Location, "code")));
+
+        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
+        Assert.IsNotNull(authorizations);
+        Assert.IsTrue(authorizations.Any(value =>
+            value.ClientId == "consent-web" && value.Type == "permanent" && value.Status == "valid"));
+
+        using var reused = await client.GetAsync(authorizationPath);
+        Assert.AreEqual(HttpStatusCode.Redirect, reused.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task SystematicConsent_RequiresConfirmationForEachAuthorization()
+    {
+        await using var factory = new JazorAdminFactory();
+        var user = await factory.CreateUserAsync("systematic@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(
+            user.Email,
+            user.Password,
+            allowAutoRedirect: false);
+
+        using var created = await client.PostAsJsonAsync("/api/configuration/applications", new
+        {
+            clientId = "systematic-web",
+            displayName = "Systematic web application",
+            applicationType = "web",
+            clientType = "public",
+            consentType = "systematic",
+            requirePkce = false,
+            redirectUris = new[] { "http://localhost/systematic/callback" },
+            postLogoutRedirectUris = Array.Empty<string>(),
+            endpoints = new[] { "authorization", "token" },
+            grantTypes = new[] { "authorization_code" },
+            responseTypes = new[] { "code" },
+            scopes = new[] { "openid" }
+        });
+        Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
+
+        var authorizationPath = "/connect/authorize?client_id=systematic-web"
+                                + "&response_type=code"
+                                + "&redirect_uri=" + Uri.EscapeDataString("http://localhost/systematic/callback")
+                                + "&scope=openid";
+        using var confirmation = await client.GetAsync(authorizationPath);
+        Assert.AreEqual(HttpStatusCode.OK, confirmation.StatusCode);
+
+        using var accepted = await client.PostAsync(
+            "/connect/authorize",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["client_id"] = "systematic-web",
+                ["response_type"] = "code",
+                ["redirect_uri"] = "http://localhost/systematic/callback",
+                ["scope"] = "openid",
+                ["decision"] = "accept"
+            }));
+        Assert.AreEqual(HttpStatusCode.Redirect, accepted.StatusCode);
+
+        using var repeated = await client.GetAsync(authorizationPath);
+        Assert.AreEqual(HttpStatusCode.OK, repeated.StatusCode);
+        StringAssert.Contains(await repeated.Content.ReadAsStringAsync(), "data-access-page=\"consent\"");
+
+        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
+        Assert.IsNotNull(authorizations);
+        Assert.IsTrue(authorizations.Any(value =>
+            value.ClientId == "systematic-web" && value.Type == "ad-hoc" && value.Status == "valid"));
     }
 
     [TestMethod]
     public async Task AuthorizationCodeWithPkce_ExchangesForAccessAndRefreshTokens()
     {
         await using var factory = new JazorAdminFactory();
-        var user = await factory.CreateUserAsync("sso@example.test", platformAdministrator: false);
+        var user = await factory.CreateUserAsync("sso@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(user.Email, user.Password, allowAutoRedirect: false);
 
         var discovery = await client.GetAsync("/.well-known/openid-configuration");
@@ -241,6 +477,36 @@ public sealed class JazorAdminApiTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken.GetString()));
         Assert.IsTrue(token.RootElement.TryGetProperty("refresh_token", out var refreshToken));
         Assert.IsFalse(string.IsNullOrWhiteSpace(refreshToken.GetString()));
+
+        using var authorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        Assert.AreEqual(HttpStatusCode.OK, authorizationsResponse.StatusCode);
+        var authorizations = await authorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
+        Assert.IsNotNull(authorizations);
+        var authorizationRecord = authorizations.First(item => item.ClientId == "jazoradmin-spa" && item.Status == "valid");
+
+        using var tokensResponse = await client.GetAsync("/api/configuration/tokens");
+        Assert.AreEqual(HttpStatusCode.OK, tokensResponse.StatusCode);
+        var tokens = await tokensResponse.Content.ReadFromJsonAsync<TokenView[]>();
+        Assert.IsNotNull(tokens);
+        var accessTokenRecord = tokens.First(item =>
+            item.ClientId == "jazoradmin-spa" &&
+            item.Type == "access_token" &&
+            item.Status == "valid");
+
+        using var revokedToken = await client.PostAsync("/api/configuration/tokens/" + accessTokenRecord.Id + "/revoke", content: null);
+        Assert.AreEqual(HttpStatusCode.NoContent, revokedToken.StatusCode);
+        using var revokedAuthorization = await client.PostAsync("/api/configuration/authorizations/" + authorizationRecord.Id + "/revoke", content: null);
+        Assert.AreEqual(HttpStatusCode.NoContent, revokedAuthorization.StatusCode);
+
+        using var updatedTokensResponse = await client.GetAsync("/api/configuration/tokens");
+        var updatedTokens = await updatedTokensResponse.Content.ReadFromJsonAsync<TokenView[]>();
+        Assert.IsNotNull(updatedTokens);
+        Assert.AreEqual("revoked", updatedTokens.Single(item => item.Id == accessTokenRecord.Id).Status);
+
+        using var updatedAuthorizationsResponse = await client.GetAsync("/api/configuration/authorizations");
+        var updatedAuthorizations = await updatedAuthorizationsResponse.Content.ReadFromJsonAsync<AuthorizationView[]>();
+        Assert.IsNotNull(updatedAuthorizations);
+        Assert.AreEqual("revoked", updatedAuthorizations.Single(item => item.Id == authorizationRecord.Id).Status);
     }
 
     private static async Task<Guid> CreateOrganizationAsync(HttpClient client, string code, string displayName)

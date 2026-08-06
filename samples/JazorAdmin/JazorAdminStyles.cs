@@ -72,7 +72,7 @@ internal static class JazorAdminStyles
                 Background = raw("#f4f6f5")
             });
 
-        global("button, input, select",
+        global("button, input, select, textarea",
             new CssRule
             {
                 Font = raw("inherit")
@@ -1982,7 +1982,7 @@ internal static class JazorAdminStyles
                 FontWeight = raw("600")
             });
 
-        global(".jazor-admin-management input, .jazor-admin-management select",
+        global(".jazor-admin-management input, .jazor-admin-management select, .jazor-admin-management textarea",
             new CssRule
             {
                 Width = raw("100%"),
@@ -1992,6 +1992,150 @@ internal static class JazorAdminStyles
                 Background = raw("var(--surface)"),
                 Border = raw("1px solid var(--border-strong)"),
                 BorderRadius = raw("4px")
+            });
+
+        global(".jazor-admin-management textarea",
+            new CssRule
+            {
+                MinHeight = raw("76px"),
+                Resize = raw("vertical"),
+                LineHeight = raw("1.5")
+            });
+
+        global(".jazor-admin-management__field-grid",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
+                Gap = raw("14px")
+            });
+
+        global(".jazor-admin-management__options",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
+                Padding = raw("12px"),
+                Margin = raw("0"),
+                Gap = raw("10px 14px"),
+                Border = raw("1px solid var(--border)"),
+                BorderRadius = raw("4px")
+            });
+
+        global(".jazor-admin-management__options legend",
+            new CssRule
+            {
+                Padding = raw("0 5px"),
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px"),
+                FontWeight = raw("650")
+            });
+
+        global(".jazor-admin-management__options label",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                MinWidth = raw("0"),
+                Gap = raw("8px"),
+                Color = raw("var(--text)"),
+                FontSize = raw("13px"),
+                FontWeight = raw("500")
+            });
+
+        global(".jazor-admin-management__options input",
+            new CssRule
+            {
+                Flex = raw("0 0 16px"),
+                Width = raw("16px"),
+                MinHeight = raw("16px"),
+                Padding = raw("0")
+            });
+
+        global(".jazor-admin-management__profiles",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("repeat(3, minmax(0, 1fr))"),
+                Margin = raw("20px 20px 0"),
+                Border = raw("1px solid var(--border-strong)"),
+                BorderRadius = raw("4px"),
+                Overflow = raw("hidden")
+            });
+
+        global(".jazor-admin-management__profiles button",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                Background = raw("var(--surface)"),
+                Border = raw("0"),
+                BorderRight = raw("1px solid var(--border-strong)"),
+                BorderRadius = raw("0")
+            });
+
+        global(".jazor-admin-management__profiles button:last-child",
+            new CssRule
+            {
+                BorderRight = raw("0")
+            });
+
+        global(".jazor-admin-management__profiles button:hover, .jazor-admin-management__profiles button.is-selected",
+            new CssRule
+            {
+                Color = raw("var(--accent-strong)"),
+                Background = raw("var(--accent-soft)")
+            });
+
+        global(".jazor-admin-management__commands",
+            new CssRule
+            {
+                Display = raw("flex"),
+                AlignItems = raw("center"),
+                FlexWrap = raw("wrap"),
+                Gap = raw("8px")
+            });
+
+        global(".jazor-admin-management__secondary-button",
+            new CssRule
+            {
+                Color = raw("var(--text) !important"),
+                Background = raw("var(--surface) !important"),
+                BorderColor = raw("var(--border-strong) !important")
+            });
+
+        global(".jazor-admin-management__danger-button",
+            new CssRule
+            {
+                Color = raw("var(--danger) !important"),
+                Background = raw("var(--danger-soft) !important"),
+                BorderColor = raw("color-mix(in srgb, var(--danger) 45%, var(--border)) !important")
+            });
+
+        global(".jazor-admin-management__secret",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Padding = raw("14px"),
+                Margin = raw("20px 20px 0"),
+                Gap = raw("6px"),
+                Color = raw("var(--text)"),
+                Background = raw("var(--warning-soft)"),
+                Border = raw("1px solid color-mix(in srgb, var(--warning) 38%, var(--border))"),
+                BorderRadius = raw("4px")
+            });
+
+        global(".jazor-admin-management__secret code",
+            new CssRule
+            {
+                OverflowWrap = raw("anywhere"),
+                FontSize = raw("13px")
+            });
+
+        global(".jazor-admin-management__secret span",
+            new CssRule
+            {
+                Color = raw("var(--text-muted)"),
+                FontSize = raw("12px")
             });
 
         global(".jazor-admin-management button",
@@ -2196,6 +2340,19 @@ internal static class JazorAdminStyles
             new CssRule
             {
                 GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin-management__field-grid, .jazor-admin-management__options", "(max-width: 620px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("1fr")
+            });
+
+        Media(".jazor-admin-management__commands button", "(max-width: 620px)",
+            new CssRule
+            {
+                Flex = raw("1 1 100%"),
+                Width = raw("100%")
             });
 
         Media(".jazor-admin__organization-picker", "(max-width: 620px)",

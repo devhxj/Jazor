@@ -76,7 +76,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var organizationModulePath = RequireModulePath(modulePaths, "JazorAdmin.OrganizationPage");
     var accessControlModulePath = RequireModulePath(modulePaths, "JazorAdmin.AccessControlPage");
     var accountModulePath = RequireModulePath(modulePaths, "JazorAdmin.AccountPage");
-    var configModulePath = RequireModulePath(modulePaths, "JazorAdmin.ConfigPage");
+    var oidcAppModulePath = RequireModulePath(modulePaths, "JazorAdmin.OidcAppPage");
+    var oidcScopeModulePath = RequireModulePath(modulePaths, "JazorAdmin.OidcScopePage");
+    var oidcGrantModulePath = RequireModulePath(modulePaths, "JazorAdmin.OidcGrantPage");
     var iconBarModulePath = RequireModulePath(modulePaths, "JazorAdmin.IconBar");
     var componentModules = new[]
     {
@@ -95,7 +97,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         (organizationModulePath, "organization management module"),
         (accessControlModulePath, "access control management module"),
         (accountModulePath, "account management module"),
-        (configModulePath, "OpenIddict configuration module"),
+        (oidcAppModulePath, "OpenIddict application module"),
+        (oidcScopeModulePath, "OpenIddict scope module"),
+        (oidcGrantModulePath, "OpenIddict grant module"),
         (iconBarModulePath, "JazorAdmin IconBar module")
     };
     foreach (var (relativePath, description) in componentModules)
@@ -130,7 +134,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var organizationModule = File.ReadAllText(Path.Combine(generatedOutputRoot, organizationModulePath));
     var accessControlModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accessControlModulePath));
     var accountModule = File.ReadAllText(Path.Combine(generatedOutputRoot, accountModulePath));
-    var configModule = File.ReadAllText(Path.Combine(generatedOutputRoot, configModulePath));
+    var oidcAppModule = File.ReadAllText(Path.Combine(generatedOutputRoot, oidcAppModulePath));
+    var oidcScopeModule = File.ReadAllText(Path.Combine(generatedOutputRoot, oidcScopeModulePath));
+    var oidcGrantModule = File.ReadAllText(Path.Combine(generatedOutputRoot, oidcGrantModulePath));
     var iconBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, iconBarModulePath));
     var manifest = File.ReadAllText(manifestPath);
 
@@ -149,8 +155,10 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(routesModule, "organizations.structure", "organization structure route in JazorAdmin routes module");
     AssertContains(routesModule, "authorization.roles", "authorization roles route in JazorAdmin routes module");
     AssertContains(routesModule, "accounts", "account route in JazorAdmin routes module");
-    AssertContains(routesModule, "configuration.clients", "OpenIddict client route in JazorAdmin routes module");
+    AssertContains(routesModule, "configuration.applications", "OpenIddict application route in JazorAdmin routes module");
     AssertContains(routesModule, "configuration.scopes", "OpenIddict scope route in JazorAdmin routes module");
+    AssertContains(routesModule, "configuration.authorizations", "OpenIddict authorization route in JazorAdmin routes module");
+    AssertContains(routesModule, "configuration.tokens", "OpenIddict token route in JazorAdmin routes module");
     AssertDoesNotContain(routesModule, "operations/releases", "retired release route in JazorAdmin routes module");
     AssertDoesNotContain(routesModule, "settings", "retired settings route in JazorAdmin routes module");
     AssertContains(adminLayoutModule, "data-shell-command", "sidebar toggle command in TDesign admin layout module");
@@ -176,9 +184,13 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(accountModule, "getAccounts", "account query in account management module");
     AssertContains(accountModule, "resetAccountPassword", "account password command in account management module");
     AssertContains(accountModule, "scope.onAfterRender(true)", "initial Razor lifecycle invocation in account management module");
-    AssertContains(configModule, "getClients", "OpenIddict client query in configuration module");
-    AssertContains(configModule, "getScopes", "OpenIddict scope query in configuration module");
-    AssertContains(configModule, "scope.onParametersSet();", "route parameter lifecycle in configuration module");
+    AssertContains(oidcAppModule, "getApps", "OpenIddict application query in application module");
+    AssertContains(oidcAppModule, "rotateAppSecret", "OpenIddict secret rotation in application module");
+    AssertContains(oidcScopeModule, "getScopes", "OpenIddict scope query in scope module");
+    AssertContains(oidcScopeModule, "updateScope", "OpenIddict scope update in scope module");
+    AssertContains(oidcGrantModule, "getAuthorizations", "OpenIddict authorization query in grant module");
+    AssertContains(oidcGrantModule, "getTokens", "OpenIddict token query in grant module");
+    AssertContains(oidcGrantModule, "scope.onParametersSet();", "route parameter lifecycle in grant module");
     foreach (var (relativePath, description) in componentModules)
         AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
     AssertDoesNotContain(manifest, ".vue", "legacy SFC artifact in JazorAdmin manifest");
@@ -365,19 +377,50 @@ static async Task VerifyBrowserSmokeAsync(
                     enabled: true,
                     platformAdministrator: true
                   }];
-                  const clients = [{
+                  const applications = [{
                     id: "c05e9d5a-e435-47cb-92f6-ca31f46ca8a5",
                     clientId: "jazoradmin-spa",
                     displayName: "JazorAdmin SPA",
+                    profile: "interactive",
+                    applicationType: "web",
+                    clientType: "public",
+                    consentType: "implicit",
+                    requirePkce: true,
                     redirectUris: ["http://localhost/auth/callback"],
                     postLogoutRedirectUris: ["http://localhost/login"],
+                    endpoints: ["authorization", "token", "end_session"],
+                    grantTypes: ["authorization_code", "refresh_token"],
+                    responseTypes: ["code"],
                     scopes: ["openid", "profile", "jazoradmin_api"]
                   }];
                   const scopes = [{
                     id: "c4351a3e-8f51-4e98-a505-6500c9d591e7",
                     name: "jazoradmin_api",
                     displayName: "JazorAdmin API",
+                    description: "Administration API",
                     resources: ["jazoradmin_api"]
+                  }];
+                  const authorizations = [{
+                    id: "authorization-smoke",
+                    applicationId: applications[0].id,
+                    clientId: "jazoradmin-spa",
+                    subject: "smoke-operator",
+                    status: "valid",
+                    type: "permanent",
+                    scopes: ["openid", "profile"],
+                    createdAt: "2026-08-07T00:00:00Z"
+                  }];
+                  const tokens = [{
+                    id: "token-smoke",
+                    applicationId: applications[0].id,
+                    clientId: "jazoradmin-spa",
+                    authorizationId: authorizations[0].id,
+                    subject: "smoke-operator",
+                    status: "valid",
+                    type: "access_token",
+                    createdAt: "2026-08-07T00:00:00Z",
+                    expiresAt: "2026-08-07T01:00:00Z",
+                    redeemedAt: null
                   }];
                   const json = (data, status = 200) => Promise.resolve(new Response(JSON.stringify(data), {
                     status,
@@ -386,7 +429,7 @@ static async Task VerifyBrowserSmokeAsync(
                   globalThis.fetch = (input, init = {}) => {
                     const url = new URL(typeof input === "string" ? input : input.url, location.href);
                     const method = String(init.method ?? "GET").toUpperCase();
-                    if (method !== "GET") return Promise.resolve(new Response(null, { status: 204 }));
+                    const body = init.body ? JSON.parse(String(init.body)) : null;
                     if (url.pathname === "/api/auth/session") return json({
                       userId: "74b0b0be-4b91-461f-9d57-c2f94aed4842",
                       email: "smoke.operator@example.test",
@@ -415,8 +458,51 @@ static async Task VerifyBrowserSmokeAsync(
                       }]
                     });
                     if (url.pathname === "/api/accounts/") return json(accounts);
-                    if (url.pathname === "/api/configuration/clients") return json(clients);
-                    if (url.pathname === "/api/configuration/scopes") return json(scopes);
+                    if (url.pathname === "/api/configuration/applications" && method === "GET") return json(applications);
+                    if (url.pathname === "/api/configuration/applications" && method === "POST") {
+                      const application = {
+                        id: `application-${applications.length + 1}`,
+                        ...body,
+                        profile: body.grantTypes.includes("client_credentials")
+                          ? "machine"
+                          : body.endpoints.includes("introspection") ? "api" : "interactive"
+                      };
+                      applications.push(application);
+                      return json({
+                        app: application,
+                        secret: application.clientType === "confidential" ? `${application.profile}-secret-smoke` : null
+                      }, 201);
+                    }
+                    if (url.pathname.startsWith("/api/configuration/applications/") && method === "PUT") {
+                      const id = url.pathname.split("/").at(-1);
+                      const index = applications.findIndex((value) => value.id === id);
+                      applications[index] = { ...applications[index], ...body };
+                      return json({ app: applications[index], secret: null });
+                    }
+                    if (url.pathname.endsWith("/secret") && method === "POST") return json({ secret: "rotated-secret-smoke" });
+                    if (url.pathname === "/api/configuration/scopes" && method === "GET") return json(scopes);
+                    if (url.pathname === "/api/configuration/scopes" && method === "POST") {
+                      const scope = { id: `scope-${scopes.length + 1}`, ...body };
+                      scopes.push(scope);
+                      return json(scope, 201);
+                    }
+                    if (url.pathname.startsWith("/api/configuration/scopes/") && method === "PUT") {
+                      const id = url.pathname.split("/").at(-1);
+                      const index = scopes.findIndex((value) => value.id === id);
+                      scopes[index] = { ...scopes[index], ...body };
+                      return json(scopes[index]);
+                    }
+                    if (url.pathname === "/api/configuration/authorizations" && method === "GET") return json(authorizations);
+                    if (url.pathname === "/api/configuration/authorizations/authorization-smoke/revoke" && method === "POST") {
+                      authorizations[0].status = "revoked";
+                      return Promise.resolve(new Response(null, { status: 204 }));
+                    }
+                    if (url.pathname === "/api/configuration/tokens" && method === "GET") return json(tokens);
+                    if (url.pathname === "/api/configuration/tokens/token-smoke/revoke" && method === "POST") {
+                      tokens[0].status = "revoked";
+                      return Promise.resolve(new Response(null, { status: 204 }));
+                    }
+                    if (method !== "GET") return Promise.resolve(new Response(null, { status: 204 }));
                     return json({ title: "Not Found" }, 404);
                   };
                 </script>
@@ -491,6 +577,17 @@ static async Task VerifyBrowserSmokeAsync(
                         activeKey: document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "",
                         organizationPanelVisible: document.querySelector('[data-management-area="organizations"]') !== null
                       };
+                    } else if (location.pathname === "/configuration/applications") {
+                      for (let attempt = 0; attempt < 100 && document.querySelector(".jazor-admin-management__loading"); attempt++) {
+                        await new Promise((resolve) => setTimeout(resolve, 10));
+                      }
+                      globalThis.__jazorAdminBrowserSmoke = {
+                        ok: true,
+                        mode: "management-layout",
+                        pathname: location.pathname,
+                        applicationPanelVisible: document.querySelector('[data-config-view="applications"]') !== null,
+                        documentFitsViewport: document.documentElement.scrollWidth <= innerWidth
+                      };
                     } else {
                       const waitFor = async (predicate, description) => {
                         for (let attempt = 0; attempt < 120; attempt++) {
@@ -509,6 +606,14 @@ static async Task VerifyBrowserSmokeAsync(
                       const waitForTitle = (title) => waitFor(
                         () => document.querySelector('[data-page-region="title"]')?.textContent?.includes(title) === true,
                         `${title} page`);
+                      const setInput = async (selector, value) => {
+                        const target = document.querySelector(selector);
+                        if (!(target instanceof HTMLInputElement)) throw new Error(`Missing input ${selector}.`);
+                        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(target, value);
+                        target.dispatchEvent(new Event("input", { bubbles: true }));
+                        target.dispatchEvent(new Event("change", { bubbles: true }));
+                        await nextTick();
+                      };
 
                       await waitFor(() => document.querySelectorAll(".jazor-admin-overview__metric").length === 4, "administration overview");
                       const dashboardText = document.querySelector('[data-page-region="body"]')?.textContent ?? "";
@@ -571,16 +676,52 @@ static async Task VerifyBrowserSmokeAsync(
                       const accountRowText = document.querySelector('[data-management-area="accounts"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
 
                       await click('[data-iconbar-key="configuration"]', "configuration IconBar item");
-                      await waitForTitle("OpenID 客户端");
-                      await waitFor(() => document.querySelectorAll('[data-management-area="configuration"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict client table");
-                      const clientsPathname = location.pathname;
-                      const clientRowText = document.querySelector('[data-management-area="configuration"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
+                      await waitForTitle("OpenID 应用");
+                      await waitFor(() => document.querySelectorAll('[data-config-view="applications"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict application table");
+                      const applicationsPathname = location.pathname;
+                      const applicationRowText = document.querySelector('[data-config-view="applications"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
+
+                      await click('[data-config-command="new-application"]', "new OpenIddict application command");
+                      await click('.jazor-admin-management__profiles button:nth-child(2)', "machine application profile");
+                      await setInput('.jazor-admin-management__field-grid label:nth-child(1) input', "audit-worker");
+                      await setInput('.jazor-admin-management__field-grid label:nth-child(2) input', "Audit worker");
+                      await click('[data-config-command="save-application"]', "save machine application command");
+                      await waitFor(() => document.querySelector('[data-oidc-application="audit-worker"]') !== null, "machine application row");
+                      await waitFor(() => document.querySelector('[data-issued-secret] code')?.textContent?.includes("machine-secret-smoke") === true, "machine client secret");
+                      const machineSecret = document.querySelector('[data-issued-secret] code')?.textContent ?? "";
+
+                      await click('[data-config-command="new-application"]', "new API application command");
+                      await click('.jazor-admin-management__profiles button:nth-child(3)', "API application profile");
+                      await setInput('.jazor-admin-management__field-grid label:nth-child(1) input', "audit-api");
+                      await setInput('.jazor-admin-management__field-grid label:nth-child(2) input', "Audit API");
+                      await click('[data-config-command="save-application"]', "save API application command");
+                      await waitFor(() => document.querySelector('[data-oidc-application="audit-api"]') !== null, "API application row");
+                      const applicationCount = document.querySelectorAll('[data-config-view="applications"] .jazor-admin-management__table tbody tr').length;
 
                       await click('[data-nav-key="configuration.scopes"] a', "OpenIddict scope navigation item");
                       await waitForTitle("OpenID Scope");
-                      await waitFor(() => document.querySelectorAll('[data-management-area="configuration"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict scope table");
+                      await waitFor(() => document.querySelectorAll('[data-config-view="scopes"] .jazor-admin-management__table tbody tr').length === 1, "OpenIddict scope table");
                       const scopesPathname = location.pathname;
-                      const scopeRowText = document.querySelector('[data-management-area="configuration"] .jazor-admin-management__table tbody tr')?.textContent ?? "";
+                      await setInput('.jazor-admin-management__form > label:nth-child(2) input', "JazorAdmin API audited");
+                      await click('[data-config-command="save-scope"]', "save OpenIddict scope command");
+                      await waitFor(() => document.querySelector('[data-oidc-scope="jazoradmin_api"]')?.textContent?.includes("audited") === true, "updated OpenIddict scope row");
+                      const scopeRowText = document.querySelector('[data-oidc-scope="jazoradmin_api"]')?.textContent ?? "";
+
+                      await click('[data-nav-key="configuration.authorizations"] a', "OpenIddict authorization navigation item");
+                      await waitForTitle("授权记录");
+                      await waitFor(() => document.querySelector('[data-config-view="authorizations"] [data-oidc-authorization]') !== null, "OpenIddict authorization table");
+                      const authorizationsPathname = location.pathname;
+                      await click('[data-config-view="authorizations"] .jazor-admin-management__text-button', "revoke authorization command");
+                      await waitFor(() => document.querySelector('[data-oidc-authorization]')?.textContent?.includes("revoked") === true, "revoked OpenIddict authorization");
+                      const authorizationRowText = document.querySelector('[data-oidc-authorization]')?.textContent ?? "";
+
+                      await click('[data-nav-key="configuration.tokens"] a', "OpenIddict token navigation item");
+                      await waitForTitle("令牌");
+                      await waitFor(() => document.querySelector('[data-config-view="tokens"] [data-oidc-token]') !== null, "OpenIddict token table");
+                      const tokensPathname = location.pathname;
+                      await click('[data-config-view="tokens"] .jazor-admin-management__text-button', "revoke token command");
+                      await waitFor(() => document.querySelector('[data-oidc-token]')?.textContent?.includes("revoked") === true, "revoked OpenIddict token");
+                      const tokenRowText = document.querySelector('[data-oidc-token]')?.textContent ?? "";
 
                       await click('[data-iconbar-key="dashboard"]', "dashboard IconBar item");
                       await waitForTitle("仪表盘");
@@ -612,10 +753,16 @@ static async Task VerifyBrowserSmokeAsync(
                         resourceText,
                         accountsPathname,
                         accountRowText,
-                        clientsPathname,
-                        clientRowText,
+                        applicationsPathname,
+                        applicationRowText,
+                        applicationCount,
+                        machineSecret,
                         scopesPathname,
                         scopeRowText,
+                        authorizationsPathname,
+                        authorizationRowText,
+                        tokensPathname,
+                        tokenRowText,
                         dashboardReturnPathname,
                         injectSmoke,
                         hasLegacyVueReference: Array.from(document.scripts)
@@ -691,10 +838,16 @@ static async Task VerifyBrowserSmokeAsync(
         AssertDoesNotContain(root.GetProperty("resourceText").GetString() ?? string.Empty, "Recruitment", "JazorAdmin removed recruitment resource");
         AssertContains(root.GetProperty("accountsPathname").GetString() ?? string.Empty, "/accounts", "JazorAdmin account navigation", root.GetRawText());
         AssertContains(root.GetProperty("accountRowText").GetString() ?? string.Empty, "Platform administrator", "JazorAdmin account row", root.GetRawText());
-        AssertContains(root.GetProperty("clientsPathname").GetString() ?? string.Empty, "/configuration/clients", "JazorAdmin OpenIddict client navigation", root.GetRawText());
-        AssertContains(root.GetProperty("clientRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict client row", root.GetRawText());
+        AssertContains(root.GetProperty("applicationsPathname").GetString() ?? string.Empty, "/configuration/applications", "JazorAdmin OpenIddict application navigation", root.GetRawText());
+        AssertContains(root.GetProperty("applicationRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict application row", root.GetRawText());
+        AssertJsonInt(root, "applicationCount", 3, "JazorAdmin created Machine and API applications", root.GetRawText());
+        AssertContains(root.GetProperty("machineSecret").GetString() ?? string.Empty, "machine-secret-smoke", "JazorAdmin one-time client secret", root.GetRawText());
         AssertContains(root.GetProperty("scopesPathname").GetString() ?? string.Empty, "/configuration/scopes", "JazorAdmin OpenIddict scope navigation", root.GetRawText());
-        AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "JazorAdmin API", "JazorAdmin OpenIddict scope row", root.GetRawText());
+        AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "audited", "JazorAdmin OpenIddict scope edit", root.GetRawText());
+        AssertContains(root.GetProperty("authorizationsPathname").GetString() ?? string.Empty, "/configuration/authorizations", "JazorAdmin OpenIddict authorization navigation", root.GetRawText());
+        AssertContains(root.GetProperty("authorizationRowText").GetString() ?? string.Empty, "revoked", "JazorAdmin OpenIddict authorization revocation", root.GetRawText());
+        AssertContains(root.GetProperty("tokensPathname").GetString() ?? string.Empty, "/configuration/tokens", "JazorAdmin OpenIddict token navigation", root.GetRawText());
+        AssertContains(root.GetProperty("tokenRowText").GetString() ?? string.Empty, "revoked", "JazorAdmin OpenIddict token revocation", root.GetRawText());
         AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard IconBar return", root.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
@@ -717,6 +870,12 @@ static async Task VerifyBrowserSmokeAsync(
         AssertJsonBoolean(mobileLayout, "sidebarBeforeMain", true, "JazorAdmin mobile sidebar order", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "documentFitsViewport", true, "JazorAdmin mobile viewport fit", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "styleRuntimeLoaded", true, "JazorAdmin mobile style runtime", mobileLayout.GetRawText());
+
+        var mobileManagement = root.GetProperty("mobileManagement");
+        AssertContains(mobileManagement.GetProperty("mode").GetString() ?? string.Empty, "management-layout", "JazorAdmin mobile management smoke mode", mobileManagement.GetRawText());
+        AssertContains(mobileManagement.GetProperty("pathname").GetString() ?? string.Empty, "/configuration/applications", "JazorAdmin mobile application location", mobileManagement.GetRawText());
+        AssertJsonBoolean(mobileManagement, "applicationPanelVisible", true, "JazorAdmin mobile application page", mobileManagement.GetRawText());
+        AssertJsonBoolean(mobileManagement, "documentFitsViewport", true, "JazorAdmin mobile application viewport fit", mobileManagement.GetRawText());
 
         var deepLink = root.GetProperty("deepLink");
         AssertContains(deepLink.GetProperty("mode").GetString() ?? string.Empty, "deep-link", "JazorAdmin deep-link smoke mode", deepLink.GetRawText());
@@ -796,6 +955,8 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               await page.waitForSmoke();
               result.mobileLayout = await page.readLayout();
+              await page.navigate(`http://127.0.0.1:${server.port}/configuration/applications`);
+              result.mobileManagement = await page.waitForSmoke();
               await page.navigate(`http://127.0.0.1:${server.port}/error/500`);
               const internalError = await page.waitForSmoke();
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);

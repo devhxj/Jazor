@@ -83,9 +83,7 @@ public sealed class JazorAdminDatabaseInitializer(
         CancellationToken cancellationToken)
     {
         var options = openIddictOptions.Value;
-        if (await applications.FindByClientIdAsync(options.ClientId, cancellationToken) is not null)
-            return;
-
+        var application = await applications.FindByClientIdAsync(options.ClientId, cancellationToken);
         var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = options.ClientId,
@@ -108,7 +106,11 @@ public sealed class JazorAdminDatabaseInitializer(
             OpenIddictConstants.Permissions.Scopes.Roles,
             OpenIddictConstants.Permissions.Prefixes.Scope + JazorAdminScopes.Api
         ]);
+        descriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
 
-        await applications.CreateAsync(descriptor, cancellationToken);
+        if (application is null)
+            await applications.CreateAsync(descriptor, cancellationToken);
+        else
+            await applications.UpdateAsync(application, descriptor, cancellationToken);
     }
 }
