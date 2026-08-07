@@ -35,9 +35,14 @@ internal static class JazorAdminShell
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
         var root = Path.Combine(environment.WebRootPath, "jazor");
         var importMap = ReadJson(Path.Combine(root, "importmap.json"), "{\"imports\":{}}");
-        var styles = GetStyleLinks(environment);
-        return context.Response.WriteAsync(string.Format(Document, importMap, styles), cancellationToken);
+        var headLinks = GetHeadLinks(environment);
+        return context.Response.WriteAsync(string.Format(Document, importMap, headLinks), cancellationToken);
     }
+
+    public static string GetHeadLinks(IWebHostEnvironment environment)
+        => "<link rel=\"icon\" href=\"/brand/jazor-mark.svg\" type=\"image/svg+xml\">" + Environment.NewLine +
+           "<link rel=\"alternate icon\" href=\"/favicon.ico\" sizes=\"any\">" + Environment.NewLine +
+           GetStyleLinks(environment);
 
     public static string GetStyleLinks(IWebHostEnvironment environment)
         => ReadStyles(Path.Combine(environment.WebRootPath, "jazor", "manifest.json"));

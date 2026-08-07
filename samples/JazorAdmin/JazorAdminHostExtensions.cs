@@ -27,8 +27,12 @@ public static class JazorAdminHostExtensions
     {
         services.Configure<JazorAdminOpenIddictOptions>(
             configuration.GetSection(JazorAdminOpenIddictOptions.SectionName));
+        services.Configure<BootstrapOptions>(
+            configuration.GetSection(BootstrapOptions.SectionName));
         services.AddProblemDetails();
         services.AddHttpContextAccessor();
+        services.AddMemoryCache();
+        services.AddSingleton<CaptchaService>();
         services.AddHealthChecks();
         // Resolve configuration when the context is created so WebApplicationFactory can replace the
         // database per test host. 注册阶段捕获连接串会绕过测试宿主的隔离配置。

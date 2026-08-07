@@ -18,9 +18,13 @@ public partial class App : ComponentBase, IVueComponent
     private bool grayscale;
     private string loginAccount = string.Empty;
     private string loginPassword = string.Empty;
+    private string loginCaptcha = string.Empty;
+    private string? loginCaptchaId;
+    private string? loginCaptchaImageUrl;
     private string unlockPassword = string.Empty;
     private string? accessError;
     private bool sessionRestoring = true;
+    private int captchaRequestVersion;
     private SessionResponse? session;
     private OrganizationSummary[] organizations = [];
     private string? selectedOrganizationId;

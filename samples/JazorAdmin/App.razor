@@ -15,9 +15,17 @@
         <main class="@(IsLoginPage ? "ja-access ja-access--login" : "ja-access ja-access--lock")"
               data-access-page="@(IsLoginPage ? "login" : "lock")">
             <section class="ja-access__panel">
-                <strong class="ja-access__brand">JazorAdmin</strong>
-                <h1>@Localization.Get(Language, IsLoginPage ? TextKey.LoginTitle : TextKey.LockTitle)</h1>
-                <p>@Localization.Get(Language, IsLoginPage ? TextKey.LoginSubtitle : TextKey.LockSubtitle)</p>
+                <strong class="ja-access__brand">
+                    <img class="ja-access__brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
+                    <span class="ja-access__brand-copy">
+                        <span>JazorAdmin</span>
+                        <small>Identity control plane</small>
+                    </span>
+                </strong>
+                <div class="ja-access__intro">
+                    <h1>@Localization.Get(Language, IsLoginPage ? TextKey.LoginTitle : TextKey.LockTitle)</h1>
+                    <p>@Localization.Get(Language, IsLoginPage ? TextKey.LoginSubtitle : TextKey.LockSubtitle)</p>
+                </div>
 
                 <form @onsubmit="@(IsLoginPage ? SignIn : Unlock)" @onsubmit:preventDefault>
                     <label>
@@ -41,6 +49,34 @@
                             <input data-access-field="password" name="password" type="password" required @bind="unlockPassword" @bind:event="oninput" />
                         }
                     </label>
+                    @if (IsLoginPage)
+                    {
+                        <label class="ja-access__captcha">
+                            @Localization.Get(Language, TextKey.VerificationCode)
+                            <span class="ja-access__captcha-control">
+                                <input data-access-field="captcha"
+                                       name="captcha"
+                                       type="text"
+                                       maxlength="4"
+                                       autocomplete="off"
+                                       required
+                                       @bind="loginCaptcha"
+                                       @bind:event="oninput" />
+                                @if (loginCaptchaImageUrl is not null)
+                                {
+                                    <img class="ja-access__captcha-image"
+                                         src="@loginCaptchaImageUrl"
+                                         alt="@Localization.Get(Language, TextKey.VerificationCode)" />
+                                }
+                                <button class="ja-access__captcha-refresh"
+                                        type="button"
+                                        data-access-command="refresh-captcha"
+                                        aria-label="@Localization.Get(Language, TextKey.RefreshVerificationCode)"
+                                        title="@Localization.Get(Language, TextKey.RefreshVerificationCode)"
+                                        @onclick="RefreshCaptcha"><span aria-hidden="true">&#8635;</span></button>
+                            </span>
+                        </label>
+                    }
                     <button type="submit" data-access-submit="@(IsLoginPage ? "login" : "lock")">
                         @Localization.Get(Language, IsLoginPage ? TextKey.SignIn : TextKey.Unlock)
                     </button>
@@ -79,6 +115,12 @@
                           SelectedKey="@SelectedKey"
                           ExpandedKeys="@EffectiveExpandedKeys"
                           ExpandedKeysChanged="@(value => expandedKeys = value)">
+            <Logo>
+                <span class="ja-brand-logo">
+                    <img class="ja-brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
+                    <span>Jazor</span>
+                </span>
+            </Logo>
             <HeaderActions>
                 <div class="ja-header-context">
                     @if (organizations.Length > 0)

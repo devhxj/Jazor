@@ -3,6 +3,7 @@
 using JazorAdmin.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace JazorAdmin.Features.Identity;
 
@@ -11,16 +12,34 @@ public static class IdentityEndpoints
     public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/auth").WithTags("Session");
+        group.MapGet("/captcha", CreateCaptcha).AllowAnonymous();
+        group.MapGet("/captcha/{id}.svg", GetCaptchaImage).AllowAnonymous();
         group.MapPost("/login", SignInAsync).AllowAnonymous();
         group.MapPost("/logout", SignOutAsync).RequireAuthorization();
         group.MapGet("/session", GetSessionAsync).RequireAuthorization();
         return app;
     }
 
+    private static IResult CreateCaptcha(CaptchaService captcha)
+    {
+        var issue = captcha.Issue();
+        return Results.Ok(new CaptchaChallengeResponse(issue.Id, "/api/auth/captcha/" + issue.Id + ".svg"));
+    }
+
+    private static IResult GetCaptchaImage(string id, CaptchaService captcha)
+    {
+        var svg = captcha.GetImage(id);
+        return svg is null
+            ? Results.NotFound()
+            : Results.Text(svg, "image/svg+xml; charset=utf-8", Encoding.UTF8);
+    }
+
     private static async Task<IResult> SignInAsync(
+        HttpContext context,
         LoginRequest request,
         UserManager<JazorAdminUser> users,
-        SignInManager<JazorAdminUser> signInManager)
+        SignInManager<JazorAdminUser> signInManager,
+        CaptchaService captcha)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
@@ -30,6 +49,11 @@ public static class IdentityEndpoints
                 ["password"] = ["Password is required."]
             });
         }
+
+        // Lock-screen confirmation retains the authenticated session; only an anonymous sign-in needs the challenge.
+        // 锁屏确认仍保留认证会话，只有匿名首次登录需要验证码。
+        if (context.User.Identity?.IsAuthenticated != true && !captcha.TryValidate(request.CaptchaId, request.CaptchaAnswer))
+            return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Verification code is incorrect or expired.");
 
         var user = await users.FindByEmailAsync(request.Email);
         if (user is null)

@@ -1,11 +1,13 @@
 // Exercises the in-host Identity, OpenIddict, organization, and operation-authorization integration boundary.
 // 验证同宿主 Identity、OpenIddict、组织机构与操作授权的集成边界。
+using System.Buffers.Binary;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
@@ -56,6 +58,8 @@ public sealed class JazorAdminApiTests
                 document,
                 "src=\"/jazor/app.mjs\"",
                 path);
+            StringAssert.Contains(document, "href=\"/brand/jazor-mark.svg\"", path);
+            StringAssert.Contains(document, "href=\"/favicon.ico\"", path);
         }
 
         using var apiRequest = new HttpRequestMessage(HttpMethod.Get, "/api/not-found");
@@ -63,6 +67,20 @@ public sealed class JazorAdminApiTests
         using var apiResponse = await client.SendAsync(apiRequest);
 
         Assert.AreEqual(HttpStatusCode.NotFound, apiResponse.StatusCode);
+
+        using var logoResponse = await client.GetAsync("/brand/jazor-mark.svg");
+        Assert.AreEqual(HttpStatusCode.OK, logoResponse.StatusCode);
+        Assert.AreEqual("image/svg+xml", logoResponse.Content.Headers.ContentType?.MediaType);
+
+        using var artworkResponse = await client.GetAsync("/brand/login-art.webp");
+        Assert.AreEqual(HttpStatusCode.OK, artworkResponse.StatusCode);
+        Assert.AreEqual("image/webp", artworkResponse.Content.Headers.ContentType?.MediaType);
+
+        using var iconResponse = await client.GetAsync("/favicon.ico");
+        Assert.AreEqual(HttpStatusCode.OK, iconResponse.StatusCode);
+        Assert.IsNotNull(iconResponse.Content.Headers.ContentType?.MediaType);
+        var icon = await iconResponse.Content.ReadAsByteArrayAsync();
+        AssertIcoSizes(icon, [16, 32, 48, 64]);
     }
 
     [TestMethod]
@@ -74,6 +92,34 @@ public sealed class JazorAdminApiTests
         var response = await client.GetAsync("/api/auth/session");
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task SignIn_WhenAnonymousCaptchaIsInvalid_ReturnsBadRequest()
+    {
+        await using var factory = new JazorAdminFactory();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest("missing@example.test", "InvalidPassword123!", CaptchaId: "missing", CaptchaAnswer: "ABCD"));
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task BootstrapAdministrator_CreatesFirstPlatformAdminAndAllowsSignIn()
+    {
+        const string email = "bootstrap@example.test";
+        const string password = "BootstrapAdmin123!";
+        await using var factory = new JazorAdminFactory(email, password);
+        using var client = await factory.CreateAuthenticatedClientAsync(email, password);
+
+        var session = await client.GetFromJsonAsync<SessionResponse>("/api/auth/session");
+
+        Assert.IsNotNull(session);
+        Assert.AreEqual(email, session.Email);
+        CollectionAssert.Contains(session.Roles, JazorAdminRoles.PlatformAdministrator);
     }
 
     [TestMethod]
@@ -652,6 +698,27 @@ public sealed class JazorAdminApiTests
         return string.Empty;
     }
 
+    private static void AssertIcoSizes(byte[] icon, int[] expectedSizes)
+    {
+        Assert.IsTrue(icon.Length >= 6 + (expectedSizes.Length * 16));
+        Assert.AreEqual((ushort)0, BinaryPrimitives.ReadUInt16LittleEndian(icon));
+        Assert.AreEqual((ushort)1, BinaryPrimitives.ReadUInt16LittleEndian(icon.AsSpan(2)));
+        Assert.AreEqual((ushort)expectedSizes.Length, BinaryPrimitives.ReadUInt16LittleEndian(icon.AsSpan(4)));
+
+        for (var index = 0; index < expectedSizes.Length; index++)
+        {
+            var entry = icon.AsSpan(6 + (index * 16), 16);
+            Assert.AreEqual((byte)expectedSizes[index], entry[0]);
+            Assert.AreEqual((byte)expectedSizes[index], entry[1]);
+            Assert.AreEqual((ushort)32, BinaryPrimitives.ReadUInt16LittleEndian(entry[6..]));
+            var imageLength = BinaryPrimitives.ReadInt32LittleEndian(entry[8..]);
+            var imageOffset = BinaryPrimitives.ReadInt32LittleEndian(entry[12..]);
+            Assert.IsTrue(imageLength > 40);
+            Assert.IsTrue(imageOffset >= 6 + (expectedSizes.Length * 16));
+            Assert.IsTrue(imageOffset + imageLength <= icon.Length);
+        }
+    }
+
     private static string Base64Url(byte[] value)
         => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
@@ -676,6 +743,14 @@ public sealed class JazorAdminApiTests
     private sealed class JazorAdminFactory : WebApplicationFactory<Program>, IAsyncDisposable
     {
         private readonly string databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
+        private readonly string? bootstrapEmail;
+        private readonly string? bootstrapPassword;
+
+        public JazorAdminFactory(string? bootstrapEmail = null, string? bootstrapPassword = null)
+        {
+            this.bootstrapEmail = bootstrapEmail;
+            this.bootstrapPassword = bootstrapPassword;
+        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -687,16 +762,26 @@ public sealed class JazorAdminApiTests
                 Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
 
             builder.UseEnvironment("Testing");
-            builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            builder.ConfigureAppConfiguration(configuration =>
             {
-                // File-backed SQLite catches relational translation issues, while disabling pooling lets
-                // each isolated test release and remove its database deterministically.
-                // 使用文件 SQLite 验证关系型查询；关闭连接池确保隔离数据库可被确定性清理。
-                ["ConnectionStrings:JazorAdmin"] = "Data Source=" + databasePath + ";Pooling=False",
-                ["JazorAdmin:OpenIddict:ClientId"] = "jazoradmin-spa",
-                ["JazorAdmin:OpenIddict:RedirectUris:0"] = "http://localhost/auth/callback",
-                ["JazorAdmin:OpenIddict:PostLogoutRedirectUris:0"] = "http://localhost/login"
-            }));
+                var values = new Dictionary<string, string?>
+                {
+                    // File-backed SQLite catches relational translation issues, while disabling pooling lets
+                    // each isolated test release and remove its database deterministically.
+                    // 使用文件 SQLite 验证关系型查询；关闭连接池确保隔离数据库可被确定性清理。
+                    ["ConnectionStrings:JazorAdmin"] = "Data Source=" + databasePath + ";Pooling=False",
+                    ["JazorAdmin:OpenIddict:ClientId"] = "jazoradmin-spa",
+                    ["JazorAdmin:OpenIddict:RedirectUris:0"] = "http://localhost/auth/callback",
+                    ["JazorAdmin:OpenIddict:PostLogoutRedirectUris:0"] = "http://localhost/login"
+                };
+                if (bootstrapEmail is not null || bootstrapPassword is not null)
+                {
+                    values["JazorAdmin:Bootstrap:Email"] = bootstrapEmail;
+                    values["JazorAdmin:Bootstrap:Password"] = bootstrapPassword;
+                }
+
+                configuration.AddInMemoryCollection(values);
+            });
         }
 
         public async Task<TestUser> CreateUserAsync(string email, bool platformAdministrator)
@@ -737,7 +822,20 @@ public sealed class JazorAdminApiTests
                 AllowAutoRedirect = allowAutoRedirect,
                 HandleCookies = true
             });
-            using var response = await client.PostAsJsonAsync("/api/auth/login", new { email, password, rememberMe = false });
+            using var challengeResponse = await client.GetAsync("/api/auth/captcha");
+            Assert.AreEqual(HttpStatusCode.OK, challengeResponse.StatusCode);
+            var challenge = await challengeResponse.Content.ReadFromJsonAsync<CaptchaChallengeResponse>();
+            Assert.IsNotNull(challenge);
+
+            using var imageResponse = await client.GetAsync(challenge.ImageUrl);
+            Assert.AreEqual(HttpStatusCode.OK, imageResponse.StatusCode);
+            var image = await imageResponse.Content.ReadAsStringAsync();
+            var answer = string.Concat(Regex.Matches(image, "<text[^>]*>([A-Z0-9])</text>").Select(match => match.Groups[1].Value));
+            Assert.AreEqual(4, answer.Length);
+
+            using var response = await client.PostAsJsonAsync(
+                "/api/auth/login",
+                new LoginRequest(email, password, CaptchaId: challenge.Id, CaptchaAnswer: answer));
             Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
             return client;
         }

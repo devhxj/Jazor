@@ -31,8 +31,10 @@ public partial class App
             organizations = [];
             selectedOrganizationId = null;
             loginPassword = string.Empty;
+            loginCaptcha = string.Empty;
             unlockPassword = string.Empty;
             accessError = null;
+            RefreshCaptcha();
             _ = router.Push("/login");
         });
     }
@@ -45,12 +47,20 @@ public partial class App
             return;
         }
 
-        ApiClient.SignIn(loginAccount, loginPassword).Then(outcome =>
+        if (Text.Normalize(loginCaptcha) is null || loginCaptchaId is null)
+        {
+            accessError = Localization.Get(Language, TextKey.VerificationCodeRequired);
+            return;
+        }
+
+        ApiClient.SignIn(loginAccount, loginPassword, loginCaptchaId, loginCaptcha).Then(outcome =>
         {
             loginPassword = string.Empty;
+            loginCaptcha = string.Empty;
             if (!outcome.Ok)
             {
                 accessError = outcome.Error ?? "Sign-in failed.";
+                RefreshCaptcha();
                 return;
             }
 
@@ -92,6 +102,7 @@ public partial class App
             session = null;
             organizations = [];
             selectedOrganizationId = null;
+            RefreshCaptcha();
             if (!IsLoginPage && currentRoute.Path != "/lock")
                 _ = router.Push("/login");
             return;
@@ -104,5 +115,28 @@ public partial class App
         accessError = null;
         if (IsLoginPage || currentRoute.Path == "/lock")
             _ = router.Push("/");
+    }
+
+    private void RefreshCaptcha()
+    {
+        loginCaptcha = string.Empty;
+        loginCaptchaId = null;
+        loginCaptchaImageUrl = null;
+        var requestVersion = ++captchaRequestVersion;
+        ApiClient.GetCaptcha().Then(outcome =>
+        {
+            if (requestVersion != captchaRequestVersion)
+                return;
+
+            if (!outcome.Ok || outcome.Data is null)
+            {
+                accessError = outcome.Error ?? "Verification code could not be loaded.";
+                return;
+            }
+
+            var captcha = ApiClient.ToCaptchaChallenge(outcome.Data);
+            loginCaptchaId = captcha.Id;
+            loginCaptchaImageUrl = captcha.ImageUrl;
+        });
     }
 }

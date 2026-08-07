@@ -19,8 +19,11 @@ public static class ApiClient
     public static IPromise<ApiOutcome> GetSession()
         => Get("/api/auth/session");
 
-    public static IPromise<ApiOutcome> SignIn(string email, string password)
-        => Send("/api/auth/login", "POST", new LoginRequest(email, password));
+    public static IPromise<ApiOutcome> GetCaptcha()
+        => Get("/api/auth/captcha");
+
+    public static IPromise<ApiOutcome> SignIn(string email, string password, string? captchaId = null, string? captchaAnswer = null)
+        => Send("/api/auth/login", "POST", new LoginRequest(email, password, CaptchaId: captchaId, CaptchaAnswer: captchaAnswer));
 
     public static IPromise<ApiOutcome> SignOut()
         => Send("/api/auth/logout", "POST");
@@ -191,6 +194,11 @@ public static class ApiClient
             ReadString(data, "displayName"),
             ReadStringArray(Reflect.Get(data, "roles")),
             ReadOrganizationSummaries(Reflect.Get(data, "organizations")));
+
+    public static CaptchaChallengeResponse ToCaptchaChallenge(object data)
+        => new(
+            ReadString(data, "id"),
+            ReadString(data, "imageUrl"));
 
     public static OrganizationDetailResponse ToOrganizationDetail(object data)
         => new(

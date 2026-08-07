@@ -231,7 +231,7 @@ public static class OpenIddictEndpoints
         var name = WebUtility.HtmlEncode(applicationName);
         var requestedScopes = WebUtility.HtmlEncode(string.Join(", ", scopes));
         var parameters = RenderRequestParameters(request);
-        var styles = JazorAdminShell.GetStyleLinks(environment);
+        var headLinks = JazorAdminShell.GetHeadLinks(environment);
         var html = $$"""
             <!doctype html>
             <html lang="en">
@@ -239,12 +239,15 @@ public static class OpenIddictEndpoints
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1">
               <title>Authorize {{name}}</title>
-              {{styles}}
+              {{headLinks}}
             </head>
             <body>
               <main class="ja-access ja-access--login" data-access-page="consent">
                 <section class="ja-access__panel">
-                  <strong class="ja-access__brand">JazorAdmin</strong>
+                  <strong class="ja-access__brand">
+                    <img class="ja-access__brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true">
+                    <span class="ja-access__brand-copy"><span>JazorAdmin</span><small>Identity control plane</small></span>
+                  </strong>
                   <h1>Authorize {{name}}</h1>
                   <p>The application is requesting: {{requestedScopes}}</p>
                   <form method="post" action="{{action}}">

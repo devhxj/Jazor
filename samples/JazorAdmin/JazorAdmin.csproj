@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <UserSecretsId>JazorAdmin-8c736ec8-0462-4f31-b7a6-b85c5d4ea3c4</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

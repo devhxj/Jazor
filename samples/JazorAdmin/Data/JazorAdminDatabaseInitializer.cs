@@ -12,6 +12,8 @@ namespace JazorAdmin.Data;
 public sealed class JazorAdminDatabaseInitializer(
     IServiceScopeFactory scopeFactory,
     IOptions<JazorAdminOpenIddictOptions> openIddictOptions,
+    IOptions<BootstrapOptions> bootstrapOptions,
+    IHostEnvironment environment,
     ILogger<JazorAdminDatabaseInitializer> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -19,7 +21,9 @@ public sealed class JazorAdminDatabaseInitializer(
         await using var scope = scopeFactory.CreateAsyncScope();
         var database = scope.ServiceProvider.GetRequiredService<JazorAdminDbContext>();
         await database.Database.MigrateAsync(cancellationToken);
-        await SeedPlatformRoleAsync(scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>());
+        var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        await SeedPlatformRoleAsync(roles);
+        await SeedBootstrapAdministratorAsync(scope.ServiceProvider.GetRequiredService<UserManager<JazorAdminUser>>());
         await SeedAuthorizationCatalogAsync(database, cancellationToken);
         await SeedSpaClientAsync(
             scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>(),
@@ -38,6 +42,53 @@ public sealed class JazorAdminDatabaseInitializer(
         var result = await roles.CreateAsync(new IdentityRole(JazorAdminRoles.PlatformAdministrator));
         if (!result.Succeeded)
             throw new InvalidOperationException("Unable to create the platform administrator role.");
+    }
+
+    private async Task SeedBootstrapAdministratorAsync(UserManager<JazorAdminUser> users)
+    {
+        var platformAdministrators = await users.GetUsersInRoleAsync(JazorAdminRoles.PlatformAdministrator);
+        if (platformAdministrators.Count > 0)
+            return;
+
+        var options = bootstrapOptions.Value;
+        var hasEmail = !string.IsNullOrWhiteSpace(options.Email);
+        var hasPassword = !string.IsNullOrWhiteSpace(options.Password);
+        if (!hasEmail && !hasPassword && environment.IsEnvironment("Testing"))
+            return;
+
+        if (!hasEmail || !hasPassword)
+        {
+            throw new InvalidOperationException(
+                "No platform administrator exists. Configure JazorAdmin:Bootstrap:Email and " +
+                "JazorAdmin:Bootstrap:Password before starting the application.");
+        }
+
+        var user = await users.FindByEmailAsync(options.Email!);
+        if (user is null)
+        {
+            user = new JazorAdminUser
+            {
+                UserName = options.Email,
+                Email = options.Email,
+                DisplayName = options.DisplayName,
+                EmailConfirmed = true,
+                LockoutEnabled = true
+            };
+            var result = await users.CreateAsync(user, options.Password!);
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Unable to create the bootstrap administrator: " +
+                    string.Join(", ", result.Errors.Select(error => error.Description)));
+        }
+
+        if (!await users.IsInRoleAsync(user, JazorAdminRoles.PlatformAdministrator))
+        {
+            var result = await users.AddToRoleAsync(user, JazorAdminRoles.PlatformAdministrator);
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Unable to grant the bootstrap administrator role: " +
+                    string.Join(", ", result.Errors.Select(error => error.Description)));
+        }
+
+        logger.LogInformation("Bootstrap platform administrator '{Email}' is ready.", user.Email);
     }
 
     private static async Task SeedAuthorizationCatalogAsync(
@@ -83,6 +134,13 @@ public sealed class JazorAdminDatabaseInitializer(
         CancellationToken cancellationToken)
     {
         var options = openIddictOptions.Value;
+        if (options.RedirectUris.Length == 0 || options.PostLogoutRedirectUris.Length == 0)
+        {
+            throw new InvalidOperationException(
+                "Configure JazorAdmin:OpenIddict:RedirectUris and " +
+                "JazorAdmin:OpenIddict:PostLogoutRedirectUris with the public application origin.");
+        }
+
         var application = await applications.FindByClientIdAsync(options.ClientId, cancellationToken);
         var descriptor = new OpenIddictApplicationDescriptor
         {

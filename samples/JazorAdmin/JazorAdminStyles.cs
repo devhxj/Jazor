@@ -205,7 +205,7 @@ internal static class JazorAdminStyles
                 Overflow = raw("auto"),
                 Background = raw("#17241f"),
                 Color = raw("#eef7f3"),
-                BorderRight = raw("1px solid #293a33")
+                BorderRight = px(1) | solid | hex("293a33")
             });
 
         global(".ja-shell--collapsed",
@@ -238,7 +238,7 @@ internal static class JazorAdminStyles
                 ZIndex = raw("15"),
                 MinHeight = raw("64px"),
                 Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
-                BorderBottom = raw("1px solid var(--border)"),
+                BorderBottom = px(1) | solid | var("--border"),
                 BackdropFilter = raw("blur(12px)")
             });
 
@@ -253,7 +253,7 @@ internal static class JazorAdminStyles
                 MarginLeft = raw("14px"),
                 Color = raw("var(--text)"),
                 Background = raw("transparent"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("5px")
             });
 
@@ -293,7 +293,7 @@ internal static class JazorAdminStyles
                 ZIndex = raw("20"),
                 Height = raw("100vh"),
                 Overflow = raw("auto"),
-                BorderRight = raw("1px solid var(--border)")
+                BorderRight = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-layout[data-shell-collapsed=\"false\"] > [data-shell-region=\"sidebar\"]",
@@ -322,7 +322,7 @@ internal static class JazorAdminStyles
                 Position = raw("sticky"),
                 Top = raw("0"),
                 ZIndex = raw("15"),
-                BorderBottom = raw("1px solid var(--border)")
+                BorderBottom = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-layout__header",
@@ -590,7 +590,7 @@ internal static class JazorAdminStyles
                 MinWidth = raw("0"),
                 Padding = raw("14px 10px"),
                 Overflow = raw("auto"),
-                BorderLeft = raw("1px solid var(--border)")
+                BorderLeft = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-sidebar-shell__brand",
@@ -611,11 +611,9 @@ internal static class JazorAdminStyles
             new CssRule
             {
                 Display = raw("block"),
-                Width = raw("18px"),
-                Height = raw("18px"),
-                Background = raw("#2f6fed"),
-                BorderRadius = raw("4px"),
-                BoxShadow = shadows(new CssShadow(px(0), px(0), Blur: px(0), Spread: px(4), Color: hex("dce8ff"), Inset: true))
+                Flex = raw("0 0 auto"),
+                Width = raw("22px"),
+                Height = raw("22px")
             });
 
         global(".ja-tdesign-sidebar-shell__menu [data-navigation-orientation=\"vertical\"]",
@@ -939,7 +937,7 @@ internal static class JazorAdminStyles
                 Padding = raw("7px 10px"),
                 Color = raw("var(--text)"),
                 Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border-strong)"),
+                Border = px(1) | solid | var("--border-strong"),
                 BorderRadius = raw("5px")
             });
 
@@ -969,7 +967,7 @@ internal static class JazorAdminStyles
                 Color = raw("var(--text)"),
                 FontWeight = raw("650"),
                 Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border-strong)"),
+                Border = px(1) | solid | var("--border-strong"),
                 BorderRadius = raw("5px")
             });
 
@@ -1130,46 +1128,138 @@ internal static class JazorAdminStyles
                 Display = raw("grid"),
                 MinHeight = raw("100vh"),
                 Padding = raw("32px"),
-                PlaceItems = raw("center"),
+                PlaceItems = raw("center")
+            });
+
+        global(".ja-access",
+            new CssRule
+            {
+                Position = raw("relative"),
+                Isolation = isolate,
+                GridTemplateColumns = tracks(minMax(px(0), fr(1.2)), minMax(px(340), fr(0.8))),
+                Padding = raw("clamp(24px, 4vw, 56px) clamp(24px, 7vw, 132px)"),
+                Overflow = hidden,
+                BackgroundColor = hex("1b5353"),
+                BackgroundImage = url("/brand/login-art.webp"),
+                BackgroundPosition = center,
+                BackgroundSize = cover
+            });
+
+        global(".ja-error",
+            new CssRule
+            {
                 Background = raw("var(--app-bg)")
             });
 
         global(".ja-access__panel, .ja-error__content",
             new CssRule
             {
-                Width = raw("min(100%, 420px)")
+                Width = raw("min(100%, 448px)")
             });
 
         global(".ja-access__panel",
             new CssRule
             {
-                Padding = raw("30px"),
-                Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border)"),
-                BorderTop = raw("4px solid var(--accent)"),
-                BorderRadius = raw("7px"),
-                BoxShadow = var("--shadow")
+                Position = relative,
+                ZIndex = raw("1"),
+                GridColumn = 2,
+                AlignSelf = center,
+                JustifySelf = end,
+                Padding = px(34),
+                Overflow = hidden,
+                Color = hex("f4fbfa"),
+                Background = rgba(8, 56, 55, 0.54),
+                Border = px(1) | solid | rgba(239, 223, 166, 0.42),
+                BorderBottomColor = rgba(91, 177, 157, 0.5),
+                BorderRadius = px(24),
+                BoxShadow = shadows(
+                    new CssShadow(px(0), px(30), Blur: px(72), Color: rgba(0, 20, 25, 0.34)),
+                    new CssShadow(px(0), px(2), Blur: px(14), Color: rgba(217, 239, 208, 0.08)),
+                    new CssShadow(px(0), px(1), Blur: px(0), Color: rgba(250, 239, 193, 0.42), Inset: true),
+                    new CssShadow(px(0), px(-1), Blur: px(0), Color: rgba(3, 42, 43, 0.34), Inset: true)),
+                BackdropFilter = filters(blur(px(22)), saturate(1.18)),
+                ["-webkit-backdrop-filter"] = filters(blur(px(22)), saturate(1.18))
             });
 
         global(".ja-access__brand",
             new CssRule
             {
-                Color = raw("var(--accent)"),
-                FontSize = raw("17px")
+                Display = raw("inline-flex"),
+                AlignItems = raw("center"),
+                Gap = raw("12px"),
+                Color = raw("#ffffff"),
+                FontSize = raw("18px"),
+                LineHeight = raw("1")
+            });
+
+        global(".ja-access__brand-mark",
+            new CssRule
+            {
+                Display = raw("block"),
+                Flex = raw("0 0 auto"),
+                Width = raw("44px"),
+                Height = raw("44px"),
+                Filter = raw("drop-shadow(0 8px 18px rgba(4, 24, 33, 0.28))")
+            });
+
+        global(".ja-access__brand-copy",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Gap = raw("5px")
+            });
+
+        global(".ja-access__brand-copy small",
+            new CssRule
+            {
+                Color = raw("rgba(235, 249, 247, 0.72)"),
+                FontSize = raw("11px"),
+                FontWeight = raw("600"),
+                TextTransform = raw("uppercase")
+            });
+
+        global(".ja-brand-logo",
+            new CssRule
+            {
+                Display = raw("inline-flex"),
+                AlignItems = raw("center"),
+                Gap = raw("8px"),
+                Color = raw("var(--text)"),
+                FontSize = raw("16px"),
+                FontWeight = raw("700"),
+                LineHeight = raw("1")
+            });
+
+        global(".ja-brand-mark",
+            new CssRule
+            {
+                Display = raw("block"),
+                Flex = raw("0 0 auto"),
+                Width = raw("24px"),
+                Height = raw("24px")
+            });
+
+        global(".ja-access__intro",
+            new CssRule
+            {
+                MarginTop = raw("30px")
             });
 
         global(".ja-access h1",
             new CssRule
             {
-                Margin = raw("22px 0 8px"),
-                FontSize = raw("26px")
+                Margin = raw("0 0 8px"),
+                Color = raw("#ffffff"),
+                FontSize = raw("27px"),
+                FontWeight = raw("700"),
+                TextShadow = raw("0 1px 1px rgba(3, 20, 30, 0.22)")
             });
 
         global(".ja-access p",
             new CssRule
             {
                 Margin = raw("0"),
-                Color = raw("var(--text-muted)"),
+                Color = raw("rgba(232, 246, 245, 0.78)"),
                 LineHeight = raw("1.5")
             });
 
@@ -1177,24 +1267,141 @@ internal static class JazorAdminStyles
             new CssRule
             {
                 Display = raw("grid"),
-                MarginTop = raw("24px"),
-                Gap = raw("16px")
+                MarginTop = raw("26px"),
+                Gap = raw("18px")
             });
 
         global(".ja-access label",
             new CssRule
             {
                 Display = raw("grid"),
-                Gap = raw("7px"),
-                FontSize = raw("13px"),
-                FontWeight = raw("650")
+                Gap = raw("8px"),
+                Color = raw("rgba(247, 253, 252, 0.92)"),
+                FontSize = raw("12px"),
+                FontWeight = raw("650"),
+                TextShadow = raw("0 1px 1px rgba(3, 20, 30, 0.18)")
+            });
+
+        global(".ja-access input",
+            new CssRule
+            {
+                Width = raw("100%"),
+                MinHeight = raw("48px"),
+                Padding = raw("11px 13px"),
+                Color = raw("#132f3c"),
+                Background = raw("rgba(235, 249, 242, 0.72)"),
+                Border = px(1) | solid | rgba(240, 245, 213, 0.62),
+                BorderBottomColor = raw("rgba(98, 153, 151, 0.58)"),
+                BorderRadius = raw("12px"),
+                BoxShadow = shadows(
+                    new CssShadow(px(0), px(1), Blur: px(0), Color: rgba(255, 255, 255, 0.66), Inset: true),
+                    new CssShadow(px(0), px(2), Blur: px(7), Color: rgba(5, 28, 40, 0.12), Inset: true))
+            });
+
+        global(".ja-access input:focus",
+            new CssRule
+            {
+                Background = raw("rgba(255, 255, 247, 0.9)"),
+                BorderColor = raw("#dcc36f"),
+                BoxShadow = shadows(
+                    new CssShadow(px(0), px(0), Blur: px(0), Spread: px(3), Color: rgba(231, 201, 108, 0.2)),
+                    new CssShadow(px(0), px(1), Blur: px(0), Color: rgba(255, 255, 255, 1), Inset: true))
+            });
+
+        global(".ja-access button",
+            new CssRule
+            {
+                MinHeight = raw("48px"),
+                Color = raw("#ffffff"),
+                Background = raw("rgba(29, 121, 109, 0.88)"),
+                Border = px(1) | solid | rgba(241, 224, 166, 0.58),
+                BorderBottomColor = raw("#155a54"),
+                BorderRadius = raw("12px"),
+                BoxShadow = shadows(
+                    new CssShadow(px(0), px(1), Blur: px(0), Color: rgba(255, 255, 255, 0.36), Inset: true),
+                    new CssShadow(px(0), px(-2), Blur: px(0), Color: rgba(8, 55, 53, 0.24), Inset: true),
+                    new CssShadow(px(0), px(8), Blur: px(20), Color: rgba(3, 27, 36, 0.2)))
+            });
+
+        global(".ja-access button:hover",
+            new CssRule
+            {
+                Background = raw("#2b9385"),
+                BorderColor = raw("rgba(235, 255, 252, 0.78)"),
+                Transform = translateY(px(-1))
+            });
+
+        global(".ja-access__captcha-control",
+            new CssRule
+            {
+                Display = raw("grid"),
+                GridTemplateColumns = raw("minmax(0, 1fr) 124px 48px"),
+                AlignItems = raw("center"),
+                Gap = raw("8px")
+            });
+
+        global(".ja-access__captcha-control input",
+            new CssRule
+            {
+                MinWidth = raw("0"),
+                TextTransform = raw("uppercase"),
+                LetterSpacing = raw("0.08em")
+            });
+
+        global(".ja-access__captcha-image",
+            new CssRule
+            {
+                Display = raw("block"),
+                Width = raw("124px"),
+                Height = raw("48px"),
+                Background = raw("rgba(234, 248, 245, 0.84)"),
+                Border = px(1) | solid | rgba(255, 255, 255, 0.64),
+                BorderRadius = raw("12px")
+            });
+
+        global(".ja-access__captcha-refresh",
+            new CssRule
+            {
+                Display = raw("grid"),
+                Width = raw("48px"),
+                Height = raw("48px"),
+                MinHeight = raw("48px"),
+                Padding = raw("0"),
+                PlaceItems = raw("center"),
+                Color = raw("#eafff9 !important"),
+                FontSize = raw("21px"),
+                LineHeight = raw("1"),
+                Background = raw("rgba(20, 88, 86, 0.78) !important"),
+                BorderColor = raw("rgba(225, 255, 250, 0.52) !important"),
+                BorderRadius = raw("12px"),
+                BoxShadow = shadows(
+                    new CssShadow(px(0), px(1), Blur: px(0), Color: rgba(255, 255, 255, 0.26), Inset: true),
+                    new CssShadow(px(0), px(6), Blur: px(14), Color: rgba(3, 27, 36, 0.15)))
+            });
+
+        global(".ja-access__captcha-refresh:hover",
+            new CssRule
+            {
+                Background = raw("#2b9385 !important"),
+                Transform = rotate(deg(12))
+            });
+
+        global(".ja-access__captcha-refresh:focus-visible",
+            new CssRule
+            {
+                Outline = px(3) | solid | rgba(116, 221, 197, 0.56),
+                OutlineOffset = raw("2px")
             });
 
         global(".ja-access__error",
             new CssRule
             {
-                Color = raw("var(--danger) !important"),
-                FontSize = raw("13px")
+                Padding = raw("10px 12px"),
+                Color = raw("#ffe8e5 !important"),
+                FontSize = raw("13px"),
+                Background = raw("rgba(124, 34, 37, 0.42)"),
+                Border = px(1) | solid | rgba(255, 192, 185, 0.35),
+                BorderRadius = raw("10px")
             });
 
         global(".ja-error__content",
@@ -1243,7 +1450,7 @@ internal static class JazorAdminStyles
         global(":where(a, button, input, select):focus-visible",
             new CssRule
             {
-                Outline = raw("3px solid color-mix(in srgb, var(--accent) 35%, transparent)"),
+                Outline = px(3) | solid | raw("color-mix(in srgb, var(--accent) 35%, transparent)"),
                 OutlineOffset = raw("2px")
             });
 
@@ -1308,7 +1515,7 @@ internal static class JazorAdminStyles
                 Height = raw("auto"),
                 Overflow = raw("visible"),
                 BorderRight = raw("0"),
-                BorderBottom = raw("1px solid #293a33")
+                BorderBottom = px(1) | solid | hex("293a33")
             });
 
         Media(".ja-tdesign-layout", "(max-width: 760px)",
@@ -1327,7 +1534,7 @@ internal static class JazorAdminStyles
                 Height = raw("auto"),
                 Overflow = raw("visible"),
                 BorderRight = raw("0"),
-                BorderBottom = raw("1px solid var(--border)"),
+                BorderBottom = px(1) | solid | var("--border"),
                 Flex = raw("0 0 auto !important")
             });
 
@@ -1384,7 +1591,7 @@ internal static class JazorAdminStyles
             {
                 Width = raw("100%"),
                 Padding = raw("10px 12px"),
-                BorderTop = raw("1px solid var(--border)"),
+                BorderTop = px(1) | solid | var("--border"),
                 BorderLeft = raw("0")
             });
 
@@ -1594,10 +1801,32 @@ internal static class JazorAdminStyles
                 Padding = raw("20px")
             });
 
+        Media(".ja-access", "(max-width: 760px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("minmax(0, 1fr)"),
+                BackgroundPosition = raw("38% center")
+            });
+
         Media(".ja-access__panel", "(max-width: 760px)",
             new CssRule
             {
-                Padding = raw("24px 20px")
+                GridColumn = raw("1"),
+                Padding = raw("26px 20px"),
+                BorderRadius = raw("18px")
+            });
+
+        Media(".ja-access__captcha-control", "(max-width: 430px)",
+            new CssRule
+            {
+                GridTemplateColumns = raw("minmax(0, 1fr) 48px")
+            });
+
+        Media(".ja-access__captcha-image", "(max-width: 430px)",
+            new CssRule
+            {
+                GridColumn = raw("1 / -1"),
+                GridRow = raw("2")
             });
 
         Media(".ja-error__code", "(max-width: 760px)",
@@ -1625,7 +1854,7 @@ internal static class JazorAdminStyles
                 Margin = raw("18px auto 28px"),
                 Background = raw("transparent !important"),
                 Border = raw("0 !important"),
-                Additional = [new("box-shadow", none, Important: true)]
+                Additional = [important("box-shadow", none)]
             });
 
         global(".ja-tdesign-page-container--dashboard .ja-tdesign-page-container__header",
@@ -1668,7 +1897,7 @@ internal static class JazorAdminStyles
             {
                 Width = raw("24px"),
                 Height = raw("24px"),
-                Border = raw("2px solid var(--border-strong)"),
+                Border = px(2) | solid | var("--border-strong"),
                 BorderTopColor = raw("var(--accent)"),
                 BorderRadius = raw("50%"),
                 Animation = raw(sessionSpin + " 720ms linear infinite")
@@ -1694,7 +1923,7 @@ internal static class JazorAdminStyles
                 Gap = raw("7px"),
                 Color = raw("var(--text-muted)"),
                 FontSize = raw("12px"),
-                BorderRight = raw("1px solid var(--border)")
+                BorderRight = px(1) | solid | var("--border")
             });
 
         global(".ja-organization-picker select",
@@ -1710,7 +1939,7 @@ internal static class JazorAdminStyles
                 TextOverflow = raw("ellipsis"),
                 WhiteSpace = raw("nowrap"),
                 Background = raw("var(--surface-subtle)"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("4px")
             });
 
@@ -1719,7 +1948,7 @@ internal static class JazorAdminStyles
             {
                 MinWidth = raw("0"),
                 PaddingLeft = raw("8px"),
-                BorderLeft = raw("1px solid var(--border)")
+                BorderLeft = px(1) | solid | var("--border")
             });
 
         global(".ja-access-command",
@@ -1761,8 +1990,8 @@ internal static class JazorAdminStyles
                 MinHeight = raw("132px"),
                 Padding = raw("18px 20px"),
                 Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border)"),
-                BorderTop = raw("3px solid var(--accent)"),
+                Border = px(1) | solid | var("--border"),
+                BorderTop = px(3) | solid | var("--accent"),
                 BorderRadius = raw("6px"),
                 BoxShadow = var("--shadow"),
                 Animation = raw(dashboardEnter + " 260ms ease both")
@@ -1835,7 +2064,7 @@ internal static class JazorAdminStyles
             {
                 MinWidth = raw("0"),
                 Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("6px"),
                 BoxShadow = var("--shadow")
             });
@@ -1849,7 +2078,7 @@ internal static class JazorAdminStyles
                 MinHeight = raw("68px"),
                 Padding = raw("15px 20px"),
                 Gap = raw("16px"),
-                BorderBottom = raw("1px solid var(--border)")
+                BorderBottom = px(1) | solid | var("--border")
             });
 
         global(".ja-overview__panel-header h2, .ja-overview__panel-header p, .ja-management__panel-header h2, .ja-management__panel-header p",
@@ -1890,7 +2119,7 @@ internal static class JazorAdminStyles
                 MinHeight = raw("48px"),
                 Padding = raw("10px 20px"),
                 Gap = raw("10px"),
-                BorderBottom = raw("1px solid var(--border)")
+                BorderBottom = px(1) | solid | var("--border")
             });
 
         global(".ja-overview__organization-list li.is-current",
@@ -1934,7 +2163,7 @@ internal static class JazorAdminStyles
             {
                 Color = raw("var(--danger)"),
                 Background = raw("var(--danger-soft)"),
-                Border = raw("1px solid color-mix(in srgb, var(--danger) 30%, var(--border))"),
+                Border = px(1) | solid | raw("color-mix(in srgb, var(--danger) 30%, var(--border))"),
                 BorderRadius = raw("6px")
             });
 
@@ -1991,7 +2220,7 @@ internal static class JazorAdminStyles
                 MinWidth = raw("0"),
                 Padding = raw("12px"),
                 Background = raw("var(--surface-subtle)"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("4px")
             });
 
@@ -2052,7 +2281,7 @@ internal static class JazorAdminStyles
                 Padding = raw("6px 9px"),
                 Color = raw("var(--text)"),
                 Background = raw("var(--surface)"),
-                Border = raw("1px solid var(--border-strong)"),
+                Border = px(1) | solid | var("--border-strong"),
                 BorderRadius = raw("4px")
             });
 
@@ -2080,7 +2309,7 @@ internal static class JazorAdminStyles
                 Padding = raw("12px"),
                 Margin = raw("0"),
                 Gap = raw("10px 14px"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("4px")
             });
 
@@ -2120,7 +2349,7 @@ internal static class JazorAdminStyles
                 Display = raw("grid"),
                 GridTemplateColumns = raw("repeat(3, minmax(0, 1fr))"),
                 Margin = raw("20px 20px 0"),
-                Border = raw("1px solid var(--border-strong)"),
+                Border = px(1) | solid | var("--border-strong"),
                 BorderRadius = raw("4px"),
                 Overflow = raw("hidden")
             });
@@ -2131,7 +2360,7 @@ internal static class JazorAdminStyles
                 Color = raw("var(--text-muted)"),
                 Background = raw("var(--surface)"),
                 Border = raw("0"),
-                BorderRight = raw("1px solid var(--border-strong)"),
+                BorderRight = px(1) | solid | var("--border-strong"),
                 BorderRadius = raw("0")
             });
 
@@ -2182,7 +2411,7 @@ internal static class JazorAdminStyles
                 Gap = raw("6px"),
                 Color = raw("var(--text)"),
                 Background = raw("var(--warning-soft)"),
-                Border = raw("1px solid color-mix(in srgb, var(--warning) 38%, var(--border))"),
+                Border = px(1) | solid | raw("color-mix(in srgb, var(--warning) 38%, var(--border))"),
                 BorderRadius = raw("4px")
             });
 
@@ -2209,7 +2438,7 @@ internal static class JazorAdminStyles
                 FontSize = raw("13px"),
                 FontWeight = raw("600"),
                 Background = raw("var(--accent)"),
-                Border = raw("1px solid var(--accent)"),
+                Border = px(1) | solid | var("--accent"),
                 BorderRadius = raw("4px")
             });
 
@@ -2240,7 +2469,7 @@ internal static class JazorAdminStyles
                 Padding = raw("13px 20px"),
                 TextAlign = raw("left"),
                 VerticalAlign = raw("middle"),
-                BorderBottom = raw("1px solid var(--border)")
+                BorderBottom = px(1) | solid | var("--border")
             });
 
         global(".ja-management__table th",
@@ -2305,7 +2534,7 @@ internal static class JazorAdminStyles
                 TextAlign = raw("left"),
                 Background = raw("transparent"),
                 Border = raw("0"),
-                BorderLeft = raw("3px solid transparent"),
+                BorderLeft = px(3) | solid | transparent,
                 BorderRadius = raw("0")
             });
 
@@ -2343,7 +2572,7 @@ internal static class JazorAdminStyles
                 Gap = raw("8px"),
                 FontSize = raw("13px"),
                 Background = raw("var(--surface-subtle)"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("4px")
             });
 
@@ -2458,7 +2687,7 @@ internal static class JazorAdminStyles
                 Margin = raw("0"),
                 Gap = raw("10px"),
                 Background = raw("var(--surface-subtle)"),
-                Border = raw("1px solid var(--border)"),
+                Border = px(1) | solid | var("--border"),
                 BorderRadius = raw("4px")
             });
 
