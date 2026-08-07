@@ -90,6 +90,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 - JazorAdmin now provides OpenIddict application, scope, authorization, and token management with public/confidential and interactive/machine/API profiles, one-time secret rotation, Consent/PKCE, endpoint/grant/response permissions, API resource audiences, and authorization/token revocation. Its local-package browser smoke covers those management flows and mobile editor containment.
 - JazorAdmin now separates its SSO center from a typed configuration center and a Quartz.NET task center. Administrators can manage `text`, `boolean`, `number`, and `json` settings, schedule catalogued operational tasks with Cron expressions, pause or manually run them, and inspect execution history without exposing arbitrary script execution.
+- JazorAdmin now creates a development-only first platform administrator on initial startup (`admin@jazor.local` / `JazorAdmin123!`). The `localhost` launch and OpenIddict callback addresses are confined to the development configuration; non-test deployments must provide their actual callback origins and first administrator through secret configuration, and startup now fails clearly instead of leaving a login page with no valid account.
+- JazorAdmin now uses an original Jinsha sunbird-inspired local mark in the shell, login, consent, and browser-tab surfaces. Its scalable SVG and multi-resolution ICO are application-owned static resources with no external image, font, or CDN dependency.
+- JazorAdmin's login now combines a locally owned cyan-green ink/mineral landscape with an Aero-style glass form and a one-time, three-minute visual captcha validated by the server. The artwork, mark, favicon, and captcha are all local resources; no CDN, remote image, or external font is required.
 - Vue Router and Pinia development builds now obtain their Vue Devtools API from the local Vue3 package resource, so browser development remains self-contained without a CDN or `node_modules`. WebIDL string-enum bindings preserve their browser wire tokens, and JazorAdmin validates the packaged `RequestCredentials.SameOrigin` path as `"same-origin"` while omitting unset Fetch dictionary members during its local-package browser smoke.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
@@ -97,7 +100,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.3.2
+dotnet add package Jazor --version 0.3.3
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -106,8 +109,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.3.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.3.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.3.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -115,11 +118,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.2" />
-  <PackageReference Include="ECMAScript.Style" Version="0.3.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.3.2" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.2" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.2" />
+  <PackageReference Include="Jazor" Version="0.3.3" />
+  <PackageReference Include="ECMAScript.Style" Version="0.3.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.3.3" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.3" />
 </ItemGroup>
 ```
 
@@ -201,6 +204,8 @@ var actionClass = style(new CssRule
     Width = percent(100) - rem(2),
     Color = varOr("--action-color", color("white")),
     BackgroundColor = hex("1769aa"),
+    Border = px(1) | solid | var("--action-border"),
+    BackdropFilter = filters(blur(px(12)), saturate(1.15)),
     Children =
     [
         new(CssChildKind.Selector, "&:hover", new CssRule
@@ -211,7 +216,7 @@ var actionClass = style(new CssRule
 });
 ```
 
-The package generates 705 standard properties from a locked Webref grammar snapshot. Native C# unions distinguish lengths, percentages, colors, times, display values, and other domains; `raw(...)` explicitly admits future or unmodeled syntax. Stable content names, nonce-aware `document`/`ShadowRoot` ownership, detached extraction, and hydration share one runtime contract. `style(...)` returns a plain string for ordinary modules and RazorVue `class` attributes. The package adds no CSS-specific MSBuild property; debug materialization writes `style.mjs` under `JazorDir`.
+The package generates 705 standard properties from a locked Webref grammar snapshot. Native C# unions distinguish lengths, percentages, colors, times, display values, border shorthand, filters, and other domains; for example, `px(1) | solid | var("--border")` yields a value restricted to border properties. `raw(...)` explicitly admits only the remaining future or unmodeled syntax. Stable content names, nonce-aware `document`/`ShadowRoot` ownership, detached extraction, and hydration share one runtime contract. `style(...)` returns a plain string for ordinary modules and RazorVue `class` attributes. The package adds no CSS-specific MSBuild property; debug materialization writes `style.mjs` under `JazorDir`.
 
 See the [ECMAScript.Style package guide](src/ECMAScript.Style/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/ecmascript.style/README.md).
 
