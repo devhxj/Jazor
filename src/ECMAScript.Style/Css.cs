@@ -264,11 +264,14 @@ public static partial class css
                 continue;
 
             ValidateDeclarationName(key);
-            var value = Reflect.Get(declarations, key) as string;
+            // The indexer preserves CssValue's erased union contract. Reflect.Get returns object and would
+            // otherwise narrow numeric declarations to string during lowering.
+            // 通过索引器保留 CssValue 的擦除 union 合同；Reflect.Get 返回 object 会在 lowering 时把数值错误窄化为 string。
+            var value = declarations[key];
             if (value is null)
                 continue;
 
-            output.Push(key + ":" + value + ";");
+            output.Push(key + ":" + StringFn(value) + ";");
         }
 
         var additional = declarations.Additional;
@@ -279,7 +282,8 @@ public static partial class css
         {
             var name = declaration.Name.Trim();
             ValidateDeclarationName(name);
-            output.Push(name + ":" + declaration.Value + (declaration.Important ? "!important;" : ";"));
+            output.Push(name + ":" + declaration.Value +
+                (declaration.Priority == CssDeclarationPriority.Important ? "!important;" : ";"));
         }
 
         return output.Join("");

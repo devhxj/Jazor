@@ -17,6 +17,9 @@ public sealed class EcmaScriptStyleValueDomainTests
         AssertPropertyType(nameof(CssDeclarations.GridTemplateColumns), typeof(CssTrackValue));
         AssertPropertyType(nameof(CssDeclarations.BoxShadow), typeof(CssBoxShadowValue));
         AssertPropertyType(nameof(CssDeclarations.WebkitBoxShadow), typeof(CssBoxShadowValue));
+        AssertPropertyType(nameof(CssDeclarations.Border), typeof(CssBorderValue));
+        AssertPropertyType(nameof(CssDeclarations.BackdropFilter), typeof(CssFilterValue));
+        AssertPropertyType(nameof(CssDeclarations.AlignItems), typeof(CssAlignmentValue));
 
         Assert.AreNotEqual(typeof(string), typeof(CssDeclarations).GetProperty(nameof(CssDeclarations.Width))!.PropertyType);
     }
@@ -43,9 +46,32 @@ public sealed class EcmaScriptStyleValueDomainTests
             typeof(CssLength),
             typeof(CssLengthPercentage),
             typeof(CssColor),
-            typeof(CssTime)
+            typeof(CssTime),
+            typeof(CssBorderWidth),
+            typeof(CssBorderStyle)
         })
             Assert.IsEmpty(type.GetConstructors(BindingFlags.Public | BindingFlags.Instance), type.FullName);
+    }
+
+    [TestMethod]
+    public void CompositeDomains_ExposeTypedCompositionOperators()
+    {
+        Assert.IsTrue(typeof(ICssBorderPart).IsAssignableFrom(typeof(CssLength)));
+        Assert.IsTrue(typeof(ICssBorderPart).IsAssignableFrom(typeof(CssBorderStyle)));
+        Assert.IsTrue(typeof(ICssBorderPart).IsAssignableFrom(typeof(CssColor)));
+
+        var pipe = typeof(CssLength).GetMethod(
+            "op_BitwiseOr",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(CssLength), typeof(ICssBorderPart)]);
+        Assert.IsNotNull(pipe);
+        Assert.AreEqual(typeof(CssBorder), pipe.ReturnType);
+        Assert.AreEqual(
+            "@#important",
+            typeof(CssDeclarationPriority)
+                .GetField(nameof(CssDeclarationPriority.Important))!
+                .GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()!
+                .Description);
     }
 
     [TestMethod]

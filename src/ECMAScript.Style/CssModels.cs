@@ -5,7 +5,7 @@ namespace ECMAScript.Style;
 public partial record CssDeclarations
 {
     [Description("@#$additional")]
-    public CssDeclaration[]? Additional { get; init; }
+    public ICssDeclaration[]? Additional { get; init; }
 
     public extern CssValue? this[string propertyName] { get; set; }
 }
@@ -20,10 +20,34 @@ public sealed record CssRule : CssDeclarations
 
 [ECMAScript]
 [Description("@#")]
+/// <summary>
+/// Represents a declaration appended after generated properties. This is the escape hatch for
+/// intentional duplicate declarations, while normal properties remain strongly typed.
+/// 表示追加在生成属性后的声明，用于有意保留重复声明；普通属性仍保持强类型。
+/// </summary>
+public interface ICssDeclaration
+{
+    string Name { get; }
+
+    CssValue Value { get; }
+
+    CssDeclarationPriority Priority { get; }
+}
+
+[String]
+public enum CssDeclarationPriority
+{
+    [Description("@#normal")]
+    Normal,
+
+    [Description("@#important")]
+    Important
+}
+
 public sealed record CssDeclaration(
     string Name,
     CssValue Value,
-    bool Important = false);
+    CssDeclarationPriority Priority = CssDeclarationPriority.Normal) : ICssDeclaration;
 
 /// <summary>
 /// Describes one structural CSS shadow. Optional parts are omitted instead of

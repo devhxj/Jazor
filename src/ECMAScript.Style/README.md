@@ -30,6 +30,8 @@ var actionClass = style(new CssRule
     Width = percent(100) - rem(2),
     Color = varOr("--action-color", color("white")),
     BackgroundColor = hex("1769aa"),
+    Border = px(1) | solid | var("--action-border"),
+    BackdropFilter = filters(blur(px(12)), saturate(1.15)),
     TransitionDuration = ms(180),
     Opacity = 0.9,
     ["--action-shadow"] = raw("0 0.25rem 0.75rem rgb(0 0 0 / 18%)"),
@@ -69,6 +71,8 @@ The generated catalog contains 705 writable `CSSStyleDeclaration` properties fro
 | `CssDisplayValue` | `Display` | `block`, `flex`, `grid`, `inlineFlex`, `none`, variables |
 | `CssTrackValue` | `GridTemplateColumns`, `GridAutoRows` | lengths, percentages, `fr(...)`, `minMax(...)`, `repeat(...)` |
 | `CssBoxShadowValue` | `BoxShadow`, `WebkitBoxShadow` | `shadows(new CssShadow(...))`, `none`, variables, CSS-wide keywords |
+| `CssBorderValue` | `Border`, `BorderTop`, `BorderInline` | `px(...) | solid | color`, `none`, variables, CSS-wide keywords |
+| `CssFilterValue` | `Filter`, `BackdropFilter` | `filters(blur(...), saturate(...))`, `none`, variables, CSS-wide keywords |
 
 Nominal token types prevent accidental cross-domain assignments. For example, `Width = deg(10)`, `Color = rem(1)`, and `Height = "10px"` do not compile. Mixed length-percentage arithmetic has its own `CssLengthPercentage` type, so it is accepted by `Width` but rejected by pure-length properties such as `ColumnWidth`.
 
@@ -78,8 +82,11 @@ The value API includes:
 - colors and text: `color`, `hex`, `rgb`, `rgba`, `hsl`, `hsla`, `url`, and `str`;
 - variables and identifiers: `var`, `varOr`, `ident`, and `keyword`;
 - grids and transforms: `fr`, `minMax`, `fitContent`, `repeat`, `translate`, `rotate`, `scale`, and `transform`;
+- borders and filters: `px(1) | solid | var("--border")`, `thin | dashed | currentColor`, `blur`, `grayscale`, `saturate`, and `filters`;
 - shadows: `shadows(new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05)))`;
 - numeric composition: typed operators produce `calc(...)`, with `min`, `max`, and `clamp` for length values.
+
+Border shorthand token composition is intentionally type-directed: `CssLength`, colors, variables, raw escapes, named widths, and named styles implement `ICssBorderPart`; `|` produces `CssBorder`, which is accepted by border properties but not unrelated properties such as `Width`. Named line widths and styles are token types rather than C# enums because enums cannot define the `|` operator. Other closed keyword domains remain string enums where composition is not part of their CSS grammar.
 
 Use `raw(...)` when valid CSS cannot yet be represented by the typed surface:
 
@@ -102,11 +109,13 @@ var layoutClass = style(new CssRule
 {
     Additional =
     [
-        new("display", keyword("-webkit-box")),
-        new("display", flex, Important: true)
+        declaration("display", keyword("-webkit-box")),
+        important("display", flex)
     ]
 });
 ```
+
+`!important` is a declaration priority, not a value token. Use `important(name, value)` or `important(existingDeclaration)` for an explicit additional declaration; it does not participate in `|` value composition.
 
 `CssChildKind` supports `Selector`, `Media`, `Supports`, `Container`, `Layer`, `Scope`, and `StartingStyle`. Selector lists are processed with quote, escape, parenthesis, and attribute-selector awareness; nested grouping rules preserve the active selector and author order.
 

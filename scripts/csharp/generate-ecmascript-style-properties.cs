@@ -174,12 +174,42 @@ static string ClassifyValueType(
 {
     if (cssName == "display")
         return "CssDisplayValue";
+    if (cssName is "align-content" or "align-items" or "align-self" or
+        "justify-content" or "justify-items" or "justify-self" or
+        "place-content" or "place-items" or "place-self")
+        return "CssAlignmentValue";
+    if (cssName == "flex-direction")
+        return "CssFlexDirectionValue";
+    if (cssName == "flex-wrap")
+        return "CssFlexWrapValue";
     if (cssName == "position")
         return "CssPositionValue";
     if (cssName is "overflow" or "overflow-block" or "overflow-inline" or "overflow-x" or "overflow-y")
         return "CssOverflowValue";
     if (cssName == "transform")
         return "CssTransformValue";
+    if (cssName is "filter" or "backdrop-filter" or "-webkit-filter" or "-webkit-backdrop-filter")
+        return "CssFilterValue";
+    if (cssName is "border" or "border-block" or "border-inline" or
+        "border-top" or "border-right" or "border-bottom" or "border-left" or
+        "border-block-start" or "border-block-end" or "border-inline-start" or "border-inline-end")
+        return "CssBorderValue";
+    if (cssName == "background-size")
+        return "CssBackgroundSizeValue";
+    if (cssName == "box-sizing")
+        return "CssBoxSizingValue";
+    if (cssName == "cursor")
+        return "CssCursorValue";
+    if (cssName == "text-transform")
+        return "CssTextTransformValue";
+    if (cssName == "text-overflow")
+        return "CssTextOverflowValue";
+    if (cssName == "white-space")
+        return "CssWhiteSpaceValue";
+    if (cssName == "isolation")
+        return "CssIsolationValue";
+    if (cssName == "color-scheme")
+        return "CssColorSchemeValue";
     if (cssName is "grid-template-columns" or "grid-template-rows" or "grid-auto-columns" or "grid-auto-rows")
         return "CssTrackValue";
     if (cssName == "aspect-ratio")

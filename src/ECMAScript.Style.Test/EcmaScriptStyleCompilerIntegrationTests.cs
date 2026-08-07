@@ -36,8 +36,11 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     Gap = rem(0.5),
                     Color = varOr("--button-color", color("red")),
                     BackgroundColor = hex("1769aa"),
+                    Border = px(1) | solid | hex("d7ebe4"),
+                    BackdropFilter = filters(blur(px(12)), saturate(1.15)),
                     TransitionDuration = ms(180),
                     Opacity = 0.9,
+                    GridColumn = 2,
                     BoxShadow = shadows(
                         new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05)),
                         new CssShadow(px(0), px(1), Color: currentColor)),
@@ -84,8 +87,11 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "gap: rem(0.5)");
         StringAssert.Contains(script, "color: varOr(\"--button-color\", color(\"red\"))");
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
+        StringAssert.Contains(script, "border: px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\")");
+        StringAssert.Contains(script, "\"backdrop-filter\": filters([blur(px(12)), saturate(1.15)])");
         StringAssert.Contains(script, "\"transition-duration\": ms(180)");
         StringAssert.Contains(script, "opacity: 0.9");
+        StringAssert.Contains(script, "\"grid-column\": 2");
         StringAssert.Contains(script, "\"box-shadow\": shadows([");
         Assert.DoesNotContain("class CssShadow", script);
         StringAssert.Contains(script, "\"--button-gap\"");
@@ -270,6 +276,56 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             .ToArray();
         Assert.HasCount(1, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
         StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssLength));
+    }
+
+    [TestMethod]
+    public void Compile_BorderPipe_ProducesOnlyTheBorderDomain()
+    {
+        const string validSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            namespace Demo;
+
+            public static class ValidStyles
+            {
+                public static readonly CssRule Rule = new()
+                {
+                    Border = px(1) | solid | var("--border-color"),
+                    BorderTop = thin | dashed | currentColor,
+                    Additional =
+                    [
+                        important("display", flex)
+                    ]
+                };
+            }
+            """;
+        var validErrors = CreateCompilation(validSource, "ValidBorderPipeConsumer")
+            .GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.IsEmpty(validErrors, string.Join(Environment.NewLine, validErrors.Select(static error => error.ToString())));
+
+        const string invalidSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            namespace Demo;
+
+            public static class InvalidStyles
+            {
+                public static readonly CssRule Rule = new()
+                {
+                    Width = px(1) | solid
+                };
+            }
+            """;
+        var invalidErrors = CreateCompilation(invalidSource, "InvalidBorderPipeConsumer")
+            .GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(1, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
+        StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssBorder));
     }
 
     private static CSharpCompilation CreateCompilation(string source, string assemblyName)

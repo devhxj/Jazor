@@ -92,7 +92,7 @@ internal static class AdminStyleSheet
             Overflow = raw("auto"),
             Background = raw("#17241f"),
             Color = raw("#eef7f3"),
-            BorderRight = raw("1px solid #293a33")
+            BorderRight = px(1) | solid | hex("293a33")
         });
         global(".ja-shell--collapsed", new CssRule
         {
@@ -117,7 +117,7 @@ internal static class AdminStyleSheet
             ZIndex = raw("15"),
             MinHeight = raw("64px"),
             Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
-            BorderBottom = raw("1px solid var(--border)"),
+            BorderBottom = px(1) | solid | var("--border"),
             BackdropFilter = raw("blur(12px)")
         });
         global(".ja-shell__sidebar-toggle", new CssRule
@@ -130,7 +130,7 @@ internal static class AdminStyleSheet
             MarginLeft = raw("14px"),
             Color = raw("var(--text)"),
             Background = raw("transparent"),
-            Border = raw("1px solid var(--border)"),
+            Border = px(1) | solid | var("--border"),
             BorderRadius = raw("5px")
         });
         global(".ja-shell__sidebar-toggle::before", new CssRule
@@ -321,7 +321,7 @@ internal static class AdminStyleSheet
             Height = raw("auto"),
             Overflow = raw("visible"),
             BorderRight = raw("0"),
-            BorderBottom = raw("1px solid #293a33")
+            BorderBottom = px(1) | solid | hex("293a33")
         });
         Media(".ja-sidebar", "(max-width: 760px)", new CssRule
         {

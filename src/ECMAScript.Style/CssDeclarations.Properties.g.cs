@@ -94,7 +94,7 @@ public partial record CssDeclarations
     public CssKeywordValue? WebkitBoxSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-filter")]
-    public CssValue? WebkitFilter { get; init; }
+    public CssFilterValue? WebkitFilter { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex")]
     public CssLengthPercentageNumberValue? WebkitFlex { get; init; }
@@ -220,13 +220,13 @@ public partial record CssDeclarations
     public CssColorValue? AccentColor { get; init; }
 
     [global::System.ComponentModel.Description("@#align-content")]
-    public CssValue? AlignContent { get; init; }
+    public CssAlignmentValue? AlignContent { get; init; }
 
     [global::System.ComponentModel.Description("@#align-items")]
-    public CssValue? AlignItems { get; init; }
+    public CssAlignmentValue? AlignItems { get; init; }
 
     [global::System.ComponentModel.Description("@#align-self")]
-    public CssValue? AlignSelf { get; init; }
+    public CssAlignmentValue? AlignSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#alignment-baseline")]
     public CssKeywordValue? AlignmentBaseline { get; init; }
@@ -289,7 +289,7 @@ public partial record CssDeclarations
     public CssRatioValue? AspectRatio { get; init; }
 
     [global::System.ComponentModel.Description("@#backdrop-filter")]
-    public CssValue? BackdropFilter { get; init; }
+    public CssFilterValue? BackdropFilter { get; init; }
 
     [global::System.ComponentModel.Description("@#backface-visibility")]
     public CssKeywordValue? BackfaceVisibility { get; init; }
@@ -334,7 +334,7 @@ public partial record CssDeclarations
     public CssValue? BackgroundRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#background-size")]
-    public CssValue? BackgroundSize { get; init; }
+    public CssBackgroundSizeValue? BackgroundSize { get; init; }
 
     [global::System.ComponentModel.Description("@#background-tbd")]
     public CssValue? BackgroundTbd { get; init; }
@@ -376,16 +376,16 @@ public partial record CssDeclarations
     public CssKeywordValue? BookmarkState { get; init; }
 
     [global::System.ComponentModel.Description("@#border")]
-    public CssValue? Border { get; init; }
+    public CssBorderValue? Border { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block")]
-    public CssValue? BorderBlock { get; init; }
+    public CssBorderValue? BorderBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-color")]
     public CssValue? BorderBlockColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end")]
-    public CssValue? BorderBlockEnd { get; init; }
+    public CssBorderValue? BorderBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end-color")]
     public CssValue? BorderBlockEndColor { get; init; }
@@ -400,7 +400,7 @@ public partial record CssDeclarations
     public CssLineWidthValue? BorderBlockEndWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start")]
-    public CssValue? BorderBlockStart { get; init; }
+    public CssBorderValue? BorderBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start-color")]
     public CssValue? BorderBlockStartColor { get; init; }
@@ -421,7 +421,7 @@ public partial record CssDeclarations
     public CssLineWidthValue? BorderBlockWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom")]
-    public CssValue? BorderBottom { get; init; }
+    public CssBorderValue? BorderBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-color")]
     public CssValue? BorderBottomColor { get; init; }
@@ -490,13 +490,13 @@ public partial record CssDeclarations
     public CssLengthPercentageNumberValue? BorderImageWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline")]
-    public CssValue? BorderInline { get; init; }
+    public CssBorderValue? BorderInline { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-color")]
     public CssValue? BorderInlineColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end")]
-    public CssValue? BorderInlineEnd { get; init; }
+    public CssBorderValue? BorderInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end-color")]
     public CssValue? BorderInlineEndColor { get; init; }
@@ -511,7 +511,7 @@ public partial record CssDeclarations
     public CssLineWidthValue? BorderInlineEndWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start")]
-    public CssValue? BorderInlineStart { get; init; }
+    public CssBorderValue? BorderInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start-color")]
     public CssValue? BorderInlineStartColor { get; init; }
@@ -532,7 +532,7 @@ public partial record CssDeclarations
     public CssLineWidthValue? BorderInlineWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left")]
-    public CssValue? BorderLeft { get; init; }
+    public CssBorderValue? BorderLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left-color")]
     public CssValue? BorderLeftColor { get; init; }
@@ -553,7 +553,7 @@ public partial record CssDeclarations
     public CssLengthPercentageValue? BorderRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right")]
-    public CssValue? BorderRight { get; init; }
+    public CssBorderValue? BorderRight { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right-color")]
     public CssValue? BorderRightColor { get; init; }
@@ -580,7 +580,7 @@ public partial record CssDeclarations
     public CssLineStyleValue? BorderStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top")]
-    public CssValue? BorderTop { get; init; }
+    public CssBorderValue? BorderTop { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-color")]
     public CssValue? BorderTopColor { get; init; }
@@ -628,7 +628,7 @@ public partial record CssDeclarations
     public CssLengthValue? BoxShadowSpread { get; init; }
 
     [global::System.ComponentModel.Description("@#box-sizing")]
-    public CssKeywordValue? BoxSizing { get; init; }
+    public CssBoxSizingValue? BoxSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#box-snap")]
     public CssKeywordValue? BoxSnap { get; init; }
@@ -682,7 +682,7 @@ public partial record CssDeclarations
     public CssKeywordValue? ColorInterpolationFilters { get; init; }
 
     [global::System.ComponentModel.Description("@#color-scheme")]
-    public CssKeywordValue? ColorScheme { get; init; }
+    public CssColorSchemeValue? ColorScheme { get; init; }
 
     [global::System.ComponentModel.Description("@#column-count")]
     public CssIntegerValue? ColumnCount { get; init; }
@@ -778,7 +778,7 @@ public partial record CssDeclarations
     public CssValue? CueBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#cursor")]
-    public CssValue? Cursor { get; init; }
+    public CssCursorValue? Cursor { get; init; }
 
     [global::System.ComponentModel.Description("@#cx")]
     public CssLengthPercentageValue? Cx { get; init; }
@@ -838,7 +838,7 @@ public partial record CssDeclarations
     public CssValue? FillSize { get; init; }
 
     [global::System.ComponentModel.Description("@#filter")]
-    public CssValue? Filter { get; init; }
+    public CssFilterValue? Filter { get; init; }
 
     [global::System.ComponentModel.Description("@#flex")]
     public CssLengthPercentageNumberValue? Flex { get; init; }
@@ -847,7 +847,7 @@ public partial record CssDeclarations
     public CssLengthPercentageValue? FlexBasis { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-direction")]
-    public CssKeywordValue? FlexDirection { get; init; }
+    public CssFlexDirectionValue? FlexDirection { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-flow")]
     public CssKeywordValue? FlexFlow { get; init; }
@@ -859,7 +859,7 @@ public partial record CssDeclarations
     public CssNumberValue? FlexShrink { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-wrap")]
-    public CssKeywordValue? FlexWrap { get; init; }
+    public CssFlexWrapValue? FlexWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#float")]
     public CssValue? Float { get; init; }
@@ -1111,16 +1111,16 @@ public partial record CssDeclarations
     public CssLengthPercentageValue? InsetInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#isolation")]
-    public CssValue? Isolation { get; init; }
+    public CssIsolationValue? Isolation { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-content")]
-    public CssValue? JustifyContent { get; init; }
+    public CssAlignmentValue? JustifyContent { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-items")]
-    public CssValue? JustifyItems { get; init; }
+    public CssAlignmentValue? JustifyItems { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-self")]
-    public CssValue? JustifySelf { get; init; }
+    public CssAlignmentValue? JustifySelf { get; init; }
 
     [global::System.ComponentModel.Description("@#left")]
     public CssLengthPercentageValue? Left { get; init; }
@@ -1516,13 +1516,13 @@ public partial record CssDeclarations
     public CssValue? PerspectiveOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#place-content")]
-    public CssValue? PlaceContent { get; init; }
+    public CssAlignmentValue? PlaceContent { get; init; }
 
     [global::System.ComponentModel.Description("@#place-items")]
-    public CssValue? PlaceItems { get; init; }
+    public CssAlignmentValue? PlaceItems { get; init; }
 
     [global::System.ComponentModel.Description("@#place-self")]
-    public CssValue? PlaceSelf { get; init; }
+    public CssAlignmentValue? PlaceSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#pointer-events")]
     public CssKeywordValue? PointerEvents { get; init; }
@@ -1927,7 +1927,7 @@ public partial record CssDeclarations
     public CssKeywordValue? TextOrientation { get; init; }
 
     [global::System.ComponentModel.Description("@#text-overflow")]
-    public CssValue? TextOverflow { get; init; }
+    public CssTextOverflowValue? TextOverflow { get; init; }
 
     [global::System.ComponentModel.Description("@#text-rendering")]
     public CssKeywordValue? TextRendering { get; init; }
@@ -1945,7 +1945,7 @@ public partial record CssDeclarations
     public CssValue? TextSpacingTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#text-transform")]
-    public CssKeywordValue? TextTransform { get; init; }
+    public CssTextTransformValue? TextTransform { get; init; }
 
     [global::System.ComponentModel.Description("@#text-underline-offset")]
     public CssLengthPercentageValue? TextUnderlineOffset { get; init; }
@@ -2062,7 +2062,7 @@ public partial record CssDeclarations
     public CssValue? VoiceVolume { get; init; }
 
     [global::System.ComponentModel.Description("@#white-space")]
-    public CssKeywordValue? WhiteSpace { get; init; }
+    public CssWhiteSpaceValue? WhiteSpace { get; init; }
 
     [global::System.ComponentModel.Description("@#white-space-collapse")]
     public CssKeywordValue? WhiteSpaceCollapse { get; init; }

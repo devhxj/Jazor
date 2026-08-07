@@ -13,6 +13,7 @@ public sealed class EcmaScriptStyleRuntimeTests
         StringAssert.Contains(module.Content, ".__ecmascript_style_root__");
         StringAssert.Contains(module.Content, "ecs-");
         StringAssert.Contains(module.Content, "/*ecs:v1:");
+        StringAssert.Contains(module.Content, "String(value)");
     }
 
     [TestMethod]
@@ -22,7 +23,8 @@ public sealed class EcmaScriptStyleRuntimeTests
             """
             import {
               style, px, rem, percent, rgba, hex, variable, varOr, ms,
-              fr, minMax, repeat, translateY, rotate, deg, transform, extract
+              fr, minMax, repeat, translateY, rotate, deg, transform,
+              border, solid, filters, blur, saturate, important, flex, extract
             } from "./runtime.mjs";
 
             const name = style({
@@ -30,9 +32,12 @@ public sealed class EcmaScriptStyleRuntimeTests
               gap: variable("--space"),
               color: varOr("--button-color", rgba(23, 105, 170, 0.8)),
               "border-color": hex("fff8"),
+              border: border(px(1), solid, hex("d7ebe4")),
+              "backdrop-filter": filters([blur(px(12)), saturate(1.15)]),
               "transition-duration": ms(180),
               "grid-template-columns": repeat(3, minMax(px(0), fr(1))),
-              transform: transform([translateY(px(2)), rotate(deg(4))])
+              transform: transform([translateY(px(2)), rotate(deg(4))]),
+              $additional: [important("display", flex)]
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);
@@ -47,9 +52,12 @@ public sealed class EcmaScriptStyleRuntimeTests
         StringAssert.Contains(css, "gap:var(--space);");
         StringAssert.Contains(css, "color:var(--button-color,rgb(23 105 170 / 0.8));");
         StringAssert.Contains(css, "border-color:#fff8;");
+        StringAssert.Contains(css, "border:1px solid #d7ebe4;");
+        StringAssert.Contains(css, "backdrop-filter:blur(12px) saturate(1.15);");
         StringAssert.Contains(css, "transition-duration:180ms;");
         StringAssert.Contains(css, "grid-template-columns:repeat(3,minmax(0px,1fr));");
         StringAssert.Contains(css, "transform:translateY(2px) rotate(4deg);");
+        StringAssert.Contains(css, "display:flex!important;");
     }
 
     [TestMethod]
@@ -152,9 +160,11 @@ public sealed class EcmaScriptStyleRuntimeTests
             const rule = {
               display: "block",
               color: "red",
+              opacity: 0,
+              "grid-column": 2,
               $additional: [
-                { name: "display", value: "-webkit-box", important: false },
-                { name: "display", value: "flex", important: true }
+                { name: "display", value: "-webkit-box", priority: "normal" },
+                { name: "display", value: "flex", priority: "important" }
               ],
               $children: [
                 { kind: "selector", prelude: "&:hover, &:focus", rule: { color: "blue" } },
@@ -166,10 +176,10 @@ public sealed class EcmaScriptStyleRuntimeTests
             };
 
             const first = style(rule);
-            const second = style({ color: "red", display: "block", $additional: rule.$additional, $children: rule.$children });
+            const second = style({ color: "red", display: "block", "grid-column": 2, opacity: 0, $additional: rule.$additional, $children: rule.$children });
             const animation = keyframes([
-              { selector: "from", declarations: { opacity: "0" } },
-              { selector: "50%, to", declarations: { opacity: "1" } }
+              { selector: "from", declarations: { opacity: 0 } },
+              { selector: "50%, to", declarations: { opacity: 1 } }
             ]);
             cssGlobal("html,\nbody", { margin: "0", color: "black" });
             const css = extract();
@@ -189,7 +199,7 @@ public sealed class EcmaScriptStyleRuntimeTests
         StringAssert.StartsWith(first, "ecs-");
         Assert.IsNotNull(animation);
         StringAssert.StartsWith(animation, "ecs-k-");
-        StringAssert.Contains(css, "." + first + "{color:red;display:block;display:-webkit-box;display:flex!important;}");
+        StringAssert.Contains(css, "." + first + "{color:red;display:block;grid-column:2;opacity:0;display:-webkit-box;display:flex!important;}");
         StringAssert.Contains(css, "." + first + ":hover,." + first + ":focus{color:blue;}");
         StringAssert.Contains(css, "@media (min-width: 40rem){." + first + "{display:grid;}}");
         StringAssert.Contains(css, "@supports (display: subgrid){." + first + " > .item{display:subgrid;}}");
@@ -279,7 +289,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             capture(() => configure({ styleId: "  " }));
             capture(() => keyframes([]));
             capture(() => keyframes([{ selector: "101%", declarations: { opacity: "1" } }]));
-            capture(() => style({ $additional: [{ name: "bad:name", value: "x", important: false }] }));
+            capture(() => style({ $additional: [{ name: "bad:name", value: "x", priority: "normal" }] }));
             capture(() => style({ $children: [{ kind: "selector", prelude: "@layer x", rule: { color: "red" } }] }));
             capture(() => style({ $children: [{ kind: "selector", prelude: ":is(&:hover", rule: { color: "red" } }] }));
             capture(() => style({ $children: [{ kind: "media", prelude: "screen; @import 'x'", rule: { color: "red" } }] }));
@@ -348,8 +358,8 @@ public sealed class EcmaScriptStyleRuntimeTests
             import { style, keyframes, global, extract } from "./runtime.mjs";
 
             const additional = [
-              { name: "display", value: "-webkit-box", important: false },
-              { name: "display", value: "flex", important: false }
+              { name: "display", value: "-webkit-box", priority: "normal" },
+              { name: "display", value: "flex", priority: "normal" }
             ];
             const first = style({ color: null, margin: "0", display: "", $additional: additional });
             const reordered = style({ display: "", margin: "0", color: null, $additional: additional });

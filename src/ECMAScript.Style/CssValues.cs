@@ -2,27 +2,39 @@ namespace ECMAScript.Style;
 
 [ECMAScript]
 [Description("@#")]
-public sealed class CssRaw
+public sealed class CssRaw : ICssBorderPart
 {
     internal CssRaw() { }
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssRaw create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssRaw left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssRaw left, CssColorKeyword right);
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed class CssVariable
+public sealed class CssVariable : ICssBorderPart
 {
     internal CssVariable() { }
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssVariable create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssVariable left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssVariable left, CssColorKeyword right);
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed class CssLength
+public sealed class CssLength : ICssBorderPart
 {
     internal CssLength() { }
 
@@ -52,6 +64,12 @@ public sealed class CssLength
 
     [ECMAScriptInline("`calc(-1 * ${__arg1})`")]
     public static extern CssLength operator -(CssLength value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssLength left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssLength left, CssColorKeyword right);
 }
 
 [ECMAScript]
@@ -197,12 +215,18 @@ public sealed class CssResolution
 
 [ECMAScript]
 [Description("@#")]
-public sealed class CssColor
+public sealed class CssColor : ICssBorderPart
 {
     internal CssColor() { }
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssColor create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssColor left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssColor left, CssColorKeyword right);
 }
 
 [ECMAScript]
@@ -263,6 +287,41 @@ public sealed class CssTransform
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssTransform create(string value);
+}
+
+/// <summary>
+/// A composed <c>filter</c> or <c>backdrop-filter</c> function list.
+/// 已组合的 <c>filter</c> 或 <c>backdrop-filter</c> 函数列表。
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class CssFilter
+{
+    internal CssFilter() { }
+
+    [ECMAScriptInline("__arg1")]
+    internal static extern CssFilter create(string value);
+}
+
+/// <summary>
+/// A composed border shorthand. It is produced by <c>border(...)</c> or by joining border tokens
+/// with <c>|</c>, for example <c>px(1) | solid | hex("d7ebe4")</c>.
+/// 已组合的 border 简写：可由 <c>border(...)</c> 或 <c>|</c> 连接 token 得到。
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class CssBorder
+{
+    internal CssBorder() { }
+
+    [ECMAScriptInline("__arg1")]
+    internal static extern CssBorder create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorder left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorder left, CssColorKeyword right);
 }
 
 /// <summary>
@@ -370,26 +429,54 @@ public enum CssOverflowKeyword
     [Description("@#scroll")] Scroll
 }
 
-[String]
-public enum CssLineWidthKeyword
+/// <summary>
+/// A named CSS line width which can participate in a border shorthand. It is a token object,
+/// rather than an enum, because C# enums cannot define the <c>|</c> composition operator.
+/// 可参与 border 简写的具名线宽。使用 token 类型而非 enum，原因是 C# enum 不能定义 <c>|</c>。
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class CssBorderWidth : ICssBorderPart
 {
-    [Description("@#thin")] Thin,
-    [Description("@#medium")] Medium,
-    [Description("@#thick")] Thick
+    internal CssBorderWidth() { }
+
+    [ECMAScriptInline("__arg1")]
+    internal static extern CssBorderWidth create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorderWidth left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorderWidth left, CssColorKeyword right);
 }
 
-[String]
-public enum CssLineStyleKeyword
+/// <summary>
+/// A CSS border/outline line-style token. It is composable so C# can retain CSS shorthand order.
+/// CSS border/outline 线型 token，可通过 <c>|</c> 保留简写表达顺序。
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class CssBorderStyle : ICssBorderPart
 {
-    [Description("@#hidden")] Hidden,
-    [Description("@#dotted")] Dotted,
-    [Description("@#dashed")] Dashed,
-    [Description("@#solid")] Solid,
-    [Description("@#double")] Double,
-    [Description("@#groove")] Groove,
-    [Description("@#ridge")] Ridge,
-    [Description("@#inset")] Inset,
-    [Description("@#outset")] Outset
+    internal CssBorderStyle() { }
+
+    [ECMAScriptInline("__arg1")]
+    internal static extern CssBorderStyle create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorderStyle left, ICssBorderPart right);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssBorder operator |(CssBorderStyle left, CssColorKeyword right);
+}
+
+/// <summary>
+/// Marks values valid as one token of a border shorthand. The resulting <see cref="CssBorder"/>
+/// remains restricted to border properties instead of becoming a general untyped CSS string.
+/// 标记可作为 border 简写 token 的值；组合结果仍是 CssBorder，不会退化成通用字符串。
+/// </summary>
+public interface ICssBorderPart
+{
 }
 
 [String]
@@ -397,6 +484,109 @@ public enum CssColorKeyword
 {
     [Description("@#transparent")] Transparent,
     [Description("@#currentColor")] CurrentColor
+}
+
+[String]
+public enum CssAlignmentKeyword
+{
+    [Description("@#start")] Start,
+    [Description("@#end")] End,
+    [Description("@#center")] Center,
+    [Description("@#flex-start")] FlexStart,
+    [Description("@#flex-end")] FlexEnd,
+    [Description("@#self-start")] SelfStart,
+    [Description("@#self-end")] SelfEnd,
+    [Description("@#left")] Left,
+    [Description("@#right")] Right,
+    [Description("@#stretch")] Stretch,
+    [Description("@#baseline")] Baseline,
+    [Description("@#space-between")] SpaceBetween,
+    [Description("@#space-around")] SpaceAround,
+    [Description("@#space-evenly")] SpaceEvenly
+}
+
+[String]
+public enum CssFlexDirectionKeyword
+{
+    [Description("@#row")] Row,
+    [Description("@#row-reverse")] RowReverse,
+    [Description("@#column")] Column,
+    [Description("@#column-reverse")] ColumnReverse
+}
+
+[String]
+public enum CssFlexWrapKeyword
+{
+    [Description("@#nowrap")] NoWrap,
+    [Description("@#wrap")] Wrap,
+    [Description("@#wrap-reverse")] WrapReverse
+}
+
+[String]
+public enum CssBackgroundSizeKeyword
+{
+    [Description("@#cover")] Cover,
+    [Description("@#contain")] Contain
+}
+
+[String]
+public enum CssBoxSizingKeyword
+{
+    [Description("@#border-box")] BorderBox,
+    [Description("@#content-box")] ContentBox
+}
+
+[String]
+public enum CssCursorKeyword
+{
+    [Description("@#default")] Default,
+    [Description("@#pointer")] Pointer,
+    [Description("@#not-allowed")] NotAllowed,
+    [Description("@#text")] Text,
+    [Description("@#move")] Move,
+    [Description("@#grab")] Grab,
+    [Description("@#grabbing")] Grabbing
+}
+
+[String]
+public enum CssTextTransformKeyword
+{
+    [Description("@#capitalize")] Capitalize,
+    [Description("@#uppercase")] Uppercase,
+    [Description("@#lowercase")] Lowercase,
+    [Description("@#full-width")] FullWidth,
+    [Description("@#full-size-kana")] FullSizeKana
+}
+
+[String]
+public enum CssWhiteSpaceKeyword
+{
+    [Description("@#nowrap")] NoWrap,
+    [Description("@#pre")] Pre,
+    [Description("@#pre-wrap")] PreWrap,
+    [Description("@#pre-line")] PreLine,
+    [Description("@#break-spaces")] BreakSpaces
+}
+
+[String]
+public enum CssTextOverflowKeyword
+{
+    [Description("@#clip")] Clip,
+    [Description("@#ellipsis")] Ellipsis
+}
+
+[String]
+public enum CssIsolationKeyword
+{
+    [Description("@#isolate")] Isolate
+}
+
+[String]
+public enum CssColorSchemeKeyword
+{
+    [Description("@#light")] Light,
+    [Description("@#dark")] Dark,
+    [Description("@#light dark")] LightDark
 }
 
 [ECMAScript]
@@ -419,6 +609,8 @@ public readonly union CssValue(
     CssIdent,
     CssKeyword,
     CssTransform,
+    CssFilter,
+    CssBorder,
     CssShadowList,
     CssTrack,
     CssRatio,
@@ -430,16 +622,29 @@ public readonly union CssValue(
     CssDisplayKeyword,
     CssPositionKeyword,
     CssOverflowKeyword,
-    CssLineWidthKeyword,
-    CssLineStyleKeyword,
-    CssColorKeyword);
+    CssBorderWidth,
+    CssBorderStyle,
+    CssColorKeyword,
+    CssAlignmentKeyword,
+    CssFlexDirectionKeyword,
+    CssFlexWrapKeyword,
+    CssBackgroundSizeKeyword,
+    CssBoxSizingKeyword,
+    CssCursorKeyword,
+    CssTextTransformKeyword,
+    CssWhiteSpaceKeyword,
+    CssTextOverflowKeyword,
+    CssIsolationKeyword,
+    CssColorSchemeKeyword);
 
 [ECMAScript]
 [Description("@#")]
 public readonly union CssKeywordValue(
     CssRaw, CssVariable, CssIdent, CssKeyword, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
-    CssSizingKeyword, CssDisplayKeyword, CssPositionKeyword, CssOverflowKeyword, CssLineWidthKeyword,
-    CssLineStyleKeyword, CssColorKeyword);
+    CssSizingKeyword, CssDisplayKeyword, CssPositionKeyword, CssOverflowKeyword, CssBorderWidth,
+    CssBorderStyle, CssColorKeyword, CssAlignmentKeyword, CssFlexDirectionKeyword, CssFlexWrapKeyword,
+    CssBackgroundSizeKeyword, CssBoxSizingKeyword, CssCursorKeyword, CssTextTransformKeyword, CssWhiteSpaceKeyword,
+    CssTextOverflowKeyword, CssIsolationKeyword, CssColorSchemeKeyword);
 
 [ECMAScript]
 [Description("@#")]
@@ -537,12 +742,12 @@ public readonly union CssTransformValue(
 [ECMAScript]
 [Description("@#")]
 public readonly union CssLineWidthValue(
-    CssRaw, CssVariable, CssLength, CssLineWidthKeyword, CssWideKeyword);
+    CssRaw, CssVariable, CssLength, CssBorderWidth, CssWideKeyword);
 
 [ECMAScript]
 [Description("@#")]
 public readonly union CssLineStyleValue(
-    CssRaw, CssVariable, CssNoneKeyword, CssLineStyleKeyword, CssWideKeyword);
+    CssRaw, CssVariable, CssNoneKeyword, CssBorderStyle, CssWideKeyword);
 
 [ECMAScript]
 [Description("@#")]
@@ -568,3 +773,69 @@ public readonly union CssTrackValue(
 [Description("@#")]
 public readonly union CssRatioValue(
     CssRaw, CssVariable, CssRatio, CssAutoKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssAlignmentValue(
+    CssRaw, CssVariable, CssAlignmentKeyword, CssAutoKeyword, CssNormalKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssFlexDirectionValue(
+    CssRaw, CssVariable, CssFlexDirectionKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssFlexWrapValue(
+    CssRaw, CssVariable, CssFlexWrapKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssBackgroundSizeValue(
+    CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssBackgroundSizeKeyword, CssAutoKeyword,
+    CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssBoxSizingValue(
+    CssRaw, CssVariable, CssBoxSizingKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssCursorValue(
+    CssRaw, CssVariable, CssCursorKeyword, CssAutoKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssTextTransformValue(
+    CssRaw, CssVariable, CssTextTransformKeyword, CssNoneKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssWhiteSpaceValue(
+    CssRaw, CssVariable, CssWhiteSpaceKeyword, CssNormalKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssTextOverflowValue(
+    CssRaw, CssVariable, CssTextOverflowKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssIsolationValue(
+    CssRaw, CssVariable, CssIsolationKeyword, CssAutoKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssColorSchemeValue(
+    CssRaw, CssVariable, CssColorSchemeKeyword, CssNormalKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssFilterValue(
+    CssRaw, CssVariable, CssFilter, CssNoneKeyword, CssWideKeyword);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union CssBorderValue(
+    CssRaw, CssVariable, CssBorder, CssNoneKeyword, CssWideKeyword);

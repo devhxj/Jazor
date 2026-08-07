@@ -32,22 +32,72 @@ public static partial class css
     public static readonly CssOverflowKeyword hidden = CssOverflowKeyword.Hidden;
     public static readonly CssOverflowKeyword clip = CssOverflowKeyword.Clip;
     public static readonly CssOverflowKeyword scroll = CssOverflowKeyword.Scroll;
-    public static readonly CssLineWidthKeyword thin = CssLineWidthKeyword.Thin;
-    public static readonly CssLineWidthKeyword medium = CssLineWidthKeyword.Medium;
-    public static readonly CssLineWidthKeyword thick = CssLineWidthKeyword.Thick;
-    public static readonly CssLineStyleKeyword dotted = CssLineStyleKeyword.Dotted;
-    public static readonly CssLineStyleKeyword dashed = CssLineStyleKeyword.Dashed;
-    public static readonly CssLineStyleKeyword solid = CssLineStyleKeyword.Solid;
-    public static readonly CssLineStyleKeyword doubleLine = CssLineStyleKeyword.Double;
-    public static readonly CssLineStyleKeyword groove = CssLineStyleKeyword.Groove;
-    public static readonly CssLineStyleKeyword ridge = CssLineStyleKeyword.Ridge;
-    public static readonly CssLineStyleKeyword inset = CssLineStyleKeyword.Inset;
-    public static readonly CssLineStyleKeyword outset = CssLineStyleKeyword.Outset;
+    public static readonly CssBorderWidth thin = CssBorderWidth.create("thin");
+    public static readonly CssBorderWidth medium = CssBorderWidth.create("medium");
+    public static readonly CssBorderWidth thick = CssBorderWidth.create("thick");
+    public static readonly CssBorderStyle dotted = CssBorderStyle.create("dotted");
+    public static readonly CssBorderStyle dashed = CssBorderStyle.create("dashed");
+    public static readonly CssBorderStyle solid = CssBorderStyle.create("solid");
+    public static readonly CssBorderStyle doubleLine = CssBorderStyle.create("double");
+    public static readonly CssBorderStyle groove = CssBorderStyle.create("groove");
+    public static readonly CssBorderStyle ridge = CssBorderStyle.create("ridge");
+    public static readonly CssBorderStyle inset = CssBorderStyle.create("inset");
+    public static readonly CssBorderStyle outset = CssBorderStyle.create("outset");
     public static readonly CssColorKeyword transparent = CssColorKeyword.Transparent;
     public static readonly CssColorKeyword currentColor = CssColorKeyword.CurrentColor;
+    public static readonly CssAlignmentKeyword start = CssAlignmentKeyword.Start;
+    public static readonly CssAlignmentKeyword end = CssAlignmentKeyword.End;
+    public static readonly CssAlignmentKeyword center = CssAlignmentKeyword.Center;
+    public static readonly CssAlignmentKeyword flexStart = CssAlignmentKeyword.FlexStart;
+    public static readonly CssAlignmentKeyword flexEnd = CssAlignmentKeyword.FlexEnd;
+    public static readonly CssAlignmentKeyword selfStart = CssAlignmentKeyword.SelfStart;
+    public static readonly CssAlignmentKeyword selfEnd = CssAlignmentKeyword.SelfEnd;
+    public static readonly CssAlignmentKeyword left = CssAlignmentKeyword.Left;
+    public static readonly CssAlignmentKeyword right = CssAlignmentKeyword.Right;
+    public static readonly CssAlignmentKeyword stretch = CssAlignmentKeyword.Stretch;
+    public static readonly CssAlignmentKeyword baseline = CssAlignmentKeyword.Baseline;
+    public static readonly CssAlignmentKeyword spaceBetween = CssAlignmentKeyword.SpaceBetween;
+    public static readonly CssAlignmentKeyword spaceAround = CssAlignmentKeyword.SpaceAround;
+    public static readonly CssAlignmentKeyword spaceEvenly = CssAlignmentKeyword.SpaceEvenly;
+    public static readonly CssFlexDirectionKeyword row = CssFlexDirectionKeyword.Row;
+    public static readonly CssFlexDirectionKeyword rowReverse = CssFlexDirectionKeyword.RowReverse;
+    public static readonly CssFlexDirectionKeyword column = CssFlexDirectionKeyword.Column;
+    public static readonly CssFlexDirectionKeyword columnReverse = CssFlexDirectionKeyword.ColumnReverse;
+    public static readonly CssFlexWrapKeyword noWrap = CssFlexWrapKeyword.NoWrap;
+    public static readonly CssFlexWrapKeyword wrap = CssFlexWrapKeyword.Wrap;
+    public static readonly CssFlexWrapKeyword wrapReverse = CssFlexWrapKeyword.WrapReverse;
+    public static readonly CssBackgroundSizeKeyword cover = CssBackgroundSizeKeyword.Cover;
+    public static readonly CssBackgroundSizeKeyword contain = CssBackgroundSizeKeyword.Contain;
+    public static readonly CssBoxSizingKeyword borderBox = CssBoxSizingKeyword.BorderBox;
+    public static readonly CssBoxSizingKeyword contentBox = CssBoxSizingKeyword.ContentBox;
+    public static readonly CssCursorKeyword defaultCursor = CssCursorKeyword.Default;
+    public static readonly CssCursorKeyword pointer = CssCursorKeyword.Pointer;
+    public static readonly CssCursorKeyword notAllowed = CssCursorKeyword.NotAllowed;
+    public static readonly CssCursorKeyword textCursor = CssCursorKeyword.Text;
+    public static readonly CssTextTransformKeyword capitalize = CssTextTransformKeyword.Capitalize;
+    public static readonly CssTextTransformKeyword uppercase = CssTextTransformKeyword.Uppercase;
+    public static readonly CssTextTransformKeyword lowercase = CssTextTransformKeyword.Lowercase;
+    public static readonly CssWhiteSpaceKeyword nowrap = CssWhiteSpaceKeyword.NoWrap;
+    public static readonly CssWhiteSpaceKeyword pre = CssWhiteSpaceKeyword.Pre;
+    public static readonly CssWhiteSpaceKeyword preWrap = CssWhiteSpaceKeyword.PreWrap;
+    public static readonly CssWhiteSpaceKeyword preLine = CssWhiteSpaceKeyword.PreLine;
+    public static readonly CssTextOverflowKeyword ellipsis = CssTextOverflowKeyword.Ellipsis;
+    public static readonly CssIsolationKeyword isolate = CssIsolationKeyword.Isolate;
+    public static readonly CssColorSchemeKeyword light = CssColorSchemeKeyword.Light;
+    public static readonly CssColorSchemeKeyword dark = CssColorSchemeKeyword.Dark;
 
     public static CssRaw raw(string value)
         => CssRaw.create(value);
+
+    public static CssDeclaration declaration(string name, CssValue value)
+        => new(name, value);
+
+    public static CssDeclaration important(string name, CssValue value)
+        => new(name, value, CssDeclarationPriority.Important);
+
+    [ECMAScriptName("importantFrom")]
+    public static CssDeclaration important(ICssDeclaration value)
+        => new(value.Name, value.Value, CssDeclarationPriority.Important);
 
     public static CssKeyword keyword(string value)
     {
@@ -206,6 +256,17 @@ public static partial class css
         return CssTrack.create("repeat(" + StringFn(count) + "," + StringFn(track.Value) + ")");
     }
 
+    public static CssTrack tracks([PreserveParamsArray] params CssTrackValue[] values)
+    {
+        if (values.Length == 0)
+            Fail("CSS grid track list requires at least one track.");
+
+        var output = new Array<string>();
+        foreach (var value in values)
+            output.Push(StringFn(value.Value));
+        return CssTrack.create(output.Join(" "));
+    }
+
     public static CssTransform translateX(CssLengthPercentageValue value)
         => CssTransform.create("translateX(" + StringFn(value.Value) + ")");
 
@@ -277,6 +338,51 @@ public static partial class css
         if (numerator <= 0 || denominator <= 0)
             Fail("CSS ratio terms must be greater than zero.");
         return CssRatio.create(StringFn(numerator) + " / " + StringFn(denominator));
+    }
+
+    public static CssBorder border(
+        CssLineWidthValue? width = null,
+        CssLineStyleValue? style = null,
+        CssColorValue? color = null)
+    {
+        if (width is null && style is null && color is null)
+            Fail("CSS border requires a width, style, or color.");
+
+        var parts = new Array<string>();
+        if (width is not null)
+            parts.Push(StringFn(width.Value.Value));
+        if (style is not null)
+            parts.Push(StringFn(style.Value.Value));
+        if (color is not null)
+            parts.Push(StringFn(color.Value.Value));
+        return CssBorder.create(parts.Join(" "));
+    }
+
+    public static CssFilter blur(CssLength value)
+        => CssFilter.create("blur(" + StringFn(value) + ")");
+
+    public static CssFilter grayscale(double amount)
+    {
+        validateUnitInterval(amount, "grayscale amount");
+        return CssFilter.create("grayscale(" + number(amount) + ")");
+    }
+
+    public static CssFilter saturate(double amount)
+    {
+        if (!IsFinite(amount) || amount < 0)
+            Fail("CSS saturate amount must be non-negative and finite.");
+        return CssFilter.create("saturate(" + number(amount) + ")");
+    }
+
+    public static CssFilter filters([PreserveParamsArray] params CssFilter[] values)
+    {
+        if (values.Length == 0)
+            Fail("CSS filter requires at least one function.");
+
+        var output = new Array<string>();
+        foreach (var value in values)
+            output.Push(StringFn(value));
+        return CssFilter.create(output.Join(" "));
     }
 
     private static string number(double value)
