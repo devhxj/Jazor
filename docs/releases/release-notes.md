@@ -7,6 +7,8 @@
 - JazorAdmin's local-package browser smoke now exercises Machine/API registration, one-time secret display, Scope edits, authorization/token revocation, and mobile application-page viewport containment. It also catches RazorVue output that would use ECMAScript reserved words as local function names.
 - JazorAdmin now has three independent operating centers: SSO management, typed configuration, and task scheduling. The configuration center supports text, boolean, number, and JSON values. The task center uses Quartz.NET for Cron triggers, misfire handling, and single-task concurrency; administrators can enable, pause, manually run, and inspect catalogued tasks, without submitting arbitrary executable code. The initial task safely prunes expired OpenIddict records.
 - JazorAdmin uses the concise `ja-*` CSS namespace consistently across its shell, pages, generated modules, and browser verification.
+- Vue Router and Pinia development builds now resolve their Vue Devtools API from a local, licensed Vue3 package resource. Browser development no longer requires a CDN, `node_modules`, or an unresolved bare module import.
+- WebIDL string-enum generation now preserves the source wire token in `Description`, rather than deriving it from the PascalCase C# member. This fixes `RequestCredentials.SameOrigin` to emit `"same-origin"` and corrects the same defect for all generated enum values. JazorAdmin's API client also omits unset `headers` and `body` members instead of passing invalid explicit `null` values. Its isolated local-package smoke asserts both production paths, and its test project explicitly identifies itself as a test project so isolated `dotnet test` runs cannot silently skip API coverage.
 
 ## 2026-08-06
 

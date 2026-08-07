@@ -431,19 +431,21 @@ public static class ApiClient
     private static IPromise<ApiOutcome> Send(string path, string method, object? body = null)
     {
         var json = body is null ? null : JSON.Stringify(body);
-        HeadersInit? headers = json is null
-            ? (HeadersInit?)null
-            : (HeadersInit)new string[][] { new[] { "content-type", "application/json" } };
-        BodyInit? requestBody = json is null
-            ? (BodyInit?)null
-            : (BodyInit)(XMLHttpRequestBodyInit)json;
-        var options = new RequestInit(
-            Method: method,
-            Headers: headers,
-            Body: requestBody,
-            Credentials: RequestCredentials.SameOrigin);
+        if (json is null)
+        {
+            // Optional WebIDL dictionary members must be absent, not null.
+            var emptyOptions = new RequestInit(
+                Method: method,
+                Credentials: RequestCredentials.SameOrigin);
+            return Promise<Response>.Resolve(ECMAScript.Global.Window.Fetch(path, emptyOptions)).Then(ReadResponse);
+        }
 
-        return Promise<Response>.Resolve(ECMAScript.Global.Window.Fetch(path, options)).Then(ReadResponse);
+        var contentOptions = new RequestInit(
+            Method: method,
+            Headers: (HeadersInit)new string[][] { new[] { "content-type", "application/json" } },
+            Body: (BodyInit)(XMLHttpRequestBodyInit)json,
+            Credentials: RequestCredentials.SameOrigin);
+        return Promise<Response>.Resolve(ECMAScript.Global.Window.Fetch(path, contentOptions)).Then(ReadResponse);
     }
 
     private static IPromise<ApiOutcome> ReadResponse(Response response)

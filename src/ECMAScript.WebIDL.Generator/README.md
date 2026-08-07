@@ -21,6 +21,13 @@ Typical command:
 dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl
 ```
 
+Regenerate bindings from the committed inventory without contacting WebRef. Use this for
+deterministic emitter changes and package regressions:
+
+```powershell
+dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl --from-inventory src/ECMAScript/webidl/webidl.inventory.json
+```
+
 The Deno worker entrypoint and `deno.json` live under `src/ECMAScript.WebIDL.Generator/` so this project does not depend on `src/ECMAScript.WebIDL`.
 
 `src/ECMAScript.WebIDL` is now archived legacy code and no longer participates in the active build.

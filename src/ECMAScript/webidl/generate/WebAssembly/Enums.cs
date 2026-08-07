@@ -8,16 +8,16 @@ namespace ECMAScript.WebAssembly;
 [String]
 public enum ImportExportKind
 {
-    [Description("@#Function")]
+    [Description("@#function")]
     Function = 0,
 
-    [Description("@#Table")]
+    [Description("@#table")]
     Table = 1,
 
-    [Description("@#Memory")]
+    [Description("@#memory")]
     Memory = 2,
 
-    [Description("@#Global")]
+    [Description("@#global")]
     Global = 3
 }
 
@@ -29,10 +29,10 @@ public enum ImportExportKind
 [String]
 public enum TableKind
 {
-    [Description("@#Externref")]
+    [Description("@#externref")]
     Externref = 0,
 
-    [Description("@#Anyfunc")]
+    [Description("@#anyfunc")]
     Anyfunc = 1
 }
 
@@ -44,24 +44,24 @@ public enum TableKind
 [String]
 public enum ValueType
 {
-    [Description("@#I32")]
+    [Description("@#i32")]
     I32 = 0,
 
-    [Description("@#I64")]
+    [Description("@#i64")]
     I64 = 1,
 
-    [Description("@#F32")]
+    [Description("@#f32")]
     F32 = 2,
 
-    [Description("@#F64")]
+    [Description("@#f64")]
     F64 = 3,
 
-    [Description("@#V128")]
+    [Description("@#v128")]
     V128 = 4,
 
-    [Description("@#Externref")]
+    [Description("@#externref")]
     Externref = 5,
 
-    [Description("@#Anyfunc")]
+    [Description("@#anyfunc")]
     Anyfunc = 6
 }

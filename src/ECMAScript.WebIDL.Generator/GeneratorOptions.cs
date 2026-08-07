@@ -5,7 +5,8 @@ internal sealed record GeneratorOptions(
     string WorkerPath,
     string DenoConfigPath,
     string OutputDirectory,
-    string InventoryFileName)
+    string InventoryFileName,
+    string? InputInventoryPath = null)
 {
     public static GeneratorOptions Parse(string[] args, RepositoryLayout layout)
     {
@@ -13,6 +14,7 @@ internal sealed record GeneratorOptions(
         var denoConfigPath = layout.DefaultDenoConfigPath;
         var outputDirectory = layout.DefaultOutputDirectory;
         var inventoryFileName = "webidl.inventory.json";
+        string? inputInventoryPath = null;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -30,10 +32,13 @@ internal sealed record GeneratorOptions(
                 case "--inventory":
                     inventoryFileName = RequireRawValue(args, ++i, "--inventory");
                     break;
+                case "--from-inventory":
+                    inputInventoryPath = RequireValue(args, ++i, "--from-inventory");
+                    break;
             }
         }
 
-        return new GeneratorOptions(layout.RepositoryRoot, workerPath, denoConfigPath, outputDirectory, inventoryFileName);
+        return new GeneratorOptions(layout.RepositoryRoot, workerPath, denoConfigPath, outputDirectory, inventoryFileName, inputInventoryPath);
     }
 
     private static string RequireValue(string[] args, int index, string optionName)

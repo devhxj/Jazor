@@ -90,6 +90,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 - JazorAdmin now provides OpenIddict application, scope, authorization, and token management with public/confidential and interactive/machine/API profiles, one-time secret rotation, Consent/PKCE, endpoint/grant/response permissions, API resource audiences, and authorization/token revocation. Its local-package browser smoke covers those management flows and mobile editor containment.
 - JazorAdmin now separates its SSO center from a typed configuration center and a Quartz.NET task center. Administrators can manage `text`, `boolean`, `number`, and `json` settings, schedule catalogued operational tasks with Cron expressions, pause or manually run them, and inspect execution history without exposing arbitrary script execution.
+- Vue Router and Pinia development builds now obtain their Vue Devtools API from the local Vue3 package resource, so browser development remains self-contained without a CDN or `node_modules`. WebIDL string-enum bindings preserve their browser wire tokens, and JazorAdmin validates the packaged `RequestCredentials.SameOrigin` path as `"same-origin"` while omitting unset Fetch dictionary members during its local-package browser smoke.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

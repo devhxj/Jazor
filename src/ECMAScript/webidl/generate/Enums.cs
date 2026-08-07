@@ -8,10 +8,10 @@ namespace ECMAScript;
 [String]
 public enum AacBitstreamFormat
 {
-    [Description("@#Aac")]
+    [Description("@#aac")]
     Aac = 0,
 
-    [Description("@#Adts")]
+    [Description("@#adts")]
     Adts = 1
 }
 
@@ -23,10 +23,10 @@ public enum AacBitstreamFormat
 [String]
 public enum AccelerometerLocalCoordinateSystem
 {
-    [Description("@#Device")]
+    [Description("@#device")]
     Device = 0,
 
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 1
 }
 
@@ -38,19 +38,19 @@ public enum AccelerometerLocalCoordinateSystem
 [String]
 public enum AlignSetting
 {
-    [Description("@#Start")]
+    [Description("@#start")]
     Start = 0,
 
-    [Description("@#Center")]
+    [Description("@#center")]
     Center = 1,
 
-    [Description("@#End")]
+    [Description("@#end")]
     End = 2,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 3,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 4
 }
 
@@ -62,10 +62,10 @@ public enum AlignSetting
 [String]
 public enum AlphaOption
 {
-    [Description("@#Keep")]
+    [Description("@#keep")]
     Keep = 0,
 
-    [Description("@#Discard")]
+    [Description("@#discard")]
     Discard = 1
 }
 
@@ -77,16 +77,16 @@ public enum AlphaOption
 [String]
 public enum AnimationPlayState
 {
-    [Description("@#Idle")]
+    [Description("@#idle")]
     Idle = 0,
 
-    [Description("@#Running")]
+    [Description("@#running")]
     Running = 1,
 
-    [Description("@#Paused")]
+    [Description("@#paused")]
     Paused = 2,
 
-    [Description("@#Finished")]
+    [Description("@#finished")]
     Finished = 3
 }
 
@@ -98,13 +98,13 @@ public enum AnimationPlayState
 [String]
 public enum AnimationReplaceState
 {
-    [Description("@#Active")]
+    [Description("@#active")]
     Active = 0,
 
-    [Description("@#Removed")]
+    [Description("@#removed")]
     Removed = 1,
 
-    [Description("@#Persisted")]
+    [Description("@#persisted")]
     Persisted = 2
 }
 
@@ -116,10 +116,10 @@ public enum AnimationReplaceState
 [String]
 public enum AppBannerPromptOutcome
 {
-    [Description("@#Accepted")]
+    [Description("@#accepted")]
     Accepted = 0,
 
-    [Description("@#Dismissed")]
+    [Description("@#dismissed")]
     Dismissed = 1
 }
 
@@ -131,10 +131,10 @@ public enum AppBannerPromptOutcome
 [String]
 public enum AppendMode
 {
-    [Description("@#Segments")]
+    [Description("@#segments")]
     Segments = 0,
 
-    [Description("@#Sequence")]
+    [Description("@#sequence")]
     Sequence = 1
 }
 
@@ -146,16 +146,16 @@ public enum AppendMode
 [String]
 public enum AttestationConveyancePreference
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Indirect")]
+    [Description("@#indirect")]
     Indirect = 1,
 
-    [Description("@#Direct")]
+    [Description("@#direct")]
     Direct = 2,
 
-    [Description("@#Enterprise")]
+    [Description("@#enterprise")]
     Enterprise = 3
 }
 
@@ -167,13 +167,13 @@ public enum AttestationConveyancePreference
 [String]
 public enum AudioContextLatencyCategory
 {
-    [Description("@#Balanced")]
+    [Description("@#balanced")]
     Balanced = 0,
 
-    [Description("@#Interactive")]
+    [Description("@#interactive")]
     Interactive = 1,
 
-    [Description("@#Playback")]
+    [Description("@#playback")]
     Playback = 2
 }
 
@@ -185,10 +185,10 @@ public enum AudioContextLatencyCategory
 [String]
 public enum AudioContextRenderSizeCategory
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#Hardware")]
+    [Description("@#hardware")]
     Hardware = 1
 }
 
@@ -200,13 +200,13 @@ public enum AudioContextRenderSizeCategory
 [String]
 public enum AudioContextState
 {
-    [Description("@#Suspended")]
+    [Description("@#suspended")]
     Suspended = 0,
 
-    [Description("@#Running")]
+    [Description("@#running")]
     Running = 1,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 2
 }
 
@@ -218,28 +218,28 @@ public enum AudioContextState
 [String]
 public enum AudioSampleFormat
 {
-    [Description("@#U8")]
+    [Description("@#u8")]
     U8 = 0,
 
-    [Description("@#S16")]
+    [Description("@#s16")]
     S16 = 1,
 
-    [Description("@#S32")]
+    [Description("@#s32")]
     S32 = 2,
 
-    [Description("@#F32")]
+    [Description("@#f32")]
     F32 = 3,
 
-    [Description("@#U8Planar")]
+    [Description("@#u8-planar")]
     U8Planar = 4,
 
-    [Description("@#S16Planar")]
+    [Description("@#s16-planar")]
     S16Planar = 5,
 
-    [Description("@#S32Planar")]
+    [Description("@#s32-planar")]
     S32Planar = 6,
 
-    [Description("@#F32Planar")]
+    [Description("@#f32-planar")]
     F32Planar = 7
 }
 
@@ -251,13 +251,13 @@ public enum AudioSampleFormat
 [String]
 public enum AudioSessionState
 {
-    [Description("@#Inactive")]
+    [Description("@#inactive")]
     Inactive = 0,
 
-    [Description("@#Active")]
+    [Description("@#active")]
     Active = 1,
 
-    [Description("@#Interrupted")]
+    [Description("@#interrupted")]
     Interrupted = 2
 }
 
@@ -269,22 +269,22 @@ public enum AudioSessionState
 [String]
 public enum AudioSessionType
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Playback")]
+    [Description("@#playback")]
     Playback = 1,
 
-    [Description("@#Transient")]
+    [Description("@#transient")]
     Transient = 2,
 
-    [Description("@#TransientSolo")]
+    [Description("@#transient-solo")]
     TransientSolo = 3,
 
-    [Description("@#Ambient")]
+    [Description("@#ambient")]
     Ambient = 4,
 
-    [Description("@#PlayAndRecord")]
+    [Description("@#play-and-record")]
     PlayAndRecord = 5
 }
 
@@ -296,7 +296,7 @@ public enum AudioSessionType
 [String]
 public enum AudioSinkType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0
 }
 
@@ -308,10 +308,10 @@ public enum AudioSinkType
 [String]
 public enum AuthenticatorAttachment
 {
-    [Description("@#Platform")]
+    [Description("@#platform")]
     Platform = 0,
 
-    [Description("@#CrossPlatform")]
+    [Description("@#cross-platform")]
     CrossPlatform = 1
 }
 
@@ -323,22 +323,22 @@ public enum AuthenticatorAttachment
 [String]
 public enum AuthenticatorTransport
 {
-    [Description("@#Usb")]
+    [Description("@#usb")]
     Usb = 0,
 
-    [Description("@#Nfc")]
+    [Description("@#nfc")]
     Nfc = 1,
 
-    [Description("@#Ble")]
+    [Description("@#ble")]
     Ble = 2,
 
-    [Description("@#SmartCard")]
+    [Description("@#smart-card")]
     SmartCard = 3,
 
-    [Description("@#Hybrid")]
+    [Description("@#hybrid")]
     Hybrid = 4,
 
-    [Description("@#Internal")]
+    [Description("@#internal")]
     Internal = 5
 }
 
@@ -350,7 +350,7 @@ public enum AuthenticatorTransport
 [String]
 public enum AutoKeyword
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0
 }
 
@@ -362,10 +362,10 @@ public enum AutoKeyword
 [String]
 public enum AutomationRate
 {
-    [Description("@#ARate")]
+    [Description("@#a-rate")]
     ARate = 0,
 
-    [Description("@#KRate")]
+    [Description("@#k-rate")]
     KRate = 1
 }
 
@@ -377,13 +377,13 @@ public enum AutomationRate
 [String]
 public enum AutoplayPolicy
 {
-    [Description("@#Allowed")]
+    [Description("@#allowed")]
     Allowed = 0,
 
-    [Description("@#AllowedMuted")]
+    [Description("@#allowed-muted")]
     AllowedMuted = 1,
 
-    [Description("@#Disallowed")]
+    [Description("@#disallowed")]
     Disallowed = 2
 }
 
@@ -395,10 +395,10 @@ public enum AutoplayPolicy
 [String]
 public enum AutoplayPolicyMediaType
 {
-    [Description("@#Mediaelement")]
+    [Description("@#mediaelement")]
     Mediaelement = 0,
 
-    [Description("@#Audiocontext")]
+    [Description("@#audiocontext")]
     Audiocontext = 1
 }
 
@@ -410,10 +410,10 @@ public enum AutoplayPolicyMediaType
 [String]
 public enum AvcBitstreamFormat
 {
-    [Description("@#Annexb")]
+    [Description("@#annexb")]
     Annexb = 0,
 
-    [Description("@#Avc")]
+    [Description("@#avc")]
     Avc = 1
 }
 
@@ -425,22 +425,22 @@ public enum AvcBitstreamFormat
 [String]
 public enum BackgroundFetchFailureReason
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Aborted")]
+    [Description("@#aborted")]
     Aborted = 1,
 
-    [Description("@#BadStatus")]
+    [Description("@#bad-status")]
     BadStatus = 2,
 
-    [Description("@#FetchError")]
+    [Description("@#fetch-error")]
     FetchError = 3,
 
-    [Description("@#QuotaExceeded")]
+    [Description("@#quota-exceeded")]
     QuotaExceeded = 4,
 
-    [Description("@#DownloadTotalExceeded")]
+    [Description("@#download-total-exceeded")]
     DownloadTotalExceeded = 5
 }
 
@@ -452,13 +452,13 @@ public enum BackgroundFetchFailureReason
 [String]
 public enum BackgroundFetchResult
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Success")]
+    [Description("@#success")]
     Success = 1,
 
-    [Description("@#Failure")]
+    [Description("@#failure")]
     Failure = 2
 }
 
@@ -470,46 +470,46 @@ public enum BackgroundFetchResult
 [String]
 public enum BarcodeFormat
 {
-    [Description("@#Aztec")]
+    [Description("@#aztec")]
     Aztec = 0,
 
-    [Description("@#Code128")]
+    [Description("@#code_128")]
     Code128 = 1,
 
-    [Description("@#Code39")]
+    [Description("@#code_39")]
     Code39 = 2,
 
-    [Description("@#Code93")]
+    [Description("@#code_93")]
     Code93 = 3,
 
-    [Description("@#Codabar")]
+    [Description("@#codabar")]
     Codabar = 4,
 
-    [Description("@#DataMatrix")]
+    [Description("@#data_matrix")]
     DataMatrix = 5,
 
-    [Description("@#Ean13")]
+    [Description("@#ean_13")]
     Ean13 = 6,
 
-    [Description("@#Ean8")]
+    [Description("@#ean_8")]
     Ean8 = 7,
 
-    [Description("@#Itf")]
+    [Description("@#itf")]
     Itf = 8,
 
-    [Description("@#Pdf417")]
+    [Description("@#pdf417")]
     Pdf417 = 9,
 
-    [Description("@#QrCode")]
+    [Description("@#qr_code")]
     QrCode = 10,
 
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 11,
 
-    [Description("@#UpcA")]
+    [Description("@#upc_a")]
     UpcA = 12,
 
-    [Description("@#UpcE")]
+    [Description("@#upc_e")]
     UpcE = 13
 }
 
@@ -521,10 +521,10 @@ public enum BarcodeFormat
 [String]
 public enum BinaryType
 {
-    [Description("@#Blob")]
+    [Description("@#blob")]
     Blob = 0,
 
-    [Description("@#Arraybuffer")]
+    [Description("@#arraybuffer")]
     Arraybuffer = 1
 }
 
@@ -536,28 +536,28 @@ public enum BinaryType
 [String]
 public enum BiquadFilterType
 {
-    [Description("@#Lowpass")]
+    [Description("@#lowpass")]
     Lowpass = 0,
 
-    [Description("@#Highpass")]
+    [Description("@#highpass")]
     Highpass = 1,
 
-    [Description("@#Bandpass")]
+    [Description("@#bandpass")]
     Bandpass = 2,
 
-    [Description("@#Lowshelf")]
+    [Description("@#lowshelf")]
     Lowshelf = 3,
 
-    [Description("@#Highshelf")]
+    [Description("@#highshelf")]
     Highshelf = 4,
 
-    [Description("@#Peaking")]
+    [Description("@#peaking")]
     Peaking = 5,
 
-    [Description("@#Notch")]
+    [Description("@#notch")]
     Notch = 6,
 
-    [Description("@#Allpass")]
+    [Description("@#allpass")]
     Allpass = 7
 }
 
@@ -569,10 +569,10 @@ public enum BiquadFilterType
 [String]
 public enum BitrateMode
 {
-    [Description("@#Constant")]
+    [Description("@#constant")]
     Constant = 0,
 
-    [Description("@#Variable")]
+    [Description("@#variable")]
     Variable = 1
 }
 
@@ -584,16 +584,16 @@ public enum BitrateMode
 [String]
 public enum CSSBoxType
 {
-    [Description("@#Margin")]
+    [Description("@#margin")]
     Margin = 0,
 
-    [Description("@#Border")]
+    [Description("@#border")]
     Border = 1,
 
-    [Description("@#Padding")]
+    [Description("@#padding")]
     Padding = 2,
 
-    [Description("@#Content")]
+    [Description("@#content")]
     Content = 3
 }
 
@@ -605,13 +605,13 @@ public enum CSSBoxType
 [String]
 public enum CanPlayTypeResult
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Maybe")]
+    [Description("@#maybe")]
     Maybe = 1,
 
-    [Description("@#Probably")]
+    [Description("@#probably")]
     Probably = 2
 }
 
@@ -623,13 +623,13 @@ public enum CanPlayTypeResult
 [String]
 public enum CanvasDirection
 {
-    [Description("@#Ltr")]
+    [Description("@#ltr")]
     Ltr = 0,
 
-    [Description("@#Rtl")]
+    [Description("@#rtl")]
     Rtl = 1,
 
-    [Description("@#Inherit")]
+    [Description("@#inherit")]
     Inherit = 2
 }
 
@@ -641,10 +641,10 @@ public enum CanvasDirection
 [String]
 public enum CanvasFillRule
 {
-    [Description("@#Nonzero")]
+    [Description("@#nonzero")]
     Nonzero = 0,
 
-    [Description("@#Evenodd")]
+    [Description("@#evenodd")]
     Evenodd = 1
 }
 
@@ -656,13 +656,13 @@ public enum CanvasFillRule
 [String]
 public enum CanvasFontKerning
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Normal")]
+    [Description("@#normal")]
     Normal = 1,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 2
 }
 
@@ -674,31 +674,31 @@ public enum CanvasFontKerning
 [String]
 public enum CanvasFontStretch
 {
-    [Description("@#UltraCondensed")]
+    [Description("@#ultra-condensed")]
     UltraCondensed = 0,
 
-    [Description("@#ExtraCondensed")]
+    [Description("@#extra-condensed")]
     ExtraCondensed = 1,
 
-    [Description("@#Condensed")]
+    [Description("@#condensed")]
     Condensed = 2,
 
-    [Description("@#SemiCondensed")]
+    [Description("@#semi-condensed")]
     SemiCondensed = 3,
 
-    [Description("@#Normal")]
+    [Description("@#normal")]
     Normal = 4,
 
-    [Description("@#SemiExpanded")]
+    [Description("@#semi-expanded")]
     SemiExpanded = 5,
 
-    [Description("@#Expanded")]
+    [Description("@#expanded")]
     Expanded = 6,
 
-    [Description("@#ExtraExpanded")]
+    [Description("@#extra-expanded")]
     ExtraExpanded = 7,
 
-    [Description("@#UltraExpanded")]
+    [Description("@#ultra-expanded")]
     UltraExpanded = 8
 }
 
@@ -710,25 +710,25 @@ public enum CanvasFontStretch
 [String]
 public enum CanvasFontVariantCaps
 {
-    [Description("@#Normal")]
+    [Description("@#normal")]
     Normal = 0,
 
-    [Description("@#SmallCaps")]
+    [Description("@#small-caps")]
     SmallCaps = 1,
 
-    [Description("@#AllSmallCaps")]
+    [Description("@#all-small-caps")]
     AllSmallCaps = 2,
 
-    [Description("@#PetiteCaps")]
+    [Description("@#petite-caps")]
     PetiteCaps = 3,
 
-    [Description("@#AllPetiteCaps")]
+    [Description("@#all-petite-caps")]
     AllPetiteCaps = 4,
 
-    [Description("@#Unicase")]
+    [Description("@#unicase")]
     Unicase = 5,
 
-    [Description("@#TitlingCaps")]
+    [Description("@#titling-caps")]
     TitlingCaps = 6
 }
 
@@ -740,13 +740,13 @@ public enum CanvasFontVariantCaps
 [String]
 public enum CanvasLineCap
 {
-    [Description("@#Butt")]
+    [Description("@#butt")]
     Butt = 0,
 
-    [Description("@#Round")]
+    [Description("@#round")]
     Round = 1,
 
-    [Description("@#Square")]
+    [Description("@#square")]
     Square = 2
 }
 
@@ -758,13 +758,13 @@ public enum CanvasLineCap
 [String]
 public enum CanvasLineJoin
 {
-    [Description("@#Round")]
+    [Description("@#round")]
     Round = 0,
 
-    [Description("@#Bevel")]
+    [Description("@#bevel")]
     Bevel = 1,
 
-    [Description("@#Miter")]
+    [Description("@#miter")]
     Miter = 2
 }
 
@@ -776,19 +776,19 @@ public enum CanvasLineJoin
 [String]
 public enum CanvasTextAlign
 {
-    [Description("@#Start")]
+    [Description("@#start")]
     Start = 0,
 
-    [Description("@#End")]
+    [Description("@#end")]
     End = 1,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 2,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 3,
 
-    [Description("@#Center")]
+    [Description("@#center")]
     Center = 4
 }
 
@@ -800,22 +800,22 @@ public enum CanvasTextAlign
 [String]
 public enum CanvasTextBaseline
 {
-    [Description("@#Top")]
+    [Description("@#top")]
     Top = 0,
 
-    [Description("@#Hanging")]
+    [Description("@#hanging")]
     Hanging = 1,
 
-    [Description("@#Middle")]
+    [Description("@#middle")]
     Middle = 2,
 
-    [Description("@#Alphabetic")]
+    [Description("@#alphabetic")]
     Alphabetic = 3,
 
-    [Description("@#Ideographic")]
+    [Description("@#ideographic")]
     Ideographic = 4,
 
-    [Description("@#Bottom")]
+    [Description("@#bottom")]
     Bottom = 5
 }
 
@@ -827,16 +827,16 @@ public enum CanvasTextBaseline
 [String]
 public enum CanvasTextRendering
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#OptimizeSpeed")]
+    [Description("@#optimizeSpeed")]
     OptimizeSpeed = 1,
 
-    [Description("@#OptimizeLegibility")]
+    [Description("@#optimizeLegibility")]
     OptimizeLegibility = 2,
 
-    [Description("@#GeometricPrecision")]
+    [Description("@#geometricPrecision")]
     GeometricPrecision = 3
 }
 
@@ -848,16 +848,16 @@ public enum CanvasTextRendering
 [String]
 public enum CaptureAction
 {
-    [Description("@#Next")]
+    [Description("@#next")]
     Next = 0,
 
-    [Description("@#Previous")]
+    [Description("@#previous")]
     Previous = 1,
 
-    [Description("@#First")]
+    [Description("@#first")]
     First = 2,
 
-    [Description("@#Last")]
+    [Description("@#last")]
     Last = 3
 }
 
@@ -869,13 +869,13 @@ public enum CaptureAction
 [String]
 public enum CaptureStartFocusBehavior
 {
-    [Description("@#FocusCapturingApplication")]
+    [Description("@#focus-capturing-application")]
     FocusCapturingApplication = 0,
 
-    [Description("@#FocusCapturedSurface")]
+    [Description("@#focus-captured-surface")]
     FocusCapturedSurface = 1,
 
-    [Description("@#NoFocusChange")]
+    [Description("@#no-focus-change")]
     NoFocusChange = 2
 }
 
@@ -887,13 +887,13 @@ public enum CaptureStartFocusBehavior
 [String]
 public enum ChannelCountMode
 {
-    [Description("@#Max")]
+    [Description("@#max")]
     Max = 0,
 
-    [Description("@#ClampedMax")]
+    [Description("@#clamped-max")]
     ClampedMax = 1,
 
-    [Description("@#Explicit")]
+    [Description("@#explicit")]
     Explicit = 2
 }
 
@@ -905,10 +905,10 @@ public enum ChannelCountMode
 [String]
 public enum ChannelInterpretation
 {
-    [Description("@#Speakers")]
+    [Description("@#speakers")]
     Speakers = 0,
 
-    [Description("@#Discrete")]
+    [Description("@#discrete")]
     Discrete = 1
 }
 
@@ -920,19 +920,19 @@ public enum ChannelInterpretation
 [String]
 public enum ClientCapability
 {
-    [Description("@#ConditionalCreate")]
+    [Description("@#conditionalCreate")]
     ConditionalCreate = 0,
 
-    [Description("@#ConditionalMediation")]
+    [Description("@#conditionalMediation")]
     ConditionalMediation = 1,
 
-    [Description("@#HybridTransport")]
+    [Description("@#hybridTransport")]
     HybridTransport = 2,
 
-    [Description("@#PasskeyPlatformAuthenticator")]
+    [Description("@#passkeyPlatformAuthenticator")]
     PasskeyPlatformAuthenticator = 3,
 
-    [Description("@#UserVerifyingPlatformAuthenticator")]
+    [Description("@#userVerifyingPlatformAuthenticator")]
     UserVerifyingPlatformAuthenticator = 4
 }
 
@@ -944,10 +944,10 @@ public enum ClientCapability
 [String]
 public enum ClientLifecycleState
 {
-    [Description("@#Active")]
+    [Description("@#active")]
     Active = 0,
 
-    [Description("@#Frozen")]
+    [Description("@#frozen")]
     Frozen = 1
 }
 
@@ -959,16 +959,16 @@ public enum ClientLifecycleState
 [String]
 public enum ClientType
 {
-    [Description("@#Window")]
+    [Description("@#window")]
     Window = 0,
 
-    [Description("@#Worker")]
+    [Description("@#worker")]
     Worker = 1,
 
-    [Description("@#Sharedworker")]
+    [Description("@#sharedworker")]
     Sharedworker = 2,
 
-    [Description("@#All")]
+    [Description("@#all")]
     All = 3
 }
 
@@ -980,13 +980,13 @@ public enum ClientType
 [String]
 public enum CodecState
 {
-    [Description("@#Unconfigured")]
+    [Description("@#unconfigured")]
     Unconfigured = 0,
 
-    [Description("@#Configured")]
+    [Description("@#configured")]
     Configured = 1,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 2
 }
 
@@ -998,13 +998,13 @@ public enum CodecState
 [String]
 public enum ColorGamut
 {
-    [Description("@#Srgb")]
+    [Description("@#srgb")]
     Srgb = 0,
 
-    [Description("@#P3")]
+    [Description("@#p3")]
     P3 = 1,
 
-    [Description("@#Rec2020")]
+    [Description("@#rec2020")]
     Rec2020 = 2
 }
 
@@ -1016,10 +1016,10 @@ public enum ColorGamut
 [String]
 public enum ColorSpaceConversion
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 1
 }
 
@@ -1031,13 +1031,13 @@ public enum ColorSpaceConversion
 [String]
 public enum CompositeOperation
 {
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 0,
 
-    [Description("@#Add")]
+    [Description("@#add")]
     Add = 1,
 
-    [Description("@#Accumulate")]
+    [Description("@#accumulate")]
     Accumulate = 2
 }
 
@@ -1049,16 +1049,16 @@ public enum CompositeOperation
 [String]
 public enum CompositeOperationOrAuto
 {
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 0,
 
-    [Description("@#Add")]
+    [Description("@#add")]
     Add = 1,
 
-    [Description("@#Accumulate")]
+    [Description("@#accumulate")]
     Accumulate = 2,
 
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 3
 }
 
@@ -1070,13 +1070,13 @@ public enum CompositeOperationOrAuto
 [String]
 public enum CompressionFormat
 {
-    [Description("@#Deflate")]
+    [Description("@#deflate")]
     Deflate = 0,
 
-    [Description("@#DeflateRaw")]
+    [Description("@#deflate-raw")]
     DeflateRaw = 1,
 
-    [Description("@#Gzip")]
+    [Description("@#gzip")]
     Gzip = 2
 }
 
@@ -1088,31 +1088,31 @@ public enum CompressionFormat
 [String]
 public enum ConnectionType
 {
-    [Description("@#Bluetooth")]
+    [Description("@#bluetooth")]
     Bluetooth = 0,
 
-    [Description("@#Cellular")]
+    [Description("@#cellular")]
     Cellular = 1,
 
-    [Description("@#Ethernet")]
+    [Description("@#ethernet")]
     Ethernet = 2,
 
-    [Description("@#Mixed")]
+    [Description("@#mixed")]
     Mixed = 3,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 4,
 
-    [Description("@#Other")]
+    [Description("@#other")]
     Other = 5,
 
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 6,
 
-    [Description("@#Wifi")]
+    [Description("@#wifi")]
     Wifi = 7,
 
-    [Description("@#Wimax")]
+    [Description("@#wimax")]
     Wimax = 8
 }
 
@@ -1124,19 +1124,19 @@ public enum ConnectionType
 [String]
 public enum ContactProperty
 {
-    [Description("@#Address")]
+    [Description("@#address")]
     Address = 0,
 
-    [Description("@#Email")]
+    [Description("@#email")]
     Email = 1,
 
-    [Description("@#Icon")]
+    [Description("@#icon")]
     Icon = 2,
 
-    [Description("@#Name")]
+    [Description("@#name")]
     Name = 3,
 
-    [Description("@#Tel")]
+    [Description("@#tel")]
     Tel = 4
 }
 
@@ -1148,19 +1148,19 @@ public enum ContactProperty
 [String]
 public enum ContentCategory
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Homepage")]
+    [Description("@#homepage")]
     Homepage = 1,
 
-    [Description("@#Article")]
+    [Description("@#article")]
     Article = 2,
 
-    [Description("@#Video")]
+    [Description("@#video")]
     Video = 3,
 
-    [Description("@#Audio")]
+    [Description("@#audio")]
     Audio = 4
 }
 
@@ -1172,13 +1172,13 @@ public enum ContentCategory
 [String]
 public enum CookieSameSite
 {
-    [Description("@#Strict")]
+    [Description("@#strict")]
     Strict = 0,
 
-    [Description("@#Lax")]
+    [Description("@#lax")]
     Lax = 1,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 2
 }
 
@@ -1190,16 +1190,16 @@ public enum CookieSameSite
 [String]
 public enum CredentialMediationRequirement
 {
-    [Description("@#Silent")]
+    [Description("@#silent")]
     Silent = 0,
 
-    [Description("@#Optional")]
+    [Description("@#optional")]
     Optional = 1,
 
-    [Description("@#Conditional")]
+    [Description("@#conditional")]
     Conditional = 2,
 
-    [Description("@#Required")]
+    [Description("@#required")]
     Required = 3
 }
 
@@ -1211,13 +1211,13 @@ public enum CredentialMediationRequirement
 [String]
 public enum CursorCaptureConstraint
 {
-    [Description("@#Never")]
+    [Description("@#never")]
     Never = 0,
 
-    [Description("@#Always")]
+    [Description("@#always")]
     Always = 1,
 
-    [Description("@#Motion")]
+    [Description("@#motion")]
     Motion = 2
 }
 
@@ -1229,19 +1229,19 @@ public enum CursorCaptureConstraint
 [String]
 public enum DOMParserSupportedType
 {
-    [Description("@#TextHtml")]
+    [Description("@#text/html")]
     TextHtml = 0,
 
-    [Description("@#TextXml")]
+    [Description("@#text/xml")]
     TextXml = 1,
 
-    [Description("@#ApplicationXml")]
+    [Description("@#application/xml")]
     ApplicationXml = 2,
 
-    [Description("@#ApplicationXhtmlXml")]
+    [Description("@#application/xhtml\u002Bxml")]
     ApplicationXhtmlXml = 3,
 
-    [Description("@#ImageSvgXml")]
+    [Description("@#image/svg\u002Bxml")]
     ImageSvgXml = 4
 }
 
@@ -1253,10 +1253,10 @@ public enum DOMParserSupportedType
 [String]
 public enum DevicePostureType
 {
-    [Description("@#Continuous")]
+    [Description("@#continuous")]
     Continuous = 0,
 
-    [Description("@#Folded")]
+    [Description("@#folded")]
     Folded = 1
 }
 
@@ -1268,13 +1268,13 @@ public enum DevicePostureType
 [String]
 public enum DirectionSetting
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Rl")]
+    [Description("@#rl")]
     Rl = 1,
 
-    [Description("@#Lr")]
+    [Description("@#lr")]
     Lr = 2
 }
 
@@ -1286,13 +1286,13 @@ public enum DirectionSetting
 [String]
 public enum DisplayCaptureSurfaceType
 {
-    [Description("@#Monitor")]
+    [Description("@#monitor")]
     Monitor = 0,
 
-    [Description("@#Window")]
+    [Description("@#window")]
     Window = 1,
 
-    [Description("@#Browser")]
+    [Description("@#browser")]
     Browser = 2
 }
 
@@ -1304,13 +1304,13 @@ public enum DisplayCaptureSurfaceType
 [String]
 public enum DistanceModelType
 {
-    [Description("@#Linear")]
+    [Description("@#linear")]
     Linear = 0,
 
-    [Description("@#Inverse")]
+    [Description("@#inverse")]
     Inverse = 1,
 
-    [Description("@#Exponential")]
+    [Description("@#exponential")]
     Exponential = 2
 }
 
@@ -1322,13 +1322,13 @@ public enum DistanceModelType
 [String]
 public enum DocumentReadyState
 {
-    [Description("@#Loading")]
+    [Description("@#loading")]
     Loading = 0,
 
-    [Description("@#Interactive")]
+    [Description("@#interactive")]
     Interactive = 1,
 
-    [Description("@#Complete")]
+    [Description("@#complete")]
     Complete = 2
 }
 
@@ -1340,10 +1340,10 @@ public enum DocumentReadyState
 [String]
 public enum DocumentVisibilityState
 {
-    [Description("@#Visible")]
+    [Description("@#visible")]
     Visible = 0,
 
-    [Description("@#Hidden")]
+    [Description("@#hidden")]
     Hidden = 1
 }
 
@@ -1355,16 +1355,16 @@ public enum DocumentVisibilityState
 [String]
 public enum EffectiveConnectionType
 {
-    [Description("@#_2g")]
+    [Description("@#2g")]
     _2g = 0,
 
-    [Description("@#_3g")]
+    [Description("@#3g")]
     _3g = 1,
 
-    [Description("@#_4g")]
+    [Description("@#4g")]
     _4g = 2,
 
-    [Description("@#Slow2g")]
+    [Description("@#slow-2g")]
     Slow2g = 3
 }
 
@@ -1376,10 +1376,10 @@ public enum EffectiveConnectionType
 [String]
 public enum EncodedAudioChunkType
 {
-    [Description("@#Key")]
+    [Description("@#key")]
     Key = 0,
 
-    [Description("@#Delta")]
+    [Description("@#delta")]
     Delta = 1
 }
 
@@ -1391,10 +1391,10 @@ public enum EncodedAudioChunkType
 [String]
 public enum EncodedVideoChunkType
 {
-    [Description("@#Key")]
+    [Description("@#key")]
     Key = 0,
 
-    [Description("@#Delta")]
+    [Description("@#delta")]
     Delta = 1
 }
 
@@ -1406,10 +1406,10 @@ public enum EncodedVideoChunkType
 [String]
 public enum EndOfStreamError
 {
-    [Description("@#Network")]
+    [Description("@#network")]
     Network = 0,
 
-    [Description("@#Decode")]
+    [Description("@#decode")]
     Decode = 1
 }
 
@@ -1421,10 +1421,10 @@ public enum EndOfStreamError
 [String]
 public enum EndingType
 {
-    [Description("@#Transparent")]
+    [Description("@#transparent")]
     Transparent = 0,
 
-    [Description("@#Native")]
+    [Description("@#native")]
     Native = 1
 }
 
@@ -1436,19 +1436,19 @@ public enum EndingType
 [String]
 public enum FenceReportingDestination
 {
-    [Description("@#Buyer")]
+    [Description("@#buyer")]
     Buyer = 0,
 
-    [Description("@#Seller")]
+    [Description("@#seller")]
     Seller = 1,
 
-    [Description("@#ComponentSeller")]
+    [Description("@#component-seller")]
     ComponentSeller = 2,
 
-    [Description("@#DirectSeller")]
+    [Description("@#direct-seller")]
     DirectSeller = 3,
 
-    [Description("@#SharedStorageSelectUrl")]
+    [Description("@#shared-storage-select-url")]
     SharedStorageSelectUrl = 4
 }
 
@@ -1460,10 +1460,10 @@ public enum FenceReportingDestination
 [String]
 public enum FileSystemHandleKind
 {
-    [Description("@#File")]
+    [Description("@#file")]
     File = 0,
 
-    [Description("@#Directory")]
+    [Description("@#directory")]
     Directory = 1
 }
 
@@ -1475,10 +1475,10 @@ public enum FileSystemHandleKind
 [String]
 public enum FileSystemPermissionMode
 {
-    [Description("@#Read")]
+    [Description("@#read")]
     Read = 0,
 
-    [Description("@#Readwrite")]
+    [Description("@#readwrite")]
     Readwrite = 1
 }
 
@@ -1490,13 +1490,13 @@ public enum FileSystemPermissionMode
 [String]
 public enum FillLightMode
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Off")]
+    [Description("@#off")]
     Off = 1,
 
-    [Description("@#Flash")]
+    [Description("@#flash")]
     Flash = 2
 }
 
@@ -1508,19 +1508,19 @@ public enum FillLightMode
 [String]
 public enum FillMode
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Forwards")]
+    [Description("@#forwards")]
     Forwards = 1,
 
-    [Description("@#Backwards")]
+    [Description("@#backwards")]
     Backwards = 2,
 
-    [Description("@#Both")]
+    [Description("@#both")]
     Both = 3,
 
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 4
 }
 
@@ -1532,10 +1532,10 @@ public enum FillMode
 [String]
 public enum FlowControlType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Hardware")]
+    [Description("@#hardware")]
     Hardware = 1
 }
 
@@ -1547,10 +1547,10 @@ public enum FlowControlType
 [String]
 public enum FocusableAreaSearchMode
 {
-    [Description("@#Visible")]
+    [Description("@#visible")]
     Visible = 0,
 
-    [Description("@#All")]
+    [Description("@#all")]
     All = 1
 }
 
@@ -1562,16 +1562,16 @@ public enum FocusableAreaSearchMode
 [String]
 public enum FontFaceLoadStatus
 {
-    [Description("@#Unloaded")]
+    [Description("@#unloaded")]
     Unloaded = 0,
 
-    [Description("@#Loading")]
+    [Description("@#loading")]
     Loading = 1,
 
-    [Description("@#Loaded")]
+    [Description("@#loaded")]
     Loaded = 2,
 
-    [Description("@#Error")]
+    [Description("@#error")]
     Error = 3
 }
 
@@ -1583,10 +1583,10 @@ public enum FontFaceLoadStatus
 [String]
 public enum FontFaceSetLoadStatus
 {
-    [Description("@#Loading")]
+    [Description("@#loading")]
     Loading = 0,
 
-    [Description("@#Loaded")]
+    [Description("@#loaded")]
     Loaded = 1
 }
 
@@ -1598,16 +1598,16 @@ public enum FontFaceSetLoadStatus
 [String]
 public enum FrameType
 {
-    [Description("@#Auxiliary")]
+    [Description("@#auxiliary")]
     Auxiliary = 0,
 
-    [Description("@#TopLevel")]
+    [Description("@#top-level")]
     TopLevel = 1,
 
-    [Description("@#Nested")]
+    [Description("@#nested")]
     Nested = 2,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 3
 }
 
@@ -1619,13 +1619,13 @@ public enum FrameType
 [String]
 public enum FullscreenNavigationUI
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Show")]
+    [Description("@#show")]
     Show = 1,
 
-    [Description("@#Hide")]
+    [Description("@#hide")]
     Hide = 2
 }
 
@@ -1637,13 +1637,13 @@ public enum FullscreenNavigationUI
 [String]
 public enum GamepadHand
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 1,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 2
 }
 
@@ -1655,10 +1655,10 @@ public enum GamepadHand
 [String]
 public enum GamepadHapticEffectType
 {
-    [Description("@#DualRumble")]
+    [Description("@#dual-rumble")]
     DualRumble = 0,
 
-    [Description("@#TriggerRumble")]
+    [Description("@#trigger-rumble")]
     TriggerRumble = 1
 }
 
@@ -1670,10 +1670,10 @@ public enum GamepadHapticEffectType
 [String]
 public enum GamepadHapticsResult
 {
-    [Description("@#Complete")]
+    [Description("@#complete")]
     Complete = 0,
 
-    [Description("@#Preempted")]
+    [Description("@#preempted")]
     Preempted = 1
 }
 
@@ -1685,13 +1685,13 @@ public enum GamepadHapticsResult
 [String]
 public enum GamepadMappingType
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Standard")]
+    [Description("@#standard")]
     Standard = 1,
 
-    [Description("@#XrStandard")]
+    [Description("@#xr-standard")]
     XrStandard = 2
 }
 
@@ -1703,10 +1703,10 @@ public enum GamepadMappingType
 [String]
 public enum GyroscopeLocalCoordinateSystem
 {
-    [Description("@#Device")]
+    [Description("@#device")]
     Device = 0,
 
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 1
 }
 
@@ -1718,31 +1718,31 @@ public enum GyroscopeLocalCoordinateSystem
 [String]
 public enum HDCPVersion
 {
-    [Description("@#_10")]
+    [Description("@#1.0")]
     _10 = 0,
 
-    [Description("@#_11")]
+    [Description("@#1.1")]
     _11 = 1,
 
-    [Description("@#_12")]
+    [Description("@#1.2")]
     _12 = 2,
 
-    [Description("@#_13")]
+    [Description("@#1.3")]
     _13 = 3,
 
-    [Description("@#_14")]
+    [Description("@#1.4")]
     _14 = 4,
 
-    [Description("@#_20")]
+    [Description("@#2.0")]
     _20 = 5,
 
-    [Description("@#_21")]
+    [Description("@#2.1")]
     _21 = 6,
 
-    [Description("@#_22")]
+    [Description("@#2.2")]
     _22 = 7,
 
-    [Description("@#_23")]
+    [Description("@#2.3")]
     _23 = 8
 }
 
@@ -1754,25 +1754,25 @@ public enum HDCPVersion
 [String]
 public enum HIDUnitSystem
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#SiLinear")]
+    [Description("@#si-linear")]
     SiLinear = 1,
 
-    [Description("@#SiRotation")]
+    [Description("@#si-rotation")]
     SiRotation = 2,
 
-    [Description("@#EnglishLinear")]
+    [Description("@#english-linear")]
     EnglishLinear = 3,
 
-    [Description("@#EnglishRotation")]
+    [Description("@#english-rotation")]
     EnglishRotation = 4,
 
-    [Description("@#VendorDefined")]
+    [Description("@#vendor-defined")]
     VendorDefined = 5,
 
-    [Description("@#Reserved")]
+    [Description("@#reserved")]
     Reserved = 6
 }
 
@@ -1784,13 +1784,13 @@ public enum HIDUnitSystem
 [String]
 public enum HardwareAcceleration
 {
-    [Description("@#NoPreference")]
+    [Description("@#no-preference")]
     NoPreference = 0,
 
-    [Description("@#PreferHardware")]
+    [Description("@#prefer-hardware")]
     PreferHardware = 1,
 
-    [Description("@#PreferSoftware")]
+    [Description("@#prefer-software")]
     PreferSoftware = 2
 }
 
@@ -1802,13 +1802,13 @@ public enum HardwareAcceleration
 [String]
 public enum HdrMetadataType
 {
-    [Description("@#SmpteSt2086")]
+    [Description("@#smpteSt2086")]
     SmpteSt2086 = 0,
 
-    [Description("@#SmpteSt209410")]
+    [Description("@#smpteSt2094-10")]
     SmpteSt209410 = 1,
 
-    [Description("@#SmpteSt209440")]
+    [Description("@#smpteSt2094-40")]
     SmpteSt209440 = 2
 }
 
@@ -1820,10 +1820,10 @@ public enum HdrMetadataType
 [String]
 public enum HevcBitstreamFormat
 {
-    [Description("@#Annexb")]
+    [Description("@#annexb")]
     Annexb = 0,
 
-    [Description("@#Hevc")]
+    [Description("@#hevc")]
     Hevc = 1
 }
 
@@ -1835,16 +1835,16 @@ public enum HevcBitstreamFormat
 [String]
 public enum IDBCursorDirection
 {
-    [Description("@#Next")]
+    [Description("@#next")]
     Next = 0,
 
-    [Description("@#Nextunique")]
+    [Description("@#nextunique")]
     Nextunique = 1,
 
-    [Description("@#Prev")]
+    [Description("@#prev")]
     Prev = 2,
 
-    [Description("@#Prevunique")]
+    [Description("@#prevunique")]
     Prevunique = 3
 }
 
@@ -1856,10 +1856,10 @@ public enum IDBCursorDirection
 [String]
 public enum IDBRequestReadyState
 {
-    [Description("@#Pending")]
+    [Description("@#pending")]
     Pending = 0,
 
-    [Description("@#Done")]
+    [Description("@#done")]
     Done = 1
 }
 
@@ -1871,13 +1871,13 @@ public enum IDBRequestReadyState
 [String]
 public enum IDBTransactionDurability
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#Strict")]
+    [Description("@#strict")]
     Strict = 1,
 
-    [Description("@#Relaxed")]
+    [Description("@#relaxed")]
     Relaxed = 2
 }
 
@@ -1889,13 +1889,13 @@ public enum IDBTransactionDurability
 [String]
 public enum IDBTransactionMode
 {
-    [Description("@#Readonly")]
+    [Description("@#readonly")]
     Readonly = 0,
 
-    [Description("@#Readwrite")]
+    [Description("@#readwrite")]
     Readwrite = 1,
 
-    [Description("@#Versionchange")]
+    [Description("@#versionchange")]
     Versionchange = 2
 }
 
@@ -1907,13 +1907,13 @@ public enum IDBTransactionMode
 [String]
 public enum IPAddressSpace
 {
-    [Description("@#Public")]
+    [Description("@#public")]
     Public = 0,
 
-    [Description("@#Private")]
+    [Description("@#private")]
     Private = 1,
 
-    [Description("@#Local")]
+    [Description("@#local")]
     Local = 2
 }
 
@@ -1925,16 +1925,16 @@ public enum IPAddressSpace
 [String]
 public enum IdentityCredentialRequestOptionsContext
 {
-    [Description("@#Signin")]
+    [Description("@#signin")]
     Signin = 0,
 
-    [Description("@#Signup")]
+    [Description("@#signup")]
     Signup = 1,
 
-    [Description("@#Use")]
+    [Description("@#use")]
     Use = 2,
 
-    [Description("@#Continue")]
+    [Description("@#continue")]
     Continue = 3
 }
 
@@ -1946,10 +1946,10 @@ public enum IdentityCredentialRequestOptionsContext
 [String]
 public enum ImageOrientation
 {
-    [Description("@#FromImage")]
+    [Description("@#from-image")]
     FromImage = 0,
 
-    [Description("@#FlipY")]
+    [Description("@#flipY")]
     FlipY = 1
 }
 
@@ -1961,13 +1961,13 @@ public enum ImageOrientation
 [String]
 public enum ImageSmoothingQuality
 {
-    [Description("@#Low")]
+    [Description("@#low")]
     Low = 0,
 
-    [Description("@#Medium")]
+    [Description("@#medium")]
     Medium = 1,
 
-    [Description("@#High")]
+    [Description("@#high")]
     High = 2
 }
 
@@ -1979,10 +1979,10 @@ public enum ImageSmoothingQuality
 [String]
 public enum ItemType
 {
-    [Description("@#Product")]
+    [Description("@#product")]
     Product = 0,
 
-    [Description("@#Subscription")]
+    [Description("@#subscription")]
     Subscription = 1
 }
 
@@ -1994,10 +1994,10 @@ public enum ItemType
 [String]
 public enum IterationCompositeOperation
 {
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 0,
 
-    [Description("@#Accumulate")]
+    [Description("@#accumulate")]
     Accumulate = 1
 }
 
@@ -2009,16 +2009,16 @@ public enum IterationCompositeOperation
 [String]
 public enum KAnonStatus
 {
-    [Description("@#PassedAndEnforced")]
+    [Description("@#passedAndEnforced")]
     PassedAndEnforced = 0,
 
-    [Description("@#PassedNotEnforced")]
+    [Description("@#passedNotEnforced")]
     PassedNotEnforced = 1,
 
-    [Description("@#BelowThreshold")]
+    [Description("@#belowThreshold")]
     BelowThreshold = 2,
 
-    [Description("@#NotCalculated")]
+    [Description("@#notCalculated")]
     NotCalculated = 3
 }
 
@@ -2030,16 +2030,16 @@ public enum KAnonStatus
 [String]
 public enum KeyFormat
 {
-    [Description("@#Raw")]
+    [Description("@#raw")]
     Raw = 0,
 
-    [Description("@#Spki")]
+    [Description("@#spki")]
     Spki = 1,
 
-    [Description("@#Pkcs8")]
+    [Description("@#pkcs8")]
     Pkcs8 = 2,
 
-    [Description("@#Jwk")]
+    [Description("@#jwk")]
     Jwk = 3
 }
 
@@ -2051,13 +2051,13 @@ public enum KeyFormat
 [String]
 public enum KeyType
 {
-    [Description("@#Public")]
+    [Description("@#public")]
     Public = 0,
 
-    [Description("@#Private")]
+    [Description("@#private")]
     Private = 1,
 
-    [Description("@#Secret")]
+    [Description("@#secret")]
     Secret = 2
 }
 
@@ -2069,28 +2069,28 @@ public enum KeyType
 [String]
 public enum KeyUsage
 {
-    [Description("@#Encrypt")]
+    [Description("@#encrypt")]
     Encrypt = 0,
 
-    [Description("@#Decrypt")]
+    [Description("@#decrypt")]
     Decrypt = 1,
 
-    [Description("@#Sign")]
+    [Description("@#sign")]
     Sign = 2,
 
-    [Description("@#Verify")]
+    [Description("@#verify")]
     Verify = 3,
 
-    [Description("@#DeriveKey")]
+    [Description("@#deriveKey")]
     DeriveKey = 4,
 
-    [Description("@#DeriveBits")]
+    [Description("@#deriveBits")]
     DeriveBits = 5,
 
-    [Description("@#WrapKey")]
+    [Description("@#wrapKey")]
     WrapKey = 6,
 
-    [Description("@#UnwrapKey")]
+    [Description("@#unwrapKey")]
     UnwrapKey = 7
 }
 
@@ -2102,13 +2102,13 @@ public enum KeyUsage
 [String]
 public enum LandmarkType
 {
-    [Description("@#Mouth")]
+    [Description("@#mouth")]
     Mouth = 0,
 
-    [Description("@#Eye")]
+    [Description("@#eye")]
     Eye = 1,
 
-    [Description("@#Nose")]
+    [Description("@#nose")]
     Nose = 2
 }
 
@@ -2120,10 +2120,10 @@ public enum LandmarkType
 [String]
 public enum LargeBlobSupport
 {
-    [Description("@#Required")]
+    [Description("@#required")]
     Required = 0,
 
-    [Description("@#Preferred")]
+    [Description("@#preferred")]
     Preferred = 1
 }
 
@@ -2135,10 +2135,10 @@ public enum LargeBlobSupport
 [String]
 public enum LatencyMode
 {
-    [Description("@#Quality")]
+    [Description("@#quality")]
     Quality = 0,
 
-    [Description("@#Realtime")]
+    [Description("@#realtime")]
     Realtime = 1
 }
 
@@ -2150,13 +2150,13 @@ public enum LatencyMode
 [String]
 public enum LineAlignSetting
 {
-    [Description("@#Start")]
+    [Description("@#start")]
     Start = 0,
 
-    [Description("@#Center")]
+    [Description("@#center")]
     Center = 1,
 
-    [Description("@#End")]
+    [Description("@#end")]
     End = 2
 }
 
@@ -2168,10 +2168,10 @@ public enum LineAlignSetting
 [String]
 public enum LockMode
 {
-    [Description("@#Shared")]
+    [Description("@#shared")]
     Shared = 0,
 
-    [Description("@#Exclusive")]
+    [Description("@#exclusive")]
     Exclusive = 1
 }
 
@@ -2183,10 +2183,10 @@ public enum LockMode
 [String]
 public enum LoginStatus
 {
-    [Description("@#LoggedIn")]
+    [Description("@#logged-in")]
     LoggedIn = 0,
 
-    [Description("@#LoggedOut")]
+    [Description("@#logged-out")]
     LoggedOut = 1
 }
 
@@ -2198,13 +2198,13 @@ public enum LoginStatus
 [String]
 public enum MIDIPortConnectionState
 {
-    [Description("@#Open")]
+    [Description("@#open")]
     Open = 0,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 1,
 
-    [Description("@#Pending")]
+    [Description("@#pending")]
     Pending = 2
 }
 
@@ -2216,10 +2216,10 @@ public enum MIDIPortConnectionState
 [String]
 public enum MIDIPortDeviceState
 {
-    [Description("@#Disconnected")]
+    [Description("@#disconnected")]
     Disconnected = 0,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 1
 }
 
@@ -2231,10 +2231,10 @@ public enum MIDIPortDeviceState
 [String]
 public enum MIDIPortType
 {
-    [Description("@#Input")]
+    [Description("@#input")]
     Input = 0,
 
-    [Description("@#Output")]
+    [Description("@#output")]
     Output = 1
 }
 
@@ -2246,16 +2246,16 @@ public enum MIDIPortType
 [String]
 public enum MLConv2dFilterOperandLayout
 {
-    [Description("@#Oihw")]
+    [Description("@#oihw")]
     Oihw = 0,
 
-    [Description("@#Hwio")]
+    [Description("@#hwio")]
     Hwio = 1,
 
-    [Description("@#Ohwi")]
+    [Description("@#ohwi")]
     Ohwi = 2,
 
-    [Description("@#Ihwo")]
+    [Description("@#ihwo")]
     Ihwo = 3
 }
 
@@ -2267,13 +2267,13 @@ public enum MLConv2dFilterOperandLayout
 [String]
 public enum MLConvTranspose2dFilterOperandLayout
 {
-    [Description("@#Iohw")]
+    [Description("@#iohw")]
     Iohw = 0,
 
-    [Description("@#Hwoi")]
+    [Description("@#hwoi")]
     Hwoi = 1,
 
-    [Description("@#Ohwi")]
+    [Description("@#ohwi")]
     Ohwi = 2
 }
 
@@ -2285,10 +2285,10 @@ public enum MLConvTranspose2dFilterOperandLayout
 [String]
 public enum MLDeviceType
 {
-    [Description("@#Cpu")]
+    [Description("@#cpu")]
     Cpu = 0,
 
-    [Description("@#Gpu")]
+    [Description("@#gpu")]
     Gpu = 1
 }
 
@@ -2300,10 +2300,10 @@ public enum MLDeviceType
 [String]
 public enum MLGruWeightLayout
 {
-    [Description("@#Zrn")]
+    [Description("@#zrn")]
     Zrn = 0,
 
-    [Description("@#Rzn")]
+    [Description("@#rzn")]
     Rzn = 1
 }
 
@@ -2315,10 +2315,10 @@ public enum MLGruWeightLayout
 [String]
 public enum MLInputOperandLayout
 {
-    [Description("@#Nchw")]
+    [Description("@#nchw")]
     Nchw = 0,
 
-    [Description("@#Nhwc")]
+    [Description("@#nhwc")]
     Nhwc = 1
 }
 
@@ -2330,10 +2330,10 @@ public enum MLInputOperandLayout
 [String]
 public enum MLInterpolationMode
 {
-    [Description("@#NearestNeighbor")]
+    [Description("@#nearest-neighbor")]
     NearestNeighbor = 0,
 
-    [Description("@#Linear")]
+    [Description("@#linear")]
     Linear = 1
 }
 
@@ -2345,10 +2345,10 @@ public enum MLInterpolationMode
 [String]
 public enum MLLstmWeightLayout
 {
-    [Description("@#Iofg")]
+    [Description("@#iofg")]
     Iofg = 0,
 
-    [Description("@#Ifgo")]
+    [Description("@#ifgo")]
     Ifgo = 1
 }
 
@@ -2360,28 +2360,28 @@ public enum MLLstmWeightLayout
 [String]
 public enum MLOperandDataType
 {
-    [Description("@#Float32")]
+    [Description("@#float32")]
     Float32 = 0,
 
-    [Description("@#Float16")]
+    [Description("@#float16")]
     Float16 = 1,
 
-    [Description("@#Int32")]
+    [Description("@#int32")]
     Int32 = 2,
 
-    [Description("@#Uint32")]
+    [Description("@#uint32")]
     Uint32 = 3,
 
-    [Description("@#Int64")]
+    [Description("@#int64")]
     Int64 = 4,
 
-    [Description("@#Uint64")]
+    [Description("@#uint64")]
     Uint64 = 5,
 
-    [Description("@#Int8")]
+    [Description("@#int8")]
     Int8 = 6,
 
-    [Description("@#Uint8")]
+    [Description("@#uint8")]
     Uint8 = 7
 }
 
@@ -2393,16 +2393,16 @@ public enum MLOperandDataType
 [String]
 public enum MLPaddingMode
 {
-    [Description("@#Constant")]
+    [Description("@#constant")]
     Constant = 0,
 
-    [Description("@#Edge")]
+    [Description("@#edge")]
     Edge = 1,
 
-    [Description("@#Reflection")]
+    [Description("@#reflection")]
     Reflection = 2,
 
-    [Description("@#Symmetric")]
+    [Description("@#symmetric")]
     Symmetric = 3
 }
 
@@ -2414,13 +2414,13 @@ public enum MLPaddingMode
 [String]
 public enum MLPowerPreference
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#HighPerformance")]
+    [Description("@#high-performance")]
     HighPerformance = 1,
 
-    [Description("@#LowPower")]
+    [Description("@#low-power")]
     LowPower = 2
 }
 
@@ -2432,13 +2432,13 @@ public enum MLPowerPreference
 [String]
 public enum MLRecurrentNetworkDirection
 {
-    [Description("@#Forward")]
+    [Description("@#forward")]
     Forward = 0,
 
-    [Description("@#Backward")]
+    [Description("@#backward")]
     Backward = 1,
 
-    [Description("@#Both")]
+    [Description("@#both")]
     Both = 2
 }
 
@@ -2450,10 +2450,10 @@ public enum MLRecurrentNetworkDirection
 [String]
 public enum MLRoundingType
 {
-    [Description("@#Floor")]
+    [Description("@#floor")]
     Floor = 0,
 
-    [Description("@#Ceil")]
+    [Description("@#ceil")]
     Ceil = 1
 }
 
@@ -2465,10 +2465,10 @@ public enum MLRoundingType
 [String]
 public enum MagnetometerLocalCoordinateSystem
 {
-    [Description("@#Device")]
+    [Description("@#device")]
     Device = 0,
 
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 1
 }
 
@@ -2480,13 +2480,13 @@ public enum MagnetometerLocalCoordinateSystem
 [String]
 public enum MediaDecodingType
 {
-    [Description("@#File")]
+    [Description("@#file")]
     File = 0,
 
-    [Description("@#MediaSource")]
+    [Description("@#media-source")]
     MediaSource = 1,
 
-    [Description("@#Webrtc")]
+    [Description("@#webrtc")]
     Webrtc = 2
 }
 
@@ -2498,13 +2498,13 @@ public enum MediaDecodingType
 [String]
 public enum MediaDeviceKind
 {
-    [Description("@#Audioinput")]
+    [Description("@#audioinput")]
     Audioinput = 0,
 
-    [Description("@#Audiooutput")]
+    [Description("@#audiooutput")]
     Audiooutput = 1,
 
-    [Description("@#Videoinput")]
+    [Description("@#videoinput")]
     Videoinput = 2
 }
 
@@ -2516,10 +2516,10 @@ public enum MediaDeviceKind
 [String]
 public enum MediaEncodingType
 {
-    [Description("@#Record")]
+    [Description("@#record")]
     Record = 0,
 
-    [Description("@#Webrtc")]
+    [Description("@#webrtc")]
     Webrtc = 1
 }
 
@@ -2531,16 +2531,16 @@ public enum MediaEncodingType
 [String]
 public enum MediaKeyMessageType
 {
-    [Description("@#LicenseRequest")]
+    [Description("@#license-request")]
     LicenseRequest = 0,
 
-    [Description("@#LicenseRenewal")]
+    [Description("@#license-renewal")]
     LicenseRenewal = 1,
 
-    [Description("@#LicenseRelease")]
+    [Description("@#license-release")]
     LicenseRelease = 2,
 
-    [Description("@#IndividualizationRequest")]
+    [Description("@#individualization-request")]
     IndividualizationRequest = 3
 }
 
@@ -2552,19 +2552,19 @@ public enum MediaKeyMessageType
 [String]
 public enum MediaKeySessionClosedReason
 {
-    [Description("@#InternalError")]
+    [Description("@#internal-error")]
     InternalError = 0,
 
-    [Description("@#ClosedByApplication")]
+    [Description("@#closed-by-application")]
     ClosedByApplication = 1,
 
-    [Description("@#ReleaseAcknowledged")]
+    [Description("@#release-acknowledged")]
     ReleaseAcknowledged = 2,
 
-    [Description("@#HardwareContextReset")]
+    [Description("@#hardware-context-reset")]
     HardwareContextReset = 3,
 
-    [Description("@#ResourceEvicted")]
+    [Description("@#resource-evicted")]
     ResourceEvicted = 4
 }
 
@@ -2576,10 +2576,10 @@ public enum MediaKeySessionClosedReason
 [String]
 public enum MediaKeySessionType
 {
-    [Description("@#Temporary")]
+    [Description("@#temporary")]
     Temporary = 0,
 
-    [Description("@#PersistentLicense")]
+    [Description("@#persistent-license")]
     PersistentLicense = 1
 }
 
@@ -2591,28 +2591,28 @@ public enum MediaKeySessionType
 [String]
 public enum MediaKeyStatus
 {
-    [Description("@#Usable")]
+    [Description("@#usable")]
     Usable = 0,
 
-    [Description("@#Expired")]
+    [Description("@#expired")]
     Expired = 1,
 
-    [Description("@#Released")]
+    [Description("@#released")]
     Released = 2,
 
-    [Description("@#OutputRestricted")]
+    [Description("@#output-restricted")]
     OutputRestricted = 3,
 
-    [Description("@#OutputDownscaled")]
+    [Description("@#output-downscaled")]
     OutputDownscaled = 4,
 
-    [Description("@#UsableInFuture")]
+    [Description("@#usable-in-future")]
     UsableInFuture = 5,
 
-    [Description("@#StatusPending")]
+    [Description("@#status-pending")]
     StatusPending = 6,
 
-    [Description("@#InternalError")]
+    [Description("@#internal-error")]
     InternalError = 7
 }
 
@@ -2624,13 +2624,13 @@ public enum MediaKeyStatus
 [String]
 public enum MediaKeysRequirement
 {
-    [Description("@#Required")]
+    [Description("@#required")]
     Required = 0,
 
-    [Description("@#Optional")]
+    [Description("@#optional")]
     Optional = 1,
 
-    [Description("@#NotAllowed")]
+    [Description("@#not-allowed")]
     NotAllowed = 2
 }
 
@@ -2642,49 +2642,49 @@ public enum MediaKeysRequirement
 [String]
 public enum MediaSessionAction
 {
-    [Description("@#Play")]
+    [Description("@#play")]
     Play = 0,
 
-    [Description("@#Pause")]
+    [Description("@#pause")]
     Pause = 1,
 
-    [Description("@#Seekbackward")]
+    [Description("@#seekbackward")]
     Seekbackward = 2,
 
-    [Description("@#Seekforward")]
+    [Description("@#seekforward")]
     Seekforward = 3,
 
-    [Description("@#Previoustrack")]
+    [Description("@#previoustrack")]
     Previoustrack = 4,
 
-    [Description("@#Nexttrack")]
+    [Description("@#nexttrack")]
     Nexttrack = 5,
 
-    [Description("@#Skipad")]
+    [Description("@#skipad")]
     Skipad = 6,
 
-    [Description("@#Stop")]
+    [Description("@#stop")]
     Stop = 7,
 
-    [Description("@#Seekto")]
+    [Description("@#seekto")]
     Seekto = 8,
 
-    [Description("@#Togglemicrophone")]
+    [Description("@#togglemicrophone")]
     Togglemicrophone = 9,
 
-    [Description("@#Togglecamera")]
+    [Description("@#togglecamera")]
     Togglecamera = 10,
 
-    [Description("@#Hangup")]
+    [Description("@#hangup")]
     Hangup = 11,
 
-    [Description("@#Previousslide")]
+    [Description("@#previousslide")]
     Previousslide = 12,
 
-    [Description("@#Nextslide")]
+    [Description("@#nextslide")]
     Nextslide = 13,
 
-    [Description("@#Enterpictureinpicture")]
+    [Description("@#enterpictureinpicture")]
     Enterpictureinpicture = 14
 }
 
@@ -2696,13 +2696,13 @@ public enum MediaSessionAction
 [String]
 public enum MediaSessionPlaybackState
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Paused")]
+    [Description("@#paused")]
     Paused = 1,
 
-    [Description("@#Playing")]
+    [Description("@#playing")]
     Playing = 2
 }
 
@@ -2714,10 +2714,10 @@ public enum MediaSessionPlaybackState
 [String]
 public enum MediaStreamTrackState
 {
-    [Description("@#Live")]
+    [Description("@#live")]
     Live = 0,
 
-    [Description("@#Ended")]
+    [Description("@#ended")]
     Ended = 1
 }
 
@@ -2729,16 +2729,16 @@ public enum MediaStreamTrackState
 [String]
 public enum MeteringMode
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 1,
 
-    [Description("@#SingleShot")]
+    [Description("@#single-shot")]
     SingleShot = 2,
 
-    [Description("@#Continuous")]
+    [Description("@#continuous")]
     Continuous = 3
 }
 
@@ -2750,10 +2750,10 @@ public enum MeteringMode
 [String]
 public enum MockCapturePromptResult
 {
-    [Description("@#Granted")]
+    [Description("@#granted")]
     Granted = 0,
 
-    [Description("@#Denied")]
+    [Description("@#denied")]
     Denied = 1
 }
 
@@ -2765,10 +2765,10 @@ public enum MockCapturePromptResult
 [String]
 public enum MonitorTypeSurfacesEnum
 {
-    [Description("@#Include")]
+    [Description("@#include")]
     Include = 0,
 
-    [Description("@#Exclude")]
+    [Description("@#exclude")]
     Exclude = 1
 }
 
@@ -2780,10 +2780,10 @@ public enum MonitorTypeSurfacesEnum
 [String]
 public enum NavigationFocusReset
 {
-    [Description("@#AfterTransition")]
+    [Description("@#after-transition")]
     AfterTransition = 0,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 1
 }
 
@@ -2795,13 +2795,13 @@ public enum NavigationFocusReset
 [String]
 public enum NavigationHistoryBehavior
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Push")]
+    [Description("@#push")]
     Push = 1,
 
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 2
 }
 
@@ -2813,10 +2813,10 @@ public enum NavigationHistoryBehavior
 [String]
 public enum NavigationScrollBehavior
 {
-    [Description("@#AfterTransition")]
+    [Description("@#after-transition")]
     AfterTransition = 0,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 1
 }
 
@@ -2828,16 +2828,16 @@ public enum NavigationScrollBehavior
 [String]
 public enum NavigationTimingType
 {
-    [Description("@#Navigate")]
+    [Description("@#navigate")]
     Navigate = 0,
 
-    [Description("@#Reload")]
+    [Description("@#reload")]
     Reload = 1,
 
-    [Description("@#BackForward")]
+    [Description("@#back_forward")]
     BackForward = 2,
 
-    [Description("@#Prerender")]
+    [Description("@#prerender")]
     Prerender = 3
 }
 
@@ -2849,16 +2849,16 @@ public enum NavigationTimingType
 [String]
 public enum NavigationType
 {
-    [Description("@#Push")]
+    [Description("@#push")]
     Push = 0,
 
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 1,
 
-    [Description("@#Reload")]
+    [Description("@#reload")]
     Reload = 2,
 
-    [Description("@#Traverse")]
+    [Description("@#traverse")]
     Traverse = 3
 }
 
@@ -2870,13 +2870,13 @@ public enum NavigationType
 [String]
 public enum NotificationDirection
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Ltr")]
+    [Description("@#ltr")]
     Ltr = 1,
 
-    [Description("@#Rtl")]
+    [Description("@#rtl")]
     Rtl = 2
 }
 
@@ -2888,13 +2888,13 @@ public enum NotificationDirection
 [String]
 public enum NotificationPermission
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#Denied")]
+    [Description("@#denied")]
     Denied = 1,
 
-    [Description("@#Granted")]
+    [Description("@#granted")]
     Granted = 2
 }
 
@@ -2906,7 +2906,7 @@ public enum NotificationPermission
 [String]
 public enum OTPCredentialTransportType
 {
-    [Description("@#Sms")]
+    [Description("@#sms")]
     Sms = 0
 }
 
@@ -2918,19 +2918,19 @@ public enum OTPCredentialTransportType
 [String]
 public enum OffscreenRenderingContextId
 {
-    [Description("@#_2d")]
+    [Description("@#2d")]
     _2d = 0,
 
-    [Description("@#Bitmaprenderer")]
+    [Description("@#bitmaprenderer")]
     Bitmaprenderer = 1,
 
-    [Description("@#Webgl")]
+    [Description("@#webgl")]
     Webgl = 2,
 
-    [Description("@#Webgl2")]
+    [Description("@#webgl2")]
     Webgl2 = 3,
 
-    [Description("@#Webgpu")]
+    [Description("@#webgpu")]
     Webgpu = 4
 }
 
@@ -2942,7 +2942,7 @@ public enum OffscreenRenderingContextId
 [String]
 public enum OpaqueProperty
 {
-    [Description("@#Opaque")]
+    [Description("@#opaque")]
     Opaque = 0
 }
 
@@ -2954,13 +2954,13 @@ public enum OpaqueProperty
 [String]
 public enum OperationType
 {
-    [Description("@#TokenRequest")]
+    [Description("@#token-request")]
     TokenRequest = 0,
 
-    [Description("@#SendRedemptionRecord")]
+    [Description("@#send-redemption-record")]
     SendRedemptionRecord = 1,
 
-    [Description("@#TokenRedemption")]
+    [Description("@#token-redemption")]
     TokenRedemption = 2
 }
 
@@ -2972,13 +2972,13 @@ public enum OperationType
 [String]
 public enum OpusApplication
 {
-    [Description("@#Voip")]
+    [Description("@#voip")]
     Voip = 0,
 
-    [Description("@#Audio")]
+    [Description("@#audio")]
     Audio = 1,
 
-    [Description("@#Lowdelay")]
+    [Description("@#lowdelay")]
     Lowdelay = 2
 }
 
@@ -2990,10 +2990,10 @@ public enum OpusApplication
 [String]
 public enum OpusBitstreamFormat
 {
-    [Description("@#Opus")]
+    [Description("@#opus")]
     Opus = 0,
 
-    [Description("@#Ogg")]
+    [Description("@#ogg")]
     Ogg = 1
 }
 
@@ -3005,13 +3005,13 @@ public enum OpusBitstreamFormat
 [String]
 public enum OpusSignal
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Music")]
+    [Description("@#music")]
     Music = 1,
 
-    [Description("@#Voice")]
+    [Description("@#voice")]
     Voice = 2
 }
 
@@ -3023,28 +3023,28 @@ public enum OpusSignal
 [String]
 public enum OrientationLockType
 {
-    [Description("@#Any")]
+    [Description("@#any")]
     Any = 0,
 
-    [Description("@#Natural")]
+    [Description("@#natural")]
     Natural = 1,
 
-    [Description("@#Landscape")]
+    [Description("@#landscape")]
     Landscape = 2,
 
-    [Description("@#Portrait")]
+    [Description("@#portrait")]
     Portrait = 3,
 
-    [Description("@#PortraitPrimary")]
+    [Description("@#portrait-primary")]
     PortraitPrimary = 4,
 
-    [Description("@#PortraitSecondary")]
+    [Description("@#portrait-secondary")]
     PortraitSecondary = 5,
 
-    [Description("@#LandscapePrimary")]
+    [Description("@#landscape-primary")]
     LandscapePrimary = 6,
 
-    [Description("@#LandscapeSecondary")]
+    [Description("@#landscape-secondary")]
     LandscapeSecondary = 7
 }
 
@@ -3056,10 +3056,10 @@ public enum OrientationLockType
 [String]
 public enum OrientationSensorLocalCoordinateSystem
 {
-    [Description("@#Device")]
+    [Description("@#device")]
     Device = 0,
 
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 1
 }
 
@@ -3071,16 +3071,16 @@ public enum OrientationSensorLocalCoordinateSystem
 [String]
 public enum OrientationType
 {
-    [Description("@#PortraitPrimary")]
+    [Description("@#portrait-primary")]
     PortraitPrimary = 0,
 
-    [Description("@#PortraitSecondary")]
+    [Description("@#portrait-secondary")]
     PortraitSecondary = 1,
 
-    [Description("@#LandscapePrimary")]
+    [Description("@#landscape-primary")]
     LandscapePrimary = 2,
 
-    [Description("@#LandscapeSecondary")]
+    [Description("@#landscape-secondary")]
     LandscapeSecondary = 3
 }
 
@@ -3092,19 +3092,19 @@ public enum OrientationType
 [String]
 public enum OscillatorType
 {
-    [Description("@#Sine")]
+    [Description("@#sine")]
     Sine = 0,
 
-    [Description("@#Square")]
+    [Description("@#square")]
     Square = 1,
 
-    [Description("@#Sawtooth")]
+    [Description("@#sawtooth")]
     Sawtooth = 2,
 
-    [Description("@#Triangle")]
+    [Description("@#triangle")]
     Triangle = 3,
 
-    [Description("@#Custom")]
+    [Description("@#custom")]
     Custom = 4
 }
 
@@ -3116,13 +3116,13 @@ public enum OscillatorType
 [String]
 public enum OverSampleType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#_2x")]
+    [Description("@#2x")]
     _2x = 1,
 
-    [Description("@#_4x")]
+    [Description("@#4x")]
     _4x = 2
 }
 
@@ -3134,7 +3134,7 @@ public enum OverSampleType
 [String]
 public enum PanningModelType
 {
-    [Description("@#Equalpower")]
+    [Description("@#equalpower")]
     Equalpower = 0,
 
     [Description("@#HRTF")]
@@ -3149,13 +3149,13 @@ public enum PanningModelType
 [String]
 public enum ParityType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Even")]
+    [Description("@#even")]
     Even = 1,
 
-    [Description("@#Odd")]
+    [Description("@#odd")]
     Odd = 2
 }
 
@@ -3167,13 +3167,13 @@ public enum ParityType
 [String]
 public enum PaymentComplete
 {
-    [Description("@#Fail")]
+    [Description("@#fail")]
     Fail = 0,
 
-    [Description("@#Success")]
+    [Description("@#success")]
     Success = 1,
 
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 2
 }
 
@@ -3185,16 +3185,16 @@ public enum PaymentComplete
 [String]
 public enum PaymentDelegation
 {
-    [Description("@#ShippingAddress")]
+    [Description("@#shippingAddress")]
     ShippingAddress = 0,
 
-    [Description("@#PayerName")]
+    [Description("@#payerName")]
     PayerName = 1,
 
-    [Description("@#PayerPhone")]
+    [Description("@#payerPhone")]
     PayerPhone = 2,
 
-    [Description("@#PayerEmail")]
+    [Description("@#payerEmail")]
     PayerEmail = 3
 }
 
@@ -3206,13 +3206,13 @@ public enum PaymentDelegation
 [String]
 public enum PaymentShippingType
 {
-    [Description("@#Shipping")]
+    [Description("@#shipping")]
     Shipping = 0,
 
-    [Description("@#Delivery")]
+    [Description("@#delivery")]
     Delivery = 1,
 
-    [Description("@#Pickup")]
+    [Description("@#pickup")]
     Pickup = 2
 }
 
@@ -3224,13 +3224,13 @@ public enum PaymentShippingType
 [String]
 public enum PermissionState
 {
-    [Description("@#Granted")]
+    [Description("@#granted")]
     Granted = 0,
 
-    [Description("@#Denied")]
+    [Description("@#denied")]
     Denied = 1,
 
-    [Description("@#Prompt")]
+    [Description("@#prompt")]
     Prompt = 2
 }
 
@@ -3242,16 +3242,16 @@ public enum PermissionState
 [String]
 public enum PlaybackDirection
 {
-    [Description("@#Normal")]
+    [Description("@#normal")]
     Normal = 0,
 
-    [Description("@#Reverse")]
+    [Description("@#reverse")]
     Reverse = 1,
 
-    [Description("@#Alternate")]
+    [Description("@#alternate")]
     Alternate = 2,
 
-    [Description("@#AlternateReverse")]
+    [Description("@#alternate-reverse")]
     AlternateReverse = 3
 }
 
@@ -3263,16 +3263,16 @@ public enum PlaybackDirection
 [String]
 public enum PositionAlignSetting
 {
-    [Description("@#LineLeft")]
+    [Description("@#line-left")]
     LineLeft = 0,
 
-    [Description("@#Center")]
+    [Description("@#center")]
     Center = 1,
 
-    [Description("@#LineRight")]
+    [Description("@#line-right")]
     LineRight = 2,
 
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 3
 }
 
@@ -3284,10 +3284,10 @@ public enum PositionAlignSetting
 [String]
 public enum PredefinedColorSpace
 {
-    [Description("@#Srgb")]
+    [Description("@#srgb")]
     Srgb = 0,
 
-    [Description("@#DisplayP3")]
+    [Description("@#display-p3")]
     DisplayP3 = 1
 }
 
@@ -3299,13 +3299,13 @@ public enum PredefinedColorSpace
 [String]
 public enum PremultiplyAlpha
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Premultiply")]
+    [Description("@#premultiply")]
     Premultiply = 1,
 
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 2
 }
 
@@ -3317,13 +3317,13 @@ public enum PremultiplyAlpha
 [String]
 public enum PresentationConnectionCloseReason
 {
-    [Description("@#Error")]
+    [Description("@#error")]
     Error = 0,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 1,
 
-    [Description("@#Wentaway")]
+    [Description("@#wentaway")]
     Wentaway = 2
 }
 
@@ -3335,16 +3335,16 @@ public enum PresentationConnectionCloseReason
 [String]
 public enum PresentationConnectionState
 {
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 0,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 1,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 2,
 
-    [Description("@#Terminated")]
+    [Description("@#terminated")]
     Terminated = 3
 }
 
@@ -3356,13 +3356,13 @@ public enum PresentationConnectionState
 [String]
 public enum PresentationStyle
 {
-    [Description("@#Unspecified")]
+    [Description("@#unspecified")]
     Unspecified = 0,
 
-    [Description("@#Inline")]
+    [Description("@#inline")]
     Inline = 1,
 
-    [Description("@#Attachment")]
+    [Description("@#attachment")]
     Attachment = 2
 }
 
@@ -3374,10 +3374,10 @@ public enum PresentationStyle
 [String]
 public enum PressureSource
 {
-    [Description("@#Thermals")]
+    [Description("@#thermals")]
     Thermals = 0,
 
-    [Description("@#Cpu")]
+    [Description("@#cpu")]
     Cpu = 1
 }
 
@@ -3389,16 +3389,16 @@ public enum PressureSource
 [String]
 public enum PressureState
 {
-    [Description("@#Nominal")]
+    [Description("@#nominal")]
     Nominal = 0,
 
-    [Description("@#Fair")]
+    [Description("@#fair")]
     Fair = 1,
 
-    [Description("@#Serious")]
+    [Description("@#serious")]
     Serious = 2,
 
-    [Description("@#Critical")]
+    [Description("@#critical")]
     Critical = 3
 }
 
@@ -3410,13 +3410,13 @@ public enum PressureState
 [String]
 public enum PublicKeyCredentialHints
 {
-    [Description("@#SecurityKey")]
+    [Description("@#security-key")]
     SecurityKey = 0,
 
-    [Description("@#ClientDevice")]
+    [Description("@#client-device")]
     ClientDevice = 1,
 
-    [Description("@#Hybrid")]
+    [Description("@#hybrid")]
     Hybrid = 2
 }
 
@@ -3428,7 +3428,7 @@ public enum PublicKeyCredentialHints
 [String]
 public enum PublicKeyCredentialType
 {
-    [Description("@#PublicKey")]
+    [Description("@#public-key")]
     PublicKey = 0
 }
 
@@ -3440,10 +3440,10 @@ public enum PublicKeyCredentialType
 [String]
 public enum PushEncryptionKeyName
 {
-    [Description("@#P256dh")]
+    [Description("@#p256dh")]
     P256dh = 0,
 
-    [Description("@#Auth")]
+    [Description("@#auth")]
     Auth = 1
 }
 
@@ -3455,13 +3455,13 @@ public enum PushEncryptionKeyName
 [String]
 public enum RTCBundlePolicy
 {
-    [Description("@#Balanced")]
+    [Description("@#balanced")]
     Balanced = 0,
 
-    [Description("@#MaxCompat")]
+    [Description("@#max-compat")]
     MaxCompat = 1,
 
-    [Description("@#MaxBundle")]
+    [Description("@#max-bundle")]
     MaxBundle = 2
 }
 
@@ -3473,16 +3473,16 @@ public enum RTCBundlePolicy
 [String]
 public enum RTCDataChannelState
 {
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 0,
 
-    [Description("@#Open")]
+    [Description("@#open")]
     Open = 1,
 
-    [Description("@#Closing")]
+    [Description("@#closing")]
     Closing = 2,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 3
 }
 
@@ -3494,13 +3494,13 @@ public enum RTCDataChannelState
 [String]
 public enum RTCDegradationPreference
 {
-    [Description("@#MaintainFramerate")]
+    [Description("@#maintain-framerate")]
     MaintainFramerate = 0,
 
-    [Description("@#MaintainResolution")]
+    [Description("@#maintain-resolution")]
     MaintainResolution = 1,
 
-    [Description("@#Balanced")]
+    [Description("@#balanced")]
     Balanced = 2
 }
 
@@ -3512,13 +3512,13 @@ public enum RTCDegradationPreference
 [String]
 public enum RTCDtlsRole
 {
-    [Description("@#Client")]
+    [Description("@#client")]
     Client = 0,
 
-    [Description("@#Server")]
+    [Description("@#server")]
     Server = 1,
 
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 2
 }
 
@@ -3530,19 +3530,19 @@ public enum RTCDtlsRole
 [String]
 public enum RTCDtlsTransportState
 {
-    [Description("@#New")]
+    [Description("@#new")]
     New = 0,
 
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 1,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 2,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 3,
 
-    [Description("@#Failed")]
+    [Description("@#failed")]
     Failed = 4
 }
 
@@ -3554,13 +3554,13 @@ public enum RTCDtlsTransportState
 [String]
 public enum RTCEncodedVideoFrameType
 {
-    [Description("@#Empty")]
+    [Description("@#empty")]
     Empty = 0,
 
-    [Description("@#Key")]
+    [Description("@#key")]
     Key = 1,
 
-    [Description("@#Delta")]
+    [Description("@#delta")]
     Delta = 2
 }
 
@@ -3572,25 +3572,25 @@ public enum RTCEncodedVideoFrameType
 [String]
 public enum RTCErrorDetailType
 {
-    [Description("@#DataChannelFailure")]
+    [Description("@#data-channel-failure")]
     DataChannelFailure = 0,
 
-    [Description("@#DtlsFailure")]
+    [Description("@#dtls-failure")]
     DtlsFailure = 1,
 
-    [Description("@#FingerprintFailure")]
+    [Description("@#fingerprint-failure")]
     FingerprintFailure = 2,
 
-    [Description("@#SctpFailure")]
+    [Description("@#sctp-failure")]
     SctpFailure = 3,
 
-    [Description("@#SdpSyntaxError")]
+    [Description("@#sdp-syntax-error")]
     SdpSyntaxError = 4,
 
-    [Description("@#HardwareEncoderNotAvailable")]
+    [Description("@#hardware-encoder-not-available")]
     HardwareEncoderNotAvailable = 5,
 
-    [Description("@#HardwareEncoderError")]
+    [Description("@#hardware-encoder-error")]
     HardwareEncoderError = 6
 }
 
@@ -3602,28 +3602,28 @@ public enum RTCErrorDetailType
 [String]
 public enum RTCErrorDetailTypeIdp
 {
-    [Description("@#IdpBadScriptFailure")]
+    [Description("@#idp-bad-script-failure")]
     IdpBadScriptFailure = 0,
 
-    [Description("@#IdpExecutionFailure")]
+    [Description("@#idp-execution-failure")]
     IdpExecutionFailure = 1,
 
-    [Description("@#IdpLoadFailure")]
+    [Description("@#idp-load-failure")]
     IdpLoadFailure = 2,
 
-    [Description("@#IdpNeedLogin")]
+    [Description("@#idp-need-login")]
     IdpNeedLogin = 3,
 
-    [Description("@#IdpTimeout")]
+    [Description("@#idp-timeout")]
     IdpTimeout = 4,
 
-    [Description("@#IdpTlsFailure")]
+    [Description("@#idp-tls-failure")]
     IdpTlsFailure = 5,
 
-    [Description("@#IdpTokenExpired")]
+    [Description("@#idp-token-expired")]
     IdpTokenExpired = 6,
 
-    [Description("@#IdpTokenInvalid")]
+    [Description("@#idp-token-invalid")]
     IdpTokenInvalid = 7
 }
 
@@ -3635,16 +3635,16 @@ public enum RTCErrorDetailTypeIdp
 [String]
 public enum RTCIceCandidateType
 {
-    [Description("@#Host")]
+    [Description("@#host")]
     Host = 0,
 
-    [Description("@#Srflx")]
+    [Description("@#srflx")]
     Srflx = 1,
 
-    [Description("@#Prflx")]
+    [Description("@#prflx")]
     Prflx = 2,
 
-    [Description("@#Relay")]
+    [Description("@#relay")]
     Relay = 3
 }
 
@@ -3656,10 +3656,10 @@ public enum RTCIceCandidateType
 [String]
 public enum RTCIceComponent
 {
-    [Description("@#Rtp")]
+    [Description("@#rtp")]
     Rtp = 0,
 
-    [Description("@#Rtcp")]
+    [Description("@#rtcp")]
     Rtcp = 1
 }
 
@@ -3671,25 +3671,25 @@ public enum RTCIceComponent
 [String]
 public enum RTCIceConnectionState
 {
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 0,
 
-    [Description("@#Failed")]
+    [Description("@#failed")]
     Failed = 1,
 
-    [Description("@#Disconnected")]
+    [Description("@#disconnected")]
     Disconnected = 2,
 
-    [Description("@#New")]
+    [Description("@#new")]
     New = 3,
 
-    [Description("@#Checking")]
+    [Description("@#checking")]
     Checking = 4,
 
-    [Description("@#Completed")]
+    [Description("@#completed")]
     Completed = 5,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 6
 }
 
@@ -3701,13 +3701,13 @@ public enum RTCIceConnectionState
 [String]
 public enum RTCIceGathererState
 {
-    [Description("@#New")]
+    [Description("@#new")]
     New = 0,
 
-    [Description("@#Gathering")]
+    [Description("@#gathering")]
     Gathering = 1,
 
-    [Description("@#Complete")]
+    [Description("@#complete")]
     Complete = 2
 }
 
@@ -3719,13 +3719,13 @@ public enum RTCIceGathererState
 [String]
 public enum RTCIceGatheringState
 {
-    [Description("@#New")]
+    [Description("@#new")]
     New = 0,
 
-    [Description("@#Gathering")]
+    [Description("@#gathering")]
     Gathering = 1,
 
-    [Description("@#Complete")]
+    [Description("@#complete")]
     Complete = 2
 }
 
@@ -3737,10 +3737,10 @@ public enum RTCIceGatheringState
 [String]
 public enum RTCIceProtocol
 {
-    [Description("@#Udp")]
+    [Description("@#udp")]
     Udp = 0,
 
-    [Description("@#Tcp")]
+    [Description("@#tcp")]
     Tcp = 1
 }
 
@@ -3752,13 +3752,13 @@ public enum RTCIceProtocol
 [String]
 public enum RTCIceRole
 {
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 0,
 
-    [Description("@#Controlling")]
+    [Description("@#controlling")]
     Controlling = 1,
 
-    [Description("@#Controlled")]
+    [Description("@#controlled")]
     Controlled = 2
 }
 
@@ -3770,13 +3770,13 @@ public enum RTCIceRole
 [String]
 public enum RTCIceServerTransportProtocol
 {
-    [Description("@#Udp")]
+    [Description("@#udp")]
     Udp = 0,
 
-    [Description("@#Tcp")]
+    [Description("@#tcp")]
     Tcp = 1,
 
-    [Description("@#Tls")]
+    [Description("@#tls")]
     Tls = 2
 }
 
@@ -3788,13 +3788,13 @@ public enum RTCIceServerTransportProtocol
 [String]
 public enum RTCIceTcpCandidateType
 {
-    [Description("@#Active")]
+    [Description("@#active")]
     Active = 0,
 
-    [Description("@#Passive")]
+    [Description("@#passive")]
     Passive = 1,
 
-    [Description("@#So")]
+    [Description("@#so")]
     So = 2
 }
 
@@ -3806,10 +3806,10 @@ public enum RTCIceTcpCandidateType
 [String]
 public enum RTCIceTransportPolicy
 {
-    [Description("@#Relay")]
+    [Description("@#relay")]
     Relay = 0,
 
-    [Description("@#All")]
+    [Description("@#all")]
     All = 1
 }
 
@@ -3821,25 +3821,25 @@ public enum RTCIceTransportPolicy
 [String]
 public enum RTCIceTransportState
 {
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 0,
 
-    [Description("@#Failed")]
+    [Description("@#failed")]
     Failed = 1,
 
-    [Description("@#Disconnected")]
+    [Description("@#disconnected")]
     Disconnected = 2,
 
-    [Description("@#New")]
+    [Description("@#new")]
     New = 3,
 
-    [Description("@#Checking")]
+    [Description("@#checking")]
     Checking = 4,
 
-    [Description("@#Completed")]
+    [Description("@#completed")]
     Completed = 5,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 6
 }
 
@@ -3851,22 +3851,22 @@ public enum RTCIceTransportState
 [String]
 public enum RTCPeerConnectionState
 {
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 0,
 
-    [Description("@#Failed")]
+    [Description("@#failed")]
     Failed = 1,
 
-    [Description("@#Disconnected")]
+    [Description("@#disconnected")]
     Disconnected = 2,
 
-    [Description("@#New")]
+    [Description("@#new")]
     New = 3,
 
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 4,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 5
 }
 
@@ -3878,16 +3878,16 @@ public enum RTCPeerConnectionState
 [String]
 public enum RTCPriorityType
 {
-    [Description("@#VeryLow")]
+    [Description("@#very-low")]
     VeryLow = 0,
 
-    [Description("@#Low")]
+    [Description("@#low")]
     Low = 1,
 
-    [Description("@#Medium")]
+    [Description("@#medium")]
     Medium = 2,
 
-    [Description("@#High")]
+    [Description("@#high")]
     High = 3
 }
 
@@ -3899,16 +3899,16 @@ public enum RTCPriorityType
 [String]
 public enum RTCQualityLimitationReason
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Cpu")]
+    [Description("@#cpu")]
     Cpu = 1,
 
-    [Description("@#Bandwidth")]
+    [Description("@#bandwidth")]
     Bandwidth = 2,
 
-    [Description("@#Other")]
+    [Description("@#other")]
     Other = 3
 }
 
@@ -3920,7 +3920,7 @@ public enum RTCQualityLimitationReason
 [String]
 public enum RTCRtcpMuxPolicy
 {
-    [Description("@#Require")]
+    [Description("@#require")]
     Require = 0
 }
 
@@ -3932,19 +3932,19 @@ public enum RTCRtcpMuxPolicy
 [String]
 public enum RTCRtpTransceiverDirection
 {
-    [Description("@#Sendrecv")]
+    [Description("@#sendrecv")]
     Sendrecv = 0,
 
-    [Description("@#Sendonly")]
+    [Description("@#sendonly")]
     Sendonly = 1,
 
-    [Description("@#Recvonly")]
+    [Description("@#recvonly")]
     Recvonly = 2,
 
-    [Description("@#Inactive")]
+    [Description("@#inactive")]
     Inactive = 3,
 
-    [Description("@#Stopped")]
+    [Description("@#stopped")]
     Stopped = 4
 }
 
@@ -3956,13 +3956,13 @@ public enum RTCRtpTransceiverDirection
 [String]
 public enum RTCSctpTransportState
 {
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 0,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 1,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 2
 }
 
@@ -3974,16 +3974,16 @@ public enum RTCSctpTransportState
 [String]
 public enum RTCSdpType
 {
-    [Description("@#Offer")]
+    [Description("@#offer")]
     Offer = 0,
 
-    [Description("@#Pranswer")]
+    [Description("@#pranswer")]
     Pranswer = 1,
 
-    [Description("@#Answer")]
+    [Description("@#answer")]
     Answer = 2,
 
-    [Description("@#Rollback")]
+    [Description("@#rollback")]
     Rollback = 3
 }
 
@@ -3995,22 +3995,22 @@ public enum RTCSdpType
 [String]
 public enum RTCSignalingState
 {
-    [Description("@#Stable")]
+    [Description("@#stable")]
     Stable = 0,
 
-    [Description("@#HaveLocalOffer")]
+    [Description("@#have-local-offer")]
     HaveLocalOffer = 1,
 
-    [Description("@#HaveRemoteOffer")]
+    [Description("@#have-remote-offer")]
     HaveRemoteOffer = 2,
 
-    [Description("@#HaveLocalPranswer")]
+    [Description("@#have-local-pranswer")]
     HaveLocalPranswer = 3,
 
-    [Description("@#HaveRemotePranswer")]
+    [Description("@#have-remote-pranswer")]
     HaveRemotePranswer = 4,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 5
 }
 
@@ -4022,19 +4022,19 @@ public enum RTCSignalingState
 [String]
 public enum RTCStatsIceCandidatePairState
 {
-    [Description("@#Frozen")]
+    [Description("@#frozen")]
     Frozen = 0,
 
-    [Description("@#Waiting")]
+    [Description("@#waiting")]
     Waiting = 1,
 
-    [Description("@#InProgress")]
+    [Description("@#in-progress")]
     InProgress = 2,
 
-    [Description("@#Failed")]
+    [Description("@#failed")]
     Failed = 3,
 
-    [Description("@#Succeeded")]
+    [Description("@#succeeded")]
     Succeeded = 4
 }
 
@@ -4046,46 +4046,46 @@ public enum RTCStatsIceCandidatePairState
 [String]
 public enum RTCStatsType
 {
-    [Description("@#Codec")]
+    [Description("@#codec")]
     Codec = 0,
 
-    [Description("@#InboundRtp")]
+    [Description("@#inbound-rtp")]
     InboundRtp = 1,
 
-    [Description("@#OutboundRtp")]
+    [Description("@#outbound-rtp")]
     OutboundRtp = 2,
 
-    [Description("@#RemoteInboundRtp")]
+    [Description("@#remote-inbound-rtp")]
     RemoteInboundRtp = 3,
 
-    [Description("@#RemoteOutboundRtp")]
+    [Description("@#remote-outbound-rtp")]
     RemoteOutboundRtp = 4,
 
-    [Description("@#MediaSource")]
+    [Description("@#media-source")]
     MediaSource = 5,
 
-    [Description("@#MediaPlayout")]
+    [Description("@#media-playout")]
     MediaPlayout = 6,
 
-    [Description("@#PeerConnection")]
+    [Description("@#peer-connection")]
     PeerConnection = 7,
 
-    [Description("@#DataChannel")]
+    [Description("@#data-channel")]
     DataChannel = 8,
 
-    [Description("@#Transport")]
+    [Description("@#transport")]
     Transport = 9,
 
-    [Description("@#CandidatePair")]
+    [Description("@#candidate-pair")]
     CandidatePair = 10,
 
-    [Description("@#LocalCandidate")]
+    [Description("@#local-candidate")]
     LocalCandidate = 11,
 
-    [Description("@#RemoteCandidate")]
+    [Description("@#remote-candidate")]
     RemoteCandidate = 12,
 
-    [Description("@#Certificate")]
+    [Description("@#certificate")]
     Certificate = 13
 }
 
@@ -4097,7 +4097,7 @@ public enum RTCStatsType
 [String]
 public enum ReadableStreamReaderMode
 {
-    [Description("@#Byob")]
+    [Description("@#byob")]
     Byob = 0
 }
 
@@ -4109,7 +4109,7 @@ public enum ReadableStreamReaderMode
 [String]
 public enum ReadableStreamType
 {
-    [Description("@#Bytes")]
+    [Description("@#bytes")]
     Bytes = 0
 }
 
@@ -4121,13 +4121,13 @@ public enum ReadableStreamType
 [String]
 public enum ReadyState
 {
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 0,
 
-    [Description("@#Open")]
+    [Description("@#open")]
     Open = 1,
 
-    [Description("@#Ended")]
+    [Description("@#ended")]
     Ended = 2
 }
 
@@ -4139,13 +4139,13 @@ public enum ReadyState
 [String]
 public enum RecordingState
 {
-    [Description("@#Inactive")]
+    [Description("@#inactive")]
     Inactive = 0,
 
-    [Description("@#Recording")]
+    [Description("@#recording")]
     Recording = 1,
 
-    [Description("@#Paused")]
+    [Description("@#paused")]
     Paused = 2
 }
 
@@ -4157,13 +4157,13 @@ public enum RecordingState
 [String]
 public enum RedEyeReduction
 {
-    [Description("@#Never")]
+    [Description("@#never")]
     Never = 0,
 
-    [Description("@#Always")]
+    [Description("@#always")]
     Always = 1,
 
-    [Description("@#Controllable")]
+    [Description("@#controllable")]
     Controllable = 2
 }
 
@@ -4175,31 +4175,31 @@ public enum RedEyeReduction
 [String]
 public enum ReferrerPolicy
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#NoReferrer")]
+    [Description("@#no-referrer")]
     NoReferrer = 1,
 
-    [Description("@#NoReferrerWhenDowngrade")]
+    [Description("@#no-referrer-when-downgrade")]
     NoReferrerWhenDowngrade = 2,
 
-    [Description("@#SameOrigin")]
+    [Description("@#same-origin")]
     SameOrigin = 3,
 
-    [Description("@#Origin")]
+    [Description("@#origin")]
     Origin = 4,
 
-    [Description("@#StrictOrigin")]
+    [Description("@#strict-origin")]
     StrictOrigin = 5,
 
-    [Description("@#OriginWhenCrossOrigin")]
+    [Description("@#origin-when-cross-origin")]
     OriginWhenCrossOrigin = 6,
 
-    [Description("@#StrictOriginWhenCrossOrigin")]
+    [Description("@#strict-origin-when-cross-origin")]
     StrictOriginWhenCrossOrigin = 7,
 
-    [Description("@#UnsafeUrl")]
+    [Description("@#unsafe-url")]
     UnsafeUrl = 8
 }
 
@@ -4211,10 +4211,10 @@ public enum ReferrerPolicy
 [String]
 public enum RefreshPolicy
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Refresh")]
+    [Description("@#refresh")]
     Refresh = 1
 }
 
@@ -4226,13 +4226,13 @@ public enum RefreshPolicy
 [String]
 public enum RemotePlaybackState
 {
-    [Description("@#Connecting")]
+    [Description("@#connecting")]
     Connecting = 0,
 
-    [Description("@#Connected")]
+    [Description("@#connected")]
     Connected = 1,
 
-    [Description("@#Disconnected")]
+    [Description("@#disconnected")]
     Disconnected = 2
 }
 
@@ -4244,10 +4244,10 @@ public enum RemotePlaybackState
 [String]
 public enum RenderBlockingStatusType
 {
-    [Description("@#Blocking")]
+    [Description("@#blocking")]
     Blocking = 0,
 
-    [Description("@#NonBlocking")]
+    [Description("@#non-blocking")]
     NonBlocking = 1
 }
 
@@ -4259,22 +4259,22 @@ public enum RenderBlockingStatusType
 [String]
 public enum RequestCache
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#NoStore")]
+    [Description("@#no-store")]
     NoStore = 1,
 
-    [Description("@#Reload")]
+    [Description("@#reload")]
     Reload = 2,
 
-    [Description("@#NoCache")]
+    [Description("@#no-cache")]
     NoCache = 3,
 
-    [Description("@#ForceCache")]
+    [Description("@#force-cache")]
     ForceCache = 4,
 
-    [Description("@#OnlyIfCached")]
+    [Description("@#only-if-cached")]
     OnlyIfCached = 5
 }
 
@@ -4286,13 +4286,13 @@ public enum RequestCache
 [String]
 public enum RequestCredentials
 {
-    [Description("@#Omit")]
+    [Description("@#omit")]
     Omit = 0,
 
-    [Description("@#SameOrigin")]
+    [Description("@#same-origin")]
     SameOrigin = 1,
 
-    [Description("@#Include")]
+    [Description("@#include")]
     Include = 2
 }
 
@@ -4304,67 +4304,67 @@ public enum RequestCredentials
 [String]
 public enum RequestDestination
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Audio")]
+    [Description("@#audio")]
     Audio = 1,
 
-    [Description("@#Audioworklet")]
+    [Description("@#audioworklet")]
     Audioworklet = 2,
 
-    [Description("@#Document")]
+    [Description("@#document")]
     Document = 3,
 
-    [Description("@#Embed")]
+    [Description("@#embed")]
     Embed = 4,
 
-    [Description("@#Font")]
+    [Description("@#font")]
     Font = 5,
 
-    [Description("@#Frame")]
+    [Description("@#frame")]
     Frame = 6,
 
-    [Description("@#Iframe")]
+    [Description("@#iframe")]
     Iframe = 7,
 
-    [Description("@#Image")]
+    [Description("@#image")]
     Image = 8,
 
-    [Description("@#Json")]
+    [Description("@#json")]
     Json = 9,
 
-    [Description("@#Manifest")]
+    [Description("@#manifest")]
     Manifest = 10,
 
-    [Description("@#Object")]
+    [Description("@#object")]
     Object = 11,
 
-    [Description("@#Paintworklet")]
+    [Description("@#paintworklet")]
     Paintworklet = 12,
 
-    [Description("@#Report")]
+    [Description("@#report")]
     Report = 13,
 
-    [Description("@#Script")]
+    [Description("@#script")]
     Script = 14,
 
-    [Description("@#Sharedworker")]
+    [Description("@#sharedworker")]
     Sharedworker = 15,
 
-    [Description("@#Style")]
+    [Description("@#style")]
     Style = 16,
 
-    [Description("@#Track")]
+    [Description("@#track")]
     Track = 17,
 
-    [Description("@#Video")]
+    [Description("@#video")]
     Video = 18,
 
-    [Description("@#Worker")]
+    [Description("@#worker")]
     Worker = 19,
 
-    [Description("@#Xslt")]
+    [Description("@#xslt")]
     Xslt = 20
 }
 
@@ -4376,7 +4376,7 @@ public enum RequestDestination
 [String]
 public enum RequestDuplex
 {
-    [Description("@#Half")]
+    [Description("@#half")]
     Half = 0
 }
 
@@ -4388,16 +4388,16 @@ public enum RequestDuplex
 [String]
 public enum RequestMode
 {
-    [Description("@#Navigate")]
+    [Description("@#navigate")]
     Navigate = 0,
 
-    [Description("@#SameOrigin")]
+    [Description("@#same-origin")]
     SameOrigin = 1,
 
-    [Description("@#NoCors")]
+    [Description("@#no-cors")]
     NoCors = 2,
 
-    [Description("@#Cors")]
+    [Description("@#cors")]
     Cors = 3
 }
 
@@ -4409,13 +4409,13 @@ public enum RequestMode
 [String]
 public enum RequestPriority
 {
-    [Description("@#High")]
+    [Description("@#high")]
     High = 0,
 
-    [Description("@#Low")]
+    [Description("@#low")]
     Low = 1,
 
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 2
 }
 
@@ -4427,13 +4427,13 @@ public enum RequestPriority
 [String]
 public enum RequestRedirect
 {
-    [Description("@#Follow")]
+    [Description("@#follow")]
     Follow = 0,
 
-    [Description("@#Error")]
+    [Description("@#error")]
     Error = 1,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 2
 }
 
@@ -4445,13 +4445,13 @@ public enum RequestRedirect
 [String]
 public enum ResidentKeyRequirement
 {
-    [Description("@#Discouraged")]
+    [Description("@#discouraged")]
     Discouraged = 0,
 
-    [Description("@#Preferred")]
+    [Description("@#preferred")]
     Preferred = 1,
 
-    [Description("@#Required")]
+    [Description("@#required")]
     Required = 2
 }
 
@@ -4463,13 +4463,13 @@ public enum ResidentKeyRequirement
 [String]
 public enum ResizeObserverBoxOptions
 {
-    [Description("@#BorderBox")]
+    [Description("@#border-box")]
     BorderBox = 0,
 
-    [Description("@#ContentBox")]
+    [Description("@#content-box")]
     ContentBox = 1,
 
-    [Description("@#DevicePixelContentBox")]
+    [Description("@#device-pixel-content-box")]
     DevicePixelContentBox = 2
 }
 
@@ -4481,16 +4481,16 @@ public enum ResizeObserverBoxOptions
 [String]
 public enum ResizeQuality
 {
-    [Description("@#Pixelated")]
+    [Description("@#pixelated")]
     Pixelated = 0,
 
-    [Description("@#Low")]
+    [Description("@#low")]
     Low = 1,
 
-    [Description("@#Medium")]
+    [Description("@#medium")]
     Medium = 2,
 
-    [Description("@#High")]
+    [Description("@#high")]
     High = 3
 }
 
@@ -4502,22 +4502,22 @@ public enum ResizeQuality
 [String]
 public enum ResponseType
 {
-    [Description("@#Basic")]
+    [Description("@#basic")]
     Basic = 0,
 
-    [Description("@#Cors")]
+    [Description("@#cors")]
     Cors = 1,
 
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 2,
 
-    [Description("@#Error")]
+    [Description("@#error")]
     Error = 3,
 
-    [Description("@#Opaque")]
+    [Description("@#opaque")]
     Opaque = 4,
 
-    [Description("@#Opaqueredirect")]
+    [Description("@#opaqueredirect")]
     Opaqueredirect = 5
 }
 
@@ -4529,16 +4529,16 @@ public enum ResponseType
 [String]
 public enum RouterSourceEnum
 {
-    [Description("@#Cache")]
+    [Description("@#cache")]
     Cache = 0,
 
-    [Description("@#FetchEvent")]
+    [Description("@#fetch-event")]
     FetchEvent = 1,
 
-    [Description("@#Network")]
+    [Description("@#network")]
     Network = 2,
 
-    [Description("@#RaceNetworkAndFetchHandler")]
+    [Description("@#race-network-and-fetch-handler")]
     RaceNetworkAndFetchHandler = 3
 }
 
@@ -4550,10 +4550,10 @@ public enum RouterSourceEnum
 [String]
 public enum RunningStatus
 {
-    [Description("@#Running")]
+    [Description("@#running")]
     Running = 0,
 
-    [Description("@#NotRunning")]
+    [Description("@#not-running")]
     NotRunning = 1
 }
 
@@ -4565,13 +4565,13 @@ public enum RunningStatus
 [String]
 public enum SFrameTransformErrorEventType
 {
-    [Description("@#Authentication")]
+    [Description("@#authentication")]
     Authentication = 0,
 
-    [Description("@#KeyID")]
+    [Description("@#keyID")]
     KeyID = 1,
 
-    [Description("@#Syntax")]
+    [Description("@#syntax")]
     Syntax = 2
 }
 
@@ -4583,10 +4583,10 @@ public enum SFrameTransformErrorEventType
 [String]
 public enum SFrameTransformRole
 {
-    [Description("@#Encrypt")]
+    [Description("@#encrypt")]
     Encrypt = 0,
 
-    [Description("@#Decrypt")]
+    [Description("@#decrypt")]
     Decrypt = 1
 }
 
@@ -4598,10 +4598,10 @@ public enum SFrameTransformRole
 [String]
 public enum ScreenIdleState
 {
-    [Description("@#Locked")]
+    [Description("@#locked")]
     Locked = 0,
 
-    [Description("@#Unlocked")]
+    [Description("@#unlocked")]
     Unlocked = 1
 }
 
@@ -4613,22 +4613,22 @@ public enum ScreenIdleState
 [String]
 public enum ScriptInvokerType
 {
-    [Description("@#ClassicScript")]
+    [Description("@#classic-script")]
     ClassicScript = 0,
 
-    [Description("@#ModuleScript")]
+    [Description("@#module-script")]
     ModuleScript = 1,
 
-    [Description("@#EventListener")]
+    [Description("@#event-listener")]
     EventListener = 2,
 
-    [Description("@#UserCallback")]
+    [Description("@#user-callback")]
     UserCallback = 3,
 
-    [Description("@#ResolvePromise")]
+    [Description("@#resolve-promise")]
     ResolvePromise = 4,
 
-    [Description("@#RejectPromise")]
+    [Description("@#reject-promise")]
     RejectPromise = 5
 }
 
@@ -4640,19 +4640,19 @@ public enum ScriptInvokerType
 [String]
 public enum ScriptWindowAttribution
 {
-    [Description("@#Self")]
+    [Description("@#self")]
     Self = 0,
 
-    [Description("@#Descendant")]
+    [Description("@#descendant")]
     Descendant = 1,
 
-    [Description("@#Ancestor")]
+    [Description("@#ancestor")]
     Ancestor = 2,
 
-    [Description("@#SamePage")]
+    [Description("@#same-page")]
     SamePage = 3,
 
-    [Description("@#Other")]
+    [Description("@#other")]
     Other = 4
 }
 
@@ -4664,16 +4664,16 @@ public enum ScriptWindowAttribution
 [String]
 public enum ScriptingPolicyViolationType
 {
-    [Description("@#ExternalScript")]
+    [Description("@#externalScript")]
     ExternalScript = 0,
 
-    [Description("@#InlineScript")]
+    [Description("@#inlineScript")]
     InlineScript = 1,
 
-    [Description("@#InlineEventHandler")]
+    [Description("@#inlineEventHandler")]
     InlineEventHandler = 2,
 
-    [Description("@#Eval")]
+    [Description("@#eval")]
     Eval = 3
 }
 
@@ -4685,16 +4685,16 @@ public enum ScriptingPolicyViolationType
 [String]
 public enum ScrollAxis
 {
-    [Description("@#Block")]
+    [Description("@#block")]
     Block = 0,
 
-    [Description("@#Inline")]
+    [Description("@#inline")]
     Inline = 1,
 
-    [Description("@#X")]
+    [Description("@#x")]
     X = 2,
 
-    [Description("@#Y")]
+    [Description("@#y")]
     Y = 3
 }
 
@@ -4706,13 +4706,13 @@ public enum ScrollAxis
 [String]
 public enum ScrollBehavior
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Instant")]
+    [Description("@#instant")]
     Instant = 1,
 
-    [Description("@#Smooth")]
+    [Description("@#smooth")]
     Smooth = 2
 }
 
@@ -4724,16 +4724,16 @@ public enum ScrollBehavior
 [String]
 public enum ScrollLogicalPosition
 {
-    [Description("@#Start")]
+    [Description("@#start")]
     Start = 0,
 
-    [Description("@#Center")]
+    [Description("@#center")]
     Center = 1,
 
-    [Description("@#End")]
+    [Description("@#end")]
     End = 2,
 
-    [Description("@#Nearest")]
+    [Description("@#nearest")]
     Nearest = 3
 }
 
@@ -4745,10 +4745,10 @@ public enum ScrollLogicalPosition
 [String]
 public enum ScrollRestoration
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 1
 }
 
@@ -4760,10 +4760,10 @@ public enum ScrollRestoration
 [String]
 public enum ScrollSetting
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Up")]
+    [Description("@#up")]
     Up = 1
 }
 
@@ -4775,10 +4775,10 @@ public enum ScrollSetting
 [String]
 public enum SecurityPolicyViolationEventDisposition
 {
-    [Description("@#Enforce")]
+    [Description("@#enforce")]
     Enforce = 0,
 
-    [Description("@#Report")]
+    [Description("@#report")]
     Report = 1
 }
 
@@ -4790,16 +4790,16 @@ public enum SecurityPolicyViolationEventDisposition
 [String]
 public enum SelectionMode
 {
-    [Description("@#Select")]
+    [Description("@#select")]
     Select = 0,
 
-    [Description("@#Start")]
+    [Description("@#start")]
     Start = 1,
 
-    [Description("@#End")]
+    [Description("@#end")]
     End = 2,
 
-    [Description("@#Preserve")]
+    [Description("@#preserve")]
     Preserve = 3
 }
 
@@ -4811,10 +4811,10 @@ public enum SelectionMode
 [String]
 public enum SelfCapturePreferenceEnum
 {
-    [Description("@#Include")]
+    [Description("@#include")]
     Include = 0,
 
-    [Description("@#Exclude")]
+    [Description("@#exclude")]
     Exclude = 1
 }
 
@@ -4826,22 +4826,22 @@ public enum SelfCapturePreferenceEnum
 [String]
 public enum ServiceWorkerState
 {
-    [Description("@#Parsed")]
+    [Description("@#parsed")]
     Parsed = 0,
 
-    [Description("@#Installing")]
+    [Description("@#installing")]
     Installing = 1,
 
-    [Description("@#Installed")]
+    [Description("@#installed")]
     Installed = 2,
 
-    [Description("@#Activating")]
+    [Description("@#activating")]
     Activating = 3,
 
-    [Description("@#Activated")]
+    [Description("@#activated")]
     Activated = 4,
 
-    [Description("@#Redundant")]
+    [Description("@#redundant")]
     Redundant = 5
 }
 
@@ -4853,13 +4853,13 @@ public enum ServiceWorkerState
 [String]
 public enum ServiceWorkerUpdateViaCache
 {
-    [Description("@#Imports")]
+    [Description("@#imports")]
     Imports = 0,
 
-    [Description("@#All")]
+    [Description("@#all")]
     All = 1,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 2
 }
 
@@ -4871,10 +4871,10 @@ public enum ServiceWorkerUpdateViaCache
 [String]
 public enum ShadowRootMode
 {
-    [Description("@#Open")]
+    [Description("@#open")]
     Open = 0,
 
-    [Description("@#Closed")]
+    [Description("@#closed")]
     Closed = 1
 }
 
@@ -4886,10 +4886,10 @@ public enum ShadowRootMode
 [String]
 public enum SlotAssignmentMode
 {
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 0,
 
-    [Description("@#Named")]
+    [Description("@#named")]
     Named = 1
 }
 
@@ -4901,16 +4901,16 @@ public enum SlotAssignmentMode
 [String]
 public enum SpatialNavigationDirection
 {
-    [Description("@#Up")]
+    [Description("@#up")]
     Up = 0,
 
-    [Description("@#Down")]
+    [Description("@#down")]
     Down = 1,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 2,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 3
 }
 
@@ -4922,28 +4922,28 @@ public enum SpatialNavigationDirection
 [String]
 public enum SpeechRecognitionErrorCode
 {
-    [Description("@#NoSpeech")]
+    [Description("@#no-speech")]
     NoSpeech = 0,
 
-    [Description("@#Aborted")]
+    [Description("@#aborted")]
     Aborted = 1,
 
-    [Description("@#AudioCapture")]
+    [Description("@#audio-capture")]
     AudioCapture = 2,
 
-    [Description("@#Network")]
+    [Description("@#network")]
     Network = 3,
 
-    [Description("@#NotAllowed")]
+    [Description("@#not-allowed")]
     NotAllowed = 4,
 
-    [Description("@#ServiceNotAllowed")]
+    [Description("@#service-not-allowed")]
     ServiceNotAllowed = 5,
 
-    [Description("@#BadGrammar")]
+    [Description("@#bad-grammar")]
     BadGrammar = 6,
 
-    [Description("@#LanguageNotSupported")]
+    [Description("@#language-not-supported")]
     LanguageNotSupported = 7
 }
 
@@ -4955,40 +4955,40 @@ public enum SpeechRecognitionErrorCode
 [String]
 public enum SpeechSynthesisErrorCode
 {
-    [Description("@#Canceled")]
+    [Description("@#canceled")]
     Canceled = 0,
 
-    [Description("@#Interrupted")]
+    [Description("@#interrupted")]
     Interrupted = 1,
 
-    [Description("@#AudioBusy")]
+    [Description("@#audio-busy")]
     AudioBusy = 2,
 
-    [Description("@#AudioHardware")]
+    [Description("@#audio-hardware")]
     AudioHardware = 3,
 
-    [Description("@#Network")]
+    [Description("@#network")]
     Network = 4,
 
-    [Description("@#SynthesisUnavailable")]
+    [Description("@#synthesis-unavailable")]
     SynthesisUnavailable = 5,
 
-    [Description("@#SynthesisFailed")]
+    [Description("@#synthesis-failed")]
     SynthesisFailed = 6,
 
-    [Description("@#LanguageUnavailable")]
+    [Description("@#language-unavailable")]
     LanguageUnavailable = 7,
 
-    [Description("@#VoiceUnavailable")]
+    [Description("@#voice-unavailable")]
     VoiceUnavailable = 8,
 
-    [Description("@#TextTooLong")]
+    [Description("@#text-too-long")]
     TextTooLong = 9,
 
-    [Description("@#InvalidArgument")]
+    [Description("@#invalid-argument")]
     InvalidArgument = 10,
 
-    [Description("@#NotAllowed")]
+    [Description("@#not-allowed")]
     NotAllowed = 11
 }
 
@@ -5000,10 +5000,10 @@ public enum SpeechSynthesisErrorCode
 [String]
 public enum SurfaceSwitchingPreferenceEnum
 {
-    [Description("@#Include")]
+    [Description("@#include")]
     Include = 0,
 
-    [Description("@#Exclude")]
+    [Description("@#exclude")]
     Exclude = 1
 }
 
@@ -5015,10 +5015,10 @@ public enum SurfaceSwitchingPreferenceEnum
 [String]
 public enum SystemAudioPreferenceEnum
 {
-    [Description("@#Include")]
+    [Description("@#include")]
     Include = 0,
 
-    [Description("@#Exclude")]
+    [Description("@#exclude")]
     Exclude = 1
 }
 
@@ -5030,13 +5030,13 @@ public enum SystemAudioPreferenceEnum
 [String]
 public enum TaskPriority
 {
-    [Description("@#UserBlocking")]
+    [Description("@#user-blocking")]
     UserBlocking = 0,
 
-    [Description("@#UserVisible")]
+    [Description("@#user-visible")]
     UserVisible = 1,
 
-    [Description("@#Background")]
+    [Description("@#background")]
     Background = 2
 }
 
@@ -5048,19 +5048,19 @@ public enum TaskPriority
 [String]
 public enum TextTrackKind
 {
-    [Description("@#Subtitles")]
+    [Description("@#subtitles")]
     Subtitles = 0,
 
-    [Description("@#Captions")]
+    [Description("@#captions")]
     Captions = 1,
 
-    [Description("@#Descriptions")]
+    [Description("@#descriptions")]
     Descriptions = 2,
 
-    [Description("@#Chapters")]
+    [Description("@#chapters")]
     Chapters = 3,
 
-    [Description("@#Metadata")]
+    [Description("@#metadata")]
     Metadata = 4
 }
 
@@ -5072,13 +5072,13 @@ public enum TextTrackKind
 [String]
 public enum TextTrackMode
 {
-    [Description("@#Disabled")]
+    [Description("@#disabled")]
     Disabled = 0,
 
-    [Description("@#Hidden")]
+    [Description("@#hidden")]
     Hidden = 1,
 
-    [Description("@#Showing")]
+    [Description("@#showing")]
     Showing = 2
 }
 
@@ -5090,10 +5090,10 @@ public enum TextTrackMode
 [String]
 public enum TokenBindingStatus
 {
-    [Description("@#Present")]
+    [Description("@#present")]
     Present = 0,
 
-    [Description("@#Supported")]
+    [Description("@#supported")]
     Supported = 1
 }
 
@@ -5105,7 +5105,7 @@ public enum TokenBindingStatus
 [String]
 public enum TokenVersion
 {
-    [Description("@#_1")]
+    [Description("@#1")]
     _1 = 0
 }
 
@@ -5117,10 +5117,10 @@ public enum TokenVersion
 [String]
 public enum TouchType
 {
-    [Description("@#Direct")]
+    [Description("@#direct")]
     Direct = 0,
 
-    [Description("@#Stylus")]
+    [Description("@#stylus")]
     Stylus = 1
 }
 
@@ -5132,13 +5132,13 @@ public enum TouchType
 [String]
 public enum TransferFunction
 {
-    [Description("@#Srgb")]
+    [Description("@#srgb")]
     Srgb = 0,
 
-    [Description("@#Pq")]
+    [Description("@#pq")]
     Pq = 1,
 
-    [Description("@#Hlg")]
+    [Description("@#hlg")]
     Hlg = 2
 }
 
@@ -5150,10 +5150,10 @@ public enum TransferFunction
 [String]
 public enum USBDirection
 {
-    [Description("@#In")]
+    [Description("@#in")]
     In = 0,
 
-    [Description("@#Out")]
+    [Description("@#out")]
     Out = 1
 }
 
@@ -5165,13 +5165,13 @@ public enum USBDirection
 [String]
 public enum USBEndpointType
 {
-    [Description("@#Bulk")]
+    [Description("@#bulk")]
     Bulk = 0,
 
-    [Description("@#Interrupt")]
+    [Description("@#interrupt")]
     Interrupt = 1,
 
-    [Description("@#Isochronous")]
+    [Description("@#isochronous")]
     Isochronous = 2
 }
 
@@ -5183,16 +5183,16 @@ public enum USBEndpointType
 [String]
 public enum USBRecipient
 {
-    [Description("@#Device")]
+    [Description("@#device")]
     Device = 0,
 
-    [Description("@#Interface")]
+    [Description("@#interface")]
     Interface = 1,
 
-    [Description("@#Endpoint")]
+    [Description("@#endpoint")]
     Endpoint = 2,
 
-    [Description("@#Other")]
+    [Description("@#other")]
     Other = 3
 }
 
@@ -5204,13 +5204,13 @@ public enum USBRecipient
 [String]
 public enum USBRequestType
 {
-    [Description("@#Standard")]
+    [Description("@#standard")]
     Standard = 0,
 
-    [Description("@#Class")]
+    [Description("@#class")]
     Class = 1,
 
-    [Description("@#Vendor")]
+    [Description("@#vendor")]
     Vendor = 2
 }
 
@@ -5222,13 +5222,13 @@ public enum USBRequestType
 [String]
 public enum USBTransferStatus
 {
-    [Description("@#Ok")]
+    [Description("@#ok")]
     Ok = 0,
 
-    [Description("@#Stall")]
+    [Description("@#stall")]
     Stall = 1,
 
-    [Description("@#Babble")]
+    [Description("@#babble")]
     Babble = 2
 }
 
@@ -5240,19 +5240,19 @@ public enum USBTransferStatus
 [String]
 public enum UnderlineStyle
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Solid")]
+    [Description("@#solid")]
     Solid = 1,
 
-    [Description("@#Dotted")]
+    [Description("@#dotted")]
     Dotted = 2,
 
-    [Description("@#Dashed")]
+    [Description("@#dashed")]
     Dashed = 3,
 
-    [Description("@#Wavy")]
+    [Description("@#wavy")]
     Wavy = 4
 }
 
@@ -5264,13 +5264,13 @@ public enum UnderlineStyle
 [String]
 public enum UnderlineThickness
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Thin")]
+    [Description("@#thin")]
     Thin = 1,
 
-    [Description("@#Thick")]
+    [Description("@#thick")]
     Thick = 2
 }
 
@@ -5282,10 +5282,10 @@ public enum UnderlineThickness
 [String]
 public enum UserIdleState
 {
-    [Description("@#Active")]
+    [Description("@#active")]
     Active = 0,
 
-    [Description("@#Idle")]
+    [Description("@#idle")]
     Idle = 1
 }
 
@@ -5297,13 +5297,13 @@ public enum UserIdleState
 [String]
 public enum UserVerificationRequirement
 {
-    [Description("@#Required")]
+    [Description("@#required")]
     Required = 0,
 
-    [Description("@#Preferred")]
+    [Description("@#preferred")]
     Preferred = 1,
 
-    [Description("@#Discouraged")]
+    [Description("@#discouraged")]
     Discouraged = 2
 }
 
@@ -5315,19 +5315,19 @@ public enum UserVerificationRequirement
 [String]
 public enum VideoColorPrimaries
 {
-    [Description("@#Bt709")]
+    [Description("@#bt709")]
     Bt709 = 0,
 
-    [Description("@#Bt470bg")]
+    [Description("@#bt470bg")]
     Bt470bg = 1,
 
-    [Description("@#Smpte170m")]
+    [Description("@#smpte170m")]
     Smpte170m = 2,
 
-    [Description("@#Bt2020")]
+    [Description("@#bt2020")]
     Bt2020 = 3,
 
-    [Description("@#Smpte432")]
+    [Description("@#smpte432")]
     Smpte432 = 4
 }
 
@@ -5339,13 +5339,13 @@ public enum VideoColorPrimaries
 [String]
 public enum VideoEncoderBitrateMode
 {
-    [Description("@#Constant")]
+    [Description("@#constant")]
     Constant = 0,
 
-    [Description("@#Variable")]
+    [Description("@#variable")]
     Variable = 1,
 
-    [Description("@#Quantizer")]
+    [Description("@#quantizer")]
     Quantizer = 2
 }
 
@@ -5357,16 +5357,16 @@ public enum VideoEncoderBitrateMode
 [String]
 public enum VideoFacingModeEnum
 {
-    [Description("@#User")]
+    [Description("@#user")]
     User = 0,
 
-    [Description("@#Environment")]
+    [Description("@#environment")]
     Environment = 1,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 2,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 3
 }
 
@@ -5378,19 +5378,19 @@ public enum VideoFacingModeEnum
 [String]
 public enum VideoMatrixCoefficients
 {
-    [Description("@#Rgb")]
+    [Description("@#rgb")]
     Rgb = 0,
 
-    [Description("@#Bt709")]
+    [Description("@#bt709")]
     Bt709 = 1,
 
-    [Description("@#Bt470bg")]
+    [Description("@#bt470bg")]
     Bt470bg = 2,
 
-    [Description("@#Smpte170m")]
+    [Description("@#smpte170m")]
     Smpte170m = 3,
 
-    [Description("@#Bt2020Ncl")]
+    [Description("@#bt2020-ncl")]
     Bt2020Ncl = 4
 }
 
@@ -5480,10 +5480,10 @@ public enum VideoPixelFormat
 [String]
 public enum VideoResizeModeEnum
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#CropAndScale")]
+    [Description("@#crop-and-scale")]
     CropAndScale = 1
 }
 
@@ -5495,22 +5495,22 @@ public enum VideoResizeModeEnum
 [String]
 public enum VideoTransferCharacteristics
 {
-    [Description("@#Bt709")]
+    [Description("@#bt709")]
     Bt709 = 0,
 
-    [Description("@#Smpte170m")]
+    [Description("@#smpte170m")]
     Smpte170m = 1,
 
-    [Description("@#Iec6196621")]
+    [Description("@#iec61966-2-1")]
     Iec6196621 = 2,
 
-    [Description("@#Linear")]
+    [Description("@#linear")]
     Linear = 3,
 
-    [Description("@#Pq")]
+    [Description("@#pq")]
     Pq = 4,
 
-    [Description("@#Hlg")]
+    [Description("@#hlg")]
     Hlg = 5
 }
 
@@ -5522,10 +5522,10 @@ public enum VideoTransferCharacteristics
 [String]
 public enum ViewTransitionNavigation
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0,
 
-    [Description("@#None")]
+    [Description("@#none")]
     None = 1
 }
 
@@ -5537,7 +5537,7 @@ public enum ViewTransitionNavigation
 [String]
 public enum WakeLockType
 {
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 0
 }
 
@@ -5549,13 +5549,13 @@ public enum WakeLockType
 [String]
 public enum WebGLPowerPreference
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#LowPower")]
+    [Description("@#low-power")]
     LowPower = 1,
 
-    [Description("@#HighPerformance")]
+    [Description("@#high-performance")]
     HighPerformance = 2
 }
 
@@ -5567,13 +5567,13 @@ public enum WebGLPowerPreference
 [String]
 public enum WebTransportCongestionControl
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#Throughput")]
+    [Description("@#throughput")]
     Throughput = 1,
 
-    [Description("@#LowLatency")]
+    [Description("@#low-latency")]
     LowLatency = 2
 }
 
@@ -5585,10 +5585,10 @@ public enum WebTransportCongestionControl
 [String]
 public enum WebTransportErrorSource
 {
-    [Description("@#Stream")]
+    [Description("@#stream")]
     Stream = 0,
 
-    [Description("@#Session")]
+    [Description("@#session")]
     Session = 1
 }
 
@@ -5600,13 +5600,13 @@ public enum WebTransportErrorSource
 [String]
 public enum WebTransportReliabilityMode
 {
-    [Description("@#Pending")]
+    [Description("@#pending")]
     Pending = 0,
 
-    [Description("@#ReliableOnly")]
+    [Description("@#reliable-only")]
     ReliableOnly = 1,
 
-    [Description("@#SupportsUnreliable")]
+    [Description("@#supports-unreliable")]
     SupportsUnreliable = 2
 }
 
@@ -5618,22 +5618,22 @@ public enum WebTransportReliabilityMode
 [String]
 public enum WellKnownDirectory
 {
-    [Description("@#Desktop")]
+    [Description("@#desktop")]
     Desktop = 0,
 
-    [Description("@#Documents")]
+    [Description("@#documents")]
     Documents = 1,
 
-    [Description("@#Downloads")]
+    [Description("@#downloads")]
     Downloads = 2,
 
-    [Description("@#Music")]
+    [Description("@#music")]
     Music = 3,
 
-    [Description("@#Pictures")]
+    [Description("@#pictures")]
     Pictures = 4,
 
-    [Description("@#Videos")]
+    [Description("@#videos")]
     Videos = 5
 }
 
@@ -5645,10 +5645,10 @@ public enum WellKnownDirectory
 [String]
 public enum WorkerType
 {
-    [Description("@#Classic")]
+    [Description("@#classic")]
     Classic = 0,
 
-    [Description("@#Module")]
+    [Description("@#module")]
     Module = 1
 }
 
@@ -5660,13 +5660,13 @@ public enum WorkerType
 [String]
 public enum WriteCommandType
 {
-    [Description("@#Write")]
+    [Description("@#write")]
     Write = 0,
 
-    [Description("@#Seek")]
+    [Description("@#seek")]
     Seek = 1,
 
-    [Description("@#Truncate")]
+    [Description("@#truncate")]
     Truncate = 2
 }
 
@@ -5678,22 +5678,22 @@ public enum WriteCommandType
 [String]
 public enum XMLHttpRequestResponseType
 {
-    [Description("@#Empty")]
+    [Description("@#")]
     Empty = 0,
 
-    [Description("@#Arraybuffer")]
+    [Description("@#arraybuffer")]
     Arraybuffer = 1,
 
-    [Description("@#Blob")]
+    [Description("@#blob")]
     Blob = 2,
 
-    [Description("@#Document")]
+    [Description("@#document")]
     Document = 3,
 
-    [Description("@#Json")]
+    [Description("@#json")]
     Json = 4,
 
-    [Description("@#Text")]
+    [Description("@#text")]
     Text = 5
 }
 
@@ -5705,13 +5705,13 @@ public enum XMLHttpRequestResponseType
 [String]
 public enum XRDOMOverlayType
 {
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 0,
 
-    [Description("@#Floating")]
+    [Description("@#floating")]
     Floating = 1,
 
-    [Description("@#HeadLocked")]
+    [Description("@#head-locked")]
     HeadLocked = 2
 }
 
@@ -5723,10 +5723,10 @@ public enum XRDOMOverlayType
 [String]
 public enum XRDepthDataFormat
 {
-    [Description("@#LuminanceAlpha")]
+    [Description("@#luminance-alpha")]
     LuminanceAlpha = 0,
 
-    [Description("@#Float32")]
+    [Description("@#float32")]
     Float32 = 1
 }
 
@@ -5738,10 +5738,10 @@ public enum XRDepthDataFormat
 [String]
 public enum XRDepthUsage
 {
-    [Description("@#CpuOptimized")]
+    [Description("@#cpu-optimized")]
     CpuOptimized = 0,
 
-    [Description("@#GpuOptimized")]
+    [Description("@#gpu-optimized")]
     GpuOptimized = 1
 }
 
@@ -5753,13 +5753,13 @@ public enum XRDepthUsage
 [String]
 public enum XREnvironmentBlendMode
 {
-    [Description("@#Opaque")]
+    [Description("@#opaque")]
     Opaque = 0,
 
-    [Description("@#AlphaBlend")]
+    [Description("@#alpha-blend")]
     AlphaBlend = 1,
 
-    [Description("@#Additive")]
+    [Description("@#additive")]
     Additive = 2
 }
 
@@ -5771,13 +5771,13 @@ public enum XREnvironmentBlendMode
 [String]
 public enum XREye
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 1,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 2
 }
 
@@ -5789,79 +5789,79 @@ public enum XREye
 [String]
 public enum XRHandJoint
 {
-    [Description("@#Wrist")]
+    [Description("@#wrist")]
     Wrist = 0,
 
-    [Description("@#ThumbMetacarpal")]
+    [Description("@#thumb-metacarpal")]
     ThumbMetacarpal = 1,
 
-    [Description("@#ThumbPhalanxProximal")]
+    [Description("@#thumb-phalanx-proximal")]
     ThumbPhalanxProximal = 2,
 
-    [Description("@#ThumbPhalanxDistal")]
+    [Description("@#thumb-phalanx-distal")]
     ThumbPhalanxDistal = 3,
 
-    [Description("@#ThumbTip")]
+    [Description("@#thumb-tip")]
     ThumbTip = 4,
 
-    [Description("@#IndexFingerMetacarpal")]
+    [Description("@#index-finger-metacarpal")]
     IndexFingerMetacarpal = 5,
 
-    [Description("@#IndexFingerPhalanxProximal")]
+    [Description("@#index-finger-phalanx-proximal")]
     IndexFingerPhalanxProximal = 6,
 
-    [Description("@#IndexFingerPhalanxIntermediate")]
+    [Description("@#index-finger-phalanx-intermediate")]
     IndexFingerPhalanxIntermediate = 7,
 
-    [Description("@#IndexFingerPhalanxDistal")]
+    [Description("@#index-finger-phalanx-distal")]
     IndexFingerPhalanxDistal = 8,
 
-    [Description("@#IndexFingerTip")]
+    [Description("@#index-finger-tip")]
     IndexFingerTip = 9,
 
-    [Description("@#MiddleFingerMetacarpal")]
+    [Description("@#middle-finger-metacarpal")]
     MiddleFingerMetacarpal = 10,
 
-    [Description("@#MiddleFingerPhalanxProximal")]
+    [Description("@#middle-finger-phalanx-proximal")]
     MiddleFingerPhalanxProximal = 11,
 
-    [Description("@#MiddleFingerPhalanxIntermediate")]
+    [Description("@#middle-finger-phalanx-intermediate")]
     MiddleFingerPhalanxIntermediate = 12,
 
-    [Description("@#MiddleFingerPhalanxDistal")]
+    [Description("@#middle-finger-phalanx-distal")]
     MiddleFingerPhalanxDistal = 13,
 
-    [Description("@#MiddleFingerTip")]
+    [Description("@#middle-finger-tip")]
     MiddleFingerTip = 14,
 
-    [Description("@#RingFingerMetacarpal")]
+    [Description("@#ring-finger-metacarpal")]
     RingFingerMetacarpal = 15,
 
-    [Description("@#RingFingerPhalanxProximal")]
+    [Description("@#ring-finger-phalanx-proximal")]
     RingFingerPhalanxProximal = 16,
 
-    [Description("@#RingFingerPhalanxIntermediate")]
+    [Description("@#ring-finger-phalanx-intermediate")]
     RingFingerPhalanxIntermediate = 17,
 
-    [Description("@#RingFingerPhalanxDistal")]
+    [Description("@#ring-finger-phalanx-distal")]
     RingFingerPhalanxDistal = 18,
 
-    [Description("@#RingFingerTip")]
+    [Description("@#ring-finger-tip")]
     RingFingerTip = 19,
 
-    [Description("@#PinkyFingerMetacarpal")]
+    [Description("@#pinky-finger-metacarpal")]
     PinkyFingerMetacarpal = 20,
 
-    [Description("@#PinkyFingerPhalanxProximal")]
+    [Description("@#pinky-finger-phalanx-proximal")]
     PinkyFingerPhalanxProximal = 21,
 
-    [Description("@#PinkyFingerPhalanxIntermediate")]
+    [Description("@#pinky-finger-phalanx-intermediate")]
     PinkyFingerPhalanxIntermediate = 22,
 
-    [Description("@#PinkyFingerPhalanxDistal")]
+    [Description("@#pinky-finger-phalanx-distal")]
     PinkyFingerPhalanxDistal = 23,
 
-    [Description("@#PinkyFingerTip")]
+    [Description("@#pinky-finger-tip")]
     PinkyFingerTip = 24
 }
 
@@ -5873,13 +5873,13 @@ public enum XRHandJoint
 [String]
 public enum XRHandedness
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Left")]
+    [Description("@#left")]
     Left = 1,
 
-    [Description("@#Right")]
+    [Description("@#right")]
     Right = 2
 }
 
@@ -5891,13 +5891,13 @@ public enum XRHandedness
 [String]
 public enum XRHitTestTrackableType
 {
-    [Description("@#Point")]
+    [Description("@#point")]
     Point = 0,
 
-    [Description("@#Plane")]
+    [Description("@#plane")]
     Plane = 1,
 
-    [Description("@#Mesh")]
+    [Description("@#mesh")]
     Mesh = 2
 }
 
@@ -5909,10 +5909,10 @@ public enum XRHitTestTrackableType
 [String]
 public enum XRInteractionMode
 {
-    [Description("@#ScreenSpace")]
+    [Description("@#screen-space")]
     ScreenSpace = 0,
 
-    [Description("@#WorldSpace")]
+    [Description("@#world-space")]
     WorldSpace = 1
 }
 
@@ -5924,19 +5924,19 @@ public enum XRInteractionMode
 [String]
 public enum XRLayerLayout
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#Mono")]
+    [Description("@#mono")]
     Mono = 1,
 
-    [Description("@#Stereo")]
+    [Description("@#stereo")]
     Stereo = 2,
 
-    [Description("@#StereoLeftRight")]
+    [Description("@#stereo-left-right")]
     StereoLeftRight = 3,
 
-    [Description("@#StereoTopBottom")]
+    [Description("@#stereo-top-bottom")]
     StereoTopBottom = 4
 }
 
@@ -5948,13 +5948,13 @@ public enum XRLayerLayout
 [String]
 public enum XRLayerQuality
 {
-    [Description("@#Default")]
+    [Description("@#default")]
     Default = 0,
 
-    [Description("@#TextOptimized")]
+    [Description("@#text-optimized")]
     TextOptimized = 1,
 
-    [Description("@#GraphicsOptimized")]
+    [Description("@#graphics-optimized")]
     GraphicsOptimized = 2
 }
 
@@ -5966,10 +5966,10 @@ public enum XRLayerQuality
 [String]
 public enum XRPlaneOrientation
 {
-    [Description("@#Horizontal")]
+    [Description("@#horizontal")]
     Horizontal = 0,
 
-    [Description("@#Vertical")]
+    [Description("@#vertical")]
     Vertical = 1
 }
 
@@ -5981,19 +5981,19 @@ public enum XRPlaneOrientation
 [String]
 public enum XRReferenceSpaceType
 {
-    [Description("@#Viewer")]
+    [Description("@#viewer")]
     Viewer = 0,
 
-    [Description("@#Local")]
+    [Description("@#local")]
     Local = 1,
 
-    [Description("@#LocalFloor")]
+    [Description("@#local-floor")]
     LocalFloor = 2,
 
-    [Description("@#BoundedFloor")]
+    [Description("@#bounded-floor")]
     BoundedFloor = 3,
 
-    [Description("@#Unbounded")]
+    [Description("@#unbounded")]
     Unbounded = 4
 }
 
@@ -6005,10 +6005,10 @@ public enum XRReferenceSpaceType
 [String]
 public enum XRReflectionFormat
 {
-    [Description("@#Srgba8")]
+    [Description("@#srgba8")]
     Srgba8 = 0,
 
-    [Description("@#Rgba16f")]
+    [Description("@#rgba16f")]
     Rgba16f = 1
 }
 
@@ -6020,13 +6020,13 @@ public enum XRReflectionFormat
 [String]
 public enum XRSessionMode
 {
-    [Description("@#Inline")]
+    [Description("@#inline")]
     Inline = 0,
 
-    [Description("@#ImmersiveVr")]
+    [Description("@#immersive-vr")]
     ImmersiveVr = 1,
 
-    [Description("@#ImmersiveAr")]
+    [Description("@#immersive-ar")]
     ImmersiveAr = 2
 }
 
@@ -6038,16 +6038,16 @@ public enum XRSessionMode
 [String]
 public enum XRTargetRayMode
 {
-    [Description("@#Gaze")]
+    [Description("@#gaze")]
     Gaze = 0,
 
-    [Description("@#TrackedPointer")]
+    [Description("@#tracked-pointer")]
     TrackedPointer = 1,
 
-    [Description("@#Screen")]
+    [Description("@#screen")]
     Screen = 2,
 
-    [Description("@#TransientPointer")]
+    [Description("@#transient-pointer")]
     TransientPointer = 3
 }
 
@@ -6059,10 +6059,10 @@ public enum XRTargetRayMode
 [String]
 public enum XRTextureType
 {
-    [Description("@#Texture")]
+    [Description("@#texture")]
     Texture = 0,
 
-    [Description("@#TextureArray")]
+    [Description("@#texture-array")]
     TextureArray = 1
 }
 
@@ -6074,12 +6074,12 @@ public enum XRTextureType
 [String]
 public enum XRVisibilityState
 {
-    [Description("@#Visible")]
+    [Description("@#visible")]
     Visible = 0,
 
-    [Description("@#VisibleBlurred")]
+    [Description("@#visible-blurred")]
     VisibleBlurred = 1,
 
-    [Description("@#Hidden")]
+    [Description("@#hidden")]
     Hidden = 2
 }

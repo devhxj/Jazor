@@ -6,11 +6,28 @@
     "vue": {
       "development": "dist/vue.runtime.esm-browser.js",
       "production": "dist/vue.runtime.esm-browser.prod.js"
+    },
+    "@vue/devtools-api": {
+      "development": "dist/devtools-api/index.js",
+      "production": "dist/devtools-api/index.js"
     }
   },
   "requires": {},
   "styles": [],
   "files": [
-    "licenses/LICENSE"
+    "dist/devtools-api/const.js",
+    "dist/devtools-api/env.js",
+    "dist/devtools-api/plugin.js",
+    "dist/devtools-api/proxy.js",
+    "dist/devtools-api/time.js",
+    "dist/devtools-api/api/api.js",
+    "dist/devtools-api/api/app.js",
+    "dist/devtools-api/api/component.js",
+    "dist/devtools-api/api/context.js",
+    "dist/devtools-api/api/hooks.js",
+    "dist/devtools-api/api/index.js",
+    "dist/devtools-api/api/util.js",
+    "licenses/LICENSE",
+    "licenses/VUE-DEVTOOLS-API-LICENSE"
   ]
 }

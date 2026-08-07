@@ -10,6 +10,24 @@ namespace ECMAScript.WebIDL.GeneratorTest;
 public sealed class PreviewBindingEmitterTests
 {
     [TestMethod]
+    public async Task EmitAsync_EnumValues_PreservesWebIdlWireTokens()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Enum("RequestCredentials", """
+                [
+                  { "type": "enum-value", "value": "same-origin" },
+                  { "type": "enum-value", "value": "no-store" },
+                  { "type": "enum-value", "value": "include" }
+                ]
+                """));
+
+        var enums = files["Enums.cs"].Replace("\r\n", "\n", StringComparison.Ordinal);
+        StringAssert.Contains(enums, "[Description(\"@#same-origin\")]\n    SameOrigin = 0");
+        StringAssert.Contains(enums, "[Description(\"@#no-store\")]\n    NoStore = 1");
+        StringAssert.Contains(enums, "[Description(\"@#include\")]\n    Include = 2");
+    }
+
+    [TestMethod]
     public async Task EmitAsync_WebCryptoBigIntegerTypedef_DoesNotCapturePrimitiveBigInt()
     {
         var files = await EmitGeneratedFilesAsync(
@@ -1193,6 +1211,16 @@ public sealed class PreviewBindingEmitterTests
             }
         """);
         return new WebIdlDeclarationInventory("interface", name, partial ? true : null, inheritance, null, null, payload.GetArray("members").Count, payload);
+    }
+
+    private static WebIdlDeclarationInventory Enum(string name, string valuesJson)
+    {
+        var payload = ParseObject($$"""
+            {
+              "values": {{valuesJson}}
+            }
+            """);
+        return new WebIdlDeclarationInventory("enum", name, null, null, null, null, payload.GetArray("values").Count, payload);
     }
 
     private static WebIdlDeclarationInventory CallbackInterface(string name, string membersJson, bool partial = false)

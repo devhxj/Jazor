@@ -8,16 +8,16 @@ namespace ECMAScript.CSS;
 [String]
 public enum BlockFragmentationType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Page")]
+    [Description("@#page")]
     Page = 1,
 
-    [Description("@#Column")]
+    [Description("@#column")]
     Column = 2,
 
-    [Description("@#Region")]
+    [Description("@#region")]
     Region = 3
 }
 
@@ -29,19 +29,19 @@ public enum BlockFragmentationType
 [String]
 public enum BreakType
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Line")]
+    [Description("@#line")]
     Line = 1,
 
-    [Description("@#Column")]
+    [Description("@#column")]
     Column = 2,
 
-    [Description("@#Page")]
+    [Description("@#page")]
     Page = 3,
 
-    [Description("@#Region")]
+    [Description("@#region")]
     Region = 4
 }
 
@@ -53,25 +53,25 @@ public enum BreakType
 [String]
 public enum CSSMathOperator
 {
-    [Description("@#Sum")]
+    [Description("@#sum")]
     Sum = 0,
 
-    [Description("@#Product")]
+    [Description("@#product")]
     Product = 1,
 
-    [Description("@#Negate")]
+    [Description("@#negate")]
     Negate = 2,
 
-    [Description("@#Invert")]
+    [Description("@#invert")]
     Invert = 3,
 
-    [Description("@#Min")]
+    [Description("@#min")]
     Min = 4,
 
-    [Description("@#Max")]
+    [Description("@#max")]
     Max = 5,
 
-    [Description("@#Clamp")]
+    [Description("@#clamp")]
     Clamp = 6
 }
 
@@ -83,25 +83,25 @@ public enum CSSMathOperator
 [String]
 public enum CSSNumericBaseType
 {
-    [Description("@#Length")]
+    [Description("@#length")]
     Length = 0,
 
-    [Description("@#Angle")]
+    [Description("@#angle")]
     Angle = 1,
 
-    [Description("@#Time")]
+    [Description("@#time")]
     Time = 2,
 
-    [Description("@#Frequency")]
+    [Description("@#frequency")]
     Frequency = 3,
 
-    [Description("@#Resolution")]
+    [Description("@#resolution")]
     Resolution = 4,
 
-    [Description("@#Flex")]
+    [Description("@#flex")]
     Flex = 5,
 
-    [Description("@#Percent")]
+    [Description("@#percent")]
     Percent = 6
 }
 
@@ -113,10 +113,10 @@ public enum CSSNumericBaseType
 [String]
 public enum ChildDisplayType
 {
-    [Description("@#Block")]
+    [Description("@#block")]
     Block = 0,
 
-    [Description("@#Normal")]
+    [Description("@#normal")]
     Normal = 1
 }
 
@@ -128,13 +128,13 @@ public enum ChildDisplayType
 [String]
 public enum HighlightType
 {
-    [Description("@#Highlight")]
+    [Description("@#highlight")]
     Highlight = 0,
 
-    [Description("@#SpellingError")]
+    [Description("@#spelling-error")]
     SpellingError = 1,
 
-    [Description("@#GrammarError")]
+    [Description("@#grammar-error")]
     GrammarError = 2
 }
 
@@ -146,9 +146,9 @@ public enum HighlightType
 [String]
 public enum LayoutSizingMode
 {
-    [Description("@#BlockLike")]
+    [Description("@#block-like")]
     BlockLike = 0,
 
-    [Description("@#Manual")]
+    [Description("@#manual")]
     Manual = 1
 }

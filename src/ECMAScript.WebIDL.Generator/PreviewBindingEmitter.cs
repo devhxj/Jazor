@@ -280,9 +280,9 @@ internal sealed class PreviewBindingEmitter
         for (var index = 0; index < enumValues.Count; index++)
         {
             var value = enumValues[index].GetStringOrNull("value") ?? string.Empty;
-            value = value.Replace("\"", string.Empty, StringComparison.Ordinal);
             var enumValueName = WebIdlNaming.ToPascalCase(string.IsNullOrEmpty(value) ? "Empty" : value);
-            builder.AppendLine($"    [Description(\"@#{enumValueName}\")]");
+            // WebIDL enum tokens are wire values. The C# name is only an authoring projection.
+            builder.AppendLine($"    [Description({JsonSerializer.Serialize($"@#{value}")})]");
             builder.Append($"    {enumValueName} = {index}");
             if (index < enumValues.Count - 1)
             {

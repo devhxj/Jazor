@@ -35,6 +35,7 @@
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
   </ItemGroup>
 
   <ItemGroup>

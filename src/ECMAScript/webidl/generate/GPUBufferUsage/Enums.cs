@@ -8,13 +8,13 @@ namespace ECMAScript.GPUBufferUsage;
 [String]
 public enum GPUAddressMode
 {
-    [Description("@#ClampToEdge")]
+    [Description("@#clamp-to-edge")]
     ClampToEdge = 0,
 
-    [Description("@#Repeat")]
+    [Description("@#repeat")]
     Repeat = 1,
 
-    [Description("@#MirrorRepeat")]
+    [Description("@#mirror-repeat")]
     MirrorRepeat = 2
 }
 
@@ -26,7 +26,7 @@ public enum GPUAddressMode
 [String]
 public enum GPUAutoLayoutMode
 {
-    [Description("@#Auto")]
+    [Description("@#auto")]
     Auto = 0
 }
 
@@ -38,43 +38,43 @@ public enum GPUAutoLayoutMode
 [String]
 public enum GPUBlendFactor
 {
-    [Description("@#Zero")]
+    [Description("@#zero")]
     Zero = 0,
 
-    [Description("@#One")]
+    [Description("@#one")]
     One = 1,
 
-    [Description("@#Src")]
+    [Description("@#src")]
     Src = 2,
 
-    [Description("@#OneMinusSrc")]
+    [Description("@#one-minus-src")]
     OneMinusSrc = 3,
 
-    [Description("@#SrcAlpha")]
+    [Description("@#src-alpha")]
     SrcAlpha = 4,
 
-    [Description("@#OneMinusSrcAlpha")]
+    [Description("@#one-minus-src-alpha")]
     OneMinusSrcAlpha = 5,
 
-    [Description("@#Dst")]
+    [Description("@#dst")]
     Dst = 6,
 
-    [Description("@#OneMinusDst")]
+    [Description("@#one-minus-dst")]
     OneMinusDst = 7,
 
-    [Description("@#DstAlpha")]
+    [Description("@#dst-alpha")]
     DstAlpha = 8,
 
-    [Description("@#OneMinusDstAlpha")]
+    [Description("@#one-minus-dst-alpha")]
     OneMinusDstAlpha = 9,
 
-    [Description("@#SrcAlphaSaturated")]
+    [Description("@#src-alpha-saturated")]
     SrcAlphaSaturated = 10,
 
-    [Description("@#Constant")]
+    [Description("@#constant")]
     Constant = 11,
 
-    [Description("@#OneMinusConstant")]
+    [Description("@#one-minus-constant")]
     OneMinusConstant = 12
 }
 
@@ -86,19 +86,19 @@ public enum GPUBlendFactor
 [String]
 public enum GPUBlendOperation
 {
-    [Description("@#Add")]
+    [Description("@#add")]
     Add = 0,
 
-    [Description("@#Subtract")]
+    [Description("@#subtract")]
     Subtract = 1,
 
-    [Description("@#ReverseSubtract")]
+    [Description("@#reverse-subtract")]
     ReverseSubtract = 2,
 
-    [Description("@#Min")]
+    [Description("@#min")]
     Min = 3,
 
-    [Description("@#Max")]
+    [Description("@#max")]
     Max = 4
 }
 
@@ -110,13 +110,13 @@ public enum GPUBlendOperation
 [String]
 public enum GPUBufferBindingType
 {
-    [Description("@#Uniform")]
+    [Description("@#uniform")]
     Uniform = 0,
 
-    [Description("@#Storage")]
+    [Description("@#storage")]
     Storage = 1,
 
-    [Description("@#ReadOnlyStorage")]
+    [Description("@#read-only-storage")]
     ReadOnlyStorage = 2
 }
 
@@ -128,13 +128,13 @@ public enum GPUBufferBindingType
 [String]
 public enum GPUBufferMapState
 {
-    [Description("@#Unmapped")]
+    [Description("@#unmapped")]
     Unmapped = 0,
 
-    [Description("@#Pending")]
+    [Description("@#pending")]
     Pending = 1,
 
-    [Description("@#Mapped")]
+    [Description("@#mapped")]
     Mapped = 2
 }
 
@@ -146,10 +146,10 @@ public enum GPUBufferMapState
 [String]
 public enum GPUCanvasAlphaMode
 {
-    [Description("@#Opaque")]
+    [Description("@#opaque")]
     Opaque = 0,
 
-    [Description("@#Premultiplied")]
+    [Description("@#premultiplied")]
     Premultiplied = 1
 }
 
@@ -161,28 +161,28 @@ public enum GPUCanvasAlphaMode
 [String]
 public enum GPUCompareFunction
 {
-    [Description("@#Never")]
+    [Description("@#never")]
     Never = 0,
 
-    [Description("@#Less")]
+    [Description("@#less")]
     Less = 1,
 
-    [Description("@#Equal")]
+    [Description("@#equal")]
     Equal = 2,
 
-    [Description("@#LessEqual")]
+    [Description("@#less-equal")]
     LessEqual = 3,
 
-    [Description("@#Greater")]
+    [Description("@#greater")]
     Greater = 4,
 
-    [Description("@#NotEqual")]
+    [Description("@#not-equal")]
     NotEqual = 5,
 
-    [Description("@#GreaterEqual")]
+    [Description("@#greater-equal")]
     GreaterEqual = 6,
 
-    [Description("@#Always")]
+    [Description("@#always")]
     Always = 7
 }
 
@@ -194,13 +194,13 @@ public enum GPUCompareFunction
 [String]
 public enum GPUCompilationMessageType
 {
-    [Description("@#Error")]
+    [Description("@#error")]
     Error = 0,
 
-    [Description("@#Warning")]
+    [Description("@#warning")]
     Warning = 1,
 
-    [Description("@#Info")]
+    [Description("@#info")]
     Info = 2
 }
 
@@ -212,13 +212,13 @@ public enum GPUCompilationMessageType
 [String]
 public enum GPUCullMode
 {
-    [Description("@#None")]
+    [Description("@#none")]
     None = 0,
 
-    [Description("@#Front")]
+    [Description("@#front")]
     Front = 1,
 
-    [Description("@#Back")]
+    [Description("@#back")]
     Back = 2
 }
 
@@ -230,10 +230,10 @@ public enum GPUCullMode
 [String]
 public enum GPUDeviceLostReason
 {
-    [Description("@#Unknown")]
+    [Description("@#unknown")]
     Unknown = 0,
 
-    [Description("@#Destroyed")]
+    [Description("@#destroyed")]
     Destroyed = 1
 }
 
@@ -245,13 +245,13 @@ public enum GPUDeviceLostReason
 [String]
 public enum GPUErrorFilter
 {
-    [Description("@#Validation")]
+    [Description("@#validation")]
     Validation = 0,
 
-    [Description("@#OutOfMemory")]
+    [Description("@#out-of-memory")]
     OutOfMemory = 1,
 
-    [Description("@#Internal")]
+    [Description("@#internal")]
     Internal = 2
 }
 
@@ -263,37 +263,37 @@ public enum GPUErrorFilter
 [String]
 public enum GPUFeatureName
 {
-    [Description("@#DepthClipControl")]
+    [Description("@#depth-clip-control")]
     DepthClipControl = 0,
 
-    [Description("@#Depth32floatStencil8")]
+    [Description("@#depth32float-stencil8")]
     Depth32floatStencil8 = 1,
 
-    [Description("@#TextureCompressionBc")]
+    [Description("@#texture-compression-bc")]
     TextureCompressionBc = 2,
 
-    [Description("@#TextureCompressionEtc2")]
+    [Description("@#texture-compression-etc2")]
     TextureCompressionEtc2 = 3,
 
-    [Description("@#TextureCompressionAstc")]
+    [Description("@#texture-compression-astc")]
     TextureCompressionAstc = 4,
 
-    [Description("@#TimestampQuery")]
+    [Description("@#timestamp-query")]
     TimestampQuery = 5,
 
-    [Description("@#IndirectFirstInstance")]
+    [Description("@#indirect-first-instance")]
     IndirectFirstInstance = 6,
 
-    [Description("@#ShaderF16")]
+    [Description("@#shader-f16")]
     ShaderF16 = 7,
 
-    [Description("@#Rg11b10ufloatRenderable")]
+    [Description("@#rg11b10ufloat-renderable")]
     Rg11b10ufloatRenderable = 8,
 
-    [Description("@#Bgra8unormStorage")]
+    [Description("@#bgra8unorm-storage")]
     Bgra8unormStorage = 9,
 
-    [Description("@#Float32Filterable")]
+    [Description("@#float32-filterable")]
     Float32Filterable = 10
 }
 
@@ -305,10 +305,10 @@ public enum GPUFeatureName
 [String]
 public enum GPUFilterMode
 {
-    [Description("@#Nearest")]
+    [Description("@#nearest")]
     Nearest = 0,
 
-    [Description("@#Linear")]
+    [Description("@#linear")]
     Linear = 1
 }
 
@@ -320,10 +320,10 @@ public enum GPUFilterMode
 [String]
 public enum GPUFrontFace
 {
-    [Description("@#Ccw")]
+    [Description("@#ccw")]
     Ccw = 0,
 
-    [Description("@#Cw")]
+    [Description("@#cw")]
     Cw = 1
 }
 
@@ -335,10 +335,10 @@ public enum GPUFrontFace
 [String]
 public enum GPUIndexFormat
 {
-    [Description("@#Uint16")]
+    [Description("@#uint16")]
     Uint16 = 0,
 
-    [Description("@#Uint32")]
+    [Description("@#uint32")]
     Uint32 = 1
 }
 
@@ -350,10 +350,10 @@ public enum GPUIndexFormat
 [String]
 public enum GPULoadOp
 {
-    [Description("@#Load")]
+    [Description("@#load")]
     Load = 0,
 
-    [Description("@#Clear")]
+    [Description("@#clear")]
     Clear = 1
 }
 
@@ -365,10 +365,10 @@ public enum GPULoadOp
 [String]
 public enum GPUMipmapFilterMode
 {
-    [Description("@#Nearest")]
+    [Description("@#nearest")]
     Nearest = 0,
 
-    [Description("@#Linear")]
+    [Description("@#linear")]
     Linear = 1
 }
 
@@ -380,10 +380,10 @@ public enum GPUMipmapFilterMode
 [String]
 public enum GPUPipelineErrorReason
 {
-    [Description("@#Validation")]
+    [Description("@#validation")]
     Validation = 0,
 
-    [Description("@#Internal")]
+    [Description("@#internal")]
     Internal = 1
 }
 
@@ -395,10 +395,10 @@ public enum GPUPipelineErrorReason
 [String]
 public enum GPUPowerPreference
 {
-    [Description("@#LowPower")]
+    [Description("@#low-power")]
     LowPower = 0,
 
-    [Description("@#HighPerformance")]
+    [Description("@#high-performance")]
     HighPerformance = 1
 }
 
@@ -410,19 +410,19 @@ public enum GPUPowerPreference
 [String]
 public enum GPUPrimitiveTopology
 {
-    [Description("@#PointList")]
+    [Description("@#point-list")]
     PointList = 0,
 
-    [Description("@#LineList")]
+    [Description("@#line-list")]
     LineList = 1,
 
-    [Description("@#LineStrip")]
+    [Description("@#line-strip")]
     LineStrip = 2,
 
-    [Description("@#TriangleList")]
+    [Description("@#triangle-list")]
     TriangleList = 3,
 
-    [Description("@#TriangleStrip")]
+    [Description("@#triangle-strip")]
     TriangleStrip = 4
 }
 
@@ -434,10 +434,10 @@ public enum GPUPrimitiveTopology
 [String]
 public enum GPUQueryType
 {
-    [Description("@#Occlusion")]
+    [Description("@#occlusion")]
     Occlusion = 0,
 
-    [Description("@#Timestamp")]
+    [Description("@#timestamp")]
     Timestamp = 1
 }
 
@@ -449,13 +449,13 @@ public enum GPUQueryType
 [String]
 public enum GPUSamplerBindingType
 {
-    [Description("@#Filtering")]
+    [Description("@#filtering")]
     Filtering = 0,
 
-    [Description("@#NonFiltering")]
+    [Description("@#non-filtering")]
     NonFiltering = 1,
 
-    [Description("@#Comparison")]
+    [Description("@#comparison")]
     Comparison = 2
 }
 
@@ -467,28 +467,28 @@ public enum GPUSamplerBindingType
 [String]
 public enum GPUStencilOperation
 {
-    [Description("@#Keep")]
+    [Description("@#keep")]
     Keep = 0,
 
-    [Description("@#Zero")]
+    [Description("@#zero")]
     Zero = 1,
 
-    [Description("@#Replace")]
+    [Description("@#replace")]
     Replace = 2,
 
-    [Description("@#Invert")]
+    [Description("@#invert")]
     Invert = 3,
 
-    [Description("@#IncrementClamp")]
+    [Description("@#increment-clamp")]
     IncrementClamp = 4,
 
-    [Description("@#DecrementClamp")]
+    [Description("@#decrement-clamp")]
     DecrementClamp = 5,
 
-    [Description("@#IncrementWrap")]
+    [Description("@#increment-wrap")]
     IncrementWrap = 6,
 
-    [Description("@#DecrementWrap")]
+    [Description("@#decrement-wrap")]
     DecrementWrap = 7
 }
 
@@ -500,13 +500,13 @@ public enum GPUStencilOperation
 [String]
 public enum GPUStorageTextureAccess
 {
-    [Description("@#WriteOnly")]
+    [Description("@#write-only")]
     WriteOnly = 0,
 
-    [Description("@#ReadOnly")]
+    [Description("@#read-only")]
     ReadOnly = 1,
 
-    [Description("@#ReadWrite")]
+    [Description("@#read-write")]
     ReadWrite = 2
 }
 
@@ -518,10 +518,10 @@ public enum GPUStorageTextureAccess
 [String]
 public enum GPUStoreOp
 {
-    [Description("@#Store")]
+    [Description("@#store")]
     Store = 0,
 
-    [Description("@#Discard")]
+    [Description("@#discard")]
     Discard = 1
 }
 
@@ -533,13 +533,13 @@ public enum GPUStoreOp
 [String]
 public enum GPUTextureAspect
 {
-    [Description("@#All")]
+    [Description("@#all")]
     All = 0,
 
-    [Description("@#StencilOnly")]
+    [Description("@#stencil-only")]
     StencilOnly = 1,
 
-    [Description("@#DepthOnly")]
+    [Description("@#depth-only")]
     DepthOnly = 2
 }
 
@@ -551,13 +551,13 @@ public enum GPUTextureAspect
 [String]
 public enum GPUTextureDimension
 {
-    [Description("@#_1d")]
+    [Description("@#1d")]
     _1d = 0,
 
-    [Description("@#_2d")]
+    [Description("@#2d")]
     _2d = 1,
 
-    [Description("@#_3d")]
+    [Description("@#3d")]
     _3d = 2
 }
 
@@ -569,289 +569,289 @@ public enum GPUTextureDimension
 [String]
 public enum GPUTextureFormat
 {
-    [Description("@#R8unorm")]
+    [Description("@#r8unorm")]
     R8unorm = 0,
 
-    [Description("@#R8snorm")]
+    [Description("@#r8snorm")]
     R8snorm = 1,
 
-    [Description("@#R8uint")]
+    [Description("@#r8uint")]
     R8uint = 2,
 
-    [Description("@#R8sint")]
+    [Description("@#r8sint")]
     R8sint = 3,
 
-    [Description("@#R16uint")]
+    [Description("@#r16uint")]
     R16uint = 4,
 
-    [Description("@#R16sint")]
+    [Description("@#r16sint")]
     R16sint = 5,
 
-    [Description("@#R16float")]
+    [Description("@#r16float")]
     R16float = 6,
 
-    [Description("@#Rg8unorm")]
+    [Description("@#rg8unorm")]
     Rg8unorm = 7,
 
-    [Description("@#Rg8snorm")]
+    [Description("@#rg8snorm")]
     Rg8snorm = 8,
 
-    [Description("@#Rg8uint")]
+    [Description("@#rg8uint")]
     Rg8uint = 9,
 
-    [Description("@#Rg8sint")]
+    [Description("@#rg8sint")]
     Rg8sint = 10,
 
-    [Description("@#R32uint")]
+    [Description("@#r32uint")]
     R32uint = 11,
 
-    [Description("@#R32sint")]
+    [Description("@#r32sint")]
     R32sint = 12,
 
-    [Description("@#R32float")]
+    [Description("@#r32float")]
     R32float = 13,
 
-    [Description("@#Rg16uint")]
+    [Description("@#rg16uint")]
     Rg16uint = 14,
 
-    [Description("@#Rg16sint")]
+    [Description("@#rg16sint")]
     Rg16sint = 15,
 
-    [Description("@#Rg16float")]
+    [Description("@#rg16float")]
     Rg16float = 16,
 
-    [Description("@#Rgba8unorm")]
+    [Description("@#rgba8unorm")]
     Rgba8unorm = 17,
 
-    [Description("@#Rgba8unormSrgb")]
+    [Description("@#rgba8unorm-srgb")]
     Rgba8unormSrgb = 18,
 
-    [Description("@#Rgba8snorm")]
+    [Description("@#rgba8snorm")]
     Rgba8snorm = 19,
 
-    [Description("@#Rgba8uint")]
+    [Description("@#rgba8uint")]
     Rgba8uint = 20,
 
-    [Description("@#Rgba8sint")]
+    [Description("@#rgba8sint")]
     Rgba8sint = 21,
 
-    [Description("@#Bgra8unorm")]
+    [Description("@#bgra8unorm")]
     Bgra8unorm = 22,
 
-    [Description("@#Bgra8unormSrgb")]
+    [Description("@#bgra8unorm-srgb")]
     Bgra8unormSrgb = 23,
 
-    [Description("@#Rgb9e5ufloat")]
+    [Description("@#rgb9e5ufloat")]
     Rgb9e5ufloat = 24,
 
-    [Description("@#Rgb10a2uint")]
+    [Description("@#rgb10a2uint")]
     Rgb10a2uint = 25,
 
-    [Description("@#Rgb10a2unorm")]
+    [Description("@#rgb10a2unorm")]
     Rgb10a2unorm = 26,
 
-    [Description("@#Rg11b10ufloat")]
+    [Description("@#rg11b10ufloat")]
     Rg11b10ufloat = 27,
 
-    [Description("@#Rg32uint")]
+    [Description("@#rg32uint")]
     Rg32uint = 28,
 
-    [Description("@#Rg32sint")]
+    [Description("@#rg32sint")]
     Rg32sint = 29,
 
-    [Description("@#Rg32float")]
+    [Description("@#rg32float")]
     Rg32float = 30,
 
-    [Description("@#Rgba16uint")]
+    [Description("@#rgba16uint")]
     Rgba16uint = 31,
 
-    [Description("@#Rgba16sint")]
+    [Description("@#rgba16sint")]
     Rgba16sint = 32,
 
-    [Description("@#Rgba16float")]
+    [Description("@#rgba16float")]
     Rgba16float = 33,
 
-    [Description("@#Rgba32uint")]
+    [Description("@#rgba32uint")]
     Rgba32uint = 34,
 
-    [Description("@#Rgba32sint")]
+    [Description("@#rgba32sint")]
     Rgba32sint = 35,
 
-    [Description("@#Rgba32float")]
+    [Description("@#rgba32float")]
     Rgba32float = 36,
 
-    [Description("@#Stencil8")]
+    [Description("@#stencil8")]
     Stencil8 = 37,
 
-    [Description("@#Depth16unorm")]
+    [Description("@#depth16unorm")]
     Depth16unorm = 38,
 
-    [Description("@#Depth24plus")]
+    [Description("@#depth24plus")]
     Depth24plus = 39,
 
-    [Description("@#Depth24plusStencil8")]
+    [Description("@#depth24plus-stencil8")]
     Depth24plusStencil8 = 40,
 
-    [Description("@#Depth32float")]
+    [Description("@#depth32float")]
     Depth32float = 41,
 
-    [Description("@#Depth32floatStencil8")]
+    [Description("@#depth32float-stencil8")]
     Depth32floatStencil8 = 42,
 
-    [Description("@#Bc1RgbaUnorm")]
+    [Description("@#bc1-rgba-unorm")]
     Bc1RgbaUnorm = 43,
 
-    [Description("@#Bc1RgbaUnormSrgb")]
+    [Description("@#bc1-rgba-unorm-srgb")]
     Bc1RgbaUnormSrgb = 44,
 
-    [Description("@#Bc2RgbaUnorm")]
+    [Description("@#bc2-rgba-unorm")]
     Bc2RgbaUnorm = 45,
 
-    [Description("@#Bc2RgbaUnormSrgb")]
+    [Description("@#bc2-rgba-unorm-srgb")]
     Bc2RgbaUnormSrgb = 46,
 
-    [Description("@#Bc3RgbaUnorm")]
+    [Description("@#bc3-rgba-unorm")]
     Bc3RgbaUnorm = 47,
 
-    [Description("@#Bc3RgbaUnormSrgb")]
+    [Description("@#bc3-rgba-unorm-srgb")]
     Bc3RgbaUnormSrgb = 48,
 
-    [Description("@#Bc4RUnorm")]
+    [Description("@#bc4-r-unorm")]
     Bc4RUnorm = 49,
 
-    [Description("@#Bc4RSnorm")]
+    [Description("@#bc4-r-snorm")]
     Bc4RSnorm = 50,
 
-    [Description("@#Bc5RgUnorm")]
+    [Description("@#bc5-rg-unorm")]
     Bc5RgUnorm = 51,
 
-    [Description("@#Bc5RgSnorm")]
+    [Description("@#bc5-rg-snorm")]
     Bc5RgSnorm = 52,
 
-    [Description("@#Bc6hRgbUfloat")]
+    [Description("@#bc6h-rgb-ufloat")]
     Bc6hRgbUfloat = 53,
 
-    [Description("@#Bc6hRgbFloat")]
+    [Description("@#bc6h-rgb-float")]
     Bc6hRgbFloat = 54,
 
-    [Description("@#Bc7RgbaUnorm")]
+    [Description("@#bc7-rgba-unorm")]
     Bc7RgbaUnorm = 55,
 
-    [Description("@#Bc7RgbaUnormSrgb")]
+    [Description("@#bc7-rgba-unorm-srgb")]
     Bc7RgbaUnormSrgb = 56,
 
-    [Description("@#Etc2Rgb8unorm")]
+    [Description("@#etc2-rgb8unorm")]
     Etc2Rgb8unorm = 57,
 
-    [Description("@#Etc2Rgb8unormSrgb")]
+    [Description("@#etc2-rgb8unorm-srgb")]
     Etc2Rgb8unormSrgb = 58,
 
-    [Description("@#Etc2Rgb8a1unorm")]
+    [Description("@#etc2-rgb8a1unorm")]
     Etc2Rgb8a1unorm = 59,
 
-    [Description("@#Etc2Rgb8a1unormSrgb")]
+    [Description("@#etc2-rgb8a1unorm-srgb")]
     Etc2Rgb8a1unormSrgb = 60,
 
-    [Description("@#Etc2Rgba8unorm")]
+    [Description("@#etc2-rgba8unorm")]
     Etc2Rgba8unorm = 61,
 
-    [Description("@#Etc2Rgba8unormSrgb")]
+    [Description("@#etc2-rgba8unorm-srgb")]
     Etc2Rgba8unormSrgb = 62,
 
-    [Description("@#EacR11unorm")]
+    [Description("@#eac-r11unorm")]
     EacR11unorm = 63,
 
-    [Description("@#EacR11snorm")]
+    [Description("@#eac-r11snorm")]
     EacR11snorm = 64,
 
-    [Description("@#EacRg11unorm")]
+    [Description("@#eac-rg11unorm")]
     EacRg11unorm = 65,
 
-    [Description("@#EacRg11snorm")]
+    [Description("@#eac-rg11snorm")]
     EacRg11snorm = 66,
 
-    [Description("@#Astc4x4Unorm")]
+    [Description("@#astc-4x4-unorm")]
     Astc4x4Unorm = 67,
 
-    [Description("@#Astc4x4UnormSrgb")]
+    [Description("@#astc-4x4-unorm-srgb")]
     Astc4x4UnormSrgb = 68,
 
-    [Description("@#Astc5x4Unorm")]
+    [Description("@#astc-5x4-unorm")]
     Astc5x4Unorm = 69,
 
-    [Description("@#Astc5x4UnormSrgb")]
+    [Description("@#astc-5x4-unorm-srgb")]
     Astc5x4UnormSrgb = 70,
 
-    [Description("@#Astc5x5Unorm")]
+    [Description("@#astc-5x5-unorm")]
     Astc5x5Unorm = 71,
 
-    [Description("@#Astc5x5UnormSrgb")]
+    [Description("@#astc-5x5-unorm-srgb")]
     Astc5x5UnormSrgb = 72,
 
-    [Description("@#Astc6x5Unorm")]
+    [Description("@#astc-6x5-unorm")]
     Astc6x5Unorm = 73,
 
-    [Description("@#Astc6x5UnormSrgb")]
+    [Description("@#astc-6x5-unorm-srgb")]
     Astc6x5UnormSrgb = 74,
 
-    [Description("@#Astc6x6Unorm")]
+    [Description("@#astc-6x6-unorm")]
     Astc6x6Unorm = 75,
 
-    [Description("@#Astc6x6UnormSrgb")]
+    [Description("@#astc-6x6-unorm-srgb")]
     Astc6x6UnormSrgb = 76,
 
-    [Description("@#Astc8x5Unorm")]
+    [Description("@#astc-8x5-unorm")]
     Astc8x5Unorm = 77,
 
-    [Description("@#Astc8x5UnormSrgb")]
+    [Description("@#astc-8x5-unorm-srgb")]
     Astc8x5UnormSrgb = 78,
 
-    [Description("@#Astc8x6Unorm")]
+    [Description("@#astc-8x6-unorm")]
     Astc8x6Unorm = 79,
 
-    [Description("@#Astc8x6UnormSrgb")]
+    [Description("@#astc-8x6-unorm-srgb")]
     Astc8x6UnormSrgb = 80,
 
-    [Description("@#Astc8x8Unorm")]
+    [Description("@#astc-8x8-unorm")]
     Astc8x8Unorm = 81,
 
-    [Description("@#Astc8x8UnormSrgb")]
+    [Description("@#astc-8x8-unorm-srgb")]
     Astc8x8UnormSrgb = 82,
 
-    [Description("@#Astc10x5Unorm")]
+    [Description("@#astc-10x5-unorm")]
     Astc10x5Unorm = 83,
 
-    [Description("@#Astc10x5UnormSrgb")]
+    [Description("@#astc-10x5-unorm-srgb")]
     Astc10x5UnormSrgb = 84,
 
-    [Description("@#Astc10x6Unorm")]
+    [Description("@#astc-10x6-unorm")]
     Astc10x6Unorm = 85,
 
-    [Description("@#Astc10x6UnormSrgb")]
+    [Description("@#astc-10x6-unorm-srgb")]
     Astc10x6UnormSrgb = 86,
 
-    [Description("@#Astc10x8Unorm")]
+    [Description("@#astc-10x8-unorm")]
     Astc10x8Unorm = 87,
 
-    [Description("@#Astc10x8UnormSrgb")]
+    [Description("@#astc-10x8-unorm-srgb")]
     Astc10x8UnormSrgb = 88,
 
-    [Description("@#Astc10x10Unorm")]
+    [Description("@#astc-10x10-unorm")]
     Astc10x10Unorm = 89,
 
-    [Description("@#Astc10x10UnormSrgb")]
+    [Description("@#astc-10x10-unorm-srgb")]
     Astc10x10UnormSrgb = 90,
 
-    [Description("@#Astc12x10Unorm")]
+    [Description("@#astc-12x10-unorm")]
     Astc12x10Unorm = 91,
 
-    [Description("@#Astc12x10UnormSrgb")]
+    [Description("@#astc-12x10-unorm-srgb")]
     Astc12x10UnormSrgb = 92,
 
-    [Description("@#Astc12x12Unorm")]
+    [Description("@#astc-12x12-unorm")]
     Astc12x12Unorm = 93,
 
-    [Description("@#Astc12x12UnormSrgb")]
+    [Description("@#astc-12x12-unorm-srgb")]
     Astc12x12UnormSrgb = 94
 }
 
@@ -863,19 +863,19 @@ public enum GPUTextureFormat
 [String]
 public enum GPUTextureSampleType
 {
-    [Description("@#Float")]
+    [Description("@#float")]
     Float = 0,
 
-    [Description("@#UnfilterableFloat")]
+    [Description("@#unfilterable-float")]
     UnfilterableFloat = 1,
 
-    [Description("@#Depth")]
+    [Description("@#depth")]
     Depth = 2,
 
-    [Description("@#Sint")]
+    [Description("@#sint")]
     Sint = 3,
 
-    [Description("@#Uint")]
+    [Description("@#uint")]
     Uint = 4
 }
 
@@ -887,22 +887,22 @@ public enum GPUTextureSampleType
 [String]
 public enum GPUTextureViewDimension
 {
-    [Description("@#_1d")]
+    [Description("@#1d")]
     _1d = 0,
 
-    [Description("@#_2d")]
+    [Description("@#2d")]
     _2d = 1,
 
-    [Description("@#_2dArray")]
+    [Description("@#2d-array")]
     _2dArray = 2,
 
-    [Description("@#Cube")]
+    [Description("@#cube")]
     Cube = 3,
 
-    [Description("@#CubeArray")]
+    [Description("@#cube-array")]
     CubeArray = 4,
 
-    [Description("@#_3d")]
+    [Description("@#3d")]
     _3d = 5
 }
 
@@ -914,97 +914,97 @@ public enum GPUTextureViewDimension
 [String]
 public enum GPUVertexFormat
 {
-    [Description("@#Uint8x2")]
+    [Description("@#uint8x2")]
     Uint8x2 = 0,
 
-    [Description("@#Uint8x4")]
+    [Description("@#uint8x4")]
     Uint8x4 = 1,
 
-    [Description("@#Sint8x2")]
+    [Description("@#sint8x2")]
     Sint8x2 = 2,
 
-    [Description("@#Sint8x4")]
+    [Description("@#sint8x4")]
     Sint8x4 = 3,
 
-    [Description("@#Unorm8x2")]
+    [Description("@#unorm8x2")]
     Unorm8x2 = 4,
 
-    [Description("@#Unorm8x4")]
+    [Description("@#unorm8x4")]
     Unorm8x4 = 5,
 
-    [Description("@#Snorm8x2")]
+    [Description("@#snorm8x2")]
     Snorm8x2 = 6,
 
-    [Description("@#Snorm8x4")]
+    [Description("@#snorm8x4")]
     Snorm8x4 = 7,
 
-    [Description("@#Uint16x2")]
+    [Description("@#uint16x2")]
     Uint16x2 = 8,
 
-    [Description("@#Uint16x4")]
+    [Description("@#uint16x4")]
     Uint16x4 = 9,
 
-    [Description("@#Sint16x2")]
+    [Description("@#sint16x2")]
     Sint16x2 = 10,
 
-    [Description("@#Sint16x4")]
+    [Description("@#sint16x4")]
     Sint16x4 = 11,
 
-    [Description("@#Unorm16x2")]
+    [Description("@#unorm16x2")]
     Unorm16x2 = 12,
 
-    [Description("@#Unorm16x4")]
+    [Description("@#unorm16x4")]
     Unorm16x4 = 13,
 
-    [Description("@#Snorm16x2")]
+    [Description("@#snorm16x2")]
     Snorm16x2 = 14,
 
-    [Description("@#Snorm16x4")]
+    [Description("@#snorm16x4")]
     Snorm16x4 = 15,
 
-    [Description("@#Float16x2")]
+    [Description("@#float16x2")]
     Float16x2 = 16,
 
-    [Description("@#Float16x4")]
+    [Description("@#float16x4")]
     Float16x4 = 17,
 
-    [Description("@#Float32")]
+    [Description("@#float32")]
     Float32 = 18,
 
-    [Description("@#Float32x2")]
+    [Description("@#float32x2")]
     Float32x2 = 19,
 
-    [Description("@#Float32x3")]
+    [Description("@#float32x3")]
     Float32x3 = 20,
 
-    [Description("@#Float32x4")]
+    [Description("@#float32x4")]
     Float32x4 = 21,
 
-    [Description("@#Uint32")]
+    [Description("@#uint32")]
     Uint32 = 22,
 
-    [Description("@#Uint32x2")]
+    [Description("@#uint32x2")]
     Uint32x2 = 23,
 
-    [Description("@#Uint32x3")]
+    [Description("@#uint32x3")]
     Uint32x3 = 24,
 
-    [Description("@#Uint32x4")]
+    [Description("@#uint32x4")]
     Uint32x4 = 25,
 
-    [Description("@#Sint32")]
+    [Description("@#sint32")]
     Sint32 = 26,
 
-    [Description("@#Sint32x2")]
+    [Description("@#sint32x2")]
     Sint32x2 = 27,
 
-    [Description("@#Sint32x3")]
+    [Description("@#sint32x3")]
     Sint32x3 = 28,
 
-    [Description("@#Sint32x4")]
+    [Description("@#sint32x4")]
     Sint32x4 = 29,
 
-    [Description("@#Unorm1010102")]
+    [Description("@#unorm10-10-10-2")]
     Unorm1010102 = 30
 }
 
@@ -1016,9 +1016,9 @@ public enum GPUVertexFormat
 [String]
 public enum GPUVertexStepMode
 {
-    [Description("@#Vertex")]
+    [Description("@#vertex")]
     Vertex = 0,
 
-    [Description("@#Instance")]
+    [Description("@#instance")]
     Instance = 1
 }

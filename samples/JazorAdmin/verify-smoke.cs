@@ -184,6 +184,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(errorPageModule, "aria-describedby", "error description accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "data-error-action", "error recovery action in JazorAdmin error page module");
     AssertContains(apiClientModule, "getSession", "session transport in JazorAdmin API client module");
+    AssertContains(apiClientModule, "credentials: \"same-origin\"", "Fetch credentials WebIDL enum mapping in JazorAdmin API client module");
+    AssertDoesNotContain(apiClientModule, "headers: null", "omitted optional Fetch headers in JazorAdmin API client module");
+    AssertDoesNotContain(apiClientModule, "body: null", "omitted optional Fetch body in JazorAdmin API client module");
     AssertContains(organizationModule, "createChildOrganization", "child organization command in organization management module");
     AssertContains(organizationModule, "scope.onParametersSet();", "route parameter lifecycle in organization management module");
     AssertContains(accessControlModule, "replaceRoleGrants", "role grant command in access control management module");
