@@ -212,7 +212,22 @@ internal sealed record VerifyNuGetPackageOptions(
             packageIds.Add("Jazor");
         }
 
-        return new VerifyNuGetPackageOptions(configuration, outputDirectory, packageVersion, packageIds);
+        return new VerifyNuGetPackageOptions(
+            configuration,
+            outputDirectory,
+            packageVersion,
+            packageIds.Select(NormalizePackageId).Distinct(StringComparer.Ordinal).ToArray());
+    }
+
+    static string NormalizePackageId(string packageId)
+    {
+        if (packageId.Equals("Jazor", StringComparison.OrdinalIgnoreCase))
+            return "Jazor";
+        if (packageId.Equals("Jazor.Vue", StringComparison.OrdinalIgnoreCase) ||
+            packageId.Equals("jazor-vue", StringComparison.OrdinalIgnoreCase))
+            return "Jazor.Vue";
+
+        throw new InvalidOperationException("Package verification is not defined for: " + packageId);
     }
 
     static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)

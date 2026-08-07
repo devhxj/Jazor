@@ -7,7 +7,7 @@
     <CodeAnalysisVersion>5.9.0-1.26359.118</CodeAnalysisVersion>
     <Net110AssembliesVersion>1.8.7</Net110AssembliesVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
-    <MinVerVersion>7.0.0</MinVerVersion>
+    <MinVerPackageVersion>7.0.0</MinVerPackageVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 

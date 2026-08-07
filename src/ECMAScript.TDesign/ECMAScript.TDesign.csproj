@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="$(MinVerVersion)" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
