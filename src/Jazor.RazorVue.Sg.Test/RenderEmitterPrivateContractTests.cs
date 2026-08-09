@@ -415,6 +415,52 @@ public sealed class RenderEmitterPrivateContractTests
         StringAssert.Contains(rendered, "captureSecond", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void EmitterMemberAndComponentFrameHelpers_ResolveBoundaryShapesDeterministically()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var indexer = host.GetMembers().OfType<IPropertySymbol>().Single(static property => property.IsIndexer);
+
+        AssertReturnedPropertyValue(emitter, GetProperty(host, "AccessorExpressionFragment"));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedPropertyValue",
+            new object?[] { indexer, null }));
+        AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "GenericExpressionFactory"));
+        AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "GenericBlockLiteralFactory"));
+
+        var parameterNames = ImmutableDictionary<string, string>.Empty
+            .Add("TitleContent", "title");
+        var componentFrame = CreateComponentFrame(parameterNames);
+        Assert.AreEqual("title", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "TitleContent"));
+        Assert.AreEqual("default", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "ChildContent"));
+        Assert.AreEqual("footerContent", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "FooterContent"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(componentFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "h(component, null)",
+            StringComparison.Ordinal);
+
+        AddFrameChild(componentFrame, new Identifier("first"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(componentFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "first",
+            StringComparison.Ordinal);
+        AddFrameChild(componentFrame, new Identifier("second"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(componentFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "second",
+            StringComparison.Ordinal);
+
+        var slotFrame = CreateComponentFrame(parameterNames);
+        AddComponentSlot(slotFrame, "header", CreateDirectRenderFragment(new Identifier("headerContent"), parameterName: null));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(slotFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "header",
+            StringComparison.Ordinal);
+    }
+
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
     {
         var arguments = new object?[] { operation, null };
@@ -506,6 +552,39 @@ public sealed class RenderEmitterPrivateContractTests
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single(candidate => candidate.GetParameters().Length == 2);
         return constructor.Invoke([new StringLiteral("div", "\"div\""), "div"]);
+    }
+
+    private static object CreateComponentFrame(ImmutableDictionary<string, string> parameterNames)
+    {
+        var componentFrameType = typeof(RenderEmitter).GetNestedType("ComponentFrame", BindingFlags.NonPublic);
+        Assert.IsNotNull(componentFrameType);
+        var constructor = componentFrameType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 2);
+        return constructor.Invoke([new Identifier("component"), parameterNames]);
+    }
+
+    private static void AddFrameChild(object frame, Expression child)
+    {
+        var children = frame.GetType().GetProperty("Children", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(children);
+        var values = children!.GetValue(frame) as System.Collections.IList;
+        Assert.IsNotNull(values);
+        _ = values!.Add(child);
+    }
+
+    private static void AddComponentSlot(object componentFrame, string name, object fragment)
+    {
+        var slots = componentFrame.GetType().GetProperty("Slots", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(slots);
+        var values = slots!.GetValue(componentFrame) as System.Collections.IList;
+        Assert.IsNotNull(values);
+        var slotType = typeof(RenderEmitter).GetNestedType("DirectSlot", BindingFlags.NonPublic);
+        Assert.IsNotNull(slotType);
+        var constructor = slotType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 2);
+        _ = values!.Add(constructor.Invoke([name, fragment]));
     }
 
     private static object CreateDirectAttribute(string name, Expression value)
@@ -657,6 +736,20 @@ public sealed class RenderEmitterPrivateContractTests
                 }
 
                 public RenderFragment ExpressionFactory() => builder => { };
+
+                public RenderFragment AccessorExpressionFragment
+                {
+                    get => builder => { };
+                }
+
+                public RenderFragment this[int index] => builder => { };
+
+                public RenderFragment<int> GenericExpressionFactory() => value => builder => { };
+
+                public RenderFragment<int> GenericBlockLiteralFactory()
+                {
+                    return value => builder => { };
+                }
 
                 public RenderFragment BlockLiteralFactory()
                 {
