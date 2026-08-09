@@ -492,6 +492,67 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             GetMethodSymbol(fixture, "OtherInstanceBindConverter", "FormatValue")));
     }
 
+    [TestMethod]
+    public void CallbackInferenceProtocolWrappers_PreserveSupportedAndRejectedHandlerShapes()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var host = new CurrentComponentSemanticWalkerHost(component);
+        var typeCheckedCallback = GetOperation<IInvocationOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "TypeCheckedCallback")
+                .DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Single(static invocation => invocation.Expression is MemberAccessExpressionSyntax
+                {
+                    Name.Identifier.ValueText: "TypeCheck"
+                }));
+        var inferredMethodGroup = GetSingleInvocation(fixture, "ComponentUnderTest", "InferredBindSetterWithMethodGroup");
+        var inferredLambda = GetSingleInvocation(fixture, "ComponentUnderTest", "InferredBindSetterWithLambda");
+        var invalidBinder = GetMethodBody(fixture, "ComponentUnderTest", "InvalidBinder");
+        var invalidSetterReference = GetOperation<IMethodReferenceOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "SetterMethodGroupWithTwoArguments")
+                .DescendantNodes()
+                .OfType<IdentifierNameSyntax>()
+                .Single(identifier => identifier.Identifier.ValueText == "SetCountWithTwoArguments"));
+        var literal = GetVariableInitializer(fixture, GetMethod(fixture, "ComponentUnderTest", "Operations"), "literal");
+
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            typeCheckedCallback,
+            new SenseArgument()));
+
+        var inferredArguments = new object?[] { inferredMethodGroup, null };
+        Assert.IsTrue(InvokeStatic<bool>("TryGetInferredBindSetterHandler", inferredArguments));
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteInferredBindSetterHandler",
+            inferredArguments[1]!,
+            new SenseArgument()));
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            inferredLambda,
+            new SenseArgument()));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "TryGetInferredBindSetterHandler",
+            new object?[] { typeCheckedCallback, null }));
+
+        Assert.IsNull(InvokeStatic<ISimpleAssignmentOperation?>("TryGetSingleBinderAssignment", invalidBinder));
+        Assert.IsNull(InvokeInstance<Expression?>(
+            host,
+            "RewriteInferredBindSetterMethodReference",
+            invalidSetterReference,
+            new SenseArgument()));
+        Assert.IsNull(InvokeInstance<Expression?>(
+            host,
+            "RewriteInferredBindSetterHandler",
+            literal,
+            new SenseArgument()));
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -566,6 +627,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
 
                 private void SetCount(int value) { Count = value; }
                 public void SetterMethodGroup() { Action<int> callback = SetCount; }
+                private void SetCountWithTwoArguments(int value, int other) { Count = value + other; }
+                public void SetterMethodGroupWithTwoArguments()
+                {
+                    Action<int, int> callback = SetCountWithTwoArguments;
+                }
                 public void ForeignSetterMethodGroup() { Action<int> callback = OtherHandlers.Set; }
 
                 public void SingleBinder(int value)
@@ -586,6 +652,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 }
 
                 public void EmptyReturn() { return; }
+                public void InvalidBinder(int value)
+                {
+                    CurrentMethod();
+                    Count = value;
+                }
                 public void StateChangedCaller() { base.StateHasChanged(); }
                 public new void StateHasChanged() { }
                 public void CurrentStateChangedCaller() { StateHasChanged(); }
@@ -618,6 +689,26 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 public void TypeCheckCall()
                 {
                     var typeChecked = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck(Count);
+                }
+
+                public void TypeCheckedCallback()
+                {
+                    var callback = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck(
+                        (Action)(() => CurrentMethod()));
+                }
+
+                public void InferredBindSetterWithMethodGroup()
+                {
+                    var callback = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredBindSetter(
+                        (Action<int>)SetCount,
+                        Count);
+                }
+
+                public void InferredBindSetterWithLambda()
+                {
+                    var callback = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredBindSetter(
+                        (Action<int>)(value => Count = value),
+                        Count);
                 }
 
                 public void InferredEventCallback()
