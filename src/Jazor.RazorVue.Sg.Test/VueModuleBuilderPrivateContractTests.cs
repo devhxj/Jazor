@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Reflection;
 using Acornima;
 using Acornima.Ast;
@@ -325,6 +326,113 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("./host.mjs", Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/host.mjs", "pages/host.mjs"));
     }
 
+    [TestMethod]
+    public void PathAndIdentifierEdgeCases_PreserveArtifactAndSourceMapContracts()
+    {
+        var compilation = CreateCompilation();
+        var noArgumentMarked = GetNamedType(compilation, "PrivateContracts.NoArgumentMarked");
+        var noisyMarked = GetNamedType(compilation, "PrivateContracts.NoisyMarked");
+
+        Assert.AreEqual(
+            "RazorVue.PrivateContracts/PrivateContracts/NoArgumentMarked.mjs",
+            Invoke<string>("GetRelativePath", noArgumentMarked));
+        Assert.AreEqual("components/noisy.mjs", Invoke<string>("GetRelativePath", noisyMarked));
+
+        var emptyImport = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<string>("ResolveImportArtifactPath", ".", "host.mjs"));
+        StringAssert.Contains(emptyImport.InnerException!.Message, "cannot be empty", StringComparison.Ordinal);
+        Assert.AreEqual(
+            "../../shared/card.mjs",
+            Invoke<string>("RebaseRootRelativeModuleSpecifier", "../shared/card.mjs", "pages/host.mjs"));
+        Assert.AreEqual("./", Invoke<string>("RebaseRootRelativeModuleSpecifier", string.Empty, string.Empty));
+
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierStart", '$'));
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierStart", '_'));
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierStart", 'a'));
+        Assert.IsFalse(Invoke<bool>("IsJavaScriptIdentifierStart", '1'));
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierPart", '$'));
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierPart", '_'));
+        Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierPart", '1'));
+        Assert.IsFalse(Invoke<bool>("IsJavaScriptIdentifierPart", '-'));
+        Assert.AreEqual(
+            "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            Invoke<string>("ComputeContentHash", string.Empty));
+        Assert.AreNotEqual(Invoke<string>("ComputeContentHash", string.Empty), Invoke<string>("ComputeContentHash", "content"));
+
+        var text = SourceText.From("zero\none");
+        var negativeColumn = new object?[] { text, 0, -1, null };
+        Assert.IsTrue(Invoke<bool>("TryGetAbsoluteIndex", negativeColumn));
+        Assert.AreEqual(0, negativeColumn[3]);
+    }
+
+    [TestMethod]
+    public void GeneratedCSharpSourceMapHelpers_ProjectOnlyMappedRazorLocations()
+    {
+        var generatedCSharp = SourceText.From("alpha\nbeta\ngamma");
+        var mappings = ImmutableArray.Create(
+            new RazorSourceMap(
+                new RazorSourceSpan("Pages/Counter.razor", 0, 3, 4, 2),
+                new RazorSourceSpan("Generated/Counter.razor.g.cs", 0, 5, 0, 0)),
+            new RazorSourceMap(
+                new RazorSourceSpan("Pages/Counter.razor", 4, 3, 5, 1),
+                new RazorSourceSpan("Generated/Counter.razor.g.cs", 6, 4, 1, 0)));
+        var document = new GeneratedDocument(
+            "Generated/Counter.razor.g.cs",
+            "Pages/Counter.razor",
+            generatedCSharp,
+            mappings);
+        var compilerMap = new SourceMapDocument(
+            "component.mjs",
+            [
+                new SourceMapSource("Generated/Counter.razor.g.cs", null),
+                new SourceMapSource("External/Helper.cs", null)
+            ],
+            [
+                new SourceMapSegment(0, 2, 0, 0, 2),
+                new SourceMapSegment(1, 1, 1, 0, 0),
+                new SourceMapSegment(2, 0, 3, 0, 0),
+                new SourceMapSegment(99, 0, 0, 0, 0)
+            ]);
+
+        var generatedMap = Invoke<SourceMapDocument>("BuildGeneratedCSharpSourceMap", document, compilerMap);
+        Assert.IsTrue(generatedMap.Segments.Count >= 3);
+        Assert.IsTrue(generatedMap.Sources.All(static source => source.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)));
+
+        var mappedPosition = new object?[] { document, mappings, 1, 2, null };
+        Assert.IsTrue(Invoke<bool>("TryResolveOriginalSourcePosition", mappedPosition));
+        Assert.IsNotNull(mappedPosition[4]);
+        Assert.IsFalse(Invoke<bool>(
+            "TryResolveOriginalSourcePosition",
+            new object?[] { document, ImmutableArray<RazorSourceMap>.Empty, 0, 0, null }));
+        Assert.IsFalse(Invoke<bool>(
+            "TryResolveOriginalSourcePosition",
+            new object?[] { document, mappings, 99, 0, null }));
+
+        var pruned = Invoke<SourceMapDocument>(
+            "PruneIntermediateSources",
+            new SourceMapDocument(
+                "component.mjs",
+                [
+                    new SourceMapSource("component.mjs", null),
+                    new SourceMapSource("Generated/Counter.razor.g.cs", null),
+                    new SourceMapSource("Pages/Counter.razor", "@page \"/\"")
+                ],
+                [
+                    new SourceMapSegment(0, 0, 0, 0, 0),
+                    new SourceMapSegment(1, 0, 1, 0, 0),
+                    new SourceMapSegment(2, 0, 2, 0, 0),
+                    new SourceMapSegment(3, 0, 3, 0, 0)
+                ]),
+            "component.mjs");
+        Assert.HasCount(1, pruned.Sources);
+        Assert.HasCount(1, pruned.Segments);
+
+        var aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        InvokeVoid("AddModuleMapAlias", aliases, string.Empty, "map");
+        InvokeVoid("AddModuleMapAlias", aliases, "./Generated/Counter.razor.g.cs", "map");
+        Assert.AreEqual("map", aliases["Generated/Counter.razor.g.cs"]);
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -346,6 +454,7 @@ public sealed class VueModuleBuilderPrivateContractTests
     {
         var source = CSharpSyntaxTree.ParseText(
             """
+            using System;
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
 
@@ -385,6 +494,12 @@ public sealed class VueModuleBuilderPrivateContractTests
 
             [ECMAScriptModule("")]
             public sealed class Blank { }
+
+            [ECMAScriptModule]
+            public sealed class NoArgumentMarked { }
+
+            [Obsolete, ECMAScriptModule("./components/noisy")]
+            public sealed class NoisyMarked { }
 
             public sealed class Plain { }
             public sealed record RecordShape;
