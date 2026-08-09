@@ -62,6 +62,7 @@ internal static partial class DirectRenderFailureCaseCatalog
         }
 
         AddCoverageDiagnosticCases(cases);
+        AddBoundaryDiagnosticCases(cases);
 
         return cases;
     }
@@ -377,6 +378,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         #nullable enable
         using ECMAScript;
         using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
         using static ECMAScript.Vue3;
 
         namespace RazorVue.FailureMatrix;
@@ -410,6 +412,17 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
 
         [ECMAScriptModule("./failure-matrix/span-child.mjs")]
         public sealed class FailureMatrixSpanChild : ComponentBase, IVueComponent;
+
+        public static class ExternalRenderFragments
+        {
+            public static RenderFragment Fragment => null!;
+
+            public static RenderFragment<string> GenericFragment => null!;
+
+            public static void Render(RenderTreeBuilder builder)
+            {
+            }
+        }
         """;
 
     private sealed record Fixture(
