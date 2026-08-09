@@ -400,12 +400,15 @@ internal static class TDesignComponentGenerator
                 .Where(static slot => slot.Property is not null)
                 .GroupBy(static slot => slot.Property!, StringComparer.Ordinal)
                 .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.Ordinal);
-            var payloadDefinitions = new List<string>();
-
-            foreach (var property in component.Contract.Properties.Where(static property => property.Name != "default"))
+            foreach (var property in component.Contract.Properties.Where(static property =>
+                         property.Name is not ("default" or "class" or "style")))
             {
                 if (eventProperties.Contains(property.Name))
                     continue;
+
+                // TComponentBase owns Vue's universal class/style bindings. Emitting the upstream
+                // prop again creates two C# parameters that both lower to the same Vue name.
+                // Keep the richer VueClassValue/VueStyleValue base contract instead.
 
                 // Named upstream declarations own their concise T* name. Anonymous prop
                 // shapes receive a Value suffix, preventing collisions such as CalendarCell
@@ -483,12 +486,16 @@ internal static class TDesignComponentGenerator
                     return false;
                 }
 
-                MappedType? payloadType = parameters.Length switch
-                {
-                    0 => null,
-                    1 => parameters[0].Type with { IsNullable = parameters[0].Optional || parameters[0].Type.IsNullable },
-                    _ => CreateEventPayload(typeName, parameters, typeParameters, payloadDefinitions)
-                };
+                // EventCallback<T> models one JavaScript callback argument. TDesign emits
+                // events as (value, context, ...); Vue does not pack those arguments into an
+                // object, so a synthetic payload record would incorrectly lower value.Value
+                // to value.value at runtime. The first argument is the truthful callback payload.
+                MappedType? payloadType = parameters.Length == 0
+                    ? null
+                    : parameters[0].Type with
+                    {
+                        IsNullable = parameters[0].Optional || parameters[0].Type.IsNullable
+                    };
                 events.Add(new MappedEvent(@event, payloadType, ToPascalCase(@event.Property)));
             }
 
@@ -515,7 +522,7 @@ internal static class TDesignComponentGenerator
                 properties.ToArray(),
                 slots.ToArray(),
                 events.ToArray(),
-                mapper.Definitions.Concat(payloadDefinitions).ToArray(),
+                mapper.Definitions.ToArray(),
                 typeParameters,
                 defaults.ToArray());
             failure = null;
@@ -556,36 +563,6 @@ internal static class TDesignComponentGenerator
             slot = new MappedSlot(source, mapped, ToSlotPropertyName(source.Name));
             failure = null;
             return true;
-        }
-
-        private static MappedType CreateEventPayload(
-            string typeName,
-            IReadOnlyList<MappedParameter> parameters,
-            IReadOnlyList<TypeParameter> typeParameters,
-            ICollection<string> definitions)
-        {
-            var genericSuffix = typeParameters.Count == 0
-                ? string.Empty
-                : "<" + string.Join(", ", typeParameters.Select(static parameter => parameter.Name)) + ">";
-            var builder = new StringBuilder();
-            builder.AppendLine("[ECMAScript]");
-            builder.AppendLine($"public sealed record {typeName}{genericSuffix} : VueProps");
-            builder.AppendLine("{");
-            foreach (var parameter in parameters)
-            {
-                var requiresInitialization = !parameter.Optional && !parameter.Type.IsNullable &&
-                    (parameter.Type.IsReference || typeParameters.Any(typeParameter =>
-                        string.Equals(typeParameter.Name, parameter.Type.Name, StringComparison.Ordinal)));
-                if (!string.Equals(parameter.SourceName, ToCamelCase(parameter.CSharpName), StringComparison.Ordinal))
-                    builder.AppendLine($"    [ECMAScriptName(\"{parameter.SourceName}\")]");
-                builder.AppendLine($"    public {parameter.Type.Name}{(parameter.Optional || parameter.Type.IsNullable ? "?" : string.Empty)} {CSharpIdentifier.Escape(parameter.CSharpName)} {{ get; init; }}{(requiresInitialization ? " = default!;" : string.Empty)}");
-                builder.AppendLine();
-            }
-
-            builder.Length -= Environment.NewLine.Length;
-            builder.AppendLine("}");
-            definitions.Add(builder.ToString());
-            return new MappedType(typeName + genericSuffix, IsReference: true);
         }
 
         private static bool TryGetTNodeBranch(string source, out string tNodeType)

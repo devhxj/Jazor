@@ -69,14 +69,6 @@ public enum TActiveRowActionType
 }
 
 [ECMAScript]
-public sealed record TAffixFixedChangeEvent : VueProps
-{
-    public bool Affixed { get; init; }
-
-    public TAffixFixedChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TAffixFixedChangeEventContext : VueProps
 {
     public Number Top { get; init; }
@@ -131,14 +123,6 @@ public enum TAlertThemeValue
 [ECMAScript]
 public readonly union TAllValidateResult(TCustomValidateObj, TValidateResultType)
 {
-}
-
-[ECMAScript]
-public sealed record TAnchorChangeEvent : VueProps
-{
-    public string CurrentLink { get; init; } = default!;
-
-    public string PrevLink { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -280,14 +264,6 @@ public record TAutoCompleteBlurEventContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TAutoCompleteChangeEvent<T> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TAutoCompleteChangeEventContext<T>? Context { get; init; }
-}
-
-[ECMAScript]
 public record TAutoCompleteChangeEventContext<T> : VueProps
 {
     public TAutoCompleteChangeEventContextE<T>? E { get; init; }
@@ -375,14 +351,6 @@ public record TAutoCompleteOptionObj : VueProps
 [ECMAScript]
 public readonly union TAutoCompleteOptionObjLabel(string, RenderFragment)
 {
-}
-
-[ECMAScript]
-public sealed record TAutoCompleteSelectEvent<T> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TAutoCompleteSelectEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -508,14 +476,6 @@ public record TBaseColProps : VueProps
     public Number? Push { get; init; }
 
     public Number? Span { get; init; }
-}
-
-[ECMAScript]
-public sealed record TBaseTableActiveChangeEvent : VueProps
-{
-    public TBaseTableActiveChangeEventActiveRowKeysItem[] ActiveRowKeys { get; init; } = default!;
-
-    public TActiveChangeContext<TTableRowData> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -766,14 +726,6 @@ public readonly union TBaseTableHorizontalScrollAffixedBottomValue(bool, TdAffix
 [ECMAScript]
 public readonly union TBaseTableMaxHeightValue(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TBaseTablePageChangeEvent : VueProps
-{
-    public TPageInfo PageInfo { get; init; } = default!;
-
-    public TTableRowData[] NewDataSource { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -1232,14 +1184,6 @@ public record TCascaderChangeContext<CascaderOption> : VueProps
 }
 
 [ECMAScript]
-public sealed record TCascaderChangeEvent<CascaderOption> : VueProps
-{
-    public TCascaderValue<CascaderOption> Value { get; init; }
-
-    public TCascaderChangeContext<CascaderOption> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 [String]
 public enum TCascaderChangeSource
 {
@@ -1333,14 +1277,6 @@ public delegate void TCascaderOptionSlotContextOnChange<CascaderOption>();
 
 [ECMAScript]
 public delegate void TCascaderOptionSlotContextOnExpand<CascaderOption>();
-
-[ECMAScript]
-public sealed record TCascaderPopupVisibleChangeEvent<CascaderOption> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
-}
 
 [ECMAScript]
 [String]
@@ -1556,14 +1492,6 @@ public readonly union TCheckTagChangeContextValue(string, Number)
 }
 
 [ECMAScript]
-public sealed record TCheckTagChangeEvent : VueProps
-{
-    public bool Checked { get; init; }
-
-    public TCheckTagChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TCheckTagClickEventContext : VueProps
 {
     [EditorRequired]
@@ -1603,14 +1531,6 @@ public enum TCheckTagGroupChangeContextType
 [ECMAScript]
 public readonly union TCheckTagGroupChangeContextValue(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TCheckTagGroupChangeEvent : VueProps
-{
-    public TCheckTagGroupValueItem[] Value { get; init; } = default!;
-
-    public TCheckTagGroupChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -1687,14 +1607,6 @@ public readonly union TCheckTagValueValue(string, Number)
 }
 
 [ECMAScript]
-public sealed record TCheckboxChangeEvent : VueProps
-{
-    public bool Checked { get; init; }
-
-    public TCheckboxChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TCheckboxChangeEventContext : VueProps
 {
     [EditorRequired]
@@ -1732,14 +1644,6 @@ public enum TCheckboxGroupChangeContextType
     Check,
     [Description("@#uncheck")]
     Uncheck,
-}
-
-[ECMAScript]
-public sealed record TCheckboxGroupChangeEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TCheckboxGroupChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -1938,14 +1842,6 @@ public record TColorObject : VueProps
 }
 
 [ECMAScript]
-public sealed record TColorPickerChangeEvent : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TColorPickerChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TColorPickerChangeEventContext : VueProps
 {
     [EditorRequired]
@@ -2034,14 +1930,6 @@ public record TColorPickerPaletteBarChangeEventContext : VueProps
 {
     [EditorRequired]
     public TColorObject Color { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TColorPickerPanelChangeEvent : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TColorPickerPanelChangeEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -2242,14 +2130,6 @@ public readonly union TDatePickerBlurEventContextValue(TDateValue, TDateValue[])
 }
 
 [ECMAScript]
-public sealed record TDatePickerChangeEvent : VueProps
-{
-    public TDatePickerChangeEventValue Value { get; init; }
-
-    public TDatePickerChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TDatePickerChangeEventContext : VueProps
 {
     public TDayjs? DayjsValue { get; init; }
@@ -2425,14 +2305,6 @@ public record TDatePickerPanelCellClickEventContext : VueProps
 
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TDatePickerPanelChangeEvent : VueProps
-{
-    public TDateValue Value { get; init; }
-
-    public TDatePickerPanelChangeEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -2711,14 +2583,6 @@ public record TDateRangePickerBlurEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TDateRangePickerChangeEvent : VueProps
-{
-    public TDateValue[] Value { get; init; } = default!;
-
-    public TDateRangePickerChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TDateRangePickerChangeEventContext : VueProps
 {
     public TDayjs[]? DayjsValue { get; init; }
@@ -2833,14 +2697,6 @@ public record TDateRangePickerPanelCellClickEventContext : VueProps
 
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TDateRangePickerPanelChangeEvent : VueProps
-{
-    public TDateValue[] Value { get; init; } = default!;
-
-    public TDateRangePickerPanelChangeEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -2966,14 +2822,6 @@ public enum TDateRangePickerPartial
     Start,
     [Description("@#end")]
     End,
-}
-
-[ECMAScript]
-public sealed record TDateRangePickerPickEvent : VueProps
-{
-    public TDateValue Value { get; init; }
-
-    public TPickContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -3607,14 +3455,6 @@ public readonly union TDrawerSizeDraggableValue(bool, TSizeDragLimit)
 }
 
 [ECMAScript]
-public sealed record TDropdownClickEvent : VueProps
-{
-    public TDropdownOption DropdownItem { get; init; } = default!;
-
-    public TDropdownClickEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TDropdownClickEventContext : VueProps
 {
     [EditorRequired]
@@ -3629,14 +3469,6 @@ public enum TDropdownDirectionValue
     Left,
     [Description("@#right")]
     Right,
-}
-
-[ECMAScript]
-public sealed record TDropdownItemClickEvent : VueProps
-{
-    public TDropdownOption DropdownItem { get; init; } = default!;
-
-    public TDropdownItemClickEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -3817,14 +3649,6 @@ public enum TEmptyTypeValue
 }
 
 [ECMAScript]
-public sealed record TEnhancedTableActiveChangeEvent<T> : VueProps
-{
-    public TEnhancedTableActiveChangeEventActiveRowKeysItem<T>[] ActiveRowKeys { get; init; } = default!;
-
-    public TActiveChangeContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
 }
@@ -3847,22 +3671,6 @@ public enum TEnhancedTableAsyncLoadingClickEventContextStatus
 
 [ECMAScript]
 public delegate bool TEnhancedTableBeforeDragSortValue<T>(TDragSortContext<T> context);
-
-[ECMAScript]
-public sealed record TEnhancedTableChangeEvent<T> : VueProps
-{
-    public TTableChangeData Data { get; init; } = default!;
-
-    public TTableChangeContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TEnhancedTableColumnControllerVisibleChangeEvent<T> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TEnhancedTableColumnControllerVisibleChangeEventContext<T> Context { get; init; } = default!;
-}
 
 [ECMAScript]
 public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VueProps
@@ -3895,32 +3703,8 @@ public record TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> : VueD
 }
 
 [ECMAScript]
-public sealed record TEnhancedTableDataChangeEvent<T> : VueProps
-{
-    public T[] Data { get; init; } = default!;
-
-    public TTableDataChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TEnhancedTableExpandChangeEvent<T> : VueProps
-{
-    public TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>[] ExpandedRowKeys { get; init; } = default!;
-
-    public TExpandOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TEnhancedTableExpandedTreeNodesChangeEvent<T> : VueProps
-{
-    public TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>[] ExpandedTreeNodes { get; init; } = default!;
-
-    public TTableTreeNodeExpandOptions<T> Options { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -3931,22 +3715,6 @@ public readonly union TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNode
 [ECMAScript]
 public readonly union TEnhancedTableExpandedTreeNodesValueItem<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TEnhancedTableFilterChangeEvent<T> : VueProps
-{
-    public TJsonObject FilterValue { get; init; } = default!;
-
-    public TTableFilterChangeContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TEnhancedTablePageChangeEvent<T> : VueProps
-{
-    public TPageInfo PageInfo { get; init; } = default!;
-
-    public T[] NewDataSource { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -3971,24 +3739,8 @@ public record TEnhancedTableScrollYEventParams<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TEnhancedTableSelectChangeEvent<T> : VueProps
-{
-    public TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>[] SelectedRowKeys { get; init; } = default!;
-
-    public TSelectOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TEnhancedTableSortChangeEvent<T> : VueProps
-{
-    public TTableSort Sort { get; init; }
-
-    public TSortOptions<T> Options { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -11505,14 +11257,6 @@ public readonly union TGroupOptionsPut(TPutResult, TGroupOptionsPutOption2)
 public delegate TPutResult TGroupOptionsPutOption2(TSortable to, TSortable @from, HTMLElement dragEl, TSortableEvent @event);
 
 [ECMAScript]
-public sealed record TGuideChangeEvent : VueProps
-{
-    public Number Current { get; init; }
-
-    public TGuideChangeEventContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TGuideChangeEventContext : VueProps
 {
     [EditorRequired]
@@ -11921,14 +11665,6 @@ public readonly union TImageViewerImagesValueItem(string, File, TImageInfo)
 }
 
 [ECMAScript]
-public sealed record TImageViewerIndexChangeEvent : VueProps
-{
-    public Number Index { get; init; }
-
-    public TImageViewerIndexChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TImageViewerIndexChangeEventContext : VueProps
 {
     public TImageViewerIndexChangeEventContextTrigger Trigger { get; init; }
@@ -11977,26 +11713,10 @@ public enum TInputAlignValue
 }
 
 [ECMAScript]
-public sealed record TInputBlurEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputBlurEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputBlurEventContext<T> : VueProps
 {
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputChangeEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputChangeEventContext<T>? Context { get; init; }
 }
 
 [ECMAScript]
@@ -12039,26 +11759,10 @@ public record TInputClickEventContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputCompositionendEvent<T> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TInputCompositionendEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputCompositionendEventContext<T> : VueProps
 {
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputCompositionstartEvent<T> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TInputCompositionstartEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12077,26 +11781,10 @@ public record TInputConfig : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputEnterEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputEnterEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputEnterEventContext<T> : VueProps
 {
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputFocusEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputFocusEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12110,14 +11798,6 @@ public record TInputFocusEventContext<T> : VueProps
 public delegate string TInputFormatType(string @value);
 
 [ECMAScript]
-public sealed record TInputKeydownEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputKeydownEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputKeydownEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -12125,26 +11805,10 @@ public record TInputKeydownEventContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputKeypressEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputKeypressEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputKeypressEventContext<T> : VueProps
 {
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputKeyupEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TInputKeyupEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12186,26 +11850,10 @@ public enum TInputNumberAlignValue
 }
 
 [ECMAScript]
-public sealed record TInputNumberBlurEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberBlurEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputNumberBlurEventContext<T> : VueProps
 {
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputNumberChangeEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12222,26 +11870,10 @@ public record TInputNumberDecimalPlacesOption2 : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputNumberEnterEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberEnterEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputNumberEnterEventContext<T> : VueProps
 {
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputNumberFocusEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberFocusEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12261,14 +11893,6 @@ public record TInputNumberFormatValueContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputNumberKeydownEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberKeydownEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputNumberKeydownEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -12276,26 +11900,10 @@ public record TInputNumberKeydownEventContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TInputNumberKeypressEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberKeypressEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TInputNumberKeypressEventContext<T> : VueProps
 {
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TInputNumberKeyupEvent<T> : VueProps
-{
-    public TInputNumberValue Value { get; init; }
-
-    public TInputNumberKeyupEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -13114,14 +12722,6 @@ public record TPaginationConfig : VueProps
 }
 
 [ECMAScript]
-public sealed record TPaginationCurrentChangeEvent : VueProps
-{
-    public Number Current { get; init; }
-
-    public TPageInfo PageInfo { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TPaginationMiniChangeEventContext : VueProps
 {
     [EditorRequired]
@@ -13168,14 +12768,6 @@ public enum TPaginationPageEllipsisModeValue
     Mid,
     [Description("@#both-ends")]
     BothEnds,
-}
-
-[ECMAScript]
-public sealed record TPaginationPageSizeChangeEvent : VueProps
-{
-    public Number PageSize { get; init; }
-
-    public TPageInfo PageInfo { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -13334,14 +12926,6 @@ public record TPopconfirmVisibleChangeContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TPopconfirmVisibleChangeEvent : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopconfirmVisibleChangeContext? Context { get; init; }
-}
-
-[ECMAScript]
 public readonly union TPopupDelayValue(Number, Number[])
 {
 }
@@ -13467,14 +13051,6 @@ public record TPopupVisibleChangeContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TPopupVisibleChangeEvent : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TPresetDate : VueDictionary<TPresetDateIndex>
 {
 }
@@ -13522,14 +13098,6 @@ public readonly union TPresetTimeRangeIndex(string[], TPresetTimeRangeIndexOptio
 
 [ECMAScript]
 public delegate string[] TPresetTimeRangeIndexOption2();
-
-[ECMAScript]
-public sealed record TPrimaryTableActiveChangeEvent<T> : VueProps
-{
-    public TPrimaryTableActiveChangeEventActiveRowKeysItem<T>[] ActiveRowKeys { get; init; } = default!;
-
-    public TActiveChangeContext<T> Context { get; init; } = default!;
-}
 
 [ECMAScript]
 public readonly union TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
@@ -13604,14 +13172,6 @@ public record TPrimaryTableCellParams<T> : VueProps
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
     public Number ColIndex { get; init; }
-}
-
-[ECMAScript]
-public sealed record TPrimaryTableChangeEvent<T> : VueProps
-{
-    public TTableChangeData Data { get; init; } = default!;
-
-    public TTableChangeContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -13772,14 +13332,6 @@ public enum TPrimaryTableColumnChangeType
 }
 
 [ECMAScript]
-public sealed record TPrimaryTableColumnControllerVisibleChangeEvent<T> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPrimaryTableColumnControllerVisibleChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
     public TPrimaryTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
@@ -13810,14 +13362,6 @@ public record TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> : VueDi
 }
 
 [ECMAScript]
-public sealed record TPrimaryTableDataChangeEvent<T> : VueProps
-{
-    public T[] Data { get; init; } = default!;
-
-    public TTableDataChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 [String]
 public enum TPrimaryTableDragSortValue
 {
@@ -13839,14 +13383,6 @@ public readonly union TPrimaryTableEditableRowKeysValueItem<T>(string, Number)
 }
 
 [ECMAScript]
-public sealed record TPrimaryTableExpandChangeEvent<T> : VueProps
-{
-    public TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>[] ExpandedRowKeys { get; init; } = default!;
-
-    public TExpandOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
 }
@@ -13854,14 +13390,6 @@ public readonly union TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(strin
 [ECMAScript]
 public readonly union TPrimaryTableExpandedRowKeysValueItem<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TPrimaryTableFilterChangeEvent<T> : VueProps
-{
-    public TJsonObject FilterValue { get; init; } = default!;
-
-    public TTableFilterChangeContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -13919,14 +13447,6 @@ public record TPrimaryTableOnEditedContext<T> : VueProps
     public string Trigger { get; init; } = default!;
 
     public T NewRowData { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TPrimaryTablePageChangeEvent<T> : VueProps
-{
-    public TPageInfo PageInfo { get; init; } = default!;
-
-    public T[] NewDataSource { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -14015,14 +13535,6 @@ public record TPrimaryTableScrollYEventParams<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TPrimaryTableSelectChangeEvent<T> : VueProps
-{
-    public TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>[] SelectedRowKeys { get; init; } = default!;
-
-    public TSelectOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
 }
@@ -14030,14 +13542,6 @@ public readonly union TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(strin
 [ECMAScript]
 public readonly union TPrimaryTableSelectedRowKeysValueItem<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TPrimaryTableSortChangeEvent<T> : VueProps
-{
-    public TTableSort Sort { get; init; }
-
-    public TSortOptions<T> Options { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -14213,14 +13717,6 @@ public enum TQRStatus
 }
 
 [ECMAScript]
-public sealed record TRadioButtonChangeEvent<T> : VueProps
-{
-    public bool Checked { get; init; }
-
-    public TRadioButtonChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TRadioButtonChangeEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -14235,14 +13731,6 @@ public record TRadioButtonClickEventContext<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TRadioChangeEvent<T> : VueProps
-{
-    public bool Checked { get; init; }
-
-    public TRadioChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TRadioChangeEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -14254,14 +13742,6 @@ public record TRadioClickEventContext<T> : VueProps
 {
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TRadioGroupChangeEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TRadioGroupChangeEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -14326,27 +13806,11 @@ public readonly union TRadioValue(string, Number, bool)
 }
 
 [ECMAScript]
-public sealed record TRangeInputBlurEvent : VueProps
-{
-    public TInputValue[] Value { get; init; } = default!;
-
-    public TRangeInputBlurEventContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TRangeInputBlurEventContext : VueProps
 {
     public FocusEvent? E { get; init; }
 
     public TRangeInputPosition? Position { get; init; }
-}
-
-[ECMAScript]
-public sealed record TRangeInputChangeEvent : VueProps
-{
-    public TInputValue[] Value { get; init; } = default!;
-
-    public TRangeInputChangeEventContext? Context { get; init; }
 }
 
 [ECMAScript]
@@ -14397,14 +13861,6 @@ public readonly union TRangeInputDisabledValue(bool, bool[])
 }
 
 [ECMAScript]
-public sealed record TRangeInputEnterEvent : VueProps
-{
-    public TInputValue[] Value { get; init; } = default!;
-
-    public TRangeInputEnterEventContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TRangeInputEnterEventContext : VueProps
 {
     public TRangeInputEnterEventContextE? E { get; init; }
@@ -14415,14 +13871,6 @@ public record TRangeInputEnterEventContext : VueProps
 [ECMAScript]
 public readonly union TRangeInputEnterEventContextE(InputEvent, MouseEvent)
 {
-}
-
-[ECMAScript]
-public sealed record TRangeInputFocusEvent : VueProps
-{
-    public TInputValue[] Value { get; init; } = default!;
-
-    public TRangeInputFocusEventContext? Context { get; init; }
 }
 
 [ECMAScript]
@@ -14465,22 +13913,6 @@ public readonly union TRangeInputPlaceholderValue(string, string[])
 [ECMAScript]
 public readonly union TRangeInputPopupDisabledValue(bool, bool[])
 {
-}
-
-[ECMAScript]
-public sealed record TRangeInputPopupInputChangeEvent : VueProps
-{
-    public TInputValue[] Value { get; init; } = default!;
-
-    public TRangeInputValueChangeContext? Context { get; init; }
-}
-
-[ECMAScript]
-public sealed record TRangeInputPopupPopupVisibleChangeEvent : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -14857,14 +14289,6 @@ public readonly union TSelectBlurEventContextE<T>(FocusEvent, KeyboardEvent)
 }
 
 [ECMAScript]
-public sealed record TSelectChangeEvent<T> : VueProps
-{
-    public TSelectValue<TSelectOption> Value { get; init; }
-
-    public TSelectChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TSelectChangeEventContext<T> : VueProps
 {
     public T? Option { get; init; }
@@ -14981,22 +14405,6 @@ public record TSelectInputBlurContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TSelectInputBlurEvent : VueProps
-{
-    public TSelectInputValue Value { get; init; }
-
-    public TSelectInputBlurContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TSelectInputChangeEvent<T> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TSelectInputValueChangeContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TSelectInputClearEventContext : VueProps
 {
     [EditorRequired]
@@ -15028,14 +14436,6 @@ public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TSelectInputEnterEvent : VueProps
-{
-    public TSelectInputValue Value { get; init; }
-
-    public TSelectInputEnterEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TSelectInputEnterEventContext : VueProps
 {
     [EditorRequired]
@@ -15057,22 +14457,6 @@ public record TSelectInputFocusContext : VueProps
 
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TSelectInputFocusEvent : VueProps
-{
-    public TSelectInputValue Value { get; init; }
-
-    public TSelectInputFocusContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TSelectInputInputChangeEvent : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TSelectInputValueChangeContext? Context { get; init; }
 }
 
 [ECMAScript]
@@ -15110,14 +14494,6 @@ public record TSelectInputPasteEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TSelectInputPopupVisibleChangeEvent : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 [String]
 public enum TSelectInputStatusValue
 {
@@ -15129,14 +14505,6 @@ public enum TSelectInputStatusValue
     Warning,
     [Description("@#error")]
     Error,
-}
-
-[ECMAScript]
-public sealed record TSelectInputTagChangeEvent : VueProps
-{
-    public TTagInputValueItem[] Value { get; init; } = default!;
-
-    public TTagInputChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -15365,14 +14733,6 @@ public enum TSelectOptionsType
 }
 
 [ECMAScript]
-public sealed record TSelectPopupVisibleChangeEvent<T> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TSelectRemoveContext<T> : VueProps
 {
     public TSelectRemoveContextValue<T> Value { get; init; }
@@ -15390,14 +14750,6 @@ public readonly union TSelectRemoveContextE<T>(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TSelectRemoveContextValue<T>(string, Number, BigInt)
 {
-}
-
-[ECMAScript]
-public sealed record TSelectSearchEvent<T> : VueProps
-{
-    public string FilterWords { get; init; } = default!;
-
-    public TSelectSearchEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -16124,16 +15476,6 @@ public enum TStepStatus
 }
 
 [ECMAScript]
-public sealed record TStepsChangeEvent : VueProps
-{
-    public TStepsChangeEventCurrent Current { get; init; }
-
-    public TStepsChangeEventPrevious Previous { get; init; }
-
-    public TStepsChangeEventContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TStepsChangeEventContext : VueProps
 {
     public MouseEvent? E { get; init; }
@@ -16334,14 +15676,6 @@ public enum TSwiperAnimationValue
 }
 
 [ECMAScript]
-public sealed record TSwiperChangeEvent : VueProps
-{
-    public Number Current { get; init; }
-
-    public TSwiperChangeEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TSwiperChangeEventContext : VueProps
 {
     public TSwiperChangeSource Source { get; init; }
@@ -16377,14 +15711,6 @@ public enum TSwiperItemAnimationValue
     Slide,
     [Description("@#fade")]
     Fade,
-}
-
-[ECMAScript]
-public sealed record TSwiperItemChangeEvent : VueProps
-{
-    public Number Current { get; init; }
-
-    public TSwiperItemChangeEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -16532,14 +15858,6 @@ public readonly union TSwitchBeforeChangeValueResult<T>(bool, IPromise<bool>)
 }
 
 [ECMAScript]
-public sealed record TSwitchChangeEvent<T> : VueProps
-{
-    public T Value { get; init; } = default!;
-
-    public TSwitchChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TSwitchChangeEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -16595,14 +15913,6 @@ public record TTableAbnormalDragSortContext<T> : VueProps
 
     [EditorRequired]
     public string Reason { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TTableActiveChangeEvent<T> : VueProps
-{
-    public TTableActiveChangeEventActiveRowKeysItem<T>[] ActiveRowKeys { get; init; } = default!;
-
-    public TActiveChangeContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -16667,14 +15977,6 @@ public record TTableChangeData : VueProps
     public TJsonObject? Filter { get; init; }
 
     public TdPaginationProps? Pagination { get; init; }
-}
-
-[ECMAScript]
-public sealed record TTableChangeEvent<T> : VueProps
-{
-    public TTableChangeData Data { get; init; } = default!;
-
-    public TTableChangeContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -16743,14 +16045,6 @@ public enum TTableColumnControllerPlacement
     BottomLeft,
     [Description("@#bottom-right")]
     BottomRight,
-}
-
-[ECMAScript]
-public sealed record TTableColumnControllerVisibleChangeEvent<T> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TTableColumnControllerVisibleChangeEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -16923,14 +16217,6 @@ public enum TTableDataChangeContextTrigger
 }
 
 [ECMAScript]
-public sealed record TTableDataChangeEvent<T> : VueProps
-{
-    public T[] Data { get; init; } = default!;
-
-    public TTableDataChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 [String]
 public enum TTableDragSortValue
 {
@@ -17057,14 +16343,6 @@ public record TTableErrorListMap : VueDictionary<TAllValidateResult[]>
 }
 
 [ECMAScript]
-public sealed record TTableExpandChangeEvent<T> : VueProps
-{
-    public TTableExpandChangeEventExpandedRowKeysItem<T>[] ExpandedRowKeys { get; init; } = default!;
-
-    public TExpandOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
 }
@@ -17112,14 +16390,6 @@ public enum TTableFilterChangeContextTrigger
 }
 
 [ECMAScript]
-public sealed record TTableFilterChangeEvent<T> : VueProps
-{
-    public TJsonObject FilterValue { get; init; } = default!;
-
-    public TTableFilterChangeContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTableFilterIconSlotContext<T> : VueProps
 {
     [EditorRequired]
@@ -17156,14 +16426,6 @@ public readonly union TTableIndeterminateSelectedRowKeysValueItem<T>(string, Num
 [ECMAScript]
 public readonly union TTableMaxHeightValue<T>(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TTablePageChangeEvent<T> : VueProps
-{
-    public TPageInfo PageInfo { get; init; } = default!;
-
-    public T[] NewDataSource { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -17293,14 +16555,6 @@ public record TTableScrollYEventParams<T> : VueProps
 }
 
 [ECMAScript]
-public sealed record TTableSelectChangeEvent<T> : VueProps
-{
-    public TTableSelectChangeEventSelectedRowKeysItem<T>[] SelectedRowKeys { get; init; } = default!;
-
-    public TSelectOptions<T> Options { get; init; } = default!;
-}
-
-[ECMAScript]
 public readonly union TTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
 }
@@ -17313,14 +16567,6 @@ public readonly union TTableSelectedRowKeysValueItem<T>(string, Number)
 [ECMAScript]
 public readonly union TTableSort(TSortInfo, TSortInfo[])
 {
-}
-
-[ECMAScript]
-public sealed record TTableSortChangeEvent<T> : VueProps
-{
-    public TTableSort Sort { get; init; }
-
-    public TSortOptions<T> Options { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -17534,14 +16780,6 @@ public record TTagConfig : VueProps
 }
 
 [ECMAScript]
-public sealed record TTagInputBlurEvent : VueProps
-{
-    public TTagInputValueItem[] Value { get; init; } = default!;
-
-    public TTagInputBlurEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTagInputBlurEventContext : VueProps
 {
     [EditorRequired]
@@ -17571,14 +16809,6 @@ public readonly union TTagInputChangeContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TTagInputChangeContextItem(string, Number)
 {
-}
-
-[ECMAScript]
-public sealed record TTagInputChangeEvent : VueProps
-{
-    public TTagInputValueItem[] Value { get; init; } = default!;
-
-    public TTagInputChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -17647,14 +16877,6 @@ public readonly union TTagInputDragSortContextTarget(string, Number)
 }
 
 [ECMAScript]
-public sealed record TTagInputEnterEvent : VueProps
-{
-    public TTagInputValueItem[] Value { get; init; } = default!;
-
-    public TTagInputEnterEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTagInputEnterEventContext : VueProps
 {
     [EditorRequired]
@@ -17675,14 +16897,6 @@ public enum TTagInputExcessTagsDisplayTypeValue
 }
 
 [ECMAScript]
-public sealed record TTagInputFocusEvent : VueProps
-{
-    public TTagInputValueItem[] Value { get; init; } = default!;
-
-    public TTagInputFocusEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTagInputFocusEventContext : VueProps
 {
     [EditorRequired]
@@ -17690,14 +16904,6 @@ public record TTagInputFocusEventContext : VueProps
 
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TTagInputInputChangeEvent : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TInputValueChangeContext? Context { get; init; }
 }
 
 [ECMAScript]
@@ -17922,14 +17128,6 @@ public record TTextareaAutosizeValueOption2 : VueProps
 }
 
 [ECMAScript]
-public sealed record TTextareaBlurEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaBlurEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTextareaBlurEventContext : VueProps
 {
     [EditorRequired]
@@ -17937,25 +17135,9 @@ public record TTextareaBlurEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TTextareaChangeEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaChangeEventContext? Context { get; init; }
-}
-
-[ECMAScript]
 public record TTextareaChangeEventContext : VueProps
 {
     public InputEvent? E { get; init; }
-}
-
-[ECMAScript]
-public sealed record TTextareaFocusEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaFocusEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -17966,14 +17148,6 @@ public record TTextareaFocusEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TTextareaKeydownEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaKeydownEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTextareaKeydownEventContext : VueProps
 {
     [EditorRequired]
@@ -17981,26 +17155,10 @@ public record TTextareaKeydownEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TTextareaKeypressEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaKeypressEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTextareaKeypressEventContext : VueProps
 {
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TTextareaKeyupEvent : VueProps
-{
-    public TTextareaValue Value { get; init; }
-
-    public TTextareaKeyupEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -18148,14 +17306,6 @@ public record TTimePickerOpenEventContext : VueProps
 }
 
 [ECMAScript]
-public sealed record TTimePickerPickEvent : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TTimePickerPickEventContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTimePickerPickEventContext : VueProps
 {
     [EditorRequired]
@@ -18268,14 +17418,6 @@ public enum TTimeRangePickerPartial
     Start,
     [Description("@#end")]
     End,
-}
-
-[ECMAScript]
-public sealed record TTimeRangePickerPickEvent : VueProps
-{
-    public string[] Value { get; init; } = default!;
-
-    public TTimeRangePickerPickEventContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -18506,22 +17648,6 @@ public enum TTooltipTriggerValue
 }
 
 [ECMAScript]
-public sealed record TTooltipVisibleChangeEvent : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TTransferChangeEvent<T> : VueProps
-{
-    public TTransferValue[] TargetValue { get; init; } = default!;
-
-    public TTargetParams Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTransferConfig : VueProps
 {
     public string? Empty { get; init; }
@@ -18606,14 +17732,6 @@ public readonly union TTransferOperationValueItem<T>(string, RenderFragment)
 }
 
 [ECMAScript]
-public sealed record TTransferPageChangeEvent<T> : VueProps
-{
-    public TPageInfo Page { get; init; } = default!;
-
-    public TTransferPageChangeEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTransferPageChangeEventContext<T> : VueProps
 {
     public TTransferListType Type { get; init; }
@@ -18672,14 +17790,6 @@ public readonly union TTransferValue(string, Number)
 }
 
 [ECMAScript]
-public sealed record TTreeActiveEvent<T> : VueProps
-{
-    public TTreeNodeValue[] Value { get; init; } = default!;
-
-    public TTreeActiveEventContext<T> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTreeActiveEventContext<T> : VueProps
 {
     [EditorRequired]
@@ -18716,14 +17826,6 @@ public record TTreeAllowDropValueContext<T> : VueProps
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
     public Number DropPosition { get; init; }
-}
-
-[ECMAScript]
-public sealed record TTreeChangeEvent<T> : VueProps
-{
-    public TTreeNodeValue[] Value { get; init; } = default!;
-
-    public TTreeChangeEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -18826,14 +17928,6 @@ public record TTreeDropEventContext<T> : VueProps
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
     public Number DropPosition { get; init; }
-}
-
-[ECMAScript]
-public sealed record TTreeExpandEvent<T> : VueProps
-{
-    public TTreeNodeValue[] Value { get; init; } = default!;
-
-    public TTreeExpandEventContext<T> Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19269,14 +18363,6 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 }
 
 [ECMAScript]
-public sealed record TTreeSelectChangeEvent<DataOption, TreeValueType> : VueProps
-{
-    public TTreeSelectValue Value { get; init; }
-
-    public TTreeSelectChangeContext<DataOption> Context { get; init; } = default!;
-}
-
-[ECMAScript]
 public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 {
     [EditorRequired]
@@ -19334,22 +18420,6 @@ public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
 
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TTreeSelectInputChangeEvent<DataOption, TreeValueType> : VueProps
-{
-    public string Value { get; init; } = default!;
-
-    public TSelectInputValueChangeContext? Context { get; init; }
-}
-
-[ECMAScript]
-public sealed record TTreeSelectPopupVisibleChangeEvent<DataOption, TreeValueType> : VueProps
-{
-    public bool Visible { get; init; }
-
-    public TPopupVisibleChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19590,14 +18660,6 @@ public record TUploadChangeContext : VueProps
 [ECMAScript]
 public readonly union TUploadChangeContextE(MouseEvent, ProgressEvent)
 {
-}
-
-[ECMAScript]
-public sealed record TUploadChangeEvent<T> : VueProps
-{
-    public T[] Value { get; init; } = default!;
-
-    public TUploadChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19889,14 +18951,6 @@ public record TUploadSelectChangeContext : VueProps
 {
     [EditorRequired]
     public TUploadFile[] CurrentSelectedFiles { get; init; } = default!;
-}
-
-[ECMAScript]
-public sealed record TUploadSelectChangeEvent<T> : VueProps
-{
-    public File[] Files { get; init; } = default!;
-
-    public TUploadSelectChangeContext Context { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -24642,7 +23696,7 @@ public sealed class TAffix : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
-    public EventCallback<TAffixFixedChangeEvent> OnFixedChange { get; set; }
+    public EventCallback<bool> OnFixedChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Alert")]
@@ -24727,7 +23781,7 @@ public sealed class TAnchor : TContentComponentBase
     public RenderFragment? CursorContent { get; set; }
 
     [Parameter]
-    public EventCallback<TAnchorChangeEvent> OnChange { get; set; }
+    public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TAnchorClickEventLink> OnClick { get; set; }
@@ -24868,7 +23922,7 @@ public class TAutoComplete<T> : TContentComponentBase
     public EventCallback<TAutoCompleteBlurEventContext<T>> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TAutoCompleteChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TAutoCompleteClearEventContext<T>> OnClear { get; set; }
@@ -24886,7 +23940,7 @@ public class TAutoComplete<T> : TContentComponentBase
     public EventCallback<TAutoCompleteFocusEventContext<T>> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TAutoCompleteSelectEvent<T>> OnSelect { get; set; }
+    public EventCallback<string> OnSelect { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "AutoComplete")]
@@ -25221,7 +24275,7 @@ public sealed class TBaseTable : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
-    public EventCallback<TBaseTableActiveChangeEvent> OnActiveChange { get; set; }
+    public EventCallback<TBaseTableActiveChangeEventActiveRowKeysItem[]> OnActiveChange { get; set; }
 
     [Parameter]
     public EventCallback<TActiveRowActionContext<TTableRowData>> OnActiveRowAction { get; set; }
@@ -25236,7 +24290,7 @@ public sealed class TBaseTable : TContentComponentBase
     public EventCallback<TBaseTableCol<TTableRowData>[]> OnLeafColumnsChange { get; set; }
 
     [Parameter]
-    public EventCallback<TBaseTablePageChangeEvent> OnPageChange { get; set; }
+    public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowClick { get; set; }
@@ -25793,13 +24847,13 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public EventCallback<TCascaderBlurEventContext<CascaderOption>> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TCascaderChangeEvent<CascaderOption>> OnChange { get; set; }
+    public EventCallback<TCascaderValue<CascaderOption>> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TCascaderFocusEventContext<CascaderOption>> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TCascaderPopupVisibleChangeEvent<CascaderOption>> OnPopupVisibleChange { get; set; }
+    public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TRemoveContext<CascaderOption>> OnRemove { get; set; }
@@ -25840,7 +24894,7 @@ public sealed class TCheckTag : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
-    public EventCallback<TCheckTagChangeEvent> OnChange { get; set; }
+    public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TCheckTagClickEventContext> OnClick { get; set; }
@@ -25865,7 +24919,7 @@ public sealed class TCheckTagGroup : TContentComponentBase
     public TCheckTagGroupValueItem[]? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TCheckTagGroupChangeEvent> OnChange { get; set; }
+    public EventCallback<TCheckTagGroupValueItem[]> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Checkbox")]
@@ -25907,7 +24961,7 @@ public sealed class TCheckbox : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
-    public EventCallback<TCheckboxChangeEvent> OnChange { get; set; }
+    public EventCallback<bool> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "CheckboxGroup")]
@@ -25935,7 +24989,7 @@ public class TCheckboxGroup<T> : TContentComponentBase
     public T? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TCheckboxGroupChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "CheckboxGroup")]
@@ -26116,7 +25170,7 @@ public sealed class TColorPicker : TContentComponentBase
     public string? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TColorPickerChangeEvent> OnChange { get; set; }
+    public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TColorPickerClearEventContext> OnClear { get; set; }
@@ -26159,7 +25213,7 @@ public sealed class TColorPickerPanel : TContentComponentBase
     public string? Value { get; set; }
 
     [Parameter]
-    public EventCallback<TColorPickerPanelChangeEvent> OnChange { get; set; }
+    public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TColorPickerPanelClearEventContext> OnClear { get; set; }
@@ -26364,7 +25418,7 @@ public sealed class TDatePicker : TContentComponentBase
     public EventCallback<TDatePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TDatePickerChangeEvent> OnChange { get; set; }
+    public EventCallback<TDatePickerChangeEventValue> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TDatePickerClearEventContext> OnClear { get; set; }
@@ -26436,7 +25490,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     public EventCallback<TDatePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
     [Parameter]
-    public EventCallback<TDatePickerPanelChangeEvent> OnChange { get; set; }
+    public EventCallback<TDateValue> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TDatePickerPanelConfirmEventContext> OnConfirm { get; set; }
@@ -26571,7 +25625,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     public EventCallback<TDateRangePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TDateRangePickerChangeEvent> OnChange { get; set; }
+    public EventCallback<TDateValue[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TDateRangePickerConfirmEventContext> OnConfirm { get; set; }
@@ -26586,7 +25640,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     public EventCallback<TDateRangePickerMonthChangeEventContext> OnMonthChange { get; set; }
 
     [Parameter]
-    public EventCallback<TDateRangePickerPickEvent> OnPick { get; set; }
+    public EventCallback<TDateValue> OnPick { get; set; }
 
     [Parameter]
     public EventCallback<TDateRangePickerPresetClickEventContext> OnPresetClick { get; set; }
@@ -26640,7 +25694,7 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     public EventCallback<TDateRangePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
     [Parameter]
-    public EventCallback<TDateRangePickerPanelChangeEvent> OnChange { get; set; }
+    public EventCallback<TDateValue[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TDateRangePickerPanelConfirmEventContext> OnConfirm { get; set; }
@@ -27133,7 +26187,7 @@ public sealed class TDropdown : TContentComponentBase
     public RenderFragment? PanelTopContent { get; set; }
 
     [Parameter]
-    public EventCallback<TDropdownClickEvent> OnClick { get; set; }
+    public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "DropdownItem")]
@@ -27167,7 +26221,7 @@ public sealed class TDropdownItem : TContentComponentBase
     public RenderFragment? PrefixIconContent { get; set; }
 
     [Parameter]
-    public EventCallback<TDropdownItemClickEvent> OnClick { get; set; }
+    public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Empty")]
@@ -27231,7 +26285,7 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TTableAbnormalDragSortContext<T>> OnAbnormalDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableActiveChangeEvent<T>> OnActiveChange { get; set; }
+    public EventCallback<TEnhancedTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
@@ -27243,19 +26297,19 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableColumnControllerVisibleChangeEvent<T>> OnColumnControllerVisibleChange { get; set; }
+    public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TEnhancedTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableDataChangeEvent<T>> OnDataChange { get; set; }
+    public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
@@ -27264,16 +26318,16 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableExpandChangeEvent<T>> OnExpandChange { get; set; }
+    public EventCallback<TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableExpandedTreeNodesChangeEvent<T>> OnExpandedTreeNodesChange { get; set; }
+    public EventCallback<TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>[]> OnExpandedTreeNodesChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableFilterChangeEvent<T>> OnFilterChange { get; set; }
+    public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTablePageChangeEvent<T>> OnPageChange { get; set; }
+    public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
@@ -27312,10 +26366,10 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TEnhancedTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableSelectChangeEvent<T>> OnSelectChange { get; set; }
+    public EventCallback<TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
-    public EventCallback<TEnhancedTableSortChangeEvent<T>> OnSortChange { get; set; }
+    public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
     public EventCallback<TTableTreeExpandChangeContext<T>> OnTreeExpandChange { get; set; }
@@ -27526,7 +26580,7 @@ public sealed class TGuide : TContentComponentBase
     public RenderFragment<TGuideCounterSlotContext>? CounterContent { get; set; }
 
     [Parameter]
-    public EventCallback<TGuideChangeEvent> OnChange { get; set; }
+    public EventCallback<Number> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TGuideFinishEventContext> OnFinish { get; set; }
@@ -27590,9 +26644,6 @@ public sealed class TIcon : TContentComponentBase
 
     [Parameter]
     public string? Size { get; set; }
-
-    [Parameter]
-    public string? Style { get; set; }
 
     [Parameter]
     public string? Tag { get; set; }
@@ -27756,7 +26807,7 @@ public sealed class TImageViewer : TContentComponentBase
     public EventCallback<TImageViewerDownloadEventUrl> OnDownload { get; set; }
 
     [Parameter]
-    public EventCallback<TImageViewerIndexChangeEvent> OnIndexChange { get; set; }
+    public EventCallback<Number> OnIndexChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Input")]
@@ -27861,10 +26912,10 @@ public class TInput<T> : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TInputBlurEvent<T>> OnBlur { get; set; }
+    public EventCallback<T> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TInputChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TInputClearEventContext<T>> OnClear { get; set; }
@@ -27873,25 +26924,25 @@ public class TInput<T> : TContentComponentBase
     public EventCallback<TInputClickEventContext<T>> OnClick { get; set; }
 
     [Parameter]
-    public EventCallback<TInputCompositionendEvent<T>> OnCompositionend { get; set; }
+    public EventCallback<string> OnCompositionend { get; set; }
 
     [Parameter]
-    public EventCallback<TInputCompositionstartEvent<T>> OnCompositionstart { get; set; }
+    public EventCallback<string> OnCompositionstart { get; set; }
 
     [Parameter]
-    public EventCallback<TInputEnterEvent<T>> OnEnter { get; set; }
+    public EventCallback<T> OnEnter { get; set; }
 
     [Parameter]
-    public EventCallback<TInputFocusEvent<T>> OnFocus { get; set; }
+    public EventCallback<T> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TInputKeydownEvent<T>> OnKeydown { get; set; }
+    public EventCallback<T> OnKeydown { get; set; }
 
     [Parameter]
-    public EventCallback<TInputKeypressEvent<T>> OnKeypress { get; set; }
+    public EventCallback<T> OnKeypress { get; set; }
 
     [Parameter]
-    public EventCallback<TInputKeyupEvent<T>> OnKeyup { get; set; }
+    public EventCallback<T> OnKeyup { get; set; }
 
     [Parameter]
     public EventCallback<TInputMouseenterEventContext<T>> OnMouseenter { get; set; }
@@ -28020,25 +27071,25 @@ public class TInputNumber<T> : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberBlurEvent<T>> OnBlur { get; set; }
+    public EventCallback<TInputNumberValue> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T> OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberEnterEvent<T>> OnEnter { get; set; }
+    public EventCallback<TInputNumberValue> OnEnter { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberFocusEvent<T>> OnFocus { get; set; }
+    public EventCallback<TInputNumberValue> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberKeydownEvent<T>> OnKeydown { get; set; }
+    public EventCallback<TInputNumberValue> OnKeydown { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberKeypressEvent<T>> OnKeypress { get; set; }
+    public EventCallback<TInputNumberValue> OnKeypress { get; set; }
 
     [Parameter]
-    public EventCallback<TInputNumberKeyupEvent<T>> OnKeyup { get; set; }
+    public EventCallback<TInputNumberValue> OnKeyup { get; set; }
 
     [Parameter]
     public EventCallback<TInputNumberValidateEventContext<T>> OnValidate { get; set; }
@@ -28562,10 +27613,10 @@ public sealed class TPagination : TContentComponentBase
     public EventCallback<TPageInfo> OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPaginationCurrentChangeEvent> OnCurrentChange { get; set; }
+    public EventCallback<Number> OnCurrentChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPaginationPageSizeChangeEvent> OnPageSizeChange { get; set; }
+    public EventCallback<Number> OnPageSizeChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "PaginationMini")]
@@ -28661,7 +27712,7 @@ public sealed class TPopconfirm : TContentComponentBase
     public EventCallback<TPopconfirmConfirmEventOptions> OnConfirm { get; set; }
 
     [Parameter]
-    public EventCallback<TPopconfirmVisibleChangeEvent> OnVisibleChange { get; set; }
+    public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Popup")]
@@ -28738,7 +27789,7 @@ public sealed class TPopup : TContentComponentBase
     public EventCallback<TPopupScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
     [Parameter]
-    public EventCallback<TPopupVisibleChangeEvent> OnVisibleChange { get; set; }
+    public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "PrimaryTable")]
@@ -29023,7 +28074,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableActiveChangeEvent<T>> OnActiveChange { get; set; }
+    public EventCallback<TPrimaryTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
@@ -29035,19 +28086,19 @@ public class TPrimaryTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableColumnControllerVisibleChangeEvent<T>> OnColumnControllerVisibleChange { get; set; }
+    public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableDataChangeEvent<T>> OnDataChange { get; set; }
+    public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
@@ -29056,13 +28107,13 @@ public class TPrimaryTable<T> : TContentComponentBase
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableExpandChangeEvent<T>> OnExpandChange { get; set; }
+    public EventCallback<TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableFilterChangeEvent<T>> OnFilterChange { get; set; }
+    public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTablePageChangeEvent<T>> OnPageChange { get; set; }
+    public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
@@ -29101,10 +28152,10 @@ public class TPrimaryTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableSelectChangeEvent<T>> OnSelectChange { get; set; }
+    public EventCallback<TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
-    public EventCallback<TPrimaryTableSortChangeEvent<T>> OnSortChange { get; set; }
+    public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
@@ -29219,7 +28270,7 @@ public class TRadio<T> : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
-    public EventCallback<TRadioChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TRadioClickEventContext<T>> OnClick { get; set; }
@@ -29260,7 +28311,7 @@ public class TRadioButton<T> : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
-    public EventCallback<TRadioButtonChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TRadioButtonClickEventContext<T>> OnClick { get; set; }
@@ -29302,7 +28353,7 @@ public class TRadioGroup<T> : TContentComponentBase
     public TRadioGroupVariantValue? Variant { get; set; }
 
     [Parameter]
-    public EventCallback<TRadioGroupChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "RadioGroup")]
@@ -29390,10 +28441,10 @@ public sealed class TRangeInput : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputBlurEvent> OnBlur { get; set; }
+    public EventCallback<TInputValue[]> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputChangeEvent> OnChange { get; set; }
+    public EventCallback<TInputValue[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TRangeInputClearEventContext> OnClear { get; set; }
@@ -29402,10 +28453,10 @@ public sealed class TRangeInput : TContentComponentBase
     public EventCallback<TRangeInputClickEventContext?> OnClick { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputEnterEvent> OnEnter { get; set; }
+    public EventCallback<TInputValue[]> OnEnter { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputFocusEvent> OnFocus { get; set; }
+    public EventCallback<TInputValue[]> OnFocus { get; set; }
 
     [Parameter]
     public EventCallback<TRangeInputMouseenterEventContext> OnMouseenter { get; set; }
@@ -29466,10 +28517,10 @@ public sealed class TRangeInputPopup : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputPopupInputChangeEvent> OnInputChange { get; set; }
+    public EventCallback<TInputValue[]> OnInputChange { get; set; }
 
     [Parameter]
-    public EventCallback<TRangeInputPopupPopupVisibleChangeEvent> OnPopupVisibleChange { get; set; }
+    public EventCallback<bool> OnPopupVisibleChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Rate")]
@@ -29705,7 +28756,7 @@ public class TSelect<T> : TContentComponentBase
     public EventCallback<TSelectBlurEventContext<T>> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TSelectValue<TSelectOption>> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TSelectClearEventContext<T>> OnClear { get; set; }
@@ -29720,16 +28771,16 @@ public class TSelect<T> : TContentComponentBase
     public EventCallback<TSelectFocusEventContext<T>> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputChangeEvent<T>> OnInputChange { get; set; }
+    public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectPopupVisibleChangeEvent<T>> OnPopupVisibleChange { get; set; }
+    public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TSelectRemoveContext<T>> OnRemove { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectSearchEvent<T>> OnSearch { get; set; }
+    public EventCallback<string> OnSearch { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Select")]
@@ -29867,19 +28918,19 @@ public sealed class TSelectInput : TContentComponentBase
     public RenderFragment<TSelectInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputBlurEvent> OnBlur { get; set; }
+    public EventCallback<TSelectInputValue> OnBlur { get; set; }
 
     [Parameter]
     public EventCallback<TSelectInputClearEventContext> OnClear { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputEnterEvent> OnEnter { get; set; }
+    public EventCallback<TSelectInputValue> OnEnter { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputFocusEvent> OnFocus { get; set; }
+    public EventCallback<TSelectInputValue> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputInputChangeEvent> OnInputChange { get; set; }
+    public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
     public EventCallback<TSelectInputMouseenterEventContext> OnMouseenter { get; set; }
@@ -29891,10 +28942,10 @@ public sealed class TSelectInput : TContentComponentBase
     public EventCallback<TSelectInputPasteEventContext> OnPaste { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputPopupVisibleChangeEvent> OnPopupVisibleChange { get; set; }
+    public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
-    public EventCallback<TSelectInputTagChangeEvent> OnTagChange { get; set; }
+    public EventCallback<TTagInputValueItem[]> OnTagChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Skeleton")]
@@ -30140,7 +29191,7 @@ public sealed class TSteps : TContentComponentBase
     public TStepsThemeValue? Theme { get; set; }
 
     [Parameter]
-    public EventCallback<TStepsChangeEvent> OnChange { get; set; }
+    public EventCallback<TStepsChangeEventCurrent> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "StickyItem")]
@@ -30288,7 +29339,7 @@ public sealed class TSwiper : TContentComponentBase
     public RenderFragment? NavigationContent { get; set; }
 
     [Parameter]
-    public EventCallback<TSwiperChangeEvent> OnChange { get; set; }
+    public EventCallback<Number> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "SwiperItem")]
@@ -30342,7 +29393,7 @@ public sealed class TSwiperItem : TContentComponentBase
     public RenderFragment? NavigationContent { get; set; }
 
     [Parameter]
-    public EventCallback<TSwiperItemChangeEvent> OnChange { get; set; }
+    public EventCallback<Number> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Switch")]
@@ -30375,7 +29426,7 @@ public class TSwitch<T> : TContentComponentBase
     public RenderFragment<TSwitchLabelSlotContext<T>>? LabelContent { get; set; }
 
     [Parameter]
-    public EventCallback<TSwitchChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T> OnChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Switch")]
@@ -30706,7 +29757,7 @@ public class TTable<T> : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
-    public EventCallback<TTableActiveChangeEvent<T>> OnActiveChange { get; set; }
+    public EventCallback<TTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
@@ -30718,19 +29769,19 @@ public class TTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
-    public EventCallback<TTableChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTableColumnControllerVisibleChangeEvent<T>> OnColumnControllerVisibleChange { get; set; }
+    public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTableDataChangeEvent<T>> OnDataChange { get; set; }
+    public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
@@ -30739,13 +29790,13 @@ public class TTable<T> : TContentComponentBase
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TTableExpandChangeEvent<T>> OnExpandChange { get; set; }
+    public EventCallback<TTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTableFilterChangeEvent<T>> OnFilterChange { get; set; }
+    public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTablePageChangeEvent<T>> OnPageChange { get; set; }
+    public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
@@ -30784,10 +29835,10 @@ public class TTable<T> : TContentComponentBase
     public EventCallback<TTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
-    public EventCallback<TTableSelectChangeEvent<T>> OnSelectChange { get; set; }
+    public EventCallback<TTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTableSortChangeEvent<T>> OnSortChange { get; set; }
+    public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
@@ -31002,10 +30053,10 @@ public sealed class TTagInput : TContentComponentBase
     public RenderFragment<TTagInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
-    public EventCallback<TTagInputBlurEvent> OnBlur { get; set; }
+    public EventCallback<TTagInputValueItem[]> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TTagInputChangeEvent> OnChange { get; set; }
+    public EventCallback<TTagInputValueItem[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TTagInputClearEventContext> OnClear { get; set; }
@@ -31017,13 +30068,13 @@ public sealed class TTagInput : TContentComponentBase
     public EventCallback<TTagInputDragSortContext> OnDragSort { get; set; }
 
     [Parameter]
-    public EventCallback<TTagInputEnterEvent> OnEnter { get; set; }
+    public EventCallback<TTagInputValueItem[]> OnEnter { get; set; }
 
     [Parameter]
-    public EventCallback<TTagInputFocusEvent> OnFocus { get; set; }
+    public EventCallback<TTagInputValueItem[]> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TTagInputInputChangeEvent> OnInputChange { get; set; }
+    public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
     public EventCallback<TTagInputMouseenterEventContext> OnMouseenter { get; set; }
@@ -31128,22 +30179,22 @@ public sealed class TTextarea : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaBlurEvent> OnBlur { get; set; }
+    public EventCallback<TTextareaValue> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaChangeEvent> OnChange { get; set; }
+    public EventCallback<TTextareaValue> OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaFocusEvent> OnFocus { get; set; }
+    public EventCallback<TTextareaValue> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaKeydownEvent> OnKeydown { get; set; }
+    public EventCallback<TTextareaValue> OnKeydown { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaKeypressEvent> OnKeypress { get; set; }
+    public EventCallback<TTextareaValue> OnKeypress { get; set; }
 
     [Parameter]
-    public EventCallback<TTextareaKeyupEvent> OnKeyup { get; set; }
+    public EventCallback<TTextareaValue> OnKeyup { get; set; }
 
     [Parameter]
     public EventCallback<TTextareaValidateEventContext> OnValidate { get; set; }
@@ -31252,7 +30303,7 @@ public sealed class TTimePicker : TContentComponentBase
     public EventCallback<TTimePickerOpenEventContext> OnOpen { get; set; }
 
     [Parameter]
-    public EventCallback<TTimePickerPickEvent> OnPick { get; set; }
+    public EventCallback<string> OnPick { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "TimeRangePicker")]
@@ -31338,7 +30389,7 @@ public sealed class TTimeRangePicker : TContentComponentBase
     public EventCallback<TTimeRangePickerInputEventContext> OnInput { get; set; }
 
     [Parameter]
-    public EventCallback<TTimeRangePickerPickEvent> OnPick { get; set; }
+    public EventCallback<string[]> OnPick { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Timeline")]
@@ -31494,7 +30545,7 @@ public sealed class TTooltip : TContentComponentBase
     public EventCallback<TTooltipScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
     [Parameter]
-    public EventCallback<TTooltipVisibleChangeEvent> OnVisibleChange { get; set; }
+    public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
 [VueLibraryComponent("tdesign-vue-next", "Transfer")]
@@ -31581,13 +30632,13 @@ public class TTransfer<T> : TContentComponentBase
     public RenderFragment? TreeContent { get; set; }
 
     [Parameter]
-    public EventCallback<TTransferChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TTransferValue[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TCheckedOptions> OnCheckedChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTransferPageChangeEvent<T>> OnPageChange { get; set; }
+    public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
     public EventCallback<TTransferScrollEventOptions<T>> OnScroll { get; set; }
@@ -31728,10 +30779,10 @@ public class TTree<T> : TContentComponentBase
     public RenderFragment<TTreeNodeModel<T>>? OperationsContent { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeActiveEvent<T>> OnActive { get; set; }
+    public EventCallback<TTreeNodeValue[]> OnActive { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<TTreeNodeValue[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TTreeClickEventContext<T>> OnClick { get; set; }
@@ -31752,7 +30803,7 @@ public class TTree<T> : TContentComponentBase
     public EventCallback<TTreeDropEventContext<T>> OnDrop { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeExpandEvent<T>> OnExpand { get; set; }
+    public EventCallback<TTreeNodeValue[]> OnExpand { get; set; }
 
     [Parameter]
     public EventCallback<TTreeLoadEventContext<T>> OnLoad { get; set; }
@@ -31926,7 +30977,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public EventCallback<TTreeSelectBlurEventContext<DataOption, TreeValueType>> OnBlur { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeSelectChangeEvent<DataOption, TreeValueType>> OnChange { get; set; }
+    public EventCallback<TTreeSelectValue> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TTreeSelectClearEventContext<DataOption, TreeValueType>> OnClear { get; set; }
@@ -31935,10 +30986,10 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public EventCallback<TTreeSelectFocusEventContext<DataOption, TreeValueType>> OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeSelectInputChangeEvent<DataOption, TreeValueType>> OnInputChange { get; set; }
+    public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
-    public EventCallback<TTreeSelectPopupVisibleChangeEvent<DataOption, TreeValueType>> OnPopupVisibleChange { get; set; }
+    public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
     public EventCallback<TRemoveOptions<DataOption>> OnRemove { get; set; }
@@ -32117,7 +31168,7 @@ public class TUpload<T> : TContentComponentBase
     public EventCallback OnCancelUpload { get; set; }
 
     [Parameter]
-    public EventCallback<TUploadChangeEvent<T>> OnChange { get; set; }
+    public EventCallback<T[]> OnChange { get; set; }
 
     [Parameter]
     public EventCallback<TUploadDragenterEventContext<T>> OnDragenter { get; set; }
@@ -32147,7 +31198,7 @@ public class TUpload<T> : TContentComponentBase
     public EventCallback<TUploadRemoveContext> OnRemove { get; set; }
 
     [Parameter]
-    public EventCallback<TUploadSelectChangeEvent<T>> OnSelectChange { get; set; }
+    public EventCallback<File[]> OnSelectChange { get; set; }
 
     [Parameter]
     public EventCallback<TSuccessContext> OnSuccess { get; set; }

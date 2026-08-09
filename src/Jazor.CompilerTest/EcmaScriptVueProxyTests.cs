@@ -3391,6 +3391,15 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void TDesign_ValueEvents_UseFirstRuntimeArgumentAsCallbackPayload()
+    {
+        AssertTDesignEventPayload<TRadioGroup<string>>(nameof(TRadioGroup<string>.OnChange), typeof(string));
+        AssertTDesignEventPayload<TSwitch<bool>>(nameof(TSwitch<bool>.OnChange), typeof(bool));
+        AssertTDesignEventPayload<TPopup>(nameof(TPopup.OnVisibleChange), typeof(bool));
+        AssertTDesignEventPayload<TColorPickerPanel>(nameof(TColorPickerPanel.OnChange), typeof(string));
+    }
+
+    [TestMethod]
     public void ElementPlus_GeneratedComponentNames_UseMemberLevelGeneralMetadata()
     {
         var componentTypes = typeof(ElementPlus).Assembly
@@ -4233,6 +4242,16 @@ public sealed class EcmaScriptVueProxyTests
     private static bool IsEventCallback(Type type)
         => type == typeof(EventCallback) ||
            type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>);
+
+    private static void AssertTDesignEventPayload<TComponent>(string propertyName, Type payloadType)
+    {
+        var property = typeof(TComponent).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        Assert.IsNotNull(property, $"{typeof(TComponent).Name}.{propertyName}");
+        Assert.AreEqual(
+            typeof(EventCallback<>).MakeGenericType(payloadType),
+            property!.PropertyType,
+            $"{typeof(TComponent).Name}.{propertyName}");
+    }
 
     private static bool IsRenderFragment(Type type)
         => type == typeof(RenderFragment) ||
