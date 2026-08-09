@@ -14,6 +14,8 @@ internal static partial class DirectRenderFailureCaseCatalog
         AddBoundaryCaseFamily(cases, "side_effect_sequence", CreateSideEffectSequenceCase);
         AddBoundaryCaseFamily(cases, "dynamic_bulk_attribute_name", CreateDynamicBulkAttributeNameCase);
         AddBoundaryCaseFamily(cases, "unclosed_render_fragment_method_group", CreateUnclosedRenderFragmentMethodGroupCase);
+        AddBoundaryCaseFamily(cases, "unsupported_event_callback_binder", CreateUnsupportedEventCallbackBinderCase);
+        AddBoundaryCaseFamily(cases, "unsupported_render_tree_builder_extension", CreateUnsupportedRenderTreeBuilderExtensionCase);
     }
 
     private static void AddBoundaryCaseFamily(
@@ -291,6 +293,52 @@ internal static partial class DirectRenderFailureCaseCatalog
             {
                 Members = "private void RenderExpression(RenderTreeBuilder target) => target.OpenElement(0, \"section\");"
             }
+        };
+
+    private static BoundaryCaseSpec CreateUnsupportedEventCallbackBinderCase(int variant, string marker)
+        => variant switch
+        {
+            0 => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, value => _boundValue = value.Trim(), _boundValue)); builder.CloseElement();",
+                "EventCallbackFactory.CreateBinder is supported by RazorVue DOM @bind v1")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + ";"
+            },
+            1 => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, value => { _firstBoundValue = value; _secondBoundValue = value; }, _firstBoundValue)); builder.CloseElement();",
+                "EventCallbackFactory.CreateBinder is supported by RazorVue DOM @bind v1")
+            {
+                Members = "private string _firstBoundValue = " + Literal(marker) + "; private string _secondBoundValue = \"\";"
+            },
+            2 => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, value => Text = value, Text)); builder.CloseElement();",
+                "EventCallbackFactory.CreateBinder cannot bind to current-component parameter")
+            {
+                Members = "[Parameter] public string Text { get; set; } = " + Literal(marker) + ";"
+            },
+            _ => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, SetBoundValue, _boundValue)); builder.CloseElement();",
+                "EventCallbackFactory.CreateBinder is supported by RazorVue DOM @bind v1")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + "; private void SetBoundValue(string value) { _boundValue = value; }"
+            }
+        };
+
+    private static BoundaryCaseSpec CreateUnsupportedRenderTreeBuilderExtensionCase(int variant, string marker)
+        => variant switch
+        {
+            0 => new(
+                "builder.UnsupportedBuilderExtension();",
+                "RenderTreeBuilder.UnsupportedBuilderExtension is not supported by direct render operation lowering yet."),
+            1 => new(
+                "builder.UnsupportedBuilderExtensionWithValue(" + Literal(marker) + ");",
+                "RenderTreeBuilder.UnsupportedBuilderExtensionWithValue is not supported by direct render operation lowering yet."),
+            2 => new(
+                "builder.UnsupportedBuilderExtensionGeneric(" + Literal(marker) + ");",
+                "RenderTreeBuilder.UnsupportedBuilderExtensionGeneric is not supported by direct render operation lowering yet."),
+            _ => new(
+                "builder.UnsupportedBuilderExtensionOptional();",
+                "RenderTreeBuilder.UnsupportedBuilderExtensionOptional is not supported by direct render operation lowering yet.")
         };
 
     private delegate BoundaryCaseSpec BoundaryCaseFactory(int variant, string marker);

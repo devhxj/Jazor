@@ -423,6 +423,17 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
             {
             }
         }
+
+        public static class FailureRenderTreeBuilderExtensions
+        {
+            public static int UnsupportedBuilderExtension(this RenderTreeBuilder builder) => 0;
+
+            public static int UnsupportedBuilderExtensionWithValue(this RenderTreeBuilder builder, string value) => value.Length;
+
+            public static T UnsupportedBuilderExtensionGeneric<T>(this RenderTreeBuilder builder, T value) => value;
+
+            public static int UnsupportedBuilderExtensionOptional(this RenderTreeBuilder builder, int value = 0) => value;
+        }
         """;
 
     private sealed record Fixture(
