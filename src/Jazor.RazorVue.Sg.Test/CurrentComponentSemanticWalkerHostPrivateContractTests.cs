@@ -369,6 +369,64 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         Assert.AreNotEqual(nullReceiverDiagnostic.Message, literalReceiverDiagnostic.Message);
     }
 
+    [TestMethod]
+    public void FrameworkCallbackBoundaryEdges_KeepCurrentComponentDispatchExplicit()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var host = new CurrentComponentSemanticWalkerHost(component);
+        var localStateChanged = GetSingleInvocation(fixture, "ComponentUnderTest", "CurrentStateChangedCaller");
+        var factoryCreate = GetSingleInvocation(fixture, "ComponentUnderTest", "FactoryCreate");
+        var directBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactory");
+        var foreignBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithForeignReceiver");
+        var conditionalHandler = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ConditionalHandlers"),
+            "callback");
+        var conditionalStatement = GetOperation<IConditionalOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ConditionalHandlers")
+                .DescendantNodes()
+                .OfType<IfStatementSyntax>()
+                .Single());
+        var indexer = component.GetMembers().OfType<IPropertySymbol>().Single(static property => property.IsIndexer);
+
+        Assert.IsTrue(InvokeInstance<bool>(
+            host,
+            "IsStateHasChangedInvocation",
+            localStateChanged.TargetMethod,
+            localStateChanged.Instance));
+        Assert.IsInstanceOfType<Expression>(host.RewriteInvocationPreorder(factoryCreate, new SenseArgument()));
+        Assert.IsInstanceOfType<Expression>(host.RewriteInvocationPreorder(directBinder, new SenseArgument()));
+        Assert.ThrowsExactly<OperationTransformationException>(() =>
+            host.RewriteInvocationPreorder(foreignBinder, new SenseArgument()));
+        Assert.IsInstanceOfType<ConditionalExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            conditionalHandler,
+            new SenseArgument()));
+        Assert.IsNull(InvokeInstance<Expression?>(
+            host,
+            "RewriteConditionalEventCallbackHandler",
+            conditionalStatement,
+            new SenseArgument()));
+        Assert.IsFalse(InvokeStatic<bool>("IsAutoProperty", indexer));
+
+        Assert.IsFalse(InvokeStatic<bool>(
+            "IsEventCallbackFactoryCreate",
+            GetMethodSymbol(fixture, "OtherFactory", "Create")));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "IsEventCallbackFactoryCreateBinder",
+            GetMethodSymbol(fixture, "OtherFactory", "CreateBinder")));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "IsBindConverterFormatValue",
+            GetMethodSymbol(fixture, "OtherBindConverter", "FormatValue")));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "IsRazorRuntimeHelpersMethod",
+            GetMethodSymbol(fixture, "OtherRuntimeHelpers", "TypeCheck"),
+            "TypeCheck"));
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -463,7 +521,9 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 }
 
                 public void EmptyReturn() { return; }
-                public void StateChangedCaller() { StateHasChanged(); }
+                public void StateChangedCaller() { base.StateHasChanged(); }
+                public new void StateHasChanged() { }
+                public void CurrentStateChangedCaller() { StateHasChanged(); }
                 public void InvokeAsyncCaller() { _ = InvokeAsync(() => { }); }
                 public void InvokeAsync(int value) { }
                 public void StateHasChanged(int value) { }
@@ -477,6 +537,12 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 public void BinderFactoryWithField()
                 {
                     var binder = _factory.CreateBinder(this, (int value) => Count = value, Count);
+                }
+
+                public void BinderFactoryWithForeignReceiver()
+                {
+                    var receiver = new object();
+                    var binder = EventCallback.Factory.CreateBinder(receiver, (int value) => Count = value, Count);
                 }
 
                 public void FactoryCreate()
@@ -501,6 +567,13 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 {
                     _ = Changed.InvokeAsync(Count);
                 }
+
+                public void ConditionalHandlers(bool enabled)
+                {
+                    Action callback = enabled ? CurrentMethod : CurrentMethod;
+                    if (enabled)
+                        CurrentMethod();
+                }
             }
 
             public sealed class GenericHolder<T>;
@@ -513,6 +586,22 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public static class OtherHandlers
             {
                 public static void Set(int value) { }
+            }
+
+            public static class OtherFactory
+            {
+                public static void Create() { }
+                public static void CreateBinder() { }
+            }
+
+            public static class OtherBindConverter
+            {
+                public static void FormatValue() { }
+            }
+
+            public static class OtherRuntimeHelpers
+            {
+                public static void TypeCheck() { }
             }
             """,
             new CSharpParseOptions(LanguageVersion.Preview),
