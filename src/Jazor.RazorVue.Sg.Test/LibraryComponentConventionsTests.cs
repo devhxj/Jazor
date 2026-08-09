@@ -1,3 +1,4 @@
+using System.Reflection;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -159,6 +160,90 @@ public sealed class LibraryComponentConventionsTests
 
         var defaultSlotNames = LibraryComponentConventions.BuildParameterRuntimeNameMap(defaultSlot);
         Assert.AreEqual("default", defaultSlotNames["DefaultContent"]);
+    }
+
+    [TestMethod]
+    public void PrivateConventionHelpers_ClassifyNonLibraryAndIncompleteDescriptorShapes()
+    {
+        var compilation = CreateCompilation(
+            """
+            #nullable enable
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace Demo;
+
+            [VueLibraryComponent("demo-components", "LibraryWidget")]
+            [VueLibraryEmit(nameof(Ready))]
+            [VueLibraryEmit("Other", Name = "  ")]
+            public sealed class LibraryWidget : ComponentBase
+            {
+                [Parameter] public string Value { get; set; } = string.Empty;
+                [Parameter] public global::Microsoft.AspNetCore.Components.EventCallback Ready { get; set; }
+                [Parameter] public global::Microsoft.AspNetCore.Components.EventCallback ValueChanged { get; set; }
+            }
+
+            public sealed class StandardWidget : ComponentBase
+            {
+                public string Plain { get; set; } = string.Empty;
+                [Parameter] public string Value { get; set; } = string.Empty;
+                [Parameter] public global::Microsoft.AspNetCore.Components.EventCallback Ready { get; set; }
+                [Parameter] public global::Microsoft.AspNetCore.Components.RenderFragment? HeaderContent { get; set; }
+                public EventCallback LocalCallback { get; set; }
+                public RenderFragment? LocalFragment { get; set; }
+            }
+
+            public sealed class EventCallback;
+            public sealed class RenderFragment;
+            """);
+        var library = GetNamedType(compilation, "Demo.LibraryWidget");
+        var standard = GetNamedType(compilation, "Demo.StandardWidget");
+        var value = GetDeclaredProperty(library, "Value");
+        var ready = GetDeclaredProperty(library, "Ready");
+        var valueChanged = GetDeclaredProperty(library, "ValueChanged");
+        var plain = GetDeclaredProperty(standard, "Plain");
+        var standardValue = GetDeclaredProperty(standard, "Value");
+        var standardReady = GetDeclaredProperty(standard, "Ready");
+        var header = GetDeclaredProperty(standard, "HeaderContent");
+        var localCallback = GetDeclaredProperty(standard, "LocalCallback");
+        var localFragment = GetDeclaredProperty(standard, "LocalFragment");
+
+        Assert.IsFalse(LibraryComponentConventions.TryGetModelUpdateEventName(library, value, out _));
+        Assert.IsFalse(LibraryComponentConventions.TryGetModelUpdateEventName(library, ready, out _));
+        Assert.IsTrue(LibraryComponentConventions.TryGetModelUpdateEventName(library, valueChanged, out var updateName));
+        Assert.AreEqual("update:value", updateName);
+        Assert.AreEqual("ready", LibraryComponentConventions.GetEmitRuntimeName(library, ready));
+        Assert.AreEqual("headerContent", LibraryComponentConventions.GetSlotRuntimeName(standard, header));
+
+        Assert.IsTrue(InvokePrivate<bool>("IsVueLibraryComponent", library));
+        Assert.IsFalse(InvokePrivate<bool>("IsVueLibraryComponent", standard));
+        Assert.IsFalse(LibraryComponentConventions.IsParameterProperty(plain));
+        Assert.IsTrue(LibraryComponentConventions.IsParameterProperty(standardValue));
+        Assert.AreEqual(string.Empty, InvokePrivate<string>("ToDefaultRuntimeName", string.Empty));
+        Assert.AreEqual("value", InvokePrivate<string>("ToDefaultRuntimeName", "Value"));
+        Assert.IsTrue(InvokePrivate<bool>("IsEventCallback", ready.Type));
+        Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", localCallback.Type));
+        Assert.IsTrue(InvokePrivate<bool>("IsRenderFragment", header.Type));
+        Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", localFragment.Type));
+
+        var attributes = library.GetAttributes();
+        var noName = attributes.Single(attribute => attribute.ConstructorArguments[0].Value as string == "Ready");
+        var whitespaceName = attributes.Single(attribute => attribute.ConstructorArguments[0].Value as string == "Other");
+        Assert.IsNull(InvokePrivate<string?>("GetNamedString", noName, "Name"));
+        Assert.IsNull(InvokePrivate<string?>("GetNamedString", whitespaceName, "Name"));
+        Assert.IsFalse(InvokePrivate<bool>(
+            "IsDescriptorFor",
+            whitespaceName,
+            "ECMAScript.VueContract.VueLibraryEmitAttribute",
+            "Ready"));
+    }
+
+    private static T InvokePrivate<T>(string methodName, params object?[] arguments)
+    {
+        var method = typeof(LibraryComponentConventions)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(null, arguments)!;
     }
 
     private static CSharpCompilation CreateCompilation(string source)
