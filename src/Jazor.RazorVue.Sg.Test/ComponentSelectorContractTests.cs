@@ -201,6 +201,42 @@ public sealed class ComponentSelectorContractTests
         Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(component));
     }
 
+    [TestMethod]
+    public void SourceIdentityHelpers_RejectNonRazorSourcePathsAndNullPathInputs()
+    {
+        var compilation = CreateCompilation(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo;
+
+            [ECMAScriptModule("./components/plain-source")]
+            public sealed class PlainSourceComponent : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "plain-source");
+                }
+            }
+            """,
+            "Pages/PlainSourceComponent.cs");
+        var component = GetNamedType(compilation, "Demo.PlainSourceComponent");
+        var buildRenderTree = GetBuildMethod(component);
+
+        Assert.IsFalse(InvokePrivate<bool>("HasRazorSourceIdentity", component));
+        Assert.IsFalse(InvokePrivate<bool>("HasRazorSourceIdentity", buildRenderTree));
+        Assert.IsFalse(InvokePrivate<bool>(
+            "HasMappedRazorPath",
+            buildRenderTree.DeclaringSyntaxReferences.Single().GetSyntax()));
+        Assert.IsFalse(InvokePrivate<bool>("IsGeneratedSourcePath", (object?)null));
+        Assert.IsFalse(InvokePrivate<bool>("HasRazorSourcePath", (object?)null));
+        Assert.IsNotNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(component));
+        Assert.IsTrue(ComponentSelector.DiscoverTailRequiredComponents(compilation).IsDefaultOrEmpty);
+    }
+
     private static IMethodSymbol GetBuildMethod(INamedTypeSymbol type)
         => type.GetMembers("BuildRenderTree").OfType<IMethodSymbol>().Single();
 

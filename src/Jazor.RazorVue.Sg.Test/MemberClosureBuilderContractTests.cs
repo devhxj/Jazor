@@ -115,10 +115,14 @@ public sealed class MemberClosureBuilderContractTests
         Assert.IsTrue(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, initialized, null));
         Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, staticInitialized, componentBase));
         Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, fixture.NonRenderTreeMethod, componentBase));
+        var inheritedInitialized = componentBase!.GetMembers("OnInitialized").OfType<IMethodSymbol>().Single();
+        Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, inheritedInitialized, componentBase));
 
         Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, dispose, disposable, asyncDisposable));
         Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, disposeAsync, disposable, asyncDisposable));
         Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, disposeOverload, disposable, asyncDisposable));
+        var interfaceDispose = disposable!.GetMembers("Dispose").OfType<IMethodSymbol>().Single();
+        Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, interfaceDispose, disposable, asyncDisposable));
         Assert.IsTrue(InvokeStatic<bool>("ImplementsInterface", component, disposable));
         Assert.IsFalse(InvokeStatic<bool>("ImplementsInterface", component, componentBase));
         Assert.IsFalse(InvokeStatic<bool>("ImplementsInterface", component, null));

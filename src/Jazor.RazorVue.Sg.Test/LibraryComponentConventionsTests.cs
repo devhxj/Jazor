@@ -243,6 +243,56 @@ public sealed class LibraryComponentConventionsTests
             "Ready"));
     }
 
+    [TestMethod]
+    public void PrivateConventionHelpers_ScanDecoratedMetadataAndRejectWrongHostTypes()
+    {
+        var compilation = CreateCompilation(
+            """
+            #nullable enable
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace Demo;
+
+            [AttributeUsage(AttributeTargets.Class)]
+            public sealed class CustomMetadataAttribute : Attribute
+            {
+                public bool Flag { get; set; }
+            }
+
+            [Obsolete("container metadata")]
+            [CustomMetadata(Flag = true)]
+            [VueLibraryComponent("demo-components", "DecoratedWidget")]
+            public sealed class DecoratedWidget : ComponentBase
+            {
+                [Obsolete("listener metadata"), Parameter]
+                public EventCallback OnOpen { get; set; }
+            }
+            """);
+        var component = GetNamedType(compilation, "Demo.DecoratedWidget");
+        var onOpen = GetDeclaredProperty(component, "OnOpen");
+        var obsolete = component.GetAttributes().Single(attribute =>
+            string.Equals(attribute.AttributeClass?.ToDisplayString(), "System.ObsoleteAttribute", StringComparison.Ordinal));
+        var customMetadata = component.GetAttributes().Single(attribute =>
+            string.Equals(attribute.AttributeClass?.ToDisplayString(), "Demo.CustomMetadataAttribute", StringComparison.Ordinal));
+
+        Assert.IsTrue(LibraryComponentConventions.IsParameterProperty(onOpen));
+        Assert.AreEqual("open", LibraryComponentConventions.GetEmitRuntimeName(component, onOpen));
+        Assert.IsTrue(InvokePrivate<bool>("IsVueLibraryComponent", component));
+        Assert.IsFalse(InvokePrivate<bool>(
+            "IsDescriptorFor",
+            obsolete,
+            "ECMAScript.VueContract.VueLibraryEmitAttribute",
+            "OnOpen"));
+        Assert.IsNull(InvokePrivate<string?>("GetNamedString", customMetadata, "Name"));
+        Assert.IsNull(InvokePrivate<string?>("GetNamedString", customMetadata, "Flag"));
+
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", stringType));
+        Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", stringType));
+    }
+
     private static T InvokePrivate<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(LibraryComponentConventions)

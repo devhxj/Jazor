@@ -1,4 +1,5 @@
 using ECMAScript;
+using System.Reflection;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -91,6 +92,79 @@ public sealed class VueInjectRegistryTests
         StringAssert.Contains(exception.Message, "CaptureUnmatchedValues", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void PrivateRegistryHelpers_RejectMissingHostContractsAndScanDecoratedParameters()
+    {
+        var decoratedCompilation = CreateCompilation(RegistrationSource(
+            contractParameter:
+            "[global::System.Obsolete(\"contract metadata\"), Parameter(CaptureUnmatchedValues = false)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }",
+            implementationParameter:
+            "[global::System.Obsolete(\"implementation metadata\"), Parameter(CaptureUnmatchedValues = false)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }"));
+        var registration = decoratedCompilation.Assembly.GetAttributes().Single(attribute =>
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "ECMAScript.VueContract.VueInjectAttribute",
+                StringComparison.Ordinal));
+        var contract = GetNamedType(decoratedCompilation, "Demo.ContractShell");
+        var decoratedParameter = contract.GetMembers("AdditionalAttributes").OfType<IPropertySymbol>().Single();
+
+        Assert.IsFalse((bool)InvokePrivate("CapturesUnmatchedValues", decoratedParameter)!);
+        var readFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokePrivate("ReadComponentType", registration, 2, "extra"));
+        Assert.IsInstanceOfType<InvalidOperationException>(readFailure.InnerException);
+        StringAssert.Contains(readFailure.InnerException.Message, "extra argument", StringComparison.Ordinal);
+
+        AssertPrivateValidationFailure(
+            CreateMinimalCompilation(
+                "RazorVue.VueInject.MissingContainer",
+                "namespace Demo { public sealed class Contract { } public sealed class Implementation { } }"),
+            "Demo.Contract",
+            "Demo.Implementation",
+            "contract must implement IVueContainerComponent");
+        AssertPrivateValidationFailure(
+            CreateMinimalCompilation(
+                "RazorVue.VueInject.MissingComponent",
+                """
+                namespace ECMAScript.VueContract
+                {
+                    public interface IVueContainerComponent { }
+                    public interface IVueContainerImplementation<T> { }
+                }
+
+                namespace Demo
+                {
+                    public sealed class Contract : ECMAScript.VueContract.IVueContainerComponent { }
+                    public sealed class Implementation : ECMAScript.VueContract.IVueContainerImplementation<Contract> { }
+                }
+                """),
+            "Demo.Contract",
+            "Demo.Implementation",
+            "must implement IComponent");
+        AssertPrivateValidationFailure(
+            CreateMinimalCompilation(
+                "RazorVue.VueInject.MissingImplementationContract",
+                """
+                namespace ECMAScript.VueContract
+                {
+                    public interface IVueContainerComponent { }
+                }
+
+                namespace Microsoft.AspNetCore.Components
+                {
+                    public interface IComponent { }
+                }
+
+                namespace Demo
+                {
+                    public sealed class Contract : ECMAScript.VueContract.IVueContainerComponent { }
+                    public sealed class Implementation : Microsoft.AspNetCore.Components.IComponent { }
+                }
+                """),
+            "Demo.Contract",
+            "Demo.Implementation",
+            "must implement IVueContainerImplementation<Demo.Contract>");
+    }
+
     private static CSharpCompilation CreateCompilation(string source)
     {
         var compilation = CSharpCompilation.Create(
@@ -101,6 +175,43 @@ public sealed class VueInjectRegistryTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
         return compilation;
+    }
+
+    private static CSharpCompilation CreateMinimalCompilation(string assemblyName, string source)
+        => CSharpCompilation.Create(
+            assemblyName,
+            [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview))],
+            TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    private static INamedTypeSymbol GetNamedType(Compilation compilation, string metadataName)
+    {
+        var symbol = compilation.GetTypeByMetadataName(metadataName);
+        Assert.IsNotNull(symbol, metadataName);
+        return symbol!;
+    }
+
+    private static void AssertPrivateValidationFailure(
+        Compilation compilation,
+        string contractMetadataName,
+        string implementationMetadataName,
+        string expectedMessage)
+    {
+        var contract = GetNamedType(compilation, contractMetadataName);
+        var implementation = GetNamedType(compilation, implementationMetadataName);
+        var failure = Assert.Throws<TargetInvocationException>(() =>
+            InvokePrivate("ValidateRegistration", compilation, contract, implementation));
+
+        Assert.IsInstanceOfType<InvalidOperationException>(failure.InnerException);
+        StringAssert.Contains(failure.InnerException.Message, expectedMessage, StringComparison.Ordinal);
+    }
+
+    private static object? InvokePrivate(string methodName, params object?[] arguments)
+    {
+        var method = typeof(VueInjectRegistry)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return method.Invoke(null, arguments);
     }
 
     private static string RegistrationSource(
