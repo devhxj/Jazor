@@ -682,6 +682,49 @@ internal static class CurrentComponentClosureScenarioCatalog
                 "NamedType:Component.Helper"
             ]),
         Case(
+            "nested-record-container",
+            "runtime-class-inside-record-container-is-excluded",
+            """
+            class Component
+            {
+                record Outer
+                {
+                    public sealed class Helper
+                    {
+                        public int Compute() => 1;
+                    }
+                }
+
+                void Render() => _ = new Outer.Helper().Compute();
+            }
+            """,
+            CurrentComponentClosureRootKind.MethodSymbols,
+            ["Render"],
+            ["Method:Component.Render"]),
+        Case(
+            "foreign-runtime-nesting",
+            "foreign-runtime-class-chain-is-excluded",
+            """
+            class Foreign
+            {
+                public class Outer
+                {
+                    public class Helper
+                    {
+                        public int Value => 1;
+                    }
+                }
+            }
+
+            class Component
+            {
+                void Render() => _ = new Foreign.Outer.Helper().Value;
+            }
+            """,
+            CurrentComponentClosureRootKind.MethodSymbols,
+            ["Render"],
+            ["Method:Component.Render"]),
+        Case(
             "external-metadata-root",
             "external-root-filtering",
             "class Component { }",

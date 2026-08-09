@@ -22,6 +22,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         var title = GetProperty(component, "Title");
         var count = GetProperty(component, "Count");
         var computed = GetProperty(component, "Computed");
+        var noisy = GetProperty(component, "Noisy");
         var operations = GetMethod(fixture, "ComponentUnderTest", "Operations");
         var propertyReference = GetVariableInitializer(fixture, operations, "property");
         var convertedPropertyReference = GetVariableInitializer(fixture, operations, "convertedProperty");
@@ -38,6 +39,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         Assert.IsTrue(InvokeStatic<bool>("IsParameterProperty", changed));
         Assert.IsTrue(InvokeStatic<bool>("IsParameterProperty", title));
         Assert.IsFalse(InvokeStatic<bool>("IsParameterProperty", count));
+        Assert.IsFalse(InvokeStatic<bool>("IsParameterProperty", noisy));
         Assert.IsTrue(InvokeStatic<bool>("IsAutoProperty", count));
         Assert.IsFalse(InvokeStatic<bool>("IsAutoProperty", computed));
 
@@ -69,12 +71,15 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         Assert.IsFalse(InvokeStatic<bool>("IsEventCallbackInvoke", unrelated));
         Assert.IsTrue(InvokeStatic<bool>("IsEventCallbackFactoryCreate", factoryCreate));
         Assert.IsFalse(InvokeStatic<bool>("IsEventCallbackFactoryCreate", factoryCreateBinder));
+        Assert.IsFalse(InvokeStatic<bool>("IsEventCallbackFactoryCreate", unrelated));
         Assert.IsTrue(InvokeStatic<bool>("IsEventCallbackFactoryCreateBinder", factoryCreateBinder));
         Assert.IsFalse(InvokeStatic<bool>("IsEventCallbackFactoryCreateBinder", factoryCreate));
+        Assert.IsFalse(InvokeStatic<bool>("IsEventCallbackFactoryCreateBinder", unrelated));
         Assert.IsTrue(InvokeStatic<bool>("IsBindConverterFormatValue", formatValue));
         Assert.IsFalse(InvokeStatic<bool>("IsBindConverterFormatValue", unrelated));
         Assert.IsTrue(InvokeStatic<bool>("IsRazorRuntimeHelpersMethod", typeCheck, "TypeCheck"));
         Assert.IsFalse(InvokeStatic<bool>("IsRazorRuntimeHelpersMethod", typeCheck, "Other"));
+        Assert.IsFalse(InvokeStatic<bool>("IsRazorRuntimeHelpersMethod", unrelated, "TypeCheck"));
         Assert.IsTrue(InvokeStatic<bool>("IsRazorRuntimeHelpersTypeCheck", typeCheck));
         Assert.IsFalse(InvokeStatic<bool>("IsRazorRuntimeHelpersTypeCheck", unrelated));
     }
@@ -130,6 +135,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         Assert.IsInstanceOfType<IConversionOperation>(binderArguments[1]);
         Assert.IsInstanceOfType<IInstanceReferenceOperation>(((IConversionOperation)binderArguments[1]!).Operand);
         Assert.IsInstanceOfType<IDelegateCreationOperation>(binderArguments[2]);
+        var propertyBinderInvocation = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithProperty");
+        var propertyBinderArguments = new object?[] { propertyBinderInvocation, null, null };
+        Assert.IsTrue(InvokeStatic<bool>("TryGetCreateBinderReceiverAndHandler", propertyBinderArguments));
+        Assert.IsNotNull(propertyBinderArguments[1]);
+        Assert.IsNotNull(propertyBinderArguments[2]);
         Assert.IsFalse(InvokeStatic<bool>(
             "TryGetCreateBinderReceiverAndHandler",
             new object?[] { GetSingleInvocation(fixture, "ComponentUnderTest", "FactoryCreate"), null, null }));
@@ -587,6 +597,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 [Parameter] public string? Title { get; set; }
                 public int Count { get; set; }
                 public int Computed => Count;
+                [Obsolete] public int Noisy { get; set; }
                 public static int StaticValue => 1;
                 public string this[int index]
                 {
@@ -673,6 +684,13 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 public void BinderFactoryWithField()
                 {
                     var binder = _factory.CreateBinder(this, (int value) => Count = value, Count);
+                }
+
+                private EventCallbackFactory Factory => _factory;
+
+                public void BinderFactoryWithProperty()
+                {
+                    var binder = Factory.CreateBinder(this, (int value) => Count = value, Count);
                 }
 
                 public void BinderFactoryWithForeignReceiver()

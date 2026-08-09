@@ -117,15 +117,18 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
         var plainChild = GetNamedType(fixture, "PlainChild");
         var directType = GetInvocation(fixture, "DirectTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
         var localType = GetInvocation(fixture, "LocalTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var convertedLocalType = GetInvocation(fixture, "ConvertedLocalTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
         var reassignedType = GetInvocation(fixture, "ReassignedTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
         var escapedType = GetInvocation(fixture, "EscapedTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
         var dynamicType = GetInvocation(fixture, "DynamicTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
         var localDeclarator = GetVariableDeclarator(fixture, "LocalTypeComponent", "componentType");
+        var convertedLocalDeclarator = GetVariableDeclarator(fixture, "ConvertedLocalTypeComponent", "componentType");
         var reassignedDeclarator = GetVariableDeclarator(fixture, "ReassignedTypeComponent", "componentType");
         var escapedDeclarator = GetVariableDeclarator(fixture, "EscapedTypeComponent", "componentType");
 
         AssertResolvedComponentType(directType, "ModuleChild");
         AssertResolvedComponentType(localType, "ModuleChild");
+        AssertResolvedComponentType(convertedLocalType, "ModuleChild");
         AssertUnresolvedComponentType(reassignedType);
         AssertResolvedComponentType(escapedType, "ModuleChild");
         AssertUnresolvedComponentType(dynamicType);
@@ -134,6 +137,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
         Assert.IsNotNull(localReference);
         Assert.IsTrue(InvokeStatic<bool>("IsOpenComponentTypeArgumentReference", localReference));
         Assert.IsTrue(InvokeStatic<bool>("IsLocalReference", localReference, localDeclarator.Symbol));
+        Assert.IsTrue(InvokeStatic<bool>("IsLocalReference", convertedLocalType.Arguments[1].Value, convertedLocalDeclarator.Symbol));
         Assert.IsFalse(InvokeStatic<bool>("IsLocalReference", directType.Arguments[1].Value, localDeclarator.Symbol));
         Assert.IsTrue(InvokeStatic<bool>("AllLocalReferencesAreOpenComponentTypeArguments", localType, localDeclarator.Symbol));
         Assert.IsFalse(InvokeStatic<bool>("AllLocalReferencesAreOpenComponentTypeArguments", escapedType, escapedDeclarator.Symbol));
@@ -336,6 +340,9 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
         Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragmentComponentParameterValue", openElement));
         Assert.IsFalse(InvokeStatic<bool>("IsRenderFragmentOperationValue", openElement.Arguments[1].Value));
         Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragmentOperationValue", openElement.Arguments[1].Value));
+        var methodBody = GetMethodBody(fixture, "AllMappedCalls");
+        Assert.IsFalse(InvokeStatic<bool>("IsRenderFragmentOperationValue", methodBody));
+        Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragmentOperationValue", methodBody));
         var unrelatedMarkup = new object?[] { unrelatedCreation, null };
         Assert.IsFalse(InvokeStatic<bool>("TryGetStaticMarkupString", unrelatedMarkup));
 
@@ -416,6 +423,33 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
 
         Assert.IsNull(InvokeStatic<string?>("GetECMAScriptModuleExportPath", whitespaceModuleChild));
         AssertNoComponentImport(whitespaceModuleChild);
+    }
+
+    [TestMethod]
+    public void InvocationLowering_RecognizesEverySupportedRenderContextMethod()
+    {
+        var fixture = CreateFixture();
+        var host = new RenderTreeBuilderSemanticWalkerHost();
+        var invocations = GetMethod(fixture, "AllMappedCalls")
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Select(syntax => GetOperation<IInvocationOperation>(fixture, syntax))
+            .Where(static invocation => invocation.TargetMethod.ContainingType?.Name == "RenderTreeBuilder")
+            .ToArray();
+
+        Assert.IsNotEmpty(invocations);
+        foreach (var invocation in invocations)
+        {
+            var arguments = Enumerable.Range(0, invocation.Arguments.Length)
+                .Select(static index => (Expression)new Identifier($"arg{index}"))
+                .ToArray();
+            var rewritten = host.RewriteInvocation(
+                invocation,
+                new SenseArgument(UseImportAliases: true),
+                new Identifier("context"),
+                arguments);
+            Assert.IsNotNull(rewritten, invocation.TargetMethod.OriginalDefinition.ToDisplayString());
+        }
     }
 
     [TestMethod]
@@ -629,6 +663,12 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                     builder.OpenComponent(0, componentType);
                 }
 
+                public void ConvertedLocalTypeComponent(RenderTreeBuilder builder)
+                {
+                    Type componentType = typeof(ModuleChild);
+                    builder.OpenComponent(0, (Type)componentType);
+                }
+
                 public void ReassignedTypeComponent(RenderTreeBuilder builder)
                 {
                     Type componentType = typeof(ModuleChild);
@@ -694,6 +734,33 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                 {
                     var counter = 0;
                     counter += 1;
+                }
+
+                public void AllMappedCalls(RenderTreeBuilder builder)
+                {
+                    builder.OpenRegion(0);
+                    builder.OpenElement(1, "section");
+                    builder.AddContent(2, "content");
+                    builder.AddContent(3, new MarkupString("markup"));
+                    builder.AddAttribute(4, "disabled");
+                    builder.AddAttribute(5, "enabled", true);
+                    builder.AddAttribute(6, default(Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame));
+                    builder.AddMultipleAttributes(7, new System.Collections.Generic.KeyValuePair<string, object>[] { });
+                    builder.SetKey("key");
+                    builder.SetUpdatesAttributeName("value");
+                    builder.SetAttributeValue(8, "value");
+                    builder.AddNamedEvent("click", "event");
+                    builder.AddElementReferenceCapture(9, _ => { });
+                    builder.CloseElement();
+                    builder.OpenComponent<ModuleChild>(10);
+                    builder.AddComponentParameter(11, "Value", new object());
+                    builder.AddComponentReferenceCapture(12, _ => { });
+                    builder.AddComponentRenderMode(null!);
+                    builder.CloseComponent();
+                    builder.GetFrames();
+                    builder.Clear();
+                    builder.Dispose();
+                    builder.CloseRegion();
                 }
 
                 public void UnrelatedCall() => Helper();
