@@ -24,6 +24,9 @@ public sealed class VueModuleBuilderPrivateContractTests
         var nested = GetNamedType(compilation, "PrivateContracts.Shapes+Nested");
         var autoProperty = GetProperty(shapes, "Auto");
         var ordinaryMethod = GetMethod(shapes, "Ordinary");
+        var explicitMethod = shapes.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Single(static method => method.MethodKind == MethodKind.ExplicitInterfaceImplementation);
         var staticConstructor = shapes.StaticConstructors.Single();
         var finalizer = shapes.GetMembers().OfType<IMethodSymbol>().Single(method => method.MethodKind == MethodKind.Destructor);
         var backingField = shapes.GetMembers().OfType<IFieldSymbol>()
@@ -35,6 +38,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("Auto", Invoke<string>("GetSourceDeclaredNameCandidate", autoProperty.GetMethod!));
         Assert.AreEqual("Ordinary", Invoke<string>("GetSourceDeclaredNameCandidate", ordinaryMethod));
         Assert.AreEqual("Nested", Invoke<string>("GetSourceDeclaredNameCandidate", nested));
+        Assert.IsTrue(Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod).StartsWith("m$", StringComparison.Ordinal));
         Assert.AreEqual(
             "PrivateContracts",
             Invoke<string>(
@@ -44,7 +48,16 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(Invoke<bool>("ShouldReserveModuleMethodName", staticConstructor));
         Assert.IsFalse(Invoke<bool>("ShouldReserveModuleMethodName", autoProperty.SetMethod!));
         Assert.IsTrue(Invoke<bool>("ShouldReserveModuleMethodName", ordinaryMethod));
+        Assert.IsTrue(Invoke<bool>("ShouldReserveModuleMethodName", explicitMethod));
         Assert.IsFalse(Invoke<bool>("ShouldReserveModuleMethodName", finalizer));
+
+        StringAssert.Contains(
+            Invoke<string>("GetStableSymbolSortKey", ordinaryMethod),
+            "PrivateContracts.cs",
+            StringComparison.Ordinal);
+        Assert.AreEqual(
+            "string",
+            Invoke<string>("GetStableSymbolSortKey", compilation.GetSpecialType(SpecialType.System_String)));
     }
 
     [TestMethod]

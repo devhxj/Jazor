@@ -134,6 +134,29 @@ public sealed class MemberClosureBuilderContractTests
         Assert.IsTrue(InvokeStatic<bool>("IsAsyncDisposeReturnType", valueTaskOfT!.Construct(intType)));
         Assert.IsFalse(InvokeStatic<bool>("IsAsyncDisposeReturnType", compilation.GetSpecialType(SpecialType.System_String)));
 
+        var explicitDispose = fixture.ExplicitDisposeComponent.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Single(static method =>
+                method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
+                method.ExplicitInterfaceImplementations.Any(static implementation => implementation.Name == "Dispose"));
+        var explicitDisposeAsync = fixture.ExplicitDisposeComponent.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Single(static method =>
+                method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
+                method.ExplicitInterfaceImplementations.Any(static implementation => implementation.Name == "DisposeAsync"));
+        Assert.IsTrue(InvokeStatic<bool>(
+            "IsDisposeRoot",
+            fixture.ExplicitDisposeComponent,
+            explicitDispose,
+            disposable,
+            asyncDisposable));
+        Assert.IsTrue(InvokeStatic<bool>(
+            "IsDisposeRoot",
+            fixture.ExplicitDisposeComponent,
+            explicitDisposeAsync,
+            disposable,
+            asyncDisposable));
+
         StringAssert.Contains(
             InvokeStatic<string>("GetStableMemberKey", initialized),
             "ClosureContract.razor.g.cs",
@@ -210,6 +233,15 @@ public sealed class MemberClosureBuilderContractTests
                 }
             }
 
+            public sealed class ExplicitDisposeComponent : ComponentBase, IDisposable, IAsyncDisposable
+            {
+                void IDisposable.Dispose()
+                {
+                }
+
+                ValueTask IAsyncDisposable.DisposeAsync() => ValueTask.CompletedTask;
+            }
+
             internal sealed class ForeignComponent
             {
             }
@@ -225,8 +257,10 @@ public sealed class MemberClosureBuilderContractTests
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
 
         var componentSymbol = compilation.GetTypeByMetadataName("ClosureContract.ContractComponent");
+        var explicitDisposeComponent = compilation.GetTypeByMetadataName("ClosureContract.ExplicitDisposeComponent");
         var foreignComponent = compilation.GetTypeByMetadataName("ClosureContract.ForeignComponent");
         Assert.IsNotNull(componentSymbol);
+        Assert.IsNotNull(explicitDisposeComponent);
         Assert.IsNotNull(foreignComponent);
         Assert.IsTrue(
             GeneratedCSharpBinder.TryBindFinalCompilation(
@@ -238,12 +272,13 @@ public sealed class MemberClosureBuilderContractTests
         Assert.IsNotNull(binding);
 
         var nonRenderTreeMethod = componentSymbol!.GetMembers("BuildOther").OfType<IMethodSymbol>().Single();
-        return new Fixture(binding!, binding.Components.Single(), foreignComponent!, nonRenderTreeMethod);
+        return new Fixture(binding!, binding.Components.Single(), explicitDisposeComponent!, foreignComponent!, nonRenderTreeMethod);
     }
 
     private sealed record Fixture(
         GeneratedCSharpBinding Binding,
         BoundComponent Component,
+        INamedTypeSymbol ExplicitDisposeComponent,
         INamedTypeSymbol ForeignComponent,
         IMethodSymbol NonRenderTreeMethod);
 }

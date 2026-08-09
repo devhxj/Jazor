@@ -702,6 +702,23 @@ internal static class CurrentComponentClosureScenarioCatalog
             ["Render"],
             ["Method:Component.Render"]),
         Case(
+            "nested-static-container",
+            "static-nested-class-is-excluded",
+            """
+            class Component
+            {
+                static class Helper
+                {
+                    public static int Compute() => 1;
+                }
+
+                void Render() => _ = Helper.Compute();
+            }
+            """,
+            CurrentComponentClosureRootKind.MethodSymbols,
+            ["Render"],
+            ["Method:Component.Render"]),
+        Case(
             "foreign-runtime-nesting",
             "foreign-runtime-class-chain-is-excluded",
             """

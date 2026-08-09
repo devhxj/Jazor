@@ -139,9 +139,13 @@ public sealed class RenderEmitterPrivateContractTests
 
         Assert.AreEqual(" ./components/module ", Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "LibraryComponent")));
+        Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
         AssertComponentImport(GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
         AssertComponentImport(GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
+        var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoArgumentModuleComponent")));
+        StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoImportComponent")));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -812,11 +816,33 @@ public sealed class RenderEmitterPrivateContractTests
         InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new Identifier("captureFirst"));
         InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new Identifier("captureSecond"));
 
+        // A malformed sequence can leave a stale last-name marker. The frame must
+        // reject it after scanning rather than updating a different attribute.
+        SetNestedPrivateField(elementFrame, "_lastAttributeName", "missingAttribute");
+        Assert.IsFalse(InvokeNestedInstance<bool>(elementFrame, "TrySetLastAttributeValue", new Identifier("missingReplacement")));
+
         var rendered = InvokeNestedInstance<Expression>(elementFrame, "ToRenderExpression").ToKnRECMAScript();
         StringAssert.Contains(rendered, "mergeProps", StringComparison.Ordinal);
         StringAssert.Contains(rendered, "onClick", StringComparison.Ordinal);
         StringAssert.Contains(rendered, "captureFirst", StringComparison.Ordinal);
         StringAssert.Contains(rendered, "captureSecond", StringComparison.Ordinal);
+
+        var conditionalFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            conditionalFrame,
+            "AddAttribute",
+            CreateDirectAttribute("class", new StringLiteral("base", "\"base\"")));
+        InvokeNestedInstance<object?>(
+            conditionalFrame,
+            "AddConditionalAttributes",
+            new Identifier("enabled"),
+            CreateDirectAttributeArray(CreateDirectAttribute("checked", new BooleanLiteral(true, "true"))),
+            CreateDirectAttributeArray(CreateDirectAttribute("readonly", new BooleanLiteral(true, "true"))));
+        var conditionalRendered = InvokeNestedInstance<Expression>(conditionalFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(conditionalRendered, "enabled", StringComparison.Ordinal);
+        StringAssert.Contains(conditionalRendered, "checked", StringComparison.Ordinal);
+        StringAssert.Contains(conditionalRendered, "readonly", StringComparison.Ordinal);
+        StringAssert.Contains(conditionalRendered, "mergeProps", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -888,6 +914,12 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual(
             "LibraryComponent",
             Invoke<INamedTypeSymbol>("ResolveOpenComponentType", typeOpenComponent, openComponentContext).Name);
+        var genericTypeParameterOpenComponent = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "GenericOpenComponentShape"),
+            "OpenComponent");
+        Assert.Throws<TargetInvocationException>(() =>
+            Invoke<INamedTypeSymbol>("ResolveOpenComponentType", genericTypeParameterOpenComponent, openComponentContext));
 
         var builderBindings = GetMethod(fixture, "OperationShapes", "BuilderBindings");
         var builderBindingsSymbol = GetMethodSymbol(fixture, "OperationShapes", "BuilderBindings");
@@ -935,6 +967,17 @@ public sealed class RenderEmitterPrivateContractTests
             InvokeNestedInstance<Expression>(selectedSlotFrame, "ToRenderExpression").ToKnRECMAScript(),
             "showHeader",
             StringComparison.Ordinal);
+
+        var unavailableSlotFrame = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        AddComponentSlot(
+            unavailableSlotFrame,
+            "unavailable",
+            CreateDirectRenderFragment(
+                new Identifier("unavailableContent"),
+                parameterName: null,
+                availabilityCondition: new BooleanLiteral(false, "false")));
+        var unavailableSlots = InvokeNestedInstance<Expression>(unavailableSlotFrame, "ToRenderExpression").ToKnRECMAScript();
+        Assert.IsFalse(unavailableSlots.Contains("unavailable", StringComparison.Ordinal));
 
         var methodReferences = GetMethod(fixture, "EmitterHost", "AdditionalRenderFragmentReferences");
         var methodReferenceContext = CreateEmitContext(
@@ -1086,6 +1129,20 @@ public sealed class RenderEmitterPrivateContractTests
             .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
         return (T)method.Invoke(instance, arguments)!;
+    }
+
+    private static void SetNestedPrivateField(object instance, string fieldName, object? value)
+    {
+        FieldInfo? field = null;
+        for (var type = instance.GetType(); type is not null; type = type.BaseType)
+        {
+            field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            if (field is not null)
+                break;
+        }
+
+        Assert.IsNotNull(field, fieldName);
+        field!.SetValue(instance, value);
     }
 
     private static void AssertRenderTreeBuilderReceiver(
@@ -1268,6 +1325,20 @@ public sealed class RenderEmitterPrivateContractTests
         return constructor.Invoke([name, value]);
     }
 
+    private static object CreateDirectAttributeArray(params object[] attributes)
+    {
+        var attributeType = typeof(RenderEmitter).GetNestedType("DirectAttribute", BindingFlags.NonPublic);
+        Assert.IsNotNull(attributeType);
+        var immutableArrayType = typeof(ImmutableArray<>).MakeGenericType(attributeType!);
+        var value = immutableArrayType.GetField("Empty", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
+        var add = immutableArrayType
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Single(candidate => candidate.Name == "Add" && candidate.GetParameters().Length == 1);
+        foreach (var attribute in attributes)
+            value = add.Invoke(value, [attribute])!;
+        return value;
+    }
+
     private static void AssertReturnedPropertyValue(object emitter, IPropertySymbol property)
     {
         var arguments = new object?[] { property, null };
@@ -1363,6 +1434,9 @@ public sealed class RenderEmitterPrivateContractTests
             [ECMAScriptModule(" ")]
             [VueLibraryComponent(" tdesign-vue-next ", " Button ")]
             public sealed class LibraryComponent;
+
+            [ECMAScriptModule]
+            public sealed class NoArgumentModuleComponent;
 
             [Obsolete]
             public sealed class NoImportComponent;
@@ -1560,6 +1634,12 @@ public sealed class RenderEmitterPrivateContractTests
                     builder.CloseComponent();
                     builder.OpenComponent(1, typeof(LibraryComponent));
                     builder.CloseComponent();
+                }
+
+                public void GenericOpenComponentShape<TComponent>(RenderTreeBuilder builder)
+                    where TComponent : IComponent
+                {
+                    builder.OpenComponent<TComponent>(0);
                 }
 
                 public void AdditionalRenderFragmentReferences(RenderTreeBuilder builder)

@@ -142,6 +142,9 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         Assert.IsNotNull(propertyBinderArguments[2]);
         Assert.IsFalse(InvokeStatic<bool>(
             "TryGetCreateBinderReceiverAndHandler",
+            new object?[] { GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithMissingHandlerArgument"), null, null }));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "TryGetCreateBinderReceiverAndHandler",
             new object?[] { GetSingleInvocation(fixture, "ComponentUnderTest", "FactoryCreate"), null, null }));
         var binderDiagnostic = InvokeStatic<Exception>(
             "CreateUnsupportedEventCallbackFactoryCreateBinderException",
@@ -691,6 +694,15 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 public void BinderFactoryWithProperty()
                 {
                     var binder = Factory.CreateBinder(this, (int value) => Count = value, Count);
+                }
+
+                private static void ConsumeBinderArguments(EventCallbackFactory factory, int value)
+                {
+                }
+
+                public void BinderFactoryWithMissingHandlerArgument()
+                {
+                    ConsumeBinderArguments(_factory, Count);
                 }
 
                 public void BinderFactoryWithForeignReceiver()
