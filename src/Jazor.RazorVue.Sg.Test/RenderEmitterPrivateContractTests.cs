@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Collections.Immutable;
 using Acornima.Ast;
+using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -352,6 +353,68 @@ public sealed class RenderEmitterPrivateContractTests
         AssertConstructorMap(emitter, GetNamedType(fixture, "ExpressionCarrier"), expected: false);
     }
 
+    [TestMethod]
+    public void EmitterFrameAndBuilderBindingHelpers_PreserveDirectRenderStateTransitions()
+    {
+        var fixture = CreateFixture();
+        var bindingMethod = GetMethod(fixture, "OperationShapes", "BuilderBindings");
+        var bindingMethodSymbol = GetMethodSymbol(fixture, "OperationShapes", "BuilderBindings");
+        var builderParameter = bindingMethodSymbol.Parameters.Single(parameter => parameter.Name == "builder");
+        var otherParameter = bindingMethodSymbol.Parameters.Single(parameter => parameter.Name == "other");
+        var localDeclarator = GetVariableDeclarator(bindingMethod, "local");
+        var localSymbol = GetOperation<IVariableDeclaratorOperation>(fixture, localDeclarator).Symbol;
+        var builderReference = GetVariableInitializer(fixture, bindingMethod, "local");
+        var otherReference = GetVariableInitializer(fixture, bindingMethod, "otherAlias");
+        var convertedBuilderReference = GetVariableInitializer(fixture, bindingMethod, "converted");
+        var localInvocation = bindingMethod.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single(invocation => invocation.Expression.ToString().StartsWith("local.", StringComparison.Ordinal));
+        var localReference = GetOperation<IInvocationOperation>(fixture, localInvocation).Instance!;
+        var substitutions = ImmutableDictionary<IParameterSymbol, IOperation>.Empty
+            .WithComparers(SymbolEqualityComparer.Default);
+        var builderBinding = CreateBuilderBinding(builderParameter);
+        var localBinding = CreateBuilderBinding(localSymbol);
+
+        Assert.IsTrue(InvokeNestedInstance<bool>(builderBinding, "Matches", builderReference, substitutions));
+        Assert.IsFalse(InvokeNestedInstance<bool>(builderBinding, "Matches", otherReference, substitutions));
+        Assert.IsTrue(InvokeNestedInstance<bool>(builderBinding, "Matches", convertedBuilderReference, substitutions));
+        Assert.IsTrue(InvokeNestedInstance<bool>(
+            builderBinding,
+            "Matches",
+            otherReference,
+            substitutions.Add(otherParameter, builderReference)));
+        Assert.IsTrue(InvokeNestedInstance<bool>(localBinding, "Matches", localReference, substitutions));
+        Assert.IsFalse(InvokeNestedInstance<bool>(builderBinding, "Matches", localReference, substitutions));
+
+        var elementFrame = CreateElementFrame();
+        Assert.IsFalse(InvokeNestedInstance<bool>(elementFrame, "AddMultipleAttributes", new NullLiteral("null")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(elementFrame, "AddMultipleAttributes", new Identifier("undefined")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(elementFrame, "TrySetLastAttributeValue", new Identifier("missing")));
+
+        InvokeNestedInstance<object?>(
+            elementFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onClick", new Identifier("handler")));
+        Assert.IsTrue(InvokeNestedInstance<bool>(elementFrame, "TrySetLastAttributeValue", new Identifier("replacementHandler")));
+        InvokeNestedInstance<object?>(elementFrame, "SetUpdatesAttributeName", "value");
+        InvokeNestedInstance<object?>(elementFrame, "SetEventModifier", "onclick", new Identifier("first"), true, false);
+        InvokeNestedInstance<object?>(elementFrame, "SetEventModifier", "onclick", new Identifier("second"), true, false);
+        InvokeNestedInstance<object?>(elementFrame, "SetEventModifier", "onclick", new BooleanLiteral(true, "true"), true, false);
+        InvokeNestedInstance<object?>(elementFrame, "SetEventModifier", "onclick", new BooleanLiteral(false, "false"), true, false);
+        Assert.IsTrue(InvokeNestedInstance<bool>(elementFrame, "AddMultipleAttributes", new Identifier("attrs")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(elementFrame, "TrySetLastAttributeValue", new Identifier("afterMultiple")));
+        InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new NullLiteral("null"));
+        InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new Identifier("undefined"));
+        InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new Identifier("captureFirst"));
+        InvokeNestedInstance<object?>(elementFrame, "AddReferenceCapture", new Identifier("captureSecond"));
+
+        var rendered = InvokeNestedInstance<Expression>(elementFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(rendered, "mergeProps", StringComparison.Ordinal);
+        StringAssert.Contains(rendered, "onClick", StringComparison.Ordinal);
+        StringAssert.Contains(rendered, "captureFirst", StringComparison.Ordinal);
+        StringAssert.Contains(rendered, "captureSecond", StringComparison.Ordinal);
+    }
+
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
     {
         var arguments = new object?[] { operation, null };
@@ -415,6 +478,44 @@ public sealed class RenderEmitterPrivateContractTests
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
             .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
         return (T)method.Invoke(emitter, arguments)!;
+    }
+
+    private static T InvokeNestedInstance<T>(object instance, string methodName, params object?[] arguments)
+    {
+        var method = instance.GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(instance, arguments)!;
+    }
+
+    private static object CreateBuilderBinding(ISymbol symbol)
+    {
+        var bindingType = typeof(RenderEmitter).GetNestedType("BuilderBinding", BindingFlags.NonPublic);
+        Assert.IsNotNull(bindingType);
+        var constructor = bindingType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 1);
+        return constructor.Invoke([symbol]);
+    }
+
+    private static object CreateElementFrame()
+    {
+        var elementFrameType = typeof(RenderEmitter).GetNestedType("ElementFrame", BindingFlags.NonPublic);
+        Assert.IsNotNull(elementFrameType);
+        var constructor = elementFrameType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 2);
+        return constructor.Invoke([new StringLiteral("div", "\"div\""), "div"]);
+    }
+
+    private static object CreateDirectAttribute(string name, Expression value)
+    {
+        var attributeType = typeof(RenderEmitter).GetNestedType("DirectAttribute", BindingFlags.NonPublic);
+        Assert.IsNotNull(attributeType);
+        var constructor = attributeType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 2);
+        return constructor.Invoke([name, value]);
     }
 
     private static void AssertReturnedPropertyValue(object emitter, IPropertySymbol property)
@@ -716,6 +817,15 @@ public sealed class RenderEmitterPrivateContractTests
                 public void RuntimeHelpersCall()
                 {
                     var checkedValue = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck(1);
+                }
+
+                public void BuilderBindings(RenderTreeBuilder builder, RenderTreeBuilder other)
+                {
+                    RenderTreeBuilder local = builder;
+                    RenderTreeBuilder otherAlias = other;
+                    RenderTreeBuilder converted = (RenderTreeBuilder)builder;
+                    local.AddContent(0, "local");
+                    converted.AddContent(1, "converted");
                 }
             }
             """,
