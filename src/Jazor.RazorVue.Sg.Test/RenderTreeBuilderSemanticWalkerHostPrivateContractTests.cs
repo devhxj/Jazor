@@ -303,6 +303,61 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             compoundLocal.Symbol));
     }
 
+    [TestMethod]
+    public void RenderContextFailureEdges_RejectNonFrameworkFragmentsAndUnresolvableComponents()
+    {
+        var fixture = CreateFixture();
+        var host = new RenderTreeBuilderSemanticWalkerHost();
+        var customFragment = GetNamedType(fixture, "Other+RenderFragment");
+        var customGenericFragment = GetNamedType(fixture, "Other+RenderFragment`1");
+        var invalidLibraryExport = GetNamedType(fixture, "InvalidLibraryExportChild");
+        var dynamicType = GetInvocation(
+            fixture,
+            "DynamicTypeComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var unsupportedComponent = GetInvocation(
+            fixture,
+            "UnsupportedComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var openElement = GetInvocation(
+            fixture,
+            "SupportedCalls",
+            static invocation => invocation.TargetMethod.Name == "OpenElement");
+        var eventModifier = GetInvocation(
+            fixture,
+            "EventModifierCalls",
+            static invocation => invocation.TargetMethod.Name == "AddEventPreventDefaultAttribute");
+        var unrelatedCreation = GetVariableInitializer(fixture, "StaticMarkup", "unrelated");
+
+        Assert.IsFalse(InvokeStatic<bool>("IsRenderFragment", customFragment));
+        Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragment", customGenericFragment));
+        AssertNoComponentImport(invalidLibraryExport);
+        Assert.IsFalse(InvokeStatic<bool>("IsRenderFragmentComponentParameterValue", openElement));
+        Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragmentComponentParameterValue", openElement));
+        Assert.IsFalse(InvokeStatic<bool>("IsRenderFragmentOperationValue", openElement.Arguments[1].Value));
+        Assert.IsFalse(InvokeStatic<bool>("IsGenericRenderFragmentOperationValue", openElement.Arguments[1].Value));
+        var unrelatedMarkup = new object?[] { unrelatedCreation, null };
+        Assert.IsFalse(InvokeStatic<bool>("TryGetStaticMarkupString", unrelatedMarkup));
+
+        Assert.ThrowsExactly<OperationTransformationException>(() =>
+            host.RewriteInvocation(
+                dynamicType,
+                new SenseArgument(),
+                new Identifier("ctx"),
+                [new Identifier("sequence"), new Identifier("componentType")]));
+        Assert.ThrowsExactly<OperationTransformationException>(() =>
+            host.RewriteInvocation(
+                unsupportedComponent,
+                new SenseArgument(),
+                new Identifier("ctx"),
+                [new Identifier("sequence")]));
+        Assert.Throws<TargetInvocationException>(() => InvokeStatic<Expression>(
+            "BuildEventModifierCall",
+            eventModifier,
+            null,
+            new Expression[] { new Identifier("builder"), new Identifier("sequence"), new Identifier("name") }));
+    }
+
     private static void AssertStaticMarkup(IOperation operation, string expected)
     {
         var arguments = new object?[] { operation, null };
@@ -400,7 +455,16 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             [VueLibraryComponent("", "TBad")]
             public sealed class InvalidLibraryChild : ComponentBase;
 
+            [VueLibraryComponent("tdesign-vue-next", " ")]
+            public sealed class InvalidLibraryExportChild : ComponentBase;
+
             public sealed class PlainChild : ComponentBase;
+
+            public static class Other
+            {
+                public delegate void RenderFragment(RenderTreeBuilder builder);
+                public delegate void RenderFragment<TValue>(TValue value);
+            }
 
             public sealed class Host
             {
