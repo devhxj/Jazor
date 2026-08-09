@@ -184,6 +184,238 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersStaticAndExpressionBodiedRenderFragmentMethodGroups()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, (RenderFragment)RenderStaticHeader); builder.AddContent(1, (RenderFragment)RenderExpressionHeader);",
+            """
+            private static void RenderStaticHeader(RenderTreeBuilder child) => child.AddContent(0, "static-method-group");
+            private void RenderExpressionHeader(RenderTreeBuilder child) => child.AddContent(0, "expression-method-group");
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "static-method-group", StringComparison.Ordinal);
+        StringAssert.Contains(output, "expression-method-group", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsRecursiveRenderFragmentMethodGroup()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, (RenderFragment)RecursiveHeader);",
+            """
+            private void RecursiveHeader(RenderTreeBuilder child)
+            {
+                RecursiveHeader(child);
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(
+            failure,
+            "Recursive RenderFragment method group 'RecursiveHeader' is not supported by direct render operation lowering.",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersRenderFragmentPropertiesAcrossGetterShapes()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, ExpressionFragment); builder.AddContent(1, BlockFragment); builder.AddContent(2, StaticFragment);",
+            """
+            private RenderFragment ExpressionFragment => child => child.AddContent(0, "expression-property");
+
+            private RenderFragment BlockFragment
+            {
+                get
+                {
+                    return child => child.AddContent(0, "block-property");
+                }
+            }
+
+            private static RenderFragment StaticFragment => child => child.AddContent(0, "static-property");
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "expression-property", StringComparison.Ordinal);
+        StringAssert.Contains(output, "block-property", StringComparison.Ordinal);
+        StringAssert.Contains(output, "static-property", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsRecursiveRenderFragmentProperty()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, RecursiveFragment);",
+            "private RenderFragment RecursiveFragment => RecursiveFragment;");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(
+            failure,
+            "Recursive RenderFragment property 'RecursiveFragment' is not supported by direct render operation lowering.",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersObjectCarriedFragmentsFromConstructorInitializerAndHelpers()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var fromConstructor = CreateConstructorCarrier();
+            var fromInitializer = CreateInitializerCarrier();
+            builder.AddContent(0, fromConstructor.Header);
+            builder.AddContent(1, fromInitializer.Header);
+            """,
+            """
+            private sealed class FragmentCarrier
+            {
+                public FragmentCarrier()
+                {
+                }
+
+                public FragmentCarrier(RenderFragment header)
+                {
+                    Header = header;
+                }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            private FragmentCarrier CreateConstructorCarrier()
+            {
+                RenderFragment fragment = child => child.AddContent(0, "constructor-carrier");
+                return new FragmentCarrier(fragment);
+            }
+
+            private FragmentCarrier CreateInitializerCarrier() => new FragmentCarrier
+            {
+                Header = child => child.AddContent(0, "initializer-carrier")
+            };
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "constructor-carrier", StringComparison.Ordinal);
+        StringAssert.Contains(output, "initializer-carrier", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_HoistsRecursiveRenderFragmentHelperWithItsCallArguments()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, RecursiveFragment(1));",
+            """
+            private RenderFragment RecursiveFragment(int depth) => child =>
+            {
+                child.AddContent(0, "recursive-depth:" + depth);
+                if (depth > 0)
+                {
+                    child.AddContent(1, RecursiveFragment(depth - 1));
+                }
+            };
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = string.Join(
+            Environment.NewLine,
+            result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
+        StringAssert.Contains(output, "recursive-depth:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "depth - 1", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersExplicitlyConvertedLocalGenericRenderFragmentInvocation()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "RenderFragment<string> template = value => child => child.AddContent(0, \"converted-generic:\" + value); builder.AddContent(0, ((RenderFragment<string>)template).Invoke(Text));",
+            "[Parameter] public string Text { get; set; } = \"\";");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "converted-generic:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_RejectsForeachAllDiscardDeconstruction()
     {
         var fixture = CreateDirectRenderFixture(
@@ -235,7 +467,7 @@ public sealed class RenderEmitterContractTests
         var declaration = sourceTree.GetRoot()
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
-            .Single();
+            .Single(static candidate => candidate.Identifier.ValueText == "ContractComponent");
         var component = model.GetDeclaredSymbol(declaration);
         Assert.IsNotNull(component);
         var methodDeclaration = declaration.Members.OfType<MethodDeclarationSyntax>().Single();
@@ -281,7 +513,7 @@ public sealed class RenderEmitterContractTests
         var declaration = sourceTree.GetRoot()
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
-            .Single();
+            .Single(static candidate => candidate.Identifier.ValueText == "ContractComponent");
         var component = model.GetDeclaredSymbol(declaration);
         Assert.IsNotNull(component);
         var methodDeclaration = declaration.Members.OfType<MethodDeclarationSyntax>()
