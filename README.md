@@ -86,20 +86,17 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-09
+### 2026-08-10
 
-- Jazor 0.4 now meets its RazorVue branch-coverage release gate: 4,613 official Razor SG scenarios cover 90.01% of branches. The embedded DenoHost runtime is updated to 2.9.5, with local NuGet Deno and browser smoke verification.
-- JazorAdmin now reproduces the TDesign Starter administration shell with Tencent Cloud's rounded theme, compact content spacing, medium route tabs, route-aware primary and secondary navigation, and an administrator-only global appearance configurator fixed at the bottom center.
-- Its IconBar remains the primary navigation rail, while the selected primary module title stays fixed in the aligned 64px secondary header and only the secondary menu scrolls. Collapsing removes that rail completely; logo, toggle, content gutters, and mobile containment remain aligned.
-- The breathing quick-action trigger now opens four square actions along a 90-degree arc at 22.5-degree intervals. The login artwork also blends continuously into the form surface.
-- `ECMAScript.Style` adds typed Starter layout values and domain-preserving `important(value)` support. Generated TDesign multi-argument events now pass their first runtime Vue argument as the `EventCallback<T>` payload.
+- Jazor 0.5 raises the RazorVue quality gate to 96% branch coverage: 4,675 official Razor SG scenarios pass with 97.71% line coverage and 96.01% branch coverage.
+- RazorVue direct-render and generated-C# binding regressions now cover metadata-only render methods, generic scoped content, helper fragment propagation, import boundaries, and render-frame ordering while keeping official Razor SG output as the production input.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.3.4
+dotnet add package Jazor --version 0.5.0
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -108,8 +105,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.4" />
-  <PackageReference Include="Jazor.Vue" Version="0.3.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.5.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.5.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -117,11 +114,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.4" />
-  <PackageReference Include="ECMAScript.Style" Version="0.3.4" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.3.4" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.4" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.4" />
+  <PackageReference Include="Jazor" Version="0.5.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.5.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.5.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.5.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.5.0" />
 </ItemGroup>
 ```
 

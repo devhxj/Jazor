@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2026-08-10
+
+- Jazor 0.5 raises the RazorVue quality gate to 96% branch coverage: 4,675 official Razor Source Generator scenarios now pass with 97.71% line coverage and 96.01% branch coverage.
+- RazorVue direct-render and generated-C# binding regressions now cover metadata-only render methods, generic scoped content, helper fragment propagation, import boundaries, and render-frame ordering without weakening the official Razor SG input contract.
+
 ## 2026-08-09
 
 - Jazor 0.4 now meets its RazorVue release gate: all 4,613 official Razor Source Generator scenarios pass, with 90.01% branch coverage. Local NuGet package consumers also pass the Deno execution and real-browser Counter smoke paths.

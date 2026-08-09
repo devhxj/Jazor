@@ -121,9 +121,8 @@ internal static class GeneratedCSharpBinder
         failure = null;
         var syntaxReference = buildRenderTree.DeclaringSyntaxReferences
             .FirstOrDefault(reference => reference.GetSyntax() is MethodDeclarationSyntax);
-        if (syntaxReference is null ||
-            syntaxReference.GetSyntax() is not MethodDeclarationSyntax declaration ||
-            declaration.Body is null)
+        var declaration = syntaxReference?.GetSyntax() as MethodDeclarationSyntax;
+        if (declaration?.Body is null)
         {
             failure = "RazorVue component '" +
                       componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +

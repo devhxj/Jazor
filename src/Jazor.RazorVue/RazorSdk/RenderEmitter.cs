@@ -2230,8 +2230,9 @@ internal static class RenderEmitter
                 return true;
             }
 
-            if (!_activeRenderFragmentHelpers.Add(method.OriginalDefinition))
-                throw Unsupported(invocation, "Recursive RenderFragment helper '" + method.Name + "' is not supported by direct render operation lowering yet.");
+            // Membership was checked immediately above; recursive re-entry is handled by
+            // the hoisted-helper path before reaching this registration.
+            _activeRenderFragmentHelpers.Add(method.OriginalDefinition);
 
             var substitutions = context.Substitutions.ToBuilder();
             for (var index = 0; index < invocation.Arguments.Length && index < method.Parameters.Length; index++)

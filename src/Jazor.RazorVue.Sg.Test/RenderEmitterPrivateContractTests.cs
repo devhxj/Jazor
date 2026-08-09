@@ -359,6 +359,7 @@ public sealed class RenderEmitterPrivateContractTests
                 .Single());
         Assert.IsTrue(InvokeEmitter<bool>("IsRazorRuntimeHelpersTypeCheck", helperInvocation.TargetMethod));
         Assert.IsFalse(InvokeEmitter<bool>("IsRazorRuntimeHelpersTypeCheck", GetMethodSymbol(fixture, "OperationShapes", "GetValue")));
+        Assert.IsFalse(InvokeEmitter<bool>("IsRazorRuntimeHelpersTypeCheck", GetMethodSymbol(fixture, "RuntimeHelpers", "TypeCheck")));
 
         var content = new Identifier("content");
         var directFragment = CreateDirectRenderFragment(content, parameterName: null);
@@ -474,6 +475,7 @@ public sealed class RenderEmitterPrivateContractTests
         var otherContent = GetInvocation(fixture, helperMethod, "AddContent", ordinal: 1);
         var instanceHelper = GetInvocation(fixture, helperMethod, "InstanceBuilderHelper");
         var staticHelper = GetInvocation(fixture, helperMethod, "StaticBuilderHelper");
+        var localHelper = GetInvocation(fixture, helperMethod, "LocalBuilderHelper");
         var externalHelper = GetInvocation(fixture, helperMethod, "Write");
         var foreignInstanceHelper = GetInvocation(fixture, helperMethod, "Write", ordinal: 1);
         var expressionHelper = GetInvocation(fixture, helperMethod, "ExpressionBuilderHelper");
@@ -484,6 +486,7 @@ public sealed class RenderEmitterPrivateContractTests
         AssertRenderTreeBuilderReceiver(emitter, builderContent, context, expected: true);
         AssertRenderTreeBuilderReceiver(emitter, otherContent, context, expected: false);
         AssertRenderTreeBuilderReceiver(emitter, instanceHelper, context, expected: false);
+        AssertRenderTreeBuilderReceiver(emitter, staticHelper, context, expected: true);
         AssertRenderTreeBuilderReceiver(emitter, noArgumentHelper, context, expected: false);
 
         var state = CreateRenderState();
@@ -492,6 +495,7 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", externalHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", foreignInstanceHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", expressionHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", localHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", mismatchedHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", nonBuilderHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", noArgumentHelper, context, state));
@@ -540,6 +544,40 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual(
             GetRecordProperty<string>(firstHelperFunction, "FunctionName"),
             GetRecordProperty<string>(cachedHelperFunction, "FunctionName"));
+
+        var multiRootMethod = GetMethodSymbol(fixture, "EmitterHost", "MultiRootFragmentFactory");
+        var multiRootBody = new object?[] { multiRootMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", multiRootBody));
+        var multiRootFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            multiRootMethod,
+            multiRootBody[1],
+            context);
+        Assert.IsTrue(GetRecordProperty<bool>(multiRootFunction, "UsesFragment"));
+
+        var markupMethod = GetMethodSymbol(fixture, "EmitterHost", "MarkupFragmentFactory");
+        var markupBody = new object?[] { markupMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", markupBody));
+        var markupFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            markupMethod,
+            markupBody[1],
+            context);
+        Assert.IsTrue(GetRecordProperty<bool>(markupFunction, "UsesStaticVNode"));
+
+        var genericContentMethod = GetMethod(fixture, "EmitterHost", "GenericContentInvocation");
+        var genericContentSymbol = GetMethodSymbol(fixture, "EmitterHost", "GenericContentInvocation");
+        var genericContentState = CreateRenderState();
+        InvokeEmitterInstance<object?>(
+            emitter,
+            "EmitAddContent",
+            GetInvocation(fixture, genericContentMethod, "AddContent"),
+            CreateEmitContext(genericContentSymbol.Parameters[0]),
+            genericContentState);
+        Assert.IsTrue(GetRecordProperty<bool>(genericContentState, "UsesFragment"));
+        Assert.IsTrue(GetRecordProperty<bool>(genericContentState, "UsesStaticVNode"));
     }
 
     [TestMethod]
@@ -595,6 +633,33 @@ public sealed class RenderEmitterPrivateContractTests
         var staticStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "staticValue"), null };
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", ownStorage));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", staticStorage));
+        var fieldStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "field"), null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", fieldStorage));
+
+        var inputsSymbol = GetMethodSymbol(fixture, "OperationShapes", "Inputs");
+        var parameter = inputsSymbol.Parameters.Single(parameter => parameter.Name == "parameter");
+        var parameterReference = GetMethodBody(fixture, "OperationShapes", "Inputs")
+            .Descendants()
+            .OfType<IParameterReferenceOperation>()
+            .First(reference => SymbolEqualityComparer.Default.Equals(reference.Parameter, parameter));
+        var literal = GetVariableInitializer(fixture, inputs, "literal");
+        var substitutionContext = CreateEmitContext(
+            runtimeLocal.Parameters[0],
+            substitutions: ImmutableDictionary<IParameterSymbol, IOperation>.Empty
+                .WithComparers(SymbolEqualityComparer.Default)
+                .Add(parameter, literal));
+        StringAssert.Contains(
+            InvokeEmitterInstance<Expression>(emitter, "LowerExpression", parameterReference, substitutionContext).ToKnRECMAScript(),
+            "constant",
+            StringComparison.Ordinal);
+        var aliasContext = CreateEmitContext(
+            runtimeLocal.Parameters[0],
+            parameterAliases: ImmutableDictionary<IParameterSymbol, string>.Empty
+                .WithComparers(SymbolEqualityComparer.Default)
+                .Add(parameter, "parameterAlias"));
+        Assert.AreEqual(
+            "parameterAlias",
+            InvokeEmitterInstance<Expression>(emitter, "LowerExpression", parameterReference, aliasContext).ToKnRECMAScript());
     }
 
     [TestMethod]
@@ -979,6 +1044,19 @@ public sealed class RenderEmitterPrivateContractTests
         var unavailableSlots = InvokeNestedInstance<Expression>(unavailableSlotFrame, "ToRenderExpression").ToKnRECMAScript();
         Assert.IsFalse(unavailableSlots.Contains("unavailable", StringComparison.Ordinal));
 
+        var availableSlotFrame = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        AddComponentSlot(
+            availableSlotFrame,
+            "available",
+            CreateDirectRenderFragment(
+                new Identifier("availableContent"),
+                parameterName: null,
+                availabilityCondition: new BooleanLiteral(true, "true")));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(availableSlotFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "available",
+            StringComparison.Ordinal);
+
         var methodReferences = GetMethod(fixture, "EmitterHost", "AdditionalRenderFragmentReferences");
         var methodReferenceContext = CreateEmitContext(
             GetMethodSymbol(fixture, "EmitterHost", "AdditionalRenderFragmentReferences").Parameters[0]);
@@ -1005,6 +1083,13 @@ public sealed class RenderEmitterPrivateContractTests
             null
         };
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentExpression", foreignPropertyArguments));
+        var foreignInstancePropertyArguments = new object?[]
+        {
+            GetVariableInitializer(fixture, propertyReferences, "foreignInstanceHeader"),
+            methodReferenceContext,
+            null
+        };
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentExpression", foreignInstancePropertyArguments));
 
         var provenance = GetMethodBody(fixture, "EmitterHost", "ProvenanceObject")
             .Operations
@@ -1023,6 +1108,37 @@ public sealed class RenderEmitterPrivateContractTests
         var helperArguments = new object?[] { helperFactory, methodReferenceContext, null };
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentHelperInvocation", helperArguments));
         Assert.IsNotNull(helperArguments[2]);
+        var namedHelperFactory = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "HelperFactoryReferences"),
+            "NamedFragmentFactory");
+        var namedHelperArguments = new object?[] { namedHelperFactory, methodReferenceContext, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentHelperInvocation", namedHelperArguments));
+        Assert.IsNotNull(namedHelperArguments[2]);
+
+        var loopHelperFactory = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "HelperFactoryReferences"),
+            "LoopFragmentFactory");
+        var loopHelperArguments = new object?[] { loopHelperFactory, methodReferenceContext, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentHelperInvocation", loopHelperArguments));
+        Assert.IsTrue(GetRecordProperty<bool>(loopHelperArguments[2]!, "UsesFragment"));
+        var loopHelperMethod = GetMethodSymbol(fixture, "EmitterHost", "LoopFragmentFactory");
+        var loopHelperBody = new object?[] { loopHelperMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", loopHelperBody));
+        var loopHelperFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            loopHelperMethod,
+            loopHelperBody[1],
+            methodReferenceContext);
+        Assert.IsTrue(GetRecordProperty<bool>(loopHelperFunction, "UsesFragment"));
+
+        var externMethodGroup = GetVariableInitializer(fixture, GetMethod(fixture, "EmitterHost", "RenderFragmentReferences"), "externGroup");
+        AssertResolvedRenderFragmentMethodReference(emitter, externMethodGroup, methodReferenceContext, expected: false);
+
+        var nativeCarrier = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "RenderObjectReferences"), "NativeCarrier");
+        AssertResolvedRenderObjectHelper(emitter, nativeCarrier, methodReferenceContext, expected: false);
 
         Assert.IsFalse(InvokeEmitter<bool>(
             "TryGetRenderFragmentFactoryReturn",
@@ -1031,10 +1147,27 @@ public sealed class RenderEmitterPrivateContractTests
         var attributeInvocation = GetInvocation(fixture, GetMethod(fixture, "OperationShapes", "AttributeInvocations"), "AddAttribute");
         Assert.Throws<TargetInvocationException>(() =>
             InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", attributeInvocation, openComponentContext, CreateRenderState()));
+        var attributeContext = CreateEmitContext(
+            GetMethodSymbol(fixture, "OperationShapes", "AttributeInvocations").Parameters[0]);
+        var attributeState = CreateRenderState();
+        var attributeFrame = CreateElementFrame();
+        PushFrame(attributeState, attributeFrame);
+        InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", attributeInvocation, attributeContext, attributeState);
+        InvokeNestedInstance<object?>(attributeState, "AddChild", new Identifier("child"));
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", attributeInvocation, attributeContext, attributeState));
 
         var invalidAttribute = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "InvalidAddAttribute"), "AddAttribute");
         Assert.Throws<TargetInvocationException>(() =>
             InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", invalidAttribute, openComponentContext, CreateRenderState()));
+        var invalidConditionalAttribute = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "BuildConditionalAttributes",
+                ImmutableArray.Create(invalidAttribute),
+                openComponentContext,
+                CreateElementFrame()));
+        Assert.IsInstanceOfType<OperationTransformationException>(invalidConditionalAttribute.InnerException);
 
         var twoArgumentModifier = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "TwoArgumentEventModifier"), "AddEventPreventDefaultAttribute");
         var modifierState = CreateRenderState();
@@ -1056,6 +1189,19 @@ public sealed class RenderEmitterPrivateContractTests
                 GetMethodBody(fixture, "EmitterHost", "DynamicConditionalAttributes"),
                 CreateEmitContext(dynamicConditional.Parameters[0]),
                 CreateRenderState()));
+
+        var lateAttribute = GetMethodSymbol(fixture, "EmitterHost", "AttributeAfterChild");
+        var lateAttributeFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                GetMethodBody(fixture, "EmitterHost", "AttributeAfterChild"),
+                CreateEmitContext(lateAttribute.Parameters[0]),
+                CreateRenderState()));
+        StringAssert.Contains(
+            lateAttributeFailure.InnerException!.Message,
+            "Attributes must be added before children",
+            StringComparison.Ordinal);
     }
 
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
@@ -1195,7 +1341,9 @@ public sealed class RenderEmitterPrivateContractTests
     private static object CreateEmitContext(
         ISymbol builderSymbol,
         bool allowPreludeDeclarations = true,
-        ImmutableHashSet<ILocalSymbol>? secondaryBuilders = null)
+        ImmutableHashSet<ILocalSymbol>? secondaryBuilders = null,
+        ImmutableDictionary<IParameterSymbol, IOperation>? substitutions = null,
+        ImmutableDictionary<IParameterSymbol, string>? parameterAliases = null)
     {
         var contextType = typeof(RenderEmitter).GetNestedType("EmitContext", BindingFlags.NonPublic);
         var fragmentType = typeof(RenderEmitter).GetNestedType("DirectRenderFragment", BindingFlags.NonPublic);
@@ -1210,8 +1358,8 @@ public sealed class RenderEmitterPrivateContractTests
         return constructor.Invoke(
         [
             CreateBuilderBinding(builderSymbol),
-            ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolEqualityComparer.Default),
-            ImmutableDictionary<IParameterSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            substitutions ?? ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            parameterAliases ?? ImmutableDictionary<IParameterSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default),
             ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default),
             GetEmptyImmutableDictionary(typeof(ILocalSymbol), fragmentType!),
             GetEmptyImmutableDictionary(typeof(ILocalSymbol), renderObjectType!),
@@ -1420,6 +1568,7 @@ public sealed class RenderEmitterPrivateContractTests
             """
             using System;
             using System.Collections.Generic;
+            using System.Runtime.InteropServices;
             using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -1481,10 +1630,17 @@ public sealed class RenderEmitterPrivateContractTests
                 public delegate void RenderFragment<T>(T value);
             }
 
+            public static class RuntimeHelpers
+            {
+                public static int TypeCheck(int value) => value;
+            }
+
             public sealed class TypeParameterOwner<T>;
 
             public sealed class EmitterHost : ComponentBase
             {
+                private RenderFragment field = default!;
+
                 public static RenderFragment StaticHeader => builder => { };
 
                 public RenderFragment ExpressionFragment => builder => { };
@@ -1552,12 +1708,18 @@ public sealed class RenderEmitterPrivateContractTests
                     other.AddContent(1, "receiver-secondary");
                     InstanceBuilderHelper(builder, "instance-helper");
                     StaticBuilderHelper(builder, "static-helper");
+                    LocalBuilderHelper(builder);
                     ExternalBuilderHelper.Write(builder, "external-helper");
                     ExpressionBuilderHelper(builder);
                     InstanceBuilderHelper(other, "mismatched-helper");
                     NonBuilderHelper("not-a-builder");
                     StaticNoBuilder();
                     new ForeignBuilderHelper().Write(builder);
+
+                    void LocalBuilderHelper(RenderTreeBuilder child)
+                    {
+                        child.AddContent(0, "local-helper");
+                    }
                 }
 
                 public void DirectRenderEdgeShapes(
@@ -1624,6 +1786,7 @@ public sealed class RenderEmitterPrivateContractTests
                 {
                     var own = Header;
                     var staticValue = StaticHeader;
+                    var field = this.field;
                     var foreign = new ForeignStorage().Value;
                     var scalar = GetRuntimeValue();
                 }
@@ -1660,6 +1823,7 @@ public sealed class RenderEmitterPrivateContractTests
                 {
                     RenderFragment staticHeader = StaticHeader;
                     RenderFragment foreignHeader = new ForeignStorage().Value;
+                    RenderFragment foreignInstanceHeader = new EmitterHost().ExpressionFragment;
                 }
 
                 public void ProvenanceObject()
@@ -1670,6 +1834,8 @@ public sealed class RenderEmitterPrivateContractTests
                 public void HelperFactoryReferences()
                 {
                     var fragment = MultiRootFragmentFactory();
+                    var named = NamedFragmentFactory("named");
+                    var loop = LoopFragmentFactory();
                 }
 
                 public RenderFragment MultiRootFragmentFactory()
@@ -1679,9 +1845,38 @@ public sealed class RenderEmitterPrivateContractTests
                         child.AddContent(1, "second");
                     };
 
+                public RenderFragment MarkupFragmentFactory()
+                    => child => child.AddContent(0, new MarkupString("<em>fragment</em>"));
+
+                public void GenericContentInvocation(RenderTreeBuilder builder, int value)
+                {
+                    builder.AddContent(0, GenericMarkupAndMultiRootFactory(), value);
+                }
+
+                public RenderFragment<int> GenericMarkupAndMultiRootFactory()
+                    => value => child =>
+                    {
+                        child.AddContent(0, new MarkupString("<em>generic</em>"));
+                        child.AddContent(1, "second");
+                    };
+
+                [DllImport("native")]
+                private static extern void NativeRenderMethod(RenderTreeBuilder child);
+
+                [DllImport("native")]
+                private static extern FragmentCarrier NativeCarrier();
+
                 public void InvalidAddAttribute(FakeBuilder builder)
                 {
                     builder.AddAttribute(0, "class", "value", 1);
+                }
+
+                public void AttributeAfterChild(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "div");
+                    builder.AddContent(1, "child");
+                    builder.AddAttribute(2, "class", "late");
+                    builder.CloseElement();
                 }
 
                 public void TwoArgumentEventModifier(FakeBuilder builder)
@@ -1726,6 +1921,7 @@ public sealed class RenderEmitterPrivateContractTests
                     Action<RenderTreeBuilder, int> invalid = InvalidRenderMethodGroup;
                     object converted = (object)(RenderFragment)RenderMethodGroup;
                     RenderFragment recursive = RecursiveRenderMethodGroup;
+                    RenderFragment externGroup = NativeRenderMethod;
                 }
 
                 public void RenderMethodGroup(RenderTreeBuilder child)
@@ -1754,6 +1950,7 @@ public sealed class RenderEmitterPrivateContractTests
                     var ignored = CreateIgnoredCarrier();
                     var local = LocalObjectFactory();
                     var recursive = RecursiveObjectFactory();
+                    var native = NativeCarrier();
                     object convertedCarrier = (object)CreateCarrier("converted-carrier");
 
                     FragmentCarrier LocalObjectFactory() => new();
@@ -1784,6 +1981,16 @@ public sealed class RenderEmitterPrivateContractTests
 
                 public RenderFragment NamedFragmentFactory(string text)
                     => child => child.AddContent(0, text);
+
+                public RenderFragment LoopFragmentFactory()
+                    => child =>
+                    {
+                        foreach (var value in new[] { 1, 2 })
+                        {
+                            child.AddContent(0, value);
+                            child.AddContent(1, value);
+                        }
+                    };
 
                 public RenderFragment UnclosedFragmentFactory()
                     => child => child.OpenElement(0, "div");

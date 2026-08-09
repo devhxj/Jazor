@@ -147,11 +147,14 @@ public sealed class ComponentSelectorContractTests
         var plain = GetNamedType(razorCompilation, "Demo.PlainIdentity");
         var generated = GetNamedType(generatedCompilation, "Demo.GeneratedIdentity");
         var moduleAttribute = razorCompilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
+        var unrelatedAttribute = razorCompilation.GetTypeByMetadataName("System.ObsoleteAttribute");
         Assert.IsNotNull(moduleAttribute);
+        Assert.IsNotNull(unrelatedAttribute);
 
         Assert.IsTrue(InvokePrivate<bool>("HasCurrentCompilationSource", razor));
         Assert.IsFalse(InvokePrivate<bool>("HasCurrentCompilationSource", razorCompilation.GetSpecialType(SpecialType.System_String)));
         Assert.IsTrue(InvokePrivate<bool>("HasECMAScriptModuleAttribute", razor, moduleAttribute!));
+        Assert.IsTrue(InvokePrivate<bool>("HasECMAScriptModuleAttribute", razor, unrelatedAttribute!));
         Assert.IsFalse(InvokePrivate<bool>("HasECMAScriptModuleAttribute", plain, moduleAttribute!));
         Assert.IsTrue(InvokePrivate<bool>("HasRazorSourceIdentity", razor));
         Assert.IsFalse(InvokePrivate<bool>(
@@ -166,6 +169,10 @@ public sealed class ComponentSelectorContractTests
         Assert.IsTrue(InvokePrivate<bool>("HasRazorSourcePath", "Pages/Counter.razor.cs"));
         Assert.IsFalse(InvokePrivate<bool>("HasRazorSourcePath", "Pages/Counter.cs"));
         Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(generated));
+
+        var detachedMethod = (Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax)
+            SyntaxFactory.ParseMemberDeclaration("void Detached() { }")!;
+        Assert.IsFalse(InvokePrivate<bool>("HasMappedRazorPath", detachedMethod));
     }
 
     [TestMethod]

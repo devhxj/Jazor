@@ -36,6 +36,8 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("Field", Invoke<string>("GetSourceDeclaredNameCandidate", normalField));
         Assert.IsNull(Invoke<string?>("GetSourceDeclaredNameCandidate", backingField));
         Assert.AreEqual("Auto", Invoke<string>("GetSourceDeclaredNameCandidate", autoProperty.GetMethod!));
+        Assert.AreEqual("auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty.GetMethod!));
+        Assert.AreEqual("auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty));
         Assert.AreEqual("Ordinary", Invoke<string>("GetSourceDeclaredNameCandidate", ordinaryMethod));
         Assert.AreEqual("Nested", Invoke<string>("GetSourceDeclaredNameCandidate", nested));
         Assert.IsTrue(Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod).StartsWith("m$", StringComparison.Ordinal));
@@ -58,6 +60,13 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual(
             "string",
             Invoke<string>("GetStableSymbolSortKey", compilation.GetSpecialType(SpecialType.System_String)));
+
+        var lookalikeCompilation = CreateStandaloneCompilation(
+            "namespace Lookalike; public readonly struct EventCallback { }",
+            "Lookalike.cs");
+        var lookalikeEventCallback = lookalikeCompilation.GetTypeByMetadataName("Lookalike.EventCallback");
+        Assert.IsNotNull(lookalikeEventCallback);
+        Assert.IsFalse(Invoke<bool>("IsEventCallbackType", lookalikeEventCallback!));
     }
 
     [TestMethod]
@@ -335,6 +344,15 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[1], new HashSet<string>(StringComparer.Ordinal) { "namespaceLocal" }));
         Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[2], new HashSet<string>(StringComparer.Ordinal) { "namedLocal" }));
         Assert.IsFalse(Invoke<bool>("HasAnyImportLocalName", imports[3], new HashSet<string>(StringComparer.Ordinal)));
+        var emptyLocalImport = new ImportDeclaration(
+            NodeList.From<ImportDeclarationSpecifier>(
+                new ImportSpecifier(new Identifier("source"), new Identifier(string.Empty))),
+            new StringLiteral("empty-local.mjs", "\"empty-local.mjs\""),
+            NodeList.From<ImportAttribute>());
+        Assert.IsFalse(Invoke<bool>(
+            "HasAnyImportLocalName",
+            emptyLocalImport,
+            new HashSet<string>(StringComparer.Ordinal) { string.Empty }));
 
         Assert.AreEqual("pages/host.mjs", Invoke<string>("ResolveImportArtifactPath", "host.mjs", "pages/host.mjs"));
         Assert.AreEqual("./host.mjs", Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/host.mjs", "pages/host.mjs"));
@@ -351,6 +369,10 @@ public sealed class VueModuleBuilderPrivateContractTests
             "RazorVue.PrivateContracts/PrivateContracts/NoArgumentMarked.mjs",
             Invoke<string>("GetRelativePath", noArgumentMarked));
         Assert.AreEqual("components/noisy.mjs", Invoke<string>("GetRelativePath", noisyMarked));
+        var globalCompilation = CreateStandaloneCompilation("public sealed class GlobalComponent { }", "GlobalComponent.cs");
+        var globalComponent = globalCompilation.GetTypeByMetadataName("GlobalComponent");
+        Assert.IsNotNull(globalComponent);
+        Assert.AreEqual("Standalone/GlobalComponent.mjs", Invoke<string>("GetRelativePath", globalComponent!));
 
         var emptyImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<string>("ResolveImportArtifactPath", ".", "host.mjs"));
@@ -708,6 +730,23 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(Invoke<bool>("IsCompilerImportReferenced", imports[4], directRender, compilerParts));
         Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[5], directRender, compilerParts));
 
+        var uninitializedStateSlot = CreatePrivateRecord(
+            "StateSlot",
+            ordinary,
+            "uninitializedStateReference",
+            "uninitializedStateReference",
+            compilation.GetSpecialType(SpecialType.System_String),
+            null,
+            null,
+            null);
+        var uninitializedStateParts = CreatePrivateRecord(
+            "CompilerModuleParts",
+            CreateImmutableArray(typeof(ImportDeclaration)),
+            CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
+            CreateImmutableArray(uninitializedStateSlot.GetType(), uninitializedStateSlot),
+            CreateEmptyReadOnlyDictionary(GetPrivateRecordConstructor("CompilerModuleParts", 4).GetParameters()[3].ParameterType));
+        Assert.IsFalse(Invoke<bool>("IsCompilerImportReferenced", imports[3], directRender, uninitializedStateParts));
+
         var fixture = CreateRuntimeComponentFixture();
         var stateModule = new Parser().ParseModule("let counter = 1;");
         var declaration = (VariableDeclaration)stateModule.Body.Single();
@@ -721,6 +760,7 @@ public sealed class VueModuleBuilderPrivateContractTests
             missingInitializerPosition.InnerException!.Message,
             "generated position",
             StringComparison.Ordinal);
+
     }
 
     [TestMethod]

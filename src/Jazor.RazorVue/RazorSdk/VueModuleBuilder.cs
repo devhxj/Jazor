@@ -196,7 +196,7 @@ internal static class VueModuleBuilder
 
         var ordered = ImmutableArray.CreateBuilder<INamedTypeSymbol>(candidates.Count);
         foreach (var runtimeClass in candidates
-                     .Where(type => type.ContainingType is not INamedTypeSymbol containingType || !candidates.Contains(containingType))
+                     .Where(type => !candidates.Contains(type.ContainingType!))
                      .OrderBy(static type => GetStableSymbolSortKey(type), StringComparer.Ordinal))
         {
             AppendFlattenedRuntimeClass(runtimeClass, candidates, ordered);
@@ -243,7 +243,7 @@ internal static class VueModuleBuilder
 
     private static string GetStableSymbolSortKey(ISymbol symbol)
         => symbol.Locations.FirstOrDefault(static location => location.IsInSource) is { } location
-            ? (location.SourceTree?.FilePath ?? string.Empty).Replace('\\', '/') + ":" + location.SourceSpan.Start.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            ? location.SourceTree!.FilePath.Replace('\\', '/') + ":" + location.SourceSpan.Start.ToString(System.Globalization.CultureInfo.InvariantCulture)
             : symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     private static DirectRenderBuildResult BuildOperationDirectRender(
@@ -1719,7 +1719,7 @@ internal static class VueModuleBuilder
 
         GeneratedNodePosition GetPosition(Node node)
         {
-            if (nodePositions is not null && nodePositions.TryGetValue(node, out var position))
+            if (nodePositions!.TryGetValue(node, out var position))
                 return position;
 
             throw new InvalidOperationException(

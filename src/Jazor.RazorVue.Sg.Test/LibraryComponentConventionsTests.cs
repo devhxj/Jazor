@@ -269,9 +269,14 @@ public sealed class LibraryComponentConventionsTests
                 [Obsolete("listener metadata"), Parameter]
                 public EventCallback OnOpen { get; set; }
             }
+
+            public sealed class EventCallback;
+            public sealed class RenderFragment;
             """);
         var component = GetNamedType(compilation, "Demo.DecoratedWidget");
         var onOpen = GetDeclaredProperty(component, "OnOpen");
+        var lookalikeEventCallback = GetNamedType(compilation, "Demo.EventCallback");
+        var lookalikeRenderFragment = GetNamedType(compilation, "Demo.RenderFragment");
         var obsolete = component.GetAttributes().Single(attribute =>
             string.Equals(attribute.AttributeClass?.ToDisplayString(), "System.ObsoleteAttribute", StringComparison.Ordinal));
         var customMetadata = component.GetAttributes().Single(attribute =>
@@ -291,6 +296,8 @@ public sealed class LibraryComponentConventionsTests
         var stringType = compilation.GetSpecialType(SpecialType.System_String);
         Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", stringType));
         Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", stringType));
+        Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", lookalikeEventCallback));
+        Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", lookalikeRenderFragment));
     }
 
     private static T InvokePrivate<T>(string methodName, params object?[] arguments)
