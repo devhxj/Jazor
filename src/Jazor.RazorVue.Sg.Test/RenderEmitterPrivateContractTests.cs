@@ -537,6 +537,105 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void EmitterEdgePaths_KeepRecursiveAndUnsupportedRoslynShapesExplicit()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var context = CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "HelperInvocationShapes").Parameters[0]);
+
+        var references = GetMethod(fixture, "EmitterHost", "RenderFragmentReferences");
+        AssertResolvedRenderFragmentMethodReference(
+            emitter,
+            GetVariableInitializer(fixture, references, "converted"),
+            context,
+            expected: true);
+        var recursiveReferenceArguments = new object?[]
+        {
+            GetVariableInitializer(fixture, references, "recursive"),
+            context,
+            null
+        };
+        var recursiveReferenceFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentMethodReference", recursiveReferenceArguments));
+        Assert.IsInstanceOfType<OperationTransformationException>(recursiveReferenceFailure.InnerException);
+
+        var objectReferences = GetMethod(fixture, "EmitterHost", "RenderObjectReferences");
+        var localObjectFactory = GetInvocation(fixture, objectReferences, "LocalObjectFactory");
+        AssertResolvedRenderObjectHelper(emitter, localObjectFactory, context, expected: false);
+        var recursiveObjectFactory = GetInvocation(fixture, objectReferences, "RecursiveObjectFactory");
+        var recursiveObjectArguments = new object?[] { recursiveObjectFactory, context, null };
+        var recursiveObjectFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<bool>(emitter, "TryResolveRenderObjectHelperInvocation", recursiveObjectArguments));
+        Assert.IsInstanceOfType<OperationTransformationException>(recursiveObjectFailure.InnerException);
+
+        var unexpectedObjectArguments = new object?[]
+        {
+            GetMethodBody(fixture, "EmitterHost", "UnexpectedObjectFactory"),
+            context,
+            null
+        };
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryResolveReturnedRenderObject", unexpectedObjectArguments));
+        var noReturnObjectArguments = new object?[]
+        {
+            GetMethodBody(fixture, "EmitterHost", "FactoryWithoutReturn"),
+            context,
+            null
+        };
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryResolveReturnedRenderObject", noReturnObjectArguments));
+
+        var convertedCarrier = GetVariableInitializer(fixture, objectReferences, "convertedCarrier");
+        Assert.IsInstanceOfType<IConversionOperation>(convertedCarrier);
+        var convertedCarrierArguments = new object?[] { convertedCarrier, context, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveReturnedRenderObject", convertedCarrierArguments));
+        Assert.IsNotNull(convertedCarrierArguments[2]);
+
+        var unclosedMethod = GetMethodSymbol(fixture, "EmitterHost", "UnclosedFragmentFactory");
+        var unclosedBody = new object?[] { unclosedMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", unclosedBody));
+        var unclosedFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(emitter, "EnsureRenderFragmentHelperFunction", unclosedMethod, unclosedBody[1], context));
+        Assert.IsInstanceOfType<OperationTransformationException>(unclosedFailure.InnerException);
+
+        var slotConversion = GetVariableInitializer(fixture, GetMethod(fixture, "EmitterHost", "ComponentSlotReferences"), "boxedHeader");
+        var slotArguments = new object?[] { slotConversion, null, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveComponentSlot", slotArguments));
+        Assert.AreEqual("header", slotArguments[1]);
+        Assert.IsFalse((bool)slotArguments[2]!);
+
+        var dynamicParameter = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "DynamicComponentParameter"), "AddComponentParameter");
+        var dynamicState = CreateRenderState();
+        PushFrame(dynamicState, CreateComponentFrame(ImmutableDictionary<string, string>.Empty));
+        var dynamicParameterFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(emitter, "EmitAddComponentParameter", dynamicParameter, context, dynamicState));
+        Assert.IsInstanceOfType<OperationTransformationException>(dynamicParameterFailure.InnerException);
+
+        var invalidGenericContent = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "InvalidGenericContent"), "AddContent");
+        var invalidContentFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(emitter, "EmitAddContent", invalidGenericContent, context, CreateRenderState()));
+        Assert.IsInstanceOfType<OperationTransformationException>(invalidContentFailure.InnerException);
+
+        var collectionCreation = GetOperation<IObjectCreationOperation>(
+            fixture,
+            GetMethod(fixture, "OperationShapes", "NonAttributeCollectionInitializer")
+                .DescendantNodes()
+                .OfType<ObjectCreationExpressionSyntax>()
+                .Single());
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitKnownMultipleAttributes",
+            collectionCreation,
+            context,
+            CreateElementFrame()));
+
+        var uninitializedDeclaration = GetMethodBody(fixture, "EmitterHost", "UninitializedFragmentLocal")
+            .Operations
+            .OfType<IVariableDeclarationGroupOperation>()
+            .Single();
+        Assert.IsNotNull(InvokeEmitterInstance<object>(emitter, "TrackRenderProvenanceDeclarationGroup", uninitializedDeclaration, context));
+    }
+
+    [TestMethod]
     public void EmitterFrameAndBuilderBindingHelpers_PreserveDirectRenderStateTransitions()
     {
         var fixture = CreateFixture();
@@ -803,6 +902,15 @@ public sealed class RenderEmitterPrivateContractTests
         return constructor.Invoke([]);
     }
 
+    private static void PushFrame(object state, object frame)
+    {
+        var stack = state.GetType().GetProperty("Stack", BindingFlags.Instance | BindingFlags.Public)?.GetValue(state);
+        Assert.IsNotNull(stack);
+        var push = stack!.GetType().GetMethod("Push", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(push);
+        _ = push!.Invoke(stack, [frame]);
+    }
+
     private static object GetEmptyImmutableDictionary(Type keyType, Type valueType)
     {
         var factory = typeof(ImmutableDictionary)
@@ -1018,6 +1126,8 @@ public sealed class RenderEmitterPrivateContractTests
 
                 public RenderFragment AutoFragment { get; set; } = default!;
 
+                [Parameter] public RenderFragment Header { get; set; } = default!;
+
                 public RenderFragment WriteOnlyFragment
                 {
                     set { }
@@ -1102,6 +1212,8 @@ public sealed class RenderEmitterPrivateContractTests
                     RenderFragment instance = RenderMethodGroup;
                     RenderFragment staticGroup = StaticRenderMethodGroup;
                     Action<RenderTreeBuilder, int> invalid = InvalidRenderMethodGroup;
+                    object converted = (object)(RenderFragment)RenderMethodGroup;
+                    RenderFragment recursive = RecursiveRenderMethodGroup;
                 }
 
                 public void RenderMethodGroup(RenderTreeBuilder child)
@@ -1118,11 +1230,21 @@ public sealed class RenderEmitterPrivateContractTests
                 {
                 }
 
+                public void RecursiveRenderMethodGroup(RenderTreeBuilder child)
+                {
+                    RecursiveRenderMethodGroup(child);
+                }
+
                 public void RenderObjectReferences()
                 {
                     var block = CreateCarrier("block-carrier");
                     var expression = CreateExpressionCarrier("expression-carrier");
                     var ignored = CreateIgnoredCarrier();
+                    var local = LocalObjectFactory();
+                    var recursive = RecursiveObjectFactory();
+                    object convertedCarrier = (object)CreateCarrier("converted-carrier");
+
+                    FragmentCarrier LocalObjectFactory() => new();
                 }
 
                 public FragmentCarrier CreateCarrier(string text)
@@ -1136,8 +1258,43 @@ public sealed class RenderEmitterPrivateContractTests
 
                 public FragmentCarrier CreateIgnoredCarrier() => new();
 
+                public FragmentCarrier RecursiveObjectFactory() => RecursiveObjectFactory();
+
+                public FragmentCarrier UnexpectedObjectFactory()
+                {
+                    ObjectSideEffect();
+                    return new FragmentCarrier(child => child.AddContent(0, "unexpected"));
+                }
+
+                public void ObjectSideEffect()
+                {
+                }
+
                 public RenderFragment NamedFragmentFactory(string text)
                     => child => child.AddContent(0, text);
+
+                public RenderFragment UnclosedFragmentFactory()
+                    => child => child.OpenElement(0, "div");
+
+                public void ComponentSlotReferences()
+                {
+                    object boxedHeader = (object)Header;
+                }
+
+                public void DynamicComponentParameter(RenderTreeBuilder builder, string name)
+                {
+                    builder.AddComponentParameter(0, name, "value");
+                }
+
+                public void InvalidGenericContent(FakeBuilder builder)
+                {
+                    builder.AddContent(0, "not-a-fragment", 1);
+                }
+
+                public void UninitializedFragmentLocal()
+                {
+                    RenderFragment? unassigned;
+                }
 
                 public sealed class FragmentCarrier
                 {
@@ -1167,6 +1324,13 @@ public sealed class RenderEmitterPrivateContractTests
                 public void Write(RenderTreeBuilder child)
                 {
                     child.AddContent(0, "foreign-helper");
+                }
+            }
+
+            public sealed class FakeBuilder
+            {
+                public void AddContent<TValue>(int sequence, object value, TValue argument)
+                {
                 }
             }
 
