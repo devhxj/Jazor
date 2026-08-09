@@ -61,4 +61,55 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
             });
             """);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorNestedRuntimeClassNamedHAndInitState_PreserveVueRenderImportOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\NestedRuntimeNameCollision.razor",
+            documentText:
+            """
+            <section>@Message</section>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/nested-runtime-name-collision")]
+            public partial class NestedRuntimeNameCollision : ComponentBase, IVueComponent
+            {
+                private string Message { get; init; } = new h().Read();
+
+                private sealed class h
+                {
+                    public string Read() => "nested";
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.NestedRuntimeNameCollision");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "import { defineComponent, h", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "class m$", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "new m$", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("class h ", StringComparison.Ordinal), observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/nested-runtime-name-collision.mjs",
+            observation.ModuleText,
+            "official-nested-runtime-name-collision.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/nested-runtime-name-collision.mjs";
+
+            test("nested runtime types do not shadow Vue render imports", () => {
+                const section = component.setup({}, { slots: {} })();
+                assert.equal(section.name, "section");
+                assert.deepEqual(section.children, ["nested"]);
+            });
+            """);
+    }
 }
