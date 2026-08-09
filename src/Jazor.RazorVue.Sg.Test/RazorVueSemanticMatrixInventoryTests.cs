@@ -4,14 +4,14 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains4040UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains4046UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(3314, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(3316, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
         Assert.HasCount(
-            64,
+            66,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Component));
         Assert.HasCount(
             49,
@@ -68,15 +68,15 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(32, SlotExpressionCase.All);
         Assert.HasCount(40, ComponentCandidateCase.All);
         Assert.HasCount(30, VueInjectCase.All);
-        Assert.HasCount(624, DirectRenderFailureCaseCatalog.All);
+        Assert.HasCount(628, DirectRenderFailureCaseCatalog.All);
         var baselineFailureCases = DirectRenderFailureCaseCatalog.All
             .Where(static testCase => testCase.Scenario is null)
             .ToArray();
-        Assert.HasCount(112, baselineFailureCases);
+        Assert.HasCount(116, baselineFailureCases);
         var failureFamilies = baselineFailureCases
             .GroupBy(static item => item.Id[..item.Id.LastIndexOf('_')], StringComparer.Ordinal)
             .ToArray();
-        Assert.HasCount(28, failureFamilies);
+        Assert.HasCount(29, failureFamilies);
         Assert.IsTrue(failureFamilies.All(static family => family.Count() == 4));
         Assert.HasCount(
             512,
@@ -88,7 +88,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(4040, ids);
+        Assert.HasCount(4046, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,

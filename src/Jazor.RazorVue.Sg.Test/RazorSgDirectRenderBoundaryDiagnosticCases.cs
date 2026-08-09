@@ -16,6 +16,7 @@ internal static partial class DirectRenderFailureCaseCatalog
         AddBoundaryCaseFamily(cases, "unclosed_render_fragment_method_group", CreateUnclosedRenderFragmentMethodGroupCase);
         AddBoundaryCaseFamily(cases, "unsupported_event_callback_binder", CreateUnsupportedEventCallbackBinderCase);
         AddBoundaryCaseFamily(cases, "unsupported_render_tree_builder_extension", CreateUnsupportedRenderTreeBuilderExtensionCase);
+        AddBoundaryCaseFamily(cases, "unresolvable_component_import", CreateUnresolvableComponentImportCase);
     }
 
     private static void AddBoundaryCaseFamily(
@@ -339,6 +340,23 @@ internal static partial class DirectRenderFailureCaseCatalog
             _ => new(
                 "builder.UnsupportedBuilderExtensionOptional();",
                 "RenderTreeBuilder.UnsupportedBuilderExtensionOptional is not supported by direct render operation lowering yet.")
+        };
+
+    private static BoundaryCaseSpec CreateUnresolvableComponentImportCase(int variant, string marker)
+        => variant switch
+        {
+            0 => new(
+                "builder.OpenComponent<FailureNoImportChild>(0); builder.CloseComponent();",
+                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+            1 => new(
+                "builder.OpenComponent<FailureWhitespaceLibrarySpecifierChild>(0); builder.CloseComponent();",
+                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+            2 => new(
+                "builder.OpenComponent<FailureWhitespaceLibraryExportChild>(0); builder.CloseComponent();",
+                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+            _ => new(
+                "builder.OpenComponent<FailureWhitespaceModuleChild>(0); builder.CloseComponent();",
+                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]")
         };
 
     private delegate BoundaryCaseSpec BoundaryCaseFactory(int variant, string marker);

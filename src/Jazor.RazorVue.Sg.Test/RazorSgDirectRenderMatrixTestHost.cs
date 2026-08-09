@@ -41,6 +41,7 @@ internal static class RazorSgDirectRenderMatrixTestHost
             result.UsesStaticVNode,
             result.UsesProps,
             result.UsesSlots,
+            string.Join("\n", result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript())),
             result.ImportDeclarations.Length);
     }
 
@@ -133,6 +134,13 @@ internal static class RazorSgDirectRenderMatrixTestHost
             [ECMAScriptName("item")]
             [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
         }
+
+        [VueLibraryComponent(" matrix-library ", " MatrixLibraryChild ")]
+        public sealed class MatrixLibraryChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule(" ./matrix/module-preferred ")]
+        [VueLibraryComponent("discarded-library", "DiscardedLibraryChild")]
+        public sealed class MatrixModulePreferredChild : ComponentBase, IVueComponent;
         """;
 
     private sealed record Fixture(
@@ -147,6 +155,7 @@ internal sealed record DirectRenderObservation(
     bool UsesStaticVNode,
     bool UsesProps,
     bool UsesSlots,
+    string Imports,
     int ImportCount);
 
 public sealed record DirectRenderCase(
@@ -164,7 +173,9 @@ public sealed record DirectRenderCase(
     int ImportCount,
     string? TertiaryExpectedFragment,
     string? UnexpectedFragment,
-    RazorVueUsageScenarioId? Scenario);
+    RazorVueUsageScenarioId? Scenario,
+    string? ExpectedImportFragment = null,
+    string? UnexpectedImportFragment = null);
 
 public enum DirectRenderCaseGroup
 {
@@ -188,6 +199,7 @@ internal static partial class DirectRenderCaseCatalog
         AddElementCases(cases);
         AddAttributeCases(cases);
         AddComponentCases(cases);
+        AddComponentImportCases(cases);
         AddControlFlowCases(cases);
         AddExtendedCases(cases);
         AddAdvancedCases(cases);
@@ -612,6 +624,33 @@ internal static partial class DirectRenderCaseCatalog
             importCount: 1);
     }
 
+    private static void AddComponentImportCases(List<DirectRenderCase> cases)
+    {
+        Add(
+            cases,
+            "component_library_import_trimmed_metadata",
+            "builder.OpenComponent<MatrixLibraryChild>(0); builder.CloseComponent();",
+            "MatrixLibraryChild",
+            additionalExpectedFragment: null,
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Component,
+            importCount: 1,
+            expectedImportFragment: "matrix-library");
+        Add(
+            cases,
+            "component_module_import_precedes_library_metadata",
+            "builder.OpenComponent<MatrixModulePreferredChild>(0); builder.CloseComponent();",
+            "h(",
+            additionalExpectedFragment: null,
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Component,
+            importCount: 1,
+            expectedImportFragment: "./matrix/module-preferred.mjs",
+            unexpectedImportFragment: "discarded-library");
+    }
+
     private static void Add(
         List<DirectRenderCase> cases,
         string id,
@@ -627,7 +666,9 @@ internal static partial class DirectRenderCaseCatalog
         int importCount = 0,
         string? tertiaryExpectedFragment = null,
         string? unexpectedFragment = null,
-        RazorVueUsageScenarioId? scenario = null)
+        RazorVueUsageScenarioId? scenario = null,
+        string? expectedImportFragment = null,
+        string? unexpectedImportFragment = null)
     {
         var typeName = "DirectRender" + cases.Count.ToString("D3", System.Globalization.CultureInfo.InvariantCulture);
         cases.Add(new DirectRenderCase(
@@ -645,7 +686,9 @@ internal static partial class DirectRenderCaseCatalog
             importCount,
             tertiaryExpectedFragment,
             unexpectedFragment,
-            scenario));
+            scenario,
+            expectedImportFragment,
+            unexpectedImportFragment));
     }
 
     private static string CSharpStringLiteral(string value)

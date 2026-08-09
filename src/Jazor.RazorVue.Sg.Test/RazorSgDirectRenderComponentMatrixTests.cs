@@ -25,6 +25,10 @@ public sealed class RazorSgDirectRenderComponentMatrixTests
         Assert.AreEqual(testCase.UsesProps, observation.UsesProps);
         Assert.AreEqual(testCase.UsesSlots, observation.UsesSlots);
         Assert.AreEqual(testCase.ImportCount, observation.ImportCount);
+        if (testCase.ExpectedImportFragment is not null)
+            StringAssert.Contains(observation.Imports, testCase.ExpectedImportFragment, StringComparison.Ordinal);
+        if (testCase.UnexpectedImportFragment is not null)
+            Assert.IsFalse(observation.Imports.Contains(testCase.UnexpectedImportFragment, StringComparison.Ordinal), observation.Imports);
         Assert.IsFalse(observation.RenderExpression.Contains("createRenderContext", StringComparison.Ordinal));
         Assert.IsFalse(observation.RenderExpression.Contains("builder.", StringComparison.Ordinal));
     }
