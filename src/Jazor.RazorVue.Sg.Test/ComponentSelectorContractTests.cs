@@ -168,6 +168,39 @@ public sealed class ComponentSelectorContractTests
         Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(generated));
     }
 
+    [TestMethod]
+    public void SourceIdentityHelpers_RecognizeLineMappedRazorOrigins()
+    {
+        var compilation = CreateCompilation(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo;
+
+            #line 1 "Pages/LineMappedIdentity.razor"
+            [ECMAScriptModule("./components/line-mapped")]
+            public sealed class LineMappedIdentity : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "line-mapped");
+                }
+            }
+            #line default
+            """,
+            "Generated/LineMappedIdentity.cs");
+        var component = GetNamedType(compilation, "Demo.LineMappedIdentity");
+        var buildRenderTree = GetBuildMethod(component);
+
+        Assert.IsTrue(InvokePrivate<bool>("HasRazorSourceIdentity", component));
+        Assert.IsTrue(InvokePrivate<bool>("HasRazorSourceIdentity", buildRenderTree));
+        Assert.IsTrue(InvokePrivate<bool>("IsLikelyRazorAuthored", component));
+        Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(component));
+    }
+
     private static IMethodSymbol GetBuildMethod(INamedTypeSymbol type)
         => type.GetMembers("BuildRenderTree").OfType<IMethodSymbol>().Single();
 

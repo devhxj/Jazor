@@ -195,9 +195,12 @@ public sealed class LibraryComponentConventionsTests
 
             public sealed class EventCallback;
             public sealed class RenderFragment;
+
+            public sealed class GenericOwner<T>;
             """);
         var library = GetNamedType(compilation, "Demo.LibraryWidget");
         var standard = GetNamedType(compilation, "Demo.StandardWidget");
+        var genericOwner = GetNamedType(compilation, "Demo.GenericOwner`1");
         var value = GetDeclaredProperty(library, "Value");
         var ready = GetDeclaredProperty(library, "Ready");
         var valueChanged = GetDeclaredProperty(library, "ValueChanged");
@@ -223,8 +226,10 @@ public sealed class LibraryComponentConventionsTests
         Assert.AreEqual("value", InvokePrivate<string>("ToDefaultRuntimeName", "Value"));
         Assert.IsTrue(InvokePrivate<bool>("IsEventCallback", ready.Type));
         Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", localCallback.Type));
+        Assert.IsFalse(InvokePrivate<bool>("IsEventCallback", genericOwner.TypeParameters.Single()));
         Assert.IsTrue(InvokePrivate<bool>("IsRenderFragment", header.Type));
         Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", localFragment.Type));
+        Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", genericOwner.TypeParameters.Single()));
 
         var attributes = library.GetAttributes();
         var noName = attributes.Single(attribute => attribute.ConstructorArguments[0].Value as string == "Ready");
