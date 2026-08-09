@@ -4,9 +4,9 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains4046UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains4051UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(3316, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(3317, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
@@ -17,7 +17,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             49,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.ControlFlow));
         Assert.HasCount(
-            448,
+            449,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Extended));
         Assert.HasCount(
             1025,
@@ -68,15 +68,15 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(32, SlotExpressionCase.All);
         Assert.HasCount(40, ComponentCandidateCase.All);
         Assert.HasCount(30, VueInjectCase.All);
-        Assert.HasCount(628, DirectRenderFailureCaseCatalog.All);
+        Assert.HasCount(632, DirectRenderFailureCaseCatalog.All);
         var baselineFailureCases = DirectRenderFailureCaseCatalog.All
             .Where(static testCase => testCase.Scenario is null)
             .ToArray();
-        Assert.HasCount(116, baselineFailureCases);
+        Assert.HasCount(120, baselineFailureCases);
         var failureFamilies = baselineFailureCases
             .GroupBy(static item => item.Id[..item.Id.LastIndexOf('_')], StringComparer.Ordinal)
             .ToArray();
-        Assert.HasCount(29, failureFamilies);
+        Assert.HasCount(30, failureFamilies);
         Assert.IsTrue(failureFamilies.All(static family => family.Count() == 4));
         Assert.HasCount(
             512,
@@ -88,7 +88,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(4046, ids);
+        Assert.HasCount(4051, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,

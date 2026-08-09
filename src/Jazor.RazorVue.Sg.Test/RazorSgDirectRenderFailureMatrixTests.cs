@@ -401,6 +401,14 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         [ECMAScriptModule(" ")]
         public sealed class FailureWhitespaceModuleChild : ComponentBase, IVueComponent;
 
+        public sealed class ExternalRenderTreeBuilderHelper
+        {
+            public void Render(RenderTreeBuilder builder, string value)
+            {
+                builder.AddContent(0, value);
+            }
+        }
+
         [ECMAScriptModule("./failure-matrix/article-child.mjs")]
         public sealed class FailureMatrixArticleChild : ComponentBase, IVueComponent;
 

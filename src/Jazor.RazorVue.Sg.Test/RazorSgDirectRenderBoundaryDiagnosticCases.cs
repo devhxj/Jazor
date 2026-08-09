@@ -17,6 +17,7 @@ internal static partial class DirectRenderFailureCaseCatalog
         AddBoundaryCaseFamily(cases, "unsupported_event_callback_binder", CreateUnsupportedEventCallbackBinderCase);
         AddBoundaryCaseFamily(cases, "unsupported_render_tree_builder_extension", CreateUnsupportedRenderTreeBuilderExtensionCase);
         AddBoundaryCaseFamily(cases, "unresolvable_component_import", CreateUnresolvableComponentImportCase);
+        AddBoundaryCaseFamily(cases, "unsupported_helper_invocation_shape", CreateUnsupportedHelperInvocationShapeCase);
     }
 
     private static void AddBoundaryCaseFamily(
@@ -357,6 +358,35 @@ internal static partial class DirectRenderFailureCaseCatalog
             _ => new(
                 "builder.OpenComponent<FailureWhitespaceModuleChild>(0); builder.CloseComponent();",
                 "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]")
+        };
+
+    private static BoundaryCaseSpec CreateUnsupportedHelperInvocationShapeCase(int variant, string marker)
+        => variant switch
+        {
+            0 => new(
+                "builder.OpenElement(0, \"div\"); RenderWithoutArguments(); builder.CloseElement();",
+                "RazorVue direct render operation lowering does not support invocation")
+            {
+                Members = "private static void RenderWithoutArguments() { }"
+            },
+            1 => new(
+                "builder.OpenElement(0, \"div\"); _externalHelper.Render(builder, " + Literal(marker) + "); builder.CloseElement();",
+                "RazorVue direct render operation lowering does not support invocation")
+            {
+                Members = "private readonly ExternalRenderTreeBuilderHelper _externalHelper = new();"
+            },
+            2 => new(
+                "builder.OpenElement(0, \"div\"); RenderWithSecondBuilder(" + Literal(marker) + ", builder); builder.CloseElement();",
+                "RazorVue direct render operation lowering does not support invocation")
+            {
+                Members = "private static void RenderWithSecondBuilder(string value, RenderTreeBuilder target) { target.AddContent(0, value); }"
+            },
+            _ => new(
+                "builder.OpenElement(0, \"div\"); RenderExpression(builder, " + Literal(marker) + "); builder.CloseElement();",
+                "RenderTreeBuilder.RenderExpression is not supported by direct render operation lowering yet.")
+            {
+                Members = "private static void RenderExpression(RenderTreeBuilder target, string value) => target.AddContent(0, value);"
+            }
         };
 
     private delegate BoundaryCaseSpec BoundaryCaseFactory(int variant, string marker);

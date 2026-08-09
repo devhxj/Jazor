@@ -114,6 +114,7 @@ internal static class RazorSgDirectRenderMatrixTestHost
         using ECMAScript;
         using ECMAScript.VueContract;
         using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
         using static ECMAScript.Vue3;
 
         namespace RazorVue.Matrix;
@@ -141,6 +142,16 @@ internal static class RazorSgDirectRenderMatrixTestHost
         [ECMAScriptModule(" ./matrix/module-preferred ")]
         [VueLibraryComponent("discarded-library", "DiscardedLibraryChild")]
         public sealed class MatrixModulePreferredChild : ComponentBase, IVueComponent;
+
+        public static class MatrixRenderTreeBuilderHelpers
+        {
+            public static void Render(RenderTreeBuilder target, string value)
+            {
+                target.OpenElement(0, "span");
+                target.AddContent(1, value);
+                target.CloseElement();
+            }
+        }
         """;
 
     private sealed record Fixture(
@@ -200,6 +211,7 @@ internal static partial class DirectRenderCaseCatalog
         AddAttributeCases(cases);
         AddComponentCases(cases);
         AddComponentImportCases(cases);
+        AddHelperInvocationCases(cases);
         AddControlFlowCases(cases);
         AddExtendedCases(cases);
         AddAdvancedCases(cases);
@@ -650,6 +662,17 @@ internal static partial class DirectRenderCaseCatalog
             expectedImportFragment: "./matrix/module-preferred.mjs",
             unexpectedImportFragment: "discarded-library");
     }
+
+    private static void AddHelperInvocationCases(List<DirectRenderCase> cases)
+        => Add(
+            cases,
+            "extended_external_static_builder_helper",
+            "MatrixRenderTreeBuilderHelpers.Render(builder, \"external-static-builder-helper\");",
+            "h(\"span\"",
+            "external-static-builder-helper",
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Extended);
 
     private static void Add(
         List<DirectRenderCase> cases,
