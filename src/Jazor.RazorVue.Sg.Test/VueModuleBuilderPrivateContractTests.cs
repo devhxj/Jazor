@@ -622,6 +622,94 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsNull(Invoke<string?>("TryGetCompilationSourceRoot", CreateCompilation(), relativeDocument));
     }
 
+    [TestMethod]
+    public void ImportRetentionAndModuleNamingEdges_PreserveCompilerArtifactBoundaries()
+    {
+        var compilation = CreateCompilation();
+        var shapes = GetNamedType(compilation, "PrivateContracts.Shapes");
+        var ordinary = GetMethod(shapes, "Ordinary");
+        var explicitMethod = shapes.GetMembers().OfType<IMethodSymbol>()
+            .Single(method => method.MethodKind == MethodKind.ExplicitInterfaceImplementation);
+        var preferredExplicitName = Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod);
+        var explicitAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            explicitMethod,
+            new HashSet<string>(StringComparer.Ordinal) { preferredExplicitName },
+            new HashSet<string>(StringComparer.Ordinal));
+        Assert.IsTrue(explicitAlias.StartsWith("m$", StringComparison.Ordinal));
+        Assert.IsTrue(explicitAlias.EndsWith("$1", StringComparison.Ordinal));
+
+        Assert.AreEqual("child.vue", Invoke<string>("ResolveImportArtifactPath", "child.vue", string.Empty));
+        Assert.AreEqual(
+            "pages/child.vue",
+            Invoke<string>("ResolveImportArtifactPath", "./nested/../child.vue", "pages/host.mjs"));
+
+        var imports = new Parser().ParseModule(
+            """
+            import renderReference from "./render.mjs";
+            import preludeReference from "./prelude.mjs";
+            import setupReference from "./setup.mjs";
+            import stateReference from "./state.mjs";
+            import unusedReference from "./unused.mjs";
+            import "./side-effect.mjs";
+            """)
+            .Body
+            .OfType<ImportDeclaration>()
+            .ToArray();
+        var preludeStatements = CreateImmutableArray(
+            typeof(Statement),
+            new Parser().ParseModule("preludeReference;").Body.Single());
+        var directRender = CreatePrivateRecord(
+            "DirectRenderBuildResult",
+            new Identifier("renderReference"),
+            "$renderDirect",
+            preludeStatements,
+            false,
+            false,
+            false,
+            false,
+            CreateImmutableArray(typeof(ImportDeclaration)),
+            CreateImmutableArray(typeof(ISymbol)));
+        var setupStatement = new Parser().ParseModule("setupReference;").Body.Single();
+        var compilerStatement = CreatePrivateRecord("CompilerStatement", setupStatement, 0, 0);
+        var stateSlot = CreatePrivateRecord(
+            "StateSlot",
+            ordinary,
+            "stateReference",
+            "stateReference",
+            compilation.GetSpecialType(SpecialType.System_String),
+            new Identifier("stateReference"),
+            null,
+            null);
+        var compilerParts = CreatePrivateRecord(
+            "CompilerModuleParts",
+            CreateImmutableArray(typeof(ImportDeclaration)),
+            CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
+            CreateImmutableArray(stateSlot.GetType(), stateSlot),
+            CreateEmptyReadOnlyDictionary(GetPrivateRecordConstructor("CompilerModuleParts", 4).GetParameters()[3].ParameterType));
+
+        Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[0], directRender, compilerParts));
+        Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[1], directRender, compilerParts));
+        Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[2], directRender, compilerParts));
+        Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[3], directRender, compilerParts));
+        Assert.IsFalse(Invoke<bool>("IsCompilerImportReferenced", imports[4], directRender, compilerParts));
+        Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[5], directRender, compilerParts));
+
+        var fixture = CreateRuntimeComponentFixture();
+        var stateModule = new Parser().ParseModule("let counter = 1;");
+        var declaration = (VariableDeclaration)stateModule.Body.Single();
+        var incompletePositions = new Dictionary<Node, GeneratedNodePosition>
+        {
+            [declaration] = new GeneratedNodePosition(0, 0)
+        };
+        var missingInitializerPosition = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("BuildCompilerModuleParts", stateModule, incompletePositions, fixture.Closure));
+        StringAssert.Contains(
+            missingInitializerPosition.InnerException!.Message,
+            "generated position",
+            StringComparison.Ordinal);
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -632,6 +720,42 @@ public sealed class VueModuleBuilderPrivateContractTests
 
     private static void InvokeVoid(string methodName, params object?[] arguments)
         => _ = Invoke<object?>(methodName, arguments);
+
+    private static ConstructorInfo GetPrivateRecordConstructor(string typeName, int parameterCount)
+    {
+        var type = typeof(VueModuleBuilder).GetNestedType(typeName, BindingFlags.NonPublic);
+        Assert.IsNotNull(type, typeName);
+        return type!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(constructor => constructor.GetParameters().Length == parameterCount);
+    }
+
+    private static object CreatePrivateRecord(string typeName, params object?[] arguments)
+        => GetPrivateRecordConstructor(typeName, arguments.Length).Invoke(arguments)!;
+
+    private static object CreateImmutableArray(Type elementType, params object[] values)
+    {
+        var array = Array.CreateInstance(elementType, values.Length);
+        for (var index = 0; index < values.Length; index++)
+            array.SetValue(values[index], index);
+
+        var createRange = typeof(ImmutableArray)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(method =>
+                method.Name == nameof(ImmutableArray.CreateRange) &&
+                method.IsGenericMethodDefinition &&
+                method.GetParameters() is [var parameter] &&
+                parameter.ParameterType.IsGenericType &&
+                parameter.ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        return createRange.MakeGenericMethod(elementType).Invoke(null, [array])!;
+    }
+
+    private static object CreateEmptyReadOnlyDictionary(Type dictionaryType)
+    {
+        Assert.IsTrue(dictionaryType.IsGenericType);
+        var arguments = dictionaryType.GetGenericArguments();
+        return Activator.CreateInstance(typeof(Dictionary<,>).MakeGenericType(arguments))!;
+    }
 
     private static object[] GetRecordItems(object value, string propertyName)
         => ((System.Collections.IEnumerable)value.GetType().GetProperty(propertyName)!.GetValue(value)!)
