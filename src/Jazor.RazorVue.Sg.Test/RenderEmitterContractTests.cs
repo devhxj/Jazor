@@ -416,6 +416,227 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersStaticWebRenderTreeBuilderExtensionMetadataCalls()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "onclick", (System.Action)OnClick);
+            Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+            Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(builder, 3, "onclick", false);
+            builder.AddContent(4, "static-extension-metadata");
+            builder.CloseElement();
+            """,
+            "private void OnClick() { }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "static-extension-metadata", StringComparison.Ordinal);
+        StringAssert.Contains(output, "preventDefault", StringComparison.Ordinal);
+        Assert.DoesNotContain("stopPropagation", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersInstanceAndExternalStaticBuilderHelpers()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "AddInstanceText(builder, \"instance-builder-helper\"); ExternalBuilderHelpers.AddStaticText(builder, \"static-builder-helper\");",
+            """
+            private void AddInstanceText(RenderTreeBuilder child, string text)
+            {
+                child.AddContent(0, text);
+            }
+
+            private static class ExternalBuilderHelpers
+            {
+                public static void AddStaticText(RenderTreeBuilder child, string text)
+                {
+                    child.AddContent(0, text);
+                }
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "instance-builder-helper", StringComparison.Ordinal);
+        StringAssert.Contains(output, "static-builder-helper", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersBlockBodiedRenderFragmentFactoriesWithLocalProvenance()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "RenderFragment<string> template = CreateTemplate(); builder.AddContent(0, CreateFragment(Text)); builder.AddContent(1, template.Invoke(Text));",
+            """
+            [Parameter] public string Text { get; set; } = "";
+
+            private RenderFragment CreateFragment(string value)
+            {
+                RenderFragment local = child => child.AddContent(0, "factory-local:" + value);
+                return child =>
+                {
+                    child.AddContent(0, local);
+                    child.AddContent(1, "factory-fragment:" + value);
+                };
+            }
+
+            private RenderFragment<string> CreateTemplate()
+            {
+                RenderFragment<string> local = value => child => child.AddContent(0, "factory-template-local:" + value);
+                return value => child => child.AddContent(0, local(value));
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "factory-fragment:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "factory-template-local:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersBulkAttributesFromIndexerAndCollectionAddInitializers()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "div");
+            builder.AddMultipleAttributes(1, new System.Collections.Generic.Dictionary<string, object?> { ["data-indexer"] = "indexer-value" });
+            builder.AddMultipleAttributes(2, new System.Collections.Generic.Dictionary<string, object?> { { "data-add", "add-value" } });
+            builder.CloseElement();
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "data-indexer", StringComparison.Ordinal);
+        StringAssert.Contains(output, "indexer-value", StringComparison.Ordinal);
+        StringAssert.Contains(output, "data-add", StringComparison.Ordinal);
+        StringAssert.Contains(output, "add-value", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsConditionalDynamicAttributeNames()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "button");
+            if (Enabled)
+            {
+                builder.AddAttribute(1, AttributeName, "dynamic-name");
+            }
+            else
+            {
+                builder.AddAttribute(2, "data-fallback", "fallback-name");
+            }
+            builder.CloseElement();
+            """,
+            "[Parameter] public bool Enabled { get; set; } [Parameter] public string AttributeName { get; set; } = \"\";");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(failure, "Attribute names must be compile-time strings for direct render lowering.", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsConditionalRenderFragmentComponentParameters()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            RenderFragment content = child => child.AddContent(0, "conditional-child");
+            builder.OpenComponent<ChildComponent>(1);
+            if (Enabled)
+            {
+                builder.AddComponentParameter(2, "ChildContent", content);
+            }
+            else
+            {
+                builder.AddComponentParameter(3, "ChildContent", content);
+            }
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+
+            [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(
+            failure,
+            "Conditional RenderFragment component parameters are not supported by direct render lowering.",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_RejectsForeachAllDiscardDeconstruction()
     {
         var fixture = CreateDirectRenderFixture(
