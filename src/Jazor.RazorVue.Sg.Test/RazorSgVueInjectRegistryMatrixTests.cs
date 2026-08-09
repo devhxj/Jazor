@@ -45,11 +45,143 @@ public sealed class VueInjectRegistryMatrixTests
             first.ResolveImplementation(unregistered!)));
     }
 
+    [TestMethod]
+    public void ForCompilation_RejectsNullInputsAndAllowsCompilationsWithoutVueInjectMetadata()
+    {
+        var nullCompilation = Assert.Throws<ArgumentNullException>(() => VueInjectRegistry.ForCompilation(null!));
+        Assert.AreEqual("compilation", nullCompilation.ParamName);
+
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public sealed class PlainComponent { }",
+            new CSharpParseOptions(LanguageVersion.Preview));
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.VueInject.NoMetadata",
+            [sourceTree],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var component = compilation.GetTypeByMetadataName("Demo.PlainComponent");
+        Assert.IsNotNull(component);
+
+        var registry = VueInjectRegistry.ForCompilation(compilation);
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(component, registry.ResolveImplementation(component!)));
+
+        var nullComponent = Assert.Throws<ArgumentNullException>(() => registry.ResolveImplementation(null!));
+        Assert.AreEqual("authoredComponent", nullComponent.ParamName);
+    }
+
+    [TestMethod]
+    public void ForCompilation_IgnoresUnrelatedAttributesAndRejectsNonNamedVueInjectTypeArguments()
+    {
+        var ignoredAttributeCompilation = CreateContractCompilation(
+            "RazorVue.VueInject.UnrelatedAttribute",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            [assembly: CLSCompliant(true)]
+
+            namespace Demo;
+
+            public sealed class PlainComponent
+            {
+            }
+            """);
+        var plainComponent = ignoredAttributeCompilation.GetTypeByMetadataName("Demo.PlainComponent");
+        Assert.IsNotNull(plainComponent);
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(
+            plainComponent,
+            VueInjectRegistry.ForCompilation(ignoredAttributeCompilation).ResolveImplementation(plainComponent!)));
+
+        var invalidContractCompilation = CreateContractCompilation(
+            "RazorVue.VueInject.InvalidContractArgument",
+            """
+            using ECMAScript.VueContract;
+
+            [assembly: VueInject(typeof(string[]), typeof(string))]
+            """);
+        var invalidContract = Assert.Throws<InvalidOperationException>(
+            () => VueInjectRegistry.ForCompilation(invalidContractCompilation));
+        StringAssert.Contains(invalidContract.Message, "contract argument must be a named component type", StringComparison.Ordinal);
+
+        var invalidImplementationCompilation = CreateContractCompilation(
+            "RazorVue.VueInject.InvalidImplementationArgument",
+            """
+            using ECMAScript.VueContract;
+
+            [assembly: VueInject(typeof(string), typeof(string[]))]
+            """);
+        var invalidImplementation = Assert.Throws<InvalidOperationException>(
+            () => VueInjectRegistry.ForCompilation(invalidImplementationCompilation));
+        StringAssert.Contains(invalidImplementation.Message, "implementation argument must be a named component type", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ForCompilation_UsesDerivedParametersAndSkipsShadowedOrNonParameterProperties()
+    {
+        var compilation = CreateContractCompilation(
+            "RazorVue.VueInject.InheritedParameters",
+            """
+            #nullable enable
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            [assembly: VueInject(typeof(Demo.ContractShell), typeof(Demo.InjectedShell))]
+
+            namespace Demo;
+
+            public abstract class ContractBase : ComponentBase
+            {
+                [Parameter] public string? Shared { get; set; }
+                [Parameter(CaptureUnmatchedValues = false)] public string? BaseOnly { get; set; }
+                public string? Ignored { get; set; }
+            }
+
+            [ECMAScriptModule("./contracts/shell")]
+            public sealed class ContractShell : ContractBase, IVueComponent, IVueContainerComponent
+            {
+                [Parameter] public new string? Shared { get; set; }
+            }
+
+            public abstract class ImplementationBase : ComponentBase
+            {
+                [Parameter] public string? Shared { get; set; }
+                [Parameter(CaptureUnmatchedValues = false)] public string? BaseOnly { get; set; }
+                public string? Ignored { get; set; }
+            }
+
+            [ECMAScriptModule("./implementations/shell")]
+            public sealed class InjectedShell : ImplementationBase, IVueComponent, IVueContainerImplementation<ContractShell>
+            {
+                [Parameter] public new string? Shared { get; set; }
+            }
+            """);
+        var contract = compilation.GetTypeByMetadataName("Demo.ContractShell");
+        var implementation = compilation.GetTypeByMetadataName("Demo.InjectedShell");
+        Assert.IsNotNull(contract);
+        Assert.IsNotNull(implementation);
+
+        var resolved = VueInjectRegistry.ForCompilation(compilation).ResolveImplementation(contract!);
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(implementation, resolved));
+    }
+
     private static CSharpCompilation CreateCompilation(VueInjectCase testCase)
     {
         var source = BuildSource(testCase);
         var compilation = CSharpCompilation.Create(
             "RazorVue.VueInject.Matrix." + testCase.Id,
+            [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview))],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+        return compilation;
+    }
+
+    private static CSharpCompilation CreateContractCompilation(string assemblyName, string source)
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName,
             [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview))],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
