@@ -4,9 +4,9 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains4055UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains4059UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(3317, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(3321, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
@@ -23,7 +23,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             1025,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Advanced));
         Assert.HasCount(
-            1536,
+            1540,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Coverage));
         AssertDirectRenderCaseCount(48, "content_");
         AssertDirectRenderCaseCount(32, "markup_");
@@ -65,6 +65,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         AssertDirectRenderCaseCount(64, "advanced_mixed_static_");
         AssertDirectRenderCaseCount(64, "advanced_return_guard_");
         AssertDirectRenderCaseCount(64, "advanced_builder_mutation_");
+        AssertDirectRenderCaseCount(4, "coverage_emitter_");
         Assert.HasCount(32, SlotExpressionCase.All);
         Assert.HasCount(40, ComponentCandidateCase.All);
         Assert.HasCount(30, VueInjectCase.All);
@@ -88,7 +89,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(4055, ids);
+        Assert.HasCount(4059, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,

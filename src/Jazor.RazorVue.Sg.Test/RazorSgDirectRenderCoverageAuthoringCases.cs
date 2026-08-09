@@ -14,6 +14,57 @@ internal static partial class DirectRenderCaseCatalog
         AddCoverageAuthoringCases(cases);
         AddCoverageCallbackTemplateCases(cases);
         AddCoverageCompositionCompilerCases(cases);
+        AddCoverageEmitterInvocationCases(cases);
+    }
+
+    private static void AddCoverageEmitterInvocationCases(List<DirectRenderCase> cases)
+    {
+        Add(
+            cases,
+            "coverage_emitter_local_render_fragment_invoke",
+            "RenderFragment fragment = child => { child.AddContent(0, \"local-fragment-invoke\"); child.AddContent(1, Text); }; fragment.Invoke(builder);",
+            "local-fragment-invoke",
+            "props.text",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string Text { get; set; } = \"\";",
+            usesProps: true);
+
+        Add(
+            cases,
+            "coverage_emitter_local_generic_render_fragment_invoke",
+            "RenderFragment<string> fragment = value => child => child.AddContent(0, \"local-generic-fragment-invoke:\" + value); fragment.Invoke(Text).Invoke(builder);",
+            "local-generic-fragment-invoke:",
+            "props.text",
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string Text { get; set; } = \"\";",
+            usesProps: true);
+
+        Add(
+            cases,
+            "coverage_emitter_frame_local_named_event_metadata",
+            "builder.OpenElement(0, \"button\"); var eventName = \"onclick\"; var assignedEventName = \"local-click\"; builder.AddNamedEvent(eventName, assignedEventName); builder.CloseElement();",
+            "h(\"button\"",
+            additionalExpectedFragment: null,
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage);
+
+        Add(
+            cases,
+            "coverage_emitter_foreach_deconstruction",
+            "foreach (var (key, value) in Items) { builder.AddContent(0, key + \":\" + value); }",
+            "Array.from(props.items ?? []",
+            "key",
+            usesFragment: false,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public (string Key, string Value)[] Items { get; set; } = [];",
+            usesProps: true,
+            tertiaryExpectedFragment: "value");
     }
 
     private static void AddCoverageAuthoringCases(List<DirectRenderCase> cases)
