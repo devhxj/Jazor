@@ -311,6 +311,47 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreSame(content, Invoke<Expression>("InvokeRenderFragment", directFragment, new Identifier("argument")));
     }
 
+    [TestMethod]
+    public void EmitterMemberResolutionHelpers_ValidateGetterFactoryAndConstructorShapes()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var expressionProperty = GetProperty(host, "ExpressionFragment");
+        var blockProperty = GetProperty(host, "BlockFragment");
+        var autoProperty = GetProperty(host, "AutoFragment");
+        var writeOnlyProperty = GetProperty(host, "WriteOnlyFragment");
+
+        AssertReturnedPropertyValue(emitter, expressionProperty);
+        AssertReturnedPropertyValue(emitter, blockProperty);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedPropertyValue", new object?[] { autoProperty, null }));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedPropertyValue", new object?[] { writeOnlyProperty, null }));
+
+        AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "ExpressionFactory"));
+        AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "BlockLiteralFactory"));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { GetMethodSymbol(fixture, "EmitterHost", "BlockFactory"), null }));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { GetMethodSymbol(fixture, "EmitterHost", "InvalidFactory"), null }));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { GetMethodSymbol(fixture, "EmitterHost", "FactoryWithoutReturn"), null }));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { GetMethodSymbol(fixture, "EmitterHost", "NonFragmentFactory"), null }));
+
+        AssertConstructorMap(emitter, GetNamedType(fixture, "MappedCarrier"), expected: true);
+        AssertConstructorMap(emitter, GetNamedType(fixture, "MixedCarrier"), expected: true);
+        AssertConstructorMap(emitter, GetNamedType(fixture, "UnmappedCarrier"), expected: false);
+        AssertConstructorMap(emitter, GetNamedType(fixture, "ExpressionCarrier"), expected: false);
+    }
+
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
     {
         var arguments = new object?[] { operation, null };
@@ -350,6 +391,53 @@ public sealed class RenderEmitterPrivateContractTests
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
             .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
         return (T)method.Invoke(null, arguments)!;
+    }
+
+    private static object CreateEmitter(Fixture fixture, INamedTypeSymbol componentSymbol)
+    {
+        var emitterType = typeof(RenderEmitter).GetNestedType("Emitter", BindingFlags.NonPublic);
+        Assert.IsNotNull(emitterType);
+        var constructor = emitterType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 4);
+        return constructor.Invoke(
+        [
+            fixture.Compilation,
+            componentSymbol,
+            null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation)
+        ]);
+    }
+
+    private static T InvokeEmitterInstance<T>(object emitter, string methodName, params object?[] arguments)
+    {
+        var method = emitter.GetType()
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(emitter, arguments)!;
+    }
+
+    private static void AssertReturnedPropertyValue(object emitter, IPropertySymbol property)
+    {
+        var arguments = new object?[] { property, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedPropertyValue", arguments));
+        Assert.IsNotNull(arguments[1]);
+    }
+
+    private static void AssertReturnedRenderFragmentBody(object emitter, IMethodSymbol method)
+    {
+        var arguments = new object?[] { method, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", arguments));
+        Assert.IsNotNull(arguments[1]);
+    }
+
+    private static void AssertConstructorMap(object emitter, INamedTypeSymbol type, bool expected)
+    {
+        var constructor = type.InstanceConstructors.Single(candidate => !candidate.IsImplicitlyDeclared);
+        var arguments = new object?[] { constructor, null };
+        Assert.AreEqual(expected, InvokeEmitterInstance<bool>(emitter, "TryBuildConstructorRenderFragmentPropertyMap", arguments));
+        if (expected)
+            Assert.IsNotNull(arguments[1]);
     }
 
     private static void AssertAttributeInitializer(IOperation operation, string key)
@@ -447,6 +535,88 @@ public sealed class RenderEmitterPrivateContractTests
             }
 
             public sealed class TypeParameterOwner<T>;
+
+            public sealed class EmitterHost : ComponentBase
+            {
+                public RenderFragment ExpressionFragment => builder => { };
+
+                public RenderFragment BlockFragment
+                {
+                    get
+                    {
+                        return builder => { };
+                    }
+                }
+
+                public RenderFragment AutoFragment { get; set; } = default!;
+
+                public RenderFragment WriteOnlyFragment
+                {
+                    set { }
+                }
+
+                public RenderFragment ExpressionFactory() => builder => { };
+
+                public RenderFragment BlockLiteralFactory()
+                {
+                    return builder => { };
+                }
+
+                public RenderFragment BlockFactory()
+                {
+                    RenderFragment local = builder => { };
+                    return local;
+                }
+
+                public RenderFragment InvalidFactory()
+                {
+                    var state = 1;
+                    return builder => { };
+                }
+
+                public void FactoryWithoutReturn()
+                {
+                    RenderFragment local = builder => { };
+                }
+
+                public int NonFragmentFactory() => 1;
+            }
+
+            public sealed class MappedCarrier
+            {
+                public MappedCarrier(RenderFragment header)
+                {
+                    Header = header;
+                }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            public sealed class MixedCarrier
+            {
+                public MixedCarrier(int ignored, RenderFragment header)
+                {
+                    Header = header;
+                }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            public sealed class UnmappedCarrier
+            {
+                public UnmappedCarrier(RenderFragment header)
+                {
+                }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            public sealed class ExpressionCarrier
+            {
+                public ExpressionCarrier(RenderFragment header) => Header = header;
+
+                public RenderFragment Header { get; set; } = default!;
+            }
 
             public sealed class OperationShapes
             {
@@ -583,6 +753,9 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(symbol, methodName);
         return symbol!;
     }
+
+    private static IPropertySymbol GetProperty(INamedTypeSymbol type, string name)
+        => type.GetMembers(name).OfType<IPropertySymbol>().Single();
 
     private static IBlockOperation GetMethodBody(Fixture fixture, string typeName, string methodName)
         => GetOperation<IBlockOperation>(fixture, GetMethod(fixture, typeName, methodName).Body!);
