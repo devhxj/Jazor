@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using Acornima;
 using Acornima.Ast;
+using Jazor.Compiler;
 using Jazor.Common.SourceMaps;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
@@ -489,6 +490,138 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual(string.Empty, Invoke<string>("NormalizeGeneratedSourcePath", new object?[] { null }));
     }
 
+    [TestMethod]
+    public void RuntimeClassAndCompilerModuleParts_KeepClosureDrivenOutputDeterministic()
+    {
+        var fixture = CreateRuntimeComponentFixture();
+
+        var flattened = Invoke<ImmutableArray<INamedTypeSymbol>>(
+            "GetFlattenedRuntimeClasses",
+            fixture.Component.ComponentSymbol,
+            fixture.Closure);
+        var flattenedNames = flattened.Select(static type => type.Name).ToArray();
+        var closureNames = fixture.Closure.OrderedMembers.Select(static member => member.Name).ToArray();
+        Assert.IsTrue(
+            flattenedNames.Contains("RuntimeInner", StringComparer.Ordinal),
+            "Flattened: " + string.Join(", ", flattenedNames) + "; Closure: " + string.Join(", ", closureNames));
+        Assert.IsTrue(
+            flattenedNames.Contains("RuntimeLeaf", StringComparer.Ordinal),
+            "Flattened: " + string.Join(", ", flattenedNames) + "; Closure: " + string.Join(", ", closureNames));
+        Assert.IsTrue(
+            Array.IndexOf(flattenedNames, "RuntimeLeaf") < Array.IndexOf(flattenedNames, "RuntimeInner"),
+            string.Join(", ", flattenedNames));
+
+        var emptyParts = Invoke<object>("BuildCompilerModuleParts", null, null, fixture.Closure);
+        Assert.IsNotNull(emptyParts);
+
+        var module = new Parser().ParseModule(
+            """
+            import { source } from "./source.mjs";
+            export { source };
+            let counter = 1;
+            let secondary = 2, kept = 3;
+            let [destructured] = source;
+            render();
+            """);
+        var positions = new Dictionary<Node, GeneratedNodePosition>();
+        var nextLine = 0;
+        foreach (var statement in module.Body)
+        {
+            AddNodePosition(statement);
+            if (statement is VariableDeclaration declaration)
+                AddVariableInitializerPositions(declaration);
+        }
+
+        var parts = Invoke<object>("BuildCompilerModuleParts", module, positions, fixture.Closure);
+        var importDeclarations = GetRecordItems(parts, "ImportDeclarations");
+        var setupStatements = GetRecordItems(parts, "SetupStatements");
+        var stateSlots = GetRecordItems(parts, "StateSlots");
+        Assert.HasCount(1, importDeclarations);
+        Assert.HasCount(3, setupStatements);
+        Assert.AreEqual(
+            2,
+            stateSlots.Count(slot => slot.GetType().GetProperty("Initializer")!.GetValue(slot) is not null));
+
+        var missingPositions = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("BuildCompilerModuleParts", module, null, fixture.Closure));
+        StringAssert.Contains(
+            missingPositions.InnerException!.Message,
+            "Compiler AST node positions are required",
+            StringComparison.Ordinal);
+
+        void AddNodePosition(Node node)
+            => positions[node] = new GeneratedNodePosition(nextLine++, 0);
+
+        void AddVariableInitializerPositions(VariableDeclaration declaration)
+        {
+            foreach (var declarator in declaration.Declarations)
+            {
+                if (declarator.Init is not null)
+                    AddNodePosition(declarator.Init);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void SourceMapProjectionAndCompilationRootEdges_PreserveStableArtifacts()
+    {
+        var compilerMap = new SourceMapDocument(
+            "compiler.mjs",
+            [
+                new SourceMapSource("Generated/Component.razor.g.cs", null),
+                new SourceMapSource("External/Helper.cs", null)
+            ],
+            [
+                new SourceMapSegment(4, 0, -1, 0, 0),
+                new SourceMapSegment(4, 0, 0, 0, 0),
+                new SourceMapSegment(5, 2, 0, 0, 0),
+                new SourceMapSegment(5, 10, 1, 1, 2),
+                new SourceMapSegment(5, 10, 1, 1, 2)
+            ]);
+        var projected = Invoke<SourceMapDocument>(
+            "ProjectCompilerSourceMap",
+            "components/output.mjs",
+            compilerMap,
+            CreateCompiledLineMappings(
+                (GeneratedLine: 20, GeneratedColumn: 3, CompiledLine: 5, CompiledColumn: 0),
+                (GeneratedLine: 20, GeneratedColumn: 9, CompiledLine: 5, CompiledColumn: 8)));
+        Assert.HasCount(2, projected.Segments);
+        Assert.AreEqual(20, projected.Segments[0].GeneratedLine);
+        Assert.AreEqual(5, projected.Segments[0].GeneratedColumn);
+        Assert.AreEqual(11, projected.Segments[1].GeneratedColumn);
+
+        var sources = new List<SourceMapSource>();
+        var indexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        Assert.AreEqual(0, Invoke<int>("GetOrAddSourceIndex", sources, indexes, "Pages/Empty.razor", null));
+        Assert.AreEqual(0, Invoke<int>("GetOrAddSourceIndex", sources, indexes, "pages/empty.razor", null));
+
+        var root = Path.Combine(Path.GetTempPath(), "JazorVue", "PrivateContractSourceRoot");
+        var rootedTree = CSharpSyntaxTree.ParseText(
+            "public sealed class RootedComponent { }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: Path.Combine(root, "Components", "RootedComponent.cs"));
+        var rootedCompilation = CSharpCompilation.Create(
+            "Rooted",
+            [rootedTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var rootedDocument = new GeneratedDocument(
+            "Generated/Rooted.razor.g.cs",
+            Path.Combine(root, "Pages", "Rooted.razor"),
+            SourceText.From("class Generated { }"),
+            []);
+        Assert.AreEqual(
+            Path.GetFullPath(root),
+            Invoke<string?>("TryGetCompilationSourceRoot", rootedCompilation, rootedDocument));
+
+        var relativeDocument = new GeneratedDocument(
+            "Generated/Relative.razor.g.cs",
+            "Pages/Relative.razor",
+            SourceText.From("class Generated { }"),
+            []);
+        Assert.IsNull(Invoke<string?>("TryGetCompilationSourceRoot", CreateCompilation(), relativeDocument));
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -499,6 +632,39 @@ public sealed class VueModuleBuilderPrivateContractTests
 
     private static void InvokeVoid(string methodName, params object?[] arguments)
         => _ = Invoke<object?>(methodName, arguments);
+
+    private static object[] GetRecordItems(object value, string propertyName)
+        => ((System.Collections.IEnumerable)value.GetType().GetProperty(propertyName)!.GetValue(value)!)
+            .Cast<object>()
+            .ToArray();
+
+    private static object CreateCompiledLineMappings(
+        params (int GeneratedLine, int GeneratedColumn, int CompiledLine, int CompiledColumn)[] mappings)
+    {
+        var mappingType = typeof(VueModuleBuilder).GetNestedType("CompiledLineMapping", BindingFlags.NonPublic);
+        Assert.IsNotNull(mappingType);
+        var constructor = mappingType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 4);
+        var values = Array.CreateInstance(mappingType!, mappings.Length);
+        for (var index = 0; index < mappings.Length; index++)
+        {
+            var mapping = mappings[index];
+            values.SetValue(
+                constructor.Invoke([mapping.GeneratedLine, mapping.GeneratedColumn, mapping.CompiledLine, mapping.CompiledColumn]),
+                index);
+        }
+
+        var createRange = typeof(ImmutableArray)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(method =>
+                method.Name == nameof(ImmutableArray.CreateRange) &&
+                method.IsGenericMethodDefinition &&
+                method.GetParameters() is [var parameter] &&
+                parameter.ParameterType.IsGenericType &&
+                parameter.ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        return createRange.MakeGenericMethod(mappingType!).Invoke(null, [values])!;
+    }
 
     private static string[] GetImportedNames(ImportDeclaration declaration)
         => declaration.Specifiers
@@ -620,6 +786,68 @@ public sealed class VueModuleBuilderPrivateContractTests
         return compilation;
     }
 
+    private static RuntimeComponentFixture CreateRuntimeComponentFixture()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace PrivateContracts;
+
+            public sealed class RuntimeComponent : ComponentBase
+            {
+                private int counter = 1;
+                private int secondary = 2;
+
+                public sealed class RuntimeOuter
+                {
+                    public sealed class RuntimeInner
+                    {
+                        public sealed class RuntimeLeaf
+                        {
+                        }
+                    }
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    var outer = new RuntimeOuter();
+                    var instance = new RuntimeOuter.RuntimeInner();
+                    var leaf = new RuntimeOuter.RuntimeInner.RuntimeLeaf();
+                    builder.AddContent(0, counter + secondary + outer.GetHashCode() + instance.GetHashCode() + leaf.GetHashCode());
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "RuntimeComponent.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.RuntimeComponent.PrivateContracts",
+            [syntaxTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+
+        var componentSymbol = compilation.GetTypeByMetadataName("PrivateContracts.RuntimeComponent");
+        Assert.IsNotNull(componentSymbol);
+        Assert.IsTrue(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
+                compilation,
+                ImmutableArray.Create(componentSymbol!),
+                out var binding,
+                out var bindingFailure),
+            bindingFailure);
+        Assert.IsNotNull(binding);
+
+        var component = binding!.Components.Single();
+        Assert.IsTrue(
+            MemberClosureBuilder.TryBuild(binding, component, out var closure, out var closureFailure),
+            closureFailure);
+        Assert.IsNotNull(closure);
+        return new RuntimeComponentFixture(component, closure!);
+    }
+
     private static INamedTypeSymbol GetNamedType(Compilation compilation, string metadataName)
     {
         var type = compilation.GetTypeByMetadataName(metadataName);
@@ -644,4 +872,8 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsNotNull(operation, methodName);
         return operation!;
     }
+
+    private sealed record RuntimeComponentFixture(
+        BoundComponent Component,
+        MemberClosure Closure);
 }
