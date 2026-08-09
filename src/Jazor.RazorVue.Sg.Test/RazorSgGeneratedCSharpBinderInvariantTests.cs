@@ -151,4 +151,76 @@ public sealed class GeneratedCSharpBinderInvariantTests
                 component.BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree.FilePath,
                 StringComparison.Ordinal)));
     }
+
+    [TestMethod]
+    public void TryBindFinalCompilation_PreservesMappedRazorIdentityAndGeneratedFallbackPath()
+    {
+        var mappedTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public sealed class MappedComponent : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+            #line 7 "Pages/MappedComponent.razor"
+                    builder.AddContent(0, "mapped");
+            #line default
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            "Pages/MappedComponent.razor.g.cs");
+        var mappedCompilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.MappedSource",
+            [mappedTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var mappedComponent = mappedCompilation.GetTypeByMetadataName("Demo.Pages.MappedComponent");
+        Assert.IsNotNull(mappedComponent);
+
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
+            mappedCompilation,
+            ImmutableArray.Create(mappedComponent!),
+            out var mappedBinding,
+            out var mappedFailure), mappedFailure);
+        Assert.IsNotNull(mappedBinding);
+        Assert.AreEqual("Pages/MappedComponent.razor", mappedBinding!.Documents.Single().SourcePath);
+
+        var generatedTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public sealed class GeneratedOnlyComponent : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "generated");
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            "Pages/GeneratedOnlyComponent.razor.g.cs");
+        var generatedCompilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.GeneratedFallback",
+            [generatedTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var generatedComponent = generatedCompilation.GetTypeByMetadataName("Demo.Pages.GeneratedOnlyComponent");
+        Assert.IsNotNull(generatedComponent);
+
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
+            generatedCompilation,
+            ImmutableArray.Create(generatedComponent!),
+            out var generatedBinding,
+            out var generatedFailure), generatedFailure);
+        Assert.IsNotNull(generatedBinding);
+        Assert.AreEqual("Pages/GeneratedOnlyComponent.razor.g.cs", generatedBinding!.Documents.Single().SourcePath);
+    }
 }

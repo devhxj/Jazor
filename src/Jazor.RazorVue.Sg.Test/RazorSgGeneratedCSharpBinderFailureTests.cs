@@ -72,6 +72,37 @@ public sealed class GeneratedCSharpBinderFailureTests
         StringAssert.Contains(failure, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void TryBindHandwritten_RejectsCandidateWithoutHandwrittenBuildRenderTree()
+    {
+        var compilation = CreateCompilation(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/missing-handwritten-render")]
+            public sealed class MissingHandwrittenRender : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            "Pages/MissingHandwrittenRender.razor.cs");
+        var component = compilation.GetTypeByMetadataName("Demo.Pages.MissingHandwrittenRender");
+
+        Assert.IsNotNull(component);
+        Assert.IsFalse(GeneratedCSharpBinder.TryBindHandwritten(
+            compilation,
+            ImmutableArray.Create(component!),
+            out var binding,
+            out var failure));
+
+        Assert.IsNull(binding);
+        StringAssert.Contains(failure, "Demo.Pages.MissingHandwrittenRender", StringComparison.Ordinal);
+        StringAssert.Contains(failure, "did not declare a handwritten BuildRenderTree", StringComparison.Ordinal);
+    }
+
     private static CSharpCompilation CreateCompilation(string source, string path)
         => CSharpCompilation.Create(
             "RazorVue.GeneratedCSharpBinder.FailureTests",
