@@ -433,6 +433,62 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("map", aliases["Generated/Counter.razor.g.cs"]);
     }
 
+    [TestMethod]
+    public void SourceMapAndSymbolFallbackEdges_KeepGeneratedArtifactsDeterministic()
+    {
+        var globalCompilation = CreateStandaloneCompilation(
+            "public sealed class GlobalComponent { }",
+            "GlobalComponent.cs");
+        var globalComponent = globalCompilation.GetTypeByMetadataName("GlobalComponent");
+        Assert.IsNotNull(globalComponent);
+        Assert.AreEqual("Standalone/GlobalComponent.mjs", Invoke<string>("GetRelativePath", globalComponent!));
+
+        var callbackCompilation = CreateStandaloneCompilation(
+            "namespace Microsoft.AspNetCore.Components; public sealed class EventCallback<TLeft, TRight> { }",
+            "EventCallbackFallback.cs");
+        var callbackFallback = callbackCompilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback`2");
+        Assert.IsNotNull(callbackFallback);
+        Assert.IsTrue(Invoke<bool>("IsEventCallbackType", callbackFallback!));
+
+        var emptyDocument = new GeneratedDocument(
+            "Generated/Empty.razor.g.cs",
+            "Pages/Empty.razor",
+            SourceText.From(string.Empty),
+            []);
+        var emptyMap = Invoke<SourceMapDocument>(
+            "BuildGeneratedCSharpSourceMap",
+            emptyDocument,
+            new SourceMapDocument("empty.mjs", [], []));
+        Assert.IsEmpty(emptyMap.Sources);
+        Assert.IsEmpty(emptyMap.Segments);
+
+        var fallbackMappings = ImmutableArray.Create(new RazorSourceMap(
+            new RazorSourceSpan(null, 0, 1, 0, 0),
+            new RazorSourceSpan(null, 0, 1, 0, 0)));
+        var fallbackDocument = new GeneratedDocument(
+            "Generated/Fallback.razor.g.cs",
+            "Pages/Fallback.razor",
+            SourceText.From("x"),
+            fallbackMappings);
+        var fallbackMap = Invoke<SourceMapDocument>(
+            "BuildGeneratedCSharpSourceMap",
+            fallbackDocument,
+            new SourceMapDocument(
+                "fallback.mjs",
+                [new SourceMapSource("Generated/Fallback.razor.g.cs", null)],
+                [
+                    new SourceMapSegment(0, 0, -1, 0, 0),
+                    new SourceMapSegment(0, 0, 0, 0, 0)
+                ]));
+        Assert.IsTrue(fallbackMap.Sources.Any(static source => source.Path == "Pages/Fallback.razor"));
+
+        Assert.AreEqual("component.razor", Invoke<string>("NormalizeSourcePath", new object?[] { null }));
+        Assert.AreEqual(
+            "component.razor",
+            Invoke<string>("NormalizeSourcePath", Path.GetPathRoot(Path.GetTempPath())!));
+        Assert.AreEqual(string.Empty, Invoke<string>("NormalizeGeneratedSourcePath", new object?[] { null }));
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -541,6 +597,22 @@ public sealed class VueModuleBuilderPrivateContractTests
         var compilation = CSharpCompilation.Create(
             "RazorVue.PrivateContracts",
             [source],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+        return compilation;
+    }
+
+    private static CSharpCompilation CreateStandaloneCompilation(string source, string path)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            source,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: path);
+        var compilation = CSharpCompilation.Create(
+            "Standalone",
+            [syntaxTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
