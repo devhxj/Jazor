@@ -957,6 +957,83 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
     }
 
     [TestMethod]
+    public void RewriteInvocation_OpenComponentWithConvertedTypeOf_LowersToDefaultImportAndProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent(0, (Type)typeof(Child));
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.closeComponent();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentWithConvertedLocalTypeOf_LowersToDefaultImportAndProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    Type childType = (Type)typeof(Child);
+                    builder.OpenComponent(0, (Type)childType);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentWithNullType_FailsWithActionableDiagnostic()
+    {
+        var block = GetBlockOperation(
+            """
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent(0, null);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new RenderTreeBuilderSemanticWalkerHost()
+        };
+
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+        StringAssert.Contains(exception.Message, "Dynamic Type OpenComponent", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void RewriteInvocation_OpenComponentWithLocalTypeOf_PreservesErasedSequenceEvaluation()
     {
         var script = CompileWithRenderTreeBuilderHost(

@@ -891,6 +891,130 @@ public sealed class VueSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersDomBindCreateBinderWithEmptyReturn()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private string text = "";
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "input");
+                    builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(this, __value =>
+                    {
+                        text = __value;
+                        return;
+                    }, text));
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new VueSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onchange\", __value => state.text = __value);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("CreateBinder", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_RejectsDomBindCreateBinderWithMultipleAssignments()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private string text = "";
+                private string previousText = "";
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddAttribute(0, "onchange", EventCallback.Factory.CreateBinder(this, __value =>
+                    {
+                        text = __value;
+                        previousText = __value;
+                    }, text));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new VueSemanticWalkerHost(fixture.Component)
+        };
+
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
+        StringAssert.Contains(exception.Message, "EventCallbackFactory.CreateBinder", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "Handler operation kind", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "Anonymous body operation kinds", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_RejectsEventCallbackFactoryCreateForNonComponentReceiver()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private void Increment()
+                {
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddAttribute(0, "onclick", EventCallback.Factory.Create(new object(), (Action)Increment));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new VueSemanticWalkerHost(fixture.Component)
+        };
+
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
+        StringAssert.Contains(exception.Message, "EventCallbackFactory.Create", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "current-component receivers", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_RejectsConditionalEventCallbackWithUnlowerableBranch()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private bool usePrimary;
+                private Action alternate = () => { };
+
+                private void Primary()
+                {
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddAttribute(0, "onclick", EventCallback.Factory.Create(this, usePrimary ? (Action)Primary : alternate));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new VueSemanticWalkerHost(fixture.Component)
+        };
+
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
+        StringAssert.Contains(exception.Message, "EventCallbackFactory.Create", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "method-group or simple state-assignment lambda handlers", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_RejectsDomBindToParameter()
     {
         var fixture = CompileComponent(
