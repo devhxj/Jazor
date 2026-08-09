@@ -62,6 +62,16 @@ public sealed record CssShadow(
     CssShadowColor? Color = null,
     bool Inset = false);
 
+/// <summary>
+/// Describes one gradient color stop. <see cref="From"/> and <see cref="To"/> model the optional
+/// one- or two-position form without admitting arbitrary CSS text.
+/// 描述一个渐变色标；From/To 精确表达可选的单位置或双位置形式。
+/// </summary>
+public sealed record CssGradientStop(
+    CssColorValue Color,
+    CssLengthPercentageValue? From = null,
+    CssLengthPercentageValue? To = null);
+
 [String]
 public enum CssChildKind
 {

@@ -85,6 +85,11 @@ public static partial class css
     public static readonly CssIsolationKeyword isolate = CssIsolationKeyword.Isolate;
     public static readonly CssColorSchemeKeyword light = CssColorSchemeKeyword.Light;
     public static readonly CssColorSchemeKeyword dark = CssColorSchemeKeyword.Dark;
+    public static readonly CssTimingFunctionKeyword linear = CssTimingFunctionKeyword.Linear;
+    public static readonly CssTimingFunctionKeyword ease = CssTimingFunctionKeyword.Ease;
+    public static readonly CssTimingFunctionKeyword easeIn = CssTimingFunctionKeyword.EaseIn;
+    public static readonly CssTimingFunctionKeyword easeOut = CssTimingFunctionKeyword.EaseOut;
+    public static readonly CssTimingFunctionKeyword easeInOut = CssTimingFunctionKeyword.EaseInOut;
 
     public static CssRaw raw(string value)
         => CssRaw.create(value);
@@ -94,6 +99,11 @@ public static partial class css
 
     public static CssDeclaration important(string name, CssValue value)
         => new(name, value, CssDeclarationPriority.Important);
+
+    /// <summary>Marks one strongly typed property value as important.</summary>
+    [ECMAScriptName("importantValue")]
+    public static CssImportant<TValue> important<TValue>(TValue value)
+        => CssImportant<TValue>.create(value);
 
     [ECMAScriptName("importantFrom")]
     public static CssDeclaration important(ICssDeclaration value)
@@ -155,6 +165,10 @@ public static partial class css
 
     public static CssLength min(CssLength first, CssLength second)
         => CssLength.create("min(" + StringFn(first) + "," + StringFn(second) + ")");
+
+    [ECMAScriptName("minLengthPercentage")]
+    public static CssLengthPercentage min(CssLengthPercentageValue first, CssLengthPercentageValue second)
+        => CssLengthPercentage.create("min(" + StringFn(first.Value) + "," + StringFn(second.Value) + ")");
 
     public static CssLength max(CssLength first, CssLength second)
         => CssLength.create("max(" + StringFn(first) + "," + StringFn(second) + ")");
@@ -265,6 +279,104 @@ public static partial class css
         foreach (var value in values)
             output.Push(StringFn(value.Value));
         return CssTrack.create(output.Join(" "));
+    }
+
+    public static CssPadding padding(CssPaddingPart value)
+        => CssPadding.create(StringFn(value.Value));
+
+    [ECMAScriptName("padding2")]
+    public static CssPadding padding(CssPaddingPart vertical, CssPaddingPart horizontal)
+        => CssPadding.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+
+    [ECMAScriptName("padding3")]
+    public static CssPadding padding(CssPaddingPart top, CssPaddingPart horizontal, CssPaddingPart bottom)
+        => CssPadding.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+
+    [ECMAScriptName("padding4")]
+    public static CssPadding padding(CssPaddingPart top, CssPaddingPart right, CssPaddingPart bottom, CssPaddingPart left)
+        => CssPadding.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+
+    public static CssMargin margin(CssMarginPart value)
+        => CssMargin.create(StringFn(value.Value));
+
+    [ECMAScriptName("margin2")]
+    public static CssMargin margin(CssMarginPart vertical, CssMarginPart horizontal)
+        => CssMargin.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+
+    [ECMAScriptName("margin3")]
+    public static CssMargin margin(CssMarginPart top, CssMarginPart horizontal, CssMarginPart bottom)
+        => CssMargin.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+
+    [ECMAScriptName("margin4")]
+    public static CssMargin margin(CssMarginPart top, CssMarginPart right, CssMarginPart bottom, CssMarginPart left)
+        => CssMargin.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+
+    public static CssGap gap(CssGapPart value)
+        => CssGap.create(StringFn(value.Value));
+
+    [ECMAScriptName("gap2")]
+    public static CssGap gap(CssGapPart row, CssGapPart column)
+        => CssGap.create(join(StringFn(row.Value), StringFn(column.Value)));
+
+    public static CssRadius radius(CssRadiusPart value)
+        => CssRadius.create(StringFn(value.Value));
+
+    [ECMAScriptName("radius2")]
+    public static CssRadius radius(CssRadiusPart vertical, CssRadiusPart horizontal)
+        => CssRadius.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+
+    [ECMAScriptName("radius4")]
+    public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRight, CssRadiusPart bottomRight, CssRadiusPart bottomLeft)
+        => CssRadius.create(join(StringFn(topLeft.Value), StringFn(topRight.Value), StringFn(bottomRight.Value), StringFn(bottomLeft.Value)));
+
+    public static CssFlex flexBox(double grow, double shrink, CssLengthPercentageValue basis)
+        => CssFlex.create(number(grow) + " " + number(shrink) + " " + StringFn(basis.Value));
+
+    public static CssBackgroundSize backgroundSize(CssLengthPercentageValue width, CssLengthPercentageValue height)
+        => CssBackgroundSize.create(join(StringFn(width.Value), StringFn(height.Value)));
+
+    public static CssGridLine gridLine(int line)
+        => CssGridLine.create(StringFn(line));
+
+    [ECMAScriptName("gridLine2")]
+    public static CssGridLine gridLine(int start, int end)
+        => CssGridLine.create(StringFn(start) + " / " + StringFn(end));
+
+    public static CssGradientStop stop(CssColorValue color)
+        => new(color);
+
+    [ECMAScriptName("stopAt")]
+    public static CssGradientStop stop(CssColorValue color, CssLengthPercentageValue at)
+        => new(color, at);
+
+    [ECMAScriptName("stopRange")]
+    public static CssGradientStop stop(CssColorValue color, CssLengthPercentageValue from, CssLengthPercentageValue to)
+        => new(color, from, to);
+
+    public static CssGradient linearGradient([PreserveParamsArray] params CssGradientStop[] stops)
+        => gradient("linear-gradient", stops);
+
+    public static CssGradient conicGradient([PreserveParamsArray] params CssGradientStop[] stops)
+        => gradient("conic-gradient", stops);
+
+    public static CssAnimation animation(CssIdent name, CssTime duration, CssTimingFunctionKeyword timing)
+        => CssAnimation.create(StringFn(name) + " " + StringFn(duration) + " " + StringFn(timing));
+
+    public static CssFontFamilyName font(string value)
+        => CssFontFamilyName.create(quote(value));
+
+    public static CssFontFamilyName genericFont(string value)
+        => CssFontFamilyName.create(StringFn(ident(value)));
+
+    public static CssFontFamily fontFamily([PreserveParamsArray] params CssFontFamilyName[] names)
+    {
+        if (names.Length == 0)
+            Fail("CSS font-family requires at least one family.");
+
+        var output = new Array<string>();
+        foreach (var name in names)
+            output.Push(StringFn(name));
+        return CssFontFamily.create(output.Join(","));
     }
 
     public static CssTransform translateX(CssLengthPercentageValue value)
@@ -383,6 +495,33 @@ public static partial class css
         foreach (var value in values)
             output.Push(StringFn(value));
         return CssFilter.create(output.Join(" "));
+    }
+
+    private static CssGradient gradient(string name, CssGradientStop[] stops)
+    {
+        if (stops.Length < 2)
+            Fail("CSS gradient requires at least two stops.");
+
+        var output = new Array<string>();
+        foreach (var stop in stops)
+        {
+            var value = StringFn(stop.Color.Value);
+            if (stop.From is not null)
+                value += " " + StringFn(stop.From.Value.Value);
+            if (stop.To is not null)
+                value += " " + StringFn(stop.To.Value.Value);
+            output.Push(value);
+        }
+
+        return CssGradient.create(name + "(" + output.Join(",") + ")");
+    }
+
+    private static string join([PreserveParamsArray] params string[] values)
+    {
+        var output = new Array<string>();
+        foreach (var value in values)
+            output.Push(value);
+        return output.Join(" ");
     }
 
     private static string number(double value)

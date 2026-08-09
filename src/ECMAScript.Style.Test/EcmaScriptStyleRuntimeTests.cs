@@ -24,7 +24,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             import {
               style, px, rem, percent, rgba, hex, variable, varOr, ms,
               fr, minMax, repeat, translateY, rotate, deg, transform,
-              border, solid, filters, blur, saturate, important, flex, extract
+              border, solid, filters, blur, saturate, importantValue, flex, extract
             } from "./runtime.mjs";
 
             const name = style({
@@ -37,7 +37,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               "transition-duration": ms(180),
               "grid-template-columns": repeat(3, minMax(px(0), fr(1))),
               transform: transform([translateY(px(2)), rotate(deg(4))]),
-              $additional: [important("display", flex)]
+              display: importantValue(flex)
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);

@@ -36,7 +36,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     Gap = rem(0.5),
                     Color = varOr("--button-color", color("red")),
                     BackgroundColor = hex("1769aa"),
-                    Border = px(1) | solid | hex("d7ebe4"),
+                    Border = important(px(1) | solid | hex("d7ebe4")),
                     BackdropFilter = filters(blur(px(12)), saturate(1.15)),
                     TransitionDuration = ms(180),
                     Opacity = 0.9,
@@ -87,7 +87,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "gap: rem(0.5)");
         StringAssert.Contains(script, "color: varOr(\"--button-color\", color(\"red\"))");
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
-        StringAssert.Contains(script, "border: px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\")");
+        StringAssert.Contains(script, "border: importantValue(px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\"))");
         StringAssert.Contains(script, "\"backdrop-filter\": filters([blur(px(12)), saturate(1.15)])");
         StringAssert.Contains(script, "\"transition-duration\": ms(180)");
         StringAssert.Contains(script, "opacity: 0.9");
@@ -279,7 +279,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
     }
 
     [TestMethod]
-    public void Compile_BorderPipe_ProducesOnlyTheBorderDomain()
+    public void Compile_BorderPipeAndImportant_StayWithinTheirPropertyDomains()
     {
         const string validSource = """
             using ECMAScript.Style;
@@ -293,10 +293,8 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                 {
                     Border = px(1) | solid | var("--border-color"),
                     BorderTop = thin | dashed | currentColor,
-                    Additional =
-                    [
-                        important("display", flex)
-                    ]
+                    Display = important(flex),
+                    Padding = important(padding(px(8), px(12)))
                 };
             }
             """;
@@ -316,7 +314,9 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = px(1) | solid
+                    Width = px(1) | solid,
+                    Height = important(hex("fff")),
+                    BoxShadow = shadows(new CssShadow(px(0), px(2), Blur: important(px(8))))
                 };
             }
             """;
@@ -324,8 +324,10 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             .GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        Assert.HasCount(1, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
+        Assert.HasCount(3, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
         StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssBorder));
+        StringAssert.Contains(invalidErrors[1].GetMessage(), nameof(CssImportant<CssColor>));
+        StringAssert.Contains(invalidErrors[2].GetMessage(), nameof(CssImportant<CssLength>));
     }
 
     private static CSharpCompilation CreateCompilation(string source, string assemblyName)

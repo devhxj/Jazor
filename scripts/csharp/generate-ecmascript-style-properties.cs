@@ -174,6 +174,23 @@ static string ClassifyValueType(
 {
     if (cssName == "display")
         return "CssDisplayValue";
+    if (cssName is "padding" or "padding-block" or "padding-inline")
+        return "CssPaddingValue";
+    if (cssName is "margin" or "margin-block" or "margin-inline")
+        return "CssMarginValue";
+    if (cssName is "gap" or "grid-gap")
+        return "CssGapValue";
+    if (cssName is "border-radius" or "border-block-end-radius" or "border-block-start-radius" or
+        "border-bottom-radius" or "border-inline-end-radius" or "border-inline-start-radius" or
+        "border-left-radius" or "border-right-radius" or "border-top-radius" or "-webkit-border-radius")
+        return "CssRadiusValue";
+    if (cssName == "flex")
+        return "CssFlexValue";
+    if (cssName is "grid-area" or "grid-column" or "grid-column-end" or "grid-column-start" or
+        "grid-row" or "grid-row-end" or "grid-row-start")
+        return "CssGridLineValue";
+    if (cssName == "text-align")
+        return "CssTextAlignValue";
     if (cssName is "align-content" or "align-items" or "align-self" or
         "justify-content" or "justify-items" or "justify-self" or
         "place-content" or "place-items" or "place-self")

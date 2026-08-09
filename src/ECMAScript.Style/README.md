@@ -115,7 +115,7 @@ var layoutClass = style(new CssRule
 });
 ```
 
-`!important` is a declaration priority, not a value token. Use `important(name, value)` or `important(existingDeclaration)` for an explicit additional declaration; it does not participate in `|` value composition.
+`!important` is available as a typed value modifier. Use `important(px(20))` (or another value accepted by the target property); the value's original CSS domain is preserved. The `important(name, value)` overload is reserved for an intentional additional declaration when a duplicate property is required.
 
 `CssChildKind` supports `Selector`, `Media`, `Supports`, `Container`, `Layer`, `Scope`, and `StartingStyle`. Selector lists are processed with quote, escape, parenthesis, and attribute-selector awareness; nested grouping rules preserve the active selector and author order.
 
