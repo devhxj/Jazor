@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Reflection;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -71,6 +72,78 @@ public sealed class MemberClosureBuilderContractTests
         Assert.IsFalse(roots.Any(static method => method.Parameters.Length != 0 && method.Name is "Dispose" or "OnInitialized"));
         Assert.IsTrue(roots.Any(static method => method.Name == "Dispose" && method.MethodKind == MethodKind.Ordinary));
         Assert.IsTrue(roots.Any(static method => method.Name == "DisposeAsync" && method.MethodKind == MethodKind.Ordinary));
+    }
+
+    [TestMethod]
+    public void PrivateLifecycleHelpers_ClassifySourceAndRuntimeSymbols()
+    {
+        var fixture = CreateFixture();
+        var compilation = fixture.Binding.Compilation;
+        var component = fixture.Component.ComponentSymbol;
+        var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        var disposable = compilation.GetTypeByMetadataName("System.IDisposable");
+        var asyncDisposable = compilation.GetTypeByMetadataName("System.IAsyncDisposable");
+        var task = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        var taskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        var valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+        var valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        Assert.IsNotNull(componentBase);
+        Assert.IsNotNull(disposable);
+        Assert.IsNotNull(asyncDisposable);
+        Assert.IsNotNull(task);
+        Assert.IsNotNull(taskOfT);
+        Assert.IsNotNull(valueTask);
+        Assert.IsNotNull(valueTaskOfT);
+
+        var initialized = component.GetMembers("OnInitialized")
+            .OfType<IMethodSymbol>()
+            .Single(method => !method.IsStatic && method.Parameters.Length == 0);
+        var staticInitialized = component.GetMembers("OnInitialized")
+            .OfType<IMethodSymbol>()
+            .Single(method => method.IsStatic);
+        var dispose = component.GetMembers("Dispose")
+            .OfType<IMethodSymbol>()
+            .Single(method => method.Parameters.Length == 0);
+        var disposeAsync = component.GetMembers("DisposeAsync")
+            .OfType<IMethodSymbol>()
+            .Single(method => method.Parameters.Length == 0);
+        var disposeOverload = component.GetMembers("Dispose")
+            .OfType<IMethodSymbol>()
+            .Single(method => method.Parameters.Length == 1);
+
+        Assert.IsTrue(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, initialized, componentBase));
+        Assert.IsTrue(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, initialized, null));
+        Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, staticInitialized, componentBase));
+        Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, fixture.NonRenderTreeMethod, componentBase));
+
+        Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, dispose, disposable, asyncDisposable));
+        Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, disposeAsync, disposable, asyncDisposable));
+        Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, disposeOverload, disposable, asyncDisposable));
+        Assert.IsTrue(InvokeStatic<bool>("ImplementsInterface", component, disposable));
+        Assert.IsFalse(InvokeStatic<bool>("ImplementsInterface", component, componentBase));
+        Assert.IsFalse(InvokeStatic<bool>("ImplementsInterface", component, null));
+
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        Assert.IsTrue(InvokeStatic<bool>("IsAsyncDisposeReturnType", task));
+        Assert.IsTrue(InvokeStatic<bool>("IsAsyncDisposeReturnType", taskOfT!.Construct(intType)));
+        Assert.IsTrue(InvokeStatic<bool>("IsAsyncDisposeReturnType", valueTask));
+        Assert.IsTrue(InvokeStatic<bool>("IsAsyncDisposeReturnType", valueTaskOfT!.Construct(intType)));
+        Assert.IsFalse(InvokeStatic<bool>("IsAsyncDisposeReturnType", compilation.GetSpecialType(SpecialType.System_String)));
+
+        StringAssert.Contains(
+            InvokeStatic<string>("GetStableMemberKey", initialized),
+            "ClosureContract.razor.g.cs",
+            StringComparison.Ordinal);
+        Assert.IsTrue(InvokeStatic<string>("GetStableMemberKey", compilation.GetSpecialType(SpecialType.System_String))
+            .StartsWith("~|", StringComparison.Ordinal));
+    }
+
+    private static T InvokeStatic<T>(string methodName, params object?[] arguments)
+    {
+        var method = typeof(MemberClosureBuilder)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(null, arguments)!;
     }
 
     private static Fixture CreateFixture()

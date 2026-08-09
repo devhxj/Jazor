@@ -251,6 +251,80 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(Invoke<bool>("IsVueFramingImport", imports[2]));
     }
 
+    [TestMethod]
+    public void BranchHelpers_ResolveNestedRuntimeClassesAndImportCollisions()
+    {
+        var compilation = CreateCompilation();
+        var component = GetNamedType(compilation, "PrivateContracts.ComponentContainer");
+        var directNested = GetNamedType(compilation, "PrivateContracts.ComponentContainer+RuntimeOuter");
+        var nestedRuntime = GetNamedType(compilation, "PrivateContracts.ComponentContainer+RuntimeOuter+RuntimeInner");
+        var recordNested = GetNamedType(compilation, "PrivateContracts.ComponentContainer+RecordOuter+RecordInner");
+        var foreignNested = GetNamedType(compilation, "PrivateContracts.ForeignContainer+RuntimeOuter+RuntimeInner");
+        var value = GetNamedType(compilation, "PrivateContracts.ValueShape");
+
+        Assert.IsFalse(Invoke<bool>("IsFlattenedRuntimeClass", component, directNested));
+        Assert.IsTrue(Invoke<bool>("IsFlattenedRuntimeClass", component, nestedRuntime));
+        Assert.IsFalse(Invoke<bool>("IsFlattenedRuntimeClass", component, recordNested));
+        Assert.IsFalse(Invoke<bool>("IsFlattenedRuntimeClass", component, foreignNested));
+        Assert.IsFalse(Invoke<bool>("IsFlattenedRuntimeClass", component, value));
+
+        var localShapes = GetMethodBody(compilation, "LocalShapes");
+        var ordinaryDeclarator = localShapes.Descendants()
+            .OfType<IVariableDeclaratorOperation>()
+            .Single(declarator => declarator.Symbol.Name == "ordinary");
+        var convertedInitializer = localShapes.Descendants()
+            .OfType<IVariableDeclaratorOperation>()
+            .Single(declarator => declarator.Symbol.Name == "converted")
+            .Initializer!
+            .Value;
+        var declaredLocal = new object?[] { ordinaryDeclarator, null };
+        var convertedLocal = new object?[] { convertedInitializer, null };
+        Assert.IsTrue(Invoke<bool>("TryGetLoopControlVariable", declaredLocal));
+        Assert.AreEqual("ordinary", ((ILocalSymbol)declaredLocal[1]!).Name);
+        Assert.IsTrue(Invoke<bool>("TryGetLoopControlVariable", convertedLocal));
+        Assert.AreEqual("ordinary", ((ILocalSymbol)convertedLocal[1]!).Name);
+
+        var ordinary = GetMethod(GetNamedType(compilation, "PrivateContracts.Shapes"), "Ordinary");
+        var preferredName = Invoke<string>("GetPreferredModuleDeclaredName", ordinary);
+        var sourceName = Invoke<string?>("GetSourceDeclaredNameCandidate", ordinary);
+        Assert.IsNotNull(sourceName);
+        var sourceFallback = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName },
+            new HashSet<string>(StringComparer.Ordinal));
+        Assert.AreEqual(sourceName, sourceFallback);
+        var firstAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName!, "m$placeholder" },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! });
+        var secondAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName!, firstAlias },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! });
+        Assert.IsTrue(secondAlias.EndsWith("$1", StringComparison.Ordinal));
+
+        var imports = new Parser().ParseModule(
+            """
+            import defaultLocal from "./default.mjs";
+            import * as namespaceLocal from "./namespace.mjs";
+            import { source as namedLocal } from "./named.mjs";
+            import "./side-effect.mjs";
+            """)
+            .Body
+            .OfType<ImportDeclaration>()
+            .ToArray();
+        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[0], new HashSet<string>(StringComparer.Ordinal) { "defaultLocal" }));
+        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[1], new HashSet<string>(StringComparer.Ordinal) { "namespaceLocal" }));
+        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[2], new HashSet<string>(StringComparer.Ordinal) { "namedLocal" }));
+        Assert.IsFalse(Invoke<bool>("HasAnyImportLocalName", imports[3], new HashSet<string>(StringComparer.Ordinal)));
+
+        Assert.AreEqual("pages/host.mjs", Invoke<string>("ResolveImportArtifactPath", "host.mjs", "pages/host.mjs"));
+        Assert.AreEqual("./host.mjs", Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/host.mjs", "pages/host.mjs"));
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -298,6 +372,7 @@ public sealed class VueModuleBuilderPrivateContractTests
                 public static void LocalShapes(object? value, int[] values)
                 {
                     var ordinary = 0;
+                    object converted = (object)ordinary;
                     if (value is string text) { }
                     if (value is Shapes { Field: var field }) { }
                     if (values is [var first, .. var rest]) { }
@@ -314,6 +389,27 @@ public sealed class VueModuleBuilderPrivateContractTests
             public sealed class Plain { }
             public sealed record RecordShape;
             public readonly struct ValueShape;
+
+            public sealed class ComponentContainer
+            {
+                public sealed class RuntimeOuter
+                {
+                    public sealed class RuntimeInner { }
+                }
+
+                public sealed record RecordOuter
+                {
+                    public sealed class RecordInner { }
+                }
+            }
+
+            public sealed class ForeignContainer
+            {
+                public sealed class RuntimeOuter
+                {
+                    public sealed class RuntimeInner { }
+                }
+            }
 
             public sealed class ComponentShapes
             {
