@@ -637,6 +637,213 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersConditionalElementAttributeBranches()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "button");
+            if (Enabled)
+            {
+                builder.AddAttribute(1, "data-state", "enabled");
+                builder.AddAttribute(2, "disabled");
+            }
+            else
+            {
+                builder.AddAttribute(3, "data-state", "disabled");
+            }
+            builder.AddContent(4, "conditional-attributes");
+            builder.CloseElement();
+            """,
+            "[Parameter] public bool Enabled { get; set; }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "props.enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "data-state", StringComparison.Ordinal);
+        StringAssert.Contains(output, "conditional-attributes", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersEarlyReturnConditionalAsRenderGuard()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            if (!Enabled)
+            {
+                return;
+            }
+
+            builder.AddContent(0, "guarded-direct-render");
+            """,
+            "[Parameter] public bool Enabled { get; set; }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "guarded-direct-render", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.enabled", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersDeconstructedForeachBindings()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            foreach (var (key, value) in Items)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "data-key", key);
+                builder.AddContent(2, value);
+                builder.CloseElement();
+            }
+            """,
+            "[Parameter] public (string Key, string Value)[] Items { get; set; } = [];");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "Array.from(props.items ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(output, "data-key", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersTypeOfComponentAliasAndIgnoresSecondaryBuilderCalls()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var childType = typeof(ChildComponent);
+            var secondaryBuilder = builder;
+            builder.OpenComponent(0, childType);
+            secondaryBuilder.AddContent(1, "secondary-builder-content");
+            builder.AddComponentParameter(2, "Title", "typeof-component");
+            builder.CloseComponent();
+            """,
+            """
+            [global::ECMAScript.ECMAScriptModule("./components/typeof-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public string Title { get; set; } = "";
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "typeof-component", StringComparison.Ordinal);
+        var imports = string.Join(
+            Environment.NewLine,
+            result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript()));
+        StringAssert.Contains(imports, "typeof-child", StringComparison.Ordinal);
+        Assert.DoesNotContain("secondary-builder-content", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_ErasesPureDiscardRazorMetadataDeconstruction()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var (_, _) = (nameof(Text), 0);
+            builder.AddContent(0, "discard-metadata");
+            """,
+            "[Parameter] public string Text { get; set; } = \"\";");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "discard-metadata", StringComparison.Ordinal);
+        Assert.DoesNotContain("nameof", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_NormalizesRuntimeComponentAttributeBags()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenComponent<ChildComponent>(0);
+            builder.AddMultipleAttributes(1, Attributes);
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object?> Attributes { get; set; } = new System.Collections.Generic.Dictionary<string, object?>();
+
+            [global::ECMAScript.ECMAScriptModule("./components/runtime-attributes-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public string Title { get; set; } = "";
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var prelude = string.Join(
+            Environment.NewLine,
+            result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
+        StringAssert.Contains(prelude, "normalizeComponentAttributes", StringComparison.Ordinal);
+        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "props.attributes", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_RejectsForeachAllDiscardDeconstruction()
     {
         var fixture = CreateDirectRenderFixture(
