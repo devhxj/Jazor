@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2026-08-09
+
+- JazorAdmin now reproduces the TDesign Starter administration shell with Tencent Cloud's rounded theme, compact page spacing, medium-size route tabs, and an administrator-only appearance configurator fixed at the bottom center. Administrators can switch theme, brand color, layout, menu split, sidebar behavior, header, breadcrumb, footer, tabs, and menu-collapse preferences from the same global panel.
+- The mixed navigation shell now keeps the IconBar as its primary navigation, fixes the selected primary module title in a 64px secondary-rail header, and scrolls only the secondary menu. Collapsing removes the secondary rail completely and lets the content reclaim its width; the logo, header toggle, content gutters, and mobile layout remain aligned without horizontal overflow.
+- IconBar quick actions now open from a breathing circular trigger into four square actions distributed at 22.5-degree intervals on a 90-degree arc. The shell also restores route-aware multi-page tabs and keeps the login artwork visually continuous with its form surface.
+- `ECMAScript.Style` now models common Starter layout values such as gradients, gaps, radii, flex shorthand, grid lines, and background sizes with typed CSS value domains, and `important(value)` preserves the original value domain. TDesign multi-argument events expose their first runtime Vue argument as the generated `EventCallback<T>` payload, matching the component runtime contract.
+
 ## 2026-08-07
 
 - JazorAdmin now creates a development-only bootstrap platform administrator when its store has no platform administrator: `admin@jazor.local` / `JazorAdmin123!`. Production and staging deployments must supply the first administrator and exact OpenIddict callback origins from their deployment configuration; `localhost` is confined to development settings. Startup fails with an actionable configuration error rather than exposing an unusable login or SSO path. Bootstrap creates or promotes only the first administrator and never resets an existing password.

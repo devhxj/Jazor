@@ -2,78 +2,138 @@
 @inherits AdminContentComponentBase
 
 <TLayout CssClass="@RootCssClass"
-         CssStyle="@CssStyle"
+         CssStyle="@LayoutCssStyle"
          data-shell-region="layout"
          data-shell-layout="@LayoutContractValue"
          data-shell-collapsed="@Collapsed"
+         data-shell-sidebar-fixed="@SidebarFixed"
+         data-shell-show-header="@ShowHeader"
          @attributes="AdditionalAttributes">
     @if (IsSidebarLayout)
     {
-        <TAside Width="@(Collapsed ? "64px" : "240px")"
+        <TAside Width="@SidebarWidth"
                 data-shell-region="sidebar">
             @if (Sidebar is not null)
             {
                 @Sidebar
             }
+            else if (Mode == AdminLayoutMode.Sidebar)
+            {
+                <div class="ja-tdesign-sidebar-only">
+                    <a class="ja-tdesign-sidebar-only__brand" href="/" aria-label="JazorAdmin">
+                        <img src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
+                        @if (!Collapsed)
+                        {
+                            <span>JazorAdmin</span>
+                        }
+                    </a>
+                    <div class="ja-tdesign-sidebar-only__menu">
+                        <TDesignSidebarMenu Items="@NavItems"
+                                            Collapsed="@Collapsed"
+                                            Theme="@SidebarTheme"
+                                            ExpandMutex="@MenuAutoCollapsed"
+                                            SelectedKey="@SelectedKey"
+                                            ExpandedKeys="@ExpandedKeys"
+                                            SelectedKeyChanged="@SelectedKeyChanged"
+                                            ExpandedKeysChanged="@ExpandedKeysChanged" />
+                    </div>
+                </div>
+            }
             else
             {
                 <div class="ja-tdesign-sidebar-shell">
                     <IconBar Items="@NavItems"
-                             SelectedKey="@SelectedKey" />
+                             SelectedKey="@SelectedKey"
+                             Theme="@SidebarTheme"
+                             QuickActions="@IconBarActions"
+                             QuickActionsLabel="@QuickActionsLabel" />
 
                     @if (!Collapsed)
                     {
                         <div class="ja-tdesign-sidebar-shell__menu">
-                            <div class="ja-tdesign-sidebar-shell__brand">
-                                <img class="ja-tdesign-sidebar-shell__brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
-                                <span>@SecondaryTitle</span>
+                            <div class="ja-tdesign-sidebar-shell__menu-title" data-shell-region="secondary-title">
+                                @ActivePrimaryTitle
                             </div>
-                            <TDesignSidebarMenu Items="@SecondaryNavItems"
-                                                Collapsed="false"
+                            <div class="ja-tdesign-sidebar-shell__menu-body" data-shell-region="secondary-menu">
+                                <TDesignSidebarMenu Items="@SecondaryNavItems"
+                                                    Collapsed="false"
+                                                    Theme="@SidebarTheme"
+                                                    ExpandMutex="@MenuAutoCollapsed"
+                                                    SelectedKey="@SelectedKey"
+                                                    ExpandedKeys="@ExpandedKeys"
+                                                    SelectedKeyChanged="@SelectedKeyChanged"
+                                                    ExpandedKeysChanged="@ExpandedKeysChanged" />
+                            </div>
+                        </div>
+                    }
+
+                    <div class="ja-tdesign-sidebar-shell__mobile-menu">
+                        <a class="ja-tdesign-sidebar-shell__mobile-brand" href="/" aria-label="Jazor">
+                            <img src="/brand/jazor-mark.svg" alt="Jazor" />
+                        </a>
+                        <div class="ja-tdesign-sidebar-shell__mobile-navigation">
+                            <TDesignSidebarMenu Items="@NavItems"
+                                                Horizontal="true"
+                                                Theme="@SidebarTheme"
                                                 SelectedKey="@SelectedKey"
                                                 ExpandedKeys="@ExpandedKeys"
                                                 SelectedKeyChanged="@SelectedKeyChanged"
-                                                ExpandedKeysChanged="@ExpandedKeysChanged"
-                                                Logo="@Logo" />
+                                                ExpandedKeysChanged="@ExpandedKeysChanged" />
                         </div>
-                    }
+                    </div>
                 </div>
             }
         </TAside>
     }
 
     <TLayout data-shell-region="main">
-        <THeader Height="64px" data-shell-region="header">
-            <div class='@("ja-tdesign-layout__header")'>
-                @if (IsSidebarLayout)
-                {
-                    <TButton ContentValue="@EffectiveCollapseLabel"
-                             Variant="@TButtonVariantValue.Text"
-                             data-shell-command="toggle-sidebar"
-                             aria-label="@EffectiveCollapseLabel"
-                             title="@EffectiveCollapseLabel"
-                             aria-expanded="@(!Collapsed)"
-                             OnClick="@ToggleCollapsed" />
-                }
-
-                @if (Header is not null)
-                {
-                    @Header
-                }
-                else
-                {
-                    <TDesignHeaderBar Title="@Title"
+        @if (ShowHeader)
+        {
+            <THeader Height="64px" data-shell-region="header">
+                <div class='@("ja-tdesign-layout__header")'>
+                    @if (Header is not null)
+                    {
+                        @Header
+                    }
+                    else
+                    {
+                        <TDesignHeaderBar Title="@Title"
                                           Subtitle="@Subtitle"
+                                          Theme="@Theme"
                                           Logo="@Logo"
+                                          ShowLogo="@(!IsSidebarLayout)"
+                                          Leading="@HeaderLeading"
                                           Navigation="@HeaderNavigation"
+                                          NavigationValue="@HeaderNavigationValue"
+                                          NavigationExpanded="@HeaderNavigationExpanded"
+                                          OnNavigationChange="@OnHeaderNavigationChanged"
+                                          OnNavigationExpand="@OnHeaderNavigationExpanded"
                                           Actions="@HeaderActions"
                                           UserRegion="@UserRegion" />
-                }
-            </div>
-        </THeader>
+                    }
+                </div>
+            </THeader>
+        }
 
-        <TContent data-shell-region="content">
-            @ChildContent
+        @if (ShowTabs && Tabs is not null)
+        {
+            <div class="ja-tdesign-layout__tabs" data-shell-region="tabs">
+                @Tabs
+            </div>
+        }
+
+        <TContent CssStyle="@ContentCssStyle" data-shell-region="content">
+            <div class="ja-tdesign-layout__content">
+                @if (ShowBreadcrumb)
+                {
+                    @Breadcrumb
+                }
+                @ChildContent
+            </div>
         </TContent>
+        @if (ShowFooter && Footer is not null)
+        {
+            <TFooter data-shell-region="footer">@Footer</TFooter>
+        }
     </TLayout>
 </TLayout>

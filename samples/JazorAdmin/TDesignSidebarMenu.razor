@@ -1,15 +1,25 @@
 @inherits AdminComponentBase
 
-@if (Horizontal)
+@if (Inline)
+{
+    @if (Items?.AsArray is { Length: > 0 } inlineItems)
+    {
+        @foreach (var item in inlineItems)
+        {
+            @RenderItem(item)
+        }
+    }
+}
+else if (Horizontal)
 {
     <THeadMenu Value="@MenuValue"
                Expanded="@ExpandedMenuValues"
-               Theme="@THeadMenuThemeValue.Light"
+               Theme="@HeadMenuTheme"
                data-navigation-orientation="horizontal"
                data-navigation-selected-key="@SelectedKey"
                OnChange="@OnMenuChanged"
                OnExpand="@OnMenuExpanded"
-               Logo="@Logo">
+               LogoContent="@Logo">
         @if (Items?.AsArray is { Length: > 0 } horizontalItems)
         {
             @foreach (var item in horizontalItems)
@@ -24,12 +34,13 @@ else
     <TMenu Collapsed="@Collapsed"
            Value="@MenuValue"
            Expanded="@ExpandedMenuValues"
-           Theme="@TMenuThemeValue.Light"
+           ExpandMutex="@ExpandMutex"
+           Theme="@MenuTheme"
            data-navigation-orientation="vertical"
            data-navigation-selected-key="@SelectedKey"
            OnChange="@OnMenuChanged"
            OnExpand="@OnMenuExpanded"
-           Logo="@Logo">
+           LogoContent="@Logo">
         @if (Items?.AsArray is { Length: > 0 } verticalItems)
         {
             @foreach (var item in verticalItems)

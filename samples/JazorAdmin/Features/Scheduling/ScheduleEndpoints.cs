@@ -11,7 +11,7 @@ public static class ScheduleEndpoints
     {
         var schedules = app.MapGroup("/api/schedules")
             .WithTags("Schedules")
-            .RequireAuthorization(JazorAdminPolicies.PlatformAdministrator);
+            .RequireAuthorization(PolicyKeys.PlatformAdministrator);
 
         schedules.MapGet("/", ListAsync);
         schedules.MapGet("/{key}/runs", ListRunsAsync);
@@ -21,7 +21,7 @@ public static class ScheduleEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        JazorAdminDbContext database,
+        AdminDbContext database,
         ScheduleService schedules,
         CancellationToken cancellationToken)
     {
@@ -37,7 +37,7 @@ public static class ScheduleEndpoints
 
     private static async Task<IResult> ListRunsAsync(
         string key,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         if (await database.Schedules.FindAsync([key], cancellationToken) is null)
@@ -69,7 +69,7 @@ public static class ScheduleEndpoints
     private static async Task<IResult> UpdateAsync(
         string key,
         ScheduleUpdate request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         ScheduleService schedules,
         CancellationToken cancellationToken)
     {
@@ -95,7 +95,7 @@ public static class ScheduleEndpoints
 
     private static async Task<IResult> TriggerAsync(
         string key,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         ScheduleService schedules,
         CancellationToken cancellationToken)
     {

@@ -37,8 +37,8 @@ public static class IdentityEndpoints
     private static async Task<IResult> SignInAsync(
         HttpContext context,
         LoginRequest request,
-        UserManager<JazorAdminUser> users,
-        SignInManager<JazorAdminUser> signInManager,
+        UserManager<AdminUser> users,
+        SignInManager<AdminUser> signInManager,
         CaptchaService captcha)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
@@ -67,7 +67,7 @@ public static class IdentityEndpoints
         return result.Succeeded ? Results.NoContent() : Results.Unauthorized();
     }
 
-    private static async Task<IResult> SignOutAsync(SignInManager<JazorAdminUser> signInManager)
+    private static async Task<IResult> SignOutAsync(SignInManager<AdminUser> signInManager)
     {
         await signInManager.SignOutAsync();
         return Results.NoContent();
@@ -75,8 +75,8 @@ public static class IdentityEndpoints
 
     private static async Task<IResult> GetSessionAsync(
         HttpContext context,
-        UserManager<JazorAdminUser> users,
-        JazorAdminDbContext database)
+        UserManager<AdminUser> users,
+        AdminDbContext database)
     {
         var user = await users.GetUserAsync(context.User);
         if (user is null)

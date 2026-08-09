@@ -1,10 +1,9 @@
-using ECMAScript;
 using JazorAdmin.Features.Accounts;
-using JazorAdmin.Features.Sso;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Organizations;
 using JazorAdmin.Features.Scheduling;
 using JazorAdmin.Features.Settings;
+using JazorAdmin.Features.Sso;
 using static ECMAScript.Global;
 
 namespace JazorAdmin;

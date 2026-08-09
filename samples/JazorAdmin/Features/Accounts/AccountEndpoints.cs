@@ -13,7 +13,7 @@ public static class AccountEndpoints
     {
         var accounts = app.MapGroup("/api/accounts")
             .WithTags("Accounts")
-            .RequireAuthorization(JazorAdminPolicies.PlatformAdministrator);
+            .RequireAuthorization(PolicyKeys.PlatformAdministrator);
 
         accounts.MapGet("/", ListAsync);
         accounts.MapPost("/", CreateAsync);
@@ -23,7 +23,7 @@ public static class AccountEndpoints
     }
 
     private static async Task<IResult> ListAsync(
-        UserManager<JazorAdminUser> users,
+        UserManager<AdminUser> users,
         CancellationToken cancellationToken)
     {
         var accounts = await users.Users
@@ -39,12 +39,12 @@ public static class AccountEndpoints
 
     private static async Task<IResult> CreateAsync(
         CreateAccountRequest request,
-        UserManager<JazorAdminUser> users)
+        UserManager<AdminUser> users)
     {
         if (!TryValidate(request, out var errors))
             return Results.ValidationProblem(errors);
 
-        var user = new JazorAdminUser
+        var user = new AdminUser
         {
             UserName = request.Email.Trim(),
             Email = request.Email.Trim(),
@@ -58,7 +58,7 @@ public static class AccountEndpoints
 
         if (request.PlatformAdministrator)
         {
-            result = await users.AddToRoleAsync(user, JazorAdminRoles.PlatformAdministrator);
+            result = await users.AddToRoleAsync(user, RoleKeys.PlatformAdministrator);
             if (!result.Succeeded)
                 return Results.ValidationProblem(ToErrors(result));
         }
@@ -69,7 +69,7 @@ public static class AccountEndpoints
     private static async Task<IResult> UpdateStateAsync(
         string userId,
         UpdateAccountStateRequest request,
-        UserManager<JazorAdminUser> users)
+        UserManager<AdminUser> users)
     {
         var user = await users.FindByIdAsync(userId);
         if (user is null)
@@ -82,7 +82,7 @@ public static class AccountEndpoints
     private static async Task<IResult> ResetPasswordAsync(
         string userId,
         ResetAccountPasswordRequest request,
-        UserManager<JazorAdminUser> users)
+        UserManager<AdminUser> users)
     {
         if (string.IsNullOrWhiteSpace(request.Password))
         {
@@ -101,13 +101,13 @@ public static class AccountEndpoints
         return result.Succeeded ? Results.NoContent() : Results.ValidationProblem(ToErrors(result));
     }
 
-    private static async Task<AccountResponse> ToResponseAsync(JazorAdminUser user, UserManager<JazorAdminUser> users)
+    private static async Task<AccountResponse> ToResponseAsync(AdminUser user, UserManager<AdminUser> users)
         => new(
             user.Id,
             user.Email ?? string.Empty,
             user.DisplayName,
             user.LockoutEnd is null || user.LockoutEnd <= DateTimeOffset.UtcNow,
-            await users.IsInRoleAsync(user, JazorAdminRoles.PlatformAdministrator));
+            await users.IsInRoleAsync(user, RoleKeys.PlatformAdministrator));
 
     private static bool TryValidate(CreateAccountRequest request, out Dictionary<string, string[]> errors)
     {

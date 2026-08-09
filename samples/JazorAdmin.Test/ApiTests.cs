@@ -25,12 +25,12 @@ namespace JazorAdmin.Test;
 
 [TestClass]
 [DoNotParallelize]
-public sealed class JazorAdminApiTests
+public sealed class ApiTests
 {
     [TestMethod]
     public async Task ApplicationShell_RootAndDeepNavigation_ReturnDynamicHtmlWithoutCapturingApiRoutes()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         foreach (var path in new[]
@@ -86,7 +86,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task Session_WhenAnonymous_ReturnsUnauthorized()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         var response = await client.GetAsync("/api/auth/session");
@@ -97,7 +97,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task SignIn_WhenAnonymousCaptchaIsInvalid_ReturnsBadRequest()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         using var response = await client.PostAsJsonAsync(
@@ -112,20 +112,20 @@ public sealed class JazorAdminApiTests
     {
         const string email = "bootstrap@example.test";
         const string password = "BootstrapAdmin123!";
-        await using var factory = new JazorAdminFactory(email, password);
+        await using var factory = new TestHost(email, password);
         using var client = await factory.CreateAuthenticatedClientAsync(email, password);
 
         var session = await client.GetFromJsonAsync<SessionResponse>("/api/auth/session");
 
         Assert.IsNotNull(session);
         Assert.AreEqual(email, session.Email);
-        CollectionAssert.Contains(session.Roles, JazorAdminRoles.PlatformAdministrator);
+        CollectionAssert.Contains(session.Roles, RoleKeys.PlatformAdministrator);
     }
 
     [TestMethod]
     public async Task OrganizationGrant_WhenRevoked_StopsAccessImmediatelyAndKeepsOtherOrganizationsIsolated()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var administrator = await factory.CreateUserAsync("admin@example.test", platformAdministrator: true);
         var operatorUser = await factory.CreateUserAsync("operator@example.test", platformAdministrator: false);
         using var administratorClient = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
@@ -135,7 +135,7 @@ public sealed class JazorAdminApiTests
         Assert.AreNotEqual(organizationId, isolatedOrganizationId);
         var roleId = await CreateRoleAsync(administratorClient, organizationId, "organization-reader", "Organization reader");
         await ReplaceRoleGrantsAsync(administratorClient, organizationId, roleId, [
-            new { resource = JazorAdminResources.Organizations, operation = JazorAdminOperations.Read }
+            new { resource = ResourceKeys.Organizations, operation = OperationKeys.Read }
         ]);
         await AddMemberAsync(administratorClient, organizationId, operatorUser.Email, [roleId]);
 
@@ -144,7 +144,7 @@ public sealed class JazorAdminApiTests
         Assert.AreEqual(operatorUser.Email, operatorSession?.Email);
         CollectionAssert.DoesNotContain(
             (operatorSession?.Roles ?? []).ToArray(),
-            JazorAdminRoles.PlatformAdministrator,
+            RoleKeys.PlatformAdministrator,
             "The operator client must not retain the administrator's Identity cookie.");
         var sessionOrganizationIds = operatorSession?.Organizations.Select(item => item.Id).ToArray() ?? [];
         Assert.IsTrue(
@@ -166,7 +166,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task AuthorizationResources_ExposeOnlyImplementedAdministrationSurfaces()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var administrator = await factory.CreateUserAsync("resources@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
         var organizationId = await CreateOrganizationAsync(client, "resources-org", "Resources organization");
@@ -193,7 +193,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task PlatformAdministration_ManagesAccountsAndOpenIddictConfiguration()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var administrator = await factory.CreateUserAsync("platform@example.test", platformAdministrator: true);
         var operatorUser = await factory.CreateUserAsync("member@example.test", platformAdministrator: false);
         using var administratorClient = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
@@ -370,7 +370,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task PlatformAdministration_ManagesTypedSettingsAndQuartzSchedules()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var administrator = await factory.CreateUserAsync("centers@example.test", platformAdministrator: true);
         var operatorUser = await factory.CreateUserAsync("centers-member@example.test", platformAdministrator: false);
         using var administratorClient = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
@@ -460,7 +460,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task ExplicitConsent_RendersConfirmationAndCreatesPermanentAuthorization()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var user = await factory.CreateUserAsync("consent@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(
             user.Email,
@@ -524,7 +524,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task SystematicConsent_RequiresConfirmationForEachAuthorization()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var user = await factory.CreateUserAsync("systematic@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(
             user.Email,
@@ -581,7 +581,7 @@ public sealed class JazorAdminApiTests
     [TestMethod]
     public async Task AuthorizationCodeWithPkce_ExchangesForAccessAndRefreshTokens()
     {
-        await using var factory = new JazorAdminFactory();
+        await using var factory = new TestHost();
         var user = await factory.CreateUserAsync("sso@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(user.Email, user.Password, allowAutoRedirect: false);
 
@@ -740,13 +740,13 @@ public sealed class JazorAdminApiTests
         return null!;
     }
 
-    private sealed class JazorAdminFactory : WebApplicationFactory<Program>, IAsyncDisposable
+    private sealed class TestHost : WebApplicationFactory<Program>, IAsyncDisposable
     {
         private readonly string databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
         private readonly string? bootstrapEmail;
         private readonly string? bootstrapPassword;
 
-        public JazorAdminFactory(string? bootstrapEmail = null, string? bootstrapPassword = null)
+        public TestHost(string? bootstrapEmail = null, string? bootstrapPassword = null)
         {
             this.bootstrapEmail = bootstrapEmail;
             this.bootstrapPassword = bootstrapPassword;
@@ -787,15 +787,15 @@ public sealed class JazorAdminApiTests
         public async Task<TestUser> CreateUserAsync(string email, bool platformAdministrator)
         {
             await using var scope = Services.CreateAsyncScope();
-            var users = scope.ServiceProvider.GetRequiredService<UserManager<JazorAdminUser>>();
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<AdminUser>>();
             var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            if (platformAdministrator && !await roles.RoleExistsAsync(JazorAdminRoles.PlatformAdministrator))
+            if (platformAdministrator && !await roles.RoleExistsAsync(RoleKeys.PlatformAdministrator))
             {
-                var roleResult = await roles.CreateAsync(new IdentityRole(JazorAdminRoles.PlatformAdministrator));
+                var roleResult = await roles.CreateAsync(new IdentityRole(RoleKeys.PlatformAdministrator));
                 Assert.IsTrue(roleResult.Succeeded, string.Join(", ", roleResult.Errors.Select(error => error.Description)));
             }
 
-            var user = new JazorAdminUser
+            var user = new AdminUser
             {
                 UserName = email,
                 Email = email,
@@ -808,7 +808,7 @@ public sealed class JazorAdminApiTests
             Assert.IsTrue(userResult.Succeeded, string.Join(", ", userResult.Errors.Select(error => error.Description)));
             if (platformAdministrator)
             {
-                var roleResult = await users.AddToRoleAsync(user, JazorAdminRoles.PlatformAdministrator);
+                var roleResult = await users.AddToRoleAsync(user, RoleKeys.PlatformAdministrator);
                 Assert.IsTrue(roleResult.Succeeded, string.Join(", ", roleResult.Errors.Select(error => error.Description)));
             }
 

@@ -75,7 +75,7 @@ public static class Routes
         new()
         {
             Key = OrganizationsKey,
-            Icon = "organizations",
+            Icon = "tree-square-dot",
             Title = Localization.Get(language, TextKey.Organizations),
             Children =
             [
@@ -98,7 +98,7 @@ public static class Routes
         new()
         {
             Key = AuthorizationKey,
-            Icon = "authorization",
+            Icon = "secured",
             Title = Localization.Get(language, TextKey.Authorization),
             Children =
             [
@@ -122,14 +122,14 @@ public static class Routes
         {
             Key = AccountsKey,
             Path = "/accounts",
-            Icon = "accounts",
+            Icon = "usergroup",
             Title = Localization.Get(language, TextKey.Accounts),
             Subtitle = Localization.Get(language, TextKey.AccountsSubtitle)
         },
         new()
         {
             Key = SsoKey,
-            Icon = "sso",
+            Icon = "root-list",
             Title = Localization.Get(language, TextKey.Sso),
             Children =
             [
@@ -167,7 +167,7 @@ public static class Routes
         {
             Key = SettingsKey,
             Path = "/settings",
-            Icon = "settings",
+            Icon = "setting",
             Title = Localization.Get(language, TextKey.Settings),
             Subtitle = Localization.Get(language, TextKey.SettingsSubtitle)
         },
@@ -175,10 +175,11 @@ public static class Routes
         {
             Key = SchedulesKey,
             Path = "/schedules",
-            Icon = "schedules",
+            Icon = "time",
             Title = Localization.Get(language, TextKey.Schedules),
             Subtitle = Localization.Get(language, TextKey.SchedulesSubtitle)
         },
+        .. StarterCatalog.CreateRoutes(language),
         ];
 
     public static readonly AdminNavItems NavigationItems =

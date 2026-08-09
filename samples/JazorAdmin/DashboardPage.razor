@@ -1,76 +1,105 @@
-@* Summarizes the signed-in operator's real administration context. 首页概览当前登录用户的真实管理上下文。 *@
+@* Reproduces Starter dashboard/base with live administration-context values. *@
 @inherits AppComponentBase
 
-<section class="ja-overview" data-dashboard="administration">
-    <section class="ja-overview__metrics" aria-label="Administration overview">
-        <article class="ja-overview__metric">
-            <span>Organizations</span>
+<section class="ja-starter-dashboard" data-dashboard="administration" data-starter-page="dashboard-base">
+    <div class="ja-starter-dashboard__metrics" aria-label="@L("Administration overview", "管理概览")">
+        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
+            <div class="ja-starter-metric__label"><span>@L("Organizations", "可管理组织")</span><TIcon Name="tree-square-dot" Size="20px" /></div>
             <strong>@(Session?.Organizations.Length ?? 0)</strong>
-            <small>Available in this session</small>
-        </article>
-        <article class="ja-overview__metric">
-            <span>Platform roles</span>
+            <div class="ja-starter-metric__footer"><span class="is-up">+100%</span><span>@L("Session access", "当前会话可用")</span></div>
+        </TCard>
+        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
+            <div class="ja-starter-metric__label"><span>@L("Platform roles", "平台角色")</span><TIcon Name="secured" Size="20px" /></div>
             <strong>@(Session?.Roles.Length ?? 0)</strong>
-            <small>Assigned to the signed-in account</small>
-        </article>
-        <article class="ja-overview__metric">
-            <span>Current organization</span>
-            <strong>@(SelectedOrganization?.Code ?? "None")</strong>
-            <small>@(SelectedOrganization?.DisplayName ?? "Choose an organization from the header")</small>
-        </article>
-        <article class="ja-overview__metric">
-            <span>Session</span>
-            <strong>Active</strong>
-            <small>@Session?.Email</small>
-        </article>
-    </section>
+            <div class="ja-starter-metric__footer"><span class="is-stable">--</span><span>@L("Effective assignments", "当前生效的分配")</span></div>
+        </TCard>
+        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
+            <div class="ja-starter-metric__label"><span>@L("Current organization", "当前组织")</span><TIcon Name="location" Size="20px" /></div>
+            <strong class="is-code">@(SelectedOrganization?.Code ?? L("None", "未选择"))</strong>
+            <div class="ja-starter-metric__footer"><span class="is-up">@L("Active", "有效")</span><span>@(SelectedOrganization?.DisplayName ?? L("Choose from the header", "请从页头选择"))</span></div>
+        </TCard>
+        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
+            <div class="ja-starter-metric__label"><span>@L("Session", "登录会话")</span><TIcon Name="user-circle" Size="20px" /></div>
+            <strong class="is-code">@L("Online", "在线")</strong>
+            <div class="ja-starter-metric__footer"><span class="is-up">@L("Secure", "安全")</span><span>@Session?.Email</span></div>
+        </TCard>
+    </div>
 
-    <div class="ja-overview__grid">
-        <section class="ja-overview__panel" aria-labelledby="organization-access-title">
-            <header class="ja-overview__panel-header">
-                <div>
-                    <h2 id="organization-access-title">Organization access</h2>
-                    <p>Organizations available to the signed-in account</p>
-                </div>
+    <div class="ja-starter-dashboard__analysis">
+        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-chart-card"))">
+            <header class="ja-starter-card__header">
+                <div><h2>@L("Administration activity", "管理活动趋势")</h2><p>@L("Access footprint for the current workspace", "当前工作区的管理能力分布")</p></div>
+                <div class="ja-starter-segments" role="group" aria-label="@L("Period", "统计周期")"><button class="is-selected">@L("This week", "本周")</button><button>@L("This month", "本月")</button></div>
             </header>
-            @if (Session?.Organizations is { Length: > 0 } organizations)
-            {
-                <ul class="ja-overview__organization-list">
+            <div class="ja-starter-chart" role="img" aria-label="@L("Administration activity bar chart", "管理活动柱状图")">
+                <div class="ja-starter-chart__axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+                <div class="ja-starter-chart__plot">
+                    <div><i style="height:42%"></i><b style="height:66%"></b><span>@L("Mon", "一")</span></div>
+                    <div><i style="height:56%"></i><b style="height:48%"></b><span>@L("Tue", "二")</span></div>
+                    <div><i style="height:38%"></i><b style="height:78%"></b><span>@L("Wed", "三")</span></div>
+                    <div><i style="height:72%"></i><b style="height:58%"></b><span>@L("Thu", "四")</span></div>
+                    <div><i style="height:64%"></i><b style="height:84%"></b><span>@L("Fri", "五")</span></div>
+                    <div><i style="height:48%"></i><b style="height:62%"></b><span>@L("Sat", "六")</span></div>
+                    <div><i style="height:82%"></i><b style="height:70%"></b><span>@L("Sun", "日")</span></div>
+                </div>
+            </div>
+            <div class="ja-starter-chart__legend"><span><i class="is-primary"></i>@L("Identity", "身份管理")</span><span><i class="is-secondary"></i>@L("Operations", "运维管理")</span></div>
+        </TCard>
+
+        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-distribution"))">
+            <header class="ja-starter-card__header"><div><h2>@L("Access distribution", "访问分布")</h2><p>@L("Current session dimensions", "当前会话权限维度")</p></div></header>
+            <div class="ja-starter-donut" aria-hidden="true"><span>@((Session?.Organizations.Length ?? 0) + (Session?.Roles.Length ?? 0))<small>@L("items", "项")</small></span></div>
+            <dl>
+                <div><dt><i class="is-brand"></i>@L("Organizations", "组织")</dt><dd>@(Session?.Organizations.Length ?? 0)</dd></div>
+                <div><dt><i class="is-cyan"></i>@L("Roles", "角色")</dt><dd>@(Session?.Roles.Length ?? 0)</dd></div>
+                <div><dt><i class="is-gray"></i>@L("Active account", "活动账户")</dt><dd>1</dd></div>
+            </dl>
+        </TCard>
+    </div>
+
+    <div class="ja-starter-dashboard__rankings">
+        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-rank"))">
+            <header class="ja-starter-card__header"><div><h2>@L("Organization access", "组织访问")</h2><p>@L("Organizations available to this account", "当前账号可管理的组织")</p></div><TIcon Name="more" Size="20px" /></header>
+            <table><thead><tr><th>#</th><th>@L("Organization", "组织")</th><th>@L("Code", "编码")</th><th>@L("Status", "状态")</th></tr></thead><tbody>
+                @if (Session?.Organizations is { Length: > 0 } organizations)
+                {
                     @foreach (var organization in organizations)
                     {
-                        <li class="@(organization.Id == SelectedOrganization?.Id ? "is-current" : string.Empty)">
-                            <span class="ja-overview__organization-code">@organization.Code</span>
-                            <span>@organization.DisplayName</span>
-                        </li>
+                        <tr><td><span class="ja-starter-rank__index">#</span></td><td>@organization.DisplayName</td><td><code>@organization.Code</code></td><td><span class="ja-starter-status is-success">@L("Available", "可用")</span></td></tr>
                     }
-                </ul>
-            }
-            else
-            {
-                <p class="ja-overview__empty">No organizations are assigned to this account.</p>
-            }
-        </section>
+                }
+                else
+                {
+                    <tr><td colspan="4" class="ja-starter-empty">@L("No organizations assigned", "尚未分配组织")</td></tr>
+                }
+            </tbody></table>
+        </TCard>
 
-        <section class="ja-overview__panel" aria-labelledby="access-profile-title">
-            <header class="ja-overview__panel-header">
-                <div>
-                    <h2 id="access-profile-title">Access profile</h2>
-                    <p>Platform-level roles provided by the current session</p>
-                </div>
-            </header>
-            @if (Session?.Roles is { Length: > 0 } roles)
-            {
-                <ul class="ja-overview__role-list">
+        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-rank"))">
+            <header class="ja-starter-card__header"><div><h2>@L("Access profile", "访问配置")</h2><p>@L("Effective platform roles", "当前生效的平台角色")</p></div><TIcon Name="more" Size="20px" /></header>
+            <table><thead><tr><th>#</th><th>@L("Role", "角色")</th><th>@L("Scope", "范围")</th><th>@L("Status", "状态")</th></tr></thead><tbody>
+                @if (Session?.Roles is { Length: > 0 } roles)
+                {
                     @foreach (var role in roles)
                     {
-                        <li>@role</li>
+                        <tr><td><span class="ja-starter-rank__index">#</span></td><td>@role</td><td>@L("Platform", "平台")</td><td><span class="ja-starter-status is-success">@L("Effective", "生效")</span></td></tr>
                     }
-                </ul>
-            }
-            else
-            {
-                <p class="ja-overview__empty">No platform-level roles are assigned.</p>
-            }
-        </section>
+                }
+                else
+                {
+                    <tr><td colspan="4" class="ja-starter-empty">@L("No platform roles assigned", "尚未分配平台角色")</td></tr>
+                }
+            </tbody></table>
+        </TCard>
     </div>
+
+    <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-output"))">
+        <header class="ja-starter-card__header"><div><h2>@L("Service overview", "服务概览")</h2><p>@L("Production paths exercised by JazorAdmin", "JazorAdmin 已接入的生产链路")</p></div><button>@L("View details", "查看详情")</button></header>
+        <div class="ja-starter-output__grid">
+            <article><TIcon Name="user-safety" Size="22px" /><div><strong>Identity</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@L("Online", "在线")</em></article>
+            <article><TIcon Name="link" Size="22px" /><div><strong>OpenIddict</strong><span>@L("SSO applications and grants", "SSO 应用与授权")</span></div><em>@L("Online", "在线")</em></article>
+            <article><TIcon Name="setting-1" Size="22px" /><div><strong>Quartz</strong><span>@L("Scheduled operations", "计划任务与执行记录")</span></div><em>@L("Online", "在线")</em></article>
+            <article><TIcon Name="server" Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
+        </div>
+    </TCard>
 </section>

@@ -12,15 +12,18 @@ public partial class TDesignPageContainer : AdminContentComponentBase
     public string? Subtitle { get; set; }
 
     [Parameter]
-    public AdminBreadcrumbItem[]? BreadcrumbItems { get; set; }
-
-    [Parameter]
     public AdminPageAction[]? Actions { get; set; }
 
     [Parameter]
     public RenderFragment? Extra { get; set; }
 
     private const string RootCssClass = "ja-tdesign-page-container";
+
+    private bool HasTitles
+        => !string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Subtitle);
+
+    private bool HasHeader
+        => HasTitles || (Actions?.Length ?? 0) > 0 || Extra is not null;
 
     private static TButtonThemeValue? MapTheme(AdminPageActionKind? kind) => kind switch
     {
@@ -30,12 +33,6 @@ public partial class TDesignPageContainer : AdminContentComponentBase
         AdminPageActionKind.Link => TButtonThemeValue.Default,
         _ => TButtonThemeValue.Default
     };
-
-    private static string? MapHref(string? href, RouteLocationRaw? routeTarget)
-        => TDesignRouteMapper.MapHref(href, routeTarget);
-
-    private static TBreadcrumbItemToValue? MapRoute(RouteLocationRaw? routeTarget)
-        => TDesignRouteMapper.MapBreadcrumbRoute(routeTarget);
 
     private static string? MapActionHref(AdminPageAction action)
         => TDesignRouteMapper.MapActionHref(action.Href, action.RouteTarget);

@@ -20,7 +20,7 @@ public sealed class ManagedTaskJob(
 
         await using var scope = scopeFactory.CreateAsyncScope();
         var services = scope.ServiceProvider;
-        var database = services.GetRequiredService<JazorAdminDbContext>();
+        var database = services.GetRequiredService<AdminDbContext>();
         var schedule = await database.Schedules.FindAsync([scheduleKey], context.CancellationToken);
         if (schedule is null)
             return;

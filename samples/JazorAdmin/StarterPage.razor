@@ -1,0 +1,256 @@
+@inherits AppComponentBase
+
+@if (Template == "dashboard-detail")
+{
+    <section class="ja-starter-page ja-starter-report" data-starter-page="dashboard-detail">
+        <div class="ja-starter-report__hero"><div><span>@L("Data overview", "数据概览")</span><h2>@L("Operational dashboard", "运营数据报表")</h2><p>@L("A detailed dashboard page with current operational indicators.", "包含当前运行指标的详细仪表盘页面。")</p></div><button>@L("Export report", "导出报表")</button></div>
+        <div class="ja-starter-report__metrics"><article><span>@L("Total visits", "总访问量")</span><strong>46,982</strong><em>+12.5%</em></article><article><span>@L("New users", "新增用户")</span><strong>1,268</strong><em>+8.2%</em></article><article><span>@L("Conversion", "转化率")</span><strong>32.8%</strong><em>+3.1%</em></article><article><span>@L("Pending work", "待处理事项")</span><strong>18</strong><em class="is-down">-4</em></article></div>
+        <div class="ja-starter-report__charts"><section><header><h2>@L("Visit trend", "访问趋势")</h2><button>@L("This week", "本周")</button></header><div class="ja-starter-line-chart"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section><section><header><h2>@L("Channel distribution", "渠道分布")</h2><TIcon Name="more" Size="20px" /></header><div class="ja-starter-donut"><span>100<small>%</small></span></div><p class="ja-starter-chart-labels"><span><i></i>@L("Direct", "直接访问") 45%</span><span><i></i>@L("Search", "搜索") 32%</span><span><i></i>@L("Referral", "推荐") 23%</span></p></section></div>
+        <section class="ja-starter-sheet"><header><h2>@L("Recent projects", "最近项目")</h2><button>@L("More", "更多")</button></header><table><thead><tr><th>@L("Project", "项目")</th><th>@L("Owner", "负责人")</th><th>@L("Updated", "更新时间")</th><th>@L("Status", "状态")</th></tr></thead><tbody>@foreach (var row in rows) { <tr><td>@row.Name</td><td>@row.Owner</td><td>@row.UpdatedAt</td><td><span class="ja-starter-status is-success">@row.Status</span></td></tr> }</tbody></table></section>
+    </section>
+}
+else if (Template == "list-card")
+{
+    <section class="ja-starter-page ja-starter-card-list" data-starter-page="list-card">
+        <header class="ja-starter-list-header"><div><h2>@L("Card list", "卡片列表")</h2><p>@L("A responsive card collection with compact actions.", "带紧凑操作区的响应式卡片集合。")</p></div><button class="ja-starter-primary" @onclick="OpenCardDialog"><TIcon Name="add" Size="16px" />@L("Create", "新建")</button></header>
+        <div class="ja-starter-filter"><label><TIcon Name="search" Size="18px" /><input @bind="query" @bind:event="oninput" placeholder="@L("Search project", "搜索项目")" /></label><button @onclick="ApplyCardSearch">@L("Filter", "筛选")</button><button @onclick="SortCards">@L("Sort", "排序")</button></div>
+        @if (submitted) { <p class="ja-starter-inline-message">@L("New card draft created.", "已创建新的卡片草稿。")</p> }
+        @if (VisibleCardRows.Any())
+        {
+            <div class="ja-starter-card-list__grid">@foreach (var row in VisibleCardRows) { <article><header><span class="ja-starter-card-list__mark">@row.Code.Substring(row.Code.Length - 3)</span><button aria-label="@L("More actions", "更多操作")"><TIcon Name="more" Size="18px" /></button></header><h3>@row.Name</h3><p>@L("Owner", "负责人"): @row.Owner</p><p>@L("Updated", "更新时间"): @row.UpdatedAt</p><footer><span class="ja-starter-status @StatusClass(row.Status)">@row.Status</span><button @onclick="OpenBaseDetail">@L("Manage", "管理")</button><button class="ja-starter-text-button is-danger" @onclick="() => RequestCardDelete(row)">@L("Delete", "删除")</button></footer></article> }</div>
+        }
+        else
+        {
+            <div class="ja-starter-empty"><TIcon Name="file-copy" Size="32px" /><p>@L("No cards found", "没有找到卡片")</p></div>
+        }
+        <footer class="ja-starter-pagination"><span>@L("Total", "共") @VisibleCardRows.Count() @L("items", "条")</span><div><button disabled>&lt;</button><button class="is-selected">1</button><button>2</button><button>3</button><button>&gt;</button></div></footer>
+        @if (cardDialogVisible)
+        {
+            <div class="ja-starter-dialog-backdrop" role="presentation" @onclick="CloseCardDialog"><section class="ja-starter-dialog ja-starter-card-dialog" role="dialog" aria-modal="true" @onclick:stopPropagation><header><h2>@L("Create product", "新建产品")</h2><button @onclick="CloseCardDialog"><TIcon Name="close" Size="18px" /></button></header><form @onsubmit="SaveCard" @onsubmit:preventDefault><label><span>@L("Name", "名称")</span><input required @bind="cardName" placeholder="@L("Enter name", "请输入名称")" /></label><label><span>@L("Description", "描述")</span><textarea rows="3" @bind="cardDescription"></textarea></label><label><span>@L("Type", "类型")</span><select @bind="cardType"><option value="0">@L("Application", "应用")</option><option value="1">@L("Service", "服务")</option></select></label><footer><button type="button" class="is-plain" @onclick="CloseCardDialog">@L("Cancel", "取消")</button><button class="ja-starter-primary" type="submit">@L("Save", "保存")</button></footer></form></section></div>
+        }
+        @if (cardDeleteCandidate is not null)
+        {
+            <div class="ja-starter-dialog-backdrop" role="presentation" @onclick="CancelCardDelete"><section class="ja-starter-dialog" role="alertdialog" aria-modal="true" @onclick:stopPropagation><header><h2>@L("Delete product", "删除产品")</h2><button @onclick="CancelCardDelete"><TIcon Name="close" Size="18px" /></button></header><p>@L("Delete this product?", "确认删除此产品？") <strong>@cardDeleteCandidate.Name</strong></p><footer><button class="is-plain" @onclick="CancelCardDelete">@L("Cancel", "取消")</button><button class="ja-starter-danger" @onclick="ConfirmCardDelete">@L("Delete", "删除")</button></footer></section></div>
+        }
+    </section>
+}
+else if (Template == "list-base")
+{
+    <section class="ja-starter-page ja-starter-list ja-starter-list--base" data-starter-page="list-base">
+        <div class="ja-starter-list__content">
+            <header class="ja-starter-list-header">
+                <div class="ja-starter-list__operations">
+                    <button class="ja-starter-primary" @onclick="OpenBaseContract"><TIcon Name="add" Size="16px" />@L("Create contract", "新建合同")</button>
+                    <button disabled="@(selectedCodes.Length == 0)"><TIcon Name="download" Size="16px" />@L("Export", "导出")</button>
+                    @if (selectedCodes.Length > 0)
+                    {
+                        <p>@L("Selected", "已选") @selectedCodes.Length @L("items", "项")</p>
+                    }
+                </div>
+                <label class="ja-starter-search"><input @bind="query" @bind:event="oninput" placeholder="@L("Search contract name", "搜索合同名称")" /><TIcon Name="search" Size="16px" /></label>
+            </header>
+            <div class="ja-starter-table-wrap">
+                <table>
+                    <thead><tr><th><input type="checkbox" checked="@AreVisibleRowsSelected" @onclick="ToggleVisibleSelection" aria-label="@L("Select all contracts", "选择全部合同")" /></th><th>@L("Contract name", "合同名称")</th><th>@L("Status", "合同状态")</th><th>@L("Contract number", "合同编号")</th><th>@L("Contract type", "合同类型")</th><th>@L("Payment type", "收付类型")</th><th>@L("Amount", "合同金额")</th><th>@L("Action", "操作")</th></tr></thead>
+                    <tbody>
+                        @foreach (var row in VisibleRows)
+                        {
+                            <tr>
+                                <td><input type="checkbox" checked="@IsSelected(row.Code)" @onclick="() => ToggleSelection(row.Code)" aria-label="@row.Name" /></td>
+                                <td><strong>@row.Name</strong></td><td><span class="ja-starter-status @StatusClass(row.Status)">@row.Status</span></td><td>@row.Code</td><td>@ContractType(row)</td><td>@PaymentType(row)</td><td>@ContractAmount(row)</td>
+                                <td><button class="ja-starter-text-button" @onclick="OpenBaseDetail">@L("Details", "详情")</button><button class="ja-starter-text-button is-danger" @onclick="() => RequestDelete(row)">@L("Delete", "删除")</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <footer class="ja-starter-pagination"><span>@L("Total", "共") @VisibleRows.Count() @L("items", "条")</span><div><button disabled>&lt;</button><button class="is-selected">1</button><button>2</button><button>3</button><button>&gt;</button></div></footer>
+        </div>
+    </section>
+}
+else if (Template == "list-filter")
+{
+    <section class="ja-starter-page ja-starter-list ja-starter-list--filter" data-starter-page="list-filter">
+        <form class="ja-starter-filter-form" @onsubmit="ApplyContractFilters" @onsubmit:preventDefault>
+            <label><span>@L("Contract name", "合同名称")</span><input @bind="filterName" placeholder="@L("Enter contract name", "请输入合同名称")" /></label>
+            <label><span>@L("Contract status", "合同状态")</span><select @bind="filterStatus"><option value="">@L("All", "全部")</option><option>@L("In progress", "进行中")</option><option>@L("Completed", "已完成")</option><option>@L("Pending", "待处理")</option></select></label>
+            <label><span>@L("Contract number", "合同编号")</span><input @bind="filterCode" placeholder="@L("Enter contract number", "请输入合同编号")" /></label>
+            <label><span>@L("Contract type", "合同类型")</span><select @bind="filterType"><option value="">@L("All", "全部")</option><option value="main">@L("Main contract", "主合同")</option><option value="supplement">@L("Supplementary contract", "补充合同")</option></select></label>
+            <div class="ja-starter-filter-form__actions"><button class="ja-starter-primary" type="submit">@L("Query", "查询")</button><button class="is-plain" type="button" @onclick="ResetContractFilters">@L("Reset", "重置")</button></div>
+        </form>
+        <section class="ja-starter-filter-table">
+            <div class="ja-starter-table-wrap">
+                <table>
+                    <thead><tr><th>@L("Contract name", "合同名称")</th><th>@L("Status", "合同状态")</th><th>@L("Contract number", "合同编号")</th><th>@L("Contract type", "合同类型")</th><th>@L("Payment type", "收付类型")</th><th>@L("Amount", "合同金额")</th><th>@L("Action", "操作")</th></tr></thead>
+                    <tbody>
+                        @foreach (var row in FilteredContractRows)
+                        {
+                            <tr><td><strong>@row.Name</strong></td><td><span class="ja-starter-status @StatusClass(row.Status)">@row.Status</span></td><td>@row.Code</td><td>@ContractType(row)</td><td>@PaymentType(row)</td><td>@ContractAmount(row)</td><td><button class="ja-starter-text-button" @onclick="OpenBaseDetail">@L("Details", "详情")</button><button class="ja-starter-text-button is-danger" @onclick="() => RequestDelete(row)">@L("Delete", "删除")</button></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <footer class="ja-starter-pagination"><span>@L("Total", "共") @FilteredContractRows.Count() @L("items", "条")</span><div><button disabled>&lt;</button><button class="is-selected">1</button><button>2</button><button>3</button><button>&gt;</button></div></footer>
+        </section>
+    </section>
+}
+else if (Template == "list-tree")
+{
+    <section class="ja-starter-page ja-starter-list ja-starter-list--tree" data-starter-page="list-tree">
+        <aside class="ja-starter-tree">
+            <label><input @bind="treeFilter" @bind:event="oninput" placeholder="@L("Filter tree", "筛选树节点")" /><TIcon Name="search" Size="16px" /></label>
+            <strong>@L("Project catalog", "项目目录")</strong>
+            @foreach (var tree in FilteredTrees)
+            {
+                <button class="@(selectedTree == tree ? "is-selected" : string.Empty)" @onclick="() => SelectTree(tree)"><TIcon Name="@(tree == "Archive" ? "folder" : "folder-open")" Size="16px" />@TreeLabel(tree)</button>
+            }
+        </aside>
+        <div class="ja-starter-list__content">
+            <header class="ja-starter-list-header"><div><h2>@TreeLabel(selectedTree)</h2><p>@L("Contracts in the selected catalog.", "当前目录下的合同。")</p></div><button class="ja-starter-primary" @onclick="OpenBaseContract"><TIcon Name="add" Size="16px" />@L("Create", "新建")</button></header>
+            <div class="ja-starter-table-wrap">
+                <table>
+                    <thead><tr><th>@L("Contract name", "合同名称")</th><th>@L("Status", "合同状态")</th><th>@L("Contract number", "合同编号")</th><th>@L("Contract type", "合同类型")</th><th>@L("Payment type", "收付类型")</th><th>@L("Amount", "合同金额")</th><th>@L("Action", "操作")</th></tr></thead>
+                    <tbody>
+                        @foreach (var row in TreeRows)
+                        {
+                            <tr><td><strong>@row.Name</strong></td><td><span class="ja-starter-status @StatusClass(row.Status)">@row.Status</span></td><td>@row.Code</td><td>@ContractType(row)</td><td>@PaymentType(row)</td><td>@ContractAmount(row)</td><td><button class="ja-starter-text-button" @onclick="OpenBaseDetail">@L("Details", "详情")</button><button class="ja-starter-text-button is-danger" @onclick="() => RequestDelete(row)">@L("Delete", "删除")</button></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <footer class="ja-starter-pagination"><span>@L("Total", "共") @TreeRows.Count() @L("items", "条")</span><div><button disabled>&lt;</button><button class="is-selected">1</button><button>2</button><button>3</button><button>&gt;</button></div></footer>
+        </div>
+    </section>
+}
+else if (Template == "form-base")
+{
+    <section class="ja-starter-page ja-starter-form ja-starter-form--base" data-starter-page="form-base">
+        <form @onsubmit="SubmitDemoForm" @onsubmit:preventDefault>
+            <section>
+                <h2>@L("Basic information", "基本信息")</h2>
+                <div class="ja-starter-form__grid">
+                    <label><span>@L("Contract name", "合同名称")</span><input required @bind="contractName" placeholder="@L("Contract name", "请输入合同名称")" /></label>
+                    <label><span>@L("Contract type", "合同类型")</span><select @bind="contractType"><option value="main">@L("Main contract", "主合同")</option><option value="supplement">@L("Supplementary contract", "补充合同")</option></select></label>
+                    <fieldset><legend>@L("Payment type", "收付类型")</legend><div class="ja-starter-radio-group"><label><input type="radio" name="payment" checked="@(paymentType == "receive")" @onclick="SetReceivePayment" /> @L("Receive", "收款")</label><label><input type="radio" name="payment" checked="@(paymentType == "pay")" @onclick="SetPayPayment" /> @L("Pay", "付款")</label><input inputmode="decimal" @bind="contractAmount" placeholder="@L("Amount", "合同金额")" /></div></fieldset>
+                    <label><span>@L("Company", "公司")</span><select @bind="contractParty"><option value="">@L("Select company", "选择公司")</option><option>Jazor Technology</option><option>North Clinic</option></select></label>
+                    <label><span>@L("Employee", "员工")</span><select @bind="employee"><option value="">@L("Select employee", "选择员工")</option><option>Zhang San</option><option>Li Si</option></select></label>
+                    <label><span>@L("Signing date", "签订日期")</span><input type="date" /></label>
+                    <label><span>@L("Effective date", "生效日期")</span><input type="date" /></label>
+                    <label><span>@L("End date", "结束日期")</span><input type="date" /></label>
+                    <label><span>@L("Attachment", "附件")</span><input type="file" accept=".pdf" /></label>
+                </div>
+            </section>
+            <section>
+                <h2>@L("Other information", "其他信息")</h2>
+                <label class="is-full"><span>@L("Remark", "备注")</span><textarea rows="5" @bind="remark" placeholder="@L("Add a remark", "添加备注")"></textarea></label>
+                <fieldset><legend>@L("Notary public", "公证人")</legend><div class="ja-starter-avatar-group"><b>D</b><b>S</b><b>+</b></div></fieldset>
+            </section>
+            <footer><button class="ja-starter-primary" type="submit">@L("Confirm", "确认")</button><button type="reset" class="is-plain">@L("Cancel", "取消")</button></footer>
+            @if (submitted) { <p class="ja-starter-inline-message">@L("Form submitted successfully.", "表单提交成功。")</p> }
+        </form>
+    </section>
+}
+else if (Template == "form-step")
+{
+    <section class="ja-starter-page ja-starter-form ja-starter-form--step" data-starter-page="form-step">
+        <ol class="ja-starter-steps"><li class="@(currentStep >= 1 ? "is-current" : string.Empty)"><b>1</b><span>@L("Contract", "合同信息")<small>@L("Select a contract", "选择合同")</small></span></li><li class="@(currentStep >= 2 ? "is-current" : string.Empty)"><b>2</b><span>@L("Invoice", "发票信息")<small>@L("Invoice details", "填写发票")</small></span></li><li class="@(currentStep >= 3 ? "is-current" : string.Empty)"><b>3</b><span>@L("Delivery", "收货信息")<small>@L("Delivery details", "填写收货")</small></span></li><li class="@(currentStep >= 4 ? "is-current" : string.Empty)"><b>4</b><span>@L("Complete", "完成")<small>@L("Review result", "查看结果")</small></span></li></ol>
+        @if (currentStep == 1)
+        {
+            <form class="ja-starter-step-panel" @onsubmit="SubmitDemoForm" @onsubmit:preventDefault><div class="ja-starter-step-panel__notice"><strong>@L("Before you begin", "开始之前")</strong><p>@L("Choose a contract and invoice type. The amount is calculated from the selected contract.", "请选择合同和发票类型，金额会根据合同自动计算。")</p></div><label><span>@L("Contract name", "合同名称")</span><select @bind="contractName"><option value="">@L("Select contract", "选择合同")</option><option value="Jazor identity center">Jazor identity center</option><option value="TDesign resource package">TDesign resource package</option><option value="Organization access review">Organization access review</option></select></label><label><span>@L("Invoice type", "发票类型")</span><select @bind="contractType"><option value="main">@L("Main invoice", "主发票")</option><option value="supplement">@L("Supplementary invoice", "补充发票")</option></select></label><p class="ja-starter-step-amount"><span>@L("Amount", "金额")</span><strong>@(string.IsNullOrWhiteSpace(contractName) ? "--" : "¥ 565,421")</strong></p><footer><button class="ja-starter-primary" type="submit">@L("Next", "下一步")</button></footer></form>
+        }
+        else if (currentStep == 2)
+        {
+            <form class="ja-starter-step-panel" @onsubmit="SubmitDemoForm" @onsubmit:preventDefault><label><span>@L("Invoice title", "发票抬头")</span><input required @bind="invoiceTitle" placeholder="@L("Enter invoice title", "请输入发票抬头")" /></label><label><span>@L("Tax number", "税号")</span><input required @bind="taxNumber" placeholder="@L("Enter tax number", "请输入税号")" /></label><label><span>@L("Address", "地址")</span><input @bind="invoiceAddress" placeholder="@L("Enter address", "请输入地址")" /></label><label><span>@L("Bank", "开户行")</span><input @bind="bank" placeholder="@L("Enter bank", "请输入开户行")" /></label><label><span>@L("Bank account", "银行账号")</span><input @bind="bankAccount" placeholder="@L("Enter bank account", "请输入银行账号")" /></label><label><span>@L("Email", "邮箱")</span><input type="email" @bind="contactEmail" placeholder="@L("Enter email", "请输入邮箱")" /></label><footer><button type="button" class="is-plain" @onclick="PreviousStep">@L("Previous", "上一步")</button><button class="ja-starter-primary" type="submit">@L("Next", "下一步")</button></footer></form>
+        }
+        else if (currentStep == 3)
+        {
+            <form class="ja-starter-step-panel" @onsubmit="SubmitDemoForm" @onsubmit:preventDefault><label><span>@L("Consignee", "收货人")</span><input required @bind="consignee" /></label><label><span>@L("Mobile number", "手机号码")</span><input required inputmode="tel" @bind="mobileNumber" /></label><label><span>@L("Delivery address", "收货地址")</span><select @bind="deliveryAddress"><option value="">@L("Select address", "选择地址")</option><option>Shanghai / Pudong</option><option>Beijing / Chaoyang</option></select></label><label><span>@L("Full address", "详细地址")</span><textarea rows="4" @bind="fullAddress"></textarea></label><footer><button type="button" class="is-plain" @onclick="PreviousStep">@L("Previous", "上一步")</button><button class="ja-starter-primary" type="submit">@L("Submit", "提交")</button></footer></form>
+        }
+        else
+        {
+            <section class="ja-starter-step-complete"><TIcon Name="check-circle" Size="52px" /><h2>@L("Application complete", "申请完成")</h2><p>@L("Your contract workflow has been submitted for processing.", "合同流程已提交，正在处理中。")</p><div><button class="ja-starter-primary" @onclick="RestartStepForm">@L("Apply again", "再次申请")</button><button class="is-plain" @onclick="OpenBaseDetail">@L("View details", "查看详情")</button></div></section>
+        }
+    </section>
+}
+else if (Template == "detail-base")
+{
+    <section class="ja-starter-page ja-starter-detail ja-starter-detail--base" data-starter-page="detail-base">
+        <section><header><h2>@L("Basic information", "基本信息")</h2><TIcon Name="more" Size="20px" /></header><dl class="ja-starter-descriptions"><div><dt>@L("Contract name", "合同名称")</dt><dd>Jazor platform delivery</dd></div><div><dt>@L("Status", "合同状态")</dt><dd><span class="ja-starter-status is-processing">@L("In progress", "进行中")</span></dd></div><div><dt>@L("Contract number", "合同编号")</dt><dd>BH00010</dd></div><div><dt>@L("Contract type", "合同类型")</dt><dd>@L("Main contract", "主合同")</dd></div><div><dt>@L("Payment type", "收付类型")</dt><dd>@L("Pay", "付款")</dd></div><div><dt>@L("Amount", "合同金额")</dt><dd>¥ 5,000,000</dd></div><div><dt>@L("Company", "公司")</dt><dd>Jazor Technology</dd></div><div><dt>@L("Employee", "员工")</dt><dd>Zhang San</dd></div><div><dt>@L("Signing date", "签订日期")</dt><dd>2026-08-07</dd></div><div><dt>@L("Effective date", "生效日期")</dt><dd>2026-08-08</dd></div><div><dt>@L("End date", "结束日期")</dt><dd>2027-08-07</dd></div><div><dt>@L("Attachment", "附件")</dt><dd class="is-link">contract.pdf</dd></div></dl></section>
+        <section><header><h2>@L("Change log", "变更记录")</h2></header><ol class="ja-starter-timeline"><li><b></b><div><strong>@L("Created", "创建")</strong><p>2026-08-01 09:30</p></div></li><li><b></b><div><strong>@L("Reviewed", "审核")</strong><p>2026-08-05 16:20</p></div></li><li><b></b><div><strong>@L("In progress", "执行中")</strong><p>2026-08-07 10:00</p></div></li></ol></section>
+    </section>
+}
+else if (Template == "detail-advanced")
+{
+    <section class="ja-starter-page ja-starter-detail ja-starter-detail--advanced" data-starter-page="detail-advanced">
+        <header class="ja-starter-detail__banner"><span>@L("Order details", "订单详情")</span><h2>BH00010</h2><p>@L("Main contract for the Jazor platform delivery.", "Jazor 平台交付的主合同。")</p><div><button class="is-plain" @onclick="SubmitDemoForm">@L("Print", "打印")</button><button class="ja-starter-primary" @onclick="SubmitDemoForm">@L("Approve", "审核")</button></div></header>
+        <section><header><h2>@L("Basic information", "基本信息")</h2><button @onclick="OpenAdvancedDialog"><TIcon Name="edit-1" Size="18px" />@L("Edit", "编辑")</button></header><dl class="ja-starter-descriptions"><div><dt>@L("Contract name", "合同名称")</dt><dd>Jazor platform delivery</dd></div><div><dt>@L("Status", "合同状态")</dt><dd><span class="ja-starter-status is-processing">@L("In progress", "进行中")</span></dd></div><div><dt>@L("Contract number", "合同编号")</dt><dd>BH00010</dd></div><div><dt>@L("Amount", "合同金额")</dt><dd>¥ 5,000,000</dd></div><div><dt>@L("Company", "公司")</dt><dd>Jazor Technology</dd></div><div><dt>@L("Signing date", "签订日期")</dt><dd>2026-08-07</dd></div></dl></section>
+        <section><header><h2>@L("Invoice progress", "发票进度")</h2></header><ol class="ja-starter-horizontal-steps"><li class="is-current"><b>1</b><span>@L("Submitted", "已提交")<small>2026-08-01</small></span></li><li class="is-current"><b>2</b><span>@L("Reviewed", "已审核")<small>2026-08-05</small></span></li><li class="is-current"><b>3</b><span>@L("Processing", "处理中")<small>2026-08-07</small></span></li><li><b>4</b><span>@L("Complete", "完成")<small>@L("Pending", "待完成")</small></span></li></ol></section>
+        <section><header><h2>@L("Product catalog", "产品目录")</h2><div class="ja-starter-tabs"><button class="is-selected">@L("Quarter", "季度")</button><button>@L("Month", "月份")</button></div></header><div class="ja-starter-product-grid"><article class="ja-starter-product-card is-add" @onclick="OpenAdvancedDialog"><TIcon Name="add" Size="24px" /><span>@L("Add product", "添加产品")</span></article>@foreach (var row in rows.Take(3)) { <article class="ja-starter-product-card"><b>@row.Code.Substring(row.Code.Length - 3)</b><h3>@row.Name</h3><p>@L("Owner", "负责人")：@row.Owner</p><strong>@ContractAmount(row)</strong></article> }</div></section>
+        <section><header><h2>@L("Product purchase details", "产品采购明细")</h2></header><div class="ja-starter-table-wrap"><table><thead><tr><th>@L("Application number", "申请编号")</th><th>@L("Product", "产品")</th><th>@L("Quantity", "数量")</th><th>@L("Department", "部门")</th><th>@L("Created", "创建时间")</th><th>@L("Action", "操作")</th></tr></thead><tbody>@foreach (var row in rows.Take(3)) { <tr><td>@row.Code</td><td><strong>@row.Name</strong></td><td>@(row.Code.EndsWith("001", StringComparison.Ordinal) ? "64" : "32")</td><td>@row.Group</td><td>@row.UpdatedAt</td><td><button class="ja-starter-text-button" @onclick="OpenAdvancedDialog">@L("Manage", "管理")</button><button class="ja-starter-text-button is-danger">@L("Delete", "删除")</button></td></tr> }</tbody></table></div></section>
+        @if (advancedDialogVisible) { <div class="ja-starter-dialog-backdrop" role="presentation" @onclick="CloseAdvancedDialog"><section class="ja-starter-dialog" role="dialog" aria-modal="true" @onclick:stopPropagation><header><h2>@L("Basic information", "基本信息")</h2><button @onclick="CloseAdvancedDialog"><TIcon Name="close" Size="18px" /></button></header><dl class="ja-starter-dialog-descriptions"><div><dt>@L("Contract number", "合同编号")</dt><dd>BH00010</dd></div><div><dt>@L("Status", "状态")</dt><dd>@L("In progress", "进行中")</dd></div><div><dt>@L("Amount", "金额")</dt><dd>¥ 5,000,000</dd></div></dl><footer><button class="ja-starter-primary" @onclick="CloseAdvancedDialog">@L("Close", "关闭")</button></footer></section></div> }
+    </section>
+}
+else if (Template == "detail-deploy")
+{
+    <section class="ja-starter-page ja-starter-detail ja-starter-detail--deploy" data-starter-page="detail-deploy">
+        <div class="ja-starter-report__charts"><section><header><h2>@L("Deployment trend", "部署趋势")</h2></header><div class="ja-starter-line-chart"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section><section><header><h2>@L("Warning trend", "告警趋势")</h2><div class="ja-starter-tabs"><button class="is-selected">@L("This week", "本周")</button><button>@L("This month", "本月")</button></div></header><div class="ja-starter-chart ja-starter-chart--mini"><div class="ja-starter-chart__axis"><span>100</span><span>0</span></div><div class="ja-starter-chart__plot"><div><i style="height:40%"></i><b style="height:60%"></b></div><div><i style="height:72%"></i><b style="height:42%"></b></div><div><i style="height:30%"></i><b style="height:72%"></b></div></div></div></section></div>
+        <section><header><h2>@L("Project list", "项目列表")</h2><button class="ja-starter-primary" @onclick="OpenDeployDialog"><TIcon Name="add" Size="16px" />@L("Add project", "添加项目")</button></header><div class="ja-starter-table-wrap"><table><thead><tr><th>@L("Project", "项目")</th><th>@L("Administrator", "管理员")</th><th>@L("Created", "创建时间")</th><th>@L("Action", "操作")</th></tr></thead><tbody>@foreach (var row in rows.Take(4)) { <tr><td><strong>@row.Name</strong></td><td>@row.Owner</td><td>@row.UpdatedAt</td><td><button class="ja-starter-text-button" @onclick="OpenDeployDialog">@L("Manage", "管理")</button><button class="ja-starter-text-button is-danger">@L("Delete", "删除")</button></td></tr> }</tbody></table></div></section>
+        @if (deployDialogVisible) { <div class="ja-starter-dialog-backdrop" role="presentation" @onclick="CloseDeployDialog"><section class="ja-starter-dialog" role="dialog" aria-modal="true" @onclick:stopPropagation><header><h2>@L("Project details", "项目详情")</h2><button @onclick="CloseDeployDialog"><TIcon Name="close" Size="18px" /></button></header><dl class="ja-starter-dialog-descriptions"><div><dt>@L("Project", "项目")</dt><dd>Jazor identity center</dd></div><div><dt>@L("Administrator", "管理员")</dt><dd>Zhang San</dd></div></dl><footer><button class="ja-starter-primary" @onclick="CloseDeployDialog">@L("Close", "关闭")</button></footer></section></div> }
+    </section>
+}
+else if (Template == "detail-secondary")
+{
+    <section class="ja-starter-page ja-starter-detail ja-starter-detail--secondary" data-starter-page="detail-secondary">
+        <section><header><h2>@L("Notifications", "消息通知")</h2></header><div class="ja-starter-tabs"><button class="@(selectedNoticeTab == "all" ? "is-selected" : string.Empty)" @onclick="SelectAllNotices">@L("All", "全部")</button><button class="@(selectedNoticeTab == "unread" ? "is-selected" : string.Empty)" @onclick="SelectUnreadNotices">@L("Unread", "未读")</button><button class="@(selectedNoticeTab == "read" ? "is-selected" : string.Empty)" @onclick="SelectReadNotices">@L("Read", "已读")</button></div><div class="ja-starter-notices">@foreach (var notice in VisibleNotices) { <article class="@(notice.Unread ? "is-unread" : string.Empty)"><i class="@notice.Kind"></i><div><h3>@notice.Title</h3><p>@notice.Content</p></div><time>@notice.Date</time><button aria-label="@L("Toggle read state", "切换已读状态")" @onclick="() => ToggleNotice(notice)"><TIcon Name="@(notice.Unread ? "queue" : "chat")" Size="16px" /></button><button aria-label="@L("Delete notification", "删除通知")" @onclick="() => RemoveNotice(notice)"><TIcon Name="delete" Size="16px" /></button></article> }</div>@if (!VisibleNotices.Any()) { <div class="ja-starter-empty"><TIcon Name="file-copy" Size="32px" /><p>@L("No notifications", "暂无消息")</p></div> }</section>
+    </section>
+}
+else if (IsResult)
+{
+    var result = GetResult();
+    <section class="ja-starter-result is-@result.Kind" data-starter-page="@Template">
+        @if (string.IsNullOrWhiteSpace(result.Asset))
+        {
+            <TIcon Name="@result.Icon" Size="72px" />
+        }
+        else
+        {
+            <img class="ja-starter-result__art" src="@result.Asset" alt="" aria-hidden="true" />
+        }
+        <h2>@result.Title</h2>
+        <p>@result.Description</p>
+        @if (Template == "result-browser")
+        {
+            <div class="ja-starter-browser-recommendation">
+                <span>@L("Recommended browsers", "推荐浏览器")</span>
+                <strong><TIcon Name="logo-chrome" Size="28px" />Chrome</strong>
+                <strong><TIcon Name="browse" Size="28px" />QQ Browser</strong>
+            </div>
+        }
+        <div class="ja-starter-result__actions">
+            @if (!string.IsNullOrWhiteSpace(result.SecondaryLabel))
+            {
+                <button class="is-plain" @onclick="() => Navigate(result.SecondaryTarget)">@result.SecondaryLabel</button>
+            }
+            <button class="ja-starter-primary" @onclick="() => Navigate(result.PrimaryTarget)">@result.PrimaryLabel</button>
+        </div>
+    </section>
+}
+else if (Template == "user")
+{
+    <section class="ja-starter-page ja-starter-user-page" data-starter-page="user"><div class="ja-starter-user-page__main"><header><div><h2>@L("Good morning", "早上好")，@Session?.DisplayName</h2><p>@L("Start a productive day from your personal workspace.", "从个人工作台开始高效的一天。")</p></div><span>@(string.IsNullOrWhiteSpace(Session?.DisplayName) ? "J" : Session.DisplayName.Substring(0, 1))</span></header><section><header><h2>@L("Personal information", "个人信息")</h2><button aria-label="@L("More", "更多")"><TIcon Name="more" Size="20px" /></button></header><dl class="ja-starter-descriptions"><div><dt>@L("Account", "账号")</dt><dd>@Session?.Email</dd></div><div><dt>@L("Role", "角色")</dt><dd>@string.Join(", ", Session?.Roles ?? [])</dd></div><div><dt>@L("Department", "部门")</dt><dd>Platform</dd></div><div><dt>@L("Position", "职位")</dt><dd>@L("Platform administrator", "平台管理员")</dd></div></dl></section><section class="ja-starter-user-content"><div class="ja-starter-tabs"><button class="@(selectedUserTab == "content" ? "is-selected" : string.Empty)" @onclick="ShowUserContent">@L("Content", "内容")</button><button class="@(selectedUserTab == "visit" ? "is-selected" : string.Empty)" @onclick="ShowUserVisits">@L("Visit data", "访问数据")</button><button class="@(selectedUserTab == "activity" ? "is-selected" : string.Empty)" @onclick="ShowUserActivity">@L("Activity", "动态")</button></div>@if (selectedUserTab == "visit") { <header><h2>@L("Visit data", "访问数据")</h2><button>@L("Last 7 days", "最近 7 天")</button></header><div class="ja-starter-line-chart"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div> } else if (selectedUserTab == "activity") { <ul class="ja-starter-user-activity"><li><b></b><div><strong>@L("Updated authorization policy", "更新了授权策略")</strong><p>2026-08-07 10:30</p></div></li><li><b></b><div><strong>@L("Created a scheduled task", "创建了计划任务")</strong><p>2026-08-06 16:20</p></div></li></ul> } else { <p class="ja-starter-user-placeholder">@L("Your latest workspace content appears here.", "最近的工作区内容会显示在这里。")</p> }</section></div><aside><section class="ja-starter-user-card"><span>@(string.IsNullOrWhiteSpace(Session?.DisplayName) ? "J" : Session.DisplayName.Substring(0, 1))</span><h2>@Session?.DisplayName</h2><p>@L("Platform administrator", "平台管理员")</p></section><section><header><h2>@L("Team members", "团队成员")</h2><button aria-label="@L("More", "更多")"><TIcon Name="more" Size="20px" /></button></header><ul><li><b>J</b><span>JazorAdmin<small>Platform</small></span></li><li><b>A</b><span>Administrator<small>Identity</small></span></li><li><b>Q</b><span>Quartz<small>Operations</small></span></li></ul></section><section class="ja-starter-user-products"><header><h2>@L("Service products", "服务产品")</h2><button aria-label="@L("More", "更多")"><TIcon Name="more" Size="20px" /></button></header><div><TIcon Name="secured" Size="22px" /><TIcon Name="link" Size="22px" /><TIcon Name="setting-1" Size="22px" /><TIcon Name="server" Size="22px" /></div></section></aside></section>
+}
+else if (Template == "login")
+{
+    <section class="ja-starter-login" data-starter-page="login"><header><strong><img src="/brand/jazor-mark.svg" alt="" /> Jazor</strong><span>@L("TDesign Starter Login", "TDesign Starter 登录页")</span></header><main><section><span class="ja-starter-login__mark">J</span><h1>@(isRegistering ? L("Create your account", "创建账号") : L("Welcome back", "欢迎回来"))</h1><p>@(isRegistering ? L("Already have an account?", "已有账号？") : L("No account yet?", "还没有账号？")) <button class="ja-starter-login__switch" type="button" @onclick="ToggleLoginMode">@(isRegistering ? L("Sign in", "去登录") : L("Create account", "创建账号"))</button></p>@if (isRegistering) { <form @onsubmit="SubmitStarterRegistration" @onsubmit:preventDefault><label><span>@L("Email", "邮箱")</span><input required type="email" @bind="starterEmail" placeholder="admin@example.com" /></label><label><span>@L("Password", "密码")</span><input required type="password" @bind="starterPassword" placeholder="••••••••" /></label><label><span>@L("Confirm password", "确认密码")</span><input required type="password" @bind="starterConfirmPassword" placeholder="••••••••" /></label><button class="ja-starter-primary" type="submit">@L("Create account", "创建账号")</button></form> } else { <form @onsubmit="SubmitStarterLogin" @onsubmit:preventDefault><label><span>@L("Account", "账号")</span><input required type="email" @bind="starterEmail" placeholder="admin@example.com" /></label><label><span>@L("Password", "密码")</span><input required type="password" @bind="starterPassword" placeholder="••••••••" /></label><div><label><input type="checkbox" /> @L("Remember me", "记住我")</label><button type="button">@L("Forgot password", "忘记密码")</button></div><button class="ja-starter-primary" type="submit">@L("Sign in", "登录")</button></form> }@if (submitted) { <p class="ja-starter-inline-message">@(isRegistering ? L("Account created. You can now sign in.", "账号已创建，请登录。") : L("Starter login form submitted.", "Starter 登录表单已提交。"))</p> }</section></main><footer>@L("Copyright 2026 Jazor. All rights reserved.", "Copyright 2026 Jazor. 保留所有权利。")</footer></section>
+}
+
+@if (deleteCandidate is not null)
+{
+    <div class="ja-starter-dialog-backdrop" role="presentation" @onclick="CancelDelete">
+        <section class="ja-starter-dialog" role="alertdialog" aria-modal="true" aria-labelledby="starter-delete-title" @onclick:stopPropagation>
+            <header><h2 id="starter-delete-title">@L("Delete contract", "删除合同")</h2><button aria-label="@L("Close", "关闭")" @onclick="CancelDelete"><TIcon Name="close" Size="18px" /></button></header>
+            <p>@L("This action cannot be undone. Delete", "此操作无法撤销，确认删除") <strong>@deleteCandidate.Name</strong>?</p>
+            <footer><button class="is-plain" @onclick="CancelDelete">@L("Cancel", "取消")</button><button class="ja-starter-danger" @onclick="ConfirmDelete">@L("Delete", "删除")</button></footer>
+        </section>
+    </div>
+}

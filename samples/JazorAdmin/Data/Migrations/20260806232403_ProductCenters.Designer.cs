@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace JazorAdmin.Data.Migrations;
 
-[DbContext(typeof(JazorAdminDbContext))]
+[DbContext(typeof(AdminDbContext))]
 [Migration("20260806232403_ProductCenters")]
 partial class _20260806232403_ProductCenters
 {
@@ -56,7 +56,7 @@ partial class _20260806232403_ProductCenters
                 b.ToTable("AuthorizationResources");
             });
 
-        modelBuilder.Entity("JazorAdmin.Data.JazorAdminUser", b =>
+        modelBuilder.Entity("JazorAdmin.Data.AdminUser", b =>
             {
                 b.Property<string>("Id")
                     .HasColumnType("TEXT");
@@ -724,7 +724,7 @@ partial class _20260806232403_ProductCenters
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", "User")
+                b.HasOne("JazorAdmin.Data.AdminUser", "User")
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -806,7 +806,7 @@ partial class _20260806232403_ProductCenters
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -815,7 +815,7 @@ partial class _20260806232403_ProductCenters
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -830,7 +830,7 @@ partial class _20260806232403_ProductCenters
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -839,7 +839,7 @@ partial class _20260806232403_ProductCenters
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)

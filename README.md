@@ -86,21 +86,19 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-07
+### 2026-08-09
 
-- JazorAdmin now provides OpenIddict application, scope, authorization, and token management with public/confidential and interactive/machine/API profiles, one-time secret rotation, Consent/PKCE, endpoint/grant/response permissions, API resource audiences, and authorization/token revocation. Its local-package browser smoke covers those management flows and mobile editor containment.
-- JazorAdmin now separates its SSO center from a typed configuration center and a Quartz.NET task center. Administrators can manage `text`, `boolean`, `number`, and `json` settings, schedule catalogued operational tasks with Cron expressions, pause or manually run them, and inspect execution history without exposing arbitrary script execution.
-- JazorAdmin now creates a development-only first platform administrator on initial startup (`admin@jazor.local` / `JazorAdmin123!`). The `localhost` launch and OpenIddict callback addresses are confined to the development configuration; non-test deployments must provide their actual callback origins and first administrator through secret configuration, and startup now fails clearly instead of leaving a login page with no valid account.
-- JazorAdmin now uses an original Jinsha sunbird-inspired local mark in the shell, login, consent, and browser-tab surfaces. Its scalable SVG and multi-resolution ICO are application-owned static resources with no external image, font, or CDN dependency.
-- JazorAdmin's login now combines a locally owned cyan-green ink/mineral landscape with an Aero-style glass form and a one-time, three-minute visual captcha validated by the server. The artwork, mark, favicon, and captcha are all local resources; no CDN, remote image, or external font is required.
-- Vue Router and Pinia development builds now obtain their Vue Devtools API from the local Vue3 package resource, so browser development remains self-contained without a CDN or `node_modules`. WebIDL string-enum bindings preserve their browser wire tokens, and JazorAdmin validates the packaged `RequestCredentials.SameOrigin` path as `"same-origin"` while omitting unset Fetch dictionary members during its local-package browser smoke.
+- JazorAdmin now reproduces the TDesign Starter administration shell with Tencent Cloud's rounded theme, compact content spacing, medium route tabs, route-aware primary and secondary navigation, and an administrator-only global appearance configurator fixed at the bottom center.
+- Its IconBar remains the primary navigation rail, while the selected primary module title stays fixed in the aligned 64px secondary header and only the secondary menu scrolls. Collapsing removes that rail completely; logo, toggle, content gutters, and mobile containment remain aligned.
+- The breathing quick-action trigger now opens four square actions along a 90-degree arc at 22.5-degree intervals. The login artwork also blends continuously into the form surface.
+- `ECMAScript.Style` adds typed Starter layout values and domain-preserving `important(value)` support. Generated TDesign multi-argument events now pass their first runtime Vue argument as the `EventCallback<T>` payload.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.3.3
+dotnet add package Jazor --version 0.3.4
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -109,8 +107,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.3" />
-  <PackageReference Include="Jazor.Vue" Version="0.3.3" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.3.4" />
+  <PackageReference Include="Jazor.Vue" Version="0.3.4" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -118,11 +116,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.3.3" />
-  <PackageReference Include="ECMAScript.Style" Version="0.3.3" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.3.3" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.3" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.3" />
+  <PackageReference Include="Jazor" Version="0.3.4" />
+  <PackageReference Include="ECMAScript.Style" Version="0.3.4" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.3.4" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.3.4" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.3.4" />
 </ItemGroup>
 ```
 

@@ -11,6 +11,7 @@ public partial class App
 
         // RazorVue maps this lifecycle hook to Vue onMounted. Constructors are not part of setup(),
         // so browser-only session recovery must start here. RazorVue 会映射到 Vue onMounted；构造函数不进入 setup，浏览器会话恢复只能在这里启动。
+        RestoreStarterStyleConfig();
         RestoreSession();
     }
 

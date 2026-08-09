@@ -15,7 +15,7 @@ public static class SettingEndpoints
     {
         var settings = app.MapGroup("/api/settings")
             .WithTags("Settings")
-            .RequireAuthorization(JazorAdminPolicies.PlatformAdministrator);
+            .RequireAuthorization(PolicyKeys.PlatformAdministrator);
 
         settings.MapGet("/", ListAsync);
         settings.MapPost("/", CreateAsync);
@@ -24,7 +24,7 @@ public static class SettingEndpoints
         return app;
     }
 
-    private static async Task<IResult> ListAsync(JazorAdminDbContext database, CancellationToken cancellationToken)
+    private static async Task<IResult> ListAsync(AdminDbContext database, CancellationToken cancellationToken)
         => Results.Ok(await database.Settings
             .AsNoTracking()
             .OrderBy(setting => setting.Group)
@@ -34,7 +34,7 @@ public static class SettingEndpoints
 
     private static async Task<IResult> CreateAsync(
         SettingCreate request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         if (!TryValidate(request.Key, request.Group, request.Label, request.Kind, request.Value, out var errors))
@@ -54,7 +54,7 @@ public static class SettingEndpoints
     private static async Task<IResult> UpdateAsync(
         string key,
         SettingUpdate request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         var setting = await database.Settings.FindAsync([key], cancellationToken);
@@ -70,7 +70,7 @@ public static class SettingEndpoints
 
     private static async Task<IResult> DeleteAsync(
         string key,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         var setting = await database.Settings.FindAsync([key], cancellationToken);

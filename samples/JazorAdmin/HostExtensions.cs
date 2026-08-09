@@ -18,15 +18,15 @@ using Quartz;
 
 namespace JazorAdmin;
 
-public static class JazorAdminHostExtensions
+public static class HostExtensions
 {
-    public static IServiceCollection AddJazorAdminHost(
+    public static IServiceCollection AddAdminHost(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment environment)
     {
-        services.Configure<JazorAdminOpenIddictOptions>(
-            configuration.GetSection(JazorAdminOpenIddictOptions.SectionName));
+        services.Configure<OpenIddictOptions>(
+            configuration.GetSection(OpenIddictOptions.SectionName));
         services.Configure<BootstrapOptions>(
             configuration.GetSection(BootstrapOptions.SectionName));
         services.AddProblemDetails();
@@ -36,7 +36,7 @@ public static class JazorAdminHostExtensions
         services.AddHealthChecks();
         // Resolve configuration when the context is created so WebApplicationFactory can replace the
         // database per test host. 注册阶段捕获连接串会绕过测试宿主的隔离配置。
-        services.AddDbContext<JazorAdminDbContext>((provider, options) =>
+        services.AddDbContext<AdminDbContext>((provider, options) =>
         {
             var currentConfiguration = provider.GetRequiredService<IConfiguration>();
             var connectionString = currentConfiguration.GetConnectionString("JazorAdmin")
@@ -44,14 +44,14 @@ public static class JazorAdminHostExtensions
             options.UseSqlite(connectionString);
         });
 
-        services.AddIdentity<JazorAdminUser, IdentityRole>(options =>
+        services.AddIdentity<AdminUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
                 options.Password.RequiredLength = 12;
                 options.Password.RequireDigit = true;
                 options.Password.RequireUppercase = true;
             })
-            .AddEntityFrameworkStores<JazorAdminDbContext>()
+            .AddEntityFrameworkStores<AdminDbContext>()
             .AddDefaultTokenProviders();
         services.ConfigureApplicationCookie(options =>
         {
@@ -84,16 +84,16 @@ public static class JazorAdminHostExtensions
                 return Task.CompletedTask;
             };
         });
-        services.AddJazorAdminAuthentication();
+        services.AddAdminAuthentication();
 
         services.AddAuthorization(options => options.AddPolicy(
-            JazorAdminPolicies.PlatformAdministrator,
-            policy => policy.RequireRole(JazorAdminRoles.PlatformAdministrator)));
+            PolicyKeys.PlatformAdministrator,
+            policy => policy.RequireRole(RoleKeys.PlatformAdministrator)));
         services.AddSingleton<IAuthorizationPolicyProvider, ResourceOperationAuthorizationPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, ResourceOperationAuthorizationHandler>();
 
         services.AddOpenIddict()
-            .AddCore(options => options.UseEntityFrameworkCore().UseDbContext<JazorAdminDbContext>())
+            .AddCore(options => options.UseEntityFrameworkCore().UseDbContext<AdminDbContext>())
             .AddServer(options =>
             {
                 options.SetConfigurationEndpointUris(".well-known/openid-configuration")
@@ -109,7 +109,7 @@ public static class JazorAdminHostExtensions
                         OpenIddictConstants.Scopes.Email,
                         OpenIddictConstants.Scopes.Profile,
                         OpenIddictConstants.Scopes.Roles,
-                        JazorAdminScopes.Api)
+                        ScopeKeys.Api)
                     .SetAccessTokenLifetime(TimeSpan.FromMinutes(20))
                     .SetRefreshTokenLifetime(TimeSpan.FromDays(14));
 
@@ -144,12 +144,12 @@ public static class JazorAdminHostExtensions
         services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
         services.AddScoped<IManagedTask, OpenIddictPruneTask>();
         services.AddSingleton<ScheduleService>();
-        services.AddHostedService<JazorAdminDatabaseInitializer>();
+        services.AddHostedService<DatabaseInitializer>();
         services.AddHostedService<ScheduleInitializer>();
         return services;
     }
 
-    public static WebApplication UseJazorAdminHost(this WebApplication app)
+    public static WebApplication UseAdminHost(this WebApplication app)
     {
         if (!app.Environment.IsDevelopment())
         {
@@ -165,7 +165,7 @@ public static class JazorAdminHostExtensions
         return app;
     }
 
-    public static IEndpointRouteBuilder MapJazorAdminEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapAdminEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapHealthChecks("/health/live").AllowAnonymous();
         app.MapIdentityEndpoints();

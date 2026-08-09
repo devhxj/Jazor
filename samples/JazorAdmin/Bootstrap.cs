@@ -1,5 +1,3 @@
-using ECMAScript;
-using static ECMAScript.Vue3;
 using static ECMAScript.VueRoute;
 
 namespace JazorAdmin;
@@ -9,8 +7,10 @@ namespace JazorAdmin;
 [Description("@#")]
 internal static class AppModule
 {
+#pragma warning disable CS0626 // The ECMAScript module binding supplies this generated module export at runtime.
     [ECMAScriptName("default")]
     public extern static IVueComponent Default { get; }
+#pragma warning restore CS0626
 }
 
 /// <summary>Creates and mounts the Vue application from the generated root component.</summary>
@@ -39,7 +39,7 @@ public static class Bootstrap
         var router = CreateRouterRuntime(shellComponent);
         var app = CreateApp(DefineComponent(new VueComponentOptions
         {
-            Name = "JazorAdminRoot",
+            Name = "AdminRoot",
             Render = RenderRoot
         }));
 

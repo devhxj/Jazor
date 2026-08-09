@@ -1,16 +1,72 @@
-@* Provides the top-level work-area navigation used by the mixed TDesign shell. *@
+@* Provides the top-level work-area navigation through TDesign's own menu components. *@
 @inherits AdminComponentBase
 
-<nav class="@RootCssClass"
-     style="@CssStyle"
-     data-iconbar=""
-     data-iconbar-selected-key="@SelectedSectionKey"
-     aria-label="@EffectiveAriaLabel"
-     @attributes="AdditionalAttributes">
-    <div class="ja-iconbar__items">
+<TMenu CssClass="@DesktopCssClass"
+       CssStyle="@CssStyle"
+       Collapsed="true"
+       Width="@DesktopWidth"
+       Value="@MenuValue"
+       Theme="@MenuTheme"
+       data-iconbar=""
+       data-iconbar-mode="rail"
+       data-iconbar-selected-key="@SelectedSectionKey"
+       aria-label="@EffectiveAriaLabel"
+       @attributes="AdditionalAttributes">
+    <LogoContent>
+        <a class="ja-iconbar__brand" href="/" aria-label="Jazor">
+            <img src="/brand/jazor-mark.svg" alt="Jazor" />
+        </a>
+    </LogoContent>
+
+    <ChildContent>
         @foreach (var item in EffectiveItems)
         {
             @RenderItem(item)
         }
-    </div>
-</nav>
+    </ChildContent>
+
+    <OperationsContent>
+        @if (QuickActions is not null)
+        {
+            <div class="ja-iconbar__operations">
+                <TPopup Placement="@TPopupPlacement.RightBottom"
+                        Trigger="@TPopupTriggerValue.Click"
+                        ShowArrow="false"
+                        OverlayClassName="@QuickActionsOverlayClass">
+                    <ContentSlot>
+                        <div class="ja-iconbar__quick-actions" data-iconbar-quick-actions="">
+                            @QuickActions
+                        </div>
+                    </ContentSlot>
+                    <TriggerElementContent>
+                        <TButton CssClass="@("ja-iconbar__quick-trigger")"
+                                 Theme="@TButtonThemeValue.Primary"
+                                 Variant="@TButtonVariantValue.Text"
+                                 Shape="@TButtonShapeValue.Square"
+                                 data-iconbar-command="toggle-quick-actions"
+                                 aria-label="@EffectiveQuickActionsLabel"
+                                 title="@EffectiveQuickActionsLabel">
+                            <IconContent><TIcon Name="add" Size="20px" aria-hidden="true" /></IconContent>
+                        </TButton>
+                    </TriggerElementContent>
+                </TPopup>
+            </div>
+        }
+    </OperationsContent>
+</TMenu>
+
+<THeadMenu CssClass="@MobileCssClass"
+           CssStyle="@CssStyle"
+           Value="@MenuValue"
+           Theme="@HeadMenuTheme"
+           data-iconbar=""
+           data-iconbar-mode="head"
+           data-iconbar-selected-key="@SelectedSectionKey"
+           aria-label="@EffectiveAriaLabel">
+    <ChildContent>
+        @foreach (var item in EffectiveItems)
+        {
+            @RenderItem(item)
+        }
+    </ChildContent>
+</THeadMenu>

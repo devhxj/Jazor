@@ -2,7 +2,7 @@
 // 绑定第一方 RazorVue 客户端注册信息，不在源代码中存储任何凭据。
 namespace JazorAdmin.Authentication;
 
-public sealed class JazorAdminOpenIddictOptions
+public sealed class OpenIddictOptions
 {
     public const string SectionName = "JazorAdmin:OpenIddict";
 

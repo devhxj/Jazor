@@ -1,32 +1,50 @@
 @inherits AdminComponentBase
 
-<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-    <div class='@("ja-tdesign-header__main")'>
-        @if (Logo is not null)
+<THeadMenu CssClass="@RootCssClass"
+           CssStyle="@CssStyle"
+           Theme="@MenuTheme"
+           ExpandType="@THeadMenuExpandTypeValue.Popup"
+           Value="@NavigationValue"
+           Expanded="@NavigationExpanded"
+           OnChange="@OnNavigationChange"
+           OnExpand="@OnNavigationExpand"
+           data-shell-region="head-menu"
+           data-shell-logo-visible="@ShowLogo"
+           @attributes="AdditionalAttributes">
+    <LogoContent>
+        @if (ShowLogo || Leading is not null)
         {
-            <div class='@("ja-tdesign-header__logo")'>@Logo</div>
+            <div class="ja-tdesign-header__logo">
+                @Leading
+                @if (ShowLogo && Logo is not null)
+                {
+                    @Logo
+                }
+                else if (ShowLogo && !string.IsNullOrWhiteSpace(Title))
+                {
+                    <div class="ja-tdesign-header__titles">
+                        <div class="ja-tdesign-header__title">@Title</div>
+                        @if (!string.IsNullOrWhiteSpace(Subtitle))
+                        {
+                            <div class="ja-tdesign-header__subtitle">@Subtitle</div>
+                        }
+                    </div>
+                }
+            </div>
         }
+    </LogoContent>
 
-        <div class='@("ja-tdesign-header__titles")'>
-            @if (!string.IsNullOrWhiteSpace(Title))
-            {
-                <div class='@("ja-tdesign-header__title")'>@Title</div>
-            }
-            @if (!string.IsNullOrWhiteSpace(Subtitle))
-            {
-                <div class='@("ja-tdesign-header__subtitle")'>@Subtitle</div>
-            }
+    <ChildContent>
+        @if (Navigation is not null)
+        {
+            <div class="ja-tdesign-header__navigation" data-shell-region="navigation">@Navigation</div>
+        }
+    </ChildContent>
+
+    <OperationsContent>
+        <div class="ja-tdesign-header__operations">
+            @Actions
+            @UserRegion
         </div>
-    </div>
-
-    @if (Navigation is not null)
-    {
-        <div class='@("ja-tdesign-header__navigation")'
-             data-shell-region="navigation">@Navigation</div>
-    }
-
-    <div class='@("ja-tdesign-header__actions")'>
-        @Actions
-        @UserRegion
-    </div>
-</div>
+    </OperationsContent>
+</THeadMenu>

@@ -10,7 +10,7 @@ public static class SsoEndpoints
     {
         var sso = app.MapGroup("/api/sso")
             .WithTags("SSO")
-            .RequireAuthorization(JazorAdminPolicies.PlatformAdministrator);
+            .RequireAuthorization(PolicyKeys.PlatformAdministrator);
 
         AppEndpoints.Map(sso);
         ScopeEndpoints.Map(sso);

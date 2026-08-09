@@ -27,7 +27,7 @@ public static class OpenIddictEndpoints
 
     private static async Task<IResult> AuthorizeAsync(
         HttpContext context,
-        UserManager<JazorAdminUser> users,
+        UserManager<AdminUser> users,
         IOpenIddictApplicationManager applications,
         IOpenIddictAuthorizationManager authorizations,
         IOpenIddictScopeManager scopes,
@@ -112,7 +112,7 @@ public static class OpenIddictEndpoints
 
     private static async Task<IResult> ExchangeTokenAsync(
         HttpContext context,
-        UserManager<JazorAdminUser> users,
+        UserManager<AdminUser> users,
         IOpenIddictScopeManager scopes)
     {
         var request = context.GetOpenIddictServerRequest()
@@ -138,7 +138,7 @@ public static class OpenIddictEndpoints
 
     private static async Task<IResult> LogoutAsync(
         HttpContext context,
-        SignInManager<JazorAdminUser> signInManager)
+        SignInManager<AdminUser> signInManager)
     {
         var request = context.GetOpenIddictServerRequest();
         await signInManager.SignOutAsync();
@@ -148,9 +148,9 @@ public static class OpenIddictEndpoints
     }
 
     private static async Task<ClaimsPrincipal> CreateUserPrincipalAsync(
-        JazorAdminUser user,
+        AdminUser user,
         OpenIddictRequest request,
-        UserManager<JazorAdminUser> users,
+        UserManager<AdminUser> users,
         IOpenIddictScopeManager scopes)
     {
         var identity = new ClaimsIdentity(
@@ -231,7 +231,7 @@ public static class OpenIddictEndpoints
         var name = WebUtility.HtmlEncode(applicationName);
         var requestedScopes = WebUtility.HtmlEncode(string.Join(", ", scopes));
         var parameters = RenderRequestParameters(request);
-        var headLinks = JazorAdminShell.GetHeadLinks(environment);
+        var headLinks = Shell.GetHeadLinks(environment);
         var html = $$"""
             <!doctype html>
             <html lang="en">

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace JazorAdmin.Data.Migrations;
 
-[DbContext(typeof(JazorAdminDbContext))]
-partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
+[DbContext(typeof(AdminDbContext))]
+partial class AdminDbContextModelSnapshot : ModelSnapshot
 {
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
@@ -58,7 +58,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("AuthorizationResources");
             });
 
-        modelBuilder.Entity("JazorAdmin.Data.JazorAdminUser", b =>
+        modelBuilder.Entity("JazorAdmin.Data.AdminUser", b =>
             {
                 b.Property<string>("Id")
                     .HasColumnType("TEXT");
@@ -726,7 +726,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", "User")
+                b.HasOne("JazorAdmin.Data.AdminUser", "User")
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -808,7 +808,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -817,7 +817,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -832,7 +832,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
@@ -841,7 +841,7 @@ partial class JazorAdminDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
             {
-                b.HasOne("JazorAdmin.Data.JazorAdminUser", null)
+                b.HasOne("JazorAdmin.Data.AdminUser", null)
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)

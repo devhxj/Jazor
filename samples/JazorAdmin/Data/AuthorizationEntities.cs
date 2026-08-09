@@ -31,7 +31,7 @@ public sealed class OrganizationMembership
 
     public string UserId { get; set; } = string.Empty;
 
-    public JazorAdminUser User { get; set; } = null!;
+    public AdminUser User { get; set; } = null!;
 
     public bool IsActive { get; set; } = true;
 

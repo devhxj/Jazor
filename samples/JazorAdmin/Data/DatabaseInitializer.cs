@@ -9,22 +9,24 @@ using OpenIddict.Abstractions;
 
 namespace JazorAdmin.Data;
 
-public sealed class JazorAdminDatabaseInitializer(
+public sealed class DatabaseInitializer(
     IServiceScopeFactory scopeFactory,
-    IOptions<JazorAdminOpenIddictOptions> openIddictOptions,
+    IOptions<OpenIddictOptions> openIddictOptions,
     IOptions<BootstrapOptions> bootstrapOptions,
     IHostEnvironment environment,
-    ILogger<JazorAdminDatabaseInitializer> logger) : IHostedService
+    ILogger<DatabaseInitializer> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
-        var database = scope.ServiceProvider.GetRequiredService<JazorAdminDbContext>();
+        var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
         await database.Database.MigrateAsync(cancellationToken);
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         await SeedPlatformRoleAsync(roles);
-        await SeedBootstrapAdministratorAsync(scope.ServiceProvider.GetRequiredService<UserManager<JazorAdminUser>>());
+        var bootstrapAdministrator = await SeedBootstrapAdministratorAsync(
+            scope.ServiceProvider.GetRequiredService<UserManager<AdminUser>>());
         await SeedAuthorizationCatalogAsync(database, cancellationToken);
+        await SeedDevelopmentWorkspaceAsync(database, bootstrapAdministrator, cancellationToken);
         await SeedSpaClientAsync(
             scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>(),
             cancellationToken);
@@ -36,25 +38,25 @@ public sealed class JazorAdminDatabaseInitializer(
 
     private static async Task SeedPlatformRoleAsync(RoleManager<IdentityRole> roles)
     {
-        if (await roles.RoleExistsAsync(JazorAdminRoles.PlatformAdministrator))
+        if (await roles.RoleExistsAsync(RoleKeys.PlatformAdministrator))
             return;
 
-        var result = await roles.CreateAsync(new IdentityRole(JazorAdminRoles.PlatformAdministrator));
+        var result = await roles.CreateAsync(new IdentityRole(RoleKeys.PlatformAdministrator));
         if (!result.Succeeded)
             throw new InvalidOperationException("Unable to create the platform administrator role.");
     }
 
-    private async Task SeedBootstrapAdministratorAsync(UserManager<JazorAdminUser> users)
+    private async Task<AdminUser?> SeedBootstrapAdministratorAsync(UserManager<AdminUser> users)
     {
-        var platformAdministrators = await users.GetUsersInRoleAsync(JazorAdminRoles.PlatformAdministrator);
+        var platformAdministrators = await users.GetUsersInRoleAsync(RoleKeys.PlatformAdministrator);
         if (platformAdministrators.Count > 0)
-            return;
+            return platformAdministrators[0];
 
         var options = bootstrapOptions.Value;
         var hasEmail = !string.IsNullOrWhiteSpace(options.Email);
         var hasPassword = !string.IsNullOrWhiteSpace(options.Password);
         if (!hasEmail && !hasPassword && environment.IsEnvironment("Testing"))
-            return;
+            return null;
 
         if (!hasEmail || !hasPassword)
         {
@@ -66,7 +68,7 @@ public sealed class JazorAdminDatabaseInitializer(
         var user = await users.FindByEmailAsync(options.Email!);
         if (user is null)
         {
-            user = new JazorAdminUser
+            user = new AdminUser
             {
                 UserName = options.Email,
                 Email = options.Email,
@@ -80,25 +82,104 @@ public sealed class JazorAdminDatabaseInitializer(
                     string.Join(", ", result.Errors.Select(error => error.Description)));
         }
 
-        if (!await users.IsInRoleAsync(user, JazorAdminRoles.PlatformAdministrator))
+        if (!await users.IsInRoleAsync(user, RoleKeys.PlatformAdministrator))
         {
-            var result = await users.AddToRoleAsync(user, JazorAdminRoles.PlatformAdministrator);
+            var result = await users.AddToRoleAsync(user, RoleKeys.PlatformAdministrator);
             if (!result.Succeeded)
                 throw new InvalidOperationException("Unable to grant the bootstrap administrator role: " +
                     string.Join(", ", result.Errors.Select(error => error.Description)));
         }
 
         logger.LogInformation("Bootstrap platform administrator '{Email}' is ready.", user.Email);
+        return user;
+    }
+
+    private async Task SeedDevelopmentWorkspaceAsync(
+        AdminDbContext database,
+        AdminUser? administrator,
+        CancellationToken cancellationToken)
+    {
+        // The usable first-run workspace is intentionally development-only. Production operators
+        // configure their own tenant model; tests keep complete ownership of their data setup.
+        if (!environment.IsDevelopment() || administrator is null ||
+            await database.Organizations.AnyAsync(cancellationToken))
+        {
+            return;
+        }
+
+        var organization = new Organization
+        {
+            Code = "jazor",
+            DisplayName = "Jazor Development"
+        };
+        var administratorRole = new OrganizationRole
+        {
+            OrganizationId = organization.Id,
+            Code = "workspace-admin",
+            DisplayName = "Workspace administrator"
+        };
+        var membership = new OrganizationMembership
+        {
+            OrganizationId = organization.Id,
+            UserId = administrator.Id
+        };
+
+        database.Organizations.Add(organization);
+        database.OrganizationRoles.Add(administratorRole);
+        database.OrganizationMemberships.Add(membership);
+        database.OrganizationMembershipRoles.Add(new OrganizationMembershipRole
+        {
+            MembershipId = membership.Id,
+            RoleId = administratorRole.Id
+        });
+
+        foreach (var resource in new[] { ResourceKeys.Organizations, ResourceKeys.Authorization })
+        {
+            foreach (var operation in new[] { OperationKeys.Read, OperationKeys.Manage })
+            {
+                database.ResourceOperationGrants.Add(new ResourceOperationGrant
+                {
+                    RoleId = administratorRole.Id,
+                    ResourceKey = resource,
+                    OperationKey = operation
+                });
+            }
+        }
+
+        database.Settings.AddRange(
+            new Setting
+            {
+                Key = "feature.audit.enabled",
+                Group = "feature",
+                Label = "Audit events",
+                Description = "Records administrative changes in the development workspace.",
+                Kind = "boolean",
+                Value = "true",
+                UpdatedAt = DateTimeOffset.UtcNow
+            },
+            new Setting
+            {
+                Key = "runtime.display-name",
+                Group = "runtime",
+                Label = "Application display name",
+                Description = "The name presented by the development workspace.",
+                Kind = "text",
+                Value = "JazorAdmin",
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+
+        await database.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Seeded the development workspace for '{Email}'.", administrator.Email);
     }
 
     private static async Task SeedAuthorizationCatalogAsync(
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         var definitions = new[]
         {
-            (JazorAdminResources.Organizations, "Organizations"),
-            (JazorAdminResources.Authorization, "Authorization")
+            (ResourceKeys.Organizations, "Organizations"),
+            (ResourceKeys.Authorization, "Authorization")
         };
 
         foreach (var (key, displayName) in definitions)
@@ -112,7 +193,7 @@ public sealed class JazorAdminDatabaseInitializer(
                 });
             }
 
-            foreach (var operation in new[] { JazorAdminOperations.Read, JazorAdminOperations.Manage })
+            foreach (var operation in new[] { OperationKeys.Read, OperationKeys.Manage })
             {
                 if (await database.AuthorizationOperations.FindAsync([key, operation], cancellationToken) is not null)
                     continue;
@@ -121,7 +202,7 @@ public sealed class JazorAdminDatabaseInitializer(
                 {
                     ResourceKey = key,
                     Key = operation,
-                    DisplayName = operation == JazorAdminOperations.Read ? "Read" : "Manage"
+                    DisplayName = operation == OperationKeys.Read ? "Read" : "Manage"
                 });
             }
         }
@@ -162,7 +243,7 @@ public sealed class JazorAdminDatabaseInitializer(
             OpenIddictConstants.Permissions.Scopes.Email,
             OpenIddictConstants.Permissions.Scopes.Profile,
             OpenIddictConstants.Permissions.Scopes.Roles,
-            OpenIddictConstants.Permissions.Prefixes.Scope + JazorAdminScopes.Api
+            OpenIddictConstants.Permissions.Prefixes.Scope + ScopeKeys.Api
         ]);
         descriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
 

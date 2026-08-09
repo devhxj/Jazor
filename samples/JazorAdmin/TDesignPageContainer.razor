@@ -4,52 +4,45 @@
          style="@CssStyle"
          data-page-container=""
          @attributes="AdditionalAttributes">
-    <div class='@("ja-tdesign-page-container__header")'>
-        <div class='@("ja-tdesign-page-container__titles")'>
-            @if (BreadcrumbItems is { Length: > 0 })
+    @if (HasHeader)
+    {
+        <div class='@("ja-tdesign-page-container__header")'>
+            @if (HasTitles)
             {
-                <TBreadcrumb data-page-region="breadcrumb">
-                    @foreach (var item in BreadcrumbItems)
+                <div class='@("ja-tdesign-page-container__titles")'>
+                    @if (!string.IsNullOrWhiteSpace(Title))
                     {
-                        <TBreadcrumbItem ContentValue="@item.Title"
-                                         Disabled="@(item.Disabled ?? false)"
-                                         Href="@MapHref(item.Href, item.RouteTarget)"
-                                         To="@MapRoute(item.RouteTarget)" />
+                        <div class='@("ja-tdesign-page-container__title")'
+                             data-page-region="title">@Title</div>
                     }
-                </TBreadcrumb>
+
+                    @if (!string.IsNullOrWhiteSpace(Subtitle))
+                    {
+                        <div class='@("ja-tdesign-page-container__subtitle")'>@Subtitle</div>
+                    }
+                </div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(Title))
+            @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
             {
-                <div class='@("ja-tdesign-page-container__title")'
-                     data-page-region="title">@Title</div>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(Subtitle))
-            {
-                <div class='@("ja-tdesign-page-container__subtitle")'>@Subtitle</div>
+                <TSpace Align="@TSpaceAlignValue.Center">
+                    @if (Actions is not null)
+                    {
+                        @foreach (var action in Actions)
+                        {
+                            <TButton Theme="@MapTheme(action.Kind)"
+                                     Disabled="@(action.Disabled ?? false)"
+                                     Href="@MapActionHref(action)"
+                                     ContentValue="@action.Text"
+                                     data-action-key="@action.Key"
+                                     OnClick="@(_ => InvokeAction(action))" />
+                        }
+                    }
+                    @Extra
+                </TSpace>
             }
         </div>
-
-        @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
-        {
-            <TSpace Align="@TSpaceAlignValue.Center">
-                @if (Actions is not null)
-                {
-                    @foreach (var action in Actions)
-                    {
-                        <TButton Theme="@MapTheme(action.Kind)"
-                                 Disabled="@(action.Disabled ?? false)"
-                                 Href="@MapActionHref(action)"
-                                 ContentValue="@action.Text"
-                                 data-action-key="@action.Key"
-                                 OnClick="@(_ => InvokeAction(action))" />
-                    }
-                }
-                @Extra
-            </TSpace>
-        }
-    </div>
+    }
 
     <div class='@("ja-tdesign-page-container__body")'
          data-page-region="body">

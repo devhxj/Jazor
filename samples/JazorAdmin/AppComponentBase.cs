@@ -4,10 +4,19 @@ namespace JazorAdmin;
 public abstract class AppComponentBase : ComponentBase, IVueComponent
 {
     [Parameter]
+    public AdminLanguage Language { get; set; } = AdminLanguage.Chinese;
+
+    [Parameter]
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
     public VueStyleValue? CssStyle { get; set; }
+
+    protected string L(string english, string chinese)
+        => Language == AdminLanguage.Chinese ? chinese : english;
+
+    protected static VueClassValue C(params string[] values)
+        => values.Length == 1 ? values[0] : values;
 
     protected VueClassValue BuildCssClass(params string[] componentClasses)
     {

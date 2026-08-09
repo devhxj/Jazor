@@ -86,21 +86,19 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## 最新更新
 
-### 2026-08-05
+### 2026-08-09
 
-- 绑定扩展方法组作为 delegate 使用时现在保留 receiver，包括标识符 receiver；生成的 callback 不会丢失原始调用上下文。
-- 复合赋值、无符号右移、隐式派生类构造函数、属性初始化、插值格式 intrinsic 与 host-bound member dispatch 现在均有聚焦的 Roslyn operation 回归，覆盖求值顺序和运行时形状契约。
-- 白名单生成会在生成阶段拒绝不完整的 alias 声明，避免 catalog 出现没有可用 runtime 名称的条目。
-- 公开名称与已声明或保留 module binding 冲突的 import 现在会分配稳定的生成别名；继承泛型静态成员仍会使用具体 runtime host。
-- 插值 `dynamic` 值现在会和其他无稳定文本契约的运行时载体一样给出明确诊断，不再泄漏内部 cast 异常。
-- Compiler 门禁已验证 10,297 个真实场景，行覆盖率 98.94%、分支覆盖率 96.01%，达到 10,000 / 98% / 96% 发布门槛。
+- JazorAdmin 现已直接复刻 TDesign Starter 管理端外壳，使用腾讯云圆滑主题、紧凑内容间距、中尺寸路由页签，并提供仅管理员可用、固定在底部中间的全局外观配置器。
+- IconBar 保留为一级导航；当前一级模块标题固定在对齐 Header 的 64px 二级栏顶部，仅二级菜单滚动。折叠后二级栏宽度归零，Logo、折叠按钮、内容边距和移动端布局保持对齐。
+- 呼吸触发按钮会沿 90 度圆弧展开四个方形操作，间隔为 22.5 度；登录页背景图与表单区域也完成连续融合。
+- `ECMAScript.Style` 新增 Starter 布局所需的类型化 CSS 值，并让 `important(value)` 保留原值域；TDesign 多参数事件会把第一个 Vue 运行时参数作为生成的 `EventCallback<T>` 载荷。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.1.46
+dotnet add package Jazor --version 0.3.4
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。

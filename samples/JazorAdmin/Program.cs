@@ -9,14 +9,14 @@ public partial class Program
     public static async Task Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
-        builder.Services.AddJazorAdminHost(builder.Configuration, builder.Environment);
+        builder.Services.AddAdminHost(builder.Configuration, builder.Environment);
 
         var app = builder.Build();
 
-        app.UseJazorAdminHost();
-        app.MapJazorAdminEndpoints();
+        app.UseAdminHost();
+        app.MapAdminEndpoints();
         app.UseJazorHost();
-        app.UseJazorSpaFallback(JazorAdminShell.WriteAsync);
+        app.UseJazorSpaFallback(Shell.WriteAsync);
 
         await app.RunAsync();
     }

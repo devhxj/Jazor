@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 var options = SmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -22,6 +23,7 @@ var baseOutputPath = options.BaseOutputPath ?? Path.Combine(repoRoot, ".tmp", "j
 var baseIntermediateOutputPath = options.BaseIntermediateOutputPath ?? Path.Combine(repoRoot, ".tmp", "jazoradmin-smoke-obj");
 
 SetCommonEnvironment(repoRoot);
+AssertConciseTypeNames(repoRoot);
 
 if (!options.FrontendOnly)
 {
@@ -56,6 +58,41 @@ Console.WriteLine(options.SkipBrowser
     ? "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .mjs artifacts, and manifests. Browser verification was skipped."
     : "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .mjs artifacts, manifests, and browser mount smoke.");
 
+static void AssertConciseTypeNames(string repoRoot)
+{
+    var prefixedType = new Regex(
+        @"\b(?:class|interface|struct|enum|record(?:\s+(?:class|struct))?)\s+JazorAdmin[A-Za-z0-9_]*\b",
+        RegexOptions.CultureInvariant);
+    var sourceRoots = new[]
+    {
+        Path.Combine(repoRoot, "samples", "JazorAdmin"),
+        Path.Combine(repoRoot, "samples", "JazorAdmin.Test"),
+        Path.Combine(repoRoot, "src", "Jazor.Admin")
+    };
+    var violations = sourceRoots
+        .SelectMany(sourceRoot => Directory.EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
+            .Select(path => (SourceRoot: sourceRoot, Path: path)))
+        .Where(path =>
+        {
+            var relativePath = Path.GetRelativePath(path.SourceRoot, path.Path);
+            return !relativePath.StartsWith("bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                   !relativePath.StartsWith("obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                   !relativePath.StartsWith(".tmp" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        })
+        .SelectMany(item => File.ReadLines(item.Path)
+            .Select((line, index) => new { item.Path, Line = index + 1, Text = line })
+            .Where(item => prefixedType.IsMatch(item.Text)))
+        .Select(item => Path.GetRelativePath(repoRoot, item.Path) + ":" + item.Line + ": " + item.Text.Trim())
+        .ToArray();
+
+    if (violations.Length > 0)
+    {
+        throw new InvalidOperationException(
+            "JazorAdmin is the product namespace, not a type-name prefix. Use a concise contextual type name:" +
+            Environment.NewLine + string.Join(Environment.NewLine, violations));
+    }
+}
+
 static void AssertGeneratedArtifacts(string generatedOutputRoot)
 {
     var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
@@ -82,6 +119,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var settingsModulePath = RequireModulePath(modulePaths, "JazorAdmin.SettingsPage");
     var schedulesModulePath = RequireModulePath(modulePaths, "JazorAdmin.SchedulePage");
     var iconBarModulePath = RequireModulePath(modulePaths, "JazorAdmin.IconBar");
+    var routeTabsModulePath = RequireModulePath(modulePaths, "JazorAdmin.RouteTabs");
+    var routeBreadcrumbModulePath = RequireModulePath(modulePaths, "JazorAdmin.RouteBreadcrumb");
     var componentModules = new[]
     {
         (appModulePath, "JazorAdmin app module"),
@@ -104,7 +143,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         (ssoGrantModulePath, "SSO grant module"),
         (settingsModulePath, "configuration center module"),
         (schedulesModulePath, "task scheduling module"),
-        (iconBarModulePath, "JazorAdmin IconBar module")
+        (iconBarModulePath, "JazorAdmin IconBar module"),
+        (routeTabsModulePath, "JazorAdmin route tabs module"),
+        (routeBreadcrumbModulePath, "JazorAdmin route breadcrumb module")
     };
     foreach (var (relativePath, description) in componentModules)
         AssertPathExists(Path.Combine(generatedOutputRoot, relativePath), "generated " + description);
@@ -144,6 +185,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var settingsModule = File.ReadAllText(Path.Combine(generatedOutputRoot, settingsModulePath));
     var schedulesModule = File.ReadAllText(Path.Combine(generatedOutputRoot, schedulesModulePath));
     var iconBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, iconBarModulePath));
+    var routeTabsModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeTabsModulePath));
+    var routeBreadcrumbModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeBreadcrumbModulePath));
     var manifest = File.ReadAllText(manifestPath);
 
     AssertContains(appModule, "defineComponent", "Vue component wrapper in JazorAdmin app module");
@@ -173,12 +216,29 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(adminLayoutModule, "onUpdate:collapsed", "controlled collapsed Vue listener in TDesign admin layout module");
     AssertContains(adminLayoutModule, "horizontal: true", "top navigation variant in TDesign admin layout module");
     AssertContains(adminLayoutModule, "variant: \"text\"", "TDesign text button variant in admin layout module");
-    AssertContains(sidebarModule, "theme: \"light\"", "TDesign light menu theme in sidebar module");
+    AssertContains(sidebarModule, "theme: menuTheme()", "TDesign theme propagation in sidebar module");
     AssertContains(pageContainerModule, "return \"primary\";", "TDesign primary button theme in page container module");
     AssertContains(pageContainerModule, "align: \"center\"", "TDesign centered action layout in page container module");
     AssertContains(iconBarModule, "data-iconbar", "IconBar root marker in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "data-iconbar-key", "IconBar item marker in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "Button, HeadMenu, Icon, Menu, MenuItem, Popup", "TDesign IconBar control imports in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "h(Menu,", "TDesign collapsed menu in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "h(HeadMenu,", "TDesign head menu in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "h(MenuItem,", "TDesign menu item in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "operations:", "TDesign IconBar operations slot in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "ja-iconbar__quick-actions", "IconBar floating action group in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "toggle-quick-actions", "IconBar floating action trigger in JazorAdmin IconBar module");
+    AssertDoesNotContain(iconBarModule, "ja-iconbar__link", "legacy custom IconBar link in JazorAdmin IconBar module");
+    AssertContains(headerBarModule, "HeadMenu", "TDesign Starter head menu in header bar module");
+    AssertContains(headerBarModule, "operations:", "TDesign Header operations slot in header bar module");
     AssertContains(headerBarModule, "ja-tdesign-header__navigation", "navigation slot region in TDesign header bar module");
+    AssertContains(headerBarModule, "data-shell-logo-visible", "Header logo visibility contract in JazorAdmin header module");
+    AssertContains(routeTabsModule, "Tabs", "TDesign route tabs in JazorAdmin module");
+    AssertContains(routeTabsModule, "dragSort: true", "Starter route tab drag sorting");
+    AssertContains(routeTabsModule, "onRemove: remove", "Starter route tab removal handler");
+    AssertContains(routeTabsModule, "context-menu", "Starter route tab context menu");
+    AssertContains(routeBreadcrumbModule, "maxItemWidth: \"150px\"", "Starter route breadcrumb width");
+    AssertContains(routeBreadcrumbModule, "data-route-breadcrumb-current", "Starter route breadcrumb current marker");
     AssertContains(errorPageModule, "data-error-kind", "typed error kind marker in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-labelledby", "error title accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-describedby", "error description accessibility relation in JazorAdmin error page module");
@@ -303,6 +363,12 @@ static async Task VerifyBrowserSmokeAsync(
     {
         CopyDirectory(generatedOutputRoot, harnessRoot);
         CopyInjectBrowserArtifacts(injectGeneratedOutputRoot, harnessRoot);
+        // The generated modules reference sample-owned branding by absolute path. Mirror the
+        // packaged static directory so browser smoke verifies those paths instead of masking 404s.
+        CopyDirectory(Path.Combine(adminRoot, "wwwroot", "brand"), Path.Combine(harnessRoot, "brand"));
+        var faviconPath = Path.Combine(adminRoot, "wwwroot", "favicon.ico");
+        if (File.Exists(faviconPath))
+            File.Copy(faviconPath, Path.Combine(harnessRoot, "favicon.ico"), overwrite: true);
         var vendorRoot = Path.Combine(harnessRoot, "vendor");
         Directory.CreateDirectory(vendorRoot);
         File.Copy(vueRuntime, Path.Combine(vendorRoot, "vue.runtime.esm-browser.prod.js"), overwrite: true);
@@ -591,7 +657,7 @@ static async Task VerifyBrowserSmokeAsync(
                     for (let attempt = 0; attempt < 100 && !document.querySelector('[data-page-region="title"], .ja-error'); attempt++) {
                       await new Promise((resolve) => setTimeout(resolve, 10));
                     }
-                    if (!document.querySelector('[data-page-region="title"], .ja-error')) {
+                    if (!document.querySelector('[data-route-breadcrumb], .ja-error')) {
                       throw new Error(`JazorAdmin router root did not mount for ${location.pathname}. Body: ${document.body.textContent ?? ""}`);
                     }
                     await nextTick();
@@ -637,6 +703,22 @@ static async Task VerifyBrowserSmokeAsync(
                         errorDescription,
                         returnPathname: location.pathname
                       };
+                    } else if (location.pathname.startsWith("/starter/")) {
+                      const starterPage = document.querySelector("[data-starter-page]");
+                      if (!starterPage) {
+                        throw new Error(`Starter page did not render for ${location.pathname}.`);
+                      }
+                      globalThis.__jazorAdminBrowserSmoke = {
+                        ok: true,
+                        mode: "starter",
+                        pathname: location.pathname,
+                        template: starterPage.getAttribute("data-starter-page") ?? "",
+                        pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
+                        pageText: starterPage.textContent ?? "",
+                        contentElementCount: starterPage.querySelectorAll("article, button, input, select, textarea, table, img, svg, li").length,
+                        documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
+                        styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null
+                      };
                     } else if (location.pathname === "/organizations/structure") {
                       for (let attempt = 0; attempt < 100 && document.querySelector(".ja-management__loading"); attempt++) {
                         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -645,8 +727,19 @@ static async Task VerifyBrowserSmokeAsync(
                         ok: true,
                         mode: "deep-link",
                         pathname: location.pathname,
-                        pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
-                        breadcrumbText: document.querySelector('[data-page-region="breadcrumb"]')?.textContent ?? "",
+                        pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
+                        breadcrumbText: document.querySelector('[data-route-breadcrumb]')?.textContent ?? "",
+                        breadcrumbDisplay: (() => {
+                          const breadcrumb = document.querySelector('[data-route-breadcrumb]');
+                          return breadcrumb ? getComputedStyle(breadcrumb).display : "";
+                        })(),
+                        breadcrumbItemsInline: (() => {
+                          const breadcrumb = document.querySelector('[data-route-breadcrumb]');
+                          const items = breadcrumb ? Array.from(breadcrumb.children) : [];
+                          if (items.length < 2) return items.length === 1;
+                          const firstTop = items[0].getBoundingClientRect().top;
+                          return items.every((item) => Math.abs(item.getBoundingClientRect().top - firstTop) <= 1);
+                        })(),
                         activeKey: document.querySelector("[data-navigation-selected-key]")?.getAttribute("data-navigation-selected-key") ?? "",
                         organizationPanelVisible: document.querySelector('[data-management-area="organizations"]') !== null
                       };
@@ -677,7 +770,7 @@ static async Task VerifyBrowserSmokeAsync(
                         await nextTick();
                       };
                       const waitForTitle = (title) => waitFor(
-                        () => document.querySelector('[data-page-region="title"]')?.textContent?.includes(title) === true,
+                        () => document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent?.includes(title) === true,
                         `${title} page`);
                       const setInput = async (selector, value) => {
                         const target = document.querySelector(selector);
@@ -696,11 +789,23 @@ static async Task VerifyBrowserSmokeAsync(
                         await nextTick();
                       };
 
-                      await waitFor(() => document.querySelectorAll(".ja-overview__metric").length === 4, "administration overview");
+                      await waitFor(() => document.querySelectorAll(".ja-starter-metric").length === 4, "administration overview");
                       const dashboardText = document.querySelector('[data-page-region="body"]')?.textContent ?? "";
-                      const metricCount = document.querySelectorAll(".ja-overview__metric").length;
+                      const metricCount = document.querySelectorAll(".ja-starter-metric").length;
                       const iconBarItemCount = document.querySelectorAll("[data-iconbar-key]").length;
-                      const userText = document.querySelector(".ja-user")?.textContent ?? "";
+                      const iconBarBrandCount = document.querySelectorAll('[data-iconbar-mode="rail"] .ja-iconbar__brand').length;
+                      const headerBrandCount = document.querySelectorAll('[data-shell-region="head-menu"] .ja-brand-logo').length;
+                      const quickActionsToggle = document.querySelector('[data-iconbar-command="toggle-quick-actions"]');
+                      if (!(quickActionsToggle instanceof HTMLElement)) throw new Error("IconBar floating action trigger is missing.");
+                      quickActionsToggle.click();
+                      await waitFor(
+                        () => document.querySelector('[data-iconbar-quick-actions]') !== null,
+                        "IconBar floating action group");
+                      const quickActionNames = Array.from(document.querySelectorAll('[data-iconbar-quick-actions] button'))
+                        .map((button) => button.getAttribute("aria-label") ?? "");
+                      quickActionsToggle.click();
+                      await nextTick();
+                      const userText = document.querySelector(".ja-starter-user")?.textContent ?? "";
                       const organizationPickerValue = document.querySelector("[data-organization-picker]")?.value ?? "";
 
                       const sidebarToggle = document.querySelector('[data-shell-command="toggle-sidebar"]');
@@ -712,9 +817,10 @@ static async Task VerifyBrowserSmokeAsync(
                         "collapsed shell");
                       await waitFor(
                         () => getComputedStyle(document.querySelector('[data-shell-region="sidebar"]')).width === "64px",
-                        "collapsed sidebar transition");
+                        "collapsed primary rail transition");
                       const collapsedSidebar = document.querySelector('[data-shell-region="sidebar"]');
                       const collapsedSidebarWidth = collapsedSidebar ? getComputedStyle(collapsedSidebar).width : "";
+                      const collapsedSecondaryMenuPresent = document.querySelector('[data-shell-region="secondary-menu"]') !== null;
                       sidebarToggle?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
                       await waitFor(
                         () => document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "false",
@@ -724,7 +830,7 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitForTitle("组织架构");
                       await waitFor(() => document.querySelector(".ja-management__details") !== null, "organization details");
                       const organizationPathname = location.pathname;
-                      const organizationTitle = document.querySelector('[data-page-region="title"]')?.textContent ?? "";
+                      const organizationTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
                       const organizationText = document.querySelector('[data-management-area="organizations"]')?.textContent ?? "";
                       const childOrganizationCount = document.querySelectorAll(".ja-management__item-list li").length;
 
@@ -825,21 +931,40 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(() => document.querySelector('[data-schedule-run]')?.textContent?.includes("succeeded") === true, "manual schedule execution");
                       const scheduleRunText = document.querySelector('[data-schedule-run]')?.textContent ?? "";
 
+                      await click('[data-iconbar-key="starter"]', "TDesign Starter IconBar item");
+                      await waitFor(() => location.pathname === "/starter/dashboard/base", "TDesign Starter default route");
+                      await waitForTitle("概览");
+                      const starterNavigationPathname = location.pathname;
+                      const starterNavigationTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
+                      const starterNavigationSelectedKey = document.querySelector('[data-navigation-selected-key]')?.getAttribute("data-navigation-selected-key") ?? "";
+                      const starterNavigationGroups = Array.from(document.querySelectorAll('[data-nav-key]'))
+                        .map((item) => item.getAttribute("data-nav-key") ?? "")
+                        .filter((key) => key.startsWith("starter."));
+                      for (const groupKey of ["starter.dashboard", "starter.list", "starter.form", "starter.detail", "starter.result", "starter.account"]) {
+                        if (!starterNavigationGroups.includes(groupKey)) {
+                          throw new Error(`Starter menu group is not visible after IconBar navigation: ${groupKey}.`);
+                        }
+                      }
+
                       await click('[data-iconbar-key="dashboard"]', "dashboard IconBar item");
-                      await waitForTitle("仪表盘");
+                      await waitForTitle("工作台");
                       const dashboardReturnPathname = location.pathname;
 
                       globalThis.__jazorAdminBrowserSmoke = {
                         ok: true,
                         mode: "app",
-                        pageTitleText: document.querySelector('[data-page-region="title"]')?.textContent ?? "",
+                        pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
                         dashboardText,
                         metricCount,
                         iconBarItemCount,
+                        iconBarBrandCount,
+                        headerBrandCount,
+                        quickActionNames,
                         userText,
                         organizationPickerValue,
                         initialSidebarExpanded,
                         collapsedSidebarWidth,
+                        collapsedSecondaryMenuPresent,
                         organizationPathname,
                         organizationTitle,
                         organizationText,
@@ -869,6 +994,10 @@ static async Task VerifyBrowserSmokeAsync(
                         settingRowText,
                         schedulesPathname,
                         scheduleRunText,
+                        starterNavigationPathname,
+                        starterNavigationTitle,
+                        starterNavigationSelectedKey,
+                        starterNavigationGroups,
                         dashboardReturnPathname,
                         injectSmoke,
                         hasLegacyVueReference: Array.from(document.scripts)
@@ -896,7 +1025,7 @@ static async Task VerifyBrowserSmokeAsync(
             denoPath,
             harnessRoot,
             ["run", "--quiet", "-A", testPath],
-            TimeSpan.FromSeconds(60));
+            TimeSpan.FromSeconds(180));
         if (browser.ExitCode != 0)
             throw new InvalidOperationException("JazorAdmin browser smoke failed." + Environment.NewLine + browser);
 
@@ -918,14 +1047,19 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(injectSmoke.GetProperty("initialCount").GetString() ?? string.Empty, "0", "JazorAdmin VueInject initial action count", injectSmoke.GetRawText());
         AssertContains(injectSmoke.GetProperty("updatedCount").GetString() ?? string.Empty, "1", "JazorAdmin VueInject updated action count", injectSmoke.GetRawText());
 
-        AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "仪表盘", "JazorAdmin browser dashboard title", root.GetRawText());
-        AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "Organization access", "JazorAdmin browser administration overview", root.GetRawText());
+        AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "工作台", "JazorAdmin browser dashboard title", root.GetRawText());
+        AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "组织访问", "JazorAdmin browser administration overview", root.GetRawText());
         AssertJsonInt(root, "metricCount", 4, "JazorAdmin administration metric count", root.GetRawText());
-        AssertJsonInt(root, "iconBarItemCount", 7, "JazorAdmin IconBar item count", root.GetRawText());
+        AssertJsonInt(root, "iconBarItemCount", 8, "JazorAdmin IconBar item count", root.GetRawText());
+        AssertJsonInt(root, "iconBarBrandCount", 1, "JazorAdmin IconBar single brand mark", root.GetRawText());
+        AssertJsonInt(root, "headerBrandCount", 0, "JazorAdmin mixed layout header duplicate brand", root.GetRawText());
+        foreach (var action in new[] { "文档", "助手", "账号", "退出登录" })
+            AssertJsonStringArrayContains(root, "quickActionNames", action, "JazorAdmin IconBar floating action", root.GetRawText());
         AssertContains(root.GetProperty("userText").GetString() ?? string.Empty, "Smoke operator", "JazorAdmin browser session account", root.GetRawText());
         AssertContains(root.GetProperty("organizationPickerValue").GetString() ?? string.Empty, "5e1246c9", "JazorAdmin browser organization selection", root.GetRawText());
         AssertContains(root.GetProperty("initialSidebarExpanded").GetString() ?? string.Empty, "true", "JazorAdmin initial sidebar state", root.GetRawText());
         AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed IconBar width", root.GetRawText());
+        AssertJsonBoolean(root, "collapsedSecondaryMenuPresent", false, "JazorAdmin collapsed secondary menu occupancy", root.GetRawText());
 
         AssertContains(root.GetProperty("organizationPathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin organization structure navigation", root.GetRawText());
         AssertContains(root.GetProperty("organizationTitle").GetString() ?? string.Empty, "组织架构", "JazorAdmin organization structure title", root.GetRawText());
@@ -958,25 +1092,58 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("settingRowText").GetString() ?? string.Empty, "Smoke feature", "JazorAdmin configuration center create", root.GetRawText());
         AssertContains(root.GetProperty("schedulesPathname").GetString() ?? string.Empty, "/schedules", "JazorAdmin task scheduling navigation", root.GetRawText());
         AssertContains(root.GetProperty("scheduleRunText").GetString() ?? string.Empty, "succeeded", "JazorAdmin task scheduling manual run", root.GetRawText());
+        AssertContains(root.GetProperty("starterNavigationPathname").GetString() ?? string.Empty, "/starter/dashboard/base", "JazorAdmin Starter IconBar navigation", root.GetRawText());
+        AssertContains(root.GetProperty("starterNavigationTitle").GetString() ?? string.Empty, "概览", "JazorAdmin Starter default page title", root.GetRawText());
+        AssertContains(root.GetProperty("starterNavigationSelectedKey").GetString() ?? string.Empty, "starter.dashboard.base", "JazorAdmin Starter selected navigation key", root.GetRawText());
+        foreach (var groupKey in new[] { "starter.dashboard", "starter.list", "starter.form", "starter.detail", "starter.result", "starter.account" })
+            AssertJsonStringArrayContains(root, "starterNavigationGroups", groupKey, "JazorAdmin Starter visible menu group", root.GetRawText());
         AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard IconBar return", root.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
+
+        AssertStarterPageMatrix(root.GetProperty("starterPages"));
+        var starterEnglish = root.GetProperty("starterEnglish");
+        AssertContains(starterEnglish.GetProperty("value").GetString() ?? string.Empty, "en-US", "JazorAdmin Starter English language selection", starterEnglish.GetRawText());
+        AssertContains(starterEnglish.GetProperty("title").GetString() ?? string.Empty, "Base List", "JazorAdmin Starter localized title", starterEnglish.GetRawText());
+
+        var routeTabs = root.GetProperty("routeTabs");
+        AssertJsonStringArrayContains(routeTabs, "before", "/", "JazorAdmin permanent home tab", routeTabs.GetRawText());
+        AssertJsonStringArrayContains(routeTabs, "before", "/organizations/structure", "JazorAdmin visited organization tab", routeTabs.GetRawText());
+        AssertJsonStringArrayContains(routeTabs, "before", "/organizations/members", "JazorAdmin visited member tab", routeTabs.GetRawText());
+        AssertContains(routeTabs.GetProperty("pathname").GetString() ?? string.Empty, "/", "JazorAdmin home tab navigation", routeTabs.GetRawText());
+        if (!int.TryParse(routeTabs.GetProperty("active").GetString(), out var routeTabCount) || routeTabCount < 3)
+            throw new InvalidOperationException("JazorAdmin route tab count did not preserve visited routes: " + routeTabs.GetRawText());
+
+        var theme = root.GetProperty("theme");
+        AssertContains(theme.GetProperty("applicationClass").GetString() ?? string.Empty, "ja-application--dark", "JazorAdmin dark application theme", theme.GetRawText());
+        AssertContains(theme.GetProperty("headerClass").GetString() ?? string.Empty, "t-menu--dark", "JazorAdmin dark TDesign header", theme.GetRawText());
+        if (string.Equals(theme.GetProperty("before").GetString(), theme.GetProperty("after").GetString(), StringComparison.Ordinal))
+            throw new InvalidOperationException("JazorAdmin theme switch did not change the content surface: " + theme.GetRawText());
 
         var desktopLayout = root.GetProperty("desktopLayout");
         AssertContains(desktopLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "row", "JazorAdmin desktop shell direction", desktopLayout.GetRawText());
         AssertContains(desktopLayout.GetProperty("iconBarDirection").GetString() ?? string.Empty, "column", "JazorAdmin desktop IconBar direction", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "iconBarBeforeSecondary", true, "JazorAdmin desktop IconBar order", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "sidebarBeforeMain", true, "JazorAdmin desktop sidebar order", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("sidebarOverflow").GetString() ?? string.Empty, "hidden", "JazorAdmin desktop sidebar scroll ownership", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("secondaryMenuOverflowX").GetString() ?? string.Empty, "hidden", "JazorAdmin secondary menu horizontal overflow", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("secondaryMenuOverflowY").GetString() ?? string.Empty, "hidden", "JazorAdmin secondary menu wrapper overflow", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("secondaryTitleText").GetString() ?? string.Empty, "工作台", "JazorAdmin secondary menu primary title", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "secondaryTitleAlignedWithHeader", true, "JazorAdmin secondary title header alignment", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "secondaryBodyStartsAfterTitle", true, "JazorAdmin secondary menu scroll body starts below title", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("nativeMenuOverflowX").GetString() ?? string.Empty, "hidden", "JazorAdmin native secondary menu horizontal overflow", desktopLayout.GetRawText());
+        AssertContains(desktopLayout.GetProperty("nativeMenuOverflowY").GetString() ?? string.Empty, "auto", "JazorAdmin native secondary menu vertical overflow", desktopLayout.GetRawText());
+        AssertJsonBoolean(desktopLayout, "secondaryMenuHasHorizontalOverflow", false, "JazorAdmin secondary menu horizontal scroll", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "documentFitsViewport", true, "JazorAdmin desktop viewport fit", desktopLayout.GetRawText());
         AssertJsonBoolean(desktopLayout, "styleRuntimeLoaded", true, "JazorAdmin desktop style runtime", desktopLayout.GetRawText());
 
         var mobileLayout = root.GetProperty("mobileLayout");
         AssertContains(mobileLayout.GetProperty("shellDirection").GetString() ?? string.Empty, "column", "JazorAdmin mobile shell direction", mobileLayout.GetRawText());
-        AssertContains(mobileLayout.GetProperty("iconBarDirection").GetString() ?? string.Empty, "row", "JazorAdmin mobile IconBar direction", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "sidebarFillsShell", true, "JazorAdmin mobile sidebar width", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "iconBarFillsSidebar", true, "JazorAdmin mobile IconBar width", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "secondaryMenuFillsSidebar", true, "JazorAdmin mobile secondary menu width", mobileLayout.GetRawText());
-        AssertJsonBoolean(mobileLayout, "iconBarBeforeSecondary", true, "JazorAdmin mobile IconBar order", mobileLayout.GetRawText());
+        AssertContains(mobileLayout.GetProperty("mobileMenuDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin mobile TDesign navigation display", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "mobileMenuFillsSidebar", true, "JazorAdmin mobile navigation width", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "mobileBrandCentered", true, "JazorAdmin mobile brand grid", mobileLayout.GetRawText());
+        AssertJsonBoolean(mobileLayout, "mobileRailHidden", true, "JazorAdmin mobile desktop IconBar hidden", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "sidebarBeforeMain", true, "JazorAdmin mobile sidebar order", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "documentFitsViewport", true, "JazorAdmin mobile viewport fit", mobileLayout.GetRawText());
         AssertJsonBoolean(mobileLayout, "styleRuntimeLoaded", true, "JazorAdmin mobile style runtime", mobileLayout.GetRawText());
@@ -992,6 +1159,8 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(deepLink.GetProperty("pathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin deep-link browser location", deepLink.GetRawText());
         AssertContains(deepLink.GetProperty("pageTitleText").GetString() ?? string.Empty, "组织架构", "JazorAdmin deep-link page title", deepLink.GetRawText());
         AssertContains(deepLink.GetProperty("breadcrumbText").GetString() ?? string.Empty, "组织机构", "JazorAdmin deep-link breadcrumb", deepLink.GetRawText());
+        AssertContains(deepLink.GetProperty("breadcrumbDisplay").GetString() ?? string.Empty, "flex", "JazorAdmin deep-link breadcrumb layout", deepLink.GetRawText());
+        AssertJsonBoolean(deepLink, "breadcrumbItemsInline", true, "JazorAdmin deep-link breadcrumb single line", deepLink.GetRawText());
         AssertContains(deepLink.GetProperty("activeKey").GetString() ?? string.Empty, "organizations.structure", "JazorAdmin deep-link selected key", deepLink.GetRawText());
         AssertJsonBoolean(deepLink, "organizationPanelVisible", true, "JazorAdmin deep-link organization page body", deepLink.GetRawText());
         var internalError = root.GetProperty("internalError");
@@ -1056,6 +1225,148 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               result.desktopLayout = await page.readLayout();
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               const deepLink = await page.waitForSmoke();
+              const starterRoutes = [
+                { path: "/starter/dashboard/base", template: "dashboard-base" },
+                { path: "/starter/dashboard/detail", template: "dashboard-detail" },
+                { path: "/starter/list/base", template: "list-base" },
+                { path: "/starter/list/card", template: "list-card" },
+                { path: "/starter/list/filter", template: "list-filter" },
+                { path: "/starter/list/tree", template: "list-tree" },
+                { path: "/starter/form/base", template: "form-base" },
+                { path: "/starter/form/step", template: "form-step" },
+                { path: "/starter/detail/base", template: "detail-base" },
+                { path: "/starter/detail/advanced", template: "detail-advanced" },
+                { path: "/starter/detail/deploy", template: "detail-deploy" },
+                { path: "/starter/detail/secondary", template: "detail-secondary" },
+                { path: "/starter/result/success", template: "result-success" },
+                { path: "/starter/result/fail", template: "result-fail" },
+                { path: "/starter/result/network-error", template: "result-network" },
+                { path: "/starter/result/403", template: "result-403" },
+                { path: "/starter/result/404", template: "result-404" },
+                { path: "/starter/result/500", template: "result-500" },
+                { path: "/starter/result/browser-incompatible", template: "result-browser" },
+                { path: "/starter/result/maintenance", template: "result-maintenance" },
+                { path: "/starter/user", template: "user" },
+                { path: "/starter/login", template: "login" }
+              ];
+              const starterPages = [];
+              for (const route of starterRoutes) {
+                await page.navigate(`http://127.0.0.1:${server.port}${route.path}`);
+                const starter = await page.waitForSmoke();
+                if (starter.mode !== "starter" || starter.pathname !== route.path || starter.template !== route.template) {
+                  throw new Error(`Starter route mismatch for ${route.path}: ${JSON.stringify(starter)}`);
+                }
+                if (!starter.pageTitleText.trim() || starter.pageText.trim().length < 12 || starter.contentElementCount === 0) {
+                  throw new Error(`Starter route rendered insufficient content for ${route.path}.`);
+                }
+                if (!starter.documentFitsViewport || !starter.styleRuntimeLoaded) {
+                  throw new Error(`Starter route layout/runtime check failed for ${route.path}.`);
+                }
+                starterPages.push({ path: route.path, template: route.template, title: starter.pageTitleText.trim() });
+              }
+              await page.navigate(`http://127.0.0.1:${server.port}/starter/list/base`);
+              await page.waitForSmoke();
+              const starterEnglish = await page.evaluate(`(async () => {
+                const waitFor = async (predicate, message) => {
+                  for (let attempt = 0; attempt < 100; attempt++) {
+                    if (predicate()) return;
+                    await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+                  }
+                  throw new Error(message);
+                };
+                const trigger = document.querySelector('[data-preference="language"]');
+                if (!(trigger instanceof HTMLElement)) throw new Error("Language menu trigger is missing.");
+                trigger.click();
+                await waitFor(
+                  () => Array.from(document.querySelectorAll('.t-dropdown__item')).some((item) => item.textContent?.trim() === "English"),
+                  "English language item");
+                const english = Array.from(document.querySelectorAll('.t-dropdown__item'))
+                  .find((item) => item.textContent?.trim() === "English");
+                if (!(english instanceof HTMLElement)) throw new Error("English language item is missing.");
+                english.click();
+                await waitFor(
+                  () => document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent?.includes("Base List") === true,
+                  "English localized title");
+                return {
+                  value: document.querySelector('.ja-application')?.getAttribute('lang') ?? "",
+                  title: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent?.trim() ?? ""
+                };
+              })()`);
+              await page.navigate(`http://127.0.0.1:${server.port}/`);
+              await page.waitForSmoke();
+              result.routeTabs = await page.evaluate(`(async () => {
+                const waitFor = async (predicate, message) => {
+                  for (let attempt = 0; attempt < 100; attempt++) {
+                    if (predicate()) return;
+                    await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+                  }
+                  throw new Error(message);
+                };
+                const paths = () => Array.from(document.querySelectorAll('[data-route-tab-label]'))
+                  .map((tab) => tab.getAttribute('data-route-tab-label'));
+                if (!document.querySelector('[data-route-tabs]')) throw new Error("Route tabs are missing.");
+                const organizations = document.querySelector('[data-iconbar-key="organizations"]');
+                if (!(organizations instanceof HTMLElement)) throw new Error("Organizations IconBar item is missing.");
+                organizations.click();
+                await waitFor(() => location.pathname === "/organizations/structure", "organization route navigation");
+                const membersNavigation = document.querySelector('[data-nav-key="organizations.members"] a');
+                if (!(membersNavigation instanceof HTMLElement)) throw new Error("Members navigation item is missing.");
+                membersNavigation.click();
+                await waitFor(() => location.pathname === "/organizations/members", "members route navigation");
+                const membersTab = document.querySelector('[data-route-tab-label="/organizations/members"]');
+                if (!(membersTab instanceof HTMLElement)) throw new Error("Visited members tab is missing.");
+                const before = paths();
+                membersTab.click();
+                await waitFor(() => location.pathname === "/organizations/members", "members tab activation");
+                const active = document.querySelector('[data-route-tabs]')?.getAttribute('data-route-tabs-count') ?? "";
+                const homeTab = document.querySelector('[data-route-tab-label="/"]');
+                if (!(homeTab instanceof HTMLElement)) throw new Error("Home tab is missing.");
+                homeTab.click();
+                await waitFor(() => location.pathname === "/", "home tab navigation");
+                return { before, active, after: paths(), pathname: location.pathname };
+              })()`);
+              result.theme = await page.evaluate(`(async () => {
+                const waitFor = async (predicate, message) => {
+                  for (let attempt = 0; attempt < 100; attempt++) {
+                    if (predicate()) return;
+                    await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+                  }
+                  throw new Error(message);
+                };
+                const trigger = document.querySelector('[data-preference="theme"]');
+                if (!(trigger instanceof HTMLElement)) throw new Error("Theme menu trigger is missing.");
+                const before = getComputedStyle(document.querySelector('[data-shell-region="content"]')).backgroundColor;
+                trigger.click();
+                await waitFor(
+                  () => Array.from(document.querySelectorAll('.t-dropdown__item')).some((item) => item.textContent?.trim() === "深色"),
+                  "dark theme item");
+                const dark = Array.from(document.querySelectorAll('.t-dropdown__item'))
+                  .find((item) => item.textContent?.trim() === "深色");
+                if (!(dark instanceof HTMLElement)) throw new Error("Dark theme item is missing.");
+                dark.click();
+                await waitFor(
+                  () => document.querySelector('.ja-application')?.classList.contains('ja-application--dark') === true,
+                  "dark application theme");
+                await waitFor(
+                  () => {
+                    const content = document.querySelector('[data-shell-region="content"]');
+                    return content instanceof HTMLElement && getComputedStyle(content).backgroundColor !== before;
+                  },
+                  "dark content surface");
+                const header = document.querySelector('[data-shell-region="head-menu"]');
+                const application = document.querySelector('.ja-application');
+                const content = document.querySelector('[data-shell-region="content"]');
+                const layout = document.querySelector('[data-shell-region="layout"]');
+                return {
+                  before,
+                  after: getComputedStyle(content).backgroundColor,
+                  applicationClass: application?.className ?? "",
+                  headerClass: header?.className ?? "",
+                  pageToken: getComputedStyle(application).getPropertyValue('--td-bg-color-page'),
+                  containerToken: getComputedStyle(application).getPropertyValue('--td-bg-color-container'),
+                  layoutBackground: getComputedStyle(layout).backgroundColor
+                };
+              })()`);
               await page.send("Emulation.setDeviceMetricsOverride", {
                 width: 390,
                 height: 844,
@@ -1072,6 +1383,8 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);
               const notFound = await page.waitForSmoke();
               result.deepLink = deepLink;
+              result.starterPages = starterPages;
+              result.starterEnglish = starterEnglish;
               result.internalError = internalError;
               result.notFound = notFound;
               result.diagnostics = page.diagnostics;
@@ -1079,7 +1392,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               console.log(JSON.stringify(result));
             } catch (error) {
               const message = error instanceof Error ? error.message : String(error);
-              throw new Error(`${message} Server: ${JSON.stringify(server.diagnostics)}`);
+              throw new Error(`${message} Browser: ${JSON.stringify(page.diagnostics)} Server: ${JSON.stringify(server.diagnostics)}`);
             }
           } finally {
             await browser.dispose();
@@ -1128,7 +1441,13 @@ static string BuildBrowserSmokeTestScript(string browserPath)
         }
 
         function responseHeaders(contentType) {
-          return { "content-type": contentType, "cache-control": "no-store" };
+          // Each route remains a fresh HTML request, while immutable generated modules use the
+          // normal browser cache. Forcing 22 full cold starts exhausts Chromium's local sockets
+          // and tests the harness limit instead of route behavior.
+          return {
+            "content-type": contentType,
+            "cache-control": contentType.startsWith("text/html") ? "no-store" : "public, max-age=300"
+          };
         }
 
         function contentType(path) {
@@ -1277,9 +1596,15 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               const shell = document.querySelector('[data-shell-region="layout"]');
               const sidebar = document.querySelector('[data-shell-region="sidebar"]');
               const main = document.querySelector('[data-shell-region="main"]');
-              const iconBar = document.querySelector('[data-iconbar]');
+              const railIconBar = document.querySelector('[data-iconbar-mode="rail"]');
+              const iconBar = railIconBar;
               const secondaryMenu = document.querySelector('.ja-tdesign-sidebar-shell__menu');
+              const secondaryTitle = document.querySelector('[data-shell-region="secondary-title"]');
+              const secondaryMenuBody = document.querySelector('[data-shell-region="secondary-menu"]');
+              const mobileMenu = document.querySelector('.ja-tdesign-sidebar-shell__mobile-menu');
+              const mobileBrand = document.querySelector('.ja-tdesign-sidebar-shell__mobile-brand');
               const navigation = document.querySelector('[data-navigation-orientation="vertical"]');
+              const nativeMenu = secondaryMenu?.querySelector('.t-menu--scroll');
               const shellStyle = shell ? getComputedStyle(shell) : null;
               const sidebarStyle = sidebar ? getComputedStyle(sidebar) : null;
               const mainStyle = main ? getComputedStyle(main) : null;
@@ -1290,17 +1615,35 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               const mainRect = main?.getBoundingClientRect();
               const iconBarRect = iconBar?.getBoundingClientRect();
               const secondaryMenuRect = secondaryMenu?.getBoundingClientRect();
+              const secondaryTitleRect = secondaryTitle?.getBoundingClientRect();
+              const secondaryMenuBodyRect = secondaryMenuBody?.getBoundingClientRect();
+              const mobileMenuRect = mobileMenu?.getBoundingClientRect();
+              const mobileBrandRect = mobileBrand?.getBoundingClientRect();
               return {
                 viewportWidth: innerWidth,
                 shellDisplay: shellStyle?.display ?? "",
                 shellDirection: shellStyle?.flexDirection ?? "",
                 sidebarWidth: sidebarStyle?.width ?? "",
+                sidebarOverflow: sidebarStyle?.overflow ?? "",
                 mainDisplay: mainStyle?.display ?? "",
                 iconBarDirection: iconBarStyle?.flexDirection ?? "",
                 navigationDisplay: navigationStyle?.display ?? "",
+                secondaryMenuOverflowX: secondaryMenu ? getComputedStyle(secondaryMenu).overflowX : "",
+                secondaryMenuOverflowY: secondaryMenu ? getComputedStyle(secondaryMenu).overflowY : "",
+                secondaryTitleText: secondaryTitle?.textContent?.trim() ?? "",
+                secondaryTitleHeight: secondaryTitleRect?.height ?? 0,
+                secondaryTitleAlignedWithHeader: !!secondaryTitleRect && Math.abs(secondaryTitleRect.height - 64) <= 1,
+                secondaryBodyStartsAfterTitle: !!secondaryTitleRect && !!secondaryMenuBodyRect && Math.abs(secondaryMenuBodyRect.top - secondaryTitleRect.bottom) <= 1,
+                nativeMenuOverflowX: nativeMenu ? getComputedStyle(nativeMenu).overflowX : "",
+                nativeMenuOverflowY: nativeMenu ? getComputedStyle(nativeMenu).overflowY : "",
+                secondaryMenuHasHorizontalOverflow: !!secondaryMenu && secondaryMenu.scrollWidth > secondaryMenu.clientWidth,
                 sidebarFillsShell: !!shellRect && !!sidebarRect && Math.abs(shellRect.width - sidebarRect.width) <= 1,
                 iconBarFillsSidebar: !!sidebarRect && !!iconBarRect && Math.abs(sidebarRect.width - iconBarRect.width) <= 1,
                 secondaryMenuFillsSidebar: !!sidebarRect && !!secondaryMenuRect && Math.abs(sidebarRect.width - secondaryMenuRect.width) <= 1,
+                mobileMenuDisplay: mobileMenu ? getComputedStyle(mobileMenu).display : "",
+                mobileMenuFillsSidebar: !!sidebarRect && !!mobileMenuRect && Math.abs(sidebarRect.width - mobileMenuRect.width) <= 1,
+                mobileBrandCentered: !!mobileBrandRect && Math.abs(mobileBrandRect.width - 64) <= 1 && Math.abs(mobileBrandRect.height - 64) <= 1,
+                mobileRailHidden: !!railIconBar && getComputedStyle(railIconBar).display === "none",
                 styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null,
                 documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
                 iconBarBeforeSecondary: iconBarRect && secondaryMenuRect
@@ -1557,6 +1900,62 @@ static void AssertJsonBoolean(JsonElement root, string propertyName, bool expect
     var actual = root.GetProperty(propertyName).GetBoolean();
     if (actual != expected)
         throw new InvalidOperationException($"Unexpected {description}: expected {expected}, got {actual}." + FormatDetails(details));
+}
+
+static void AssertJsonStringArrayContains(JsonElement root, string propertyName, string expected, string description, string? details = null)
+{
+    var actual = root.GetProperty(propertyName);
+    if (actual.ValueKind != JsonValueKind.Array || !actual.EnumerateArray().Any(item => item.GetString() == expected))
+    {
+        throw new InvalidOperationException(
+            $"Missing {description}: expected '{expected}'." +
+            FormatDetails(details ?? actual.GetRawText()));
+    }
+}
+
+static void AssertStarterPageMatrix(JsonElement pages)
+{
+    var expected = new[]
+    {
+        ("/starter/dashboard/base", "dashboard-base"),
+        ("/starter/dashboard/detail", "dashboard-detail"),
+        ("/starter/list/base", "list-base"),
+        ("/starter/list/card", "list-card"),
+        ("/starter/list/filter", "list-filter"),
+        ("/starter/list/tree", "list-tree"),
+        ("/starter/form/base", "form-base"),
+        ("/starter/form/step", "form-step"),
+        ("/starter/detail/base", "detail-base"),
+        ("/starter/detail/advanced", "detail-advanced"),
+        ("/starter/detail/deploy", "detail-deploy"),
+        ("/starter/detail/secondary", "detail-secondary"),
+        ("/starter/result/success", "result-success"),
+        ("/starter/result/fail", "result-fail"),
+        ("/starter/result/network-error", "result-network"),
+        ("/starter/result/403", "result-403"),
+        ("/starter/result/404", "result-404"),
+        ("/starter/result/500", "result-500"),
+        ("/starter/result/browser-incompatible", "result-browser"),
+        ("/starter/result/maintenance", "result-maintenance"),
+        ("/starter/user", "user"),
+        ("/starter/login", "login")
+    };
+    if (pages.ValueKind != JsonValueKind.Array || pages.GetArrayLength() != expected.Length)
+        throw new InvalidOperationException($"Unexpected Starter page count: expected {expected.Length}." + Environment.NewLine + pages.GetRawText());
+
+    var actual = pages.EnumerateArray().ToDictionary(
+        page => page.GetProperty("path").GetString() ?? string.Empty,
+        page => (Template: page.GetProperty("template").GetString() ?? string.Empty, Title: page.GetProperty("title").GetString() ?? string.Empty),
+        StringComparer.Ordinal);
+    foreach (var (path, template) in expected)
+    {
+        if (!actual.TryGetValue(path, out var page) || page.Template != template || string.IsNullOrWhiteSpace(page.Title))
+        {
+            throw new InvalidOperationException(
+                $"Starter page coverage failed for '{path}': expected template '{template}'." +
+                Environment.NewLine + pages.GetRawText());
+        }
+    }
 }
 
 static string FormatDetails(string? details)

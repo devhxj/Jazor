@@ -1,0 +1,86 @@
+@* Mirrors the TDesign Vue Next Starter global setting drawer. *@
+@inherits AdminComponentBase
+
+<TDrawer Visible="@Visible"
+         Size="408px"
+         FooterValue="false"
+         HeaderValue="@L("全局配置", "Global Settings")"
+         CloseBtnValue="true"
+         DrawerClassName="setting-drawer-container"
+         OnClose="@(_ => CloseAsync())"
+         OnCloseBtnClick="@(_ => CloseAsync())">
+    <div class="setting-container" data-starter-settings="">
+        <StarterForm LabelAlign="@TFormLabelAlignValue.Left">
+            <div class="setting-group-title">@L("主题模式", "Theme Mode")</div>
+            <StarterRadioGroup Value="@ThemeKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeThemeAsync(value))">
+                <div class="setting-layout-drawer"><div><StarterRadioButton Value="light"><img src="/brand/starter-assets-setting-light.svg" alt="" aria-hidden="true" /></StarterRadioButton><p>@L("明亮", "Light")</p></div></div>
+                <div class="setting-layout-drawer"><div><StarterRadioButton Value="dark"><img src="/brand/starter-assets-setting-dark.svg" alt="" aria-hidden="true" /></StarterRadioButton><p>@L("暗色", "Dark")</p></div></div>
+                <div class="setting-layout-drawer"><div><StarterRadioButton Value="auto"><img src="/brand/starter-assets-setting-auto.svg" alt="" aria-hidden="true" /></StarterRadioButton><p>@L("跟随系统", "Auto")</p></div></div>
+            </StarterRadioGroup>
+
+            <div class="setting-group-title">@L("主题色", "Theme Color")</div>
+            <StarterRadioGroup Value="@BrandTheme" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeBrandAsync(value))">
+                @foreach (var color in BrandColors)
+                {
+                    <div class="setting-layout-drawer">
+                        <StarterRadioButton Value="@color" CssClass="@ColorGroupCssClass">
+                            <span class="setting-color-preview" style="@("background: " + color)"></span>
+                        </StarterRadioButton>
+                    </div>
+                }
+                <div class="setting-layout-drawer">
+                    <TPopup DestroyOnClose="true"
+                            Placement="@TPopupPlacement.BottomRight"
+                            Trigger="@TPopupTriggerValue.Click"
+                            Visible="@colorPickerVisible"
+                            OnVisibleChange="@ChangeColorPickerVisibilityAsync">
+                        <ContentSlot>
+                            <TColorPickerPanel Value="@BrandTheme"
+                                               ColorModes="@(new[] { TColorPickerPanelColorModesValueItem.Monochrome })"
+                                               EnableAlpha="false"
+                                               Format="@TColorPickerPanelFormatValue.HEX"
+                                               ShowPrimaryColorPreview="false"
+                                               SwatchColors="@EmptySwatchColors"
+                                               OnChange="@(value => ChangeCustomColorAsync(value))" />
+                        </ContentSlot>
+                        <TriggerElementContent>
+                            <StarterRadioButton Value="@BrandTheme" CssClass="@DynamicColorCssClass">
+                                <span class="setting-color-preview" style="@("background: " + BrandTheme)"></span>
+                            </StarterRadioButton>
+                        </TriggerElementContent>
+                    </TPopup>
+                </div>
+            </StarterRadioGroup>
+
+            <div class="setting-group-title">@L("导航布局", "Navigation Layout")</div>
+            <StarterRadioGroup Value="@LayoutKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeLayoutAsync(value))">
+                <div class="setting-layout-drawer"><StarterRadioButton Value="side"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/side.png" alt="@SideLayoutLabel" /></StarterRadioButton></div>
+                <div class="setting-layout-drawer"><StarterRadioButton Value="top"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/top.png" alt="@TopLayoutLabel" /></StarterRadioButton></div>
+                <div class="setting-layout-drawer"><StarterRadioButton Value="mix"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/mix.png" alt="@MixedLayoutLabel" /></StarterRadioButton></div>
+            </StarterRadioGroup>
+
+            <TFormItem LabelValue="@SplitMenuLabel" Name="splitMenu" CssStyle="@MixOnlyStyle"><StarterToggle Value="@SplitMenu" OnChange="@(value => ChangeSplitMenuAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@FixedSidebarLabel" Name="isSidebarFixed" CssStyle="@MixOnlyStyle"><StarterToggle Value="@IsSidebarFixed" OnChange="@(value => ChangeSidebarFixedAsync(value))" /></TFormItem>
+
+            <div class="setting-group-title">@L("界面元素", "Interface Elements")</div>
+            <TFormItem LabelValue="@SideModeLabel" Name="sideMode">
+                <StarterRadioGroup Value="@SideModeKey" Size="@TSizeEnum.Medium" CssClass="@SideModeRadioCssClass" OnChange="@(value => ChangeSideModeAsync(value))">
+                    <StarterRadioButton Value="light" LabelValue="@LightLabel" />
+                    <StarterRadioButton Value="dark" LabelValue="@DarkLabel" />
+                </StarterRadioGroup>
+            </TFormItem>
+            @if (LayoutKey == "side")
+            {
+                <TFormItem LabelValue="@ShowHeaderLabel" Name="showHeader"><StarterToggle Value="@ShowHeader" OnChange="@(value => ChangeShowHeaderAsync(value))" /></TFormItem>
+            }
+            <TFormItem LabelValue="@ShowBreadcrumbLabel" Name="showBreadcrumb"><StarterToggle Value="@ShowBreadcrumb" OnChange="@(value => ChangeShowBreadcrumbAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@ShowFooterLabel" Name="showFooter"><StarterToggle Value="@ShowFooter" OnChange="@(value => ChangeShowFooterAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@UseTabsLabel" Name="isUseTabsRouter"><StarterToggle Value="@IsUseTabsRouter" OnChange="@(value => ChangeUseTabsAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@MenuAutoCollapsedLabel" Name="menuAutoCollapsed"><StarterToggle Value="@MenuAutoCollapsed" OnChange="@(value => ChangeMenuAutoCollapsedAsync(value))" /></TFormItem>
+        </StarterForm>
+        <div class="setting-info">
+            <p>@L("配置会持久化保存在当前浏览器。", "Settings persist in the current browser.")</p>
+            <TButton Theme="@TButtonThemeValue.Primary" Variant="@TButtonVariantValue.Text" OnClick="@(_ => CopyConfig())">@CopyConfigLabel</TButton>
+        </div>
+    </div>
+</TDrawer>

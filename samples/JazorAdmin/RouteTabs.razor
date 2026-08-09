@@ -1,0 +1,37 @@
+@* Keeps the Starter's route tabs at the layout boundary instead of coupling them to any page. *@
+@inherits AdminComponentBase
+
+<TTabs CssClass="@("ja-route-tabs")"
+       Value="@ActiveValue"
+       Size="@TTabsSizeValue.Medium"
+       Theme="@TTabsThemeValue.Card"
+       DragSort="true"
+       data-route-tabs=""
+       data-route-tabs-count="@tabs.Length"
+       OnChange="@Navigate"
+       OnRemove="@Remove"
+       OnDragSort="@Reorder">
+    @foreach (var tab in tabs)
+    {
+        <TTabPanel Value="@((TTabValue)tab.Path)"
+                   Removable="@(!tab.IsHome)"
+                   Draggable="@(!tab.IsHome)"
+                   data-route-tab-path="@tab.Path"
+                   data-route-tab-home="@tab.IsHome">
+            <LabelContent>
+                @if (tab.IsHome)
+                {
+                    <span class="ja-route-tabs__home" data-route-tab-label="@tab.Path" title="@tab.Title">
+                        <TIcon Name="home" Size="18px" aria-hidden="true" />
+                    </span>
+                }
+                else
+                {
+                    <TDropdown Trigger="@TDropdownTriggerValue.ContextMenu" Options="@MenuOptions(tab, FindTab(tab.Path))">
+                        <span class="ja-route-tabs__label" data-route-tab-label="@tab.Path">@tab.Title</span>
+                    </TDropdown>
+                }
+            </LabelContent>
+        </TTabPanel>
+    }
+</TTabs>

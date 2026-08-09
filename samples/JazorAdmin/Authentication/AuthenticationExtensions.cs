@@ -6,11 +6,11 @@ using OpenIddict.Validation.AspNetCore;
 
 namespace JazorAdmin.Authentication;
 
-public static class JazorAdminAuthentication
+public static class AuthenticationExtensions
 {
     public const string ApiScheme = "JazorAdmin.Api";
 
-    public static AuthenticationBuilder AddJazorAdminAuthentication(this IServiceCollection services)
+    public static AuthenticationBuilder AddAdminAuthentication(this IServiceCollection services)
         => services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = ApiScheme;

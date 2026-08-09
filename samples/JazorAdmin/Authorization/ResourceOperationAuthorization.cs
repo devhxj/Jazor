@@ -22,7 +22,7 @@ public sealed class ResourceOperationAuthorizationPolicyProvider(
         if (!TryParse(policyName, out var requirement))
             return base.GetPolicyAsync(policyName);
 
-        var policy = new AuthorizationPolicyBuilder(JazorAdminAuthentication.ApiScheme)
+        var policy = new AuthorizationPolicyBuilder(AuthenticationExtensions.ApiScheme)
             .RequireAuthenticatedUser()
             .AddRequirements(requirement)
             .Build();
@@ -50,14 +50,14 @@ public sealed class ResourceOperationAuthorizationPolicyProvider(
 }
 
 public sealed class ResourceOperationAuthorizationHandler(
-    JazorAdminDbContext database)
+    AdminDbContext database)
     : AuthorizationHandler<ResourceOperationRequirement>
 {
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         ResourceOperationRequirement requirement)
     {
-        if (context.User.IsInRole(JazorAdminRoles.PlatformAdministrator))
+        if (context.User.IsInRole(RoleKeys.PlatformAdministrator))
         {
             context.Succeed(requirement);
             return;

@@ -1,0 +1,15 @@
+@inherits AdminComponentBase
+
+<TBreadcrumb CssClass="@RootCssClass"
+             MaxItemWidth="150px"
+             data-route-breadcrumb="">
+    @foreach (var item in Items)
+    {
+        <TBreadcrumbItem ContentValue="@item.Title"
+                         Disabled="@(item.Disabled ?? false)"
+                         Href="@MapHref(item.Href, item.RouteTarget)"
+                         To="@MapRoute(item.RouteTarget)"
+                         data-route-breadcrumb-key="@item.Key"
+                         data-route-breadcrumb-current="@IsCurrent(item)" />
+    }
+</TBreadcrumb>

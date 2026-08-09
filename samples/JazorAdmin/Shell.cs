@@ -7,7 +7,7 @@ using HostFile = System.IO.File;
 namespace JazorAdmin;
 
 /// <summary>Renders the host document with only local import-map, stylesheet, and application resources.</summary>
-internal static class JazorAdminShell
+internal static class Shell
 {
     private const string Document = """
         <!doctype html>

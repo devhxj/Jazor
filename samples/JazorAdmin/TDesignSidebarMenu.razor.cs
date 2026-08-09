@@ -9,6 +9,9 @@ public partial class TDesignSidebarMenu : AdminComponentBase
     public bool Collapsed { get; set; }
 
     [Parameter]
+    public AdminThemeMode Theme { get; set; } = AdminThemeMode.Light;
+
+    [Parameter]
     public string? SelectedKey { get; set; }
 
     [Parameter]
@@ -29,30 +32,56 @@ public partial class TDesignSidebarMenu : AdminComponentBase
     [Parameter]
     public bool Horizontal { get; set; }
 
+    // Header renders these menu nodes in its existing THeadMenu. A second THeadMenu would
+    // create a nested horizontal scroller, unlike the Starter's MenuContent structure.
+    [Parameter]
+    public bool Inline { get; set; }
+
+    [Parameter]
+    public bool ExpandMutex { get; set; }
+
     private TMenuValue? MenuValue
         => SelectedKey is null ? default(TMenuValue?) : (TMenuValue)SelectedKey;
 
     private TMenuValue[]? ExpandedMenuValues
         => ExpandedKeys is null ? null : Array.ConvertAll(ExpandedKeys, static key => (TMenuValue)key);
 
+    private TMenuThemeValue MenuTheme
+        => Theme == AdminThemeMode.Dark ? TMenuThemeValue.Dark : TMenuThemeValue.Light;
+
+    private THeadMenuThemeValue HeadMenuTheme
+        => Theme == AdminThemeMode.Dark ? THeadMenuThemeValue.Dark : THeadMenuThemeValue.Light;
+
     private RenderFragment RenderItem(AdminNavItem item) => builder =>
     {
+        RenderFragment? icon = string.IsNullOrWhiteSpace(item.Icon)
+            ? null
+            : iconBuilder =>
+            {
+                iconBuilder.OpenComponent<TIcon>(0);
+                iconBuilder.AddComponentParameter(1, nameof(TIcon.Name), item.Icon);
+                iconBuilder.AddComponentParameter(2, nameof(TIcon.Size), "18px");
+                iconBuilder.AddComponentParameter(3, "aria-hidden", "true");
+                iconBuilder.CloseComponent();
+            };
+
         if (item.Children?.AsArray is { Length: > 0 } children)
         {
             builder.OpenComponent<TSubmenu>(0);
             builder.AddAttribute(1, nameof(TSubmenu.Value), (TMenuValue)item.Key);
-            builder.AddAttribute(2, nameof(TSubmenu.TitleContent), (RenderFragment)(titleBuilder =>
+            builder.AddAttribute(2, nameof(TSubmenu.IconContent), icon);
+            builder.AddAttribute(3, nameof(TSubmenu.TitleContent), (RenderFragment)(titleBuilder =>
             {
                 titleBuilder.OpenElement(0, "span");
                 titleBuilder.AddAttribute(1, "data-nav-command", "toggle");
                 titleBuilder.AddContent(2, item.Title);
                 titleBuilder.CloseElement();
             }));
-            builder.AddAttribute(3, nameof(TSubmenu.Disabled), item.Disabled ?? false);
-            builder.AddAttribute(4, "data-nav-key", item.Key);
-            builder.AddAttribute(5, "data-nav-kind", "branch");
-            builder.AddAttribute(6, "data-nav-expanded", IsExpanded(item.Key));
-            builder.AddAttribute(7, nameof(TSubmenu.ChildContent), (RenderFragment)(childBuilder =>
+            builder.AddAttribute(4, nameof(TSubmenu.Disabled), item.Disabled ?? false);
+            builder.AddAttribute(5, "data-nav-key", item.Key);
+            builder.AddAttribute(6, "data-nav-kind", "branch");
+            builder.AddAttribute(7, "data-nav-expanded", IsExpanded(item.Key));
+            builder.AddAttribute(8, nameof(TSubmenu.ChildContent), (RenderFragment)(childBuilder =>
             {
                 foreach (var child in children)
                 {
@@ -68,23 +97,24 @@ public partial class TDesignSidebarMenu : AdminComponentBase
 
             builder.OpenComponent<TMenuItem>(10);
             builder.AddAttribute(11, nameof(TMenuItem.Value), (TMenuValue)item.Key);
-            builder.AddAttribute(12, nameof(TMenuItem.ChildContent), (RenderFragment)(childBuilder =>
+            builder.AddAttribute(12, nameof(TMenuItem.IconContent), icon);
+            builder.AddAttribute(13, nameof(TMenuItem.ChildContent), (RenderFragment)(childBuilder =>
             {
                 childBuilder.AddContent(0, item.Title);
             }));
-            builder.AddAttribute(13, nameof(TMenuItem.Disabled), item.Disabled ?? false);
-            builder.AddAttribute(14, "data-nav-key", item.Key);
-            builder.AddAttribute(15, "data-nav-kind", "item");
-            builder.AddAttribute(16, "data-nav-selected", item.Key == SelectedKey);
+            builder.AddAttribute(14, nameof(TMenuItem.Disabled), item.Disabled ?? false);
+            builder.AddAttribute(15, "data-nav-key", item.Key);
+            builder.AddAttribute(16, "data-nav-kind", "item");
+            builder.AddAttribute(17, "data-nav-selected", item.Key == SelectedKey);
             if (href is not null)
             {
-                builder.AddAttribute(17, nameof(TMenuItem.Href), href);
+                builder.AddAttribute(18, nameof(TMenuItem.Href), href);
             }
 
             if (href is null && route.HasValue)
             {
-                builder.AddAttribute(18, nameof(TMenuItem.RouterLink), true);
-                builder.AddAttribute(19, nameof(TMenuItem.To), route.Value);
+                builder.AddAttribute(19, nameof(TMenuItem.RouterLink), true);
+                builder.AddAttribute(20, nameof(TMenuItem.To), route.Value);
             }
             builder.CloseComponent();
         }

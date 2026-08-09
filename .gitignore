@@ -8,6 +8,9 @@
 .worktrees/
 src/.vscode/
 src/ECMAScript.WebIDL/.vscode/
+/jazoradmin.db
+/samples/JazorAdmin/jazoradmin.db
+/output/
 
 # User-specific files
 *.rsuser

@@ -1,8 +1,9 @@
 @inherits ComponentBase
 
-@{ JazorAdminStyles.EnsureLoaded(); }
+@{ Styles.EnsureLoaded(); StarterStyles.EnsureLoaded(); }
 
-<ApplicationFrame Theme="@Theme" Language="@languageTag" Grayscale="@grayscale">
+<ApplicationFrame Theme="@Theme" Language="@languageTag" CssStyle="@ApplicationStyle">
+    <style data-starter-theme="">@BrandThemeCss</style>
     @if (sessionRestoring && currentRoute.Path != "/login" && currentRoute.Path != "/lock")
     {
         <main class="ja-session-state" data-session-state="restoring" aria-live="polite">
@@ -14,6 +15,19 @@
     {
         <main class="@(IsLoginPage ? "ja-access ja-access--login" : "ja-access ja-access--lock")"
               data-access-page="@(IsLoginPage ? "login" : "lock")">
+            <aside class="ja-access__visual">
+                <strong class="ja-access__brand">
+                    <img class="ja-access__brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
+                    <span class="ja-access__brand-copy">
+                        <span>JazorAdmin</span>
+                        <small>Identity control plane</small>
+                    </span>
+                </strong>
+                <div class="ja-access__visual-copy">
+                    <h2>JazorAdmin</h2>
+                    <p>@Localization.Get(Language, IsLoginPage ? TextKey.LoginSubtitle : TextKey.LockSubtitle)</p>
+                </div>
+            </aside>
             <section class="ja-access__panel">
                 <strong class="ja-access__brand">
                     <img class="ja-access__brand-mark" src="/brand/jazor-mark.svg" alt="" aria-hidden="true" />
@@ -105,6 +119,15 @@
     else
     {
         <TDesignLayout Mode="@LayoutMode"
+                          Theme="@Theme"
+                          SidebarTheme="@SidebarTheme"
+                          SplitMenu="@splitMenu"
+                          SidebarFixed="@isSidebarFixed"
+                          ShowHeader="@showHeader"
+                          ShowBreadcrumb="@showBreadcrumb"
+                          ShowTabs="@isUseTabsRouter"
+                          ShowFooter="@showFooter"
+                          MenuAutoCollapsed="@menuAutoCollapsed"
                           Title="JazorAdmin"
                           Subtitle="Identity and access management"
                           NavItems="@AdminRouteCatalog.BuildNavigation(LocalizedItems)"
@@ -112,6 +135,7 @@
                           CollapsedChanged="@(value => collapsed = value)"
                           CollapseLabel="@Localization.Get(Language, TextKey.CollapseSidebar)"
                           ExpandLabel="@Localization.Get(Language, TextKey.ExpandSidebar)"
+                          QuickActionsLabel="@Localization.Get(Language, TextKey.QuickActions)"
                           SelectedKey="@SelectedKey"
                           ExpandedKeys="@EffectiveExpandedKeys"
                           ExpandedKeysChanged="@(value => expandedKeys = value)">
@@ -121,12 +145,61 @@
                     <span>Jazor</span>
                 </span>
             </Logo>
+            <IconBarActions>
+                <TTooltip ContentValue="@Localization.Get(Language, TextKey.Documentation)" Placement="@TPopupPlacement.Right">
+                    <TButton CssClass="@("ja-iconbar__quick-action")"
+                             Variant="@TButtonVariantValue.Text"
+                             Shape="@TButtonShapeValue.Square"
+                             data-iconbar-action="documentation"
+                             data-iconbar-placeholder="true"
+                             aria-label="@Localization.Get(Language, TextKey.Documentation)">
+                        <IconContent><TIcon Name="file-paste" Size="20px" aria-hidden="true" /></IconContent>
+                    </TButton>
+                </TTooltip>
+                <TTooltip ContentValue="@Localization.Get(Language, TextKey.Assistant)" Placement="@TPopupPlacement.Right">
+                    <TButton CssClass="@("ja-iconbar__quick-action")"
+                             Variant="@TButtonVariantValue.Text"
+                             Shape="@TButtonShapeValue.Square"
+                             data-iconbar-action="assistant"
+                             data-iconbar-placeholder="true"
+                             aria-label="@Localization.Get(Language, TextKey.Assistant)">
+                        <IconContent><TIcon Name="chat" Size="20px" aria-hidden="true" /></IconContent>
+                    </TButton>
+                </TTooltip>
+                <TTooltip ContentValue="@Localization.Get(Language, TextKey.Account)" Placement="@TPopupPlacement.Right">
+                    <TButton CssClass="@("ja-iconbar__quick-action")"
+                             Variant="@TButtonVariantValue.Text"
+                             Shape="@TButtonShapeValue.Square"
+                             data-iconbar-action="account"
+                             data-iconbar-placeholder="true"
+                             aria-label="@Localization.Get(Language, TextKey.Account)">
+                        <IconContent><TIcon Name="user-circle" Size="20px" aria-hidden="true" /></IconContent>
+                    </TButton>
+                </TTooltip>
+                <TTooltip ContentValue="@Localization.Get(Language, TextKey.SignOut)" Placement="@TPopupPlacement.Right">
+                    <TButton CssClass="@("ja-iconbar__quick-action ja-iconbar__quick-action--danger")"
+                             Variant="@TButtonVariantValue.Text"
+                             Shape="@TButtonShapeValue.Square"
+                             data-iconbar-action="sign-out"
+                             aria-label="@Localization.Get(Language, TextKey.SignOut)"
+                             OnClick="@(_ => SignOut())">
+                        <IconContent><TIcon Name="poweroff" Size="20px" aria-hidden="true" /></IconContent>
+                    </TButton>
+                </TTooltip>
+            </IconBarActions>
             <HeaderActions>
-                <div class="ja-header-context">
+                <div class="ja-starter-operations">
+                    <label class="ja-starter-search" title="@Localization.Get(Language, TextKey.Search)">
+                        <TIcon Name="search" Size="18px" aria-hidden="true" />
+                        <input type="search"
+                               placeholder="@Localization.Get(Language, TextKey.SearchPlaceholder)"
+                               aria-label="@Localization.Get(Language, TextKey.Search)" />
+                    </label>
                     @if (organizations.Length > 0)
                     {
-                        <label class="ja-organization-picker">
-                            <span>Organization</span>
+                        <label class="ja-starter-organization">
+                            <TIcon Name="location" Size="18px" aria-hidden="true" />
+                            <span>@Localization.Get(Language, TextKey.Organization)</span>
                             <select data-organization-picker=""
                                     @bind="selectedOrganizationId">
                                 @foreach (var organization in organizations)
@@ -136,88 +209,157 @@
                             </select>
                         </label>
                     }
-                    <label class="ja-preference">
-                        @Localization.Get(Language, TextKey.Theme)
-                        <select data-preference="theme" @bind="themeKey">
-                            <option value="system">System</option>
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </label>
-                    <label class="ja-preference">
-                        @Localization.Get(Language, TextKey.Language)
-                        <select data-preference="language" @bind="languageTag">
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">中文</option>
-                        </select>
-                    </label>
-                    <label class="ja-preference-toggle">
-                        <input type="checkbox" data-preference="grayscale" @bind="grayscale" />
-                        @Localization.Get(Language, TextKey.Grayscale)
-                    </label>
+                    <TTooltip ContentValue="@Localization.Get(Language, TextKey.Notifications)">
+                        <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square"
+                                 aria-label="@Localization.Get(Language, TextKey.Notifications)">
+                            <IconContent><TIcon Name="notification" Size="20px" /></IconContent>
+                        </TButton>
+                    </TTooltip>
+                    <TTooltip ContentValue="TDesign Vue Next">
+                        <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square" aria-label="TDesign Vue Next">
+                            <IconContent><TIcon Name="logo-github" Size="20px" /></IconContent>
+                        </TButton>
+                    </TTooltip>
+                    <TTooltip ContentValue="@Localization.Get(Language, TextKey.Help)">
+                        <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square"
+                                 aria-label="@Localization.Get(Language, TextKey.Help)">
+                            <IconContent><TIcon Name="help-circle" Size="20px" /></IconContent>
+                        </TButton>
+                    </TTooltip>
+                    <TDropdown Trigger="@TDropdownTriggerValue.Click" Options="@LanguageOptions">
+                        <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square"
+                                 data-preference="language"
+                                 aria-label="@Localization.Get(Language, TextKey.Language)"
+                                 title="@Localization.Get(Language, TextKey.Language)">
+                            <IconContent><TIcon Name="translate" Size="20px" /></IconContent>
+                        </TButton>
+                    </TDropdown>
                 </div>
             </HeaderActions>
             <UserRegion>
-                <div class="ja-user-region" data-user-menu="">
-                    <span class="ja-user">@CurrentUserLabel</span>
-                    <button type="button" class="ja-access-command" data-access-command="lock" @onclick="OpenLockScreen">
-                        @Localization.Get(Language, TextKey.Lock)
-                    </button>
-                    <button type="button" class="ja-access-command" data-access-command="sign-out" @onclick="SignOut">
-                        @Localization.Get(Language, TextKey.SignOut)
-                    </button>
+                <div class="ja-starter-user" data-user-menu="">
+                    <TDropdown Trigger="@TDropdownTriggerValue.Click" Options="@UserMenuOptions" MinColumnWidth="@UserMenuWidth">
+                        <TButton CssClass="@("ja-starter-user__trigger")" Variant="@TButtonVariantValue.Text">
+                            <IconContent><span class="ja-starter-user__avatar">@CurrentUserInitial</span></IconContent>
+                            <ContentSlot>@CurrentUserLabel</ContentSlot>
+                            <SuffixContent><TIcon Name="chevron-down" Size="16px" /></SuffixContent>
+                        </TButton>
+                    </TDropdown>
                 </div>
             </UserRegion>
+            <Tabs>
+                <RouteTabs Routes="@LocalizedItems" CurrentPath="@currentRoute.Path" HomePath="/" />
+            </Tabs>
+            <Breadcrumb>
+                <RouteBreadcrumb Items="@SelectedBreadcrumbItems" />
+            </Breadcrumb>
             <ChildContent>
-                <TDesignPageContainer CssClass="@DashboardContainerClass"
-                                         Title="@GetSelectedPageTitle()"
-                                         Subtitle="@GetSelectedPageSubtitle()"
-                                         BreadcrumbItems="@GetSelectedBreadcrumbItems()"
-                                         Actions="@GetPageActions()">
+                <TDesignPageContainer>
                     @if (IsOrganizationPage)
                     {
-                        <OrganizationPage OrganizationId="@selectedOrganizationId"
+                        <OrganizationPage Language="@Language"
+                                          OrganizationId="@selectedOrganizationId"
                                           View="@(IsOrganizationMembersPage ? OrganizationView.Members : OrganizationView.Structure)" />
                     }
                     else if (IsAuthorizationPage)
                     {
-                        <AccessControlPage OrganizationId="@selectedOrganizationId"
+                        <AccessControlPage Language="@Language"
+                                           OrganizationId="@selectedOrganizationId"
                                            View="@(IsAuthorizationResourcesPage ? AccessControlView.Resources : AccessControlView.Roles)" />
                     }
                     else if (IsAccountsPage)
                     {
-                        <AccountPage />
+                        <AccountPage Language="@Language" />
                     }
                     else if (IsSsoPage)
                     {
                         @if (IsSsoApplicationsPage)
                         {
-                            <SsoAppPage />
+                            <SsoAppPage Language="@Language" />
                         }
                         else if (IsSsoScopesPage)
                         {
-                            <SsoScopePage />
+                            <SsoScopePage Language="@Language" />
                         }
                         else
                         {
-                            <SsoGrantPage View="@(IsSsoAuthorizationsPage ? GrantView.Authorizations : GrantView.Tokens)" />
+                            <SsoGrantPage Language="@Language"
+                                          View="@(IsSsoAuthorizationsPage ? GrantView.Authorizations : GrantView.Tokens)" />
                         }
                     }
                     else if (IsSettingsPage)
                     {
-                        <SettingsPage />
+                        <SettingsPage Language="@Language" />
                     }
                     else if (IsSchedulesPage)
                     {
-                        <SchedulePage />
+                        <SchedulePage Language="@Language" />
+                    }
+                    else if (IsStarterPage)
+                    {
+                        @if (SelectedKey == "starter.dashboard.base")
+                        {
+                            <DashboardPage Language="@Language"
+                                           Session="@session"
+                                           SelectedOrganization="@SelectedOrganization" />
+                        }
+                        else
+                        {
+                            <StarterPage Language="@Language"
+                                         Template="@StarterCatalog.GetTemplate(SelectedKey)"
+                                         Session="@session" />
+                        }
                     }
                     else
                     {
-                        <DashboardPage Session="@session"
+                        <DashboardPage Language="@Language"
+                                       Session="@session"
                                        SelectedOrganization="@SelectedOrganization" />
                     }
                 </TDesignPageContainer>
             </ChildContent>
+            <Footer>
+                <div class="tdesign-starter-footer">Copyright © 2021-2026 Tencent. All Rights Reserved</div>
+            </Footer>
         </TDesignLayout>
+
+        @if (CanConfigureAppearance)
+        {
+            <TTooltip ContentValue="@Localization.Get(Language, TextKey.Appearance)" Placement="@TPopupPlacement.Top">
+                <TButton CssClass="@("ja-starter-setting-trigger")"
+                         Theme="@TButtonThemeValue.Primary"
+                         Shape="@TButtonShapeValue.Circle"
+                         data-preference="setting"
+                         aria-label="@Localization.Get(Language, TextKey.Appearance)"
+                         OnClick="@(_ => showSettingPanel = true)">
+                    <IconContent><TIcon Name="setting" Size="20px" aria-hidden="true" /></IconContent>
+                </TButton>
+            </TTooltip>
+
+            <StarterSettings @bind-Visible="showSettingPanel"
+                             ThemeKey="@themeKey"
+                             ThemeKeyChanged="@ChangeTheme"
+                             BrandTheme="@brandTheme"
+                             BrandThemeChanged="@ChangeBrandTheme"
+                             LayoutKey="@layoutKey"
+                             LayoutKeyChanged="@ChangeLayout"
+                             SplitMenu="@splitMenu"
+                             SplitMenuChanged="@ChangeSplitMenu"
+                             SideModeKey="@sideModeKey"
+                             SideModeKeyChanged="@ChangeSideMode"
+                             IsSidebarFixed="@isSidebarFixed"
+                             IsSidebarFixedChanged="@ChangeSidebarFixed"
+                             ShowHeader="@showHeader"
+                             ShowHeaderChanged="@ChangeShowHeader"
+                             ShowBreadcrumb="@showBreadcrumb"
+                             ShowBreadcrumbChanged="@ChangeShowBreadcrumb"
+                             ShowFooter="@showFooter"
+                             ShowFooterChanged="@ChangeShowFooter"
+                             IsUseTabsRouter="@isUseTabsRouter"
+                             IsUseTabsRouterChanged="@ChangeUseTabs"
+                             MenuAutoCollapsed="@menuAutoCollapsed"
+                             MenuAutoCollapsedChanged="@ChangeMenuAutoCollapsed"
+                             Language="@Language" />
+        }
     }
 </ApplicationFrame>

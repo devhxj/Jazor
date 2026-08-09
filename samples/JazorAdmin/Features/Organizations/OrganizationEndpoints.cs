@@ -18,36 +18,36 @@ public static class OrganizationEndpoints
 
         organizations.MapGet("/", ListOrganizationsAsync);
         organizations.MapPost("/", CreateRootOrganizationAsync)
-            .RequireAuthorization(JazorAdminPolicies.PlatformAdministrator);
+            .RequireAuthorization(PolicyKeys.PlatformAdministrator);
         organizations.MapGet("/{organizationId:guid}", GetOrganizationAsync)
-            .RequireResourceOperation(JazorAdminResources.Organizations, JazorAdminOperations.Read);
+            .RequireResourceOperation(ResourceKeys.Organizations, OperationKeys.Read);
         organizations.MapPost("/{organizationId:guid}/children", CreateChildOrganizationAsync)
-            .RequireResourceOperation(JazorAdminResources.Organizations, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Organizations, OperationKeys.Manage);
 
         organizations.MapGet("/{organizationId:guid}/roles", ListRolesAsync)
-            .RequireResourceOperation(JazorAdminResources.Authorization, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Authorization, OperationKeys.Manage);
         organizations.MapPost("/{organizationId:guid}/roles", CreateRoleAsync)
-            .RequireResourceOperation(JazorAdminResources.Authorization, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Authorization, OperationKeys.Manage);
         organizations.MapGet("/{organizationId:guid}/roles/{roleId:guid}/grants", ListRoleGrantsAsync)
-            .RequireResourceOperation(JazorAdminResources.Authorization, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Authorization, OperationKeys.Manage);
         organizations.MapPut("/{organizationId:guid}/roles/{roleId:guid}/grants", ReplaceRoleGrantsAsync)
-            .RequireResourceOperation(JazorAdminResources.Authorization, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Authorization, OperationKeys.Manage);
         organizations.MapGet("/{organizationId:guid}/authorization-resources", ListAuthorizationResourcesAsync)
-            .RequireResourceOperation(JazorAdminResources.Authorization, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Authorization, OperationKeys.Manage);
 
         organizations.MapGet("/{organizationId:guid}/members", ListMembersAsync)
-            .RequireResourceOperation(JazorAdminResources.Organizations, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Organizations, OperationKeys.Manage);
         organizations.MapPost("/{organizationId:guid}/members", CreateMemberAsync)
-            .RequireResourceOperation(JazorAdminResources.Organizations, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Organizations, OperationKeys.Manage);
         organizations.MapPut("/{organizationId:guid}/members/{membershipId:guid}/roles", ReplaceMemberRolesAsync)
-            .RequireResourceOperation(JazorAdminResources.Organizations, JazorAdminOperations.Manage);
+            .RequireResourceOperation(ResourceKeys.Organizations, OperationKeys.Manage);
         return app;
     }
 
     private static async Task<IResult> ListOrganizationsAsync(
         HttpContext context,
-        UserManager<JazorAdminUser> users,
-        JazorAdminDbContext database)
+        UserManager<AdminUser> users,
+        AdminDbContext database)
     {
         var user = await users.GetUserAsync(context.User);
         if (user is null)
@@ -67,7 +67,7 @@ public static class OrganizationEndpoints
 
     private static async Task<IResult> CreateRootOrganizationAsync(
         CreateOrganizationRequest request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         if (!TryValidateOrganization(request, out var errors))
@@ -84,7 +84,7 @@ public static class OrganizationEndpoints
 
     private static async Task<IResult> GetOrganizationAsync(
         Guid organizationId,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         var organization = await database.Organizations
@@ -99,7 +99,7 @@ public static class OrganizationEndpoints
     private static async Task<IResult> CreateChildOrganizationAsync(
         Guid organizationId,
         CreateOrganizationRequest request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         if (!TryValidateOrganization(request, out var errors))
@@ -121,7 +121,7 @@ public static class OrganizationEndpoints
         return Results.Created("/api/organizations/" + organization.Id, ToDetail(organization, []));
     }
 
-    private static async Task<IResult> ListRolesAsync(Guid organizationId, JazorAdminDbContext database, HttpContext context)
+    private static async Task<IResult> ListRolesAsync(Guid organizationId, AdminDbContext database, HttpContext context)
     {
         var roles = await database.OrganizationRoles
             .AsNoTracking()
@@ -135,7 +135,7 @@ public static class OrganizationEndpoints
     private static async Task<IResult> CreateRoleAsync(
         Guid organizationId,
         CreateOrganizationRoleRequest request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         if (!TryValidateRole(request, out var errors))
@@ -165,7 +165,7 @@ public static class OrganizationEndpoints
     private static async Task<IResult> ListRoleGrantsAsync(
         Guid organizationId,
         Guid roleId,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         var grants = await database.ResourceOperationGrants
@@ -182,7 +182,7 @@ public static class OrganizationEndpoints
         Guid organizationId,
         Guid roleId,
         UpdateRoleGrantsRequest request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         var role = await database.OrganizationRoles
@@ -231,7 +231,7 @@ public static class OrganizationEndpoints
         return Results.NoContent();
     }
 
-    private static async Task<IResult> ListAuthorizationResourcesAsync(JazorAdminDbContext database, HttpContext context)
+    private static async Task<IResult> ListAuthorizationResourcesAsync(AdminDbContext database, HttpContext context)
     {
         var operations = await database.AuthorizationOperations
             .AsNoTracking()
@@ -245,7 +245,7 @@ public static class OrganizationEndpoints
         return Results.Ok(operations);
     }
 
-    private static async Task<IResult> ListMembersAsync(Guid organizationId, JazorAdminDbContext database, HttpContext context)
+    private static async Task<IResult> ListMembersAsync(Guid organizationId, AdminDbContext database, HttpContext context)
     {
         var memberships = await database.OrganizationMemberships
             .AsNoTracking()
@@ -261,8 +261,8 @@ public static class OrganizationEndpoints
     private static async Task<IResult> CreateMemberAsync(
         Guid organizationId,
         CreateOrganizationMemberRequest request,
-        UserManager<JazorAdminUser> users,
-        JazorAdminDbContext database,
+        UserManager<AdminUser> users,
+        AdminDbContext database,
         HttpContext context)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
@@ -302,7 +302,7 @@ public static class OrganizationEndpoints
         Guid organizationId,
         Guid membershipId,
         UpdateOrganizationMemberRolesRequest request,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         HttpContext context)
     {
         var membership = await database.OrganizationMemberships
@@ -327,7 +327,7 @@ public static class OrganizationEndpoints
     private static async Task<OrganizationRole[]?> ResolveOrganizationRolesAsync(
         Guid organizationId,
         string[] roleIds,
-        JazorAdminDbContext database,
+        AdminDbContext database,
         CancellationToken cancellationToken)
     {
         var parsedRoleIds = new Guid[roleIds.Length];

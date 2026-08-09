@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace JazorAdmin.Data;
 
-public sealed class JazorAdminUser : IdentityUser
+public sealed class AdminUser : IdentityUser
 {
     public string DisplayName { get; set; } = string.Empty;
 }

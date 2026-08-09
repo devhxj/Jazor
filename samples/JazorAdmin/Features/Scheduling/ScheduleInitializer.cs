@@ -10,7 +10,7 @@ public sealed class ScheduleInitializer(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
-        var database = scope.ServiceProvider.GetRequiredService<JazorAdminDbContext>();
+        var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
         foreach (var item in ScheduleCatalog.Items)
         {
             if (await database.Schedules.FindAsync([item.Key], cancellationToken) is not null)

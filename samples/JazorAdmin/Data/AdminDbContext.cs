@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JazorAdmin.Data;
 
-public sealed class JazorAdminDbContext(DbContextOptions<JazorAdminDbContext> options)
-    : IdentityDbContext<JazorAdminUser>(options)
+public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options)
+    : IdentityDbContext<AdminUser>(options)
 {
     public DbSet<Organization> Organizations => Set<Organization>();
 

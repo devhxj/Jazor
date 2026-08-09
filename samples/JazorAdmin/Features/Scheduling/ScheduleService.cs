@@ -15,7 +15,7 @@ public sealed class ScheduleService(
     public async Task SyncAllAsync(CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
-        var schedules = await scope.ServiceProvider.GetRequiredService<JazorAdminDbContext>()
+        var schedules = await scope.ServiceProvider.GetRequiredService<AdminDbContext>()
             .Schedules
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
