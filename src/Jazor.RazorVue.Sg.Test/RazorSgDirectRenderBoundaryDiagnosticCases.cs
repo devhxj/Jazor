@@ -18,6 +18,7 @@ internal static partial class DirectRenderFailureCaseCatalog
         AddBoundaryCaseFamily(cases, "unsupported_render_tree_builder_extension", CreateUnsupportedRenderTreeBuilderExtensionCase);
         AddBoundaryCaseFamily(cases, "unresolvable_component_import", CreateUnresolvableComponentImportCase);
         AddBoundaryCaseFamily(cases, "unsupported_helper_invocation_shape", CreateUnsupportedHelperInvocationShapeCase);
+        AddBoundaryCaseFamily(cases, "unsupported_event_callback_binder_handler_shape", CreateUnsupportedEventCallbackBinderHandlerShapeCase);
     }
 
     private static void AddBoundaryCaseFamily(
@@ -386,6 +387,35 @@ internal static partial class DirectRenderFailureCaseCatalog
                 "RenderTreeBuilder.RenderExpression is not supported by direct render operation lowering yet.")
             {
                 Members = "private static void RenderExpression(RenderTreeBuilder target, string value) => target.AddContent(0, value);"
+            }
+        };
+
+    private static BoundaryCaseSpec CreateUnsupportedEventCallbackBinderHandlerShapeCase(int variant, string marker)
+        => variant switch
+        {
+            0 => new(
+                "System.Action<string> handler = value => _boundValue = value.Trim(); builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, handler, _boundValue)); builder.CloseElement();",
+                "Handler operation kind: LocalReference.")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + ";"
+            },
+            1 => new(
+                "object handler = (System.Action<string>)(value => _boundValue = value.Trim()); builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, (System.Action<string>)handler, _boundValue)); builder.CloseElement();",
+                "Inner handler operation kind: LocalReference.")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + ";"
+            },
+            2 => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, CreateHandler(), _boundValue)); builder.CloseElement();",
+                "Invocation target: RazorVue.FailureMatrix.DirectRenderFailure")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + "; private System.Action<string> CreateHandler() => value => _boundValue = value.Trim();"
+            },
+            _ => new(
+                "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"oninput\", EventCallback.Factory.CreateBinder<string>(this, default(System.Action<string>), _boundValue)); builder.CloseElement();",
+                "Handler operation kind: DefaultValue.")
+            {
+                Members = "private string _boundValue = " + Literal(marker) + ";"
             }
         };
 
