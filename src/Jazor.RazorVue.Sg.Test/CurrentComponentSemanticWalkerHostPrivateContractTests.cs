@@ -279,6 +279,96 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             new SenseArgument()));
     }
 
+    [TestMethod]
+    public void CallbackHelperEdges_KeepInferenceAndFailureContractsExplicit()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var host = new CurrentComponentSemanticWalkerHost(component);
+        var stateChanged = GetSingleInvocation(fixture, "ComponentUnderTest", "StateChangedCaller");
+        var invokeAsync = GetSingleInvocation(fixture, "ComponentUnderTest", "InvokeAsyncCaller");
+        var typeCheck = GetSingleInvocation(fixture, "ComponentUnderTest", "TypeCheckCall");
+        var inferredEvent = GetSingleInvocation(fixture, "ComponentUnderTest", "InferredEventCallback");
+        var directBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactory");
+        var setterReference = GetOperation<IMethodReferenceOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "SetterMethodGroup")
+                .DescendantNodes()
+                .OfType<IdentifierNameSyntax>()
+                .Single(identifier => identifier.Identifier.ValueText == "SetCount"));
+        var foreignSetterReference = GetOperation<IMethodReferenceOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ForeignSetterMethodGroup")
+                .DescendantNodes()
+                .OfType<MemberAccessExpressionSyntax>()
+                .Single(access => access.Name.Identifier.ValueText == "Set"));
+
+        var inferredArguments = new object?[] { inferredEvent, null };
+        Assert.IsTrue(InvokeInstance<bool>(host, "TryGetInferredEventCallbackHandler", inferredArguments));
+        Assert.IsNotNull(inferredArguments[1]);
+        Assert.IsFalse(InvokeInstance<bool>(
+            host,
+            "TryGetInferredEventCallbackHandler",
+            new object?[] { stateChanged, null }));
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            inferredEvent,
+            new SenseArgument()));
+
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteInferredBindSetterMethodReference",
+            setterReference,
+            new SenseArgument()));
+        Assert.IsNull(InvokeInstance<Expression?>(
+            host,
+            "RewriteInferredBindSetterMethodReference",
+            foreignSetterReference,
+            new SenseArgument()));
+
+        var directBinderArguments = new object?[] { directBinder, null, null };
+        Assert.IsTrue(InvokeStatic<bool>("TryGetCreateBinderReceiverAndHandler", directBinderArguments));
+        Assert.IsInstanceOfType<IDelegateCreationOperation>(directBinderArguments[2]);
+        var noHandlerDiagnostic = InvokeStatic<Exception>(
+            "CreateUnsupportedEventCallbackFactoryCreateBinderException",
+            stateChanged);
+        StringAssert.Contains(noHandlerDiagnostic.Message, "Handler operation kind: <missing>", StringComparison.Ordinal);
+
+        Assert.Throws<TargetInvocationException>(() => InvokeStatic<Expression>(
+            "RewriteStateHasChanged",
+            invokeAsync));
+        Assert.Throws<TargetInvocationException>(() => InvokeStatic<Expression>(
+            "RewriteInvokeAsync",
+            invokeAsync,
+            new Expression[] { new Identifier("first"), new Identifier("second") }));
+        Assert.Throws<TargetInvocationException>(() => InvokeStatic<Expression>(
+            "RewriteRazorRuntimeHelpersTypeCheck",
+            typeCheck,
+            Array.Empty<Expression>()));
+        Assert.IsInstanceOfType<CallExpression>(InvokeStatic<Expression>(
+            "RewriteRazorRuntimeHelpersInvokeAsynchronousDelegate",
+            stateChanged,
+            new Expression[] { new Identifier("callback") }));
+        Assert.Throws<TargetInvocationException>(() => InvokeStatic<Expression>(
+            "RewriteRazorRuntimeHelpersInvokeAsynchronousDelegate",
+            stateChanged,
+            Array.Empty<Expression>()));
+
+        var nullReceiverDiagnostic = InvokeStatic<Exception>(
+            "CreateUnsupportedIndirectCurrentComponentDispatchException",
+            stateChanged,
+            stateChanged.TargetMethod,
+            null);
+        var literalReceiverDiagnostic = InvokeStatic<Exception>(
+            "CreateUnsupportedIndirectCurrentComponentDispatchException",
+            stateChanged,
+            stateChanged.TargetMethod,
+            GetVariableInitializer(fixture, GetMethod(fixture, "ComponentUnderTest", "Operations"), "literal"));
+        StringAssert.Contains(nullReceiverDiagnostic.Message, "<unknown>", StringComparison.Ordinal);
+        Assert.AreNotEqual(nullReceiverDiagnostic.Message, literalReceiverDiagnostic.Message);
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -351,6 +441,10 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     var copy = local;
                 }
 
+                private void SetCount(int value) { Count = value; }
+                public void SetterMethodGroup() { Action<int> callback = SetCount; }
+                public void ForeignSetterMethodGroup() { Action<int> callback = OtherHandlers.Set; }
+
                 public void SingleBinder(int value)
                 {
                     Count = value;
@@ -395,6 +489,14 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     var typeChecked = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck(Count);
                 }
 
+                public void InferredEventCallback()
+                {
+                    var callback = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(
+                        this,
+                        (int value) => Count = value,
+                        Count);
+                }
+
                 public void EventCallbackCaller()
                 {
                     _ = Changed.InvokeAsync(Count);
@@ -406,6 +508,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public static class Other
             {
                 public sealed class EventCallback;
+            }
+
+            public static class OtherHandlers
+            {
+                public static void Set(int value) { }
             }
             """,
             new CSharpParseOptions(LanguageVersion.Preview),
