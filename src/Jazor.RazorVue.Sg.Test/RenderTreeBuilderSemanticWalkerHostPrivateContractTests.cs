@@ -358,6 +358,114 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             new Expression[] { new Identifier("builder"), new Identifier("sequence"), new Identifier("name") }));
     }
 
+    [TestMethod]
+    public void RenderContextPrivateEdges_HandleConvertedFragmentsAndIncompleteTypeShapes()
+    {
+        var fixture = CreateFixture();
+        var host = new RenderTreeBuilderSemanticWalkerHost();
+        var convertedFragment = GetInvocation(
+            fixture,
+            "ConvertedFragments",
+            static invocation => invocation.TargetMethod.Name == "AddContent" && invocation.Arguments.Length == 2);
+        var convertedGenericFragment = GetInvocation(
+            fixture,
+            "ConvertedFragments",
+            static invocation => invocation.TargetMethod.Name == "AddContent" && invocation.Arguments.Length == 3);
+        var genericTypeParameter = GetInvocation(
+            fixture,
+            "GenericTypeParameterComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var clear = GetInvocation(
+            fixture,
+            "NoOpCalls",
+            static invocation => invocation.TargetMethod.Name == "Clear");
+        var dynamicLocalType = GetInvocation(
+            fixture,
+            "DynamicLocalTypeComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var dynamicLocal = GetVariableDeclarator(fixture, "DynamicLocalTypeComponent", "componentType");
+        var uninitializedLocal = GetVariableDeclarator(fixture, "UninitializedTypeLocal", "componentType");
+        var whitespaceModuleChild = GetNamedType(fixture, "WhitespaceModuleChild");
+
+        Assert.IsInstanceOfType<IConversionOperation>(convertedFragment.Arguments[1].Value);
+        Assert.IsInstanceOfType<IConversionOperation>(convertedGenericFragment.Arguments[1].Value);
+        Assert.IsTrue(InvokeStatic<bool>("IsRenderFragmentOperationValue", convertedFragment.Arguments[1].Value));
+        Assert.IsTrue(InvokeStatic<bool>("IsGenericRenderFragmentOperationValue", convertedGenericFragment.Arguments[1].Value));
+        AssertUnresolvedComponentType(clear);
+        AssertUnresolvedComponentType(genericTypeParameter);
+        AssertUnresolvedComponentType(dynamicLocalType);
+
+        var genericTypeParameterImport = new object?[] { genericTypeParameter.TargetMethod, null, null };
+        Assert.IsFalse(InvokeStatic<bool>("TryResolveComponentImport", genericTypeParameterImport));
+        Assert.IsNull(genericTypeParameterImport[2]);
+
+        var nonGenericImport = new object?[] { clear.TargetMethod, null, null };
+        Assert.IsFalse(InvokeStatic<bool>("TryResolveComponentImport", nonGenericImport));
+        Assert.IsNull(nonGenericImport[2]);
+
+        var uninitializedInitializer = new object?[]
+        {
+            GetMethodBody(fixture, "UninitializedTypeLocal"),
+            uninitializedLocal.Symbol,
+            null
+        };
+        Assert.IsFalse(InvokeStatic<bool>("TryFindLocalInitializer", uninitializedInitializer));
+        Assert.IsNull(uninitializedInitializer[2]);
+        Assert.IsFalse(host.ShouldSkipVariableDeclarator(uninitializedLocal, new SenseArgument()));
+        Assert.IsFalse(host.ShouldSkipVariableDeclarator(dynamicLocal, new SenseArgument()));
+
+        Assert.IsNull(InvokeStatic<string?>("GetECMAScriptModuleExportPath", whitespaceModuleChild));
+        AssertNoComponentImport(whitespaceModuleChild);
+    }
+
+    [TestMethod]
+    public void ContextCallArgument_ResolvesSourceAndSyntheticArgumentsAcrossBothOverloads()
+    {
+        var contextCallArgumentType = typeof(RenderTreeBuilderSemanticWalkerHost)
+            .GetNestedType("ContextCallArgument", BindingFlags.NonPublic);
+        Assert.IsNotNull(contextCallArgumentType);
+
+        var fromSource = contextCallArgumentType.GetMethod(
+            "FromSource",
+            BindingFlags.Public | BindingFlags.Static);
+        var fromExpression = contextCallArgumentType.GetMethod(
+            "FromExpression",
+            BindingFlags.Public | BindingFlags.Static);
+        Assert.IsNotNull(fromSource);
+        Assert.IsNotNull(fromExpression);
+
+        var resolveExpressions = contextCallArgumentType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Single(method =>
+                method.Name == "Resolve" &&
+                method.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(Expression));
+        var resolveIdentifiers = contextCallArgumentType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Single(method =>
+                method.Name == "Resolve" &&
+                method.GetParameters()[0].ParameterType.GetGenericArguments()[0] == typeof(Identifier));
+
+        var sourceArgument = fromSource.Invoke(null, [1])!;
+        var syntheticExpression = new Identifier("synthetic");
+        var syntheticArgument = fromExpression.Invoke(null, [syntheticExpression])!;
+        var translatedArguments = new Expression[] { new Identifier("first"), new Identifier("second") };
+        var argumentParameters = new Identifier[] { new Identifier("first"), new Identifier("second") };
+
+        Assert.AreSame(translatedArguments[1], resolveExpressions.Invoke(sourceArgument, [translatedArguments]));
+        Assert.AreSame(syntheticExpression, resolveExpressions.Invoke(syntheticArgument, [translatedArguments]));
+        Assert.AreSame(argumentParameters[1], resolveIdentifiers.Invoke(sourceArgument, [argumentParameters]));
+        Assert.AreSame(syntheticExpression, resolveIdentifiers.Invoke(syntheticArgument, [argumentParameters]));
+
+        var constructor = contextCallArgumentType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single();
+        var missingSyntheticArgument = constructor.Invoke([-1, null]);
+        var expressionFailure = Assert.Throws<TargetInvocationException>(() =>
+            resolveExpressions.Invoke(missingSyntheticArgument, [translatedArguments]));
+        var identifierFailure = Assert.Throws<TargetInvocationException>(() =>
+            resolveIdentifiers.Invoke(missingSyntheticArgument, [argumentParameters]));
+        Assert.IsInstanceOfType<InvalidOperationException>(expressionFailure.InnerException);
+        Assert.IsInstanceOfType<InvalidOperationException>(identifierFailure.InnerException);
+    }
+
     private static void AssertStaticMarkup(IOperation operation, string expected)
     {
         var arguments = new object?[] { operation, null };
@@ -449,6 +557,9 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             [ECMAScriptModule("./components/no-props")]
             public sealed class NoPropsModuleChild : ComponentBase;
 
+            [ECMAScriptModule(" ")]
+            public sealed class WhitespaceModuleChild : ComponentBase;
+
             [VueLibraryComponent("tdesign-vue-next", "TButton")]
             public sealed class LibraryChild : ComponentBase;
 
@@ -499,6 +610,10 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                 public void GenericPlainComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent<PlainChild>(0);
 
+                public void GenericTypeParameterComponent<TComponent>(RenderTreeBuilder builder)
+                    where TComponent : IComponent
+                    => builder.OpenComponent<TComponent>(0);
+
                 public void DirectTypeComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent(0, typeof(ModuleChild));
 
@@ -530,6 +645,26 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
 
                 public void DynamicTypeComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent(0, DynamicType());
+
+                public void DynamicLocalTypeComponent(RenderTreeBuilder builder)
+                {
+                    Type componentType = DynamicType();
+                    builder.OpenComponent(0, componentType);
+                }
+
+                public void UninitializedTypeLocal()
+                {
+                    Type componentType;
+                }
+
+                public void ConvertedFragments(RenderTreeBuilder builder, RenderFragment fragment, RenderFragment<int> genericFragment)
+                {
+                    builder.AddContent(0, (RenderFragment)fragment);
+                    builder.AddContent(1, (RenderFragment<int>)genericFragment, 2);
+                }
+
+                public void NoOpCalls(RenderTreeBuilder builder)
+                    => builder.Clear();
 
                 public void EventModifierCalls(RenderTreeBuilder builder)
                     => builder.AddEventPreventDefaultAttribute(0, "click", true);
