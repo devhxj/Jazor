@@ -485,6 +485,116 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersGenericComponentSlotsAndNullableMarkupContent()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, ItemTemplate, Text); builder.AddContent(1, Markup);",
+            """
+            [Parameter] public string Text { get; set; } = "";
+            [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
+            [Parameter] public MarkupString? Markup { get; set; }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesSlots);
+        Assert.IsTrue(result.UsesStaticVNode);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "slots.itemTemplate", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.markup", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_HoistsRecursiveGenericRenderFragmentHelpersWithScopedValues()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, RecursiveItemTemplate(1), Text);",
+            """
+            [Parameter] public string Text { get; set; } = "";
+
+            private RenderFragment<string> RecursiveItemTemplate(int depth) => value => child =>
+            {
+                child.AddContent(0, "recursive-item:" + value + depth);
+                if (depth > 0)
+                {
+                    child.AddContent(1, RecursiveItemTemplate(depth - 1), value);
+                }
+            };
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var prelude = string.Join(
+            Environment.NewLine,
+            result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
+        StringAssert.Contains(prelude, "recursive-item:", StringComparison.Ordinal);
+        StringAssert.Contains(prelude, "depth - 1", StringComparison.Ordinal);
+        StringAssert.Contains(prelude, "value", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersRenderObjectHelpersWithLocalFragmentProvenance()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, CreateCarrier(Text).Header);",
+            """
+            [Parameter] public string Text { get; set; } = "";
+
+            private sealed class FragmentCarrier
+            {
+                public FragmentCarrier(RenderFragment header)
+                {
+                    Header = header;
+                }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            private FragmentCarrier CreateCarrier(string text)
+            {
+                RenderFragment header = child => child.AddContent(0, "object-helper:" + text);
+                return new FragmentCarrier(header);
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "object-helper:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_LowersBlockBodiedRenderFragmentFactoriesWithLocalProvenance()
     {
         var fixture = CreateDirectRenderFixture(
