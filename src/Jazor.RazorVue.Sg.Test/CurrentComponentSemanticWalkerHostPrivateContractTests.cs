@@ -427,6 +427,71 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             "TypeCheck"));
     }
 
+    [TestMethod]
+    public void CallbackDispatchAlternateShapes_PreserveLocalAndBinderBoundaryContracts()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var host = new CurrentComponentSemanticWalkerHost(component);
+        var localCallback = GetSingleInvocation(fixture, "ComponentUnderTest", "LocalEventCallbackCaller");
+        var stateChanged = GetSingleInvocation(fixture, "ComponentUnderTest", "StateChangedCaller");
+        var factoryCreate = GetSingleInvocation(fixture, "ComponentUnderTest", "FactoryCreate");
+        var binderWithEmptyReturn = GetMethodBody(fixture, "ComponentUnderTest", "BinderWithEmptyReturn");
+        var convertedReturn = GetReturnOperation(fixture, "ComponentUnderTest", "ConvertedReturnBinder");
+        var convertedReturnMethod = GetMethodSymbol(fixture, "ComponentUnderTest", "ConvertedReturnBinder");
+        var foreignMethodReference = GetOperation<IMethodReferenceOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ForeignSetterMethodGroup")
+                .DescendantNodes()
+                .OfType<MemberAccessExpressionSyntax>()
+                .Single(access => access.Name.Identifier.ValueText == "Set"));
+
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocation(
+            localCallback,
+            new SenseArgument(),
+            new Identifier("callback"),
+            [new Identifier("value")]));
+        Assert.IsNull(host.RewriteInvocation(
+            localCallback,
+            new SenseArgument(),
+            null,
+            [new Identifier("value")]));
+        Assert.IsNull(host.RewriteMethodReference(
+            foreignMethodReference,
+            new SenseArgument(),
+            new Identifier("handlers")));
+
+        Assert.Throws<TargetInvocationException>(() => InvokeInstance<Expression>(
+            host,
+            "RewriteEventCallbackFactoryCreate",
+            stateChanged,
+            new SenseArgument()));
+        Assert.Throws<TargetInvocationException>(() => InvokeInstance<Expression>(
+            host,
+            "RewriteEventCallbackFactoryCreateBinder",
+            factoryCreate,
+            new SenseArgument()));
+
+        Assert.IsNotNull(InvokeStatic<ISimpleAssignmentOperation?>(
+            "TryGetSingleBinderAssignment",
+            binderWithEmptyReturn));
+        Assert.IsNotNull(convertedReturn.ReturnedValue);
+        Assert.IsInstanceOfType<IConversionOperation>(convertedReturn.ReturnedValue);
+        var convertedAssignment = InvokeStatic<ISimpleAssignmentOperation?>(
+            "TryGetBinderAssignment",
+            convertedReturn);
+        Assert.IsNotNull(convertedAssignment);
+        Assert.IsInstanceOfType<IConversionOperation>(convertedAssignment.Value);
+        Assert.IsTrue(InvokeInstance<bool>(
+            host,
+            "IsAssignmentFromParameter",
+            convertedAssignment.Value,
+            convertedReturnMethod.Parameters.Single()));
+        Assert.IsFalse(InvokeStatic<bool>(
+            "IsBindConverterFormatValue",
+            GetMethodSymbol(fixture, "OtherInstanceBindConverter", "FormatValue")));
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -568,6 +633,22 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     _ = Changed.InvokeAsync(Count);
                 }
 
+                public void LocalEventCallbackCaller(EventCallback callback)
+                {
+                    _ = callback.InvokeAsync(Count);
+                }
+
+                public void BinderWithEmptyReturn(int value)
+                {
+                    Count = value;
+                    return;
+                }
+
+                public object ConvertedReturnBinder(object value)
+                {
+                    return (object)(Count = (int)value);
+                }
+
                 public void ConditionalHandlers(bool enabled)
                 {
                     Action callback = enabled ? CurrentMethod : CurrentMethod;
@@ -597,6 +678,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public static class OtherBindConverter
             {
                 public static void FormatValue() { }
+            }
+
+            public sealed class OtherInstanceBindConverter
+            {
+                public void FormatValue() { }
             }
 
             public static class OtherRuntimeHelpers
