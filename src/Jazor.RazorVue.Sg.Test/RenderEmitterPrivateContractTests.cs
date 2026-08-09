@@ -172,6 +172,55 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void RoslynConversionOperations_UnwrapDirectCastSyntaxAcrossRenderHelpers()
+    {
+        var fixture = CreateFixture();
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var fragmentLambdas = GetMethod(fixture, "OperationShapes", "FragmentLambdas");
+        var convertedFragment = GetOperation<IConversionOperation>(
+            fixture,
+            GetVariableDeclarator(fragmentLambdas, "convertedFragmentAsObject").Initializer!.Value);
+        var convertedGenericFragment = GetOperation<IConversionOperation>(
+            fixture,
+            GetVariableDeclarator(fragmentLambdas, "convertedGenericFragmentAsObject").Initializer!.Value);
+        var convertedNullableMarkup = GetOperation<IConversionOperation>(
+            fixture,
+            inputs.DescendantNodes()
+                .OfType<CastExpressionSyntax>()
+                .Single(cast => cast.Type.ToString() == "MarkupString?"));
+        var convertedFragmentReference = GetOperation<IConversionOperation>(
+            fixture,
+            GetVariableDeclarator(fragmentLambdas, "convertedFragmentReference").Initializer!.Value);
+        var convertedGenericFragmentReference = GetOperation<IConversionOperation>(
+            fixture,
+            GetVariableDeclarator(fragmentLambdas, "convertedGenericFragmentReference").Initializer!.Value);
+
+        var fragmentArguments = new object?[] { convertedFragment, null, null };
+        Assert.IsTrue(Invoke<bool>("TryGetRenderFragmentBody", fragmentArguments));
+        Assert.IsNotNull(fragmentArguments[1]);
+        Assert.IsNotNull(fragmentArguments[2]);
+        Assert.IsTrue(Invoke<bool>("IsRenderFragmentOperationValue", convertedFragmentReference));
+
+        var genericArguments = new object?[] { convertedGenericFragment, null, null, null };
+        Assert.IsTrue(Invoke<bool>("TryGetGenericRenderFragmentBody", genericArguments));
+        Assert.IsNotNull(genericArguments[1]);
+        Assert.IsNotNull(genericArguments[2]);
+        Assert.IsNotNull(genericArguments[3]);
+        Assert.IsTrue(Invoke<bool>("IsGenericRenderFragmentOperationValue", convertedGenericFragmentReference));
+
+        Assert.IsTrue(Invoke<bool>("IsNullableMarkupStringOperationValue", convertedNullableMarkup));
+
+        var bindingMethod = GetMethod(fixture, "OperationShapes", "BuilderBindings");
+        var castReceiverInvocation = bindingMethod.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Select(syntax => GetOperation<IInvocationOperation>(fixture, syntax))
+            .Single(invocation => invocation.Instance is IConversionOperation);
+        var binding = GetMethodSymbol(fixture, "OperationShapes", "BuilderBindings").Parameters[0];
+        var context = CreateEmitContext(binding);
+        Assert.IsFalse(Invoke<bool>("IsSecondaryBuilderInvocation", castReceiverInvocation, context));
+    }
+
+    [TestMethod]
     public void AstAndIdentifierHelpers_KeepDirectRenderNamesAndConditionsStable()
     {
         Assert.AreEqual("fallback", Invoke<string>("SanitizeJavaScriptIdentifierPart", "  ", "fallback"));
@@ -408,6 +457,86 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void EmitterPrivateHelpers_ResolveBuilderFragmentsAndRenderObjectProvenance()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var helperMethod = GetMethod(fixture, "EmitterHost", "HelperInvocationShapes");
+        var helperSymbol = GetMethodSymbol(fixture, "EmitterHost", "HelperInvocationShapes");
+        var context = CreateEmitContext(helperSymbol.Parameters[0]);
+
+        var builderContent = GetInvocation(fixture, helperMethod, "AddContent", ordinal: 0);
+        var otherContent = GetInvocation(fixture, helperMethod, "AddContent", ordinal: 1);
+        var instanceHelper = GetInvocation(fixture, helperMethod, "InstanceBuilderHelper");
+        var staticHelper = GetInvocation(fixture, helperMethod, "StaticBuilderHelper");
+        var externalHelper = GetInvocation(fixture, helperMethod, "Write");
+        var expressionHelper = GetInvocation(fixture, helperMethod, "ExpressionBuilderHelper");
+        var mismatchedHelper = GetInvocation(fixture, helperMethod, "InstanceBuilderHelper", ordinal: 1);
+        var nonBuilderHelper = GetInvocation(fixture, helperMethod, "NonBuilderHelper");
+        var noArgumentHelper = GetInvocation(fixture, helperMethod, "StaticNoBuilder");
+
+        AssertRenderTreeBuilderReceiver(emitter, builderContent, context, expected: true);
+        AssertRenderTreeBuilderReceiver(emitter, otherContent, context, expected: false);
+        AssertRenderTreeBuilderReceiver(emitter, instanceHelper, context, expected: false);
+        AssertRenderTreeBuilderReceiver(emitter, noArgumentHelper, context, expected: false);
+
+        var state = CreateRenderState();
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", instanceHelper, context, state));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", staticHelper, context, state));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", externalHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", expressionHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", mismatchedHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", nonBuilderHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", noArgumentHelper, context, state));
+
+        var referenceMethod = GetMethod(fixture, "EmitterHost", "RenderFragmentReferences");
+        var instanceMethodGroup = GetVariableInitializer(fixture, referenceMethod, "instance");
+        var staticMethodGroup = GetVariableInitializer(fixture, referenceMethod, "staticGroup");
+        var invalidMethodGroup = GetVariableInitializer(fixture, referenceMethod, "invalid");
+        AssertResolvedRenderFragmentMethodReference(emitter, instanceMethodGroup, context, expected: true);
+        AssertResolvedRenderFragmentMethodReference(emitter, staticMethodGroup, context, expected: true);
+        AssertResolvedRenderFragmentMethodReference(emitter, invalidMethodGroup, context, expected: false);
+
+        var objectMethod = GetMethod(fixture, "EmitterHost", "RenderObjectReferences");
+        var blockObjectHelper = GetInvocation(fixture, objectMethod, "CreateCarrier");
+        var expressionObjectHelper = GetInvocation(fixture, objectMethod, "CreateExpressionCarrier");
+        var ignoredObjectHelper = GetInvocation(fixture, objectMethod, "CreateIgnoredCarrier");
+        AssertResolvedRenderObjectHelper(emitter, blockObjectHelper, context, expected: true);
+        AssertResolvedRenderObjectHelper(emitter, expressionObjectHelper, context, expected: true);
+        AssertResolvedRenderObjectHelper(emitter, ignoredObjectHelper, context, expected: false);
+
+        var blockCarrierBody = GetMethodBody(fixture, "EmitterHost", "CreateCarrier");
+        var renderedObject = new object?[] { blockCarrierBody, context, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveReturnedRenderObject", renderedObject));
+        Assert.IsNotNull(renderedObject[2]);
+
+        var declaration = blockCarrierBody.Operations.OfType<IVariableDeclarationGroupOperation>().Single();
+        var trackedContext = InvokeEmitterInstance<object>(emitter, "TrackRenderProvenanceDeclarationGroup", declaration, context);
+        Assert.IsNotNull(trackedContext);
+
+        var factoryMethod = GetMethodSymbol(fixture, "EmitterHost", "NamedFragmentFactory");
+        var helperBody = new object?[] { factoryMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", helperBody));
+        Assert.IsNotNull(helperBody[1]);
+        var firstHelperFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            factoryMethod,
+            helperBody[1],
+            context);
+        var cachedHelperFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            factoryMethod,
+            helperBody[1],
+            context);
+        Assert.AreEqual(
+            GetRecordProperty<string>(firstHelperFunction, "FunctionName"),
+            GetRecordProperty<string>(cachedHelperFunction, "FunctionName"));
+    }
+
+    [TestMethod]
     public void EmitterFrameAndBuilderBindingHelpers_PreserveDirectRenderStateTransitions()
     {
         var fixture = CreateFixture();
@@ -586,6 +715,111 @@ public sealed class RenderEmitterPrivateContractTests
             .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
         return (T)method.Invoke(instance, arguments)!;
+    }
+
+    private static void AssertRenderTreeBuilderReceiver(
+        object emitter,
+        IInvocationOperation invocation,
+        object context,
+        bool expected)
+    {
+        var arguments = new object?[] { invocation, context, null };
+        Assert.AreEqual(expected, InvokeEmitter<bool>("TryGetRenderTreeBuilderReceiver", arguments));
+        if (expected)
+            Assert.IsNotNull(arguments[2]);
+    }
+
+    private static void AssertResolvedRenderFragmentMethodReference(
+        object emitter,
+        IOperation operation,
+        object context,
+        bool expected)
+    {
+        var arguments = new object?[] { operation, context, null };
+        Assert.AreEqual(expected, InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentMethodReference", arguments));
+        if (expected)
+            Assert.IsNotNull(arguments[2]);
+    }
+
+    private static void AssertResolvedRenderObjectHelper(
+        object emitter,
+        IInvocationOperation invocation,
+        object context,
+        bool expected)
+    {
+        var arguments = new object?[] { invocation, context, null };
+        Assert.AreEqual(expected, InvokeEmitterInstance<bool>(emitter, "TryResolveRenderObjectHelperInvocation", arguments));
+        if (expected)
+            Assert.IsNotNull(arguments[2]);
+    }
+
+    private static IInvocationOperation GetInvocation(
+        Fixture fixture,
+        MethodDeclarationSyntax method,
+        string targetMethodName,
+        int ordinal = 0)
+        => method.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Select(syntax => GetOperation<IInvocationOperation>(fixture, syntax))
+            .Where(operation => operation.TargetMethod.Name == targetMethodName)
+            .ElementAt(ordinal);
+
+    private static object CreateEmitContext(ISymbol builderSymbol)
+    {
+        var contextType = typeof(RenderEmitter).GetNestedType("EmitContext", BindingFlags.NonPublic);
+        var fragmentType = typeof(RenderEmitter).GetNestedType("DirectRenderFragment", BindingFlags.NonPublic);
+        var renderObjectType = typeof(RenderEmitter).GetNestedType("DirectRenderObject", BindingFlags.NonPublic);
+        Assert.IsNotNull(contextType);
+        Assert.IsNotNull(fragmentType);
+        Assert.IsNotNull(renderObjectType);
+
+        var constructor = contextType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 12);
+        return constructor.Invoke(
+        [
+            CreateBuilderBinding(builderSymbol),
+            ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            ImmutableDictionary<IParameterSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            GetEmptyImmutableDictionary(typeof(ILocalSymbol), fragmentType!),
+            GetEmptyImmutableDictionary(typeof(ILocalSymbol), renderObjectType!),
+            ImmutableDictionary<ILocalSymbol, INamedTypeSymbol>.Empty.WithComparers(SymbolEqualityComparer.Default),
+            ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default),
+            new List<Statement>(),
+            true,
+            new SenseArgument(),
+            false
+        ]);
+    }
+
+    private static object CreateRenderState()
+    {
+        var stateType = typeof(RenderEmitter).GetNestedType("RenderState", BindingFlags.NonPublic);
+        Assert.IsNotNull(stateType);
+        var constructor = stateType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single();
+        return constructor.Invoke([]);
+    }
+
+    private static object GetEmptyImmutableDictionary(Type keyType, Type valueType)
+    {
+        var factory = typeof(ImmutableDictionary)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(candidate =>
+                candidate.Name == "Create" &&
+                candidate.IsGenericMethodDefinition &&
+                candidate.GetGenericArguments().Length == 2 &&
+                candidate.GetParameters().Length == 0);
+        return factory.MakeGenericMethod(keyType, valueType).Invoke(null, null)!;
+    }
+
+    private static T GetRecordProperty<T>(object instance, string name)
+    {
+        var property = instance.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.IsNotNull(property, name);
+        return (T)property!.GetValue(instance)!;
     }
 
     private static object CreateBuilderBinding(ISymbol symbol)
@@ -828,6 +1062,112 @@ public sealed class RenderEmitterPrivateContractTests
                 }
 
                 public int NonFragmentFactory() => 1;
+
+                public void HelperInvocationShapes(RenderTreeBuilder builder, RenderTreeBuilder other)
+                {
+                    builder.AddContent(0, "receiver-primary");
+                    other.AddContent(1, "receiver-secondary");
+                    InstanceBuilderHelper(builder, "instance-helper");
+                    StaticBuilderHelper(builder, "static-helper");
+                    ExternalBuilderHelper.Write(builder, "external-helper");
+                    ExpressionBuilderHelper(builder);
+                    InstanceBuilderHelper(other, "mismatched-helper");
+                    NonBuilderHelper("not-a-builder");
+                    StaticNoBuilder();
+                    new ForeignBuilderHelper().Write(builder);
+                }
+
+                public void InstanceBuilderHelper(RenderTreeBuilder child, string text)
+                {
+                    child.AddContent(0, text);
+                }
+
+                public static void StaticBuilderHelper(RenderTreeBuilder child, string text)
+                {
+                    child.AddContent(0, text);
+                }
+
+                public void ExpressionBuilderHelper(RenderTreeBuilder child) => child.AddContent(0, "expression-helper");
+
+                public void NonBuilderHelper(string value)
+                {
+                }
+
+                public static void StaticNoBuilder()
+                {
+                }
+
+                public void RenderFragmentReferences()
+                {
+                    RenderFragment instance = RenderMethodGroup;
+                    RenderFragment staticGroup = StaticRenderMethodGroup;
+                    Action<RenderTreeBuilder, int> invalid = InvalidRenderMethodGroup;
+                }
+
+                public void RenderMethodGroup(RenderTreeBuilder child)
+                {
+                    child.AddContent(0, "instance-method-group");
+                }
+
+                public static void StaticRenderMethodGroup(RenderTreeBuilder child)
+                {
+                    child.AddContent(0, "static-method-group");
+                }
+
+                public void InvalidRenderMethodGroup(RenderTreeBuilder child, int state)
+                {
+                }
+
+                public void RenderObjectReferences()
+                {
+                    var block = CreateCarrier("block-carrier");
+                    var expression = CreateExpressionCarrier("expression-carrier");
+                    var ignored = CreateIgnoredCarrier();
+                }
+
+                public FragmentCarrier CreateCarrier(string text)
+                {
+                    RenderFragment header = child => child.AddContent(0, text);
+                    return new FragmentCarrier(header);
+                }
+
+                public FragmentCarrier CreateExpressionCarrier(string text)
+                    => new(child => child.AddContent(0, text));
+
+                public FragmentCarrier CreateIgnoredCarrier() => new();
+
+                public RenderFragment NamedFragmentFactory(string text)
+                    => child => child.AddContent(0, text);
+
+                public sealed class FragmentCarrier
+                {
+                    public FragmentCarrier()
+                    {
+                    }
+
+                    public FragmentCarrier(RenderFragment header)
+                    {
+                        Header = header;
+                    }
+
+                    public RenderFragment Header { get; set; } = default!;
+                }
+            }
+
+            public static class ExternalBuilderHelper
+            {
+                public static void Write(RenderTreeBuilder child, string text)
+                {
+                    child.AddContent(0, text);
+                }
+            }
+
+            public sealed class ForeignBuilderHelper
+            {
+                public void Write(RenderTreeBuilder child)
+                {
+                    child.AddContent(0, "foreign-helper");
+                }
             }
 
             public sealed class MappedCarrier
@@ -904,6 +1244,7 @@ public sealed class RenderEmitterPrivateContractTests
                     var genericFragmentValue = genericFragment;
                     var markupValue = markup;
                     var nullableMarkupValue = nullableMarkup;
+                    MarkupString? convertedNullableMarkup = (MarkupString?)nullableMarkup;
                     var notLoopVariable = 999;
                 }
 
@@ -939,6 +1280,10 @@ public sealed class RenderEmitterPrivateContractTests
                     RenderFragment<int> generic = value => builder => { };
                     RenderFragment convertedFragment = (RenderFragment)(builder => { });
                     RenderFragment<int> convertedGeneric = (RenderFragment<int>)(value => builder => { });
+                    object convertedFragmentAsObject = (object)(RenderFragment)(builder => { });
+                    object convertedGenericFragmentAsObject = (object)(RenderFragment<int>)(value => builder => { });
+                    object convertedFragmentReference = (object)fragment;
+                    object convertedGenericFragmentReference = (object)generic;
                 }
 
                 public RenderFragment FragmentFactory()
@@ -987,6 +1332,7 @@ public sealed class RenderEmitterPrivateContractTests
                     RenderTreeBuilder converted = (RenderTreeBuilder)builder;
                     local.AddContent(0, "local");
                     converted.AddContent(1, "converted");
+                    ((RenderTreeBuilder)builder).AddContent(2, "cast-receiver");
                 }
             }
             """,
