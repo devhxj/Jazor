@@ -1179,6 +1179,161 @@ public sealed class RenderEmitterContractTests
             "private static IComponentRenderMode RenderMode(object? value) => default!;");
     }
 
+    [TestMethod]
+    public void TryEmit_LowersConditionalGenericFragmentsAndMixedRenderObjectProperties()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            RenderFragment<string> template = Enabled
+                ? value => child =>
+                {
+                    child.AddContent(0, "conditional:true:" + value);
+                    child.AddMarkupContent(1, "<i>true</i>");
+                }
+                : value => child =>
+                {
+                    child.AddContent(0, "conditional:false:" + value);
+                    child.AddMarkupContent(1, "<i>false</i>");
+                };
+            builder.AddContent(0, template, Text);
+            builder.AddContent(1, template.Invoke(Text));
+            builder.AddContent(2, CreateCarrier(Text).Header);
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+            [Parameter] public string Text { get; set; } = "";
+
+            private sealed class FragmentCarrier
+            {
+                public FragmentCarrier(int ignored, RenderFragment header)
+                {
+                    Header = header;
+                }
+
+                public string Name { get; set; } = string.Empty;
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            private FragmentCarrier CreateCarrier(string text)
+            {
+                var ignored = 0;
+                RenderFragment header = child => child.AddContent(0, "mixed-carrier:" + text);
+                return new FragmentCarrier(ignored, header)
+                {
+                    Name = "ignored"
+                };
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesFragment);
+        Assert.IsTrue(result.UsesStaticVNode);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "conditional:true:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "conditional:false:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "mixed-carrier:", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsUnclosedRenderFragmentHelperFrames()
+    {
+        AssertDirectRenderFailure(
+            "builder.AddContent(0, CreateOpenFragment());",
+            "RenderFragment helper 'CreateOpenFragment' left unclosed ElementFrame('div') frames.",
+            """
+            private RenderFragment CreateOpenFragment() => child =>
+            {
+                child.OpenElement(0, "div");
+            };
+            """);
+    }
+
+    [TestMethod]
+    public void TryEmit_HoistsRecursiveStaticMultiRootRenderFragmentHelpers()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, RecursiveMarkup(1));",
+            """
+            private RenderFragment RecursiveMarkup(int depth) => child =>
+            {
+                child.AddMarkupContent(0, "<i>first</i>");
+                child.AddMarkupContent(1, "<i>second</i>");
+                if (depth > 0)
+                {
+                    child.AddContent(2, RecursiveMarkup(depth - 1));
+                }
+            };
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesFragment);
+        Assert.IsTrue(result.UsesStaticVNode);
+        var prelude = string.Join(
+            Environment.NewLine,
+            result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
+        StringAssert.Contains(prelude, "<i>first</i>", StringComparison.Ordinal);
+        StringAssert.Contains(prelude, "depth - 1", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersDirectAndConditionalBooleanAttributes()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "disabled");
+            if (Enabled)
+            {
+                builder.AddAttribute(2, "required");
+            }
+            else
+            {
+                builder.AddAttribute(3, "data-state", "fallback");
+            }
+            builder.CloseElement();
+            """,
+            "[Parameter] public bool Enabled { get; set; }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "disabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "required", StringComparison.Ordinal);
+        StringAssert.Contains(output, "data-state", StringComparison.Ordinal);
+    }
+
     private static Fixture CreateFixture()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
