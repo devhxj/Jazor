@@ -978,6 +978,158 @@ public sealed class RenderEmitterContractTests
             StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void TryEmit_RejectsUnsupportedDirectRenderOperationShapes()
+    {
+        AssertDirectRenderFailure(
+            "string value;",
+            "Local declarations in direct render lowering must have an initializer.");
+        AssertDirectRenderFailure(
+            "Text = \"changed\";",
+            "RazorVue direct render operation lowering only supports invocation statements.",
+            "[Parameter] public string Text { get; set; } = \"\";");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\");",
+            "RazorVue direct render operation lowering found unclosed RenderTreeBuilder frames.");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsNestedRuntimeLocalsAndUnclosedConditionalFrames()
+    {
+        AssertDirectRenderFailure(
+            """
+            builder.OpenElement(0, "section");
+            var value = Text;
+            builder.CloseElement();
+            """,
+            "Runtime local declarations in direct render lowering are only supported outside open RenderTreeBuilder frames.",
+            "[Parameter] public string Text { get; set; } = \"\";");
+        AssertDirectRenderFailure(
+            """
+            if (Enabled)
+            {
+                builder.OpenElement(0, "section");
+            }
+            else
+            {
+                builder.AddContent(1, "fallback");
+            }
+            """,
+            "Structured direct render lowering left unclosed ElementFrame",
+            "[Parameter] public bool Enabled { get; set; }");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsInvalidFrameSpecificParametersAndAttributes()
+    {
+        AssertDirectRenderFailure(
+            """
+            builder.OpenElement(0, "div");
+            if (Enabled)
+            {
+                builder.AddComponentParameter(1, "Title", "enabled");
+            }
+            else
+            {
+                builder.AddComponentParameter(2, "Title", "disabled");
+            }
+            builder.CloseElement();
+            """,
+            "AddComponentParameter requires an open component.",
+            "[Parameter] public bool Enabled { get; set; }");
+        AssertDirectRenderFailure(
+            """
+            builder.OpenElement(0, "div");
+            builder.AddContent(1, "content");
+            builder.AddAttribute(2, "data-late", "late");
+            builder.CloseElement();
+            """,
+            "Attributes must be added before children on an open element or component:");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsUnresolvableRenderFragmentParameterValues()
+    {
+        AssertDirectRenderFailure(
+            """
+            builder.OpenComponent<ChildComponent>(0);
+            builder.AddComponentParameter(1, "ChildContent", "not-a-fragment");
+            builder.CloseComponent();
+            """,
+            "ChildContent component parameter must be a RenderFragment for direct render lowering.",
+            """
+            [global::ECMAScript.ECMAScriptModule("./components/parameter-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+        AssertDirectRenderFailure(
+            """
+            builder.OpenComponent<ChildComponent>(0);
+            builder.AddComponentParameter(1, "Header", UnknownFragment);
+            builder.CloseComponent();
+            """,
+            "RenderFragment component parameters require a resolvable inline, local, helper, or component-slot source.",
+            """
+            private static RenderFragment UnknownFragment = default!;
+
+            [global::ECMAScript.ECMAScriptModule("./components/parameter-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? Header { get; set; }
+            }
+            """);
+        AssertDirectRenderFailure(
+            "builder.AddContent(0, UnknownTemplate, Text);",
+            "AddContent<TValue> requires a resolvable RenderFragment<TValue> source.",
+            """
+            private static RenderFragment<string> UnknownTemplate = default!;
+
+            [Parameter] public string Text { get; set; } = "";
+            """);
+    }
+
+    [TestMethod]
+    public void TryEmit_PreservesDiscardedPreludeCallsAndRejectsErasedDescriptorValues()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "_ = (object)CreateValue(); builder.AddContent(0, \"after-discard\");",
+            "private static string CreateValue() => \"discarded\";");
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var prelude = string.Join(
+            Environment.NewLine,
+            result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
+        StringAssert.Contains(prelude, "createValue()", StringComparison.Ordinal);
+
+        AssertDirectRenderFailure(
+            """
+            var descriptor = new FragmentDescriptor
+            {
+                Header = child => child.AddContent(0, "descriptor-header")
+            };
+            builder.AddContent(1, descriptor);
+            """,
+            "RenderFragment descriptor local 'descriptor' can only be consumed through a resolved RenderFragment member in direct render lowering.",
+            """
+            private sealed class FragmentDescriptor
+            {
+                public RenderFragment Header { get; set; } = default!;
+            }
+            """);
+    }
+
     private static Fixture CreateFixture()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
@@ -1062,6 +1214,24 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(operation);
 
         return new Fixture(compilation, component!, method!, operation!);
+    }
+
+    private static void AssertDirectRenderFailure(string body, string expectedFailure, string members = "")
+    {
+        var fixture = CreateDirectRenderFixture(body, members);
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(failure, expectedFailure, StringComparison.Ordinal);
     }
 
     private sealed record Fixture(
