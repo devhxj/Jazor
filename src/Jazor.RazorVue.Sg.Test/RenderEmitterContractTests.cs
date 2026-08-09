@@ -1130,6 +1130,55 @@ public sealed class RenderEmitterContractTests
             """);
     }
 
+    [TestMethod]
+    public void TryEmit_RejectsDirectRenderFrameAndMetadataBoundaryShapes()
+    {
+        AssertDirectRenderFailure(
+            "while (Enabled) { builder.AddContent(0, \"loop\"); }",
+            "only supports straight-line RenderTreeBuilder statements in this slice.",
+            "[Parameter] public bool Enabled { get; set; }");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, Tag); builder.CloseElement();",
+            "OpenElement tag names must be compile-time strings for direct render lowering.",
+            "[Parameter] public string Tag { get; set; } = \"div\";");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddAttribute(1, Name, \"value\"); builder.CloseElement();",
+            "Attribute names must be compile-time strings for direct render lowering.",
+            "[Parameter] public string Name { get; set; } = \"data-name\";");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"input\"); builder.SetAttributeValue(1, \"value\"); builder.CloseElement();",
+            "SetAttributeValue requires a known preceding attribute in direct render lowering.");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddContent(1, \"content\"); builder.SetKey(\"key\"); builder.CloseElement();",
+            "SetKey must target an open element or component before children.");
+        AssertDirectRenderFailure(
+            "builder.OpenComponent<ChildComponent>(0); builder.SetUpdatesAttributeName(\"value\"); builder.CloseComponent();",
+            "SetUpdatesAttributeName must target an open element before children.",
+            """
+            [global::ECMAScript.ECMAScriptModule("./components/frame-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+            }
+            """);
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"form\"); builder.AddNamedEvent(\"\", \"submit\"); builder.CloseElement();",
+            "Named event metadata requires compile-time event names for direct render lowering.");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddContent(1, \"content\"); builder.AddMultipleAttributes(2, Attributes); builder.CloseElement();",
+            "Multiple attributes must be added before children on an open element or component.",
+            "private static System.Collections.Generic.Dictionary<string, object> Attributes = [];");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddContent(1, \"content\"); builder.AddElementReferenceCapture(2, value => { }); builder.CloseElement();",
+            "Element reference captures require the current open element before children.");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddComponentReferenceCapture(1, value => { }); builder.CloseElement();",
+            "Component reference captures require the current open component before children.");
+        AssertDirectRenderFailure(
+            "builder.OpenElement(0, \"div\"); builder.AddComponentRenderMode(RenderMode(null!)); builder.CloseElement();",
+            "Component render mode metadata requires the current open component before children.",
+            "private static IComponentRenderMode RenderMode(object? value) => default!;");
+    }
+
     private static Fixture CreateFixture()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(

@@ -313,6 +313,60 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void EmitterEdgeHelpers_UseRoslynConversionAndNoContextOperationShapes()
+    {
+        var fixture = CreateFixture();
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var convertedLoopLocal = GetOperation<IConversionOperation>(fixture, inputs
+            .DescendantNodes()
+            .OfType<CastExpressionSyntax>()
+            .Single(cast => cast.Expression is IdentifierNameSyntax { Identifier.ValueText: "loopLocal" }));
+        var convertedLiteral = GetOperation<IConversionOperation>(fixture, inputs
+            .DescendantNodes()
+            .OfType<CastExpressionSyntax>()
+            .Single(cast => cast.Expression is LiteralExpressionSyntax { Token.ValueText: "converted" }));
+
+        Assert.IsFalse(InvokeEmitter<bool>("IsDiscardDeconstructionTarget", convertedLoopLocal));
+        Assert.IsTrue(InvokeEmitter<bool>("IsCompileTimeOnlyDeconstructionValue", convertedLiteral));
+
+        var loopLocals = InvokeEmitter<ImmutableArray<ILocalSymbol>>(
+            "GetLoopControlLocals",
+            GetVariableInitializer(fixture, inputs, "omitLocal"));
+        Assert.AreEqual(1, loopLocals.Length);
+        Assert.AreEqual("loopLocal", loopLocals[0].Name);
+
+        var collectionInitializer = GetOperation<IObjectOrCollectionInitializerOperation>(
+            fixture,
+            GetMethod(fixture, "OperationShapes", "NonAttributeCollectionInitializer")
+                .DescendantNodes()
+                .OfType<InitializerExpressionSyntax>()
+                .Single(static initializer => initializer.IsKind(SyntaxKind.CollectionInitializerExpression)));
+        Assert.IsFalse(InvokeEmitter<bool>(
+            "TryGetAttributeInitializer",
+            new object?[] { collectionInitializer.Initializers.Single(), null, null }));
+
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var parameterReference = GetVariableInitializer(fixture, inputs, "omitParameter") as IParameterReferenceOperation;
+        var localReference = GetVariableInitializer(fixture, inputs, "omitLocal") as ILocalReferenceOperation;
+        Assert.IsNotNull(parameterReference);
+        Assert.IsNotNull(localReference);
+        Assert.IsNull(InvokeEmitterInstance<Expression?>(emitter, "RewriteDirectParameterReference", parameterReference!, new SenseArgument()));
+        Assert.IsNull(InvokeEmitterInstance<Expression?>(emitter, "RewriteDirectLocalReference", localReference!, new SenseArgument()));
+
+        var localFunction = GetMethod(fixture, "OperationShapes", "LocalFragmentFactory")
+            .DescendantNodes()
+            .OfType<LocalFunctionStatementSyntax>()
+            .Single();
+        var localFunctionSymbol = fixture.SemanticModel.GetDeclaredSymbol(localFunction);
+        Assert.IsNotNull(localFunctionSymbol);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { localFunctionSymbol!, null }));
+    }
+
+    [TestMethod]
     public void EmitterMemberResolutionHelpers_ValidateGetterFactoryAndConstructorShapes()
     {
         var fixture = CreateFixture();
@@ -863,6 +917,14 @@ public sealed class RenderEmitterPrivateContractTests
                     var notInitializer = 1;
                 }
 
+                public void NonAttributeCollectionInitializer()
+                {
+                    var values = new List<KeyValuePair<string, object>>
+                    {
+                        new("key", "value")
+                    };
+                }
+
                 public void Deconstruction()
                 {
                     var kept = 0;
@@ -894,6 +956,12 @@ public sealed class RenderEmitterPrivateContractTests
                 public void FragmentFactoryWithoutReturn()
                 {
                     RenderFragment local = builder => { };
+                }
+
+                public void LocalFragmentFactory()
+                {
+                    RenderFragment Local() => builder => { };
+                    var fragment = Local();
                 }
 
                 public void AttributeInvocations(RenderTreeBuilder builder)
