@@ -231,6 +231,78 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                 [new Identifier("seq"), new Identifier("tag")]));
     }
 
+    [TestMethod]
+    public void ComponentImportAndInvocationEdges_CoverUnmappedAndEffectfulBuilderShapes()
+    {
+        var fixture = CreateFixture();
+        var host = new RenderTreeBuilderSemanticWalkerHost();
+        var noArgumentModuleChild = GetNamedType(fixture, "NoArgumentModuleChild");
+        var noisyModuleChild = GetNamedType(fixture, "NoisyModuleChild");
+        var plainChild = GetNamedType(fixture, "PlainChild");
+        var genericPlain = GetInvocation(
+            fixture,
+            "GenericPlainComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var directType = GetInvocation(
+            fixture,
+            "DirectTypeComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var noPropsType = GetInvocation(
+            fixture,
+            "NoPropsTypeComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var effectfulType = GetInvocation(
+            fixture,
+            "EffectfulTypeComponent",
+            static invocation => invocation.TargetMethod.Name == "OpenComponent");
+        var eventModifier = GetInvocation(
+            fixture,
+            "EventModifierCalls",
+            static invocation => invocation.TargetMethod.Name == "AddEventPreventDefaultAttribute");
+        var compoundLocal = GetVariableDeclarator(fixture, "CompoundLocal", "counter");
+
+        Assert.IsNull(InvokeStatic<string?>("GetECMAScriptModuleExportPath", noArgumentModuleChild));
+        Assert.AreEqual("./components/noisy", InvokeStatic<string?>("GetECMAScriptModuleExportPath", noisyModuleChild));
+        AssertNoComponentImport(noArgumentModuleChild);
+        AssertNoComponentImport(plainChild);
+
+        var genericPlainImport = new object?[] { genericPlain.TargetMethod, null, null };
+        Assert.IsFalse(InvokeStatic<bool>("TryResolveComponentImport", genericPlainImport));
+        Assert.AreEqual("PlainChild", ((INamedTypeSymbol)genericPlainImport[2]!).Name);
+
+        AssertDirectCall(host.RewriteInvocation(
+            directType,
+            new SenseArgument(),
+            new Identifier("ctx"),
+            [new Identifier("sequence"), new Identifier("componentType")]));
+        AssertDirectCall(host.RewriteInvocation(
+            noPropsType,
+            new SenseArgument(),
+            new Identifier("ctx"),
+            [new Identifier("sequence"), new Identifier("componentType")]));
+        AssertSingleEvaluationCall(host.RewriteInvocation(
+            effectfulType,
+            new SenseArgument(),
+            new Identifier("ctx"),
+            [new Identifier("sequence"), new Identifier("componentType")]));
+
+        AssertSingleEvaluationCall(InvokeStatic<Expression>(
+            "BuildEventModifierCall",
+            eventModifier,
+            new Identifier("ctx"),
+            new Expression[]
+            {
+                new Identifier("builder"),
+                new Identifier("sequence"),
+                new Identifier("name"),
+                new Identifier("enabled")
+            }));
+        Assert.IsTrue(InvokeStatic<bool>(
+            "ContainsLocalAssignment",
+            GetMethodBody(fixture, "CompoundLocal"),
+            compoundLocal.Symbol));
+    }
+
     private static void AssertStaticMarkup(IOperation operation, string expected)
     {
         var arguments = new object?[] { operation, null };
@@ -313,6 +385,15 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                 public string? Title { get; set; }
             }
 
+            [ECMAScriptModule]
+            public sealed class NoArgumentModuleChild : ComponentBase;
+
+            [Obsolete, ECMAScriptModule("./components/noisy")]
+            public sealed class NoisyModuleChild : ComponentBase;
+
+            [ECMAScriptModule("./components/no-props")]
+            public sealed class NoPropsModuleChild : ComponentBase;
+
             [VueLibraryComponent("tdesign-vue-next", "TButton")]
             public sealed class LibraryChild : ComponentBase;
 
@@ -351,8 +432,17 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
                 public void GenericComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent<ModuleChild>(0);
 
+                public void GenericPlainComponent(RenderTreeBuilder builder)
+                    => builder.OpenComponent<PlainChild>(0);
+
                 public void DirectTypeComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent(0, typeof(ModuleChild));
+
+                public void NoPropsTypeComponent(RenderTreeBuilder builder)
+                    => builder.OpenComponent(0, typeof(NoPropsModuleChild));
+
+                public void EffectfulTypeComponent(RenderTreeBuilder builder)
+                    => builder.OpenComponent(NextSequence(), typeof(ModuleChild));
 
                 public void LocalTypeComponent(RenderTreeBuilder builder)
                 {
@@ -400,6 +490,12 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
 
                 public void UnsupportedComponent(RenderTreeBuilder builder)
                     => builder.OpenComponent<PlainChild>(0);
+
+                public void CompoundLocal()
+                {
+                    var counter = 0;
+                    counter += 1;
+                }
 
                 public void UnrelatedCall() => Helper();
             }
