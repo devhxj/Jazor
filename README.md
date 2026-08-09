@@ -88,6 +88,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-09
 
+- Jazor 0.4 now meets its RazorVue branch-coverage release gate: 4,613 official Razor SG scenarios cover 90.01% of branches. The embedded DenoHost runtime is updated to 2.9.5, with local NuGet Deno and browser smoke verification.
 - JazorAdmin now reproduces the TDesign Starter administration shell with Tencent Cloud's rounded theme, compact content spacing, medium route tabs, route-aware primary and secondary navigation, and an administrator-only global appearance configurator fixed at the bottom center.
 - Its IconBar remains the primary navigation rail, while the selected primary module title stays fixed in the aligned 64px secondary header and only the secondary menu scrolls. Collapsing removes that rail completely; logo, toggle, content gutters, and mobile containment remain aligned.
 - The breathing quick-action trigger now opens four square actions along a 90-degree arc at 22.5-degree intervals. The login artwork also blends continuously into the form surface.

@@ -2,6 +2,8 @@
 
 ## 2026-08-09
 
+- Jazor 0.4 now meets its RazorVue release gate: all 4,613 official Razor Source Generator scenarios pass, with 90.01% branch coverage. Local NuGet package consumers also pass the Deno execution and real-browser Counter smoke paths.
+- The embedded DenoHost runtime is updated to 2.9.5. Deno bundling and the explicit Deno and Netpack production-toolchain checks remain verified against the current source.
 - JazorAdmin now reproduces the TDesign Starter administration shell with Tencent Cloud's rounded theme, compact page spacing, medium-size route tabs, and an administrator-only appearance configurator fixed at the bottom center. Administrators can switch theme, brand color, layout, menu split, sidebar behavior, header, breadcrumb, footer, tabs, and menu-collapse preferences from the same global panel.
 - The mixed navigation shell now keeps the IconBar as its primary navigation, fixes the selected primary module title in a 64px secondary-rail header, and scrolls only the secondary menu. Collapsing removes the secondary rail completely and lets the content reclaim its width; the logo, header toggle, content gutters, and mobile layout remain aligned without horizontal overflow.
 - IconBar quick actions now open from a breathing circular trigger into four square actions distributed at 22.5-degree intervals on a 90-degree arc. The shell also restores route-aware multi-page tabs and keeps the login artwork visually continuous with its form surface.

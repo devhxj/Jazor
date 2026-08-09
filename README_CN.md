@@ -88,6 +88,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-09
 
+- Jazor 0.4 已达到 RazorVue 90% 分支覆盖率发布门槛：4,613 个官方 Razor SG 场景覆盖 90.01% 分支。嵌入式 DenoHost 已升级至 2.9.5，并通过本地 NuGet Deno 与浏览器 smoke 验证。
 - JazorAdmin 现已直接复刻 TDesign Starter 管理端外壳，使用腾讯云圆滑主题、紧凑内容间距、中尺寸路由页签，并提供仅管理员可用、固定在底部中间的全局外观配置器。
 - IconBar 保留为一级导航；当前一级模块标题固定在对齐 Header 的 64px 二级栏顶部，仅二级菜单滚动。折叠后二级栏宽度归零，Logo、折叠按钮、内容边距和移动端布局保持对齐。
 - 呼吸触发按钮会沿 90 度圆弧展开四个方形操作，间隔为 22.5 度；登录页背景图与表单区域也完成连续融合。
