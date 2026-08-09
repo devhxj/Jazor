@@ -471,6 +471,7 @@ public sealed class RenderEmitterPrivateContractTests
         var instanceHelper = GetInvocation(fixture, helperMethod, "InstanceBuilderHelper");
         var staticHelper = GetInvocation(fixture, helperMethod, "StaticBuilderHelper");
         var externalHelper = GetInvocation(fixture, helperMethod, "Write");
+        var foreignInstanceHelper = GetInvocation(fixture, helperMethod, "Write", ordinal: 1);
         var expressionHelper = GetInvocation(fixture, helperMethod, "ExpressionBuilderHelper");
         var mismatchedHelper = GetInvocation(fixture, helperMethod, "InstanceBuilderHelper", ordinal: 1);
         var nonBuilderHelper = GetInvocation(fixture, helperMethod, "NonBuilderHelper");
@@ -485,6 +486,7 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", instanceHelper, context, state));
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", staticHelper, context, state));
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", externalHelper, context, state));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", foreignInstanceHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", expressionHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", mismatchedHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", nonBuilderHelper, context, state));
@@ -534,6 +536,126 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual(
             GetRecordProperty<string>(firstHelperFunction, "FunctionName"),
             GetRecordProperty<string>(cachedHelperFunction, "FunctionName"));
+    }
+
+    [TestMethod]
+    public void EmitterRoslynOperationEdges_LowerConditionalAndDeconstructedFramesExplicitly()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var directRender = GetMethodSymbol(fixture, "EmitterHost", "DirectRenderEdgeShapes");
+        var context = CreateEmitContext(directRender.Parameters[0]);
+
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            GetMethodBody(fixture, "EmitterHost", "DirectRenderEdgeShapes"),
+            context,
+            CreateRenderState()));
+
+        var runtimeLocal = GetMethodSymbol(fixture, "EmitterHost", "RuntimeLocalInsideOpenFrame");
+        var runtimeLocalFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                GetMethodBody(fixture, "EmitterHost", "RuntimeLocalInsideOpenFrame"),
+                CreateEmitContext(runtimeLocal.Parameters[0]),
+                CreateRenderState()));
+        StringAssert.Contains(
+            runtimeLocalFailure.InnerException!.Message,
+            "Runtime local declarations",
+            StringComparison.Ordinal);
+
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var convertedLiteral = GetOperation<IConversionOperation>(
+            fixture,
+            GetVariableDeclarator(inputs, "convertedLiteral").Initializer!.Value);
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitExpressionStatement",
+                convertedLiteral,
+                context,
+                CreateRenderState()));
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                GetVariableInitializer(fixture, inputs, "literal"),
+                context,
+                CreateRenderState()));
+
+        var storageReferences = GetMethod(fixture, "EmitterHost", "StorageReferences");
+        var ownStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "own"), null };
+        var staticStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "staticValue"), null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", ownStorage));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", staticStorage));
+    }
+
+    [TestMethod]
+    public void EmitterResidualOperationContracts_KeepUnsupportedAndMetadataBranchesExplicit()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var metadataMethod = GetMethodSymbol(fixture, "EmitterHost", "MetadataInvocation");
+        var metadataContext = CreateEmitContext(metadataMethod.Parameters[0]);
+
+        var metadataInvocation = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "MetadataInvocation"), "AddEventPreventDefaultAttribute");
+        AssertRenderTreeBuilderReceiver(emitter, metadataInvocation, metadataContext, expected: true);
+
+        var booleanAttributes = GetMethodSymbol(fixture, "EmitterHost", "BooleanAndConditionalAttributes");
+        var booleanAttributesContext = CreateEmitContext(booleanAttributes.Parameters[0]);
+
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            GetMethodBody(fixture, "EmitterHost", "BooleanAndConditionalAttributes"),
+            booleanAttributesContext,
+            CreateRenderState()));
+
+        var runtimeLocal = GetMethodSymbol(fixture, "EmitterHost", "RuntimeLocalOutsideFrame");
+        var noPrelude = CreateEmitContext(runtimeLocal.Parameters[0], allowPreludeDeclarations: false);
+        var runtimeLocalFailure = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                GetMethodBody(fixture, "EmitterHost", "RuntimeLocalOutsideFrame"),
+                noPrelude,
+                CreateRenderState()));
+        StringAssert.Contains(runtimeLocalFailure.InnerException!.Message, "Runtime local declarations", StringComparison.Ordinal);
+
+        var noArgumentHelper = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "HelperInvocationShapes"), "StaticNoBuilder");
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(
+                emitter,
+                "EmitExpressionStatement",
+                noArgumentHelper,
+                noPrelude,
+                CreateRenderState()));
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(
+                emitter,
+                "EmitAddEventModifier",
+                noArgumentHelper,
+                metadataContext,
+                CreateRenderState(),
+                true,
+                false));
+
+        var unsupportedLoop = GetMethodBody(fixture, "EmitterHost", "UnsupportedLoop")
+            .Operations
+            .OfType<IWhileLoopOperation>()
+            .Single();
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(emitter, "EmitOperation", unsupportedLoop, metadataContext, CreateRenderState()));
+
+        var storageReferences = GetMethod(fixture, "EmitterHost", "StorageReferences");
+        var foreignStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "foreign"), null };
+        var nonMemberStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "scalar"), null };
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", foreignStorage));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetCurrentComponentStorageMember", nonMemberStorage));
     }
 
     [TestMethod]
@@ -743,6 +865,156 @@ public sealed class RenderEmitterPrivateContractTests
             StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void EmitterResidualSymbolAndFrameBranches_KeepAlternateBoundShapesExplicit()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var foreignGenericFragment = GetVariableInitializer(fixture, inputs, "foreignGenericFragment");
+
+        Assert.IsFalse(Invoke<bool>("IsGenericRenderFragmentOperationValue", foreignGenericFragment));
+        Assert.IsFalse(Invoke<bool>("IsGenericRenderFragmentType", foreignGenericFragment.Type));
+
+        var openComponentShapes = GetMethod(fixture, "EmitterHost", "OpenComponentShapes");
+        var openComponentSymbol = GetMethodSymbol(fixture, "EmitterHost", "OpenComponentShapes");
+        var openComponentContext = CreateEmitContext(openComponentSymbol.Parameters[0]);
+        var genericOpenComponent = GetInvocation(fixture, openComponentShapes, "OpenComponent", ordinal: 0);
+        var typeOpenComponent = GetInvocation(fixture, openComponentShapes, "OpenComponent", ordinal: 1);
+        Assert.AreEqual(
+            "ModuleComponent",
+            Invoke<INamedTypeSymbol>("ResolveOpenComponentType", genericOpenComponent, openComponentContext).Name);
+        Assert.AreEqual(
+            "LibraryComponent",
+            Invoke<INamedTypeSymbol>("ResolveOpenComponentType", typeOpenComponent, openComponentContext).Name);
+
+        var builderBindings = GetMethod(fixture, "OperationShapes", "BuilderBindings");
+        var builderBindingsSymbol = GetMethodSymbol(fixture, "OperationShapes", "BuilderBindings");
+        var builderParameter = builderBindingsSymbol.Parameters.Single(parameter => parameter.Name == "builder");
+        var localSymbol = GetOperation<IVariableDeclaratorOperation>(
+            fixture,
+            GetVariableDeclarator(builderBindings, "local")).Symbol;
+        var localInvocation = builderBindings.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single(invocation => invocation.Expression.ToString().StartsWith("local.", StringComparison.Ordinal));
+        var secondaryBuilderContext = CreateEmitContext(
+            builderParameter,
+            secondaryBuilders: ImmutableHashSet<ILocalSymbol>.Empty
+                .WithComparer(SymbolEqualityComparer.Default)
+                .Add(localSymbol));
+        Assert.IsTrue(Invoke<bool>(
+            "IsSecondaryBuilderInvocation",
+            GetOperation<IInvocationOperation>(fixture, localInvocation),
+            secondaryBuilderContext));
+        Assert.IsFalse(InvokeNestedInstance<bool>(
+            CreateBuilderBinding(builderParameter),
+            "Matches",
+            GetVariableInitializer(fixture, inputs, "literal"),
+            ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolEqualityComparer.Default)));
+
+        var noEventFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(noEventFrame, "SetUpdatesAttributeName", "value");
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(noEventFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "h(\"div\"",
+            StringComparison.Ordinal);
+
+        var selectedSlotFrame = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        var selectedWhenTrue = CreateDirectRenderFragment(new Identifier("whenTrue"), parameterName: null);
+        var selectedWhenFalse = CreateDirectRenderFragment(new Identifier("whenFalse"), parameterName: null);
+        var selection = CreateConditionalRenderFragmentSelection(
+            new Identifier("showHeader"),
+            selectedWhenTrue,
+            selectedWhenFalse);
+        AddComponentSlot(
+            selectedSlotFrame,
+            "header",
+            CreateDirectRenderFragment(new Identifier("fallback"), parameterName: null, selection: selection));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(selectedSlotFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "showHeader",
+            StringComparison.Ordinal);
+
+        var methodReferences = GetMethod(fixture, "EmitterHost", "AdditionalRenderFragmentReferences");
+        var methodReferenceContext = CreateEmitContext(
+            GetMethodSymbol(fixture, "EmitterHost", "AdditionalRenderFragmentReferences").Parameters[0]);
+        AssertResolvedRenderFragmentMethodReference(
+            emitter,
+            GetVariableInitializer(fixture, methodReferences, "expression"),
+            methodReferenceContext,
+            expected: true);
+        AssertResolvedRenderFragmentMethodReference(
+            emitter,
+            GetVariableInitializer(fixture, methodReferences, "local"),
+            methodReferenceContext,
+            expected: false);
+
+        var propertyReferences = GetMethod(fixture, "EmitterHost", "AdditionalPropertyReferences");
+        var staticPropertyReference = GetVariableInitializer(fixture, propertyReferences, "staticHeader");
+        var staticPropertyArguments = new object?[] { staticPropertyReference, methodReferenceContext, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentExpression", staticPropertyArguments));
+        Assert.IsNotNull(staticPropertyArguments[2]);
+        var foreignPropertyArguments = new object?[]
+        {
+            GetVariableInitializer(fixture, propertyReferences, "foreignHeader"),
+            methodReferenceContext,
+            null
+        };
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentExpression", foreignPropertyArguments));
+
+        var provenance = GetMethodBody(fixture, "EmitterHost", "ProvenanceObject")
+            .Operations
+            .OfType<IVariableDeclarationGroupOperation>()
+            .Single();
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "TrackRenderProvenanceDeclarationGroup",
+            provenance,
+            methodReferenceContext));
+
+        var helperFactory = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "HelperFactoryReferences"),
+            "MultiRootFragmentFactory");
+        var helperArguments = new object?[] { helperFactory, methodReferenceContext, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveRenderFragmentHelperInvocation", helperArguments));
+        Assert.IsNotNull(helperArguments[2]);
+
+        Assert.IsFalse(InvokeEmitter<bool>(
+            "TryGetRenderFragmentFactoryReturn",
+            new object?[] { GetMethodBody(fixture, "EmitterHost", "UninitializedFragmentLocal"), null, null }));
+
+        var attributeInvocation = GetInvocation(fixture, GetMethod(fixture, "OperationShapes", "AttributeInvocations"), "AddAttribute");
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", attributeInvocation, openComponentContext, CreateRenderState()));
+
+        var invalidAttribute = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "InvalidAddAttribute"), "AddAttribute");
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(emitter, "EmitAddAttribute", invalidAttribute, openComponentContext, CreateRenderState()));
+
+        var twoArgumentModifier = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "TwoArgumentEventModifier"), "AddEventPreventDefaultAttribute");
+        var modifierState = CreateRenderState();
+        PushFrame(modifierState, CreateElementFrame());
+        InvokeEmitterInstance<object?>(
+            emitter,
+            "EmitAddEventModifier",
+            twoArgumentModifier,
+            openComponentContext,
+            modifierState,
+            true,
+            false);
+
+        var dynamicConditional = GetMethodSymbol(fixture, "EmitterHost", "DynamicConditionalAttributes");
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                GetMethodBody(fixture, "EmitterHost", "DynamicConditionalAttributes"),
+                CreateEmitContext(dynamicConditional.Parameters[0]),
+                CreateRenderState()));
+    }
+
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
     {
         var arguments = new object?[] { operation, null };
@@ -863,7 +1135,10 @@ public sealed class RenderEmitterPrivateContractTests
             .Where(operation => operation.TargetMethod.Name == targetMethodName)
             .ElementAt(ordinal);
 
-    private static object CreateEmitContext(ISymbol builderSymbol)
+    private static object CreateEmitContext(
+        ISymbol builderSymbol,
+        bool allowPreludeDeclarations = true,
+        ImmutableHashSet<ILocalSymbol>? secondaryBuilders = null)
     {
         var contextType = typeof(RenderEmitter).GetNestedType("EmitContext", BindingFlags.NonPublic);
         var fragmentType = typeof(RenderEmitter).GetNestedType("DirectRenderFragment", BindingFlags.NonPublic);
@@ -884,9 +1159,9 @@ public sealed class RenderEmitterPrivateContractTests
             GetEmptyImmutableDictionary(typeof(ILocalSymbol), fragmentType!),
             GetEmptyImmutableDictionary(typeof(ILocalSymbol), renderObjectType!),
             ImmutableDictionary<ILocalSymbol, INamedTypeSymbol>.Empty.WithComparers(SymbolEqualityComparer.Default),
-            ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default),
+            secondaryBuilders ?? ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default),
             new List<Statement>(),
-            true,
+            allowPreludeDeclarations,
             new SenseArgument(),
             false
         ]);
@@ -1031,7 +1306,11 @@ public sealed class RenderEmitterPrivateContractTests
         AssertConstantString((IOperation)arguments[1]!, key);
     }
 
-    private static object CreateDirectRenderFragment(Expression renderExpression, string? parameterName)
+    private static object CreateDirectRenderFragment(
+        Expression renderExpression,
+        string? parameterName,
+        Expression? availabilityCondition = null,
+        object? selection = null)
     {
         var fragmentType = typeof(RenderEmitter).GetNestedType("DirectRenderFragment", BindingFlags.NonPublic);
         Assert.IsNotNull(fragmentType);
@@ -1044,11 +1323,24 @@ public sealed class RenderEmitterPrivateContractTests
             parameterName,
             false,
             false,
+            availabilityCondition,
             null,
-            null,
-            null,
+            selection,
             false
         });
+    }
+
+    private static object CreateConditionalRenderFragmentSelection(
+        Expression condition,
+        object whenTrue,
+        object whenFalse)
+    {
+        var selectionType = typeof(RenderEmitter).GetNestedType("ConditionalRenderFragmentSelection", BindingFlags.NonPublic);
+        Assert.IsNotNull(selectionType);
+        var constructor = selectionType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 3);
+        return constructor.Invoke([condition, whenTrue, whenFalse]);
     }
 
     private static Fixture CreateFixture()
@@ -1066,7 +1358,7 @@ public sealed class RenderEmitterPrivateContractTests
 
             [Obsolete]
             [ECMAScriptModule(" ./components/module ")]
-            public sealed class ModuleComponent;
+            public sealed class ModuleComponent : ComponentBase;
 
             [ECMAScriptModule(" ")]
             [VueLibraryComponent(" tdesign-vue-next ", " Button ")]
@@ -1110,10 +1402,17 @@ public sealed class RenderEmitterPrivateContractTests
                 public static RenderFragment? Slot { get; set; }
             }
 
+            public static class ForeignTypes
+            {
+                public delegate void RenderFragment<T>(T value);
+            }
+
             public sealed class TypeParameterOwner<T>;
 
             public sealed class EmitterHost : ComponentBase
             {
+                public static RenderFragment StaticHeader => builder => { };
+
                 public RenderFragment ExpressionFragment => builder => { };
 
                 public RenderFragment BlockFragment
@@ -1185,6 +1484,139 @@ public sealed class RenderEmitterPrivateContractTests
                     NonBuilderHelper("not-a-builder");
                     StaticNoBuilder();
                     new ForeignBuilderHelper().Write(builder);
+                }
+
+                public void DirectRenderEdgeShapes(
+                    RenderTreeBuilder builder,
+                    bool enabled,
+                    IEnumerable<(string Name, int Value)> entries)
+                {
+                    builder.OpenElement(0, "section");
+                    if (enabled)
+                        builder.AddAttribute(1, "class", "enabled");
+                    else
+                        builder.AddAttribute(2, "class", "disabled");
+                    builder.CloseElement();
+
+                    foreach (var (name, value) in entries)
+                    {
+                        builder.OpenElement(3, "span");
+                        builder.AddContent(4, name);
+                        builder.CloseElement();
+                    }
+                }
+
+                public void BooleanAndConditionalAttributes(RenderTreeBuilder builder, bool enabled)
+                {
+                    builder.OpenElement(0, "input");
+                    builder.AddAttribute(1, "disabled");
+                    if (enabled)
+                        builder.AddAttribute(2, "checked");
+                    else
+                        builder.AddAttribute(3, "readonly");
+                    builder.CloseElement();
+                }
+
+                public void MetadataInvocation(RenderTreeBuilder builder)
+                {
+                    Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(
+                        builder,
+                        0,
+                        "onclick",
+                        true);
+                }
+
+                public void RuntimeLocalInsideOpenFrame(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "div");
+                    var runtime = GetRuntimeValue();
+                    builder.CloseElement();
+                }
+
+                private static int GetRuntimeValue() => 1;
+
+                public void RuntimeLocalOutsideFrame(RenderTreeBuilder builder)
+                {
+                    var runtime = GetRuntimeValue();
+                }
+
+                public void UnsupportedLoop(RenderTreeBuilder builder, bool enabled)
+                {
+                    while (enabled)
+                        break;
+                }
+
+                public void StorageReferences()
+                {
+                    var own = Header;
+                    var staticValue = StaticHeader;
+                    var foreign = new ForeignStorage().Value;
+                    var scalar = GetRuntimeValue();
+                }
+
+                public void OpenComponentShapes(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<ModuleComponent>(0);
+                    builder.CloseComponent();
+                    builder.OpenComponent(1, typeof(LibraryComponent));
+                    builder.CloseComponent();
+                }
+
+                public void AdditionalRenderFragmentReferences(RenderTreeBuilder builder)
+                {
+                    RenderFragment expression = ExpressionRenderMethodGroup;
+                    RenderFragment local = LocalRenderMethodGroup;
+
+                    void LocalRenderMethodGroup(RenderTreeBuilder child)
+                    {
+                        child.AddContent(0, "local-method-group");
+                    }
+                }
+
+                public void ExpressionRenderMethodGroup(RenderTreeBuilder child)
+                    => child.AddContent(0, "expression-method-group");
+
+                public void AdditionalPropertyReferences()
+                {
+                    RenderFragment staticHeader = StaticHeader;
+                    RenderFragment foreignHeader = new ForeignStorage().Value;
+                }
+
+                public void ProvenanceObject()
+                {
+                    var carrier = new FragmentCarrier(child => child.AddContent(0, "carrier"));
+                }
+
+                public void HelperFactoryReferences()
+                {
+                    var fragment = MultiRootFragmentFactory();
+                }
+
+                public RenderFragment MultiRootFragmentFactory()
+                    => child =>
+                    {
+                        child.AddContent(0, "first");
+                        child.AddContent(1, "second");
+                    };
+
+                public void InvalidAddAttribute(FakeBuilder builder)
+                {
+                    builder.AddAttribute(0, "class", "value", 1);
+                }
+
+                public void TwoArgumentEventModifier(FakeBuilder builder)
+                {
+                    builder.AddEventPreventDefaultAttribute("onclick", true);
+                }
+
+                public void DynamicConditionalAttributes(RenderTreeBuilder builder, bool visible, string name)
+                {
+                    builder.OpenElement(0, "div");
+                    if (visible)
+                        builder.AddAttribute(1, name, "visible");
+                    else
+                        builder.AddAttribute(2, "class", "hidden");
+                    builder.CloseElement();
                 }
 
                 public void InstanceBuilderHelper(RenderTreeBuilder child, string text)
@@ -1327,12 +1759,20 @@ public sealed class RenderEmitterPrivateContractTests
                 }
             }
 
-            public sealed class FakeBuilder
-            {
-                public void AddContent<TValue>(int sequence, object value, TValue argument)
+                public sealed class FakeBuilder
                 {
+                    public void AddContent<TValue>(int sequence, object value, TValue argument)
+                    {
+                    }
+
+                    public void AddAttribute(int sequence, string name, object value, int extra)
+                    {
+                    }
+
+                    public void AddEventPreventDefaultAttribute(string eventName, bool value)
+                    {
+                    }
                 }
-            }
 
             public sealed class MappedCarrier
             {
@@ -1368,6 +1808,11 @@ public sealed class RenderEmitterPrivateContractTests
                 public ExpressionCarrier(RenderFragment header) => Header = header;
 
                 public RenderFragment Header { get; set; } = default!;
+            }
+
+            public sealed class ForeignStorage
+            {
+                public RenderFragment Value { get; set; } = default!;
             }
 
             public sealed class OperationShapes
@@ -1408,6 +1853,7 @@ public sealed class RenderEmitterPrivateContractTests
                     var genericFragmentValue = genericFragment;
                     var markupValue = markup;
                     var nullableMarkupValue = nullableMarkup;
+                    ForeignTypes.RenderFragment<int> foreignGenericFragment = value => { };
                     MarkupString? convertedNullableMarkup = (MarkupString?)nullableMarkup;
                     var notLoopVariable = 999;
                 }

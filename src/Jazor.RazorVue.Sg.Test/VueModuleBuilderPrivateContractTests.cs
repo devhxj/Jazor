@@ -710,6 +710,70 @@ public sealed class VueModuleBuilderPrivateContractTests
             StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void ResidualBranchEdges_PreserveNameAndSourceMapFallbackContracts()
+    {
+        var compilation = CreateCompilation();
+        var ordinary = GetMethod(GetNamedType(compilation, "PrivateContracts.Shapes"), "Ordinary");
+        var preferredName = Invoke<string>("GetPreferredModuleDeclaredName", ordinary);
+        var sourceName = Invoke<string?>("GetSourceDeclaredNameCandidate", ordinary);
+        Assert.IsNotNull(sourceName);
+
+        var alias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! });
+        var localCollisionAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName!, alias });
+        var usedCollisionAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName!, alias },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! });
+        Assert.IsTrue(localCollisionAlias.EndsWith("$1", StringComparison.Ordinal));
+        Assert.IsTrue(usedCollisionAlias.EndsWith("$1", StringComparison.Ordinal));
+
+        var pruned = Invoke<SourceMapDocument>(
+            "PruneIntermediateSources",
+            new SourceMapDocument(
+                "component.mjs",
+                [new SourceMapSource("Pages/Retained.razor", "<div />")],
+                [
+                    new SourceMapSegment(0, 0, -1, 0, 0),
+                    new SourceMapSegment(1, 0, 0, 0, 0)
+                ]),
+            "component.mjs");
+        Assert.HasCount(1, pruned.Sources);
+        Assert.HasCount(1, pruned.Segments);
+
+        var sources = new List<SourceMapSource>
+        {
+            new("Pages/Retained.razor", "first")
+        };
+        var sourceIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["pages/retained.razor"] = 0
+        };
+        Assert.AreEqual(
+            0,
+            Invoke<int>("GetOrAddSourceIndex", sources, sourceIndexes, "Pages/Retained.razor", "second"));
+        Assert.AreEqual("first", sources[0].Content);
+
+        var divergentCompilation = CreateStandaloneCompilation(
+            "public sealed class DivergentComponent { }",
+            @"C:\\RazorVue\\Divergent\\Component.cs");
+        var divergentDocument = new GeneratedDocument(
+            "Generated/Divergent.razor.g.cs",
+            @"D:\\RazorVue\\Divergent\\Page.razor",
+            SourceText.From("class Generated { }"),
+            []);
+        Assert.IsNull(Invoke<string?>("TryGetCompilationSourceRoot", divergentCompilation, divergentDocument));
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
