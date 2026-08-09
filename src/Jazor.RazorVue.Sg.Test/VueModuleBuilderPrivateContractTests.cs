@@ -5,6 +5,8 @@ using Jazor.Common.SourceMaps;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.Sg.Test;
@@ -186,6 +188,69 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(Invoke<string>("GetStableSymbolSortKey", compilation.GetSpecialType(SpecialType.System_String))));
     }
 
+    [TestMethod]
+    public void AstLocalAndModuleNamingHelpers_PreserveFramingContracts()
+    {
+        var compilation = CreateCompilation();
+        var shapes = GetNamedType(compilation, "PrivateContracts.Shapes");
+        var ordinary = GetMethod(shapes, "Ordinary");
+        var explicitMethod = shapes.GetMembers().OfType<IMethodSymbol>()
+            .Single(method => method.MethodKind == MethodKind.ExplicitInterfaceImplementation);
+        var localShapes = GetMethodBody(compilation, "LocalShapes");
+        var loop = localShapes.Descendants().OfType<IForEachLoopOperation>().Single();
+        var localNames = Invoke<HashSet<string>>("CollectDirectRenderLocalNames", localShapes);
+
+        foreach (var name in new[] { "ordinary", "text", "field", "first", "rest", "item" })
+            Assert.IsTrue(localNames.Contains(name), name);
+        var loopArguments = new object?[] { loop.LoopControlVariable, null };
+        Assert.IsTrue(Invoke<bool>("TryGetLoopControlVariable", loopArguments));
+        Assert.AreEqual("item", ((ILocalSymbol)loopArguments[1]!).Name);
+        Assert.IsFalse(Invoke<bool>("TryGetLoopControlVariable", new object?[] { localShapes.Operations[0], null }));
+
+        var preferredName = Invoke<string>("GetPreferredModuleDeclaredName", ordinary);
+        Assert.AreEqual(preferredName, Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal)));
+        var sourceName = Invoke<string?>("GetSourceDeclaredNameCandidate", ordinary);
+        Assert.IsNotNull(sourceName);
+        var alias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            ordinary,
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! },
+            new HashSet<string>(StringComparer.Ordinal) { preferredName, sourceName! });
+        Assert.IsTrue(alias.StartsWith("m$", StringComparison.Ordinal));
+        Assert.IsTrue(Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod).StartsWith("m$", StringComparison.Ordinal));
+
+        var identifierAccess = Invoke<MemberExpression>("CreateMemberAccess", new Identifier("scope"), "ready");
+        var stringAccess = Invoke<MemberExpression>("CreateMemberAccess", new Identifier("scope"), "data-title");
+        Assert.IsFalse(identifierAccess.Computed);
+        Assert.IsTrue(stringAccess.Computed);
+        Assert.IsInstanceOfType<Identifier>(Invoke<ObjectProperty>("CreateObjectProperty", "ready", new Identifier("value")).Key);
+        Assert.IsInstanceOfType<StringLiteral>(Invoke<ObjectProperty>("CreateObjectProperty", "data-title", new Identifier("value")).Key);
+
+        var minimalVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", false, false, false, false, false, false, false);
+        CollectionAssert.AreEquivalent(
+            new[] { "defineComponent", "h" },
+            GetImportedNames(minimalVueImport));
+        var fullVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", true, true, true, true, true, true, true);
+        CollectionAssert.AreEquivalent(
+            new[] { "defineComponent", "h", "Fragment", "createStaticVNode", "onMounted", "onUnmounted", "onUpdated", "reactive", "watch" },
+            GetImportedNames(fullVueImport));
+
+        var module = new Parser().ParseModule(
+            """
+            import { h } from "vue";
+            import context from "@jazor/vue-runtime/render-context.mjs";
+            import local from "./local.mjs";
+            """);
+        var imports = module.Body.OfType<ImportDeclaration>().ToArray();
+        Assert.IsTrue(Invoke<bool>("IsVueFramingImport", imports[0]));
+        Assert.IsTrue(Invoke<bool>("IsVueFramingImport", imports[1]));
+        Assert.IsFalse(Invoke<bool>("IsVueFramingImport", imports[2]));
+    }
+
     private static T Invoke<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(VueModuleBuilder)
@@ -197,6 +262,12 @@ public sealed class VueModuleBuilderPrivateContractTests
     private static void InvokeVoid(string methodName, params object?[] arguments)
         => _ = Invoke<object?>(methodName, arguments);
 
+    private static string[] GetImportedNames(ImportDeclaration declaration)
+        => declaration.Specifiers
+            .OfType<ImportSpecifier>()
+            .Select(static specifier => ((Identifier)specifier.Imported).Name)
+            .ToArray();
+
     private static CSharpCompilation CreateCompilation()
     {
         var source = CSharpSyntaxTree.ParseText(
@@ -206,14 +277,32 @@ public sealed class VueModuleBuilderPrivateContractTests
 
             namespace PrivateContracts;
 
-            public sealed class Shapes
+            public interface IExplicit
+            {
+                void Execute();
+            }
+
+            public sealed class Shapes : IExplicit
             {
                 private static readonly int Seed = 1;
                 public int Field;
                 public int Auto { get; init; }
                 public static void Ordinary() { }
+                void IExplicit.Execute() { }
                 ~Shapes() { }
                 public sealed class Nested { }
+            }
+
+            public static class LocalShapeHost
+            {
+                public static void LocalShapes(object? value, int[] values)
+                {
+                    var ordinary = 0;
+                    if (value is string text) { }
+                    if (value is Shapes { Field: var field }) { }
+                    if (values is [var first, .. var rest]) { }
+                    foreach (var item in values) { }
+                }
             }
 
             [ECMAScriptModule("./components/marked")]
@@ -260,4 +349,16 @@ public sealed class VueModuleBuilderPrivateContractTests
 
     private static IMethodSymbol GetMethod(INamedTypeSymbol type, string name)
         => type.GetMembers(name).OfType<IMethodSymbol>().Single();
+
+    private static IBlockOperation GetMethodBody(Compilation compilation, string methodName)
+    {
+        var syntaxTree = compilation.SyntaxTrees.Single();
+        var method = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(candidate => candidate.Identifier.ValueText == methodName);
+        var operation = compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!) as IBlockOperation;
+        Assert.IsNotNull(operation, methodName);
+        return operation!;
+    }
 }

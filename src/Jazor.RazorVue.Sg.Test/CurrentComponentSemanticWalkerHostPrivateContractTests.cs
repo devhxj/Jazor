@@ -1,4 +1,6 @@
 using System.Reflection;
+using Acornima.Ast;
+using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -138,6 +140,145 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         StringAssert.Contains(binderDiagnostic.Message, "Anonymous body operation kinds", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void RewriteHooks_ProjectCurrentComponentStorageCallbacksAndFrameworkCalls()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var count = GetProperty(component, "Count");
+        var title = GetProperty(component, "Title");
+        var computed = GetProperty(component, "Computed");
+        var field = GetField(component, "_countField");
+        var currentMethod = GetMethodSymbol(fixture, "ComponentUnderTest", "CurrentMethod");
+        var host = new CurrentComponentSemanticWalkerHost(
+            component,
+            parameterRuntimeNames: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Title"] = "data-title"
+            },
+            memberRuntimeNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)
+            {
+                [count.OriginalDefinition] = "countState",
+                [computed.OriginalDefinition] = "readComputed",
+                [field.OriginalDefinition] = "fieldState",
+                [currentMethod.OriginalDefinition] = "currentMethod"
+            });
+
+        var reads = GetMethod(fixture, "ComponentUnderTest", "ReadMembers");
+        var countReference = GetVariableInitializer(fixture, reads, "count");
+        var titleReference = GetVariableInitializer(fixture, reads, "title");
+        var computedReference = GetVariableInitializer(fixture, reads, "computed");
+        var fieldReference = GetVariableInitializer(fixture, reads, "field");
+        var countProjection = host.RewritePropertyReference(
+            (IPropertyReferenceOperation)countReference,
+            new SenseArgument(),
+            new Identifier("this"),
+            []);
+        var titleProjection = host.RewritePropertyReference(
+            (IPropertyReferenceOperation)titleReference,
+            new SenseArgument(),
+            new Identifier("this"),
+            []);
+        var computedProjection = host.RewritePropertyReference(
+            (IPropertyReferenceOperation)computedReference,
+            new SenseArgument(),
+            new Identifier("this"),
+            []);
+        var fieldProjection = host.RewriteFieldReference(
+            (IFieldReferenceOperation)fieldReference,
+            new SenseArgument(),
+            new Identifier("this"));
+
+        Assert.IsInstanceOfType<MemberExpression>(countProjection);
+        Assert.IsFalse(((MemberExpression)countProjection!).Computed);
+        Assert.IsInstanceOfType<MemberExpression>(titleProjection);
+        Assert.IsTrue(((MemberExpression)titleProjection!).Computed);
+        Assert.IsInstanceOfType<CallExpression>(computedProjection);
+        Assert.IsInstanceOfType<MemberExpression>(fieldProjection);
+
+        var assignCount = GetAssignment(fixture, "AssignCount");
+        var assignTitle = GetAssignment(fixture, "AssignTitle");
+        var assignIndexer = GetAssignment(fixture, "AssignIndexer");
+        Assert.IsNull(host.RewriteSimpleAssignmentPreorder(assignCount, new SenseArgument()));
+        Assert.ThrowsExactly<OperationTransformationException>(() =>
+            host.RewriteSimpleAssignmentPreorder(assignTitle, new SenseArgument()));
+        Assert.IsInstanceOfType<AssignmentExpression>(host.RewriteSimpleAssignmentPostorder(
+            assignCount,
+            new SenseArgument(),
+            new Identifier("value")));
+        Assert.IsNull(host.RewriteSimpleAssignmentPostorder(
+            assignIndexer,
+            new SenseArgument(),
+            new Identifier("value")));
+
+        var indexer = GetVariableInitializer(fixture, GetMethod(fixture, "ComponentUnderTest", "ReadMembers"), "indexed");
+        Assert.ThrowsExactly<OperationTransformationException>(() =>
+            host.RewritePropertyReference(
+                (IPropertyReferenceOperation)indexer,
+                new SenseArgument(),
+                new Identifier("this"),
+                [new Identifier("index")]));
+
+        var stateChanged = GetSingleInvocation(fixture, "ComponentUnderTest", "StateChangedCaller");
+        var invokeAsync = GetSingleInvocation(fixture, "ComponentUnderTest", "InvokeAsyncCaller");
+        var typeCheck = GetSingleInvocation(fixture, "ComponentUnderTest", "TypeCheckCall");
+        var eventCallback = GetSingleInvocation(fixture, "ComponentUnderTest", "EventCallbackCaller");
+        var currentMethodCall = GetSingleInvocation(fixture, "ComponentUnderTest", "CurrentMethodCaller");
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocationPreorder(stateChanged, new SenseArgument()));
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocation(
+            stateChanged,
+            new SenseArgument(),
+            new Identifier("this"),
+            []));
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocation(
+            invokeAsync,
+            new SenseArgument(),
+            new Identifier("this"),
+            [new Identifier("work")]));
+        Assert.IsInstanceOfType<Identifier>(
+            host.RewriteInvocation(typeCheck, new SenseArgument(), null, [new Identifier("value")]));
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocation(
+            eventCallback,
+            new SenseArgument(),
+            new Identifier("changed"),
+            [new Identifier("value")]));
+        Assert.IsInstanceOfType<CallExpression>(host.RewriteInvocation(
+            currentMethodCall,
+            new SenseArgument(),
+            new Identifier("this"),
+            []));
+
+        var methodReference = GetOperation<IMethodReferenceOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "MethodGroup")
+                .DescendantNodes()
+                .OfType<IdentifierNameSyntax>()
+                .Single(identifier => identifier.Identifier.ValueText == "CurrentMethod"));
+        Assert.IsInstanceOfType<Identifier>(host.RewriteMethodReference(
+            methodReference,
+            new SenseArgument(),
+            new Identifier("this")));
+
+        var parameterReference = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "LocalAndParameter"),
+            "local");
+        var localReference = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "LocalAndParameter"),
+            "copy");
+        var rewriteHost = new CurrentComponentSemanticWalkerHost(
+            component,
+            parameterReferenceRewriter: static (_, _) => new Identifier("parameter"),
+            localReferenceRewriter: static (_, _) => new Identifier("local"));
+        Assert.IsInstanceOfType<Identifier>(rewriteHost.RewriteParameterReference(
+            (IParameterReferenceOperation)parameterReference,
+            new SenseArgument()));
+        Assert.IsInstanceOfType<Identifier>(rewriteHost.RewriteLocalReference(
+            (ILocalReferenceOperation)localReference,
+            new SenseArgument()));
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -158,6 +299,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             """
+            using System;
             using Microsoft.AspNetCore.Components;
 
             namespace CurrentComponentPrivateContracts;
@@ -165,12 +307,18 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public sealed class ComponentUnderTest : ComponentBase
             {
                 private EventCallbackFactory _factory;
+                private int _countField;
                 [Parameter] public EventCallback Changed { get; set; }
                 [Parameter] public EventCallback<int> GenericChanged { get; set; }
                 [Parameter] public string? Title { get; set; }
                 public int Count { get; set; }
                 public int Computed => Count;
                 public static int StaticValue => 1;
+                public string this[int index]
+                {
+                    get => Title ?? string.Empty;
+                    set => Count = value.Length;
+                }
 
                 private static int Other() => 1;
 
@@ -180,6 +328,27 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     object convertedProperty = (object)Count;
                     var staticValue = StaticValue;
                     var literal = 1;
+                }
+
+                public void ReadMembers()
+                {
+                    var count = Count;
+                    var title = Title;
+                    var computed = Computed;
+                    var field = _countField;
+                    var indexed = this[0];
+                }
+
+                public void AssignCount() { Count = 1; }
+                public void AssignTitle() { Title = "title"; }
+                public void AssignIndexer() { this[0] = "value"; }
+                private void CurrentMethod() { }
+                public void CurrentMethodCaller() { CurrentMethod(); }
+                public void MethodGroup() { Action callback = CurrentMethod; }
+                public void LocalAndParameter(int value)
+                {
+                    var local = value;
+                    var copy = local;
                 }
 
                 public void SingleBinder(int value)
@@ -225,6 +394,11 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 {
                     var typeChecked = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck(Count);
                 }
+
+                public void EventCallbackCaller()
+                {
+                    _ = Changed.InvokeAsync(Count);
+                }
             }
 
             public sealed class GenericHolder<T>;
@@ -255,6 +429,9 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
 
     private static IPropertySymbol GetProperty(INamedTypeSymbol type, string name)
         => type.GetMembers(name).OfType<IPropertySymbol>().Single();
+
+    private static IFieldSymbol GetField(INamedTypeSymbol type, string name)
+        => type.GetMembers(name).OfType<IFieldSymbol>().Single();
 
     private static MethodDeclarationSyntax GetMethod(Fixture fixture, string typeName, string methodName)
         => fixture.SyntaxTree.GetRoot()
@@ -297,6 +474,14 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             GetMethod(fixture, typeName, methodName)
                 .DescendantNodes()
                 .OfType<ReturnStatementSyntax>()
+                .Single());
+
+    private static ISimpleAssignmentOperation GetAssignment(Fixture fixture, string methodName)
+        => GetOperation<ISimpleAssignmentOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", methodName)
+                .DescendantNodes()
+                .OfType<AssignmentExpressionSyntax>()
                 .Single());
 
     private static IOperation GetVariableInitializer(Fixture fixture, MethodDeclarationSyntax method, string name)
