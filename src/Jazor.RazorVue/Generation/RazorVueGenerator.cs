@@ -19,6 +19,26 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         Bootstrap.Initialize();
+
+        var razorSources = context.AdditionalTextsProvider
+            .Select(static (source, cancellationToken) => RazorSourceTextRegistry.TryCreate(source, cancellationToken))
+            .Where(static source => source is not null)
+            .Select(static (source, _) => source!.Value)
+            .Collect();
+        context.RegisterImplementationSourceOutput(
+            razorSources,
+            static (output, sources) =>
+            {
+                if (sources.IsDefaultOrEmpty)
+                    return;
+
+                output.AddSource(
+                    RazorSourceTextRegistry.CarrierHintName,
+                    Microsoft.CodeAnalysis.Text.SourceText.From(
+                        RazorSourceTextRegistry.BuildCarrierSource(sources),
+                        System.Text.Encoding.UTF8));
+            });
+
         var failure = InitializeHookInstaller.GetInstallFailure();
         if (string.IsNullOrEmpty(failure))
             return;

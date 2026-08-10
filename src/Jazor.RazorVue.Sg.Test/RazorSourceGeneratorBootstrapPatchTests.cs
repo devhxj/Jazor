@@ -110,7 +110,15 @@ public sealed class BootstrapPatchTests
         var catalog = outputCompilation.SyntaxTrees.SingleOrDefault(
             static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs");
         Assert.IsNotNull(catalog);
-        StringAssert.Contains(catalog!.GetText().ToString(), "components/counter.mjs");
+        Assert.IsFalse(
+            outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.Contains("RazorSourceTextCatalog", StringComparison.Ordinal)),
+            "Host output source text must not enter the consumer compilation.");
+        var catalogText = catalog!.GetText().ToString();
+        StringAssert.Contains(catalogText, "components/counter.mjs");
+        // The production driver path must carry AdditionalText into the final map. The
+        // lowerer still consumes Razor SG's final C# compilation rather than this text.
+        StringAssert.Contains(catalogText, "sourcesContent");
+        StringAssert.Contains(catalogText, "<button>Counter</button>");
         Assert.AreEqual(
             0,
             outputCompilation.GetDiagnostics().Count(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error),

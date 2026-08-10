@@ -42,6 +42,7 @@ internal static class JazorDevelopmentClientScriptFactory
           resolveTransportReady = resolve;
         });
         const hmrHandlers = new Map();
+        const vueComponents = new Map();
         function sendMessage(payload) {
           if (!socket || socket.readyState !== WebSocket.OPEN) {
             return;
@@ -107,22 +108,52 @@ internal static class JazorDevelopmentClientScriptFactory
             detail
           })) === false;
         }
+        function registerVueComponent(moduleId, component) {
+          if (typeof moduleId !== "string" || moduleId.length === 0 || (typeof component !== "object" && typeof component !== "function") || component === null) {
+            throw new TypeError("JazorHmr.registerVueComponent requires a module id and Vue component.");
+          }
+          const runtime = globalThis.__VUE_HMR_RUNTIME__;
+          if (!runtime || typeof runtime.createRecord !== "function") {
+            return false;
+          }
+          component.__hmrId = moduleId;
+          runtime.createRecord(moduleId, component);
+          vueComponents.set(moduleId, component);
+          return true;
+        }
+        function reloadVueComponent(moduleId, component) {
+          const runtime = globalThis.__VUE_HMR_RUNTIME__;
+          if (!runtime || typeof runtime.reload !== "function") {
+            return false;
+          }
+          runtime.reload(moduleId, component);
+          return true;
+        }
         async function applyRegisteredModuleUpdates(detail) {
           if (detail.moduleUpdates.length === 0) {
             return false;
           }
           for (const update of detail.moduleUpdates) {
             const handlers = hmrHandlers.get(update.moduleId);
-            if (!handlers || handlers.size === 0) {
+            const previousVueComponent = vueComponents.get(update.moduleId);
+            if ((!handlers || handlers.size === 0) && !previousVueComponent) {
               return false;
             }
             try {
               const moduleUrl = new URL(update.url, location.href);
               moduleUrl.searchParams.set("__jazor_hmr", String(detail.reloadSequence ?? Date.now()));
               const module = await import(moduleUrl.href);
-              for (const handler of Array.from(handlers)) {
-                if (await handler({ module, update, reason: detail.reason, reloadSequence: detail.reloadSequence }) === false) {
+              if (previousVueComponent) {
+                const replacementVueComponent = vueComponents.get(update.moduleId);
+                if (!replacementVueComponent || replacementVueComponent === previousVueComponent || !reloadVueComponent(update.moduleId, replacementVueComponent)) {
                   return false;
+                }
+              }
+              if (handlers) {
+                for (const handler of Array.from(handlers)) {
+                  if (await handler({ module, update, reason: detail.reason, reloadSequence: detail.reloadSequence }) === false) {
+                    return false;
+                  }
                 }
               }
             } catch (error) {
@@ -144,6 +175,9 @@ internal static class JazorDevelopmentClientScriptFactory
           enumerable: false,
           value: Object.freeze({
             ready: transportReady,
+            registerVueComponent(moduleId, component) {
+              return registerVueComponent(moduleId, component);
+            },
             accept(moduleId, handler) {
               if (typeof moduleId !== "string" || moduleId.length === 0 || typeof handler !== "function") {
                 throw new TypeError("JazorHmr.accept requires a module id and handler.");

@@ -19,7 +19,10 @@ var workspace = Path.Combine(repoRoot, ".tmp", "development-hmr-browser", Guid.N
 var webRoot = Path.Combine(workspace, "wwwroot");
 var artifactRoot = Path.Combine(webRoot, "jazor");
 var componentPath = Path.Combine(artifactRoot, "component.mjs");
+var componentSourceMapPath = componentPath + ".map";
 var manifestPath = Path.Combine(artifactRoot, "jazor-manifest.json");
+var vueRuntimeSourcePath = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "dist", "vue.runtime.esm-browser.js");
+var vueRuntimePath = Path.Combine(webRoot, "vue.runtime.esm-browser.js");
 var browserSessionName = "jazor-development-hmr-" + Guid.NewGuid().ToString("N");
 var browserSessionOpened = false;
 WebApplication? app = null;
@@ -27,7 +30,11 @@ WebApplication? app = null;
 try
 {
     Directory.CreateDirectory(artifactRoot);
-    await WriteFixtureAsync(componentPath, manifestPath, "v1", "content-v1", "template-v1");
+    if (!File.Exists(vueRuntimeSourcePath))
+        throw new InvalidOperationException("Vue browser runtime was not found at '" + vueRuntimeSourcePath + "'.");
+
+    File.Copy(vueRuntimeSourcePath, vueRuntimePath);
+    await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v1", "content-v1", "template-v1");
     var indexPath = Path.Combine(webRoot, "index.html");
     await File.WriteAllTextAsync(indexPath, CreateBrowserHarness(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
@@ -65,7 +72,7 @@ try
         // The host deliberately falls back to a full reload before the browser advertises
         // module-update capability. The browser waits for JazorHmr.ready before this request.
         await Task.Delay(250);
-        await WriteFixtureAsync(componentPath, manifestPath, "v2", "content-v2", "template-v2");
+        await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v2", "content-v2", "template-v2");
         // Keep the request open until watcher/poller delivery can reach the browser.
         await Task.Delay(750);
         return Results.NoContent();
@@ -76,7 +83,14 @@ try
     EnsureProcessSucceeded(browserOpen, "Playwright could not open the development HMR fixture.");
     browserSessionOpened = true;
 
-    var ready = await WaitForBrowserResultAsync(repoRoot, browserSessionName, TimeSpan.FromSeconds(10));
+    using var httpClient = new HttpClient();
+    await VerifyBrowserSourceMapAsync(httpClient, baseAddress, "v1");
+
+    var ready = await WaitForBrowserConditionAsync(
+        repoRoot,
+        browserSessionName,
+        "(() => { const component = document.getElementById('component-version')?.textContent; const count = document.getElementById('parent-count')?.textContent; return component === 'child:v1' && count === '0' ? 'ready:v1' : null; })()",
+        TimeSpan.FromSeconds(10));
     if (!ready.Contains("ready:v1", StringComparison.Ordinal))
     {
         var browserState = await ReadBrowserStateAsync(repoRoot, browserSessionName);
@@ -84,23 +98,42 @@ try
             "Development HMR fixture did not register its v1 handler: " + ready + Environment.NewLine + browserState);
     }
 
-    using var httpClient = new HttpClient();
+    var click = await RunPlaywrightCliAsync(
+        repoRoot,
+        browserSessionName,
+        "eval",
+        "() => { document.getElementById('increment').click(); return 'clicked'; }");
+    EnsureProcessSucceeded(click, "Playwright could not increment the parent component state.");
+    var incremented = await WaitForBrowserConditionAsync(
+        repoRoot,
+        browserSessionName,
+        "(() => document.getElementById('parent-count')?.textContent === '1' ? 'parent-count:1' : null)()",
+        TimeSpan.FromSeconds(10));
+    if (!incremented.Contains("parent-count:1", StringComparison.Ordinal))
+        throw new InvalidOperationException("Development HMR fixture did not render the parent state increment: " + incremented);
+
     using var updateResponse = await httpClient.PostAsync(
         new Uri(baseAddress, "__jazor-hmr-fixture/update"),
         content: null);
     updateResponse.EnsureSuccessStatusCode();
 
-    var update = await WaitForBrowserResultAsync(repoRoot, browserSessionName, TimeSpan.FromSeconds(10));
-    if (!update.Contains("module-update:v2", StringComparison.Ordinal))
+    var update = await WaitForBrowserConditionAsync(
+        repoRoot,
+        browserSessionName,
+        "(() => { const loads = sessionStorage.getItem('jazor-hmr-fixture-loads'); if (loads !== '1') return 'full-reload:' + loads; const component = document.getElementById('component-version')?.textContent; const count = document.getElementById('parent-count')?.textContent; return component === 'child:v2' && count === '1' ? 'module-update:v2:loads=' + loads : null; })()",
+        TimeSpan.FromSeconds(10));
+    if (!update.Contains("module-update:v2:loads=1", StringComparison.Ordinal))
     {
         throw new InvalidOperationException(
             "Development HMR browser verification did not apply the v2 module update." + Environment.NewLine +
             update);
     }
 
+    await VerifyBrowserSourceMapAsync(httpClient, baseAddress, "v2");
+
     Console.WriteLine("Development HMR browser verification passed.");
     Console.WriteLine("  Browser: Playwright CLI");
-    Console.WriteLine("  Flow: custom mapping -> manifest template diff -> WebSocket module-update -> dynamic import -> registered handler");
+    Console.WriteLine("  Flow: generated-component registration -> Vue HMR reload -> parent state preserved -> authored Razor source map available");
 }
 finally
 {
@@ -136,6 +169,7 @@ finally
 
 static async Task WriteFixtureAsync(
     string componentPath,
+    string sourceMapPath,
     string manifestPath,
     string version,
     string contentHash,
@@ -143,8 +177,32 @@ static async Task WriteFixtureAsync(
 {
     await File.WriteAllTextAsync(
         componentPath,
-        "export const version = \"" + version + "\";\n",
+        CreateVueComponentModule(version),
         new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    await using (var sourceMapStream = new FileStream(
+                     sourceMapPath,
+                     FileMode.Create,
+                     FileAccess.Write,
+                     FileShare.Read,
+                     bufferSize: 4096,
+                     useAsync: true))
+    using (var sourceMapWriter = new Utf8JsonWriter(sourceMapStream))
+    {
+        sourceMapWriter.WriteStartObject();
+        sourceMapWriter.WriteNumber("version", 3);
+        sourceMapWriter.WriteString("file", "component.mjs");
+        sourceMapWriter.WriteStartArray("sources");
+        sourceMapWriter.WriteStringValue("Pages/HmrFixture.razor");
+        sourceMapWriter.WriteEndArray();
+        sourceMapWriter.WriteStartArray("sourcesContent");
+        sourceMapWriter.WriteStringValue("<span>child:" + version + "</span>");
+        sourceMapWriter.WriteEndArray();
+        sourceMapWriter.WriteStartArray("names");
+        sourceMapWriter.WriteEndArray();
+        sourceMapWriter.WriteString("mappings", "AAAA");
+        sourceMapWriter.WriteEndObject();
+        await sourceMapWriter.FlushAsync();
+    }
 
     await using var manifestStream = new FileStream(
         manifestPath,
@@ -174,6 +232,22 @@ static async Task WriteFixtureAsync(
     await writer.FlushAsync();
 }
 
+static string CreateVueComponentModule(string version)
+    => $$"""
+        import { defineComponent, h } from "/vue.runtime.esm-browser.js";
+        const __jazorComponent = defineComponent({
+          name: "JazorHmrFixtureComponent",
+          setup() {
+            return () => h("span", { id: "component-version" }, "child:{{version}}");
+          }
+        });
+        if (globalThis.JazorHmr && typeof globalThis.JazorHmr.registerVueComponent === "function") {
+          globalThis.JazorHmr.registerVueComponent("fixture:component", __jazorComponent);
+        }
+        export default __jazorComponent;
+        //# sourceMappingURL=component.mjs.map
+        """;
+
 static string CreateBrowserHarness()
     => """
         <!doctype html>
@@ -183,9 +257,10 @@ static string CreateBrowserHarness()
             <title>Jazor Development HMR Fixture</title>
           </head>
           <body>
-            <output id="result">pending</output>
+            <div id="app"></div>
             <script type="module">
-              const output = document.getElementById("result");
+              import { createApp, defineComponent, h, ref } from "/vue.runtime.esm-browser.js";
+
               const trace = JSON.parse(sessionStorage.getItem("jazor-hmr-fixture-trace") || "[]");
               const record = value => {
                 trace.push(value);
@@ -220,14 +295,19 @@ static string CreateBrowserHarness()
                   await hmr.ready;
                   document.documentElement.setAttribute("data-jazor-hmr-phase", "transport-ready");
                   const initial = await import("/jazor/component.mjs");
-                  output.textContent = initial.version;
-                  record("handler-registered");
-                  hmr.accept("fixture:component", ({ module }) => {
-                    record("handler:" + module.version);
-                    output.textContent = module.version;
-                    complete("module-update:" + module.version);
+                  const host = defineComponent({
+                    setup() {
+                      const count = ref(0);
+                      return () => h("section", null, [
+                        h("button", { id: "increment", onClick: () => { count.value++; } }, "increment"),
+                        h("output", { id: "parent-count" }, String(count.value)),
+                        h(initial.default)
+                      ]);
+                    }
                   });
-                  complete("ready:" + initial.version);
+                  createApp(host).mount("#app");
+                  record("component-registered");
+                  complete("ready:" + document.getElementById("component-version")?.textContent);
                 }
               } catch (error) {
                 complete("error:" + (error instanceof Error ? error.message : String(error)));
@@ -244,9 +324,10 @@ static int AllocateLoopbackPort()
     return ((IPEndPoint)listener.LocalEndpoint).Port;
 }
 
-static async Task<string> WaitForBrowserResultAsync(
+static async Task<string> WaitForBrowserConditionAsync(
     string repoRoot,
     string browserSessionName,
+    string conditionExpression,
     TimeSpan timeout)
 {
     ProcessResult? lastFailure = null;
@@ -258,7 +339,9 @@ static async Task<string> WaitForBrowserResultAsync(
             "eval",
             "async () => { const deadline = Date.now() + " +
             timeout.TotalMilliseconds.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-            "; while (Date.now() < deadline) { const value = document.documentElement.getAttribute('data-jazor-hmr-result'); if (value) return value; await new Promise(resolve => setTimeout(resolve, 50)); } return 'timeout:' + (document.documentElement.getAttribute('data-jazor-hmr-result') || 'pending'); }");
+            "; while (Date.now() < deadline) { const error = document.documentElement.getAttribute('data-jazor-hmr-result'); if (error && error.startsWith('error:')) return error; const value = (" +
+            conditionExpression +
+            "); if (value) return value; await new Promise(resolve => setTimeout(resolve, 50)); } return 'timeout:' + (document.documentElement.getAttribute('data-jazor-hmr-result') || 'pending'); }");
         if (result.ExitCode == 0)
             return result.StandardOutput;
 
@@ -296,8 +379,30 @@ static async Task<string> ReadBrowserStateAsync(string repoRoot, string browserS
         repoRoot,
         browserSessionName,
         "eval",
-        "() => ({ href: location.href, result: document.documentElement.getAttribute('data-jazor-hmr-result'), phase: document.documentElement.getAttribute('data-jazor-hmr-phase'), hmr: typeof window.JazorHmr, ready: typeof window.JazorHmr?.ready })");
+        "() => ({ href: location.href, result: document.documentElement.getAttribute('data-jazor-hmr-result'), phase: document.documentElement.getAttribute('data-jazor-hmr-phase'), component: document.getElementById('component-version')?.textContent, count: document.getElementById('parent-count')?.textContent, loads: sessionStorage.getItem('jazor-hmr-fixture-loads'), hmr: typeof window.JazorHmr, ready: typeof window.JazorHmr?.ready })");
     return result.StandardOutput + Environment.NewLine + result.StandardError;
+}
+
+static async Task VerifyBrowserSourceMapAsync(HttpClient httpClient, Uri baseAddress, string expectedVersion)
+{
+    var moduleText = await httpClient.GetStringAsync(new Uri(baseAddress, "jazor/component.mjs"));
+    if (!moduleText.Contains("//# sourceMappingURL=component.mjs.map", StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException("Development HMR fixture module did not declare its source map.");
+    }
+
+    var sourceMapResponse = await httpClient.GetAsync(new Uri(baseAddress, "jazor/component.mjs.map?version=" + expectedVersion));
+    sourceMapResponse.EnsureSuccessStatusCode();
+    using var sourceMap = JsonDocument.Parse(await sourceMapResponse.Content.ReadAsStringAsync());
+    if (!sourceMap.RootElement.TryGetProperty("sources", out var sources) ||
+        !sources.EnumerateArray().Any(static source => source.GetString() == "Pages/HmrFixture.razor") ||
+        !sourceMap.RootElement.TryGetProperty("sourcesContent", out var sourceContents) ||
+        !sourceContents.EnumerateArray().Any(source =>
+            source.ValueKind == JsonValueKind.String &&
+            source.GetString()?.Contains("child:" + expectedVersion, StringComparison.Ordinal) == true))
+    {
+        throw new InvalidOperationException("Development HMR fixture source map did not expose authored Razor v" + expectedVersion + ".");
+    }
 }
 
 static string ResolveNpxExecutable()

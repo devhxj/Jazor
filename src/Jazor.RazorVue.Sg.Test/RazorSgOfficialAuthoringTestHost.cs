@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,6 +58,7 @@ internal static class RazorSgOfficialAuthoringTestHost
         var projectDirectory = Path.GetDirectoryName(documentPath);
         Assert.IsFalse(string.IsNullOrWhiteSpace(projectDirectory), "Official Razor document path must have a parent directory.");
         var additionalText = new InMemoryAdditionalText(documentPath, documentText);
+        using var sourceTextScope = RazorSourceTextRegistry.Push(documentPath, documentText);
         var optionsProvider = new OfficialAuthoringAnalyzerConfigOptionsProvider(
             new Dictionary<string, string>(StringComparer.Ordinal)
             {

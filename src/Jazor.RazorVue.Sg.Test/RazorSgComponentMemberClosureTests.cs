@@ -1208,7 +1208,10 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "from \"./child.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+        // HMR framing legitimately probes its optional browser bridge with `typeof`.
+        // The authored typeof(Child) expressions themselves must still erase to imports.
+        Assert.IsFalse(script.Contains("typeof(Child)", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("typeof Child", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
@@ -3676,7 +3679,8 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("return builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return scope.$renderDirect();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "export default defineComponent({", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const __jazorComponent = defineComponent({", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export default __jazorComponent;", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("watch(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("onMounted(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("onUpdated(", StringComparison.Ordinal), script);

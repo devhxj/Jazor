@@ -124,7 +124,11 @@ internal static class InitializeHookInstaller
         // from RunGenerators/GetRunResult so the hook remains installed for every thread.
         var result = instance.RunGenerators(compilation, cancellationToken);
         var runResult = result.GetRunResult();
-        outputCompilation = compilation.AddSyntaxTrees(runResult.GeneratedTrees);
+        using var sourceTextScope = RazorSourceTextRegistry.PushGeneratedTrees(
+            runResult.GeneratedTrees,
+            cancellationToken);
+        outputCompilation = compilation.AddSyntaxTrees(
+            runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree)));
         diagnostics = runResult.Diagnostics;
         if (ContainsVueRenderCatalog(outputCompilation))
             return result;

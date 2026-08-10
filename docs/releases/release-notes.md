@@ -1,5 +1,10 @@
 # Release Notes
 
+## 2026-08-11
+
+- Development reload now registers generated RazorVue components with Vue's HMR runtime. Compiler-proven template-only updates reload the affected component in place and preserve parent component state; unavailable Vue HMR support, failed module imports, descriptor or logic changes, and other unproven boundaries still use a full-page reload.
+- RazorVue debug modules now declare their external source map and embed the authored Razor text as `sourcesContent`. Browser DevTools can open the originating `.razor` source directly from generated render-function code without an additional source-file HTTP route.
+
 ## 2026-08-10
 
 - Jazor 0.8.0 makes ECMAScript name resolution explicit. Unmapped C# symbols retain their authored names, while JavaScript ABI differences are declared per member with `Description("@#...")` or `ECMAScriptName`; RazorVue no longer infers prop, listener, or slot names from casing or Vue conventions.

@@ -69,6 +69,10 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         StringAssert.Contains(clientScript, "cancelable: true");
         StringAssert.Contains(clientScript, "Object.defineProperty(window, \"JazorHmr\"");
         StringAssert.Contains(clientScript, "ready: transportReady");
+        StringAssert.Contains(clientScript, "const vueComponents = new Map();");
+        StringAssert.Contains(clientScript, "registerVueComponent(moduleId, component)");
+        StringAssert.Contains(clientScript, "runtime.createRecord(moduleId, component);");
+        StringAssert.Contains(clientScript, "runtime.reload(moduleId, component);");
         StringAssert.Contains(clientScript, "moduleUrl.searchParams.set(\"__jazor_hmr\"");
         StringAssert.Contains(clientScript, "void acceptModuleUpdate(payload).then(accepted => {");
         StringAssert.Contains(clientScript, "sendMessage({ type: \"ready\", capabilities: [moduleUpdateCapability] });");

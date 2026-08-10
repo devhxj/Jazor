@@ -1802,12 +1802,17 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(componentModule.Contains("onUpdated", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("createRenderContext", StringComparison.Ordinal), componentModule);
-        StringAssert.Contains(componentModule, "export default defineComponent({");
+        StringAssert.Contains(componentModule, "const __jazorComponent = defineComponent({");
+        StringAssert.Contains(componentModule, "export default __jazorComponent;");
         StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
 
         var componentMap = await File.ReadAllTextAsync(componentMapPath);
         StringAssert.Contains(componentMap, "\"file\": \"components/counter.mjs\"");
         StringAssert.Contains(componentMap, "Counter.razor");
+        var sourceMap = new SourceMapReader().Read(componentMap);
+        var razorSource = sourceMap.Sources.Single(static source => source.Path == "Counter.razor");
+        Assert.IsNotNull(razorSource.Content);
+        StringAssert.Contains(razorSource.Content!, "Clicks: @count", StringComparison.Ordinal);
         Assert.IsFalse(
             componentMap.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
             "RazorVue component source map must not persist the external consumer's absolute project path.");

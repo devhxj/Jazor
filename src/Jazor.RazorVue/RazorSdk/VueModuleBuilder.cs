@@ -6,6 +6,7 @@ using Acornima.Ast;
 using Jazor.Common;
 using Jazor.Common.SourceMaps;
 using Jazor.Compiler;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -20,6 +21,7 @@ internal static class VueModuleBuilder
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
+    private const string HmrComponentVariableName = "__jazorComponent";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
     private static readonly ImmutableHashSet<string> FramingReservedNames =
     new[]
@@ -46,7 +48,8 @@ internal static class VueModuleBuilder
         "invokeAsync",
         "parametersSetAsyncGen",
         "parametersSetAsyncTail",
-        "runOnParametersSetAsync"
+        "runOnParametersSetAsync",
+        HmrComponentVariableName
     }.ToImmutableHashSet(StringComparer.Ordinal);
 
     public static async Task<VueModuleArtifact> BuildAsync(
@@ -99,6 +102,7 @@ internal static class VueModuleBuilder
             directRender = BuildOperationDirectRender(binding, component, declaredNames, injectRegistry);
         }
 
+        var hmr = BuildHmrMetadata(component, closure, relativePath);
         var moduleBuild = BuildModuleText(
             component,
             closure,
@@ -106,7 +110,8 @@ internal static class VueModuleBuilder
             compilerOutput.Module,
             compilerOutput.Layout?.NodePositions,
             relativePath,
-            declaredNames);
+            declaredNames,
+            hmr.ModuleId);
         var moduleText = moduleBuild.ModuleText;
         var sourceMapRelativePath = relativePath + ".map";
         var sourceMapContent = BuildSourceMapContent(
@@ -126,7 +131,7 @@ internal static class VueModuleBuilder
             ComputeContentHash(sourceMapContent),
             moduleBuild.PackageImports,
             moduleBuild.Assets,
-            BuildHmrMetadata(component, closure, relativePath));
+            hmr);
     }
 
     private static async Task<CompilerOutput> BuildCompilerOutputAsync(
@@ -396,7 +401,8 @@ internal static class VueModuleBuilder
         Module? compilerModule,
         IReadOnlyDictionary<Node, GeneratedNodePosition>? compilerNodePositions,
         string relativePath,
-        IReadOnlyDictionary<ISymbol, string>? declaredNames)
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        string hmrModuleId)
     {
         var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure);
         var componentSymbol = component.ComponentSymbol;
@@ -504,11 +510,13 @@ internal static class VueModuleBuilder
             parts,
             directRender,
             features));
-        moduleStatements.Add(BuildVueComponentExport(
+        moduleStatements.Add(BuildVueComponentDeclaration(
             closure,
             setupFactoryName,
             directRender,
             features));
+        moduleStatements.Add(BuildVueHmrRegistration(hmrModuleId));
+        moduleStatements.Add(new ExportDefaultDeclaration(new Identifier(HmrComponentVariableName)));
 
         var vueModule = new Module(NodeList.From(moduleStatements));
         var moduleLayout = vueModule.ToKnRECMAScriptWithNodePositions();
@@ -593,7 +601,7 @@ internal static class VueModuleBuilder
                 shorthand: true,
                 method: false))));
 
-    private static ExportDefaultDeclaration BuildVueComponentExport(
+    private static VariableDeclaration BuildVueComponentDeclaration(
         MemberClosure closure,
         string setupFactoryName,
         DirectRenderBuildResult directRender,
@@ -621,9 +629,38 @@ internal static class VueModuleBuilder
             shorthand: false,
             method: true));
 
-        return new ExportDefaultDeclaration(CreateCall(
-            "defineComponent",
-            new ObjectExpression(NodeList.From(componentOptions))));
+        return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            HmrComponentVariableName,
+            CreateCall(
+                "defineComponent",
+                new ObjectExpression(NodeList.From(componentOptions))));
+    }
+
+    private static IfStatement BuildVueHmrRegistration(string moduleId)
+    {
+        // The module only frames a component identity here. Vue owns the actual instance
+        // update protocol, while the development client decides whether a change is safe.
+        Expression CreateHmrAccess()
+            => CreateMemberAccess(new Identifier("globalThis"), "JazorHmr");
+
+        var registrationAccess = CreateMemberAccess(CreateHmrAccess(), "registerVueComponent");
+        var condition = new LogicalExpression(
+            Operator.LogicalAnd,
+            CreateHmrAccess(),
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                new NonUpdateUnaryExpression(Operator.TypeOf, registrationAccess),
+                StringLiteral("function")));
+        var registration = CreateCallMember(
+            CreateHmrAccess(),
+            "registerVueComponent",
+            StringLiteral(moduleId),
+            new Identifier(HmrComponentVariableName));
+        return new IfStatement(
+            condition,
+            CreateBlock(CreateExpressionStatement(registration)),
+            null);
     }
 
     private static IEnumerable<Identifier> BuildSetupFactoryIdentifiers(VueModuleFeatures features)
@@ -2224,8 +2261,13 @@ internal static class VueModuleBuilder
         if (orderedMappings.Length > 0)
         {
             var first = orderedMappings[0];
-            var sourcePath = NormalizeSourcePath(first.OriginalSpan.FilePath ?? document.SourcePath);
-            var sourceIndex = GetOrAddSourceIndex(sources, sourceIndexByPath, sourcePath, null);
+            var sourceFilePath = first.OriginalSpan.FilePath ?? document.SourcePath;
+            var sourcePath = NormalizeSourcePath(sourceFilePath);
+            var sourceIndex = GetOrAddSourceIndex(
+                sources,
+                sourceIndexByPath,
+                sourcePath,
+                TryGetSourceMapSourceContent(sourceFilePath));
             segments.Add(new SourceMapSegment(
                 0,
                 0,
@@ -2236,8 +2278,13 @@ internal static class VueModuleBuilder
 
         foreach (var mapping in orderedMappings)
         {
-            var sourcePath = NormalizeSourcePath(mapping.OriginalSpan.FilePath ?? document.SourcePath);
-            var sourceIndex = GetOrAddSourceIndex(sources, sourceIndexByPath, sourcePath, null);
+            var sourceFilePath = mapping.OriginalSpan.FilePath ?? document.SourcePath;
+            var sourcePath = NormalizeSourcePath(sourceFilePath);
+            var sourceIndex = GetOrAddSourceIndex(
+                sources,
+                sourceIndexByPath,
+                sourcePath,
+                TryGetSourceMapSourceContent(sourceFilePath));
             segments.Add(new SourceMapSegment(
                 Math.Max(0, mapping.GeneratedSpan.LineIndex),
                 Math.Max(0, mapping.GeneratedSpan.CharacterIndex),
@@ -2265,7 +2312,11 @@ internal static class VueModuleBuilder
                 continue;
             }
 
-            var sourceIndex = GetOrAddSourceIndex(sources, sourceIndexByPath, mapped.SourcePath, null);
+            var sourceIndex = GetOrAddSourceIndex(
+                sources,
+                sourceIndexByPath,
+                mapped.SourcePath,
+                mapped.SourceContent);
             segments.Add(new SourceMapSegment(
                 compilerSegment.SourceLine,
                 compilerSegment.SourceColumn,
@@ -2328,8 +2379,10 @@ internal static class VueModuleBuilder
         if (candidate.OriginalSpan.Length > 0)
             offset = Math.Min(offset, candidate.OriginalSpan.Length - 1);
 
+        var sourceFilePath = candidate.OriginalSpan.FilePath ?? document.SourcePath;
         mapped = new MappedSourcePosition(
-            NormalizeSourcePath(candidate.OriginalSpan.FilePath ?? document.SourcePath),
+            NormalizeSourcePath(sourceFilePath),
+            TryGetSourceMapSourceContent(sourceFilePath),
             Math.Max(0, candidate.OriginalSpan.LineIndex),
             Math.Max(0, candidate.OriginalSpan.CharacterIndex + offset));
         return true;
@@ -2403,6 +2456,9 @@ internal static class VueModuleBuilder
         string path,
         string? content)
     {
+        // A chained map can introduce an authored Razor path before the corresponding
+        // segment is projected. Hydrate that existing source entry at the merge boundary.
+        content ??= TryGetSourceMapSourceContent(path);
         var normalizedPath = NormalizeGeneratedSourcePath(path);
         if (sourceIndexByPath.TryGetValue(normalizedPath, out var existingIndex))
         {
@@ -2417,6 +2473,11 @@ internal static class VueModuleBuilder
         sourceIndexByPath[normalizedPath] = index;
         return index;
     }
+
+    private static string? TryGetSourceMapSourceContent(string? sourcePath)
+        // Razor files are not public static assets. Capture generator-provided text so DevTools
+        // can show the source that produced this module without a second HTTP route or analyzer I/O.
+        => RazorSourceTextRegistry.TryGet(sourcePath);
 
     private static void AddModuleMapAlias(
         Dictionary<string, string> moduleMaps,
@@ -2439,13 +2500,14 @@ internal static class VueModuleBuilder
             .ThenBy(static mapping => mapping.GeneratedSpan.CharacterIndex)
             .Select(static mapping => mapping.OriginalSpan)
             .FirstOrDefault();
-        var sourcePath = NormalizeSourcePath(sourceSpan.FilePath ?? component.Document.SourcePath);
+        var sourceFilePath = sourceSpan.FilePath ?? component.Document.SourcePath;
+        var sourcePath = NormalizeSourcePath(sourceFilePath);
         var sourceLine = Math.Max(0, sourceSpan.LineIndex);
         var sourceColumn = Math.Max(0, sourceSpan.CharacterIndex);
         var generatedLine = FindGeneratedLine(moduleText, "scope.$renderDirect()");
         var document = new SourceMapDocument(
             relativePath,
-            [new SourceMapSource(sourcePath, null)],
+            [new SourceMapSource(sourcePath, TryGetSourceMapSourceContent(sourceFilePath))],
             [new SourceMapSegment(generatedLine, 0, 0, sourceLine, sourceColumn)]);
 
         return Util.NormalizeLineEndingsToLf(new SourceMapWriter().Write(document));
@@ -2707,6 +2769,7 @@ internal static class VueModuleBuilder
 
     private readonly record struct MappedSourcePosition(
         string SourcePath,
+        string? SourceContent,
         int SourceLine,
         int SourceColumn);
 

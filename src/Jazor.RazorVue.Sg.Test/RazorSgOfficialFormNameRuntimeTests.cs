@@ -28,7 +28,8 @@ public sealed class RazorSgOfficialFormNameRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "AddNamedEvent", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        Assert.IsFalse(observation.ModuleText.Contains("release-deployment", StringComparison.Ordinal), observation.ModuleText);
+        Assert.IsFalse(observation.ModuleText.Contains("formname", StringComparison.OrdinalIgnoreCase), observation.ModuleText);
+        Assert.IsFalse(observation.ModuleText.Contains("\"release-deployment\"", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-deployment-form.mjs",

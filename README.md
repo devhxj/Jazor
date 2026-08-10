@@ -86,14 +86,10 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ## Latest Updates
 
-### 2026-08-10
+### 2026-08-11
 
-- Jazor 0.8.0 completes the explicit ECMAScript naming migration. Unmapped C# symbols now retain their authored names; JavaScript ABI differences are declared per member with `Description("@#...")` or `ECMAScriptName`, and RazorVue no longer infers prop, listener, or slot names from casing or Vue conventions.
-- JazorAdmin restores saved appearance preferences before its first render, so returning after changing theme or layout preferences no longer interrupts the session transition.
-- Vuetify bindings are updated to 4.1.8. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router each complete the public binding-contract audit at 100%, exceeding the 0.8 per-package 96% gate.
-- The current Compiler and RazorVue baselines verify 10,318 compiler scenarios at 98.91% line / 96.01% branch coverage and 4,684 official Razor SG scenarios at 97.57% line / 96.00% branch coverage.
-- Development reload now applies compiler-proven template-only module updates when the consumer registers `JazorHmr.accept(moduleId, handler)`. Missing handlers, failed imports, descriptor or logic changes, and every other unproven boundary use a full-page reload; this does not replace Vue instances or preserve component state automatically.
-- RazorVue G2 retains a repeatable external-package-consumer, generated-artifact, Node, and browser performance baseline. Threshold warnings and unavailable retired-line comparisons remain explicit rather than being presented as a completed performance claim.
+- Generated RazorVue components now register with Vue's development HMR runtime. Compiler-proven template-only changes reload the component in place while preserving parent state; unsafe or unavailable update paths continue to fall back to a full-page reload.
+- RazorVue debug output now links each generated `.mjs` module to an external source map containing the authored Razor text, so browser DevTools can trace render-function code back to `.razor` source without a separate source-file route.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
