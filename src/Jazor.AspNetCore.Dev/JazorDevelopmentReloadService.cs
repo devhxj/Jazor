@@ -341,11 +341,46 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
 
         RecordBroadcastSnapshots(changedPathsToProcess);
         var reloadSequence = Interlocked.Increment(ref _reloadSequence);
+        var reason = BuildReloadReason(changedPathsToProcess);
+        if (CanOfferModuleUpdate(changedPathsToProcess))
+        {
+            await _reloadHub.BroadcastModuleUpdateAsync(
+                _serverInstanceId,
+                reloadSequence,
+                reason,
+                BuildModuleUpdatePaths(changedPathsToProcess),
+                cancellationToken);
+            return;
+        }
+
         await _reloadHub.BroadcastReloadAsync(
             _serverInstanceId,
             reloadSequence,
-            BuildReloadReason(changedPathsToProcess),
+            reason,
             cancellationToken);
+    }
+
+    private static bool CanOfferModuleUpdate(IReadOnlyList<string> changedPaths)
+        => changedPaths.Count > 0
+            && changedPaths.All(static path => path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase));
+
+    private IReadOnlyList<string> BuildModuleUpdatePaths(IReadOnlyList<string> changedPaths)
+    {
+        var modulePaths = new List<string>(changedPaths.Count);
+        foreach (var changedPath in changedPaths)
+        {
+            foreach (var registration in _watchRegistrations)
+            {
+                if (!JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
+                    continue;
+
+                // This is a logical path relative to the watched root, not a server file-system path or URL.
+                modulePaths.Add(Path.GetRelativePath(registration.RootPath, changedPath).Replace('\\', '/'));
+                break;
+            }
+        }
+
+        return modulePaths;
     }
 
     private IReadOnlyList<string> FilterAlreadyBroadcastChanges(IReadOnlyList<string> changedPaths)

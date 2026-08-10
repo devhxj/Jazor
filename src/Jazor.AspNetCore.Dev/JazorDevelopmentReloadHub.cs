@@ -12,6 +12,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
     private static readonly TimeSpan DefaultHeartbeatTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultHeartbeatSweepInterval = TimeSpan.FromSeconds(10);
     private const int DefaultMaxIncomingMessageBytes = 64 * 1024;
+    internal const string ModuleUpdateCapability = "module-update";
     private readonly ConcurrentDictionary<WebSocket, ClientState> _sockets = new();
     private readonly TimeSpan _sendTimeout;
     private readonly TimeSpan _heartbeatTimeout;
@@ -117,7 +118,41 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             },
             cancellationToken);
 
+    public Task BroadcastModuleUpdateAsync(
+        string serverInstanceId,
+        long reloadSequence,
+        string? reason,
+        IReadOnlyList<string> changedPaths,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(serverInstanceId);
+        ArgumentNullException.ThrowIfNull(changedPaths);
+
+        var moduleUpdate = new DevelopmentReloadNotificationEnvelope
+        {
+            Type = "module-update",
+            ServerInstanceId = serverInstanceId,
+            ReloadSequence = reloadSequence,
+            Reason = string.IsNullOrWhiteSpace(reason) ? null : reason,
+            ChangedPaths = changedPaths.ToArray()
+        };
+        var fullReloadFallback = new DevelopmentReloadNotificationEnvelope
+        {
+            Type = "full-reload",
+            ServerInstanceId = serverInstanceId,
+            ReloadSequence = reloadSequence,
+            Reason = string.IsNullOrWhiteSpace(reason) ? null : reason
+        };
+
+        return BroadcastAsync(
+            state => state.SupportsCapability(ModuleUpdateCapability) ? moduleUpdate : fullReloadFallback,
+            cancellationToken);
+    }
+
     private async Task BroadcastAsync(object payload, CancellationToken cancellationToken)
+        => await BroadcastAsync(_ => payload, cancellationToken);
+
+    private async Task BroadcastAsync(Func<ClientState, object> payloadFactory, CancellationToken cancellationToken)
     {
         await PruneExpiredClientsAsync(DateTimeOffset.UtcNow);
         var broadcastTasks = new List<Task>(_sockets.Count);
@@ -131,7 +166,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
                 continue;
             }
 
-            broadcastTasks.Add(SendToClientAsync(socket, state, payload, cancellationToken));
+            broadcastTasks.Add(SendToClientAsync(socket, state, payloadFactory(state), cancellationToken));
         }
 
         if (broadcastTasks.Count == 0)
@@ -305,7 +340,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
 
         if (string.Equals(message.Type, "ready", StringComparison.OrdinalIgnoreCase))
         {
-            state.IsReady = true;
+            state.MarkReady(message.Capabilities);
             state.LastSeenUtc = DateTimeOffset.UtcNow;
             return;
         }
@@ -426,23 +461,46 @@ internal sealed class DevelopmentReloadNotificationEnvelope
 
     [JsonPropertyName("reason")]
     public string? Reason { get; init; }
+
+    [JsonPropertyName("changedPaths")]
+    public IReadOnlyList<string>? ChangedPaths { get; init; }
 }
 
 internal sealed class DevelopmentReloadClientMessage
 {
     [JsonPropertyName("type")]
     public string? Type { get; init; }
+
+    [JsonPropertyName("capabilities")]
+    public string[]? Capabilities { get; init; }
 }
 
 internal sealed class ClientState(string clientId) : IDisposable
 {
-    public string ClientId { get; } = clientId;
+    private string[] _capabilities = [];
+    private int _isReady;
 
-    public bool IsReady { get; set; }
+    public string ClientId { get; } = clientId;
 
     public DateTimeOffset LastSeenUtc { get; set; } = DateTimeOffset.UtcNow;
 
     public SemaphoreSlim SendGate { get; } = new(1, 1);
+
+    public void MarkReady(IEnumerable<string>? capabilities)
+    {
+        var normalizedCapabilities = capabilities?
+            .Where(static capability => !string.IsNullOrWhiteSpace(capability))
+            .Select(static capability => capability.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray()
+            ?? [];
+        Volatile.Write(ref _capabilities, normalizedCapabilities);
+        Volatile.Write(ref _isReady, 1);
+    }
+
+    public bool SupportsCapability(string capability)
+        => Volatile.Read(ref _isReady) != 0
+            && Array.IndexOf(Volatile.Read(ref _capabilities), capability) >= 0;
 
     public void Dispose()
         => SendGate.Dispose();

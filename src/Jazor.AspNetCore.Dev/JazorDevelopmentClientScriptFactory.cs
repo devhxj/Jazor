@@ -30,6 +30,7 @@ internal static class JazorDevelopmentClientScriptFactory
         const socketPath = {{serializedWebSocketPath}};
         const socketUrl = `${socketProtocol}://${location.host}${pathBase}${socketPath}`;
         const reloadOnReconnect = {{reloadOnReconnect}};
+        const moduleUpdateCapability = "module-update";
         let socket;
         let reconnectTimer;
         let heartbeatTimer;
@@ -68,6 +69,21 @@ internal static class JazorDevelopmentClientScriptFactory
         function reloadPage() {
           location.reload();
         }
+        function acceptModuleUpdate(payload) {
+          const changedPaths = Array.isArray(payload?.changedPaths)
+            ? payload.changedPaths.filter(path => typeof path === "string")
+            : [];
+          const accepted = window.dispatchEvent(new CustomEvent("jazor:module-update", {
+            cancelable: true,
+            detail: {
+              changedPaths,
+              reason: typeof payload?.reason === "string" ? payload.reason : null,
+              reloadSequence: Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : null,
+              serverInstanceId: typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null
+            }
+          })) === false;
+          return accepted;
+        }
         function handleConnected(payload) {
           const nextServerInstanceId = typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null;
           const nextReloadSequence = Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : 0;
@@ -99,6 +115,15 @@ internal static class JazorDevelopmentClientScriptFactory
               ? Math.max(currentReloadSequence, payload.reloadSequence)
               : currentReloadSequence + 1;
             reloadPage();
+            return;
+          }
+          if (payload?.type === "module-update") {
+            currentReloadSequence = Number.isFinite(payload?.reloadSequence)
+              ? Math.max(currentReloadSequence, payload.reloadSequence)
+              : currentReloadSequence + 1;
+            if (!acceptModuleUpdate(payload)) {
+              reloadPage();
+            }
           }
         }
         function connect() {
@@ -109,7 +134,7 @@ internal static class JazorDevelopmentClientScriptFactory
                 clearTimeout(reconnectTimer);
                 reconnectTimer = undefined;
               }
-              sendMessage({ type: "ready" });
+              sendMessage({ type: "ready", capabilities: [moduleUpdateCapability] });
               startHeartbeat();
             });
             socket.addEventListener("message", handleSocketMessage);
