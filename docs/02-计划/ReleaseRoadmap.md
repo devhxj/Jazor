@@ -32,6 +32,6 @@
 
 当前已验证的 Compiler 基线为 `98.94%` 行覆盖率和 `96.01%` 分支覆盖率，不再作为后续发布版本的独立门槛。RazorVue `0.5` 门禁已于 2026-08-10 验证：`4675/4675` 个官方 Razor SG 场景通过，行覆盖率为 `97.71%`，分支覆盖率为 `96.01%`。
 
-`0.6` 门禁也已于 2026-08-10 重新验证：`verify-vue-binding-coverage.cs` 中的 Compiler、Pinia、Pinia Testing 和 Vue Router test lane 分别为 `10318/10318`、`68/68`、`39/39`、`102/102` 通过；Vue3 `1304/1304`、Vuetify `5076/5076`、Element Plus `3611/3611`、TDesign `13251/13251`、Pinia `314/314`、Pinia Testing `65/65`、Vue Router `766/766` 个公开绑定契约单位均完成审计。`.mjs` 文件变更现可向声明 `module-update` capability 的开发客户端发送可取消事件，其他客户端和其他变更仍使用完整刷新。RazorVue G2 首份可复现报告已记录官方 Razor SG 外部包消费者、生成物、Node 和浏览器数据；其中性能阈值警告和旧线同协议缺失仍是后续阶段工作，不构成“性能已经完成”的声明。主线下一门槛为 `0.7` 的逐项 `90%` Vue 封装契约审计覆盖率。
+`0.6` 门禁也已于 2026-08-10 重新验证：`verify-vue-binding-coverage.cs` 中的 Compiler、Pinia、Pinia Testing 和 Vue Router test lane 分别为 `10318/10318`、`68/68`、`39/39`、`102/102` 通过；Vue3 `1304/1304`、Vuetify `5076/5076`、Element Plus `3611/3611`、TDesign `13251/13251`、Pinia `314/314`、Pinia Testing `65/65`、Vue Router `766/766` 个公开绑定契约单位均完成审计。精确发布提交还在 clean worktree 中以 `publish-nuget.cs -- --skip-push --package-version 0.6.0` 成功打包十个默认公开包。`.mjs` 文件变更现可向声明 `module-update` capability 的开发客户端发送可取消事件，其他客户端和其他变更仍使用完整刷新。RazorVue G2 首份可复现报告已记录官方 Razor SG 外部包消费者、生成物、Node 和浏览器数据；其中性能阈值警告和旧线同协议缺失仍是后续阶段工作，不构成“性能已经完成”的声明。主线下一门槛为 `0.7` 的逐项 `90%` Vue 封装契约审计覆盖率。
 
 达到任一版本门槛前，必须重新运行对应的当前测试、覆盖率报告、包消费验证和必要的浏览器验证；历史状态文档中的通过记录不能替代本次证据。
