@@ -3,6 +3,7 @@
 ## 2026-08-10
 
 - Jazor 0.8.0 makes ECMAScript name resolution explicit. Unmapped C# symbols retain their authored names, while JavaScript ABI differences are declared per member with `Description("@#...")` or `ECMAScriptName`; RazorVue no longer infers prop, listener, or slot names from casing or Vue conventions.
+- JazorAdmin now restores saved appearance preferences before its first render, so returning after changing theme or layout preferences no longer interrupts the session transition.
 - Vuetify bindings are updated to 4.1.8. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router each complete the public binding-contract audit at 100%, exceeding the 0.8 per-package 96% gate.
 - The release baseline rechecks 10,318 compiler scenarios at 98.91% line and 96.01% branch coverage, plus 4,684 official Razor Source Generator scenarios at 97.57% line and 96.00% branch coverage.
 - Jazor 0.7 raises the independent public Vue binding-contract audit gate to 90%. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router pass every currently audited contract unit and their corresponding test lanes.

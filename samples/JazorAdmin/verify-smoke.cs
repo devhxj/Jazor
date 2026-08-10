@@ -194,11 +194,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(appModule, "JazorAdmin", "JazorAdmin app text in generated module");
     AssertContains(appModule, "useRoute", "Vue Router route injection in JazorAdmin app module");
     AssertContains(appModule, "onMounted", "session restoration mount hook in JazorAdmin app module");
-    AssertContains(appModule, "scope.onAfterRender(true)", "initial Razor lifecycle invocation in JazorAdmin app module");
-    AssertContains(appModule, "restoreSession();", "mounted session restoration invocation in JazorAdmin app module");
+    AssertContains(appModule, "scope.OnAfterRender(true)", "initial Razor lifecycle invocation in JazorAdmin app module");
+    AssertContains(appModule, "RestoreSession();", "mounted session restoration invocation in JazorAdmin app module");
     AssertContains(bootstrapModule, "createRouter", "Vue Router creation in JazorAdmin bootstrap module");
     AssertContains(bootstrapModule, "createWebHistory", "Vue Router web history in JazorAdmin bootstrap module");
     AssertContains(bootstrapModule, "RouterView", "Vue Router view in JazorAdmin bootstrap module");
+    AssertContains(bootstrapModule, "export function Boot", "JazorAdmin bootstrap export name");
     AssertContains(routeCatalogModule, "routeTarget", "strongly typed route target in admin route catalog module");
     AssertDoesNotContain(routeCatalogModule, "return path == null ? null : from(path)", "undefined union factory in admin route catalog module");
     AssertContains(routesModule, "organizations.structure", "organization structure route in JazorAdmin routes module");
@@ -213,10 +214,10 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertDoesNotContain(routesModule, "operations/releases", "retired release route in JazorAdmin routes module");
     AssertContains(adminLayoutModule, "data-shell-command", "sidebar toggle command in TDesign admin layout module");
     AssertContains(adminLayoutModule, "toggle-sidebar", "sidebar toggle command key in TDesign admin layout module");
-    AssertContains(adminLayoutModule, "onUpdate:collapsed", "controlled collapsed Vue listener in TDesign admin layout module");
-    AssertContains(adminLayoutModule, "horizontal: true", "top navigation variant in TDesign admin layout module");
+    AssertContains(adminLayoutModule, "CollapsedChanged", "controlled collapsed component callback in JazorAdmin layout module");
+    AssertContains(adminLayoutModule, "Horizontal: true", "top navigation variant in JazorAdmin layout module");
     AssertContains(adminLayoutModule, "variant: \"text\"", "TDesign text button variant in admin layout module");
-    AssertContains(sidebarModule, "theme: menuTheme()", "TDesign theme propagation in sidebar module");
+    AssertContains(sidebarModule, "theme: MenuTheme()", "TDesign theme propagation in sidebar module");
     AssertContains(pageContainerModule, "return \"primary\";", "TDesign primary button theme in page container module");
     AssertContains(pageContainerModule, "align: \"center\"", "TDesign centered action layout in page container module");
     AssertContains(iconBarModule, "data-iconbar", "IconBar root marker in JazorAdmin IconBar module");
@@ -235,7 +236,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(headerBarModule, "data-shell-logo-visible", "Header logo visibility contract in JazorAdmin header module");
     AssertContains(routeTabsModule, "Tabs", "TDesign route tabs in JazorAdmin module");
     AssertContains(routeTabsModule, "dragSort: true", "Starter route tab drag sorting");
-    AssertContains(routeTabsModule, "onRemove: remove", "Starter route tab removal handler");
+    AssertContains(routeTabsModule, "onRemove: Remove", "Starter route tab removal handler");
     AssertContains(routeTabsModule, "context-menu", "Starter route tab context menu");
     AssertContains(routeBreadcrumbModule, "maxItemWidth: \"150px\"", "Starter route breadcrumb width");
     AssertContains(routeBreadcrumbModule, "data-route-breadcrumb-current", "Starter route breadcrumb current marker");
@@ -243,28 +244,28 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(errorPageModule, "aria-labelledby", "error title accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "aria-describedby", "error description accessibility relation in JazorAdmin error page module");
     AssertContains(errorPageModule, "data-error-action", "error recovery action in JazorAdmin error page module");
-    AssertContains(apiClientModule, "getSession", "session transport in JazorAdmin API client module");
+    AssertContains(apiClientModule, "GetSession", "session transport in JazorAdmin API client module");
     AssertContains(apiClientModule, "credentials: \"same-origin\"", "Fetch credentials WebIDL enum mapping in JazorAdmin API client module");
     AssertDoesNotContain(apiClientModule, "headers: null", "omitted optional Fetch headers in JazorAdmin API client module");
     AssertDoesNotContain(apiClientModule, "body: null", "omitted optional Fetch body in JazorAdmin API client module");
-    AssertContains(organizationModule, "createChildOrganization", "child organization command in organization management module");
-    AssertContains(organizationModule, "scope.onParametersSet();", "route parameter lifecycle in organization management module");
-    AssertContains(accessControlModule, "replaceRoleGrants", "role grant command in access control management module");
-    AssertContains(accessControlModule, "scope.onParametersSet();", "route parameter lifecycle in access control management module");
-    AssertContains(accountModule, "getAccounts", "account query in account management module");
-    AssertContains(accountModule, "resetAccountPassword", "account password command in account management module");
-    AssertContains(accountModule, "scope.onAfterRender(true)", "initial Razor lifecycle invocation in account management module");
-    AssertContains(ssoAppModule, "getApps", "OpenIddict application query in application module");
-    AssertContains(ssoAppModule, "rotateAppSecret", "OpenIddict secret rotation in application module");
-    AssertContains(ssoScopeModule, "getScopes", "OpenIddict scope query in scope module");
-    AssertContains(ssoScopeModule, "updateScope", "OpenIddict scope update in scope module");
-    AssertContains(ssoGrantModule, "getAuthorizations", "OpenIddict authorization query in grant module");
-    AssertContains(ssoGrantModule, "getTokens", "OpenIddict token query in grant module");
-    AssertContains(ssoGrantModule, "scope.onParametersSet();", "route parameter lifecycle in grant module");
-    AssertContains(settingsModule, "createSetting", "configuration center create command");
-    AssertContains(settingsModule, "updateSetting", "configuration center update command");
-    AssertContains(schedulesModule, "triggerSchedule", "task scheduling manual run command");
-    AssertContains(schedulesModule, "getScheduleRuns", "task scheduling history query");
+    AssertContains(organizationModule, "CreateChildOrganization", "child organization command in organization management module");
+    AssertContains(organizationModule, "scope.OnParametersSet();", "route parameter lifecycle in organization management module");
+    AssertContains(accessControlModule, "ReplaceRoleGrants", "role grant command in access control management module");
+    AssertContains(accessControlModule, "scope.OnParametersSet();", "route parameter lifecycle in access control management module");
+    AssertContains(accountModule, "GetAccounts", "account query in account management module");
+    AssertContains(accountModule, "ResetAccountPassword", "account password command in account management module");
+    AssertContains(accountModule, "scope.OnAfterRender(true)", "initial Razor lifecycle invocation in account management module");
+    AssertContains(ssoAppModule, "GetApps", "OpenIddict application query in application module");
+    AssertContains(ssoAppModule, "RotateAppSecret", "OpenIddict secret rotation in application module");
+    AssertContains(ssoScopeModule, "GetScopes", "OpenIddict scope query in scope module");
+    AssertContains(ssoScopeModule, "UpdateScope", "OpenIddict scope update in scope module");
+    AssertContains(ssoGrantModule, "GetAuthorizations", "OpenIddict authorization query in grant module");
+    AssertContains(ssoGrantModule, "GetTokens", "OpenIddict token query in grant module");
+    AssertContains(ssoGrantModule, "scope.OnParametersSet();", "route parameter lifecycle in grant module");
+    AssertContains(settingsModule, "CreateSetting", "configuration center create command");
+    AssertContains(settingsModule, "UpdateSetting", "configuration center update command");
+    AssertContains(schedulesModule, "TriggerSchedule", "task scheduling manual run command");
+    AssertContains(schedulesModule, "GetScheduleRuns", "task scheduling history query");
     foreach (var (relativePath, description) in componentModules)
         AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
     AssertDoesNotContain(manifest, ".vue", "legacy SFC artifact in JazorAdmin manifest");
@@ -335,7 +336,6 @@ static async Task VerifyBrowserSmokeAsync(
 {
     var adminModules = ReadModulePaths(Path.Combine(generatedOutputRoot, "jazor-manifest.json"));
     var injectModules = ReadModulePaths(Path.Combine(injectGeneratedOutputRoot, "jazor-manifest.json"));
-    var appModulePath = RequireModulePath(adminModules, "JazorAdmin.App");
     var bootstrapModulePath = RequireModulePath(adminModules, "JazorAdmin.Bootstrap");
     var injectAppModulePath = RequireModulePath(injectModules, "JazorAdmin.InjectSmoke.InjectApp");
     var browserPath = ResolveBrowserExecutable();
@@ -563,10 +563,21 @@ static async Task VerifyBrowserSmokeAsync(
                     if (url.pathname === "/api/sso/applications" && method === "POST") {
                       const application = {
                         id: `application-${applications.length + 1}`,
-                        ...body,
-                        profile: body.grantTypes.includes("client_credentials")
+                        clientId: body.ClientId,
+                        displayName: body.DisplayName,
+                        applicationType: body.ApplicationType,
+                        clientType: body.ClientType,
+                        consentType: body.ConsentType,
+                        requirePkce: body.RequirePkce,
+                        redirectUris: body.RedirectUris,
+                        postLogoutRedirectUris: body.PostLogoutRedirectUris,
+                        endpoints: body.Endpoints,
+                        grantTypes: body.GrantTypes,
+                        responseTypes: body.ResponseTypes,
+                        scopes: body.Scopes,
+                        profile: body.GrantTypes.includes("client_credentials")
                           ? "machine"
-                          : body.endpoints.includes("introspection") ? "api" : "interactive"
+                          : body.Endpoints.includes("introspection") ? "api" : "interactive"
                       };
                       applications.push(application);
                       return json({
@@ -577,20 +588,44 @@ static async Task VerifyBrowserSmokeAsync(
                     if (url.pathname.startsWith("/api/sso/applications/") && method === "PUT") {
                       const id = url.pathname.split("/").at(-1);
                       const index = applications.findIndex((value) => value.id === id);
-                      applications[index] = { ...applications[index], ...body };
+                      applications[index] = {
+                        ...applications[index],
+                        displayName: body.DisplayName,
+                        applicationType: body.ApplicationType,
+                        clientType: body.ClientType,
+                        consentType: body.ConsentType,
+                        requirePkce: body.RequirePkce,
+                        redirectUris: body.RedirectUris,
+                        postLogoutRedirectUris: body.PostLogoutRedirectUris,
+                        endpoints: body.Endpoints,
+                        grantTypes: body.GrantTypes,
+                        responseTypes: body.ResponseTypes,
+                        scopes: body.Scopes
+                      };
                       return json({ app: applications[index], secret: null });
                     }
                     if (url.pathname.endsWith("/secret") && method === "POST") return json({ secret: "rotated-secret-smoke" });
                     if (url.pathname === "/api/sso/scopes" && method === "GET") return json(scopes);
                     if (url.pathname === "/api/sso/scopes" && method === "POST") {
-                      const scope = { id: `scope-${scopes.length + 1}`, ...body };
+                      const scope = {
+                        id: `scope-${scopes.length + 1}`,
+                        name: body.Name,
+                        displayName: body.DisplayName,
+                        description: body.Description,
+                        resources: body.Resources
+                      };
                       scopes.push(scope);
                       return json(scope, 201);
                     }
                     if (url.pathname.startsWith("/api/sso/scopes/") && method === "PUT") {
                       const id = url.pathname.split("/").at(-1);
                       const index = scopes.findIndex((value) => value.id === id);
-                      scopes[index] = { ...scopes[index], ...body };
+                      scopes[index] = {
+                        ...scopes[index],
+                        displayName: body.DisplayName,
+                        description: body.Description,
+                        resources: body.Resources
+                      };
                       return json(scopes[index]);
                     }
                     if (url.pathname === "/api/sso/authorizations" && method === "GET") return json(authorizations);
@@ -605,14 +640,30 @@ static async Task VerifyBrowserSmokeAsync(
                     }
                     if (url.pathname === "/api/settings/" && method === "GET") return json(settings);
                     if (url.pathname === "/api/settings/" && method === "POST") {
-                      const setting = { ...body, updatedAt: "2026-08-07T00:00:00Z" };
+                      const setting = {
+                        key: body.Key,
+                        group: body.Group,
+                        label: body.Label,
+                        description: body.Description,
+                        kind: body.Kind,
+                        value: body.Value,
+                        updatedAt: "2026-08-07T00:00:00Z"
+                      };
                       settings.push(setting);
                       return json(setting, 201);
                     }
                     if (url.pathname.startsWith("/api/settings/") && method === "PUT") {
                       const key = url.pathname.split("/").at(-1);
                       const index = settings.findIndex((item) => item.key === key);
-                      settings[index] = { ...settings[index], ...body, updatedAt: "2026-08-07T00:00:00Z" };
+                      settings[index] = {
+                        ...settings[index],
+                        group: body.Group,
+                        label: body.Label,
+                        description: body.Description,
+                        kind: body.Kind,
+                        value: body.Value,
+                        updatedAt: "2026-08-07T00:00:00Z"
+                      };
                       return json(settings[index]);
                     }
                     if (url.pathname.startsWith("/api/settings/") && method === "DELETE") {
@@ -625,8 +676,9 @@ static async Task VerifyBrowserSmokeAsync(
                     if (url.pathname === "/api/schedules/openid-prune" && method === "PUT") {
                       schedules[0] = {
                         ...schedules[0],
-                        ...body,
-                        nextRunAt: body.enabled ? "2026-08-08T02:15:00Z" : null
+                        cron: body.Cron,
+                        enabled: body.Enabled,
+                        nextRunAt: body.Enabled ? "2026-08-08T02:15:00Z" : null
                       };
                       return json(schedules[0]);
                     }
@@ -644,17 +696,16 @@ static async Task VerifyBrowserSmokeAsync(
                     if (method !== "GET") return Promise.resolve(new Response(null, { status: 204 }));
                     return json({ title: "Not Found" }, 404);
                   };
+                  localStorage.setItem("jazoradmin.starter.style.showBreadcrumb", "true");
                 </script>
                 <script type="module">
                   import { createApp, nextTick } from "vue";
-                  import App from "/{{appModulePath}}";
+                  import "/{{bootstrapModulePath}}";
                   import InjectApp from "/{{injectAppModulePath}}";
-                  import { boot } from "/{{bootstrapModulePath}}";
 
                   try {
-                    boot("#app", App);
                     createApp(InjectApp).mount("#inject-app");
-                    for (let attempt = 0; attempt < 100 && !document.querySelector('[data-page-region="title"], .ja-error'); attempt++) {
+                    for (let attempt = 0; attempt < 100 && !document.querySelector('[data-route-breadcrumb], .ja-error'); attempt++) {
                       await new Promise((resolve) => setTimeout(resolve, 10));
                     }
                     if (!document.querySelector('[data-route-breadcrumb], .ja-error')) {
@@ -730,11 +781,11 @@ static async Task VerifyBrowserSmokeAsync(
                         pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
                         breadcrumbText: document.querySelector('[data-route-breadcrumb]')?.textContent ?? "",
                         breadcrumbDisplay: (() => {
-                          const breadcrumb = document.querySelector('[data-route-breadcrumb]');
+                          const breadcrumb = document.querySelector('.ja-route-breadcrumb');
                           return breadcrumb ? getComputedStyle(breadcrumb).display : "";
                         })(),
                         breadcrumbItemsInline: (() => {
-                          const breadcrumb = document.querySelector('[data-route-breadcrumb]');
+                          const breadcrumb = document.querySelector('.ja-route-breadcrumb');
                           const items = breadcrumb ? Array.from(breadcrumb.children) : [];
                           if (items.length < 2) return items.length === 1;
                           const firstTop = items[0].getBoundingClientRect().top;
@@ -1333,16 +1384,15 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                   }
                   throw new Error(message);
                 };
-                const trigger = document.querySelector('[data-preference="theme"]');
-                if (!(trigger instanceof HTMLElement)) throw new Error("Theme menu trigger is missing.");
+                const trigger = document.querySelector('[data-preference="setting"]');
+                if (!(trigger instanceof HTMLElement)) throw new Error("Global settings trigger is missing.");
                 const before = getComputedStyle(document.querySelector('[data-shell-region="content"]')).backgroundColor;
                 trigger.click();
                 await waitFor(
-                  () => Array.from(document.querySelectorAll('.t-dropdown__item')).some((item) => item.textContent?.trim() === "深色"),
-                  "dark theme item");
-                const dark = Array.from(document.querySelectorAll('.t-dropdown__item'))
-                  .find((item) => item.textContent?.trim() === "深色");
-                if (!(dark instanceof HTMLElement)) throw new Error("Dark theme item is missing.");
+                  () => document.querySelector('[data-starter-settings]') !== null,
+                  "global settings drawer");
+                const dark = document.querySelector('[data-starter-settings] input[value="dark"]')?.closest("label");
+                if (!(dark instanceof HTMLElement)) throw new Error("Dark theme option is missing.");
                 dark.click();
                 await waitFor(
                   () => document.querySelector('.ja-application')?.classList.contains('ja-application--dark') === true,
@@ -1582,6 +1632,10 @@ static string BuildBrowserSmokeTestScript(string browserPath)
             while (Date.now() < deadline) {
               const result = await this.evaluate("globalThis.__jazorAdminBrowserSmoke ?? null");
               if (result !== null) {
+                if (result.ok === false) {
+                  const href = await this.evaluate("location.href");
+                  throw new Error(`JazorAdmin page smoke failed at ${href}: ${result.message ?? "Unknown error"}. Diagnostics: ${JSON.stringify(this.diagnostics)}`);
+                }
                 return result;
               }
               await delay(100);

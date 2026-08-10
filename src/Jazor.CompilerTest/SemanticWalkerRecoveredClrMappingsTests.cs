@@ -288,7 +288,7 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
         Assert.HasCount(1, imports["System/RuntimeModule.js"], body);
-        StringAssert.Contains(body, "return markAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
+        StringAssert.Contains(body, "return MarkAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(source) " + body);
     }
 

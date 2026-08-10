@@ -9138,7 +9138,7 @@ public sealed class SemanticWalkerReferenceTest
               let empty = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return markAsMutableListCarrier(__src);
+                return MarkAsMutableListCarrier(__src);
               })([]);
               let literal = (__src => {
                 if (__src == null)
@@ -9148,7 +9148,7 @@ public sealed class SemanticWalkerReferenceTest
               let copied = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return markAsMutableListCarrier(Array.from(__src));
+                return MarkAsMutableListCarrier(Array.from(__src));
               })(createFromCollection(source));
             }
             """, script);
@@ -9181,7 +9181,7 @@ public sealed class SemanticWalkerReferenceTest
               let filtered = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return markAsMutableListCarrier(Array.from(__src));
+                return MarkAsMutableListCarrier(Array.from(__src));
               })(findAll((() => {
                 let v$0 = createDefault();
                 add(v$0, 1);
@@ -9205,7 +9205,7 @@ public sealed class SemanticWalkerReferenceTest
               let copied = (__src => {
                 if (__src == null)
                   throw new TypeError("source");
-                return markAsMutableListCarrier(__src);
+                return MarkAsMutableListCarrier(__src);
               })((() => {
                 let v$0 = createDefault();
                 add(v$0, 1);
@@ -9288,7 +9288,7 @@ public sealed class SemanticWalkerReferenceTest
 			  let list = (__src => {
 			    if (__src == null)
 			      throw new TypeError("source");
-			    return markAsMutableListCarrier(Array.from(__src));
+			    return MarkAsMutableListCarrier(Array.from(__src));
 			  })(null);
 			  let array = (__src => {
 			    if (__src == null)
@@ -9370,7 +9370,7 @@ public sealed class SemanticWalkerReferenceTest
 		StringAssert.Contains(script, "})(source.sort());");
 		StringAssert.Contains(script, "})(source.fill(0));");
 		Assert.AreEqual(2, script.Split(["return Array.from(__src);"], StringSplitOptions.None).Length - 1);
-		StringAssert.Contains(script, "return markAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
+		StringAssert.Contains(script, "return MarkAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
 	}
 
 	[TestMethod]

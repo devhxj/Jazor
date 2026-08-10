@@ -1080,7 +1080,7 @@ public partial class SemanticWalker
 			// interface-mutation contract; ToArray deliberately remains an unmarked fixed array.
 			var markAsMutableListCarrier = context.BindImportSpecifier(
 				"System/RuntimeModule.js",
-				"markAsMutableListCarrier");
+				"MarkAsMutableListCarrier");
 			intrinsicExpression = new CallExpression(
 				markAsMutableListCarrier,
 				NodeList.From(intrinsicExpression),

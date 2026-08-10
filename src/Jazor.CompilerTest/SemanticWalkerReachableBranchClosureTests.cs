@@ -306,7 +306,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             """);
 
         StringAssert.Contains(script, "let copy =", StringComparison.Ordinal);
-        StringAssert.Contains(script, "markAsMutableListCarrier", StringComparison.Ordinal);
+        StringAssert.Contains(script, "MarkAsMutableListCarrier", StringComparison.Ordinal);
         Assert.AreEqual(1, CountOccurrences(script, "Array.from(__src)"), script);
         StringAssert.Contains(script, "return __src;", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);

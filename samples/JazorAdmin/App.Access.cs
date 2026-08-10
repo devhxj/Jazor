@@ -4,14 +4,20 @@ namespace JazorAdmin;
 
 public partial class App
 {
+    protected override void OnInitialized()
+    {
+        // Vue setup can read local storage before the first VNode is created. Restoring visual
+        // state here avoids replacing the mounted session placeholder with a different slot tree.
+        RestoreStarterStyleConfig();
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (!firstRender)
             return;
 
         // RazorVue maps this lifecycle hook to Vue onMounted. Constructors are not part of setup(),
-        // so browser-only session recovery must start here. RazorVue 会映射到 Vue onMounted；构造函数不进入 setup，浏览器会话恢复只能在这里启动。
-        RestoreStarterStyleConfig();
+        // so browser-only session recovery starts only after the root is mounted.
         RestoreSession();
     }
 
