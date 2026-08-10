@@ -2881,7 +2881,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "let selectorTarget = {");
         StringAssert.Contains(script, "el: \"#app\"");
         StringAssert.Contains(script, "top: 12");
-        StringAssert.Contains(script, "behavior: \"Smooth\"");
+        StringAssert.Contains(script, "behavior: \"smooth\"");
         StringAssert.Contains(script, "let elementTarget = {");
         StringAssert.Contains(script, "el: panel");
         StringAssert.Contains(script, "left: 4");

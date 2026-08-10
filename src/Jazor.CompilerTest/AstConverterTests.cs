@@ -7349,7 +7349,7 @@ export function createFacingMode() {
 
         AssertScriptEqual(
 @"export function importJwk(crypto, jwk, usages) {
-  return crypto.importKey(""Jwk"", jwk, ""RSA-PSS"", true, usages);
+  return crypto.importKey(""jwk"", jwk, ""RSA-PSS"", true, usages);
 }
 ", script);
     }

@@ -2,6 +2,9 @@
 
 ## 2026-08-10
 
+- Jazor 0.6 now verifies every supported Vue binding package independently. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router all meet the 80% public binding-contract audit gate, while their corresponding test lanes complete without failures.
+- Development reload now offers a first opt-in `.mjs` module-update path: capable clients receive a cancellable `jazor:module-update` browser event, while older clients, unhandled updates, and non-module changes continue through full-page reload. This is a controlled first HMR phase and does not claim dynamic import or state preservation.
+- RazorVue G2 now records a repeatable release performance baseline from an external official Razor SG consumer, generated modules and source maps, Node measurements, and a real-browser heap/timer lane. Any threshold warnings and unavailable retired-line comparison remain visible in the report.
 - Jazor 0.5 raises the RazorVue quality gate to 96% branch coverage: 4,675 official Razor Source Generator scenarios now pass with 97.71% line coverage and 96.01% branch coverage.
 - RazorVue direct-render and generated-C# binding regressions now cover metadata-only render methods, generic scoped content, helper fragment propagation, import boundaries, and render-frame ordering without weakening the official Razor SG input contract.
 

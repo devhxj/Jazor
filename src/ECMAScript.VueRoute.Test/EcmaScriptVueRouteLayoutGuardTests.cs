@@ -209,7 +209,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var propsPath = System.IO.Path.Combine(repoRoot, "samples", "ECMAScript.VueRoute.MemorySmoke", "Directory.Build.props");
         var source = System.IO.File.ReadAllText(propsPath);
 
-        StringAssert.Contains(source, "<Import Project=\"..\\..\\Directory.Build.props\" />");
+        StringAssert.Contains(source, "<Import Project=\"..\\Directory.Build.props\" />");
     }
 
     [TestMethod]

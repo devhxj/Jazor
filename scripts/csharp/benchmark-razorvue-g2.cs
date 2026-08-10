@@ -1895,13 +1895,45 @@ internal static class GeneratedArtifactBenchmarkRunner
                 "/nr:false",
                 "/p:UseSharedCompilation=false"
             ]);
-        packageStopwatch.Stop();
         if (pack.ExitCode != 0)
             throw new InvalidOperationException("Failed to pack local Jazor package for generated artifact benchmark." + Environment.NewLine + pack);
         if (pack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Local Jazor package emitted duplicate pack warnings." + Environment.NewLine + pack);
 
         var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
+        var jazorVuePack = await RunDotNetAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
+                "-c",
+                "Debug",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={ScriptHelpers.EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={ScriptHelpers.EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={ScriptHelpers.EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "/p:UseSharedCompilation=false"
+            ]);
+        if (jazorVuePack.ExitCode != 0)
+            throw new InvalidOperationException("Failed to pack local Jazor.Vue package for generated artifact benchmark." + Environment.NewLine + jazorVuePack);
+        if (jazorVuePack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Local Jazor.Vue package emitted duplicate pack warnings." + Environment.NewLine + jazorVuePack);
+
+        var jazorVuePackageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue");
+        if (!string.Equals(packageVersion, jazorVuePackageVersion, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "Jazor and Jazor.Vue package versions must match for the generated artifact benchmark. " +
+                $"Jazor={packageVersion}, Jazor.Vue={jazorVuePackageVersion}.");
+        }
+
+        packageStopwatch.Stop();
+
         var projectRoot = Path.Combine(workspaceRoot, "ExternalRazorSgGeneratedArtifactConsumer");
         var projectPath = CreateExternalRazorSgGeneratedArtifactConsumerProject(projectRoot);
 
@@ -2049,6 +2081,7 @@ internal static class GeneratedArtifactBenchmarkRunner
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -2320,9 +2353,6 @@ internal static class GeneratedArtifactBenchmarkRunner
             RequireArtifact(paths, fixture.ComponentRelativePath);
             RequireArtifact(paths, fixture.SourceMapRelativePath);
         }
-
-        RequireArtifact(paths, "@jazor/vue-runtime/render-context.mjs");
-        RequireArtifact(paths, "@jazor/vue-runtime/render-context-core.mjs");
     }
 
     private static void RequireArtifact(IReadOnlyList<string> paths, string relativePath)
