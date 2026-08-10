@@ -67,7 +67,10 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         StringAssert.Contains(clientScript, "const moduleUpdateCapability = \"module-update\";");
         StringAssert.Contains(clientScript, "new CustomEvent(\"jazor:module-update\", {");
         StringAssert.Contains(clientScript, "cancelable: true");
-        StringAssert.Contains(clientScript, "if (!acceptModuleUpdate(payload)) {");
+        StringAssert.Contains(clientScript, "Object.defineProperty(window, \"JazorHmr\"");
+        StringAssert.Contains(clientScript, "ready: transportReady");
+        StringAssert.Contains(clientScript, "moduleUrl.searchParams.set(\"__jazor_hmr\"");
+        StringAssert.Contains(clientScript, "void acceptModuleUpdate(payload).then(accepted => {");
         StringAssert.Contains(clientScript, "sendMessage({ type: \"ready\", capabilities: [moduleUpdateCapability] });");
     }
 
@@ -121,7 +124,9 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         var watchRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(watchRoot);
         var watchedFilePath = Path.Combine(watchRoot, "main.mjs");
+        var manifestPath = Path.Combine(watchRoot, "jazor-manifest.json");
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 1;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v1", "template-v1", "logic-v1", "descriptor-v1");
 
         await using var host = await CreateHostAsync(
             workspace.RootPath,
@@ -130,6 +135,12 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
             {
                 options.WatchRootPaths.Clear();
                 options.WatchRootPaths.Add("jazor");
+                options.HmrModuleMappings.Clear();
+                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                {
+                    ArtifactRootPath = "jazor",
+                    RequestPath = new PathString("/jazor")
+                });
                 options.FileChangeDebounceInterval = TestDebounceInterval;
                 options.FileChangePollingInterval = TestPollingInterval;
             }),
@@ -149,6 +160,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await Task.Delay(TestPollingInterval);
 
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v2", "template-v2", "logic-v1", "descriptor-v1");
 
         var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
@@ -157,13 +169,15 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenWatchedModuleChanges_OffersCancellableModuleUpdateToCapabilityAwareClient()
+    public async Task UseJazorDevelopmentReload_WhenMappedModuleChanges_OffersCancellableModuleUpdateToCapabilityAwareClient()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var watchRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(watchRoot);
         var watchedFilePath = Path.Combine(watchRoot, "main.mjs");
+        var manifestPath = Path.Combine(watchRoot, "jazor-manifest.json");
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 1;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v1", "template-v1", "logic-v1", "descriptor-v1");
 
         await using var host = await CreateHostAsync(
             workspace.RootPath,
@@ -171,7 +185,12 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
             services => services.AddJazorDevelopmentReload(options =>
             {
                 options.WatchRootPaths.Clear();
-                options.WatchRootPaths.Add("jazor");
+                options.HmrModuleMappings.Clear();
+                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                {
+                    ArtifactRootPath = "jazor",
+                    RequestPath = new PathString("/jazor")
+                });
                 options.FileChangeDebounceInterval = TestDebounceInterval;
                 options.FileChangePollingInterval = TestPollingInterval;
             }),
@@ -191,13 +210,73 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await Task.Delay(TestPollingInterval);
 
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v2", "template-v2", "logic-v1", "descriptor-v1");
 
         var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("module-update", updateMessage.GetProperty("type").GetString());
-        Assert.AreEqual("file-change:main.mjs", updateMessage.GetProperty("reason").GetString());
+        Assert.AreEqual("hmr-template-only", updateMessage.GetProperty("reason").GetString());
         CollectionAssert.AreEqual(
             new[] { "main.mjs" },
             updateMessage.GetProperty("changedPaths").EnumerateArray().Select(static path => path.GetString()).ToArray());
+        var update = updateMessage.GetProperty("moduleUpdates").EnumerateArray().Single();
+        Assert.AreEqual("main.mjs", update.GetProperty("path").GetString());
+        Assert.AreEqual("/jazor/main.mjs", update.GetProperty("url").GetString());
+        Assert.AreEqual("Demo.Pages.Counter", update.GetProperty("componentId").GetString());
+        Assert.AreEqual("Demo.Pages.Counter:main.mjs", update.GetProperty("moduleId").GetString());
+        Assert.AreEqual("descriptor-v1", update.GetProperty("descriptorHash").GetString());
+        Assert.AreEqual("template-v2", update.GetProperty("templateHash").GetString());
+        Assert.AreEqual("logic-v1", update.GetProperty("logicHash").GetString());
+        Assert.AreEqual("template-only", update.GetProperty("boundaryKind").GetString());
+
+        await AssertNoWebSocketJsonAsync(socket, NoDuplicateMessageTimeout);
+    }
+
+    [TestMethod]
+    public async Task UseJazorDevelopmentReload_WhenHmrDescriptorChanges_FallsBackToFullReload()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var watchRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(watchRoot);
+        var watchedFilePath = Path.Combine(watchRoot, "main.mjs");
+        var manifestPath = Path.Combine(watchRoot, "jazor-manifest.json");
+        await File.WriteAllTextAsync(watchedFilePath, "export const version = 1;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v1", "template-v1", "logic-v1", "descriptor-v1");
+
+        await using var host = await CreateHostAsync(
+            workspace.RootPath,
+            Environments.Development,
+            services => services.AddJazorDevelopmentReload(options =>
+            {
+                options.WatchRootPaths.Clear();
+                options.WatchRootPaths.Add("jazor");
+                options.HmrModuleMappings.Clear();
+                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                {
+                    ArtifactRootPath = "jazor",
+                    RequestPath = new PathString("/jazor")
+                });
+                options.FileChangeDebounceInterval = TestDebounceInterval;
+                options.FileChangePollingInterval = TestPollingInterval;
+            }),
+            app =>
+            {
+                app.UseJazorDevelopmentReload();
+                app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
+            });
+
+        var socketClient = host.GetTestServer().CreateWebSocketClient();
+        using var socket = await socketClient.ConnectAsync(new Uri("ws://localhost/@jazor/reload"), CancellationToken.None);
+
+        _ = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+        await SendWebSocketJsonAsync(socket, new { type = "ready", capabilities = new[] { "module-update" } });
+        await Task.Delay(TestPollingInterval);
+
+        await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v2", "template-v2", "logic-v1", "descriptor-v2");
+
+        var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
+        Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+        Assert.AreEqual("hmr-descriptor-changed", reloadMessage.GetProperty("reason").GetString());
 
         await AssertNoWebSocketJsonAsync(socket, NoDuplicateMessageTimeout);
     }
@@ -484,6 +563,47 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         configure(app);
         await app.StartAsync();
         return app;
+    }
+
+    private static Task WriteHmrManifestAsync(
+        string manifestPath,
+        string relativePath,
+        string contentHash,
+        string templateHash,
+        string logicHash,
+        string descriptorHash)
+    {
+        var directory = Path.GetDirectoryName(manifestPath)
+            ?? throw new InvalidOperationException("HMR manifest path must have a parent directory.");
+        Directory.CreateDirectory(directory);
+        var manifest = new
+        {
+            schemaVersion = 1,
+            runtimeProtocolVersion = 1,
+            rootAssemblyName = "Demo.Host",
+            entries = new[] { relativePath },
+            modules = new[]
+            {
+                new
+                {
+                    assemblyName = "Demo.Host",
+                    typeName = "Demo.Pages.Counter",
+                    id = "Demo.Pages.Counter",
+                    path = relativePath,
+                    contentHash,
+                    hmr = new
+                    {
+                        componentId = "Demo.Pages.Counter",
+                        moduleId = "Demo.Pages.Counter:" + relativePath,
+                        descriptorHash,
+                        templateHash,
+                        logicHash,
+                        boundaryKind = "template-only"
+                    }
+                }
+            }
+        };
+        return File.WriteAllTextAsync(manifestPath, JsonSerializer.Serialize(manifest));
     }
 
     private static async Task<JsonElement> ReceiveWebSocketJsonAsync(WebSocket socket, TimeSpan timeout)

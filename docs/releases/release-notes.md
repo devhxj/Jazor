@@ -2,6 +2,9 @@
 
 ## 2026-08-10
 
+- Jazor 0.7 raises the independent public Vue binding-contract audit gate to 90%. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router pass every currently audited contract unit and their corresponding test lanes.
+- Development reload can now dynamically import a compiler-proven template-only module update and pass it to a consumer-registered `JazorHmr.accept(moduleId, handler)` callback. Missing handlers, failed imports, descriptor or logic changes, and all other unproven boundaries fall back to a full-page reload. This does not automatically replace Vue instances or preserve component state.
+- The release baseline now includes a real-browser HMR workflow: a manifest template diff reaches the browser over WebSocket, loads a cache-busted module, and invokes the registered handler. The G2 performance report remains a measured baseline with its gzip and retired-line comparison warnings visible.
 - Jazor 0.6 now verifies every supported Vue binding package independently. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router all meet the 80% public binding-contract audit gate, while their corresponding test lanes complete without failures.
 - Development reload now offers a first opt-in `.mjs` module-update path: capable clients receive a cancellable `jazor:module-update` browser event, while older clients, unhandled updates, and non-module changes continue through full-page reload. This is a controlled first HMR phase and does not claim dynamic import or state preservation.
 - RazorVue G2 now records a repeatable release performance baseline from an external official Razor SG consumer, generated modules and source maps, Node measurements, and a real-browser heap/timer lane. Any threshold warnings and unavailable retired-line comparison remain visible in the report.

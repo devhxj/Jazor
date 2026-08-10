@@ -153,7 +153,8 @@ internal sealed record ManifestModel
                     module.Hash,
                     module.SourceMapPath,
                     module.MapHash,
-                    module.PackageImports))
+                    module.PackageImports,
+                    module.Hmr))
                 .ToList(),
             fileAssets);
 
@@ -182,7 +183,8 @@ internal sealed record ManifestModel
                 ReadRequiredString(moduleElement, "contentHash", "hash", "Hash"),
                 ReadOptionalString(moduleElement, "sourceMap", "sourceMapPath", "SourceMapPath"),
                 ReadOptionalString(moduleElement, "sourceMapHash", "mapHash", "MapHash"),
-                ReadStringArray(moduleElement, "imports", "packageImports", "PackageImports")));
+                ReadStringArray(moduleElement, "imports", "packageImports", "PackageImports"),
+                ReadHmrMetadata(moduleElement)));
         }
 
         return modules;
@@ -244,7 +246,8 @@ internal sealed record ManifestModel
             {
                 RelativePath = NormalizeRelativePath(module.RelativePath),
                 SourceMapPath = module.SourceMapPath is null ? null : NormalizeRelativePath(module.SourceMapPath),
-                PackageImports = NormalizePackageImports(module.PackageImports)
+                PackageImports = NormalizePackageImports(module.PackageImports),
+                Hmr = NormalizeHmrMetadata(module.Hmr)
             };
 
             if (indexByRelativePath.TryGetValue(normalizedModule.RelativePath, out var existingIndex))
@@ -328,6 +331,17 @@ internal sealed record ManifestModel
             .ToArray() ?? [];
         return normalized.Length == 0 ? null : normalized;
     }
+
+    private static HmrMetadata? NormalizeHmrMetadata(HmrMetadata? hmr)
+        => hmr is null
+            ? null
+            : HmrMetadata.Create(
+                hmr.ComponentId,
+                hmr.ModuleId,
+                hmr.DescriptorHash,
+                hmr.TemplateHash,
+                hmr.LogicHash,
+                hmr.BoundaryKind);
 
     private static string NormalizeRelativePath(string relativePath)
     {
@@ -462,6 +476,26 @@ internal sealed record ManifestModel
         return values.Length == 0 ? null : values;
     }
 
+    private static HmrMetadata? ReadHmrMetadata(JsonElement moduleElement)
+    {
+        if (!TryGetProperty(moduleElement, out var hmrElement, "hmr", "Hmr") ||
+            hmrElement.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (hmrElement.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException("Manifest HMR metadata must be an object.");
+
+        return HmrMetadata.Create(
+            ReadRequiredString(hmrElement, "componentId", "ComponentId"),
+            ReadRequiredString(hmrElement, "moduleId", "ModuleId"),
+            ReadRequiredString(hmrElement, "descriptorHash", "DescriptorHash"),
+            ReadRequiredString(hmrElement, "templateHash", "TemplateHash"),
+            ReadRequiredString(hmrElement, "logicHash", "LogicHash"),
+            ReadRequiredString(hmrElement, "boundaryKind", "BoundaryKind"));
+    }
+
     private sealed record ManifestFileModel(
         int SchemaVersion,
         int RuntimeProtocolVersion,
@@ -478,7 +512,8 @@ internal sealed record ManifestModel
         string ContentHash,
         string? SourceMap = null,
         string? SourceMapHash = null,
-        IReadOnlyList<string>? Imports = null);
+        IReadOnlyList<string>? Imports = null,
+        HmrMetadata? Hmr = null);
 
     private sealed record ManifestAssetFileEntry(
         string Source,
@@ -496,7 +531,8 @@ internal sealed record ModuleEntry(
     string Hash,
     string? SourceMapPath = null,
     string? MapHash = null,
-    IReadOnlyList<string>? PackageImports = null);
+    IReadOnlyList<string>? PackageImports = null,
+    HmrMetadata? Hmr = null);
 
 /// <summary>One source-controlled asset copied to the application artifact root.</summary>
 internal sealed record AssetEntry(

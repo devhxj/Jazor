@@ -122,11 +122,27 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         string serverInstanceId,
         long reloadSequence,
         string? reason,
-        IReadOnlyList<string> changedPaths,
+        IReadOnlyList<JazorDevelopmentHmrModuleUpdate> moduleUpdates,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serverInstanceId);
-        ArgumentNullException.ThrowIfNull(changedPaths);
+        ArgumentNullException.ThrowIfNull(moduleUpdates);
+        if (moduleUpdates.Count == 0)
+            throw new ArgumentException("At least one module update is required.", nameof(moduleUpdates));
+
+        var updates = moduleUpdates
+            .Select(static update => new DevelopmentReloadModuleUpdate
+            {
+                Path = update.Path,
+                Url = update.Url,
+                ComponentId = update.ComponentId,
+                ModuleId = update.ModuleId,
+                DescriptorHash = update.DescriptorHash,
+                TemplateHash = update.TemplateHash,
+                LogicHash = update.LogicHash,
+                BoundaryKind = update.BoundaryKind
+            })
+            .ToArray();
 
         var moduleUpdate = new DevelopmentReloadNotificationEnvelope
         {
@@ -134,7 +150,8 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             ServerInstanceId = serverInstanceId,
             ReloadSequence = reloadSequence,
             Reason = string.IsNullOrWhiteSpace(reason) ? null : reason,
-            ChangedPaths = changedPaths.ToArray()
+            ChangedPaths = updates.Select(static update => update.Path).ToArray(),
+            ModuleUpdates = updates
         };
         var fullReloadFallback = new DevelopmentReloadNotificationEnvelope
         {
@@ -149,10 +166,14 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             cancellationToken);
     }
 
-    private async Task BroadcastAsync(object payload, CancellationToken cancellationToken)
+    private async Task BroadcastAsync(
+        DevelopmentReloadNotificationEnvelope payload,
+        CancellationToken cancellationToken)
         => await BroadcastAsync(_ => payload, cancellationToken);
 
-    private async Task BroadcastAsync(Func<ClientState, object> payloadFactory, CancellationToken cancellationToken)
+    private async Task BroadcastAsync(
+        Func<ClientState, DevelopmentReloadNotificationEnvelope> payloadFactory,
+        CancellationToken cancellationToken)
     {
         await PruneExpiredClientsAsync(DateTimeOffset.UtcNow);
         var broadcastTasks = new List<Task>(_sockets.Count);
@@ -213,7 +234,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
     private async Task SendToClientAsync(
         WebSocket socket,
         ClientState state,
-        object payload,
+        DevelopmentReloadNotificationEnvelope payload,
         CancellationToken cancellationToken)
     {
         try
@@ -259,7 +280,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
     private async Task SendWithClientStateAsync(
         WebSocket socket,
         ClientState state,
-        object payload,
+        DevelopmentReloadNotificationEnvelope payload,
         CancellationToken cancellationToken)
     {
         using var sendTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -277,10 +298,12 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
 
     private static async Task SendAsync(
         WebSocket socket,
-        object payload,
+        DevelopmentReloadNotificationEnvelope payload,
         CancellationToken cancellationToken)
     {
-        var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload));
+        var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
+            payload,
+            JazorDevelopmentReloadJsonSerializerContext.Default.DevelopmentReloadNotificationEnvelope));
         await socket.SendAsync(
             message,
             WebSocketMessageType.Text,
@@ -328,7 +351,9 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         DevelopmentReloadClientMessage? message;
         try
         {
-            message = JsonSerializer.Deserialize<DevelopmentReloadClientMessage>(text);
+            message = JsonSerializer.Deserialize(
+                text,
+                JazorDevelopmentReloadJsonSerializerContext.Default.DevelopmentReloadClientMessage);
         }
         catch (JsonException)
         {
@@ -464,6 +489,36 @@ internal sealed class DevelopmentReloadNotificationEnvelope
 
     [JsonPropertyName("changedPaths")]
     public IReadOnlyList<string>? ChangedPaths { get; init; }
+
+    [JsonPropertyName("moduleUpdates")]
+    public IReadOnlyList<DevelopmentReloadModuleUpdate>? ModuleUpdates { get; init; }
+}
+
+internal sealed class DevelopmentReloadModuleUpdate
+{
+    [JsonPropertyName("path")]
+    public required string Path { get; init; }
+
+    [JsonPropertyName("url")]
+    public required string Url { get; init; }
+
+    [JsonPropertyName("componentId")]
+    public required string ComponentId { get; init; }
+
+    [JsonPropertyName("moduleId")]
+    public required string ModuleId { get; init; }
+
+    [JsonPropertyName("descriptorHash")]
+    public required string DescriptorHash { get; init; }
+
+    [JsonPropertyName("templateHash")]
+    public required string TemplateHash { get; init; }
+
+    [JsonPropertyName("logicHash")]
+    public required string LogicHash { get; init; }
+
+    [JsonPropertyName("boundaryKind")]
+    public required string BoundaryKind { get; init; }
 }
 
 internal sealed class DevelopmentReloadClientMessage

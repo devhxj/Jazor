@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 #pragma warning disable IL2026, IL2075 // The local gate intentionally reflects untrimmed test outputs.
 
-const double minimumBindingSurfaceCoverage = 0.80;
+const double minimumBindingSurfaceCoverage = 0.90;
 
 var testLanes = new[]
 {

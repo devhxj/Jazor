@@ -25,7 +25,9 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     private readonly List<FileSystemWatcher> _fileWatchers = [];
     private readonly List<JazorDevelopmentFileSnapshotPoller> _fileSnapshotPollers = [];
     private readonly List<WatchRootRegistration> _watchRegistrations = [];
+    private readonly List<JazorDevelopmentHmrArtifactRegistration> _hmrArtifactRegistrations = [];
     private JazorDevelopmentFileChangeDebouncer? _fileChangeDebouncer;
+    private JazorDevelopmentHmrManifestTracker? _hmrManifestTracker;
     private Task? _fileChangePump;
     private CancellationTokenSource? _fileChangeCancellationSource;
     private long _reloadSequence;
@@ -62,6 +64,9 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         if (_fileChangePump is not null)
             return;
 
+        ResolveHmrArtifactRegistrations();
+        _hmrManifestTracker = new JazorDevelopmentHmrManifestTracker(_hmrArtifactRegistrations);
+        _hmrManifestTracker.Initialize();
         ResolveWatchRegistrations();
         _fileChangeCancellationSource = new CancellationTokenSource();
         _fileChangePump = PumpFileChangesAsync(_fileChangeCancellationSource.Token);
@@ -166,6 +171,24 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         }
 
         await _reloadHub.DisposeAsync();
+        _hmrManifestTracker = null;
+    }
+
+    private void ResolveHmrArtifactRegistrations()
+    {
+        _hmrArtifactRegistrations.Clear();
+        foreach (var mapping in _options.HmrModuleMappings.Where(static mapping => mapping is not null))
+        {
+            var artifactRootPath = ResolveContentRootPath(mapping.ArtifactRootPath);
+            var requestPath = mapping.RequestPath.Value?.TrimEnd('/');
+            if (string.IsNullOrWhiteSpace(requestPath))
+                continue;
+
+            _hmrArtifactRegistrations.Add(new JazorDevelopmentHmrArtifactRegistration(
+                artifactRootPath,
+                Path.Combine(artifactRootPath, "jazor-manifest.json"),
+                requestPath));
+        }
     }
 
     private void ResolveWatchRegistrations()
@@ -175,15 +198,22 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             _options.SuppressWatchRootsHandledByExternalBrowserRefresh
             && _runtimeSignals.IsExternalBrowserRefreshActive;
 
-        foreach (var configuredRoot in _options.WatchRootPaths
-                     .Where(static path => !string.IsNullOrWhiteSpace(path))
-                     .Select(static path => path.Trim())
-                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        // An HMR mapping is not useful unless its artifacts are observed. Include it
+        // automatically so custom output roots do not require duplicated configuration.
+        var configuredRoots = _options.WatchRootPaths
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Select(static path => path.Trim())
+            .Concat(_hmrArtifactRegistrations.Select(static registration => registration.ArtifactRootPath))
+            .Select(ResolveContentRootPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static path => path.Length)
+            .ThenBy(static path => path, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rootPath in configuredRoots)
         {
-            var rootPath = Path.GetFullPath(
-                Path.IsPathRooted(configuredRoot)
-                    ? configuredRoot
-                    : Path.Combine(_environment.ContentRootPath, configuredRoot));
+            if (_watchRegistrations.Any(registration => IsSamePathOrDescendant(rootPath, registration.RootPath)))
+                continue;
+
             if (suppressExternalBrowserRefreshRoots && IsHandledByExternalBrowserRefresh(rootPath))
             {
                 _logger.LogDebug(
@@ -204,6 +234,12 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             _watchRegistrations.Add(new WatchRootRegistration(rootPath, watcherPath));
         }
     }
+
+    private string ResolveContentRootPath(string configuredPath)
+        => Path.GetFullPath(
+            Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(_environment.ContentRootPath, configuredPath));
 
     private bool IsHandledByExternalBrowserRefresh(string rootPath)
     {
@@ -340,15 +376,28 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             return;
 
         RecordBroadcastSnapshots(changedPathsToProcess);
+        var hmrDecision = _hmrManifestTracker?.Evaluate(changedPathsToProcess)
+            ?? JazorDevelopmentHmrDecision.FullReload("hmr-metadata-unavailable");
+        _logger.LogDebug(
+            "Jazor development reload selected {ReloadKind} ({ReloadReason}) for {ChangedPathCount} observed changes.",
+            hmrDecision.Kind,
+            hmrDecision.Reason,
+            changedPathsToProcess.Count);
+        if (hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.None)
+            return;
+
         var reloadSequence = Interlocked.Increment(ref _reloadSequence);
-        var reason = BuildReloadReason(changedPathsToProcess);
-        if (CanOfferModuleUpdate(changedPathsToProcess))
+        var reason = hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.FullReload &&
+                     IsGenericFileChangeFallback(hmrDecision.Reason)
+            ? BuildReloadReason(changedPathsToProcess)
+            : hmrDecision.Reason;
+        if (hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.ModuleUpdate)
         {
             await _reloadHub.BroadcastModuleUpdateAsync(
                 _serverInstanceId,
                 reloadSequence,
                 reason,
-                BuildModuleUpdatePaths(changedPathsToProcess),
+                hmrDecision.Updates,
                 cancellationToken);
             return;
         }
@@ -360,27 +409,26 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             cancellationToken);
     }
 
-    private static bool CanOfferModuleUpdate(IReadOnlyList<string> changedPaths)
-        => changedPaths.Count > 0
-            && changedPaths.All(static path => path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase));
+    private static bool IsGenericFileChangeFallback(string reason)
+        => reason is "hmr-unmapped-change" or "hmr-non-module-change";
 
-    private IReadOnlyList<string> BuildModuleUpdatePaths(IReadOnlyList<string> changedPaths)
+    private string BuildReloadReason(IReadOnlyList<string> changedPaths)
     {
-        var modulePaths = new List<string>(changedPaths.Count);
-        foreach (var changedPath in changedPaths)
-        {
-            foreach (var registration in _watchRegistrations)
-            {
-                if (!JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
-                    continue;
+        if (changedPaths.Count != 1)
+            return "file-change";
 
-                // This is a logical path relative to the watched root, not a server file-system path or URL.
-                modulePaths.Add(Path.GetRelativePath(registration.RootPath, changedPath).Replace('\\', '/'));
-                break;
-            }
+        var changedPath = changedPaths[0];
+        foreach (var registration in _watchRegistrations)
+        {
+            if (!JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
+                continue;
+
+            var relativePath = Path.GetRelativePath(registration.RootPath, changedPath)
+                .Replace('\\', '/');
+            return "file-change:" + relativePath;
         }
 
-        return modulePaths;
+        return "file-change";
     }
 
     private IReadOnlyList<string> FilterAlreadyBroadcastChanges(IReadOnlyList<string> changedPaths)
@@ -427,25 +475,6 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
                 _lastBroadcastSnapshots[path] = CaptureObservedFileSnapshot(path);
             }
         }
-    }
-
-    private string BuildReloadReason(IReadOnlyList<string> changedPaths)
-    {
-        if (changedPaths.Count != 1)
-            return "file-change";
-
-        var changedPath = changedPaths[0];
-        foreach (var registration in _watchRegistrations)
-        {
-            if (!JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
-                continue;
-
-            var relativePath = Path.GetRelativePath(registration.RootPath, changedPath)
-                .Replace('\\', '/');
-            return "file-change:" + relativePath;
-        }
-
-        return "file-change";
     }
 
     private static JazorDevelopmentObservedFileSnapshot? CaptureObservedFileSnapshot(string path)

@@ -88,7 +88,8 @@ internal sealed class ModuleWriter
                 module.Hash,
                 sourceMapRelativePath,
                 mapHash,
-                module.PackageImports));
+                module.PackageImports,
+                module.Hmr));
         }
 
         var nextAssetsByArtifactPath = new Dictionary<string, AssetEntry>(StringComparer.OrdinalIgnoreCase);

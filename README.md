@@ -88,16 +88,16 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-10
 
-- Jazor 0.6 verifies each supported Vue binding package independently: Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router all pass their test lane and public binding-contract audit gate.
-- Development reload now provides a capability-gated `.mjs` module-update event with a full-reload fallback; it is the first controlled HMR phase and does not claim state preservation.
-- RazorVue G2 now produces a repeatable external-package-consumer, generated-artifact, Node, and browser performance baseline with explicit threshold warnings.
+- Jazor 0.7 raises the independent public Vue binding-contract audit gate to 90%. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router currently pass every audited contract unit and their test lanes.
+- Development reload now applies compiler-proven template-only module updates when the consumer registers `JazorHmr.accept(moduleId, handler)`. Missing handlers, failed imports, descriptor or logic changes, and every other unproven boundary use a full-page reload; this does not replace Vue instances or preserve component state automatically.
+- RazorVue G2 retains a repeatable external-package-consumer, generated-artifact, Node, and browser performance baseline. Threshold warnings and unavailable retired-line comparisons remain explicit rather than being presented as a completed performance claim.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.6.0
+dotnet add package Jazor --version 0.7.0
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -106,8 +106,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.6.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.6.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.7.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.7.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -115,11 +115,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.6.0" />
-  <PackageReference Include="ECMAScript.Style" Version="0.6.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.6.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.6.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.6.0" />
+  <PackageReference Include="Jazor" Version="0.7.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.7.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.7.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.7.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.7.0" />
 </ItemGroup>
 ```
 

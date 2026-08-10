@@ -14,6 +14,15 @@ public sealed class JazorDevelopmentReloadOptions
         "wwwroot"
     };
 
+    /// <summary>
+    /// Maps compiler-emitted artifact roots to browser URLs for conservative RazorVue HMR.
+    /// The default matches JazorMode=debug's standard wwwroot/jazor output.
+    /// </summary>
+    public IList<JazorDevelopmentHmrModuleMapping> HmrModuleMappings { get; } =
+    [
+        new JazorDevelopmentHmrModuleMapping()
+    ];
+
     public TimeSpan FileChangeDebounceInterval { get; set; } = TimeSpan.FromMilliseconds(100);
 
     public TimeSpan FileChangePollingInterval { get; set; } = TimeSpan.FromMilliseconds(750);

@@ -38,6 +38,22 @@ internal sealed class JazorDevelopmentReloadOptionsValidator : IValidateOptions<
             failures.Add("Jazor development reload watch root paths cannot contain null, empty, or whitespace entries.");
         }
 
+        foreach (var mapping in options.HmrModuleMappings)
+        {
+            if (mapping is null)
+            {
+                failures.Add("Jazor development reload HMR module mappings cannot contain null entries.");
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(mapping.ArtifactRootPath))
+            {
+                failures.Add("Jazor development reload HMR artifact root paths cannot be null, empty, or whitespace.");
+            }
+
+            ValidatePath(mapping.RequestPath, "HmrModuleMappings.RequestPath", failures);
+        }
+
         return failures.Count == 0
             ? ValidateOptionsResult.Success
             : ValidateOptionsResult.Fail(failures);

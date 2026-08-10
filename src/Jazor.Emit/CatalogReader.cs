@@ -105,6 +105,7 @@ internal static class CatalogReader
 
             var itemType = item.GetType();
             var componentId = ReadString(itemType, item, "ComponentId");
+            var hmr = TryReadVueHmrMetadata(itemType, item, componentId);
             var sourceMapRelativePath = TryReadString(itemType, item, "SourceMapRelativePath");
             var sourceMapContent = TryReadString(itemType, item, "SourceMapContent");
             var mapHash = TryReadString(itemType, item, "MapHash");
@@ -132,11 +133,41 @@ internal static class CatalogReader
                 hasSourceMap ? sourceMapContent : null,
                 hasSourceMap ? mapHash : null,
                 Assets: assetCarrierWritten ? null : assets,
-                PackageImports: TryReadStrings(itemType, item, "PackageImports")));
+                PackageImports: TryReadStrings(itemType, item, "PackageImports"),
+                Hmr: hmr));
             assetCarrierWritten = true;
         }
 
         return modules;
+    }
+
+    private static HmrMetadata? TryReadVueHmrMetadata(Type itemType, object item, string componentId)
+    {
+        var moduleId = TryReadString(itemType, item, "ModuleId");
+        var descriptorHash = TryReadString(itemType, item, "DescriptorHash");
+        var templateHash = TryReadString(itemType, item, "TemplateHash");
+        var logicHash = TryReadString(itemType, item, "LogicHash");
+        var boundaryKind = TryReadString(itemType, item, "HmrBoundaryKind");
+        if (moduleId is null && descriptorHash is null && templateHash is null && logicHash is null && boundaryKind is null)
+            return null;
+
+        if (string.IsNullOrWhiteSpace(moduleId) ||
+            string.IsNullOrWhiteSpace(descriptorHash) ||
+            string.IsNullOrWhiteSpace(templateHash) ||
+            string.IsNullOrWhiteSpace(logicHash) ||
+            string.IsNullOrWhiteSpace(boundaryKind))
+        {
+            throw new InvalidOperationException(
+                $"VueRenderCatalog module '{componentId}' must provide complete HMR metadata when any HMR field is present.");
+        }
+
+        return HmrMetadata.Create(
+            componentId,
+            moduleId,
+            descriptorHash,
+            templateHash,
+            logicHash,
+            boundaryKind);
     }
 
     private static IReadOnlyList<AssetEntry> ReadVueRenderCatalogAssets(Assembly assembly, Type catalogType)

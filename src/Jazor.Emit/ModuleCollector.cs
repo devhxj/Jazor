@@ -63,7 +63,8 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 {
                     if (!StringComparer.Ordinal.Equals(existing.Hash, module.Hash) ||
                         !StringComparer.Ordinal.Equals(existing.MapHash, module.MapHash) ||
-                        !StringComparer.Ordinal.Equals(existing.SourceMapRelativePath, module.SourceMapRelativePath))
+                        !StringComparer.Ordinal.Equals(existing.SourceMapRelativePath, module.SourceMapRelativePath) ||
+                        !Equals(existing.Hmr, module.Hmr))
                     {
                         return CollectResult.Fail(4, $"Conflicting module content for '{key}'.");
                     }
@@ -92,7 +93,8 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 {
                     if (!StringComparer.Ordinal.Equals(existingPath.Hash, module.Hash) ||
                         !StringComparer.Ordinal.Equals(existingPath.MapHash, module.MapHash) ||
-                        !StringComparer.Ordinal.Equals(existingPath.SourceMapRelativePath, module.SourceMapRelativePath))
+                        !StringComparer.Ordinal.Equals(existingPath.SourceMapRelativePath, module.SourceMapRelativePath) ||
+                        !Equals(existingPath.Hmr, module.Hmr))
                     {
                         if (failOnPathConflict)
                         {
@@ -205,7 +207,8 @@ internal sealed record ModuleRecord(
     string? SourceMapContent = null,
     string? MapHash = null,
     IReadOnlyList<AssetEntry>? Assets = null,
-    IReadOnlyList<string>? PackageImports = null);
+    IReadOnlyList<string>? PackageImports = null,
+    HmrMetadata? Hmr = null);
 
 /// <summary>Outcome of catalog collection before files are materialized.</summary>
 internal sealed record CollectResult(

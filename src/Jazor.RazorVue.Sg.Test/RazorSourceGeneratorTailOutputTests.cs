@@ -69,6 +69,11 @@ public sealed class RazorTailOutputTests
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
         StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
+        StringAssert.Contains(catalogSource, "moduleId:");
+        StringAssert.Contains(catalogSource, "descriptorHash:");
+        StringAssert.Contains(catalogSource, "templateHash:");
+        StringAssert.Contains(catalogSource, "logicHash:");
+        StringAssert.Contains(catalogSource, "hmrBoundaryKind:");
         StringAssert.Contains(catalogSource, "function $renderDirect()");
         Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal));
         Assert.IsFalse(catalogSource.Contains(".vue", StringComparison.OrdinalIgnoreCase));

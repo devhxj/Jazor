@@ -14,7 +14,8 @@ Use these scripts for reflection, Roslyn, metadata inspection, and other probes 
 
 - `test-dotnet.cs` builds once and runs the active compiler, CLR, Pinia, VueRoute, Razor SG, emit, and render-context suites.
 - `verify-compiler-coverage.cs` runs the complete compiler suite and fails unless at least 10,000 tests pass with 98% line and 96% branch coverage for `Jazor.Compiler`.
-- `verify-vue-binding-coverage.cs` runs the Vue binding test lanes and independently audits every public binding contract unit in Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router. It requires every target to reach 80%; this is a metadata-contract audit, not misleading Coverlet IL line coverage for `extern` wrappers.
+- `verify-vue-binding-coverage.cs` runs the Vue binding test lanes and independently audits every public binding contract unit in Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router. It requires every target to reach 90%; this is a metadata-contract audit, not misleading Coverlet IL line coverage for `extern` wrappers.
+- `verify-development-hmr.cs` starts a temporary development host and real browser, then verifies the custom artifact mapping, manifest template-only diff, WebSocket `module-update`, cache-busted dynamic import, and `JazorHmr.accept` callback path.
 - `test-render-context.cs` runs the RazorVue render-context runtime checks directly with Node.
 - `benchmark-razorvue-g2.cs` records the RazorVue G2 benchmark protocol for the plain-text, Counter, and 100-item keyed-list fixtures. `--write-release-report` runs the protocol, runtime, external official Razor SG package-consumer, and browser lanes, including generated module/source-map/manifest checks. The report is a reproducible baseline and keeps warnings or unavailable retired-line comparisons explicit rather than claiming performance completion.
 - `wiki-verify-smoke.cs` verifies the current Wiki host smoke path.

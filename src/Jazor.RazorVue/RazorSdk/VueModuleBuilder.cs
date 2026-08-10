@@ -125,7 +125,8 @@ internal static class VueModuleBuilder
             sourceMapContent,
             ComputeContentHash(sourceMapContent),
             moduleBuild.PackageImports,
-            moduleBuild.Assets);
+            moduleBuild.Assets,
+            BuildHmrMetadata(component, closure, relativePath));
     }
 
     private static async Task<CompilerOutput> BuildCompilerOutputAsync(
@@ -268,6 +269,104 @@ internal static class VueModuleBuilder
             component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
             "': " +
             (string.IsNullOrWhiteSpace(directRenderFailure) ? "No failure detail was provided." : directRenderFailure));
+    }
+
+    private static VueHmrMetadata BuildHmrMetadata(
+        BoundComponent component,
+        MemberClosure closure,
+        string relativePath)
+    {
+        // The three fingerprints intentionally come from distinct compiler-owned inputs.
+        // They are not inferred by diffing the final framed module text, because framing can
+        // change without making a Razor template update safe to apply at runtime.
+        var assemblyName = component.ComponentSymbol.ContainingAssembly.Name;
+        var moduleId = assemblyName + ":" + relativePath;
+        return new VueHmrMetadata(
+            moduleId,
+            ComputeDescriptorHash(closure),
+            ComputeTemplateHash(component),
+            ComputeLogicHash(component, closure),
+            VueHmrBoundaryKind.TemplateOnly);
+    }
+
+    private static string ComputeDescriptorHash(MemberClosure closure)
+    {
+        var descriptorEntries = new List<string>();
+        foreach (var property in LibraryComponentConventions.GetEffectiveParameterProperties(closure.ComponentSymbol))
+        {
+            var typeName = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (IsAnyRenderFragmentType(property.Type))
+            {
+                descriptorEntries.Add(
+                    "slot|" + property.Name + "|" +
+                    LibraryComponentConventions.GetSlotRuntimeName(closure.ComponentSymbol, property) + "|" + typeName);
+                continue;
+            }
+
+            if (IsEventCallbackType(property.Type))
+            {
+                descriptorEntries.Add(
+                    "event|" + property.Name + "|" +
+                    LibraryComponentConventions.GetEventListenerRuntimeName(closure.ComponentSymbol, property) + "|" +
+                    LibraryComponentConventions.GetEmitRuntimeName(closure.ComponentSymbol, property) + "|" + typeName);
+                continue;
+            }
+
+            descriptorEntries.Add(
+                "prop|" + property.Name + "|" +
+                LibraryComponentConventions.GetPropRuntimeName(property) + "|" + typeName);
+        }
+
+        var fingerprint = new StringBuilder();
+        AppendFingerprintPart(
+            fingerprint,
+            closure.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+        foreach (var entry in descriptorEntries.OrderBy(static entry => entry, StringComparer.Ordinal))
+            AppendFingerprintPart(fingerprint, entry);
+        return ComputeContentHash(fingerprint.ToString());
+    }
+
+    private static string ComputeTemplateHash(BoundComponent component)
+    {
+        var declaration = component.BuildRenderTreeMethod.DeclaringSyntaxReferences
+            .Single()
+            .GetSyntax();
+        return ComputeContentHash(GetCanonicalSyntaxText(declaration));
+    }
+
+    private static string ComputeLogicHash(BoundComponent component, MemberClosure closure)
+    {
+        var fingerprint = new StringBuilder();
+        foreach (var member in closure.OrderedMembers
+                     .Where(member => !SymbolComparer.Equals(
+                         member.OriginalDefinition,
+                         component.BuildRenderTreeMethod.OriginalDefinition))
+                     .OrderBy(GetStableSymbolSortKey, StringComparer.Ordinal))
+        {
+            AppendFingerprintPart(fingerprint, member.Kind.ToString());
+            AppendFingerprintPart(
+                fingerprint,
+                member.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+            foreach (var declaration in member.DeclaringSyntaxReferences
+                         .Select(static reference => GetCanonicalSyntaxText(reference.GetSyntax()))
+                         .OrderBy(static declaration => declaration, StringComparer.Ordinal))
+            {
+                AppendFingerprintPart(fingerprint, declaration);
+            }
+        }
+
+        return ComputeContentHash(fingerprint.ToString());
+    }
+
+    private static string GetCanonicalSyntaxText(SyntaxNode syntax)
+        => Util.NormalizeLineEndingsToLf(syntax.WithoutTrivia().ToFullString());
+
+    private static void AppendFingerprintPart(StringBuilder builder, string value)
+    {
+        builder.Append(value.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.Append(':');
+        builder.Append(value);
+        builder.Append('\n');
     }
 
     private static HashSet<string> CollectImportLocalNames(
@@ -2676,7 +2775,8 @@ internal sealed record VueModuleArtifact(
     string SourceMapContent,
     string MapHash,
     ImmutableArray<string> PackageImports,
-    ImmutableArray<VueAsset> Assets);
+    ImmutableArray<VueAsset> Assets,
+    VueHmrMetadata Hmr);
 
 /// <summary>One source asset copied beside the generated module.</summary>
 internal sealed record VueAsset(

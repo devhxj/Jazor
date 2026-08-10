@@ -69,6 +69,87 @@ public sealed class VueRenderCatalogReaderTests
     }
 
     [TestMethod]
+    public void CatalogReader_TryRead_ReadsCompilerOwnedVueHmrMetadata()
+    {
+        var assembly = CompileCatalogAssembly(
+            "VueRenderCatalog.Hmr.Tests",
+            """
+            namespace Jazor.Generated
+            {
+                internal static partial class VueRenderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const int RuntimeProtocolVersion = 1;
+
+                    internal static System.Collections.IEnumerable GetModules()
+                    {
+                        return _modules;
+                    }
+
+                    private static readonly GeneratedVueRenderModule[] _modules = new[]
+                    {
+                        new GeneratedVueRenderModule(
+                            componentId: "Demo.Pages.Counter",
+                            moduleId: "VueRenderCatalog.Hmr.Tests:components/counter.mjs",
+                            relativePath: "components/counter.mjs",
+                            moduleText: "export default {};",
+                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                            descriptorHash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                            templateHash: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                            logicHash: "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+                            hmrBoundaryKind: "template-only")
+                    };
+
+                    private sealed class GeneratedVueRenderModule
+                    {
+                        public GeneratedVueRenderModule(
+                            string componentId,
+                            string moduleId,
+                            string relativePath,
+                            string moduleText,
+                            string contentHash,
+                            string descriptorHash,
+                            string templateHash,
+                            string logicHash,
+                            string hmrBoundaryKind)
+                        {
+                            ComponentId = componentId;
+                            ModuleId = moduleId;
+                            RelativePath = relativePath;
+                            ModuleText = moduleText;
+                            ContentHash = contentHash;
+                            DescriptorHash = descriptorHash;
+                            TemplateHash = templateHash;
+                            LogicHash = logicHash;
+                            HmrBoundaryKind = hmrBoundaryKind;
+                        }
+
+                        public string ComponentId { get; }
+                        public string ModuleId { get; }
+                        public string RelativePath { get; }
+                        public string ModuleText { get; }
+                        public string ContentHash { get; }
+                        public string DescriptorHash { get; }
+                        public string TemplateHash { get; }
+                        public string LogicHash { get; }
+                        public string HmrBoundaryKind { get; }
+                    }
+                }
+            }
+            """);
+
+        var module = CatalogReader.TryRead(assembly)!.Single();
+
+        Assert.IsNotNull(module.Hmr);
+        Assert.AreEqual("Demo.Pages.Counter", module.Hmr.ComponentId);
+        Assert.AreEqual("VueRenderCatalog.Hmr.Tests:components/counter.mjs", module.Hmr.ModuleId);
+        Assert.AreEqual("sha256:1111111111111111111111111111111111111111111111111111111111111111", module.Hmr.DescriptorHash);
+        Assert.AreEqual("sha256:2222222222222222222222222222222222222222222222222222222222222222", module.Hmr.TemplateHash);
+        Assert.AreEqual("sha256:3333333333333333333333333333333333333333333333333333333333333333", module.Hmr.LogicHash);
+        Assert.AreEqual("template-only", module.Hmr.BoundaryKind);
+    }
+
+    [TestMethod]
     public void CatalogReader_TryRead_ReadsVueRenderCatalogSourceMapPayload()
     {
         var assembly = CompileCatalogAssembly(
@@ -567,7 +648,14 @@ public sealed class VueRenderCatalogReaderTests
                     "components/LocalCard.vue",
                     AssetEntry.KindVueSfc,
                     string.Empty)
-            ]);
+            ],
+            Hmr: HmrMetadata.Create(
+                "Demo.Pages.Counter",
+                "VueRenderCatalog.AssetManifest.Tests:components/counter.mjs",
+                "sha256:descriptor",
+                "sha256:template",
+                "sha256:logic",
+                "template-only"));
 
         try
         {
@@ -585,6 +673,13 @@ public sealed class VueRenderCatalogReaderTests
             Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].SourcePath);
             Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].ArtifactPath);
             Assert.AreEqual(AssetEntry.KindVueSfc, manifest.Assets[0].Kind);
+            var hmr = manifest.Modules[0].Hmr
+                ?? throw new AssertFailedException("Manifest HMR metadata was not materialized.");
+            Assert.AreEqual(
+                "VueRenderCatalog.AssetManifest.Tests:components/counter.mjs",
+                hmr.ModuleId);
+            Assert.AreEqual("template-only", hmr.BoundaryKind);
+            StringAssert.Contains(File.ReadAllText(manifestPath), "\"hmr\": {");
         }
         finally
         {

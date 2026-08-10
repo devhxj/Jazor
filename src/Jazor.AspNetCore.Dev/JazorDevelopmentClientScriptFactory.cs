@@ -9,8 +9,8 @@ internal static class JazorDevelopmentClientScriptFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(webSocketPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(pathBaseExpression);
 
-        var serializedWebSocketPath = JsonSerializer.Serialize(webSocketPath);
-        var serializedPathBaseExpression = JsonSerializer.Serialize(pathBaseExpression);
+        var serializedWebSocketPath = SerializeJavaScriptString(webSocketPath);
+        var serializedPathBaseExpression = SerializeJavaScriptString(pathBaseExpression);
         var reloadOnReconnect = suppressReloadOnReconnect ? "false" : "true";
         return $$"""
         const socketProtocol = location.protocol === "https:" ? "wss" : "ws";
@@ -37,6 +37,11 @@ internal static class JazorDevelopmentClientScriptFactory
         let hasConnected = false;
         let currentServerInstanceId = null;
         let currentReloadSequence = 0;
+        let resolveTransportReady;
+        const transportReady = new Promise(resolve => {
+          resolveTransportReady = resolve;
+        });
+        const hmrHandlers = new Map();
         function sendMessage(payload) {
           if (!socket || socket.readyState !== WebSocket.OPEN) {
             return;
@@ -69,21 +74,95 @@ internal static class JazorDevelopmentClientScriptFactory
         function reloadPage() {
           location.reload();
         }
-        function acceptModuleUpdate(payload) {
+        function normalizeModuleUpdates(payload) {
+          if (!Array.isArray(payload?.moduleUpdates)) {
+            return [];
+          }
+          return payload.moduleUpdates.filter(update =>
+            update &&
+            typeof update.path === "string" &&
+            typeof update.url === "string" &&
+            typeof update.componentId === "string" &&
+            typeof update.moduleId === "string" &&
+            typeof update.descriptorHash === "string" &&
+            typeof update.templateHash === "string" &&
+            typeof update.logicHash === "string" &&
+            typeof update.boundaryKind === "string");
+        }
+        function createModuleUpdateDetail(payload) {
           const changedPaths = Array.isArray(payload?.changedPaths)
             ? payload.changedPaths.filter(path => typeof path === "string")
             : [];
-          const accepted = window.dispatchEvent(new CustomEvent("jazor:module-update", {
-            cancelable: true,
-            detail: {
-              changedPaths,
-              reason: typeof payload?.reason === "string" ? payload.reason : null,
-              reloadSequence: Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : null,
-              serverInstanceId: typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null
-            }
-          })) === false;
-          return accepted;
+          return {
+            changedPaths,
+            moduleUpdates: normalizeModuleUpdates(payload),
+            reason: typeof payload?.reason === "string" ? payload.reason : null,
+            reloadSequence: Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : null,
+            serverInstanceId: typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null
+          };
         }
+        function dispatchModuleUpdate(detail) {
+          return window.dispatchEvent(new CustomEvent("jazor:module-update", {
+            cancelable: true,
+            detail
+          })) === false;
+        }
+        async function applyRegisteredModuleUpdates(detail) {
+          if (detail.moduleUpdates.length === 0) {
+            return false;
+          }
+          for (const update of detail.moduleUpdates) {
+            const handlers = hmrHandlers.get(update.moduleId);
+            if (!handlers || handlers.size === 0) {
+              return false;
+            }
+            try {
+              const moduleUrl = new URL(update.url, location.href);
+              moduleUrl.searchParams.set("__jazor_hmr", String(detail.reloadSequence ?? Date.now()));
+              const module = await import(moduleUrl.href);
+              for (const handler of Array.from(handlers)) {
+                if (await handler({ module, update, reason: detail.reason, reloadSequence: detail.reloadSequence }) === false) {
+                  return false;
+                }
+              }
+            } catch (error) {
+              console.error("Jazor module update failed.", error);
+              return false;
+            }
+          }
+          return true;
+        }
+        async function acceptModuleUpdate(payload) {
+          const detail = createModuleUpdateDetail(payload);
+          if (dispatchModuleUpdate(detail)) {
+            return true;
+          }
+          return await applyRegisteredModuleUpdates(detail);
+        }
+        Object.defineProperty(window, "JazorHmr", {
+          configurable: true,
+          enumerable: false,
+          value: Object.freeze({
+            ready: transportReady,
+            accept(moduleId, handler) {
+              if (typeof moduleId !== "string" || moduleId.length === 0 || typeof handler !== "function") {
+                throw new TypeError("JazorHmr.accept requires a module id and handler.");
+              }
+              let handlers = hmrHandlers.get(moduleId);
+              if (!handlers) {
+                handlers = new Set();
+                hmrHandlers.set(moduleId, handlers);
+              }
+              handlers.add(handler);
+              return () => {
+                handlers.delete(handler);
+                if (handlers.size === 0) {
+                  hmrHandlers.delete(moduleId);
+                }
+              };
+            }
+          })
+        });
         function handleConnected(payload) {
           const nextServerInstanceId = typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null;
           const nextReloadSequence = Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : 0;
@@ -121,9 +200,11 @@ internal static class JazorDevelopmentClientScriptFactory
             currentReloadSequence = Number.isFinite(payload?.reloadSequence)
               ? Math.max(currentReloadSequence, payload.reloadSequence)
               : currentReloadSequence + 1;
-            if (!acceptModuleUpdate(payload)) {
-              reloadPage();
-            }
+            void acceptModuleUpdate(payload).then(accepted => {
+              if (!accepted) {
+                reloadPage();
+              }
+            });
           }
         }
         function connect() {
@@ -135,6 +216,7 @@ internal static class JazorDevelopmentClientScriptFactory
                 reconnectTimer = undefined;
               }
               sendMessage({ type: "ready", capabilities: [moduleUpdateCapability] });
+              resolveTransportReady();
               startHeartbeat();
             });
             socket.addEventListener("message", handleSocketMessage);
@@ -154,4 +236,7 @@ internal static class JazorDevelopmentClientScriptFactory
         export {};
         """;
     }
+
+    private static string SerializeJavaScriptString(string value)
+        => "\"" + JsonEncodedText.Encode(value).ToString() + "\"";
 }

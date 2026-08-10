@@ -3630,12 +3630,18 @@ public sealed class MemberClosureTests
         Assert.AreEqual("Demo.Pages.Counter", artifact.ComponentId);
         Assert.AreEqual("components/counter.mjs", artifact.RelativePath);
         Assert.AreEqual("components/counter.mjs.map", artifact.SourceMapRelativePath);
+        Assert.AreEqual("RazorSg.ComponentMemberClosure.Manual.Tests:components/counter.mjs", artifact.Hmr.ModuleId);
+        Assert.AreEqual(VueHmrBoundaryKind.TemplateOnly, artifact.Hmr.BoundaryKind);
         Assert.AreEqual(artifact.ModuleText, rebuilt.ModuleText);
         Assert.AreEqual(artifact.ContentHash, rebuilt.ContentHash);
         Assert.AreEqual(artifact.SourceMapContent, rebuilt.SourceMapContent);
         Assert.AreEqual(artifact.MapHash, rebuilt.MapHash);
+        Assert.AreEqual(artifact.Hmr, rebuilt.Hmr);
         Assert.IsTrue(IsSha256Hash(artifact.ContentHash), artifact.ContentHash);
         Assert.IsTrue(IsSha256Hash(artifact.MapHash), artifact.MapHash);
+        Assert.IsTrue(IsSha256Hash(artifact.Hmr.DescriptorHash), artifact.Hmr.DescriptorHash);
+        Assert.IsTrue(IsSha256Hash(artifact.Hmr.TemplateHash), artifact.Hmr.TemplateHash);
+        Assert.IsTrue(IsSha256Hash(artifact.Hmr.LogicHash), artifact.Hmr.LogicHash);
         Assert.IsFalse(artifact.ModuleText.Contains("\r", StringComparison.Ordinal), artifact.ModuleText);
         Assert.IsFalse(artifact.SourceMapContent.Contains("\r", StringComparison.Ordinal), artifact.SourceMapContent);
         StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.mjs\"", StringComparison.Ordinal);
@@ -3679,6 +3685,75 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("let count", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_HmrMetadata_SeparatesDescriptorTemplateAndLogicFingerprints()
+    {
+        const string baselineSource = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/counter")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = "";
+
+                    private int count;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", (System.Action)Increment);
+                        builder.AddContent(2, "first");
+                        builder.AddContent(3, Title);
+                        builder.AddContent(4, count);
+                        builder.CloseElement();
+                    }
+
+                    private void Increment()
+                    {
+                        count++;
+                    }
+                }
+            }
+            """;
+
+        static async Task<VueModuleArtifact> BuildArtifactAsync(string source)
+        {
+            var fixture = CreateManualGeneratedFixture(source);
+            return await VueModuleBuilder.BuildAsync(
+                fixture.Binding,
+                fixture.Component,
+                BuildClosure(fixture));
+        }
+
+        var baseline = await BuildArtifactAsync(baselineSource);
+        var templateOnly = await BuildArtifactAsync(
+            baselineSource.Replace("\"first\"", "\"second\"", StringComparison.Ordinal));
+        var logicChanged = await BuildArtifactAsync(
+            baselineSource.Replace("count++;", "count += 2;", StringComparison.Ordinal));
+        var descriptorChanged = await BuildArtifactAsync(
+            baselineSource
+                .Replace("public string Title", "public string Caption", StringComparison.Ordinal)
+                .Replace("builder.AddContent(3, Title);", "builder.AddContent(3, Caption);", StringComparison.Ordinal));
+
+        Assert.AreEqual(baseline.Hmr.ModuleId, templateOnly.Hmr.ModuleId);
+        Assert.AreEqual(baseline.Hmr.DescriptorHash, templateOnly.Hmr.DescriptorHash);
+        Assert.AreNotEqual(baseline.Hmr.TemplateHash, templateOnly.Hmr.TemplateHash);
+        Assert.AreEqual(baseline.Hmr.LogicHash, templateOnly.Hmr.LogicHash);
+
+        Assert.AreEqual(baseline.Hmr.DescriptorHash, logicChanged.Hmr.DescriptorHash);
+        Assert.AreEqual(baseline.Hmr.TemplateHash, logicChanged.Hmr.TemplateHash);
+        Assert.AreNotEqual(baseline.Hmr.LogicHash, logicChanged.Hmr.LogicHash);
+
+        Assert.AreNotEqual(baseline.Hmr.DescriptorHash, descriptorChanged.Hmr.DescriptorHash);
+        Assert.AreEqual(VueHmrBoundaryKind.TemplateOnly, descriptorChanged.Hmr.BoundaryKind);
     }
 
     [TestMethod]
