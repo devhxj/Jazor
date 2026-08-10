@@ -14,6 +14,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Model value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Model value changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Reverses the transition direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Slide direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyInputDirection? Direction { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VTabsWindow : ComponentBase
     /// CSS class applied to the selected item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VTabsWindow : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -77,5 +86,6 @@ public sealed class VTabsWindow : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

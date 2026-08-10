@@ -345,7 +345,9 @@ public enum ChildrenToSlotAuthoringFailureKind
 {
     NonGenericConcreteSlotMissingDefault,
     ExcludedDefaultSlotMembers,
-    ArrayValuedDefaultSlot
+    ArrayValuedDefaultSlot,
+    OpenSlotTypeParameter,
+    OpenTypedComponentSlotTypeParameter
 }
 
 public enum ChildrenToSlotChildExpressionKind
@@ -524,6 +526,12 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
 
             public delegate IVNode Slot();
 
+            public sealed class DefaultSlots
+            {
+                [System.ComponentModel.Description("@#default")]
+                public Slot Content => null!;
+            }
+
             [System.ComponentModel.Description("@#h")]
             public static extern IVNode h(IVueComponent component, IVNode child);
 
@@ -559,6 +567,27 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, IVNode child);
 
             [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, IVNode[] children);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, IEnumerable<IVNode> children);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, VueChild child);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, Number child);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, string child);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, int child);
+
+            [System.ComponentModel.Description("@#h")]
+            public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, bool child);
+
+            [System.ComponentModel.Description("@#h")]
             public static extern IVNode h<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode child)
                 where TProps : VueProps;
         }
@@ -588,19 +617,27 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
                 {
                 }
 
+                public delegate IVNode Slot();
+
+                public sealed class DefaultSlots
+                {
+                    [System.ComponentModel.Description("@#default")]
+                    public Slot Content => null!;
+                }
+
                 public interface IVueSlotComponent<TSlots> :
                     Contracts.IComponentShape,
                     Contracts.IVueComponent
                 {
                 }
 
-                public static extern IVNode h(Contracts.IVueComponent component, IVNode child);
+                public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, IVNode child);
             }
 
             public static class ScenarioModule
             {
                 public static AlternateHost.IVNode Invoke(
-                    Contracts.IVueComponent component,
+                    AlternateHost.IVueSlotComponent<AlternateHost.DefaultSlots> component,
                     AlternateHost.IVNode child)
                     => AlternateHost.h(component, child);
             }
@@ -618,13 +655,13 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
                 }
 
                 [System.ComponentModel.Description("@#h")]
-                public static extern IVNode h(IVueComponent component, RichChild child);
+                public static extern IVNode h<TSlots>(IVueSlotComponent<TSlots> component, RichChild child);
             }
 
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     SlotHost.RichChild child)
                     => SlotHost.h(component, child);
             }
@@ -638,7 +675,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     SlotHost.IVNode[] children)
                     => SlotHost.h(component, children);
             }
@@ -652,7 +689,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     System.Collections.Generic.IEnumerable<SlotHost.IVNode> children)
                     => SlotHost.h(component, children);
             }
@@ -666,7 +703,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     SlotHost.Number child)
                     => SlotHost.h(component, child);
             }
@@ -680,7 +717,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     string child)
                     => SlotHost.h(component, child);
             }
@@ -694,7 +731,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     int child)
                     => SlotHost.h(component, child);
             }
@@ -708,7 +745,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent component,
+                    SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                     bool child)
                     => SlotHost.h(component, child);
             }
@@ -726,7 +763,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(
-                    SlotHost.IVueComponent<EditorProps> component,
+                    SlotHost.IVueComponent<EditorProps, SlotHost.DefaultSlots> component,
                     EditorProps props,
                     SlotHost.IVNode child)
                     => SlotHost.h(component, props, child);
@@ -741,7 +778,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke<TProps>(
-                    SlotHost.IVueComponent<TProps> component,
+                    SlotHost.IVueComponent<TProps, SlotHost.DefaultSlots> component,
                     TProps props,
                     SlotHost.IVNode child)
                     where TProps : SlotHost.VueProps
@@ -757,7 +794,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             public static class ScenarioModule
             {
                 public static SlotHost.IVNode Invoke(SlotHost.IVueComponent component)
-                    => SlotHost.h(component, (SlotHost.IVNode)null!);
+                    => SlotHost.h((SlotHost.IVueSlotComponent<SlotHost.DefaultSlots>)component, (SlotHost.IVNode)null!);
             }
             """,
             hasProps: false,
@@ -769,6 +806,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             """
             public abstract class BaseSlots
             {
+                [System.ComponentModel.Description("@#default")]
                 public SlotHost.Slot Default => null!;
             }
 
@@ -792,8 +830,14 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
             """
             public static class ScenarioModule
             {
-                public static SlotHost.IVNode Invoke<TSlots>(
-                    SlotHost.IVueSlotComponent<TSlots> component,
+                public sealed class GenericDefaultSlots<TValue>
+                {
+                    [System.ComponentModel.Description("@#default")]
+                    public SlotHost.Slot Content => null!;
+                }
+
+                public static SlotHost.IVNode Invoke<TValue>(
+                    SlotHost.IVueSlotComponent<GenericDefaultSlots<TValue>> component,
                     SlotHost.IVNode child)
                     => SlotHost.h(component, child);
             }
@@ -810,6 +854,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
 
             public sealed class DialogSlots
             {
+                [System.ComponentModel.Description("@#default")]
                 public SlotHost.Slot Default => null!;
             }
 
@@ -1057,7 +1102,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
                     => SlotHost.h(component, child);
             }
             """,
-            ["MissingDefaultSlots", "does not declare a default slot"]),
+            ["MissingDefaultSlots", "does not declare an explicit default slot"]),
         AuthoringFailure(
             "excluded-default-slot-members",
             "static-private-indexer-and-write-only-properties-do-not-form-slot-contract",
@@ -1091,7 +1136,7 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
                     => SlotHost.h(component, child);
             }
             """,
-            ["FilteredSlots", "does not declare a default slot"]),
+            ["FilteredSlots", "does not declare an explicit default slot"]),
         AuthoringFailure(
             "array-valued-default-slot",
             "default-slot-member-must-be-a-node-returning-delegate",
@@ -1111,14 +1156,44 @@ internal static class ChildrenToSlotIntrinsicScenarioCatalog
                     => SlotHost.h(component, child);
             }
             """,
-            ["ArrayDefaultSlots.Content", "must be a delegate returning the host IVNode type"])
+            ["ArrayDefaultSlots.Content", "must be a delegate returning the host IVNode type"]),
+        AuthoringFailure(
+            "open-slot-type-parameter",
+            "open-slot-component-type-parameter-cannot-prove-a-default-slot-contract",
+            ChildrenToSlotAuthoringFailureKind.OpenSlotTypeParameter,
+            """
+            public static class ScenarioModule
+            {
+                public static SlotHost.IVNode Invoke<TSlots>(
+                    SlotHost.IVueSlotComponent<TSlots> component,
+                    SlotHost.IVNode child)
+                    => SlotHost.h(component, child);
+            }
+            """,
+            ["requires a typed slot contract"]),
+        AuthoringFailure(
+            "open-typed-component-slot-type-parameter",
+            "open-typed-component-slot-parameter-cannot-prove-a-default-slot-contract",
+            ChildrenToSlotAuthoringFailureKind.OpenTypedComponentSlotTypeParameter,
+            """
+            public static class ScenarioModule
+            {
+                public static SlotHost.IVNode Invoke<TProps, TSlots>(
+                    SlotHost.IVueComponent<TProps, TSlots> component,
+                    TProps props,
+                    SlotHost.IVNode child)
+                    where TProps : SlotHost.VueProps
+                    => SlotHost.h(component, props, child);
+            }
+            """,
+            ["requires a typed slot contract"])
     ];
 
     private const string StandardInvocationSource = """
         public static class ScenarioModule
         {
             public static SlotHost.IVNode Invoke(
-                SlotHost.IVueComponent component,
+                SlotHost.IVueSlotComponent<SlotHost.DefaultSlots> component,
                 SlotHost.IVNode child)
                 => SlotHost.h(component, child);
         }

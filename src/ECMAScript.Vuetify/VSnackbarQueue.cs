@@ -14,6 +14,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// List of pending notifications in the queue.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifySnackbarQueueMessages? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Callback invoked when the notification list changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifySnackbarQueueMessages?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Visual variant of the snackbar queue.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Offset of the snackbar relative to its anchor.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VuetifyOverlayOffsetValue? Offset { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Position where the snackbar appears.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Transform origin of the snackbar animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyOriginValue? Origin { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Height of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Width of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Background color of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Maximum height of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Maximum width of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Minimum height of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Minimum width of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Opacity of the snackbar overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Positioning strategy of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Transition animation of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Z-index level of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Text content of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to eagerly mount the content on first render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether the snackbar is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Duration in milliseconds before the snackbar auto-closes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("timeout")]
     public VueStringNumberValue? Timeout { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to use a vertical layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("vertical")]
     public bool Vertical { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to show the auto-close countdown timer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("timer")]
     public VuetifyBooleanStringValue? Timer { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Location strategy used by the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("locationStrategy")]
     public VuetifyLocationStrategy? LocationStrategy { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Border radius of the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Delay in milliseconds before closing the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Delay in milliseconds before opening the snackbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Props applied to the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to open the snackbar on click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool OpenOnClick { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to open the snackbar on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to open the snackbar on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool OpenOnFocus { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to close the snackbar when content is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnContentClick")]
     public bool CloseOnContentClick { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to close the snackbar on browser back navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnBack")]
     public bool CloseOnBack { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to contain the snackbar within its parent.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contained")]
     public bool Contained { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Props applied to the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -280,6 +318,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Container target where the snackbar is attached.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("attach")]
     public VuetifyAttachTarget? Attach { get; set; }
 
     /// <summary>
@@ -287,6 +326,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to allow multi-line text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiLine")]
     public bool MultiLine { get; set; }
 
     /// <summary>
@@ -294,6 +334,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Whether to show the close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closable")]
     public VuetifyBooleanStringValue? Closable { get; set; }
 
     /// <summary>
@@ -301,6 +342,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Text label for the close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeText")]
     public string? CloseText { get; set; }
 
     /// <summary>
@@ -308,6 +350,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Captures unmatched additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -315,6 +358,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Default slot for the snackbar queue body content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VSnackbarQueueSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -322,6 +366,7 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Text slot for the snackbar text area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment<VSnackbarQueueSlotContext>? TextContent { get; set; }
 
     /// <summary>
@@ -329,5 +374,6 @@ public sealed class VSnackbarQueue : ComponentBase
     /// Actions slot for the snackbar action buttons area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment<VSnackbarQueueActionsSlotContext>? Actions { get; set; }
 }

@@ -15,6 +15,7 @@ public sealed class VListItem : ComponentBase
     /// Whether the list item is in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool? Active { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VListItem : ComponentBase
     /// CSS class applied when in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeClass")]
     public string? ActiveClass { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VListItem : ComponentBase
     /// Color when in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VListItem : ComponentBase
     /// URL of the append avatar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendAvatar")]
     public string? AppendAvatar { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VListItem : ComponentBase
     /// Name of the append icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public string? AppendIcon { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VListItem : ComponentBase
     /// Color when the component is in an inactive state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VListItem : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to disable list item interaction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VListItem : ComponentBase
     /// Line spacing style for the list item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lines")]
     public VuetifyListLines? Lines { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to render the list item as a link.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("link")]
     public bool? Link { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VListItem : ComponentBase
     /// Whether the list item is in navigation mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nav")]
     public bool Nav { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VListItem : ComponentBase
     /// URL of the prepend avatar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependAvatar")]
     public string? PrependAvatar { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VListItem : ComponentBase
     /// Name of the prepend icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public string? PrependIcon { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to show a ripple click effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to use a slim compact style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("slim")]
     public bool Slim { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VListItem : ComponentBase
     /// Subtitle text of the list item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public VuetifyTextValue? Subtitle { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VListItem : ComponentBase
     /// Title text of the list item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VListItem : ComponentBase
     /// Value of the list item, used for selection state identification.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VueValue? Value { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VListItem : ComponentBase
     /// Component density style that adjusts vertical spacing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VListItem : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VListItem : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VListItem : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VListItem : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VListItem : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -183,6 +207,7 @@ public sealed class VListItem : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -190,6 +215,7 @@ public sealed class VListItem : ComponentBase
     /// Elevation shadow level of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -197,6 +223,7 @@ public sealed class VListItem : ComponentBase
     /// Border radius style of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -204,6 +231,7 @@ public sealed class VListItem : ComponentBase
     /// Link URL of the list item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -211,6 +239,7 @@ public sealed class VListItem : ComponentBase
     /// Target path for router navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -218,6 +247,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to replace the current history entry on navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool Replace { get; set; }
 
     /// <summary>
@@ -225,6 +255,7 @@ public sealed class VListItem : ComponentBase
     /// Whether to require exact route matching.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("exact")]
     public bool Exact { get; set; }
 
     /// <summary>
@@ -232,6 +263,7 @@ public sealed class VListItem : ComponentBase
     /// Visual variant style of the list item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -239,6 +271,7 @@ public sealed class VListItem : ComponentBase
     /// Callback invoked when the list item is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
     /// <summary>
@@ -246,6 +279,7 @@ public sealed class VListItem : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -253,6 +287,7 @@ public sealed class VListItem : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment<VListItemSlotContext>? Prepend { get; set; }
 
     /// <summary>
@@ -260,6 +295,7 @@ public sealed class VListItem : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment<VListItemSlotContext>? Append { get; set; }
 
     /// <summary>
@@ -267,6 +303,7 @@ public sealed class VListItem : ComponentBase
     /// Title slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment<VListItemTitleSlotContext>? TitleContent { get; set; }
 
     /// <summary>
@@ -274,6 +311,7 @@ public sealed class VListItem : ComponentBase
     /// Subtitle slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public RenderFragment<VListItemSubtitleSlotContext>? SubtitleContent { get; set; }
 
     /// <summary>
@@ -281,5 +319,6 @@ public sealed class VListItem : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

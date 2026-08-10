@@ -15,6 +15,7 @@ public sealed class VBadge : ComponentBase
     /// Transition animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VBadge : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VBadge : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VBadge : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VBadge : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VBadge : ComponentBase
     /// Position within container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VBadge : ComponentBase
     /// Shows badge border.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool Bordered { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VBadge : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VBadge : ComponentBase
     /// Content displayed in the badge.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("content")]
     public VueStringNumberValue? Content { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VBadge : ComponentBase
     /// Shows as a dot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dot")]
     public bool Dot { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VBadge : ComponentBase
     /// Floating mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("floating")]
     public bool Floating { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VBadge : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VBadge : ComponentBase
     /// Displays inline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool Inline { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VBadge : ComponentBase
     /// Accessibility label for the badge.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VBadge : ComponentBase
     /// Maximum value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -136,6 +151,7 @@ public sealed class VBadge : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; } = true;
 
     /// <summary>
@@ -143,6 +159,7 @@ public sealed class VBadge : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -150,6 +167,7 @@ public sealed class VBadge : ComponentBase
     /// Horizontal offset.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offsetX")]
     public VueStringNumberValue? OffsetX { get; set; }
 
     /// <summary>
@@ -157,6 +175,7 @@ public sealed class VBadge : ComponentBase
     /// Vertical offset.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offsetY")]
     public VueStringNumberValue? OffsetY { get; set; }
 
     /// <summary>
@@ -164,6 +183,7 @@ public sealed class VBadge : ComponentBase
     /// Badge text color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
     /// <summary>
@@ -171,6 +191,7 @@ public sealed class VBadge : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -178,6 +199,7 @@ public sealed class VBadge : ComponentBase
     /// Badge slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("badge")]
     public RenderFragment? BadgeContent { get; set; }
 
     /// <summary>
@@ -185,5 +207,6 @@ public sealed class VBadge : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

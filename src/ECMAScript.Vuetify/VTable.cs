@@ -16,6 +16,7 @@ public sealed class VTable : ComponentBase
     /// Whether to fix the table header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fixedHeader")]
     public bool FixedHeader { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VTable : ComponentBase
     /// Whether to fix the table footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fixedFooter")]
     public bool FixedFooter { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VTable : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VTable : ComponentBase
     /// Whether to highlight rows on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool Hover { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VTable : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VTable : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VTable : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VTable : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -72,5 +80,6 @@ public sealed class VTable : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

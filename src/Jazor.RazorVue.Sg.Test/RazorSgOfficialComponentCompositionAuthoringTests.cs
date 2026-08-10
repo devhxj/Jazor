@@ -37,8 +37,11 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
                     [Parameter] public string Title { get; set; } = "";
                     [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
+                    [ECMAScriptName("onUpdate:modelValue")]
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+                    [ECMAScriptName("default")]
                     [Parameter] public RenderFragment? ChildContent { get; set; }
+                    [ECMAScriptName("header")]
                     [Parameter] public RenderFragment? Header { get; set; }
                     [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
@@ -74,14 +77,14 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"./authoring-child.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "heading: state.title", StringComparison.Ordinal);
-        StringAssert.Contains(script, "modelValue: state.selected", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"onUpdate:modelValue\": __value => state.selected = __value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "heading: state.Title", StringComparison.Ordinal);
+        StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"onUpdate:modelValue\": __value => state.Selected = __value", StringComparison.Ordinal);
         StringAssert.Contains(script, "header: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "default: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "item: item =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "h(\"strong\", null, [state.title])", StringComparison.Ordinal);
-        StringAssert.Contains(script, "h(\"span\", null, [state.selected])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "h(\"strong\", null, [state.Title])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "h(\"span\", null, [state.Selected])", StringComparison.Ordinal);
         StringAssert.Contains(script, "h(\"em\", null, [item])", StringComparison.Ordinal);
 
         Assert.IsFalse(script.Contains("function title(", StringComparison.Ordinal), script);
@@ -115,6 +118,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
                 {
                     [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
+                    [ECMAScriptName("onUpdate:modelValue")]
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -143,12 +147,12 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"./bind-after-child.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "modelValue: state.selected", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.selected = __value", StringComparison.Ordinal);
-        StringAssert.Contains(script, "persistSelectedAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Selected = __value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "PersistSelectedAsync()", StringComparison.Ordinal);
 
-        var assignment = script.IndexOf("state.selected = __value", StringComparison.Ordinal);
-        var callback = script.IndexOf("persistSelectedAsync()", assignment, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Selected = __value", StringComparison.Ordinal);
+        var callback = script.IndexOf("PersistSelectedAsync()", assignment, StringComparison.Ordinal);
         Assert.IsTrue(assignment < callback, script);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
@@ -180,6 +184,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
                 {
                     [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
+                    [ECMAScriptName("onUpdate:modelValue")]
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -211,9 +216,9 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"./bind-set-child.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "modelValue: state.selected", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"onUpdate:modelValue\": setSelectedAsync", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.selected = value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"onUpdate:modelValue\": SetSelectedAsync", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Selected = value", StringComparison.Ordinal);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("CreateInferredEventCallback", StringComparison.Ordinal), script);

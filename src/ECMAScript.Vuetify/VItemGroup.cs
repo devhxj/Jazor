@@ -14,6 +14,7 @@ public sealed class VItemGroup : ComponentBase
     /// Bound value of the item group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VItemGroup : ComponentBase
     /// Callback when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VItemGroup : ComponentBase
     /// Whether at least one item must be selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VItemGroup : ComponentBase
     /// Maximum number of selectable items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VItemGroup : ComponentBase
     /// Whether multiple selection is allowed.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VItemGroup : ComponentBase
     /// CSS class applied to selected items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VItemGroup : ComponentBase
     /// HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VItemGroup : ComponentBase
     /// Value comparator for item selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("valueComparator")]
     public VuetifyValueComparator? ValueComparator { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VItemGroup : ComponentBase
     /// Additional HTML attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -77,5 +86,6 @@ public sealed class VItemGroup : ComponentBase
     /// Default slot content for the item group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VItemGroupDefaultSlotContext>? ChildContent { get; set; }
 }

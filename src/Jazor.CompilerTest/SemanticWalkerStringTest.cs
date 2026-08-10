@@ -2036,7 +2036,7 @@ ${name ?? """"}!`;
 		StringAssert.Contains(script, "_0e8f0a28fc1de8c2", StringComparison.Ordinal);
 		StringAssert.Contains(script, "_26620c4bafb4f435", StringComparison.Ordinal);
 
-		Assert.AreEqual(2, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+        Assert.AreEqual(2, script.Split("TestClass.NextValue()", StringSplitOptions.None).Length - 1, script);
 	}
 
 	[TestMethod]
@@ -2212,8 +2212,8 @@ ${name ?? """"}!`;
 		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, ".toString(\"X\", null)", StringComparison.Ordinal);
-		Assert.AreEqual(1, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+		StringAssert.Contains(script, ".ToString(\"X\", null)", StringComparison.Ordinal);
+        Assert.AreEqual(1, script.Split("TestClass.NextValue()", StringSplitOptions.None).Length - 1, script);
 	}
 
 	[TestMethod]
@@ -2272,8 +2272,8 @@ ${name ?? """"}!`;
 		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, ".toString()", StringComparison.Ordinal);
-		Assert.AreEqual(1, script.Split("TestClass.nextValue()", StringSplitOptions.None).Length - 1, script);
+        StringAssert.Contains(script, ".toString()", StringComparison.Ordinal);
+        Assert.AreEqual(1, script.Split("TestClass.NextValue()", StringSplitOptions.None).Length - 1, script);
 	}
 
 	[TestMethod]
@@ -2303,7 +2303,7 @@ ${name ?? """"}!`;
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "v$0 = value", StringComparison.Ordinal);
-		StringAssert.Contains(script, "v$0.toString()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.toString()", StringComparison.Ordinal);
 		Assert.AreEqual(1, script.Split("v$0 = value", StringSplitOptions.None).Length - 1, script);
 	}
 

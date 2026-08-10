@@ -14,6 +14,7 @@ public sealed class VResponsive : ComponentBase
     /// The aspect ratio of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("aspectRatio")]
     public VueStringNumberValue? AspectRatio { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VResponsive : ComponentBase
     /// CSS classes applied to the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentClass")]
     public string? ContentClass { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VResponsive : ComponentBase
     /// Whether to use inline layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool Inline { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VResponsive : ComponentBase
     /// The height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VResponsive : ComponentBase
     /// The maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VResponsive : ComponentBase
     /// The maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VResponsive : ComponentBase
     /// The minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VResponsive : ComponentBase
     /// The minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VResponsive : ComponentBase
     /// The width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VResponsive : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VResponsive : ComponentBase
     /// Custom content for the additional area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("additional")]
     public RenderFragment? Additional { get; set; }
 
     /// <summary>
@@ -91,5 +102,6 @@ public sealed class VResponsive : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

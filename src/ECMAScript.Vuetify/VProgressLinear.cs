@@ -15,6 +15,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to remove border radius for sharp corners.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The location of the progress bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -66,6 +71,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether the progress bar is active and visible.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; } = true;
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The color of the progress bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The background color of the progress bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The background opacity.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgOpacity")]
     public VueStringNumberValue? BgOpacity { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The buffer progress value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bufferValue")]
     public VueStringNumberValue? BufferValue { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The color of the buffer track.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bufferColor")]
     public string? BufferColor { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The opacity of the buffer track.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bufferOpacity")]
     public VueStringNumberValue? BufferOpacity { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether the progress bar is clickable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clickable")]
     public bool Clickable { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The height of the progress bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -136,6 +151,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to display an indeterminate animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("indeterminate")]
     public bool Indeterminate { get; set; }
 
     /// <summary>
@@ -143,6 +159,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The maximum value of the progress.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -150,6 +167,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The current progress value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     /// <summary>
@@ -157,6 +175,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Callback invoked when the progress value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -164,6 +183,7 @@ public sealed class VProgressLinear : ComponentBase
     /// The opacity of the progress bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -171,6 +191,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to reverse the progress bar direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -178,6 +199,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to show a streaming animation effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("stream")]
     public bool Stream { get; set; }
 
     /// <summary>
@@ -185,6 +207,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether to show a striped effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("striped")]
     public bool Striped { get; set; }
 
     /// <summary>
@@ -192,6 +215,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Whether the progress bar track has rounded corners.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("roundedBar")]
     public bool RoundedBar { get; set; }
 
     /// <summary>
@@ -199,6 +223,7 @@ public sealed class VProgressLinear : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -206,5 +231,6 @@ public sealed class VProgressLinear : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VProgressLinearDefaultSlotContext>? ChildContent { get; set; }
 }

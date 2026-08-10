@@ -23,10 +23,10 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
                 [ECMAScriptModule("./components/release-editor-generic-runtime")]
                 public sealed class ReleaseEditor<TValue> : ComponentBase, IVueComponent
                 {
-                    [ECMAScriptName("modelValue")]
+                    [System.ComponentModel.Description("@#modelValue")]
                     [Parameter] public TValue Value { get; set; } = default!;
 
-                    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#onUpdate:modelValue")] public EventCallback<TValue> ValueChanged { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -54,7 +54,7 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
             StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredEventCallback", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "modelValue: state.releaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "modelValue: state.ReleaseName", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onUpdate:modelValue", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(

@@ -27,7 +27,7 @@ internal static partial class DirectRenderCaseCatalog
         var runtimeName = NormalizeCoverageEventName(eventName);
         var suffix = shape.ToString("D2", CultureInfo.InvariantCulture) + hostIndex.ToString("D2", CultureInfo.InvariantCulture);
         var handler = "HandleCoverageEvent" + suffix;
-        var runtimeHandler = char.ToLowerInvariant(handler[0]) + handler[1..];
+        var runtimeHandler = handler;
         var field = "eventValue" + suffix;
         var openTag = shape is 3 or 4 or 5 ? "input" : tag;
         var open = "builder.OpenElement(0, " + CSharpStringLiteral(openTag) + "); ";
@@ -159,7 +159,7 @@ internal static partial class DirectRenderCaseCatalog
         var runtimeName = NormalizeCoverageEventName(eventName);
         var suffix = shape.ToString("D2", CultureInfo.InvariantCulture) + hostIndex.ToString("D2", CultureInfo.InvariantCulture);
         var handler = "HandleCoverageModifier" + suffix;
-        var runtimeHandler = char.ToLowerInvariant(handler[0]) + handler[1..];
+        var runtimeHandler = handler;
         var open = "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddAttribute(1, " + CSharpStringLiteral(eventName) + ", EventCallback.Factory.Create(this, " + handler + ")); ";
         const string close = " builder.CloseElement();";
         var members = "private void " + handler + "() { }";
@@ -200,22 +200,22 @@ internal static partial class DirectRenderCaseCatalog
             },
             5 => new(open + "builder.AddEventPreventDefaultAttribute(2, " + CSharpStringLiteral(eventName) + ", PreventDefault);" + close, runtimeName)
             {
-                AdditionalExpectedFragment = "props.preventDefault",
+                AdditionalExpectedFragment = "props.PreventDefault",
                 TertiaryExpectedFragment = "preventDefault",
                 Members = members + " [Parameter] public bool PreventDefault { get; set; }",
                 UsesProps = true
             },
             6 => new(open + "builder.AddEventStopPropagationAttribute(2, " + CSharpStringLiteral(eventName) + ", StopPropagation);" + close, runtimeName)
             {
-                AdditionalExpectedFragment = "props.stopPropagation",
+                AdditionalExpectedFragment = "props.StopPropagation",
                 TertiaryExpectedFragment = "stopPropagation",
                 Members = members + " [Parameter] public bool StopPropagation { get; set; }",
                 UsesProps = true
             },
             _ => new(open + "builder.AddEventPreventDefaultAttribute(2, " + CSharpStringLiteral(eventName) + ", PreventDefault); builder.AddEventPreventDefaultAttribute(3, " + CSharpStringLiteral(eventName) + ", AlternatePreventDefault); builder.AddEventStopPropagationAttribute(4, " + CSharpStringLiteral(eventName) + ", StopPropagation);" + close, runtimeName)
             {
-                AdditionalExpectedFragment = "props.preventDefault || props.alternatePreventDefault",
-                TertiaryExpectedFragment = "props.stopPropagation",
+                AdditionalExpectedFragment = "props.PreventDefault || props.AlternatePreventDefault",
+                TertiaryExpectedFragment = "props.StopPropagation",
                 Members = members + " [Parameter] public bool PreventDefault { get; set; } [Parameter] public bool AlternatePreventDefault { get; set; } [Parameter] public bool StopPropagation { get; set; }",
                 UsesProps = true
             }
@@ -228,7 +228,7 @@ internal static partial class DirectRenderCaseCatalog
         var field = "coverageElement" + suffix;
         var second = "secondaryElement" + suffix;
         var method = "CaptureCoverageElement" + suffix;
-        var runtimeMethod = char.ToLowerInvariant(method[0]) + method[1..];
+        var runtimeMethod = method;
         var capture = "builder.AddElementReferenceCapture(2, value => " + field + " = value); ";
         return shape switch
         {
@@ -266,14 +266,14 @@ internal static partial class DirectRenderCaseCatalog
                 TertiaryExpectedFragment = marker,
                 Members = "private ElementReference " + field + ";"
             },
-            6 => new("if (Visible) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddElementReferenceCapture(1, value => " + field + " = value); builder.CloseElement(); } else { builder.OpenElement(2, \"div\"); builder.AddElementReferenceCapture(3, value => " + second + " = value); builder.CloseElement(); }", "props.visible")
+            6 => new("if (Visible) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddElementReferenceCapture(1, value => " + field + " = value); builder.CloseElement(); } else { builder.OpenElement(2, \"div\"); builder.AddElementReferenceCapture(3, value => " + second + " = value); builder.CloseElement(); }", "props.Visible")
             {
                 AdditionalExpectedFragment = "ref",
                 TertiaryExpectedFragment = field,
                 Members = "[Parameter] public bool Visible { get; set; } private ElementReference " + field + "; private ElementReference " + second + ";",
                 UsesProps = true
             },
-            _ => new("foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddElementReferenceCapture(1, value => " + field + " = value); builder.CloseElement(); }", "Array.from(props.items ?? []")
+            _ => new("foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddElementReferenceCapture(1, value => " + field + " = value); builder.CloseElement(); }", "Array.from(props.Items ?? []")
             {
                 AdditionalExpectedFragment = "ref",
                 TertiaryExpectedFragment = marker,
@@ -289,7 +289,7 @@ internal static partial class DirectRenderCaseCatalog
         var field = "coverageChild" + suffix;
         var second = "secondaryChild" + suffix;
         var method = "CaptureCoverageChild" + suffix;
-        var runtimeMethod = char.ToLowerInvariant(method[0]) + method[1..];
+        var runtimeMethod = method;
         return shape switch
         {
             0 => new("builder.OpenComponent<MatrixChild>(0); builder.AddComponentReferenceCapture(1, value => " + field + " = (MatrixChild)value); builder.CloseComponent();", "ref")
@@ -332,7 +332,7 @@ internal static partial class DirectRenderCaseCatalog
                 Members = "private MatrixChild? " + field + ";",
                 ImportCount = 1
             },
-            6 => new("if (Visible) { builder.OpenComponent<MatrixChild>(0); builder.AddComponentReferenceCapture(1, value => " + field + " = (MatrixChild)value); builder.CloseComponent(); } else { builder.OpenComponent<MatrixChild>(2); builder.AddComponentReferenceCapture(3, value => " + second + " = (MatrixChild)value); builder.CloseComponent(); }", "props.visible")
+            6 => new("if (Visible) { builder.OpenComponent<MatrixChild>(0); builder.AddComponentReferenceCapture(1, value => " + field + " = (MatrixChild)value); builder.CloseComponent(); } else { builder.OpenComponent<MatrixChild>(2); builder.AddComponentReferenceCapture(3, value => " + second + " = (MatrixChild)value); builder.CloseComponent(); }", "props.Visible")
             {
                 AdditionalExpectedFragment = "ref",
                 TertiaryExpectedFragment = field,
@@ -340,7 +340,7 @@ internal static partial class DirectRenderCaseCatalog
                 UsesProps = true,
                 ImportCount = 1
             },
-            _ => new("foreach (var item in Items) { builder.OpenComponent<MatrixChild>(0); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddComponentReferenceCapture(1, value => " + field + " = (MatrixChild)value); builder.CloseComponent(); }", "Array.from(props.items ?? []")
+            _ => new("foreach (var item in Items) { builder.OpenComponent<MatrixChild>(0); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddComponentReferenceCapture(1, value => " + field + " = (MatrixChild)value); builder.CloseComponent(); }", "Array.from(props.Items ?? []")
             {
                 AdditionalExpectedFragment = "ref",
                 TertiaryExpectedFragment = marker,
@@ -417,12 +417,12 @@ internal static partial class DirectRenderCaseCatalog
                 if (scoped)
                 {
                     body = fragmentType + " " + fragment + " = value => child => child.AddContent(0, Text + " + CSharpStringLiteral(marker + ":") + " + value); " + OpenSlotComponent(parameterName, fragment);
-                    tertiary = "props.text";
+                    tertiary = "props.Text";
                 }
                 else
                 {
                     body = fragmentType + " " + fragment + " = child => { if (Visible) { child.AddContent(0, " + CSharpStringLiteral(marker + "-visible") + "); } else { child.AddContent(1, " + CSharpStringLiteral(marker + "-hidden") + "); } }; " + OpenSlotComponent(parameterName, fragment);
-                    tertiary = "props.visible";
+                    tertiary = "props.Visible";
                 }
                 members = scoped ? outerParameterMembers : "[Parameter] public bool Visible { get; set; }";
                 usesProps = true;
@@ -436,7 +436,7 @@ internal static partial class DirectRenderCaseCatalog
                 else
                 {
                     body = fragmentType + " " + fragment + " = child => { foreach (var item in Items) { child.OpenElement(0, " + CSharpStringLiteral(tag) + "); child.AddContent(1, " + CSharpStringLiteral(marker + ":") + " + item); child.CloseElement(); } }; " + OpenSlotComponent(parameterName, fragment);
-                    tertiary = "Array.from(props.items ?? []";
+                    tertiary = "Array.from(props.Items ?? []";
                     members = "[Parameter] public string[] Items { get; set; } = [];";
                     usesProps = true;
                 }

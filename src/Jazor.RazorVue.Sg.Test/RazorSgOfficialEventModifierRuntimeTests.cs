@@ -44,8 +44,8 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddEventPreventDefaultAttribute", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "AddEventStopPropagationAttribute", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.preventNativeSubmit", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "props.stopSubmit", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.PreventNativeSubmit", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.StopSubmit", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-deploy-form-event-modifiers-runtime.mjs",
@@ -59,8 +59,8 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
 
             test("official Razor dynamic form modifiers run before the submit callback", () => {
                 const enabledRender = component.setup({
-                    preventNativeSubmit: true,
-                    stopSubmit: true
+                    PreventNativeSubmit: true,
+                    StopSubmit: true
                 }, { slots: {} });
                 const enabledForm = enabledRender();
                 const calls = [];
@@ -72,8 +72,8 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
                 assert.equal(enabledRender().props["data-submissions"], 1);
 
                 const disabledRender = component.setup({
-                    preventNativeSubmit: false,
-                    stopSubmit: false
+                    PreventNativeSubmit: false,
+                    StopSubmit: false
                 }, { slots: {} });
                 const disabledForm = disabledRender();
                 const disabledCalls = [];

@@ -47,10 +47,10 @@ public sealed class RazorSgOfficialEventCallbackAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "CommitAsync", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "onClick: commitAsync", StringComparison.Ordinal);
-        StringAssert.Contains(script, "async function commitAsync()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "await props.onCommit?.(state.value);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "[props.label]", StringComparison.Ordinal);
+        StringAssert.Contains(script, "onClick: CommitAsync", StringComparison.Ordinal);
+        StringAssert.Contains(script, "async function CommitAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "await props.OnCommit?.(state.Value);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "[props.Label]", StringComparison.Ordinal);
 
         Assert.IsFalse(script.Contains("EventCallback.Factory", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);

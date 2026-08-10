@@ -23,9 +23,9 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-render-fragment-members")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
-                    [Parameter] public RenderFragment? Footer { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#footer")] public RenderFragment? Footer { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {

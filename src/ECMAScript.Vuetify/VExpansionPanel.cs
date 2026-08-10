@@ -16,6 +16,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Background color of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Icon displayed when the panel is collapsed.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("collapseIcon")]
     public string? CollapseIcon { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Theme color of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Whether to disable expand/collapse interaction on the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Elevation shadow level of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Icon displayed when the panel is expanded.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expandIcon")]
     public string? ExpandIcon { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Whether to hide the expand/collapse action icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideActions")]
     public string? HideActions { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Whether the panel is read-only and non-interactive.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Border radius style of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Text content of the panel body.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Title text of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Bound value used to identify this panel within a panel group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VueValue? Value { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Additional custom attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Custom content slot for the panel title.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment<VExpansionPanelTitleSlotContext>? TitleContent { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VExpansionPanel : ComponentBase
     /// Custom content slot for the panel text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 
     /// <summary>
@@ -121,5 +136,6 @@ public sealed class VExpansionPanel : ComponentBase
     /// Default child content slot of the panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

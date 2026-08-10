@@ -204,7 +204,7 @@ internal static class ImplicitIndexerProtocolCatalog
                         var buffer = new LengthBuffer();
                         var value = buffer[^1];
                 """,
-            ["buffer[buffer.length - 1]"],
+            ["buffer[buffer.Length - 1]"],
             [],
             []),
         Success(
@@ -215,7 +215,7 @@ internal static class ImplicitIndexerProtocolCatalog
                         var offset = 2;
                         var value = buffer[^offset];
                 """,
-            ["buffer[buffer.count - offset]"],
+            ["buffer[buffer.Count - offset]"],
             [],
             []),
         Success(
@@ -225,8 +225,8 @@ internal static class ImplicitIndexerProtocolCatalog
                         var buffer = new LengthBuffer();
                         var value = buffer[(Index)NextOffset()];
                 """,
-            ["buffer[ImplicitIndexerProtocolScenarios.nextOffset()]"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()"],
+            ["buffer[ImplicitIndexerProtocolScenarios.NextOffset()]"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()"],
             []),
         Success(
             "index.complex-receiver",
@@ -234,27 +234,27 @@ internal static class ImplicitIndexerProtocolCatalog
             """
                         var value = GetLengthBuffer()[^NextOffset()];
                 """,
-            [".length - ImplicitIndexerProtocolScenarios.nextOffset()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"]),
+            [".Length - ImplicitIndexerProtocolScenarios.NextOffset()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()"]),
         Success(
             "index.assignment",
             "form=index;bound=from-end;receiver=invocation;access=assignment;evaluation=left-to-right",
             """
                         GetLengthBuffer()[^NextOffset()] = NextValue();
                 """,
-            ["] = ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+            ["] = ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextValue()"]),
         Success(
             "index.compound-assignment",
             "form=index;bound=from-end;receiver=invocation;access=compound-add;evaluation=single",
             """
                         GetLengthBuffer()[^NextOffset()] += NextValue();
                 """,
-            [" + ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+            [" + ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextValue()"]),
         Success(
             "index.postincrement",
             "form=index;bound=from-end;receiver=invocation;access=postincrement;result=discarded",
@@ -262,8 +262,8 @@ internal static class ImplicitIndexerProtocolCatalog
                         GetLengthBuffer()[^NextOffset()]++;
                 """,
             [" + 1"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"],
-            ["ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()"]),
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()"],
+            ["ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()"]),
         Success(
             "index.coalesce-assignment",
             "form=index;bound=from-end;receiver=invocation;access=coalesce-assignment;evaluation=single;fallback=computed-write",
@@ -271,8 +271,8 @@ internal static class ImplicitIndexerProtocolCatalog
                         var value = GetNullableLengthBuffer()[^NextOffset()] ??= NextText();
                 """,
             [" == null ?", "v$0[v$1] = v$2"],
-            ["ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextText()"],
-            ["ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.nextText()"]),
+            ["ImplicitIndexerProtocolScenarios.GetNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextText()"],
+            ["ImplicitIndexerProtocolScenarios.GetNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.NextText()"]),
         Success(
             "range.bounded",
             "form=range;bounds=from-start/from-end;slice=Slice(int,int);receiver=local",
@@ -280,7 +280,7 @@ internal static class ImplicitIndexerProtocolCatalog
                         var buffer = new SliceBuffer();
                         var middle = buffer[1..^1];
                 """,
-            ["buffer.slice(1, buffer.length - 1 - 1)"],
+            ["buffer.Slice(1, buffer.Length - 1 - 1)"],
             [],
             []),
         Success(
@@ -290,7 +290,7 @@ internal static class ImplicitIndexerProtocolCatalog
                         var buffer = new SliceBuffer();
                         var tail = buffer[2..];
                 """,
-            ["buffer.slice(2, buffer.length - 2)"],
+            ["buffer.Slice(2, buffer.Length - 2)"],
             [],
             []),
         Success(
@@ -299,8 +299,8 @@ internal static class ImplicitIndexerProtocolCatalog
             """
                         var copy = GetSliceBuffer()[..];
                 """,
-            [".slice(0,", ".length)"],
-            ["ImplicitIndexerProtocolScenarios.getSliceBuffer()"],
+            [".Slice(0,", ".Length)"],
+            ["ImplicitIndexerProtocolScenarios.GetSliceBuffer()"],
             []),
         Success(
             "range.from-end-bounds",
@@ -309,9 +309,9 @@ internal static class ImplicitIndexerProtocolCatalog
                         var buffer = new SliceBuffer();
                         var middle = buffer[^3..^1];
                 """,
-            ["v$0 = buffer.length - 3", "buffer.slice(v$0, buffer.length - 1 - v$0)"],
-            ["buffer.length - 3"],
-            ["v$0 = buffer.length - 3", "buffer.slice(v$0, buffer.length - 1 - v$0)"]),
+            ["v$0 = buffer.Length - 3", "buffer.Slice(v$0, buffer.Length - 1 - v$0)"],
+            ["buffer.Length - 3"],
+            ["v$0 = buffer.Length - 3", "buffer.Slice(v$0, buffer.Length - 1 - v$0)"]),
         Success(
             "index.standalone-from-start-value",
             "form=index;operand=System.Index.FromStart;access=read;offset=mapped-carrier",
@@ -320,8 +320,8 @@ internal static class ImplicitIndexerProtocolCatalog
                         Index index = Index.FromStart(NextOffset());
                         var value = buffer[index];
                 """,
-            ["_1b0e1c2ab6c4cd39(ImplicitIndexerProtocolScenarios.nextOffset())", "buffer[_9b817e75f3f8f58f(index, buffer.length)]"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()"],
+            ["_1b0e1c2ab6c4cd39(ImplicitIndexerProtocolScenarios.NextOffset())", "buffer[_9b817e75f3f8f58f(index, buffer.Length)]"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()"],
             []),
         Success(
             "index.standalone-value",
@@ -331,7 +331,7 @@ internal static class ImplicitIndexerProtocolCatalog
                         Index index = ^1;
                         var value = buffer[index];
                 """,
-            ["_ce8b9229a41c8545(1)", "buffer[_9b817e75f3f8f58f(index, buffer.length)]"],
+            ["_ce8b9229a41c8545(1)", "buffer[_9b817e75f3f8f58f(index, buffer.Length)]"],
             [],
             []),
         Success(
@@ -341,9 +341,9 @@ internal static class ImplicitIndexerProtocolCatalog
                         Index index = ^NextOffset();
                         GetLengthBuffer()[index] = NextValue();
                 """,
-            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.NextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextValue()"]),
         Success(
             "index.standalone-compound-assignment",
             "form=index;operand=System.Index-local;access=compound-add;evaluation=single;offset=mapped-carrier",
@@ -351,9 +351,9 @@ internal static class ImplicitIndexerProtocolCatalog
                         Index index = ^NextOffset();
                         GetLengthBuffer()[index] += NextValue();
                 """,
-            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextValue()"]),
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.NextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextValue()"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextValue()"]),
         Success(
             "index.standalone-coalesce-assignment",
             "form=index;operand=System.Index-local;access=coalesce-assignment;evaluation=single;offset=mapped-carrier",
@@ -361,9 +361,9 @@ internal static class ImplicitIndexerProtocolCatalog
                         Index index = ^NextOffset();
                         var value = GetNullableLengthBuffer()[index] ??= NextText();
                 """,
-            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.nextOffset())", "_9b817e75f3f8f58f(index,"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextText()"],
-            ["ImplicitIndexerProtocolScenarios.nextOffset()", "ImplicitIndexerProtocolScenarios.getNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.nextText()"]),
+            ["_ce8b9229a41c8545(ImplicitIndexerProtocolScenarios.NextOffset())", "_9b817e75f3f8f58f(index,"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextText()"],
+            ["ImplicitIndexerProtocolScenarios.NextOffset()", "ImplicitIndexerProtocolScenarios.GetNullableLengthBuffer()", "ImplicitIndexerProtocolScenarios.NextText()"]),
         Success(
             "range.standalone-value",
             "form=range;operand=System.Range-local;access=slice;offset-length=mapped-carrier",
@@ -372,8 +372,8 @@ internal static class ImplicitIndexerProtocolCatalog
                         Range range = 1..^1;
                         var value = buffer[range];
                 """,
-            ["_fc3dfc5dbaa397eb", "_1c7a1e658ed790ff(range, buffer.length)", ".offset", ".length"],
-            ["_1c7a1e658ed790ff(range, buffer.length)"],
+            ["_fc3dfc5dbaa397eb", "_1c7a1e658ed790ff(range, buffer.Length)", ".Offset", ".Length"],
+            ["_1c7a1e658ed790ff(range, buffer.Length)"],
             [])
     ];
 

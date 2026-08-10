@@ -72,7 +72,7 @@ public sealed class SemanticWalkerUtf8StringTests
         AssertUtf8ByteArray(returnStatement.Argument, [65, 194, 169], "module-return");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export function getPayload()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export function GetPayload()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return [", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script!);
     }

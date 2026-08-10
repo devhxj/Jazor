@@ -14,6 +14,7 @@ public sealed class VLazy : ComponentBase
     /// Whether the component is activated (content has been rendered).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VLazy : ComponentBase
     /// Callback invoked when the activation state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VLazy : ComponentBase
     /// Minimum placeholder height before the component is activated.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VLazy : ComponentBase
     /// Intersection observer configuration options.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("options")]
     public VuetifyIntersectionObserverOptions? Options { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VLazy : ComponentBase
     /// HTML tag name for the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VLazy : ComponentBase
     /// Transition animation when content appears.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VLazy : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VLazy : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VLazy : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VLazy : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VLazy : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VLazy : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -98,5 +110,6 @@ public sealed class VLazy : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

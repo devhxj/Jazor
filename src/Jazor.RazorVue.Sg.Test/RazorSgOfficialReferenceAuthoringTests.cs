@@ -120,7 +120,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
                 assert.deepEqual(initialStatus.children, ["waiting"]);
                 assert.equal(initialChild.name.name, "reference-child");
 
-                initialChild.props.ref({ status: "attached" });
+                initialChild.props.ref({ Status: "attached" });
 
                 const attached = render();
                 const attachedStatus = attached.children.find(node => node.name === "span");

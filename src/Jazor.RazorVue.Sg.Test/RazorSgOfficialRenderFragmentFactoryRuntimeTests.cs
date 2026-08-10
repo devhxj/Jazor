@@ -80,7 +80,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 assert.equal(panel.name, templatePanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ id: 42, label: "Deploy" });
+                const nodes = panel.children.item({ Id: 42, Label: "Deploy" });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-release-id"], 42);
@@ -106,6 +106,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using Demo.Components;
             using ECMAScript.VueContract;
 
@@ -173,7 +174,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 assert.equal(panel.name, templatePanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ id: 7, label: "Review" });
+                const nodes = panel.children.item({ Id: 7, Label: "Review" });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "span");
                 assert.equal(nodes[0].props["data-release-label"], "Review");
@@ -199,6 +200,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using Demo.Components;
             using ECMAScript.VueContract;
 
@@ -207,7 +209,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-conditional-property-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -253,7 +255,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "Header", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.detailed", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -268,14 +270,14 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             import slotPanel from "./components/slot-panel-conditional-property-runtime.mjs";
 
             test("official Razor conditional RenderFragment property selects the matching slot", () => {
-                const detailed = component.setup({ detailed: true }, { slots: {} })();
+                const detailed = component.setup({ Detailed: true }, { slots: {} })();
                 assert.equal(detailed.name, slotPanel);
                 const detailedNodes = detailed.children.header();
                 assert.equal(detailedNodes[0].name, "strong");
                 assert.equal(detailedNodes[0].props["data-variant"], "detailed");
                 assert.deepEqual(detailedNodes[0].children, ["Detailed release"]);
 
-                const compact = component.setup({ detailed: false }, { slots: {} })();
+                const compact = component.setup({ Detailed: false }, { slots: {} })();
                 const compactNodes = compact.children.header();
                 assert.equal(compactNodes[0].name, "span");
                 assert.equal(compactNodes[0].props["data-variant"], "compact");
@@ -301,6 +303,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using Demo.Components;
             using ECMAScript.VueContract;
 
@@ -309,7 +312,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-conditional-parameter-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -354,7 +357,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateDetailedHeader()", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "CreateCompactHeader()", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.detailed", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -369,14 +372,14 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             import slotPanel from "./components/slot-panel-conditional-parameter-runtime.mjs";
 
             test("official Razor conditional RenderFragment parameter selects the matching slot", () => {
-                const detailed = component.setup({ detailed: true }, { slots: {} })();
+                const detailed = component.setup({ Detailed: true }, { slots: {} })();
                 assert.equal(detailed.name, slotPanel);
                 const detailedNodes = detailed.children.header();
                 assert.equal(detailedNodes[0].name, "strong");
                 assert.equal(detailedNodes[0].props["data-variant"], "detailed");
                 assert.deepEqual(detailedNodes[0].children, ["Detailed release"]);
 
-                const compact = component.setup({ detailed: false }, { slots: {} })();
+                const compact = component.setup({ Detailed: false }, { slots: {} })();
                 const compactNodes = compact.children.header();
                 assert.equal(compactNodes[0].name, "span");
                 assert.equal(compactNodes[0].props["data-variant"], "compact");
@@ -402,6 +405,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using Demo.Components;
             using ECMAScript.VueContract;
 
@@ -410,8 +414,8 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-method-group-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
-                    [Parameter] public RenderFragment? Footer { get; set; }
+                    [Parameter, Description("@#header")] public RenderFragment? Header { get; set; }
+                    [Parameter, Description("@#footer")] public RenderFragment? Footer { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -460,7 +464,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             import slotPanel from "./components/slot-panel-method-group-runtime.mjs";
 
             test("official Razor method groups provide instance and static Vue slots", () => {
-                const panel = component.setup({ label: "Deployments" }, { slots: {} })();
+                const panel = component.setup({ Label: "Deployments" }, { slots: {} })();
                 assert.equal(panel.name, slotPanel);
                 assert.equal(typeof panel.children.header, "function");
                 assert.equal(typeof panel.children.footer, "function");

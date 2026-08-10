@@ -38,7 +38,7 @@ public sealed class SemanticWalkerRecordForEachTests
         Assert.IsNotNull(script);
         StringAssert.Contains(
             script,
-            "for (let { name: name, version: { major: major, minor: minor } } of releases)",
+            "for (let { Name: name, Version: { Major: major, Minor: minor } } of releases)",
             StringComparison.Ordinal);
         StringAssert.Contains(script, "console.log(name);", StringComparison.Ordinal);
         StringAssert.Contains(script, "console.log(major + minor);", StringComparison.Ordinal);

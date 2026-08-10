@@ -15,6 +15,7 @@ public sealed class VToolbarItems : ComponentBase
     /// Theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VToolbarItems : ComponentBase
     /// Variant.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -45,6 +47,7 @@ public sealed class VToolbarItems : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -52,5 +55,6 @@ public sealed class VToolbarItems : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

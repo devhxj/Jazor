@@ -257,7 +257,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
         StringAssert.Contains(moduleCatalog, "modules/text-helper.mjs");
-        StringAssert.Contains(moduleCatalog, "function normalize(value)");
+        StringAssert.Contains(moduleCatalog, "function Normalize(value)");
     }
 
     private static Compilation CreateCompilation(string assemblyName, string source, string sourcePath)

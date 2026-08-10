@@ -23,8 +23,8 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 [ECMAScriptModule("./components/dual-slot-panel-overloaded-template-runtime")]
                 public sealed class DualSlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
-                    [Parameter] public RenderFragment? Footer { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#footer")] public RenderFragment? Footer { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -90,7 +90,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
 
             test("official Razor overloads bind recursive RenderFragment helpers by symbol", () => {
                 const result = component.setup(
-                    { releaseName: "API", releaseId: 2 },
+                    { ReleaseName: "API", ReleaseId: 2 },
                     { slots: {} })();
                 assert.equal(result.name, panel);
 
@@ -139,7 +139,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-header-variant-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -186,7 +186,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "UseCompactHeader ? CompactHeader : DetailedHeader", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.useCompactHeader", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.UseCompactHeader", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -202,8 +202,8 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
 
             test("official Razor conditional RenderFragment members select the active slot", () => {
                 const compact = component.setup({
-                    useCompactHeader: true,
-                    releaseName: "Orders API"
+                    UseCompactHeader: true,
+                    ReleaseName: "Orders API"
                 }, { slots: {} })();
                 assert.equal(compact.name, panel);
                 const compactHeader = compact.children.header()[0];
@@ -212,8 +212,8 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 assert.deepEqual(compactHeader.children, ["Orders API"]);
 
                 const detailed = component.setup({
-                    useCompactHeader: false,
-                    releaseName: "Orders API"
+                    UseCompactHeader: false,
+                    ReleaseName: "Orders API"
                 }, { slots: {} })();
                 assert.equal(detailed.name, panel);
                 const detailedHeader = detailed.children.header()[0];

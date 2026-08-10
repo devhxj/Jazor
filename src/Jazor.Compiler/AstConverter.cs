@@ -57,7 +57,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
         options?.MemberFilter,
-        options?.ModulePolicy ?? AstConverterModulePolicy.Default);
+        options?.ModulePolicy ?? AstConverterModulePolicy.Default,
+        options?.Profile ?? AstConverterProfile.Standard);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
     private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
@@ -461,30 +462,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private bool TryGetClrImportMemberName(IMethodSymbol symbol, out string memberName)
     {
-        memberName = string.Empty;
         if (_options.Profile != AstConverterProfile.ClrRuntime)
-            return false;
-
-        var annotatedSymbol = symbol.AssociatedSymbol ?? (ISymbol)symbol;
-        foreach (var attribute in annotatedSymbol.GetAttributes())
         {
-            if (attribute.AttributeClass!.Name != "JazorAttribute" ||
-                attribute.ConstructorArguments.Length < 2 ||
-                !IsImportOperation(attribute.ConstructorArguments[0]) ||
-                attribute.ConstructorArguments[1].Value is not string { Length: > 0 } authoredMemberName)
-            {
-                continue;
-            }
-
-            memberName = authoredMemberName;
-            return true;
+            memberName = string.Empty;
+            return false;
         }
 
-        return false;
+        return Util.TryGetJazorImportMapping(symbol, out memberName, out _);
     }
 
-    private static bool IsImportOperation(TypedConstant argument)
-        => System.Convert.ToInt32(argument.Value!, CultureInfo.InvariantCulture) == (int)Op.Import;
+    private static bool TryGetClrImportRuntimeName(ISymbol symbol, out string runtimeName)
+        => Util.TryGetJazorImportRuntimeName(symbol, out runtimeName);
 
     private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
@@ -1719,10 +1707,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static ModuleNamePlan BuildModuleNamePlan(
         INamedTypeSymbol classSymbol,
         Func<ISymbol, bool>? includeMember,
-        AstConverterModulePolicy modulePolicy)
+        AstConverterModulePolicy modulePolicy,
+        AstConverterProfile profile)
     {
         var localNames = BuildModuleLocalNames(classSymbol, modulePolicy);
-        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, modulePolicy);
+        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, modulePolicy, profile);
         var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, modulePolicy);
         return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
     }
@@ -1730,14 +1719,18 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private string GetModuleDeclaredName(ISymbol symbol)
         => ModuleDeclaredNames.TryGetValue(symbol.OriginalDefinition, out var name)
             ? name
-            : GetPreferredModuleDeclaredName(symbol, _modulePolicy);
+            : GetPreferredModuleDeclaredName(symbol, _modulePolicy, _options.Profile);
 
-    private static string GetModuleNamedExportName(ISymbol symbol)
-        => symbol switch
+    private string GetModuleNamedExportName(ISymbol symbol)
+    {
+        if (_options.Profile == AstConverterProfile.ClrRuntime &&
+            TryGetClrImportRuntimeName(symbol, out var runtimeName))
         {
-            INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
-            _ => Util.GetConfigOrSymbolName(symbol)
-        };
+            return runtimeName;
+        }
+
+        return Util.GetConfigOrSymbolName(symbol);
+    }
 
     private void ValidateModuleExportPolicy()
     {
@@ -1811,7 +1804,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         INamedTypeSymbol classSymbol,
         HashSet<string> localNames,
         Func<ISymbol, bool>? includeMember,
-        AstConverterModulePolicy modulePolicy)
+        AstConverterModulePolicy modulePolicy,
+        AstConverterProfile profile)
     {
         var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
         var usedDeclaredNames = new HashSet<string>(System.StringComparer.Ordinal);
@@ -1824,13 +1818,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames, modulePolicy);
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames, modulePolicy, profile);
                     break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames, modulePolicy);
+                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames, modulePolicy, profile);
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames, modulePolicy);
+                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames, modulePolicy, profile);
                     break;
             }
         }
@@ -1842,9 +1836,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ISymbol symbol,
         HashSet<string> usedDeclaredNames,
         HashSet<string> localNames,
-        AstConverterModulePolicy modulePolicy)
+        AstConverterModulePolicy modulePolicy,
+        AstConverterProfile profile)
     {
-        var preferredName = GetPreferredModuleDeclaredName(symbol, modulePolicy);
+        var preferredName = GetPreferredModuleDeclaredName(symbol, modulePolicy, profile);
         if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(preferredName) &&
             !localNames.Contains(preferredName) &&
             usedDeclaredNames.Add(preferredName))
@@ -1874,14 +1869,23 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static string GetPreferredModuleDeclaredName(
         ISymbol symbol,
-        AstConverterModulePolicy modulePolicy)
-        => modulePolicy.GetPreferredModuleDeclaredName(symbol) ?? symbol switch
+        AstConverterModulePolicy modulePolicy,
+        AstConverterProfile profile)
+    {
+        if (profile == AstConverterProfile.ClrRuntime &&
+            TryGetClrImportRuntimeName(symbol, out var runtimeName))
+        {
+            return runtimeName;
+        }
+
+        return modulePolicy.GetPreferredModuleDeclaredName(symbol) ?? symbol switch
         {
             IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
             IMethodSymbol method => Util.GetConfigOrSymbolName(method),
             INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
             _ => Util.GetConfigOrSymbolName(symbol)
         };
+    }
 
     private static string? GetSourceDeclaredNameCandidate(ISymbol symbol)
         => symbol switch
@@ -1931,10 +1935,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         foreach (var localName in localNames)
-        {
             names.Add(localName);
-            names.Add(Util.ConvertPascalCaseIdentifierToJsNaming(localName));
-        }
 
         return names;
     }

@@ -98,13 +98,13 @@ public sealed class AstConverterBoundArgumentScenarioTests
             await File.WriteAllTextAsync(
                 testPath,
                 """
-                import { run, runReceiverOrder } from "./bound-arguments.mjs";
+                import { Run, RunReceiverOrder } from "./bound-arguments.mjs";
 
                 Deno.test("named arguments preserve source evaluation, parameter binding, defaults, and ref/out write-back", () => {
-                  const result = run();
+                  const result = Run();
                   if (result !== 21355363011)
                     throw new Error(`expected 21355363011, got ${result}`);
-                  const receiverResult = runReceiverOrder();
+                  const receiverResult = RunReceiverOrder();
                   if (receiverResult !== 9213132)
                     throw new Error(`expected receiver-first evaluation result 9213132, got ${receiverResult}`);
                 });

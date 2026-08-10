@@ -14,6 +14,7 @@ public sealed class VLabel : ComponentBase
     /// Text content displayed by the label.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VLabel : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VLabel : ComponentBase
     /// Callback invoked when the label is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VLabel : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -42,5 +46,6 @@ public sealed class VLabel : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -44,7 +44,7 @@ public sealed class EnumerableIndexRuntimeTests
                   const indexed = {{index}}(source());
                   if (trace.join(",") !== "7,3,9")
                     throw new Error(`Index did not enumerate source in order: ${trace.join(",")}`);
-                  if (indexed.length !== 3 || indexed[0].index !== 0 || indexed[0].item !== 7 || indexed[2].index !== 2 || indexed[2].item !== 9)
+                  if (indexed.length !== 3 || indexed[0].Index !== 0 || indexed[0].Item !== 7 || indexed[2].Index !== 2 || indexed[2].Item !== 9)
                     throw new Error(`Index tuple shape drifted: ${JSON.stringify(indexed)}`);
                   if ({{index}}([]).length !== 0)
                     throw new Error("Index must materialize an empty source as an empty Array");

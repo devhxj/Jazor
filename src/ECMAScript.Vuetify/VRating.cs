@@ -16,6 +16,7 @@ public sealed class VRating : ComponentBase
     /// The current rating value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VRating : ComponentBase
     /// Callback invoked when the rating value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VRating : ComponentBase
     /// The icon color when active/selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VRating : ComponentBase
     /// The icon color when inactive.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VRating : ComponentBase
     /// Whether clicking again clears the rating.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool Clearable { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VRating : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VRating : ComponentBase
     /// The name attribute for the form element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VRating : ComponentBase
     /// The position of item labels.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemLabelPosition")]
     public VuetifyItemLabelPosition? ItemLabelPosition { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VRating : ComponentBase
     /// The label text for each rating item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemLabels")]
     public VuetifyMessagesValue? ItemLabels { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VRating : ComponentBase
     /// The ARIA label for rating items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemAriaLabel")]
     public string? ItemAriaLabel { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VRating : ComponentBase
     /// Whether to allow half-increment ratings.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("halfIncrements")]
     public bool HalfIncrements { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VRating : ComponentBase
     /// The icon displayed for empty items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("emptyIcon")]
     public VuetifyIconValue? EmptyIcon { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VRating : ComponentBase
     /// The icon displayed for full items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fullIcon")]
     public VuetifyIconValue? FullIcon { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VRating : ComponentBase
     /// The icon displayed for half-filled items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("halfIcon")]
     public VuetifyIconValue? HalfIcon { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VRating : ComponentBase
     /// The number of rating items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
 
     /// <summary>
@@ -121,6 +136,7 @@ public sealed class VRating : ComponentBase
     /// Whether to preview rating on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool Hover { get; set; }
 
     /// <summary>
@@ -128,6 +144,7 @@ public sealed class VRating : ComponentBase
     /// Whether the rating is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -135,6 +152,7 @@ public sealed class VRating : ComponentBase
     /// Whether the rating is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -142,6 +160,7 @@ public sealed class VRating : ComponentBase
     /// Whether to enable the ripple effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -149,6 +168,7 @@ public sealed class VRating : ComponentBase
     /// The size of the rating icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -156,6 +176,7 @@ public sealed class VRating : ComponentBase
     /// The HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -163,6 +184,7 @@ public sealed class VRating : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -170,6 +192,7 @@ public sealed class VRating : ComponentBase
     /// Custom content for each rating item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment<VRatingItemSlotContext>? ItemContent { get; set; }
 
     /// <summary>
@@ -177,5 +200,6 @@ public sealed class VRating : ComponentBase
     /// Custom content for each rating item label.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item-label")]
     public RenderFragment<VRatingItemLabelSlotContext>? ItemLabel { get; set; }
 }

@@ -71,7 +71,7 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
                 assert.equal(list.name, releaseList);
                 assert.equal(typeof list.children.item, "function");
 
-                const nodes = list.children.item({ id: 42, label: "Production" });
+                const nodes = list.children.item({ Id: 42, Label: "Production" });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "article");
                 assert.equal(nodes[0].props["data-release-id"], 42);

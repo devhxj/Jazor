@@ -132,12 +132,12 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "initialState: { counter: { count: 7 } }");
+        StringAssert.Contains(script, "initialState: { Counter: { Count: 7 } }");
 		StringAssert.Contains(script, "stubActions: true");
 		StringAssert.Contains(script, "stubPatch: false");
 		StringAssert.Contains(script, "stubReset: true");
 		StringAssert.Contains(script, "fakeApp: true");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 	}
 
 	[TestMethod]
@@ -170,7 +170,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -204,7 +204,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -311,7 +311,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -460,11 +460,11 @@ public sealed class EcmaScriptPiniaTestingImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "initialState: { counter: { count: 11, status: \"testing\" } }");
-		StringAssert.Contains(script, "plugins: [installPlugin]");
+        StringAssert.Contains(script, "initialState: { Counter: { Count: 11, Status: \"testing\" } }");
+        StringAssert.Contains(script, "plugins: [InstallPlugin]");
 		StringAssert.Contains(script, "stubActions: false");
 		StringAssert.Contains(script, "writableComputed: true");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 	}
 
 	[TestMethod]
@@ -503,7 +503,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
 		StringAssert.Contains(script, "stubActions: false");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 	}
 
 	[TestMethod]
@@ -556,8 +556,8 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -611,8 +611,8 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -666,7 +666,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
 		StringAssert.Contains(script, "stubActions: false");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 		StringAssert.Contains(script, "stubPatch: true");
 		StringAssert.Contains(script, "stubReset: true");
@@ -723,7 +723,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
 		StringAssert.Contains(script, "stubActions: [\"increment\", \"resetStatus\"]");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 		StringAssert.Contains(script, "stubPatch: false");
 		StringAssert.Contains(script, "stubReset: false");
@@ -780,8 +780,8 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -835,8 +835,8 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "stubActions: shouldStub");
-		StringAssert.Contains(script, "createSpy: wrapSpy");
+        StringAssert.Contains(script, "stubActions: ShouldStub");
+        StringAssert.Contains(script, "createSpy: WrapSpy");
 		StringAssert.Contains(script, "writableComputed: true");
 	}
 
@@ -918,6 +918,6 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
 		StringAssert.Contains(script, "return createTestingPinia({");
-		StringAssert.Contains(script, "plugins: [installTypedPlugin, installProjectedPlugin]");
+        StringAssert.Contains(script, "plugins: [InstallTypedPlugin, InstallProjectedPlugin]");
 	}
 }

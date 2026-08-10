@@ -314,7 +314,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("first", "dispose"), Member("second", "dispose")]),
+            [Member("first", "Dispose"), Member("second", "Dispose")]),
         Success(
             "statement-multiple-async",
             "async-statement-declarators-nest-for-reverse-disposal",
@@ -332,7 +332,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("first", "disposeAsync", awaited: true), Member("second", "disposeAsync", awaited: true)]),
+            [Member("first", "DisposeAsync", awaited: true), Member("second", "DisposeAsync", awaited: true)]),
         Success(
             "ref-struct-pattern-sync",
             "ref-struct-pattern-dispose",
@@ -347,7 +347,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")]),
+            [Member("resource", "Dispose")]),
         Success(
             "ref-struct-pattern-async",
             "ref-struct-pattern-dispose-async",
@@ -365,7 +365,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "disposeAsync", awaited: true)]),
+            [Member("resource", "DisposeAsync", awaited: true)]),
         Success(
             "inherited-interface-sync",
             "inherited-idisposable-implementation",
@@ -381,7 +381,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")]),
+            [Member("resource", "Dispose")]),
         Success(
             "inherited-interface-async",
             "inherited-iasyncdisposable-implementation",
@@ -400,7 +400,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "disposeAsync", awaited: true)]),
+            [Member("resource", "DisposeAsync", awaited: true)]),
         Success(
             "this-expression-sync",
             "this-resource-reused-without-temp",
@@ -415,7 +415,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [ThisMember("dispose")]),
+            [ThisMember("Dispose")]),
         Success(
             "this-expression-async",
             "this-async-resource-reused-without-temp",
@@ -430,7 +430,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [ThisMember("disposeAsync", awaited: true)]),
+            [ThisMember("DisposeAsync", awaited: true)]),
         Success(
             "non-block-body",
             "embedded-statement-body-is-protected",
@@ -447,8 +447,8 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")],
-            expectedProtectedCall: "touch"),
+            [Member("resource", "Dispose")],
+            expectedProtectedCall: "Touch"),
         Success(
             "declaration-prefix-and-tail",
             "using-declaration-wraps-only-following-statements",
@@ -467,9 +467,9 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")],
-            expectedLeadingCall: "before",
-            expectedProtectedCall: "after"),
+            [Member("resource", "Dispose")],
+            expectedLeadingCall: "Before",
+            expectedProtectedCall: "After"),
         Success(
             "pattern-switch-case-declaration",
             "pattern-switch-case-using-declaration-wraps-tail-and-break",
@@ -495,9 +495,9 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")],
+            [Member("resource", "Dispose")],
             expectedReturn: true,
-            expectedProtectedCall: "after"),
+            expectedProtectedCall: "After"),
         Success(
             "consecutive-declarations",
             "consecutive-declarations-nest-lifetimes",
@@ -513,7 +513,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("first", "dispose"), Member("second", "dispose")]),
+            [Member("first", "Dispose"), Member("second", "Dispose")]),
         Success(
             "declaration-return",
             "return-remains-inside-protected-body",
@@ -529,7 +529,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")],
+            [Member("resource", "Dispose")],
             expectedReturn: true),
         Success(
             "declaration-throw",
@@ -546,7 +546,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")],
+            [Member("resource", "Dispose")],
             expectedThrow: true),
         Success(
             "conditional-expression-once",
@@ -564,8 +564,8 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [TemporaryMember("dispose")],
-            expectedSingleEvaluationCalls: ["createFirst", "createSecond"]),
+            [TemporaryMember("Dispose")],
+            expectedSingleEvaluationCalls: ["CreateFirst", "CreateSecond"]),
         Success(
             "coalesce-expression-once",
             "coalesced-resource-is-materialized-once",
@@ -581,8 +581,8 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [TemporaryMember("dispose")],
-            expectedSingleEvaluationCalls: ["createFallback"]),
+            [TemporaryMember("Dispose")],
+            expectedSingleEvaluationCalls: ["CreateFallback"]),
         Success(
             "interface-declarator-sync",
             "interface-typed-declarator-uses-runtime-helper",
@@ -701,7 +701,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose")]),
+            [Member("resource", "Dispose")]),
         Success(
             "generic-interface-statement-async",
             "generic-iasyncdisposable-constraint-statement",
@@ -750,7 +750,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("resource", "dispose_ab2ea3c0f2bf66a0")]),
+            [Member("resource", "Dispose_ab2ea3c0f2bf66a0")]),
         Success(
             "nested-sync-and-async",
             "nested-mixed-disposal-kinds",
@@ -770,7 +770,7 @@ internal static class UsingLifetimeScenarioCatalog
                 }
             }
             """,
-            [Member("sync", "dispose"), Member("asyncResource", "disposeAsync", awaited: true)]),
+            [Member("sync", "Dispose"), Member("asyncResource", "DisposeAsync", awaited: true)]),
         Failure(
             "nullable-struct",
             "nullable-struct-runtime-shape-is-rejected",

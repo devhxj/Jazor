@@ -582,7 +582,7 @@ public sealed class SemanticWalkerHostRewriteTest
         var script = walker.Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "this.consume(hostTimestamp);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "this.Consume(hostTimestamp);", StringComparison.Ordinal);
         Assert.IsInstanceOfType<IPropertyReferenceOperation>(host.ArgumentValue);
         Assert.AreEqual("UtcNow", ((IPropertyReferenceOperation)host.ArgumentValue!).Property.Name);
     }

@@ -14,6 +14,7 @@ public sealed class VTimePicker : ComponentBase
     /// Model value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyTimePickerModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VTimePicker : ComponentBase
     /// Model value changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VTimePicker : ComponentBase
     /// Allowed hours.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("allowedHours")]
     public VuetifyTimePickerAllowedUnitValue? AllowedHours { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VTimePicker : ComponentBase
     /// Allowed minutes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("allowedMinutes")]
     public VuetifyTimePickerAllowedUnitValue? AllowedMinutes { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VTimePicker : ComponentBase
     /// Allowed seconds.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("allowedSeconds")]
     public VuetifyTimePickerAllowedUnitValue? AllowedSeconds { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VTimePicker : ComponentBase
     /// Shows AM/PM in the title.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ampmInTitle")]
     public bool AmpmInTitle { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VTimePicker : ComponentBase
     /// Disables the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VTimePicker : ComponentBase
     /// Time format.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("format")]
     public VuetifyTimePickerFormat? Format { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VTimePicker : ComponentBase
     /// Maximum allowed time.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public string? Max { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VTimePicker : ComponentBase
     /// Minimum allowed time.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public string? Min { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VTimePicker : ComponentBase
     /// View mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("viewMode")]
     public VuetifyTimePickerViewMode? ViewMode { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VTimePicker : ComponentBase
     /// View mode changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:viewMode")]
     public EventCallback<VuetifyTimePickerViewMode> ViewModeChanged { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VTimePicker : ComponentBase
     /// Period changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("periodChanged")]
     public EventCallback<VuetifyTimePickerPeriod> PeriodChanged { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VTimePicker : ComponentBase
     /// Hour changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hourChanged")]
     public EventCallback<Number> HourChanged { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VTimePicker : ComponentBase
     /// Minute changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minuteChanged")]
     public EventCallback<Number> MinuteChanged { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VTimePicker : ComponentBase
     /// Second changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("secondChanged")]
     public EventCallback<Number> SecondChanged { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VTimePicker : ComponentBase
     /// Puts the picker in readonly mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VTimePicker : ComponentBase
     /// Enables scroll interaction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollable")]
     public bool Scrollable { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VTimePicker : ComponentBase
     /// Enables seconds selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("useSeconds")]
     public bool UseSeconds { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VTimePicker : ComponentBase
     /// Theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VTimePicker : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VTimePicker : ComponentBase
     /// Border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VTimePicker : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VTimePicker : ComponentBase
     /// CSS position.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VTimePicker : ComponentBase
     /// Location of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VTimePicker : ComponentBase
     /// Elevation shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VTimePicker : ComponentBase
     /// Height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VTimePicker : ComponentBase
     /// Maximum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VTimePicker : ComponentBase
     /// Maximum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VTimePicker : ComponentBase
     /// Minimum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VTimePicker : ComponentBase
     /// Minimum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VTimePicker : ComponentBase
     /// Width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VTimePicker : ComponentBase
     /// Border.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VTimePicker : ComponentBase
     /// Theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VTimePicker : ComponentBase
     /// Background color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VTimePicker : ComponentBase
     /// Adds a divider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divided")]
     public bool Divided { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VTimePicker : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VTimePicker : ComponentBase
     /// Hides the header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideHeader")]
     public bool HideHeader { get; set; }
 
     /// <summary>
@@ -280,6 +318,7 @@ public sealed class VTimePicker : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -287,6 +326,7 @@ public sealed class VTimePicker : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -294,6 +334,7 @@ public sealed class VTimePicker : ComponentBase
     /// Actions slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
     /// <summary>
@@ -301,5 +342,6 @@ public sealed class VTimePicker : ComponentBase
     /// Title content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }

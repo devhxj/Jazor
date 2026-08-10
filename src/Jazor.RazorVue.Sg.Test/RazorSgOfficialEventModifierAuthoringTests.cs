@@ -41,15 +41,15 @@ public sealed class RazorSgOfficialEventModifierAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "onClick", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (props.preventDefault)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "if (props.PreventDefault)", StringComparison.Ordinal);
         StringAssert.Contains(script, "event?.preventDefault?.();", StringComparison.Ordinal);
         StringAssert.Contains(script, "event?.stopPropagation?.();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "handleClick(event, ...args)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "HandleClick(event, ...args)", StringComparison.Ordinal);
 
-        var preventCondition = script.IndexOf("if (props.preventDefault)", StringComparison.Ordinal);
+        var preventCondition = script.IndexOf("if (props.PreventDefault)", StringComparison.Ordinal);
         var preventCall = script.IndexOf("event?.preventDefault?.();", StringComparison.Ordinal);
         var stopCall = script.IndexOf("event?.stopPropagation?.();", StringComparison.Ordinal);
-        var handlerCall = script.IndexOf("handleClick(event, ...args)", StringComparison.Ordinal);
+        var handlerCall = script.IndexOf("HandleClick(event, ...args)", StringComparison.Ordinal);
         Assert.IsTrue(preventCondition < preventCall, script);
         Assert.IsTrue(preventCall < stopCall, script);
         Assert.IsTrue(stopCall < handlerCall, script);

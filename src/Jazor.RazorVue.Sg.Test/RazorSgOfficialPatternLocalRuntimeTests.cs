@@ -31,7 +31,7 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
             componentMetadataName: "Demo.Pages.PatternLocalRuntime");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.releaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/pattern-local-runtime.mjs",
@@ -47,10 +47,10 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
                 const missing = component.setup({}, { slots: {} })();
                 assert.equal(missing, null);
 
-                const empty = component.setup({ releaseName: "" }, { slots: {} })();
+                const empty = component.setup({ ReleaseName: "" }, { slots: {} })();
                 assert.equal(empty, null);
 
-                const matched = component.setup({ releaseName: "Deploy" }, { slots: {} })();
+                const matched = component.setup({ ReleaseName: "Deploy" }, { slots: {} })();
                 assert.equal(matched.name, "span");
                 assert.equal(matched.props["data-release"], "Deploy");
                 assert.deepEqual(matched.children, ["Deploy"]);

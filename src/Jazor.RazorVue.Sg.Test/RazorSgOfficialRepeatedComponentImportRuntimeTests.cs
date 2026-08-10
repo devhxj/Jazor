@@ -35,7 +35,7 @@ public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
                 [ECMAScriptModule("./components/release-badge")]
                 public sealed class ReleaseBadge : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, System.ComponentModel.Description("@#label")]
                     public string Label { get; set; } = string.Empty;
                 }
                 """

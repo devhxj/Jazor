@@ -17,27 +17,35 @@ namespace ECMAScript.ElementPlus;
 public sealed class ElAffix : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("position")]
     public ElTopBottomPlacement? Position { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public string? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
 }
@@ -49,27 +57,35 @@ public sealed class ElAffix : ElContentComponentBase
 public sealed class ElAlert : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("description")]
     public string? Description { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeText")]
     public string? CloseText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showIcon")]
     public bool? ShowIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
@@ -77,9 +93,11 @@ public sealed class ElAlert : ElContentComponentBase
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
 }
@@ -91,9 +109,11 @@ public sealed class ElAlert : ElContentComponentBase
 public sealed class ElAnchor : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
 }
@@ -105,6 +125,7 @@ public sealed class ElAnchor : ElContentComponentBase
 public sealed class ElAnchorLink : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("sub-link")]
     public RenderFragment? SubLink { get; set; }
 
 }
@@ -116,6 +137,7 @@ public sealed class ElAnchorLink : ElContentComponentBase
 public sealed class ElAside : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("width")]
     public string? Width { get; set; }
 
 }
@@ -127,12 +149,15 @@ public sealed class ElAside : ElContentComponentBase
 public sealed class ElAutoResizer : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("disableWidth")]
     public bool? DisableWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableHeight")]
     public bool? DisableHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResize")]
     public ElAutoResizerResizeCallback? OnResize { get; set; }
 
 }
@@ -144,114 +169,151 @@ public sealed class ElAutoResizer : ElContentComponentBase
 public sealed class ElAutocomplete : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fetchSuggestions")]
     public ElAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("triggerOnFocus")]
     public bool? TriggerOnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectWhenUnmatched")]
     public bool? SelectWhenUnmatched { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideLoading")]
     public bool? HideLoading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightFirstItem")]
     public bool? HighlightFirstItem { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loopNavigation")]
     public bool? LoopNavigation { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
@@ -263,27 +325,35 @@ public sealed class ElAutocomplete : ElContentComponentBase
 public sealed class ElAvatar : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public ElAvatarShape? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("src")]
     public string? Src { get; set; }
 
     [Parameter]
+    [ECMAScriptName("srcSet")]
     public string? SrcSet { get; set; }
 
     [Parameter]
+    [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fit")]
     public string? Fit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
 
 }
@@ -295,36 +365,47 @@ public sealed class ElAvatar : ElContentComponentBase
 public sealed class ElAvatarGroup : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public ElAvatarShape? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseAvatars")]
     public bool? CollapseAvatars { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseAvatarsTooltip")]
     public bool? CollapseAvatarsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseAvatars")]
     public Number? MaxCollapseAvatars { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseClass")]
     public string? CollapseClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseStyle")]
     public VueStyleValue? CollapseStyle { get; set; }
 
 }
@@ -336,18 +417,23 @@ public sealed class ElAvatarGroup : ElComponentBase
 public sealed class ElBacktop : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("target")]
     public string? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visibilityHeight")]
     public Number? VisibilityHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("right")]
     public Number? Right { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bottom")]
     public Number? Bottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
 }
@@ -359,36 +445,47 @@ public sealed class ElBacktop : ElContentComponentBase
 public sealed class ElBadge : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("value")]
     public VueStringNumberValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("isDot")]
     public bool? IsDot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hidden")]
     public bool? Hidden { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showZero")]
     public bool? ShowZero { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("badgeStyle")]
     public VueStyleValue? BadgeStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("badgeClass")]
     public string? BadgeClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public RenderFragment? Content { get; set; }
 
 }
@@ -400,9 +497,11 @@ public sealed class ElBadge : ElContentComponentBase
 public sealed class ElBreadcrumb : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separatorIcon")]
     public VueStringComponentValue? SeparatorIcon { get; set; }
 
 }
@@ -414,9 +513,11 @@ public sealed class ElBreadcrumb : ElContentComponentBase
 public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("to")]
     public RouteLocationRaw? To { get; set; }
 
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
 
 }
@@ -428,60 +529,79 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
 public sealed class ElButton : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("plain")]
     public bool? Plain { get; set; }
 
     [Parameter]
+    [ECMAScriptName("text")]
     public bool? Text { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bg")]
     public bool? Bg { get; set; }
 
     [Parameter]
+    [ECMAScriptName("link")]
     public bool? Link { get; set; }
 
     [Parameter]
+    [ECMAScriptName("round")]
     public bool? Round { get; set; }
 
     [Parameter]
+    [ECMAScriptName("circle")]
     public bool? Circle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dashed")]
     public bool? Dashed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingIcon")]
     public VueStringComponentValue? LoadingIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nativeType")]
     public ElButtonNativeType? NativeType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoInsertSpace")]
     public bool? AutoInsertSpace { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dark")]
     public bool? Dark { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public VueStringComponentValue? Tag { get; set; }
 
     [Parameter]
@@ -501,12 +621,15 @@ public sealed class ElButton : ElContentComponentBase
 public sealed class ElButtonGroup : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
 }
@@ -518,24 +641,31 @@ public sealed class ElButtonGroup : ElContentComponentBase
 public sealed class ElCalendar : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public Date? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("range")]
     public VueDatePair? Range { get; set; }
 
     [Parameter]
+    [ECMAScriptName("controllerType")]
     public ElCalendarControllerType? ControllerType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatter")]
     public ElCalendarFormatterCallback? Formatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("date-cell")]
     public RenderFragment? DateCell { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Date?> ModelValueChanged { get; set; }
 
 }
@@ -547,24 +677,31 @@ public sealed class ElCalendar : ElComponentBase
 public sealed class ElCard : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("header")]
     public string? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public string? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyStyle")]
     public VueStyleValue? BodyStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shadow")]
     public ElCardShadow? Shadow { get; set; }
 
     [Parameter]
@@ -584,45 +721,59 @@ public sealed class ElCard : ElContentComponentBase
 public sealed class ElCarousel : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public ElHoverClickTrigger? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indicatorPosition")]
     public string? IndicatorPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("arrow")]
     public string? Arrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElCarouselType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pauseOnHover")]
     public bool? PauseOnHover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("motionBlur")]
     public bool? MotionBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
 }
@@ -634,9 +785,11 @@ public sealed class ElCarousel : ElContentComponentBase
 public sealed class ElCarouselItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
 
 }
@@ -648,153 +801,203 @@ public sealed class ElCarouselItem : ElContentComponentBase
 public sealed class ElCascader : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElCascaderProps? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAllLevels")]
     public bool? ShowAllLevels { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTagsTooltipHeight")]
     public VueStringNumberValue? MaxCollapseTagsTooltipHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElCascaderFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeFilter")]
     public ElCascaderBeforeFilterCallback? BeforeFilter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagType")]
     public string? TagType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagEffect")]
     public string? TagEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCheckedStrategy")]
     public string? ShowCheckedStrategy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualScroll")]
     public bool? VirtualScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suggestion-item")]
     public RenderFragment? SuggestionItem { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -806,36 +1009,47 @@ public sealed class ElCascader : ElContentComponentBase
 public sealed class ElCascaderPanel : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElCascaderProps? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualScroll")]
     public bool? VirtualScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
 }
@@ -847,15 +1061,19 @@ public sealed class ElCascaderPanel : ElContentComponentBase
 public sealed class ElCheckTag : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
 }
@@ -867,66 +1085,87 @@ public sealed class ElCheckTag : ElContentComponentBase
 public sealed class ElCheckbox : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaControls")]
     public string? AriaControls { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("controls")]
     public string? Controls { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -938,30 +1177,39 @@ public sealed class ElCheckbox : ElContentComponentBase
 public sealed class ElCheckboxButton : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
 
 }
@@ -973,51 +1221,67 @@ public sealed class ElCheckboxButton : ElContentComponentBase
 public sealed class ElCheckboxGroup : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fill")]
     public string? Fill { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElCheckboxOptionPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
 
 }
@@ -1029,33 +1293,43 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
 public sealed class ElCol : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("push")]
     public Number? Push { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
 
     [Parameter]
+    [ECMAScriptName("xs")]
     public ElColSizeValue? Xs { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sm")]
     public ElColSizeValue? Sm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("md")]
     public ElColSizeValue? Md { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lg")]
     public ElColSizeValue? Lg { get; set; }
 
     [Parameter]
+    [ECMAScriptName("xl")]
     public ElColSizeValue? Xl { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
 }
@@ -1067,21 +1341,27 @@ public sealed class ElCol : ElContentComponentBase
 public sealed class ElCollapse : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandIconPosition")]
     public ElCollapseIconPosition? ExpandIconPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeCollapse")]
     public ElCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -1093,15 +1373,19 @@ public sealed class ElCollapse : ElContentComponentBase
 public sealed class ElCollapseItem : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
 }
@@ -1121,78 +1405,103 @@ public sealed class ElCollapseTransition : ElContentComponentBase
 public sealed class ElColorPicker : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAlpha")]
     public bool? ShowAlpha { get; set; }
 
     [Parameter]
+    [ECMAScriptName("colorFormat")]
     public string? ColorFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("predefine")]
     public string[]? Predefine { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveChange")]
     public EventCallback OnActiveChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
@@ -1204,36 +1513,47 @@ public sealed class ElColorPicker : ElComponentBase
 public sealed class ElColorPickerPanel : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAlpha")]
     public bool? ShowAlpha { get; set; }
 
     [Parameter]
+    [ECMAScriptName("colorFormat")]
     public string? ColorFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("predefine")]
     public string[]? Predefine { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hueSliderClass")]
     public VueClassValue? HueSliderClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hueSliderStyle")]
     public VueStyleValue? HueSliderStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
@@ -1245,48 +1565,63 @@ public sealed class ElColorPickerPanel : ElComponentBase
 public sealed class ElConfigProvider : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("locale")]
     public ElLanguage? Locale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("namespace")]
     public string? Namespace { get; set; }
 
     [Parameter]
+    [ECMAScriptName("button")]
     public ElButtonConfig? Button { get; set; }
 
     [Parameter]
+    [ECMAScriptName("link")]
     public ElLinkConfig? Link { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dialog")]
     public ElDialogConfig? Dialog { get; set; }
 
     [Parameter]
+    [ECMAScriptName("message")]
     public ElMessageConfig? Message { get; set; }
 
     [Parameter]
+    [ECMAScriptName("experimentalFeatures")]
     public VueProps? ExperimentalFeatures { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("table")]
     public ElTableConfig? Table { get; set; }
 
     [Parameter]
+    [ECMAScriptName("a11y")]
     public bool? A11y { get; set; }
 
     [Parameter]
+    [ECMAScriptName("card")]
     public ElCardConfig? Card { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keyboardNavigation")]
     public bool? KeyboardNavigation { get; set; }
 
 }
@@ -1298,6 +1633,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
 public sealed class ElContainer : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
 }
@@ -1309,18 +1645,23 @@ public sealed class ElContainer : ElContentComponentBase
 public sealed class ElCountdown : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFinish")]
     public EventCallback OnFinish { get; set; }
 
 }
@@ -1332,120 +1673,159 @@ public sealed class ElCountdown : ElComponentBase
 public sealed class ElDatePicker : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("startPlaceholder")]
     public string? StartPlaceholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("endPlaceholder")]
     public string? EndPlaceholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeSeparator")]
     public string? RangeSeparator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("unlinkPanels")]
     public bool? UnlinkPanels { get; set; }
 
     [Parameter]
+    [ECMAScriptName("singlePanel")]
     public bool? SinglePanel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledDate")]
     public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shortcuts")]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cellClassName")]
     public ElDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showFooter")]
     public bool? ShowFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showConfirm")]
     public bool? ShowConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showWeekNumber")]
     public bool? ShowWeekNumber { get; set; }
 
     [Parameter]
+    [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
     [Parameter]
@@ -1453,39 +1833,51 @@ public sealed class ElDatePicker : ElContentComponentBase
     public RenderFragment? RangeSeparatorSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prev-month")]
     public RenderFragment? PrevMonth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("next-month")]
     public RenderFragment? NextMonth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prev-year")]
     public RenderFragment? PrevYear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("next-year")]
     public RenderFragment? NextYear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCalendarChange")]
     public EventCallback OnCalendarChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPanelChange")]
     public EventCallback OnPanelChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -1497,84 +1889,111 @@ public sealed class ElDatePicker : ElContentComponentBase
 public sealed class ElDatePickerPanel : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("unlinkPanels")]
     public bool? UnlinkPanels { get; set; }
 
     [Parameter]
+    [ECMAScriptName("singlePanel")]
     public bool? SinglePanel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledDate")]
     public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shortcuts")]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cellClassName")]
     public ElDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showFooter")]
     public bool? ShowFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showConfirm")]
     public bool? ShowConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showWeekNumber")]
     public bool? ShowWeekNumber { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prev-month")]
     public RenderFragment? PrevMonth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("next-month")]
     public RenderFragment? NextMonth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prev-year")]
     public RenderFragment? PrevYear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("next-year")]
     public RenderFragment? NextYear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCalendarChange")]
     public EventCallback OnCalendarChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPanelChange")]
     public EventCallback OnPanelChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -1586,24 +2005,31 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
 public sealed class ElDescriptions : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("column")]
     public Number? Column { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("extra")]
     public string? Extra { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
     [Parameter]
@@ -1623,33 +2049,43 @@ public sealed class ElDescriptions : ElContentComponentBase
 public sealed class ElDescriptionsItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspan")]
     public Number? Rowspan { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("align")]
     public string? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelAlign")]
     public string? LabelAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("className")]
     public string? ClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelClassName")]
     public string? LabelClassName { get; set; }
 
     [Parameter]
@@ -1665,99 +2101,131 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
 public sealed class ElDialog : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("top")]
     public string? Top { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modal")]
     public bool? Modal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modalPenetrable")]
     public bool? ModalPenetrable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modalClass")]
     public string? ModalClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendToBody")]
     public bool? AppendToBody { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lockScroll")]
     public bool? LockScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnClickModal")]
     public bool? CloseOnClickModal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showClose")]
     public bool? ShowClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeClose")]
     public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overflow")]
     public bool? Overflow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
     [Parameter]
+    [ECMAScriptName("alignCenter")]
     public bool? AlignCenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeIcon")]
     public VueStringComponentValue? CloseIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAriaLevel")]
     public string? HeaderAriaLevel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("transition")]
     public VueTransitionValue? Transition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("customClass")]
     public string? CustomClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
@@ -1765,24 +2233,31 @@ public sealed class ElDialog : ElContentComponentBase
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpenAutoFocus")]
     public EventCallback OnOpenAutoFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseAutoFocus")]
     public EventCallback OnCloseAutoFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
 
 }
@@ -1794,12 +2269,15 @@ public sealed class ElDialog : ElContentComponentBase
 public sealed class ElDivider : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderStyle")]
     public string? BorderStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("contentPosition")]
     public ElContentPosition? ContentPosition { get; set; }
 
 }
@@ -1811,84 +2289,111 @@ public sealed class ElDivider : ElContentComponentBase
 public sealed class ElDrawer : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendToBody")]
     public bool? AppendToBody { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lockScroll")]
     public bool? LockScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeClose")]
     public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnClickModal")]
     public bool? CloseOnClickModal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modal")]
     public bool? Modal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modalPenetrable")]
     public bool? ModalPenetrable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public string? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showClose")]
     public bool? ShowClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("withHeader")]
     public bool? WithHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modalClass")]
     public string? ModalClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAriaLevel")]
     public string? HeaderAriaLevel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("customClass")]
     public string? CustomClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
@@ -1896,33 +2401,43 @@ public sealed class ElDrawer : ElContentComponentBase
     public RenderFragment? TitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpenAutoFocus")]
     public EventCallback OnOpenAutoFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseAutoFocus")]
     public EventCallback OnCloseAutoFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResizeStart")]
     public EventCallback OnResizeStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResize")]
     public EventCallback OnResize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResizeEnd")]
     public EventCallback OnResizeEnd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
 
 }
@@ -1934,87 +2449,115 @@ public sealed class ElDrawer : ElContentComponentBase
 public sealed class ElDropdown : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("buttonProps")]
     public ElButtonProps? ButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("splitButton")]
     public bool? SplitButton { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public ElDropdownTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideOnClick")]
     public bool? HideOnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("role")]
     public string? Role { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dropdown")]
     public RenderFragment? Dropdown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCommand")]
     public EventCallback OnCommand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
 }
@@ -2026,15 +2569,19 @@ public sealed class ElDropdown : ElContentComponentBase
 public sealed class ElDropdownItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("command")]
     public VueStringNumberObjectValue? Command { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("divided")]
     public bool? Divided { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
@@ -2058,12 +2605,15 @@ public sealed class ElDropdownMenu : ElContentComponentBase
 public sealed class ElEmpty : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageSize")]
     public Number? ImageSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("description")]
     public string? Description { get; set; }
 
     [Parameter]
@@ -2083,6 +2633,7 @@ public sealed class ElEmpty : ElContentComponentBase
 public sealed class ElFooter : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 
 }
@@ -2094,54 +2645,71 @@ public sealed class ElFooter : ElContentComponentBase
 public sealed class ElForm : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("model")]
     public VueDictionary? Model { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rules")]
     public ElFormRules? Rules { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool? Inline { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelPosition")]
     public string? LabelPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelSuffix")]
     public string? LabelSuffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideRequiredAsterisk")]
     public bool? HideRequiredAsterisk { get; set; }
 
     [Parameter]
+    [ECMAScriptName("requireAsteriskPosition")]
     public string? RequireAsteriskPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showMessage")]
     public bool? ShowMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inlineMessage")]
     public bool? InlineMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("statusIcon")]
     public bool? StatusIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateOnRuleChange")]
     public bool? ValidateOnRuleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollToError")]
     public bool? ScrollToError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollIntoViewOptions")]
     public ScrollIntoViewArg? ScrollIntoViewOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback OnValidate { get; set; }
 
 }
@@ -2153,39 +2721,51 @@ public sealed class ElForm : ElContentComponentBase
 public sealed class ElFormItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("prop")]
     public VueStringOrStringsValue? Prop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelPosition")]
     public string? LabelPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("required")]
     public bool? Required { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rules")]
     public ElFormItemRules? Rules { get; set; }
 
     [Parameter]
+    [ECMAScriptName("error")]
     public string? Error { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showMessage")]
     public bool? ShowMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inlineMessage")]
     public bool? InlineMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("for")]
     public string? For { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateStatus")]
     public ElFormItemValidateStatus? ValidateStatus { get; set; }
 
     [Parameter]
@@ -2205,6 +2785,7 @@ public sealed class ElFormItem : ElContentComponentBase
 public sealed class ElHeader : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 
 }
@@ -2216,9 +2797,11 @@ public sealed class ElHeader : ElContentComponentBase
 public sealed class ElIcon : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
 }
@@ -2230,84 +2813,111 @@ public sealed class ElIcon : ElContentComponentBase
 public sealed class ElImage : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("src")]
     public string? Src { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fit")]
     public ElImageFitType? Fit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideOnClickModal")]
     public bool? HideOnClickModal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public ElImageLoadingType? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollContainer")]
     public VueStringHtmlElementValue? ScrollContainer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
     [Parameter]
+    [ECMAScriptName("referrerpolicy")]
     public string? Referrerpolicy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("crossorigin")]
     public ElCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
+    [ECMAScriptName("previewSrcList")]
     public string[]? PreviewSrcList { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("previewTeleported")]
     public bool? PreviewTeleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("infinite")]
     public bool? Infinite { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showProgress")]
     public bool? ShowProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public RenderFragment? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("error")]
     public RenderFragment? Error { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback OnLoad { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSwitch")]
     public EventCallback OnSwitch { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
 
 }
@@ -2319,63 +2929,83 @@ public sealed class ElImage : ElComponentBase
 public sealed class ElImageViewer : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("urlList")]
     public string[]? UrlList { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("infinite")]
     public bool? Infinite { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideOnClickModal")]
     public bool? HideOnClickModal { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showProgress")]
     public bool? ShowProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("viewer")]
     public RenderFragment? Viewer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("progress")]
     public RenderFragment? Progress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("toolbar")]
     public RenderFragment? Toolbar { get; set; }
 
     [Parameter]
+    [ECMAScriptName("viewer-error")]
     public RenderFragment? ViewerError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSwitch")]
     public EventCallback OnSwitch { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRotate")]
     public EventCallback OnRotate { get; set; }
 
 }
@@ -2387,159 +3017,211 @@ public sealed class ElImageViewer : ElComponentBase
 public sealed class ElInput : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modelModifiers")]
     public VueModelModifierBag? ModelModifiers { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showWordLimit")]
     public bool? ShowWordLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("wordLimitPosition")]
     public string? WordLimitPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatter")]
     public ElInputFormatter? Formatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("parser")]
     public ElInputParser? Parser { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPassword")]
     public bool? ShowPassword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autosize")]
     public ElInputAutoSize? Autosize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resize")]
     public string? Resize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("form")]
     public string? Form { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputStyle")]
     public VueStyleValue? InputStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("countGraphemes")]
     public ElInputCountGraphemes? CountGraphemes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     [Parameter]
+    [ECMAScriptName("password-icon")]
     public RenderFragment? PasswordIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback OnKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseleave")]
     public EventCallback OnMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseenter")]
     public EventCallback OnMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionstart")]
     public EventCallback OnCompositionstart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionupdate")]
     public EventCallback OnCompositionupdate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionend")]
     public EventCallback OnCompositionend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -2551,99 +3233,131 @@ public sealed class ElInput : ElComponentBase
 public sealed class ElInputNumber : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stepStrictly")]
     public bool? StepStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("precision")]
     public Number? Precision { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("controls")]
     public bool? Controls { get; set; }
 
     [Parameter]
+    [ECMAScriptName("controlsPosition")]
     public string? ControlsPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("align")]
     public string? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledScientific")]
     public bool? DisabledScientific { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatter")]
     public ElInputFormatter? Formatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("parser")]
     public ElInputParser? Parser { get; set; }
 
     [Parameter]
+    [ECMAScriptName("decrease-icon")]
     public RenderFragment? DecreaseIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("increase-icon")]
     public RenderFragment? IncreaseIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
 
 }
@@ -2655,42 +3369,55 @@ public sealed class ElInputNumber : ElComponentBase
 public sealed class ElInputOtp : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("length")]
     public Number? Length { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validator")]
     public ElInputOtpValidator? Validator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mask")]
     public bool? Mask { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public ElInputOtpSeparatorValue? Separator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
@@ -2698,18 +3425,23 @@ public sealed class ElInputOtp : ElComponentBase
     public RenderFragment? SeparatorSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFinish")]
     public EventCallback OnFinish { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
 }
@@ -2721,117 +3453,155 @@ public sealed class ElInputOtp : ElComponentBase
 public sealed class ElInputTag : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string[]? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagType")]
     public string? TagType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagEffect")]
     public string? TagEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public string? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delimiter")]
     public VueStringRegExpValue? Delimiter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("saveOnBlur")]
     public bool? SaveOnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAddTag")]
     public EventCallback OnAddTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragTag")]
     public EventCallback OnDragTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string[]?> ModelValueChanged { get; set; }
 
 }
@@ -2843,21 +3613,27 @@ public sealed class ElInputTag : ElComponentBase
 public sealed class ElLink : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("underline")]
     public VueBooleanStringValue? Underline { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public string? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
@@ -2881,51 +3657,67 @@ public sealed class ElMain : ElContentComponentBase
 public sealed class ElMention : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("options")]
     public ElMentionOption[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElMentionOptionPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public VueStringOrStringsValue? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("split")]
     public string? Split { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterOption")]
     public ElMentionFilterOptionValue? FilterOption { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("whole")]
     public bool? Whole { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkIsWhole")]
     public ElMentionCheckIsWhole? CheckIsWhole { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
     [Parameter]
@@ -2933,21 +3725,27 @@ public sealed class ElMention : ElComponentBase
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSearch")]
     public EventCallback OnSearch { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onWholeRemove")]
     public EventCallback OnWholeRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
@@ -2959,75 +3757,99 @@ public sealed class ElMention : ElComponentBase
 public sealed class ElMenu : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("mode")]
     public string? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapse")]
     public bool? Collapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ellipsis")]
     public bool? Ellipsis { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ellipsisIcon")]
     public VueStringComponentValue? EllipsisIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultActive")]
     public string? DefaultActive { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultOpeneds")]
     public string[]? DefaultOpeneds { get; set; }
 
     [Parameter]
+    [ECMAScriptName("uniqueOpened")]
     public bool? UniqueOpened { get; set; }
 
     [Parameter]
+    [ECMAScriptName("menuTrigger")]
     public ElHoverClickTrigger? MenuTrigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("router")]
     public bool? Router { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTransition")]
     public bool? CollapseTransition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperEffect")]
     public string? PopperEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnClickOutside")]
     public bool? CloseOnClickOutside { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("backgroundColor")]
     public string? BackgroundColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeTextColor")]
     public string? ActiveTextColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
 }
@@ -3039,18 +3861,23 @@ public sealed class ElMenu : ElContentComponentBase
 public sealed class ElMenuItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("index")]
     public string? Index { get; set; }
 
     [Parameter]
+    [ECMAScriptName("route")]
     public RouteLocationRaw? Route { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
 }
@@ -3062,6 +3889,7 @@ public sealed class ElMenuItem : ElContentComponentBase
 public sealed class ElMenuItemGroup : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
@@ -3077,12 +3905,15 @@ public sealed class ElMenuItemGroup : ElContentComponentBase
 public sealed class ElOption : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
 }
@@ -3094,9 +3925,11 @@ public sealed class ElOption : ElContentComponentBase
 public sealed class ElOptionGroup : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
 }
@@ -3108,12 +3941,15 @@ public sealed class ElOptionGroup : ElContentComponentBase
 public sealed class ElPageHeader : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Content { get; set; }
 
     [Parameter]
@@ -3129,12 +3965,15 @@ public sealed class ElPageHeader : ElContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("extra")]
     public RenderFragment? Extra { get; set; }
 
     [Parameter]
+    [ECMAScriptName("breadcrumb")]
     public RenderFragment? Breadcrumb { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBack")]
     public EventCallback OnBack { get; set; }
 
 }
@@ -3146,84 +3985,111 @@ public sealed class ElPageHeader : ElContentComponentBase
 public sealed class ElPagination : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("background")]
     public bool? Background { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultPageSize")]
     public Number? DefaultPageSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("total")]
     public Number? Total { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageCount")]
     public Number? PageCount { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pagerCount")]
     public Number? PagerCount { get; set; }
 
     [Parameter]
+    [ECMAScriptName("currentPage")]
     public Number? CurrentPage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultCurrentPage")]
     public Number? DefaultCurrentPage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public string? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageSizes")]
     public Number[]? PageSizes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendSizeTo")]
     public string? AppendSizeTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prevText")]
     public string? PrevText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public VueStringComponentValue? PrevIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nextText")]
     public string? NextText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public VueStringComponentValue? NextIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideOnSinglePage")]
     public bool? HideOnSinglePage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("small")]
     public bool? Small { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSizeChange")]
     public EventCallback OnSizeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPrevClick")]
     public EventCallback OnPrevClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNextClick")]
     public EventCallback OnNextClick { get; set; }
 
 }
@@ -3235,54 +4101,71 @@ public sealed class ElPagination : ElContentComponentBase
 public sealed class ElPopconfirm : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("confirmButtonText")]
     public string? ConfirmButtonText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cancelButtonText")]
     public string? CancelButtonText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("confirmButtonType")]
     public string? ConfirmButtonType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cancelButtonType")]
     public string? CancelButtonType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("iconColor")]
     public string? IconColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideIcon")]
     public bool? HideIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reference")]
     public RenderFragment? Reference { get; set; }
 
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback OnCancel { get; set; }
 
 }
@@ -3294,96 +4177,127 @@ public sealed class ElPopconfirm : ElComponentBase
 public sealed class ElPopover : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Content { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("transition")]
     public string? Transition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reference")]
     public RenderFragment? Reference { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeEnter")]
     public EventCallback OnBeforeEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAfterEnter")]
     public EventCallback OnAfterEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHide")]
     public EventCallback OnHide { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeLeave")]
     public EventCallback OnBeforeLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAfterLeave")]
     public EventCallback OnAfterLeave { get; set; }
 
 }
@@ -3395,6 +4309,7 @@ public sealed class ElPopover : ElContentComponentBase
 public sealed class ElPopper : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("role")]
     public string? Role { get; set; }
 
 }
@@ -3406,45 +4321,59 @@ public sealed class ElPopper : ElContentComponentBase
 public sealed class ElProgress : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElProgressType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("strokeWidth")]
     public Number? StrokeWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textInside")]
     public bool? TextInside { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public ElProgressStatus? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public ElProgressColorValue? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("strokeLinecap")]
     public string? StrokeLinecap { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public ElProgressFormatCallback? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("striped")]
     public bool? Striped { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripedFlow")]
     public bool? StripedFlow { get; set; }
 
 }
@@ -3456,30 +4385,39 @@ public sealed class ElProgress : ElContentComponentBase
 public sealed class ElRadio : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -3491,15 +4429,19 @@ public sealed class ElRadio : ElContentComponentBase
 public sealed class ElRadioButton : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
 }
@@ -3511,48 +4453,63 @@ public sealed class ElRadioButton : ElContentComponentBase
 public sealed class ElRadioGroup : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fill")]
     public string? Fill { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElRadioOptionPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -3564,75 +4521,99 @@ public sealed class ElRadioGroup : ElContentComponentBase
 public sealed class ElRate : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowHalf")]
     public bool? AllowHalf { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lowThreshold")]
     public Number? LowThreshold { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highThreshold")]
     public Number? HighThreshold { get; set; }
 
     [Parameter]
+    [ECMAScriptName("colors")]
     public ElRateColorsValue? Colors { get; set; }
 
     [Parameter]
+    [ECMAScriptName("voidColor")]
     public string? VoidColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledVoidColor")]
     public string? DisabledVoidColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icons")]
     public ElRateIconsValue? Icons { get; set; }
 
     [Parameter]
+    [ECMAScriptName("voidIcon")]
     public VueStringComponentValue? VoidIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledVoidIcon")]
     public VueStringComponentValue? DisabledVoidIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showScore")]
     public bool? ShowScore { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("texts")]
     public string[]? Texts { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scoreTemplate")]
     public string? ScoreTemplate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
 
 }
@@ -3644,12 +4625,15 @@ public sealed class ElRate : ElComponentBase
 public sealed class ElResult : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("subTitle")]
     public string? SubTitle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public string? Icon { get; set; }
 
     [Parameter]
@@ -3665,6 +4649,7 @@ public sealed class ElResult : ElComponentBase
     public RenderFragment? SubTitleSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("extra")]
     public RenderFragment? Extra { get; set; }
 
 }
@@ -3676,15 +4661,19 @@ public sealed class ElResult : ElComponentBase
 public sealed class ElRow : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("gutter")]
     public Number? Gutter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("justify")]
     public string? Justify { get; set; }
 
     [Parameter]
+    [ECMAScriptName("align")]
     public string? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
 }
@@ -3696,60 +4685,79 @@ public sealed class ElRow : ElContentComponentBase
 public sealed class ElScrollbar : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("native")]
     public bool? Native { get; set; }
 
     [Parameter]
+    [ECMAScriptName("wrapStyle")]
     public VueStyleValue? WrapStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("wrapClass")]
     public string? WrapClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("viewStyle")]
     public VueStyleValue? ViewStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("viewClass")]
     public string? ViewClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noresize")]
     public bool? Noresize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("always")]
     public bool? Always { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minSize")]
     public Number? MinSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("role")]
     public string? Role { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaOrientation")]
     public string? AriaOrientation { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("distance")]
     public Number? Distance { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
 }
@@ -3761,42 +4769,55 @@ public sealed class ElScrollbar : ElContentComponentBase
 public sealed class ElSegmented : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElSegmentedPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("block")]
     public bool? Block { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -3808,177 +4829,235 @@ public sealed class ElSegmented : ElContentComponentBase
 public sealed class ElSelect : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
     [Parameter]
+    [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixTransition")]
     public bool? SuffixTransition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
@@ -3986,33 +5065,43 @@ public sealed class ElSelect : ElContentComponentBase
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupScroll")]
     public EventCallback OnPopupScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -4024,21 +5113,27 @@ public sealed class ElSelect : ElContentComponentBase
 public sealed class ElSkeleton : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("animated")]
     public bool? Animated { get; set; }
 
     [Parameter]
+    [ECMAScriptName("count")]
     public Number? Count { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
 
     [Parameter]
+    [ECMAScriptName("throttle")]
     public ElThrottleValue? Throttle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("template")]
     public RenderFragment? Template { get; set; }
 
 }
@@ -4050,6 +5145,7 @@ public sealed class ElSkeleton : ElContentComponentBase
 public sealed class ElSkeletonItem : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("variant")]
     public string? Variant { get; set; }
 
 }
@@ -4061,87 +5157,115 @@ public sealed class ElSkeletonItem : ElComponentBase
 public sealed class ElSlider : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueNumberOrNumbersValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showInput")]
     public bool? ShowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showInputControls")]
     public bool? ShowInputControls { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputSize")]
     public string? InputSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showStops")]
     public bool? ShowStops { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showTooltip")]
     public bool? ShowTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatTooltip")]
     public ElSliderFormatTooltipCallback? FormatTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("range")]
     public bool? Range { get; set; }
 
     [Parameter]
+    [ECMAScriptName("vertical")]
     public bool? Vertical { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeStartLabel")]
     public string? RangeStartLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeEndLabel")]
     public string? RangeEndLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatValueText")]
     public ElSliderFormatValueTextCallback? FormatValueText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipClass")]
     public string? TooltipClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("marks")]
     public ElSliderMarks? Marks { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueNumberOrNumbersValue?> ModelValueChanged { get; set; }
 
 }
@@ -4153,27 +5277,35 @@ public sealed class ElSlider : ElComponentBase
 public sealed class ElSpace : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("alignment")]
     public string? Alignment { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixCls")]
     public string? PrefixCls { get; set; }
 
     [Parameter]
+    [ECMAScriptName("spacer")]
     public VueStringNumberVNodeValue? Spacer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElSpaceSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("wrap")]
     public bool? Wrap { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fill")]
     public bool? Fill { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fillRatio")]
     public Number? FillRatio { get; set; }
 
 }
@@ -4185,21 +5317,27 @@ public sealed class ElSpace : ElComponentBase
 public sealed class ElSplitter : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("layout")]
     public string? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResizeStart")]
     public EventCallback OnResizeStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResize")]
     public EventCallback OnResize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onResizeEnd")]
     public EventCallback OnResizeEnd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCollapse")]
     public EventCallback OnCollapse { get; set; }
 
 }
@@ -4211,27 +5349,35 @@ public sealed class ElSplitter : ElComponentBase
 public sealed class ElSplitterPanel : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapsible")]
     public bool? Collapsible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("start-collapsible")]
     public RenderFragment? StartCollapsible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("end-collapsible")]
     public RenderFragment? EndCollapsible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:size")]
     public EventCallback<VueStringNumberValue?> SizeChanged { get; set; }
 
 }
@@ -4243,12 +5389,15 @@ public sealed class ElSplitterPanel : ElContentComponentBase
 public sealed class ElStatistic : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
 }
@@ -4260,15 +5409,19 @@ public sealed class ElStatistic : ElComponentBase
 public sealed class ElStep : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("description")]
     public string? Description { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public ElStepStatus? Status { get; set; }
 
     [Parameter]
@@ -4292,27 +5445,35 @@ public sealed class ElStep : ElComponentBase
 public sealed class ElSteps : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("space")]
     public VueStringNumberValue? Space { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("active")]
     public Number? Active { get; set; }
 
     [Parameter]
+    [ECMAScriptName("processStatus")]
     public ElStepStatus? ProcessStatus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("finishStatus")]
     public ElStepStatus? FinishStatus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("alignCenter")]
     public bool? AlignCenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("simple")]
     public bool? Simple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
 }
@@ -4324,42 +5485,55 @@ public sealed class ElSteps : ElContentComponentBase
 public sealed class ElSubMenu : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("index")]
     public string? Index { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandCloseIcon")]
     public VueStringComponentValue? ExpandCloseIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOpenIcon")]
     public VueStringComponentValue? ExpandOpenIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseCloseIcon")]
     public VueStringComponentValue? CollapseCloseIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseOpenIcon")]
     public VueStringComponentValue? CollapseOpenIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
 }
@@ -4371,93 +5545,123 @@ public sealed class ElSubMenu : ElContentComponentBase
 public sealed class ElSwitch : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inlinePrompt")]
     public bool? InlinePrompt { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeIcon")]
     public VueStringComponentValue? ActiveIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactiveIcon")]
     public VueStringComponentValue? InactiveIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeActionIcon")]
     public VueStringComponentValue? ActiveActionIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactiveActionIcon")]
     public VueStringComponentValue? InactiveActionIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeText")]
     public string? ActiveText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactiveText")]
     public string? InactiveText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeValue")]
     public VueBooleanStringNumberValue? ActiveValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactiveValue")]
     public VueBooleanStringNumberValue? InactiveValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeChange")]
     public ElSwitchBeforeChangeCallback? BeforeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactiveColor")]
     public string? InactiveColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderColor")]
     public string? BorderColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("active-action")]
     public RenderFragment? ActiveAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactive-action")]
     public RenderFragment? InactiveAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("active")]
     public RenderFragment? Active { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inactive")]
     public RenderFragment? Inactive { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -4469,18 +5673,23 @@ public sealed class ElSwitch : ElComponentBase
 public sealed class ElTabPane : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
@@ -4496,201 +5705,267 @@ public sealed class ElTabPane : ElContentComponentBase
 public sealed class ElTable : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
     [Parameter]
+    [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fit")]
     public bool? Fit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightCurrentRow")]
     public bool? HighlightCurrentRow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("currentRowKey")]
     public VueStringNumberValue? CurrentRowKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowClassName")]
     public ElTableRowClassNameValue? RowClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowStyle")]
     public ElTableRowStyleValue? RowStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cellClassName")]
     public ElTableCellClassNameValue? CellClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cellStyle")]
     public ElTableCellStyleValue? CellStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerRowClassName")]
     public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerRowStyle")]
     public ElTableRowStyleValue? HeaderRowStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerCellClassName")]
     public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerCellStyle")]
     public ElTableCellStyleValue? HeaderCellStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowKey")]
     public ElTableRowKeyValue? RowKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandRowKeys")]
     public string[]? ExpandRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultSort")]
     public ElTableSort? DefaultSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipEffect")]
     public string? TooltipEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipOptions")]
     public ElTableOverflowTooltipOptions? TooltipOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendFilterPanelTo")]
     public string? AppendFilterPanelTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showSummary")]
     public bool? ShowSummary { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sumText")]
     public string? SumText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("summaryMethod")]
     public ElTableSummaryMethodCallback? SummaryMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("spanMethod")]
     public ElTableSpanMethodCallback? SpanMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectOnIndeterminate")]
     public bool? SelectOnIndeterminate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("load")]
     public ElTableLoadCallback? Load { get; set; }
 
     [Parameter]
+    [ECMAScriptName("treeProps")]
     public ElTableTreeProps? TreeProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableLayout")]
     public string? TableLayout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("flexible")]
     public bool? Flexible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollbarTabindex")]
     public VueStringNumberValue? ScrollbarTabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDragLastColumn")]
     public bool? AllowDragLastColumn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipFormatter")]
     public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preserveExpandedContent")]
     public bool? PreserveExpandedContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nativeScrollbar")]
     public bool? NativeScrollbar { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowExpandable")]
     public ElTableRowExpandableCallback? RowExpandable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectAll")]
     public EventCallback OnSelectAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectionChange")]
     public EventCallback OnSelectionChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellMouseEnter")]
     public EventCallback OnCellMouseEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellMouseLeave")]
     public EventCallback OnCellMouseLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellDblclick")]
     public EventCallback OnCellDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellContextmenu")]
     public EventCallback OnCellContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowClick")]
     public EventCallback OnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowContextmenu")]
     public EventCallback OnRowContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowDblclick")]
     public EventCallback OnRowDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHeaderClick")]
     public EventCallback OnHeaderClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHeaderContextmenu")]
     public EventCallback OnHeaderContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSortChange")]
     public EventCallback OnSortChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFilterChange")]
     public EventCallback OnFilterChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHeaderDragend")]
     public EventCallback OnHeaderDragend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
 }
@@ -4702,99 +5977,131 @@ public sealed class ElTable : ElContentComponentBase
 public sealed class ElTableColumn : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("index")]
     public ElTableColumnIndexValue? Index { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columnKey")]
     public string? ColumnKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prop")]
     public string? Prop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixed")]
     public VueBooleanStringValue? Fixed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderHeader")]
     public ElTableColumnRenderHeaderCallback? RenderHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortable")]
     public VueBooleanStringValue? Sortable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortMethod")]
     public ElTableColumnSortMethodCallback? SortMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortBy")]
     public ElTableColumnSortByValue? SortBy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortOrders")]
     public ElTableSortOrder?[]? SortOrders { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatter")]
     public ElTableColumnFormatterCallback? Formatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("align")]
     public string? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAlign")]
     public string? HeaderAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("className")]
     public string? ClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelClassName")]
     public string? LabelClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectable")]
     public ElTableColumnSelectableCallback? Selectable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveSelection")]
     public bool? ReserveSelection { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filters")]
     public ElTableFilterItem[]? Filters { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterPlacement")]
     public string? FilterPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterClassName")]
     public string? FilterClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMultiple")]
     public bool? FilterMultiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElTableColumnFilterMethodCallback? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filteredValue")]
     public string[]? FilteredValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipFormatter")]
     public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter-icon")]
     public RenderFragment? FilterIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expand")]
     public RenderFragment? Expand { get; set; }
 
 }
@@ -4806,132 +6113,175 @@ public sealed class ElTableColumn : ElContentComponentBase
 public sealed class ElTableV2 : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("cache")]
     public Number? Cache { get; set; }
 
     [Parameter]
+    [ECMAScriptName("estimatedRowHeight")]
     public Number? EstimatedRowHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerClass")]
     public ElTableV2ClassValue? HeaderClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerProps")]
     public ElTableV2DynamicPropsValue? HeaderProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerCellProps")]
     public ElTableV2DynamicPropsValue? HeaderCellProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerHeight")]
     public ElTableV2HeaderHeightValue? HeaderHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerHeight")]
     public Number? FooterHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowClass")]
     public ElTableV2ClassValue? RowClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowKey")]
     public ElTableV2KeyValue? RowKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowProps")]
     public ElTableV2DynamicPropsValue? RowProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowHeight")]
     public Number? RowHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowEventHandlers")]
     public ElTableV2RowEventHandlers? RowEventHandlers { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cellProps")]
     public ElTableV2DynamicPropsValue? CellProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columns")]
     public ElTableV2Column[]? Columns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public ElTableV2DataItem[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dataGetter")]
     public ElTableV2DataGetter? DataGetter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixedData")]
     public ElTableV2DataItem[]? FixedData { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandColumnKey")]
     public string? ExpandColumnKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandedRowKeys")]
     public ElTableV2KeyValue[]? ExpandedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandedRowKeys")]
     public ElTableV2KeyValue[]? DefaultExpandedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixed")]
     public bool? Fixed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indentSize")]
     public Number? IndentSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hScrollbarSize")]
     public Number? HScrollbarSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("vScrollbarSize")]
     public Number? VScrollbarSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortBy")]
     public ElTableV2SortBy? SortBy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortState")]
     public ElTableV2SortState? SortState { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cell")]
     public RenderFragment? Cell { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header-cell")]
     public RenderFragment? HeaderCell { get; set; }
 
     [Parameter]
+    [ECMAScriptName("row")]
     public RenderFragment? Row { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlay")]
     public RenderFragment? Overlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnSort")]
     public EventCallback OnColumnSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandedRowsChange")]
     public EventCallback OnExpandedRowsChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowsRendered")]
     public EventCallback OnRowsRendered { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowExpand")]
     public EventCallback OnRowExpand { get; set; }
 
 }
@@ -4943,54 +6293,71 @@ public sealed class ElTableV2 : ElComponentBase
 public sealed class ElTabs : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultValue")]
     public VueStringNumberValue? DefaultValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElTabsType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("addable")]
     public bool? Addable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabPosition")]
     public ElPopperPlacementSide? TabPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stretch")]
     public bool? Stretch { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeLeave")]
     public ElTabsBeforeLeaveCallback? BeforeLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("add-icon")]
     public RenderFragment? AddIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTabClick")]
     public EventCallback OnTabClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTabChange")]
     public EventCallback OnTabChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTabRemove")]
     public EventCallback OnTabRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTabAdd")]
     public EventCallback OnTabAdd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEdit")]
     public EventCallback OnEdit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
 }
@@ -5002,33 +6369,43 @@ public sealed class ElTabs : ElContentComponentBase
 public sealed class ElTag : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public ElTagType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTransitions")]
     public bool? DisableTransitions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hit")]
     public bool? Hit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElTagEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("round")]
     public bool? Round { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
 }
@@ -5040,18 +6417,23 @@ public sealed class ElTag : ElContentComponentBase
 public sealed class ElText : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("type")]
     public ElSemanticType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("truncated")]
     public bool? Truncated { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lineClamp")]
     public VueStringNumberValue? LineClamp { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
 }
@@ -5063,132 +6445,175 @@ public sealed class ElText : ElContentComponentBase
 public sealed class ElTimePicker : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("startPlaceholder")]
     public string? StartPlaceholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("endPlaceholder")]
     public string? EndPlaceholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("isRange")]
     public bool? IsRange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("arrowControl")]
     public bool? ArrowControl { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeSeparator")]
     public string? RangeSeparator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledHours")]
     public ElTimePickerDisabledHoursCallback? DisabledHours { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledMinutes")]
     public ElTimePickerDisabledMinutesCallback? DisabledMinutes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabledSeconds")]
     public ElTimePickerDisabledSecondsCallback? DisabledSeconds { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("saveOnBlur")]
     public bool? SaveOnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
@@ -5200,81 +6625,107 @@ public sealed class ElTimePicker : ElComponentBase
 public sealed class ElTimeSelect : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("includeEndTime")]
     public bool? IncludeEndTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("start")]
     public string? Start { get; set; }
 
     [Parameter]
+    [ECMAScriptName("end")]
     public string? End { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public string? Step { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minTime")]
     public string? MinTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxTime")]
     public string? MaxTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
@@ -5286,9 +6737,11 @@ public sealed class ElTimeSelect : ElComponentBase
 public sealed class ElTimeline : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool? Reverse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public ElTimelineMode? Mode { get; set; }
 
 }
@@ -5300,33 +6753,43 @@ public sealed class ElTimeline : ElContentComponentBase
 public sealed class ElTimelineItem : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("timestamp")]
     public string? Timestamp { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideTimestamp")]
     public bool? HideTimestamp { get; set; }
 
     [Parameter]
+    [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElTopBottomPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public ElSemanticType? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hollow")]
     public bool? Hollow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dot")]
     public RenderFragment? Dot { get; set; }
 
 }
@@ -5338,84 +6801,111 @@ public sealed class ElTimelineItem : ElContentComponentBase
 public sealed class ElTooltip : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public string? Content { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rawContent")]
     public bool? RawContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("transition")]
     public string? Transition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("arrowOffset")]
     public Number? ArrowOffset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enterable")]
     public bool? Enterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
     [Parameter]
+    [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
     [Parameter]
+    [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("focusOnTarget")]
     public bool? FocusOnTarget { get; set; }
 
     [Parameter]
@@ -5423,15 +6913,19 @@ public sealed class ElTooltip : ElContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeShow")]
     public EventCallback OnBeforeShow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeHide")]
     public EventCallback OnBeforeHide { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHide")]
     public EventCallback OnHide { get; set; }
 
 }
@@ -5459,69 +6953,91 @@ public sealed class ElTourStep : ElComponentBase
 public sealed class ElTransfer : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public ElTransferDataItem[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterPlaceholder")]
     public string? FilterPlaceholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElTransferFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("targetOrder")]
     public ElTransferTargetOrder? TargetOrder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("titles")]
     public ElTransferTextPair? Titles { get; set; }
 
     [Parameter]
+    [ECMAScriptName("buttonTexts")]
     public ElTransferTextPair? ButtonTexts { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderContent")]
     public ElTransferRenderContent? RenderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public ElTransferFormat? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElTransferPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("leftDefaultChecked")]
     public VueStringNumberValue[]? LeftDefaultChecked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rightDefaultChecked")]
     public VueStringNumberValue[]? RightDefaultChecked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("left-footer")]
     public RenderFragment? LeftFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("right-footer")]
     public RenderFragment? RightFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("left-empty")]
     public RenderFragment? LeftEmpty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("right-empty")]
     public RenderFragment? RightEmpty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLeftCheckChange")]
     public EventCallback OnLeftCheckChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRightCheckChange")]
     public EventCallback OnRightCheckChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
 
 }
@@ -5533,123 +7049,163 @@ public sealed class ElTransfer : ElContentComponentBase
 public sealed class ElTree : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nodeKey")]
     public string? NodeKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElTreeOptionProps? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderAfterExpand")]
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("load")]
     public ElTreeLoadCallback? Load { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderContent")]
     public ElTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoExpandParent")]
     public bool? AutoExpandParent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterNodeMethod")]
     public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDrag")]
     public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDrop")]
     public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragStart")]
     public EventCallback OnNodeDragStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragEnter")]
     public EventCallback OnNodeDragEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragLeave")]
     public EventCallback OnNodeDragLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragOver")]
     public EventCallback OnNodeDragOver { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragEnd")]
     public EventCallback OnNodeDragEnd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
 
 }
@@ -5661,255 +7217,339 @@ public sealed class ElTree : ElContentComponentBase
 public sealed class ElTreeSelect : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("cacheData")]
     public VueValue[]? CacheData { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
     [Parameter]
+    [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixTransition")]
     public bool? SuffixTransition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nodeKey")]
     public string? NodeKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderAfterExpand")]
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("load")]
     public ElTreeLoadCallback? Load { get; set; }
 
     [Parameter]
+    [ECMAScriptName("renderContent")]
     public ElTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoExpandParent")]
     public bool? AutoExpandParent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterNodeMethod")]
     public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDrag")]
     public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDrop")]
     public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
@@ -5917,72 +7557,95 @@ public sealed class ElTreeSelect : ElContentComponentBase
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupScroll")]
     public EventCallback OnPopupScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragStart")]
     public EventCallback OnNodeDragStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragEnter")]
     public EventCallback OnNodeDragEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragLeave")]
     public EventCallback OnNodeDragLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragOver")]
     public EventCallback OnNodeDragOver { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDragEnd")]
     public EventCallback OnNodeDragEnd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
 
 }
@@ -5994,84 +7657,111 @@ public sealed class ElTreeSelect : ElContentComponentBase
 public sealed class ElTreeV2 : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElTreeOptionProps? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElTreeV2FilterMethod? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
 
 }
@@ -6083,93 +7773,123 @@ public sealed class ElTreeV2 : ElContentComponentBase
 public sealed class ElUpload : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("action")]
     public string? Action { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headers")]
     public VueHeadersValue? Headers { get; set; }
 
     [Parameter]
+    [ECMAScriptName("method")]
     public string? Method { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public ElUploadDataValue? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("withCredentials")]
     public bool? WithCredentials { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showFileList")]
     public bool? ShowFileList { get; set; }
 
     [Parameter]
+    [ECMAScriptName("drag")]
     public bool? Drag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("accept")]
     public string? Accept { get; set; }
 
     [Parameter]
+    [ECMAScriptName("crossorigin")]
     public ElCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPreview")]
     public ElUploadPreviewCallback? OnPreview { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public ElUploadFileListCallback? OnRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSuccess")]
     public ElUploadSuccessCallback? OnSuccess { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public ElUploadErrorCallback? OnError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onProgress")]
     public ElUploadProgressCallback? OnProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public ElUploadFileListCallback? OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExceed")]
     public ElUploadExceedCallback? OnExceed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeUpload")]
     public ElUploadBeforeUploadCallback? BeforeUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeRemove")]
     public ElUploadBeforeRemoveCallback? BeforeRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fileList")]
     public ElUploadUserFile[]? FileList { get; set; }
 
     [Parameter]
+    [ECMAScriptName("listType")]
     public ElUploadListType? ListType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoUpload")]
     public bool? AutoUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("httpRequest")]
     public ElUploadRequestCallback? HttpRequest { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("limit")]
     public Number? Limit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("directory")]
     public bool? Directory { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public RenderFragment? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tip")]
     public RenderFragment? Tip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("file")]
     public RenderFragment? File { get; set; }
 
 }
@@ -6181,189 +7901,251 @@ public sealed class ElUpload : ElContentComponentBase
 public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public ElSelectV2ModelValue? ModelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public ElSelectV2OptionValue[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
     [Parameter]
+    [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemHeight")]
     public Number? ItemHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("estimatedOptionHeight")]
     public Number? EstimatedOptionHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
     [Parameter]
+    [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
     [Parameter]
@@ -6371,30 +8153,39 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     public RenderFragment? LoadingSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<ElSelectV2ModelValue?> ModelValueChanged { get; set; }
 
 }
@@ -6406,30 +8197,39 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
 public sealed class ElWatermark : ElContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     [Parameter]
+    [ECMAScriptName("content")]
     public VueStringOrStringsValue? Content { get; set; }
 
     [Parameter]
+    [ECMAScriptName("font")]
     public VueProps? Font { get; set; }
 
     [Parameter]
+    [ECMAScriptName("gap")]
     public VueNumberPair? Gap { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }
 
 }

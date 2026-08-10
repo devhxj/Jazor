@@ -611,11 +611,6 @@ internal static class ElementPlusGenerator
             builder.AppendLine("/// </summary>");
             builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
 
-            foreach (var emit in component.Emits.Where(RequiresExplicitEmitName))
-            {
-                builder.AppendLine(RenderVueEmitAttribute(emit));
-            }
-
             builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");
 
@@ -642,6 +637,8 @@ internal static class ElementPlusGenerator
             foreach (var emit in component.Emits)
             {
                 builder.AppendLine("    [Parameter]");
+                if (RequiresExplicitListenerName(emit))
+                    builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(emit.ListenerRuntimeName)}\")]");
                 builder.AppendLine($"    public {emit.CallbackTypeSourceText} {emit.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
@@ -707,62 +704,45 @@ internal static class ElementPlusGenerator
     private static bool RequiresExplicitPropName(ElementPlusPropMetadata prop)
         => !string.Equals(
             prop.RuntimeName,
-            ToLowerCamelCase(prop.PropertyName),
+            prop.PropertyName,
             StringComparison.Ordinal);
 
     private static bool RequiresExplicitSlotName(ElementPlusSlotMetadata slot)
-    {
-        var conventionalName = slot.PropertyName.EndsWith("Content", StringComparison.Ordinal) &&
-                               slot.PropertyName.Length > "Content".Length
-            ? slot.PropertyName[..^"Content".Length]
-            : slot.PropertyName;
-        return !string.Equals(
-            slot.RuntimeName,
-            ToKebabCase(conventionalName),
-            StringComparison.Ordinal);
-    }
+        => !string.Equals(slot.RuntimeName, slot.PropertyName, StringComparison.Ordinal);
 
-    private static bool RequiresExplicitEmitName(ElementPlusEmitMetadata emit)
-    {
-        if (emit.IsModelUpdate)
-            return false;
+    private static bool RequiresExplicitListenerName(ElementPlusEmitMetadata emit)
+        => !string.Equals(emit.ListenerRuntimeName, emit.PropertyName, StringComparison.Ordinal);
 
-        return emit.PropertyName.Length <= 2 ||
-               !emit.PropertyName.StartsWith("On", StringComparison.Ordinal) ||
-               !char.IsUpper(emit.PropertyName[2]) ||
-               !string.Equals(
-                   emit.RuntimeName,
-                   ToKebabCase(emit.PropertyName[2..]),
-                   StringComparison.Ordinal);
-    }
-
-    private static string ToKebabCase(string name)
+    // This is generator-owned ABI projection from upstream event metadata. The
+    // generated property still receives the exact result as explicit metadata;
+    // RazorVue never reconstructs it from a raw emit name.
+    private static string GetListenerRuntimeName(string eventName)
     {
-        var result = new StringBuilder(name.Length + 4);
-        for (var index = 0; index < name.Length; index++)
+        if (eventName.Length == 0 ||
+            eventName.StartsWith("on", StringComparison.Ordinal) &&
+            eventName.Length > 2 &&
+            char.IsUpper(eventName[2]))
         {
-            var character = name[index];
-            if (char.IsUpper(character))
-            {
-                var separatesWord = index > 0 &&
-                    (char.IsLower(name[index - 1]) ||
-                     char.IsDigit(name[index - 1]) ||
-                     index + 1 < name.Length && char.IsLower(name[index + 1]));
-                if (separatesWord)
-                    result.Append('-');
+            return eventName;
+        }
 
-                result.Append(char.ToLowerInvariant(character));
+        var result = new StringBuilder(eventName.Length + 2);
+        result.Append("on");
+        var capitalizeNext = true;
+        foreach (var character in eventName)
+        {
+            if (character == '-')
+            {
+                capitalizeNext = true;
                 continue;
             }
 
-            result.Append(character);
+            result.Append(capitalizeNext ? char.ToUpperInvariant(character) : character);
+            capitalizeNext = false;
         }
 
         return result.ToString();
     }
-
-    private static string RenderVueEmitAttribute(ElementPlusEmitMetadata emit)
-        => $"[VueLibraryEmit(nameof({emit.PropertyName}), Name = \"{emit.RuntimeName}\")]";
 
     private static ElementPlusAttributeCatalog ReadAttributeCatalog(string path)
     {
@@ -2199,10 +2179,11 @@ internal static class ElementPlusGenerator
     private sealed record ElementPlusEmitMetadata(
         string RuntimeName,
         string PropertyName,
-        bool IsModelUpdate,
         string? PayloadTypeSourceText,
         string? PayloadTypeRuntimeName)
     {
+        public string ListenerRuntimeName => GetListenerRuntimeName(RuntimeName);
+
         public string CallbackTypeSourceText
             => PayloadTypeSourceText is null
                 ? "EventCallback"
@@ -2289,7 +2270,6 @@ internal static class ElementPlusGenerator
                 return new ElementPlusEmitMetadata(
                     GetUpdateEventRuntimeName(bindableProp.RuntimeName, updateModelEventName),
                     uniquePropertyName,
-                    IsModelUpdate: true,
                     bindableProp.Type.SourceText,
                     ResolveRuntimeTypeName(bindableProp.Type.SourceText));
             }
@@ -2311,7 +2291,6 @@ internal static class ElementPlusGenerator
                 emits.Add(new ElementPlusEmitMetadata(
                     rawEvent.RuntimeName,
                     emitPropertyName,
-                    IsModelUpdate: false,
                     PayloadTypeSourceText: null,
                     PayloadTypeRuntimeName: null));
             }

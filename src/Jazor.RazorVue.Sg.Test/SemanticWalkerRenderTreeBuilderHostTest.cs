@@ -225,7 +225,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             """);
 
         StringAssert.Contains(script, "let handler = () => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "this.increment();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.Increment();", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.addAttribute(\"onclick\", handler);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("RenderTreeBuilder", StringComparison.Ordinal), script);
     }
@@ -253,7 +253,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
         StringAssert.Contains(script, "builder.openElement(\"button\");", StringComparison.Ordinal);
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1) => __rtb.addMultipleAttributes(__arg1))(builder, this.nextSequence(), attributes);",
+            "((__rtb, __arg0, __arg1) => __rtb.addMultipleAttributes(__arg1))(builder, this.NextSequence(), attributes);",
             StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.closeElement();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("AddMultipleAttributes", StringComparison.Ordinal), script);
@@ -355,7 +355,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "builder.addNamedEvent(this.nextEventType(), this.nextAssignedName());",
+            "builder.addNamedEvent(this.NextEventType(), this.NextAssignedName());",
             StringComparison.Ordinal);
     }
 
@@ -410,7 +410,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__arg0, __arg1, __arg2, __arg3) => __arg0.addEventPreventDefaultAttribute(__arg2, __arg3))(builder, this.nextSequence(), this.nextEventName(), this.nextValue());",
+            "((__arg0, __arg1, __arg2, __arg3) => __arg0.addEventPreventDefaultAttribute(__arg2, __arg3))(builder, this.NextSequence(), this.NextEventName(), this.NextValue());",
             StringComparison.Ordinal);
     }
 
@@ -472,7 +472,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1) => __rtb.addElementReferenceCapture(__arg1))(builder, this.nextSequence(), value => {",
+            "((__rtb, __arg0, __arg1) => __rtb.addElementReferenceCapture(__arg1))(builder, this.NextSequence(), value => {",
             StringComparison.Ordinal);
     }
 
@@ -498,7 +498,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1, __arg2) => __rtb.addAttribute(__arg1, __arg2))(builder, this.nextSequence(), this.nextName(), this.nextValue());",
+            "((__rtb, __arg0, __arg1, __arg2) => __rtb.addAttribute(__arg1, __arg2))(builder, this.NextSequence(), this.NextName(), this.NextValue());",
             StringComparison.Ordinal);
     }
 
@@ -524,9 +524,9 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1) => __rtb.openElement(__arg1))(this.getBuilder(), this.nextSequence(), this.nextName());",
+            "((__rtb, __arg0, __arg1) => __rtb.openElement(__arg1))(this.GetBuilder(), this.NextSequence(), this.NextName());",
             StringComparison.Ordinal);
-        Assert.AreEqual(1, Regex.Matches(script, "this\\.getBuilder\\(\\)").Count, script);
+        Assert.AreEqual(1, Regex.Matches(script, "this\\.GetBuilder\\(\\)").Count, script);
     }
 
     [TestMethod]
@@ -657,8 +657,8 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             }
             """);
 
-        StringAssert.Contains(script, "header.extra?.(builder);", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("header.extra(builder)", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "header.Extra?.(builder);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("header.Extra(builder)", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -713,7 +713,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1, __arg2) => __arg1?.(__arg2)?.(__rtb))(builder, this.nextSequence(), template, this.nextValue());",
+            "((__rtb, __arg0, __arg1, __arg2) => __arg1?.(__arg2)?.(__rtb))(builder, this.NextSequence(), template, this.NextValue());",
             StringComparison.Ordinal);
     }
 
@@ -1060,7 +1060,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             script,
             "((__rtb, __arg0) => __rtb.openComponent(",
             StringComparison.Ordinal);
-        StringAssert.Contains(script, ")(builder, this.nextSequence());", StringComparison.Ordinal);
+        StringAssert.Contains(script, ")(builder, this.NextSequence());", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
     }
 
@@ -1148,7 +1148,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.nextSequence(), this.readMarkup());",
+            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.NextSequence(), this.ReadMarkup());",
             StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("AddMarkupContent", StringComparison.Ordinal), script);
     }
@@ -1189,7 +1189,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.nextSequence(), \"<em>raw</em>\");",
+            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.NextSequence(), \"<em>raw</em>\");",
             StringComparison.Ordinal);
     }
 
@@ -1209,7 +1209,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             }
             """);
 
-        StringAssert.Contains(script, "builder.addMarkupContent(this.readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addMarkupContent(this.ReadMarkup());", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("MarkupString", StringComparison.Ordinal), script);
     }
 
@@ -1364,7 +1364,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryEmitAttribute).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs).Assembly.Location));
         var compilation = CSharpCompilation.Create(

@@ -307,8 +307,7 @@ internal static class VueModuleBuilder
             {
                 descriptorEntries.Add(
                     "event|" + property.Name + "|" +
-                    LibraryComponentConventions.GetEventListenerRuntimeName(closure.ComponentSymbol, property) + "|" +
-                    LibraryComponentConventions.GetEmitRuntimeName(closure.ComponentSymbol, property) + "|" + typeName);
+                    LibraryComponentConventions.GetEventListenerRuntimeName(closure.ComponentSymbol, property) + "|" + typeName);
                 continue;
             }
 
@@ -401,11 +400,16 @@ internal static class VueModuleBuilder
     {
         var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure);
         var componentSymbol = component.ComponentSymbol;
+        var buildRenderTreeMemberName = GetRuntimeMemberName(
+            component.BuildRenderTreeMethod,
+            declaredNames);
         // A Vue ref callback receives its value only during mount. Its direct C# assignment
         // identifies an otherwise opaque component storage slot whose pre-mount state is empty.
         parts = parts with
         {
-            SetupStatements = RemoveBuildRenderTreeFunction(parts.SetupStatements),
+            SetupStatements = RemoveBuildRenderTreeFunction(
+                parts.SetupStatements,
+                buildRenderTreeMemberName),
             StateSlots = ApplyReferenceCaptureStateInitializers(
                 parts.StateSlots,
                 directRender.ReferenceCaptureStateMembers)
@@ -415,7 +419,7 @@ internal static class VueModuleBuilder
         var returnedMembers = GetReturnedMembers(closure, declaredNames);
         var lifecycleMembers = ComponentLifecycleRuntimeMembers.Create(closure, declaredNames);
         returnedMembers = returnedMembers
-            .RemoveAll(static member => string.Equals(member, "buildRenderTree", StringComparison.Ordinal))
+            .RemoveAll(member => string.Equals(member, buildRenderTreeMemberName, StringComparison.Ordinal))
             .Add(directRender.MemberName);
         parts = parts with
         {
@@ -599,10 +603,6 @@ internal static class VueModuleBuilder
         var propNames = GetVuePropNames(closure);
         if (propNames.Length > 0)
             componentOptions.Add(CreateObjectProperty("props", CreateStringArray(propNames)));
-
-        var emitNames = GetVueEmitNames(closure);
-        if (emitNames.Length > 0)
-            componentOptions.Add(CreateObjectProperty("emits", CreateStringArray(emitNames)));
 
         var setupFunction = new FunctionExpression(
             id: null,
@@ -1022,17 +1022,6 @@ internal static class VueModuleBuilder
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToImmutableArray();
 
-    private static ImmutableArray<string> GetVueEmitNames(MemberClosure closure)
-        => LibraryComponentConventions.GetEffectiveParameterProperties(closure.ComponentSymbol)
-            .Where(static property => IsEventCallbackType(property.Type))
-            .Select(property => LibraryComponentConventions.GetEmitRuntimeName(
-                closure.ComponentSymbol,
-                property))
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static name => name, StringComparer.Ordinal)
-            .ToImmutableArray();
-
     private static ImmutableArray<CompiledLineMapping> BuildCompiledLineMappings(
         IReadOnlyDictionary<Node, GeneratedNodePosition> generatedNodePositions,
         CompilerModuleParts parts)
@@ -1419,10 +1408,12 @@ internal static class VueModuleBuilder
         => property is not null && LibraryComponentConventions.IsParameterProperty(property);
 
     private static ImmutableArray<CompilerStatement> RemoveBuildRenderTreeFunction(
-        ImmutableArray<CompilerStatement> setupStatements)
+        ImmutableArray<CompilerStatement> setupStatements,
+        string buildRenderTreeMemberName)
         => setupStatements
-            .Where(static item =>
-                item.Statement is not FunctionDeclaration { Id.Name: "buildRenderTree" })
+            .Where(item =>
+                item.Statement is not FunctionDeclaration { Id.Name: var name } ||
+                !string.Equals(name, buildRenderTreeMemberName, StringComparison.Ordinal))
             .ToImmutableArray();
 
     private static ImmutableArray<CompilerStatement> RemoveDirectRenderOnlyFunctions(
@@ -1952,10 +1943,6 @@ internal static class VueModuleBuilder
     private static string[] SplitPathSegments(string path)
         => NormalizeGeneratedSourcePath(path)
             .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-    private static bool IsChildContentParameter(IPropertySymbol property)
-        => string.Equals(property.Name, "ChildContent", StringComparison.Ordinal) &&
-           IsRenderFragmentType(property.Type);
 
     private static bool IsAnyRenderFragmentType(ITypeSymbol type)
         => IsRenderFragmentType(type) || IsGenericRenderFragmentType(type);

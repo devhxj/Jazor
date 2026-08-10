@@ -14,6 +14,7 @@ public sealed class VLocaleProvider : ComponentBase
     /// Locale identifier for the current scope.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("locale")]
     public string? Locale { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VLocaleProvider : ComponentBase
     /// Fallback locale identifier when the primary locale is unavailable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fallbackLocale")]
     public string? FallbackLocale { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VLocaleProvider : ComponentBase
     /// Internationalization message key-value pairs.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VueProps? Messages { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VLocaleProvider : ComponentBase
     /// Whether to enable right-to-left text direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rtl")]
     public bool? Rtl { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VLocaleProvider : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -49,5 +54,6 @@ public sealed class VLocaleProvider : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

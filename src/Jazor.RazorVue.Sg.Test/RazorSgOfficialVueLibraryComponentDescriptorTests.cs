@@ -46,9 +46,9 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
                 public sealed class TButton : ComponentBase
                 {
-                    [Parameter] public string Theme { get; set; } = string.Empty;
-                    [Parameter] public EventCallback OnClick { get; set; }
-                    [Parameter] public RenderFragment? ChildContent { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#theme")] public string Theme { get; set; } = string.Empty;
+                    [Parameter, System.ComponentModel.Description("@#onClick")] public EventCallback OnClick { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#default")] public RenderFragment? ChildContent { get; set; }
                 }
                 """
             });
@@ -61,7 +61,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
             "import { Button } from \"tdesign-vue-next\";",
             StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "theme: \"primary\"", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "onClick: queueRelease", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "onClick: QueueRelease", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "default: () =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "data-action", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("createRenderContext", StringComparison.Ordinal), observation.ModuleText);

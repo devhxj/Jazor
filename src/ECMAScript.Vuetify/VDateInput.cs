@@ -14,6 +14,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Minimum selectable date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public VuetifyDatePickerModelValue? Min { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Maximum selectable date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VuetifyDatePickerModelValue? Max { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Text for the cancel button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("cancelText")]
     public string? CancelText { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Text for the OK/confirm button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("okText")]
     public string? OkText { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Whether to hide the actions area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideActions")]
     public bool HideActions { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Whether to display in mobile mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobile")]
     public VuetifyMobileValue? Mobile { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Breakpoint threshold for mobile mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobileBreakpoint")]
     public VuetifyDisplayBreakpoint? MobileBreakpoint { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Display format for the date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("displayFormat")]
     public VDateInputDisplayFormatValue? DisplayFormat { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Popup location of the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Event callback fired on save.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onSave")]
     public EventCallback<string> OnSave { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Event callback fired on cancel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback OnCancel { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VDateInput : VInputComponentBase
     /// Additional HTML attributes attached to the component.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -98,5 +110,6 @@ public sealed class VDateInput : VInputComponentBase
     /// Slot content for the actions area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment<VDateInputActionsSlotContext>? Actions { get; set; }
 }

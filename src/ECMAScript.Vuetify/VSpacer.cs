@@ -31,6 +31,7 @@ public sealed class VSpacer : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class VSpacer : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -45,5 +47,6 @@ public sealed class VSpacer : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

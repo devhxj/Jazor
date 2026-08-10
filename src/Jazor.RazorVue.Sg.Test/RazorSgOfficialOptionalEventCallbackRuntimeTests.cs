@@ -43,8 +43,8 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
             "EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,",
             StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "await props.onDismiss?.();", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.dismissCount++;", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "await props.OnDismiss?.();", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.DismissCount++;", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/dismissible-panel-runtime.mjs",
@@ -66,7 +66,7 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
                 let releaseListener;
                 const calls = [];
                 const withListener = component.setup({
-                    onDismiss: async () => {
+                    OnDismiss: async () => {
                         calls.push("started");
                         await new Promise(resolve => { releaseListener = resolve; });
                         calls.push("finished");

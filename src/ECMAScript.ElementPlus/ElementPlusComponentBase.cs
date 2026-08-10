@@ -19,5 +19,6 @@ public abstract class ElComponentBase : ComponentBase
 public abstract class ElContentComponentBase : ElComponentBase
 {
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

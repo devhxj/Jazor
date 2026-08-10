@@ -206,8 +206,6 @@ internal static class TDesignComponentGenerator
         {
             builder.AppendLine();
             builder.AppendLine($"[VueLibraryComponent(\"tdesign-vue-next\", \"{component.Component.Binding.RuntimeExport}\")]");
-            foreach (var @event in component.Events.Where(static @event => !UsesConventionalEventName(@event)))
-                builder.AppendLine($"[VueLibraryEmit(nameof({@event.CSharpName}), Name = \"{@event.Source.Name}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
                 : "<" + string.Join(", ", component.TypeParameters.Select(static parameter => parameter.Name)) + ">";
@@ -220,7 +218,7 @@ internal static class TDesignComponentGenerator
                 var typeName = property.Type.Name + (property.Source.Optional || property.Type.IsNullable ? "?" : string.Empty);
 
                 builder.AppendLine("    [Parameter]");
-                if (!string.Equals(property.Source.Name, ToCamelCase(propertyName), StringComparison.Ordinal))
+                if (!string.Equals(property.Source.Name, propertyName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{property.Source.Name}\")]");
                 if (!property.Source.Optional && property.Type.IsReference && !property.Type.IsNullable)
                     builder.AppendLine("    [EditorRequired]");
@@ -232,7 +230,8 @@ internal static class TDesignComponentGenerator
             foreach (var slot in component.Slots)
             {
                 builder.AppendLine("    [Parameter]");
-                builder.AppendLine($"    [ECMAScriptName(\"{slot.Source.Name}\")]");
+                if (!string.Equals(slot.Source.Name, slot.CSharpName, StringComparison.Ordinal))
+                    builder.AppendLine($"    [ECMAScriptName(\"{slot.Source.Name}\")]");
                 builder.AppendLine($"    public {slot.Type.Name}? {CSharpIdentifier.Escape(slot.CSharpName)} {{ get; set; }}");
                 builder.AppendLine();
                 memberCount++;
@@ -241,6 +240,8 @@ internal static class TDesignComponentGenerator
             foreach (var @event in component.Events)
             {
                 builder.AppendLine("    [Parameter]");
+                if (!string.Equals(@event.ListenerRuntimeName, @event.CSharpName, StringComparison.Ordinal))
+                    builder.AppendLine($"    [ECMAScriptName(\"{@event.ListenerRuntimeName}\")]");
                 var callbackType = @event.PayloadType is null
                     ? "EventCallback"
                     : $"EventCallback<{@event.PayloadType.Name}{(@event.PayloadType.IsNullable ? "?" : string.Empty)}>";
@@ -319,26 +320,35 @@ internal static class TDesignComponentGenerator
         return match.Groups["name"].Success ? match.Groups["name"].Value : match.Groups["delegate"].Value;
     }
 
-    static bool UsesConventionalEventName(MappedEvent @event)
-        => @event.CSharpName.Length > 2 &&
-           @event.CSharpName.StartsWith("On", StringComparison.Ordinal) &&
-           string.Equals(ToKebabCase(@event.CSharpName[2..]), @event.Source.Name, StringComparison.Ordinal);
-
-    static string ToKebabCase(string value)
+    // This is generator-owned ABI projection from the upstream event name. The
+    // resulting listener key is always materialized as member metadata.
+    static string GetListenerRuntimeName(string eventName)
     {
-        var builder = new StringBuilder(value.Length + 4);
-        foreach (var character in value)
+        if (eventName.Length == 0 ||
+            eventName.StartsWith("on", StringComparison.Ordinal) &&
+            eventName.Length > 2 &&
+            char.IsUpper(eventName[2]))
         {
-            if (char.IsUpper(character))
-                builder.Append('-');
-            builder.Append(char.ToLowerInvariant(character));
+            return eventName;
         }
 
-        return builder.ToString().TrimStart('-');
-    }
+        var builder = new StringBuilder(eventName.Length + 2);
+        builder.Append("on");
+        var capitalizeNext = true;
+        foreach (var character in eventName)
+        {
+            if (character == '-')
+            {
+                capitalizeNext = true;
+                continue;
+            }
 
-    static string ToCamelCase(string name)
-        => char.ToLowerInvariant(name[0]) + name[1..];
+            builder.Append(capitalizeNext ? char.ToUpperInvariant(character) : character);
+            capitalizeNext = false;
+        }
+
+        return builder.ToString();
+    }
 
     static string FindRepositoryRoot(string startDirectory)
     {
@@ -371,7 +381,10 @@ internal static class TDesignComponentGenerator
 
     sealed record MappedProperty(Property Source, MappedType Type, string CSharpName);
     sealed record MappedSlot(ComponentSlot Source, MappedType Type, string CSharpName);
-    sealed record MappedEvent(ComponentEvent Source, MappedType? PayloadType, string CSharpName);
+    sealed record MappedEvent(ComponentEvent Source, MappedType? PayloadType, string CSharpName)
+    {
+        public string ListenerRuntimeName => GetListenerRuntimeName(Source.Name);
+    }
     sealed record GeneratedComponent(
         Component Component,
         MappedProperty[] Properties,
@@ -627,9 +640,6 @@ internal static class TDesignComponentGenerator
                 _ => builder.ToString()
             };
         }
-
-        private static string ToCamelCase(string name)
-            => char.ToLowerInvariant(name[0]) + name[1..];
 
         private static string ToCSharpName(string name)
         {
@@ -2135,7 +2145,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine("{");
             foreach (var property in properties)
             {
-                if (!string.Equals(property.SourceName, ToCamelCase(property.CSharpName), StringComparison.Ordinal))
+                if (!string.Equals(property.SourceName, property.CSharpName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{property.SourceName}\")]");
                 if (!property.Optional && property.Type.IsReference && !property.Type.IsNullable)
                     builder.AppendLine("    [EditorRequired]");
@@ -2260,7 +2270,7 @@ internal static class TDesignComponentGenerator
             {
                 var requiresInitialization = !property.Optional && !property.Type.IsNullable &&
                     (property.Type.IsReference || _definitionTypeParameters.Contains(property.Type.Name, StringComparer.Ordinal));
-                if (!string.Equals(property.SourceName, ToCamelCase(property.CSharpName), StringComparison.Ordinal))
+                if (!string.Equals(property.SourceName, property.CSharpName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{property.SourceName}\")]");
                 if (!property.Optional && property.Type.IsReference && !property.Type.IsNullable)
                     builder.AppendLine("    [EditorRequired]");
@@ -2622,9 +2632,6 @@ internal static class TDesignComponentGenerator
                 _ => builder.ToString()
             };
         }
-
-        private static string ToCamelCase(string name)
-            => name.Length == 0 ? name : char.ToLowerInvariant(name[0]) + name[1..];
 
         private static Node? GetTypeNode(Node node)
         {

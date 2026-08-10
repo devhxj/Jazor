@@ -309,7 +309,8 @@ public sealed class SdkIntegrationTests
         var appModule = await File.ReadAllTextAsync(appPath);
         StringAssert.Contains(appModule, "from \"style.mjs\"");
         StringAssert.Contains(appModule, "\"background-color\": hex(\"1769aa\")");
-        StringAssert.Contains(appModule, "context as ");
+        StringAssert.Contains(appModule, "context({");
+        Assert.IsFalse(appModule.Contains("context as ", StringComparison.Ordinal), appModule);
         StringAssert.Contains(appModule, "styleIn");
         StringAssert.Contains(appModule, "atRuleIn");
         StringAssert.Contains(appModule, "snapshotFrom");
@@ -380,11 +381,11 @@ public sealed class SdkIntegrationTests
 
         var bundle = await File.ReadAllTextAsync(bundlePath);
 
-        StringAssert.Contains(bundle, "function prefix()");
-        StringAssert.Contains(bundle, "function greet(name)");
-        StringAssert.Contains(bundle, "function boot()");
+        StringAssert.Contains(bundle, "function Prefix()");
+        StringAssert.Contains(bundle, "function Greet(name)");
+        StringAssert.Contains(bundle, "function Boot()");
         StringAssert.Contains(bundle, "export {");
-        StringAssert.Contains(bundle, "boot");
+        StringAssert.Contains(bundle, "Boot");
     }
 
     [TestMethod]
@@ -680,11 +681,11 @@ public sealed class SdkIntegrationTests
             testFile,
             """
             import {
-                sliceInterior,
-                increaseLast,
-                sliceStoredRangeWithProtocol,
-                triggerInvalidStoredRange,
-                increaseStoredIndexWithProtocol
+                SliceInterior,
+                IncreaseLast,
+                SliceStoredRangeWithProtocol,
+                TriggerInvalidStoredRange,
+                IncreaseStoredIndexWithProtocol
             } from "./host/app.mjs";
 
             function assertEqual(actual, expected, message) {
@@ -700,26 +701,26 @@ public sealed class SdkIntegrationTests
 
             Deno.test("materialized stored Index and Range preserve array offsets and mutation", () => {
                 const source = [3, 5, 7, 11, 13, 17];
-                assertArrayEqual(sliceInterior(source), [7, 11, 13], "stored range slice");
+                assertArrayEqual(SliceInterior(source), [7, 11, 13], "stored range slice");
                 assertArrayEqual(source, [3, 5, 7, 11, 13, 17], "slice source remains unchanged");
 
                 const mutable = [2, 4, 6];
-                assertEqual(increaseLast(mutable, 5), 11, "stored index return value");
+                assertEqual(IncreaseLast(mutable, 5), 11, "stored index return value");
                 assertArrayEqual(mutable, [2, 4, 11], "stored index compound assignment");
 
                 assertArrayEqual(
-                    sliceStoredRangeWithProtocol(),
+                    SliceStoredRangeWithProtocol(),
                     [1, 7, 11, 13],
                     "stored range custom Slice protocol and single invocation");
 
                 assertArrayEqual(
-                    increaseStoredIndexWithProtocol(),
+                    IncreaseStoredIndexWithProtocol(),
                     [1, 1, 21],
                     "stored Index custom indexer compound assignment");
 
                 let invalidRangeError = null;
                 try {
-                    triggerInvalidStoredRange();
+                    TriggerInvalidStoredRange();
                 } catch (error) {
                     invalidRangeError = error;
                 }
@@ -989,7 +990,7 @@ public sealed class SdkIntegrationTests
         WriteFile(
             testFile,
             """
-            import { aggregateReleaseScore, chunkReleaseIds, concatenateReleaseIds, countAllChecksUntilFailure, countAnyChecksUntilMatch, countOrderKeyInvocations, distinctReleaseIdsByParity, expandPositiveValues, findReleaseWithMaximumLastDigit, findReleaseWithMinimumLastDigit, frameReleaseIds, groupJoinAllowedReleaseCounts, hasMatchingReleaseSequence, joinAllowedReleaseIds, orderReleaseIds, orderReleaseIdsDescending, pageAfterThreshold, reverseVisibleReleaseIds, selectEvenProducts, selectReleaseAt, sortByParity, sortByParityDescending, sortByParityThenDescendingValue, terminalReleaseScore, terminalSingleScore } from "./host/app.mjs";
+            import { AggregateReleaseScore, ChunkReleaseIds, ConcatenateReleaseIds, CountAllChecksUntilFailure, CountAnyChecksUntilMatch, CountOrderKeyInvocations, DistinctReleaseIdsByParity, ExpandPositiveValues, FindReleaseWithMaximumLastDigit, FindReleaseWithMinimumLastDigit, FrameReleaseIds, GroupJoinAllowedReleaseCounts, HasMatchingReleaseSequence, JoinAllowedReleaseIds, OrderReleaseIds, OrderReleaseIdsDescending, PageAfterThreshold, ReverseVisibleReleaseIds, SelectEvenProducts, SelectReleaseAt, SortByParity, SortByParityDescending, SortByParityThenDescendingValue, TerminalReleaseScore, TerminalSingleScore } from "./host/app.mjs";
 
             function assertEqual(actual, expected, message) {
                 if (!Object.is(actual, expected))
@@ -1004,36 +1005,36 @@ public sealed class SdkIntegrationTests
 
             Deno.test("materialized query syntax preserves lambda capture and source values", () => {
                 const source = [1, 2, 3, 4, 5];
-                assertArrayEqual(selectEvenProducts(source, 7), [14, 28], "query result");
+                assertArrayEqual(SelectEvenProducts(source, 7), [14, 28], "query result");
                 assertArrayEqual(source, [1, 2, 3, 4, 5], "query source remains unchanged");
 
                 const sortable = [2, 3, 4, 1];
-                assertArrayEqual(sortByParity(sortable), [2, 4, 3, 1], "ascending stable query order");
-                assertArrayEqual(sortByParityDescending(sortable), [3, 1, 2, 4], "descending stable query order");
+                assertArrayEqual(SortByParity(sortable), [2, 4, 3, 1], "ascending stable query order");
+                assertArrayEqual(SortByParityDescending(sortable), [3, 1, 2, 4], "descending stable query order");
                 assertArrayEqual(sortable, [2, 3, 4, 1], "order query source remains unchanged");
 
                 const chained = [2, 1, 4, 3];
-                assertArrayEqual(sortByParityThenDescendingValue(chained), [4, 2, 3, 1], "primary and secondary query order");
+                assertArrayEqual(SortByParityThenDescendingValue(chained), [4, 2, 3, 1], "primary and secondary query order");
                 assertArrayEqual(chained, [2, 1, 4, 3], "then-by query source remains unchanged");
 
-                assertEqual(countOrderKeyInvocations([2, 3, 4, 1]), 4, "order key selector invocation count");
+                assertEqual(CountOrderKeyInvocations([2, 3, 4, 1]), 4, "order key selector invocation count");
 
                 const pageSource = [1, 2, 3, 4, 5, 6];
-                assertArrayEqual(pageAfterThreshold(pageSource, 2, 1, 2), [4, 5], "filtered page");
-                assertArrayEqual(pageAfterThreshold(pageSource, 2, -1, 0), [], "empty page");
+                assertArrayEqual(PageAfterThreshold(pageSource, 2, 1, 2), [4, 5], "filtered page");
+                assertArrayEqual(PageAfterThreshold(pageSource, 2, -1, 0), [], "empty page");
                 assertArrayEqual(pageSource, [1, 2, 3, 4, 5, 6], "page source remains unchanged");
 
-                assertEqual(countAnyChecksUntilMatch([1, 3, 4, 6]), 3, "any predicate short-circuits at match");
-                assertEqual(countAllChecksUntilFailure([4, 2, -1, 8]), -3, "all predicate short-circuits at failure");
+                assertEqual(CountAnyChecksUntilMatch([1, 3, 4, 6]), 3, "any predicate short-circuits at match");
+                assertEqual(CountAllChecksUntilFailure([4, 2, -1, 8]), -3, "all predicate short-circuits at failure");
 
                 const releaseIds = [7, 2, 7, 3];
                 const allowedIds = [2, 7, 7];
                 assertArrayEqual(
-                    joinAllowedReleaseIds(releaseIds, allowedIds),
+                    JoinAllowedReleaseIds(releaseIds, allowedIds),
                     [7, 7, 2, 7, 7],
                     "join preserves outer order and duplicate inner match order");
                 assertArrayEqual(
-                    groupJoinAllowedReleaseCounts(releaseIds, allowedIds),
+                    GroupJoinAllowedReleaseCounts(releaseIds, allowedIds),
                     [72, 21, 72, 30],
                     "group join preserves unmatched outer values as empty groups");
                 assertArrayEqual(releaseIds, [7, 2, 7, 3], "join outer source remains unchanged");
@@ -1041,14 +1042,14 @@ public sealed class SdkIntegrationTests
 
                 const expansionSource = [2, -1, 3];
                 assertArrayEqual(
-                    expandPositiveValues(expansionSource, 0, 5),
+                    ExpandPositiveValues(expansionSource, 0, 5),
                     [9, 27, 11, 38],
                     "multiple from clauses preserve capture and outer/inner expansion order");
                 assertArrayEqual(expansionSource, [2, -1, 3], "multiple from source remains unchanged");
 
                 const reverseSource = [2, 7, 2, 9];
                 assertArrayEqual(
-                    reverseVisibleReleaseIds(reverseSource),
+                    ReverseVisibleReleaseIds(reverseSource),
                     [9, 2, 7, 2],
                     "reverse materializes descending source order");
                 assertArrayEqual(reverseSource, [2, 7, 2, 9], "reverse source remains unchanged");
@@ -1056,11 +1057,11 @@ public sealed class SdkIntegrationTests
                 const expectedSequence = [Number.NaN, -0, 7];
                 const actualSequence = [Number.NaN, 0, 7];
                 assertEqual(
-                    hasMatchingReleaseSequence(expectedSequence, actualSequence),
+                    HasMatchingReleaseSequence(expectedSequence, actualSequence),
                     true,
                     "sequence equality uses the CLR default equality contract");
                 assertEqual(
-                    hasMatchingReleaseSequence(expectedSequence, [Number.NaN, 0, 8]),
+                    HasMatchingReleaseSequence(expectedSequence, [Number.NaN, 0, 8]),
                     false,
                     "sequence equality rejects the first unequal release");
                 assertArrayEqual(expectedSequence, [Number.NaN, -0, 7], "sequence equality expected input remains unchanged");
@@ -1069,7 +1070,7 @@ public sealed class SdkIntegrationTests
                 const firstReleaseIds = [2, 7];
                 const secondReleaseIds = [3, 9];
                 assertArrayEqual(
-                    concatenateReleaseIds(firstReleaseIds, secondReleaseIds),
+                    ConcatenateReleaseIds(firstReleaseIds, secondReleaseIds),
                     [2, 7, 3, 9],
                     "concat preserves first then second source order");
                 assertArrayEqual(firstReleaseIds, [2, 7], "concat first input remains unchanged");
@@ -1077,56 +1078,56 @@ public sealed class SdkIntegrationTests
 
                 const frameSource = [2, 7];
                 assertArrayEqual(
-                    frameReleaseIds(frameSource, 1, 9),
+                    FrameReleaseIds(frameSource, 1, 9),
                     [1, 2, 7, 9],
                     "prepend and append frame source in bound order");
                 assertArrayEqual(frameSource, [2, 7], "prepend and append input remains unchanged");
 
                 const elementAtSource = [2, 7, 9];
-                assertEqual(selectReleaseAt(elementAtSource, 1), 7, "element at bound index");
+                assertEqual(SelectReleaseAt(elementAtSource, 1), 7, "element at bound index");
                 assertArrayEqual(elementAtSource, [2, 7, 9], "element at input remains unchanged");
 
                 const distinctBySource = [2, 7, 4, 9, 3];
                 assertArrayEqual(
-                    distinctReleaseIdsByParity(distinctBySource),
+                    DistinctReleaseIdsByParity(distinctBySource),
                     [2, 7],
                     "distinct by preserves the first release for each bound key");
                 assertArrayEqual(distinctBySource, [2, 7, 4, 9, 3], "distinct by input remains unchanged");
 
                 const orderSource = [2, 7, 4, 1];
-                assertArrayEqual(orderReleaseIds(orderSource), [1, 2, 4, 7], "order uses the bound default comparer");
-                assertArrayEqual(orderReleaseIdsDescending(orderSource), [7, 4, 2, 1], "order descending uses the bound default comparer");
+                assertArrayEqual(OrderReleaseIds(orderSource), [1, 2, 4, 7], "order uses the bound default comparer");
+                assertArrayEqual(OrderReleaseIdsDescending(orderSource), [7, 4, 2, 1], "order descending uses the bound default comparer");
                 assertArrayEqual(orderSource, [2, 7, 4, 1], "order input remains unchanged");
 
                 const extremumSource = [22, 15, 35, 12];
-                assertEqual(findReleaseWithMinimumLastDigit(extremumSource), 22, "min by preserves the first tied key");
-                assertEqual(findReleaseWithMaximumLastDigit(extremumSource), 15, "max by preserves the first tied key");
+                assertEqual(FindReleaseWithMinimumLastDigit(extremumSource), 22, "min by preserves the first tied key");
+                assertEqual(FindReleaseWithMaximumLastDigit(extremumSource), 15, "max by preserves the first tied key");
                 assertArrayEqual(extremumSource, [22, 15, 35, 12], "min and max by input remains unchanged");
 
                 const chunkSource = [2, 7, 3, 9, 4];
                 assertEqual(
-                    chunkReleaseIds(chunkSource, 2).map(chunk => chunk.join(",")).join("|"),
+                    ChunkReleaseIds(chunkSource, 2).map(chunk => chunk.join(",")).join("|"),
                     "2,7|3,9|4",
                     "chunk preserves source order and final partial chunk");
                 assertArrayEqual(chunkSource, [2, 7, 3, 9, 4], "chunk input remains unchanged");
 
                 const terminalSource = [2, 7, 3, 9];
                 assertEqual(
-                    terminalReleaseScore(terminalSource, 3),
+                    TerminalReleaseScore(terminalSource, 3),
                     27,
                     "terminal query operators preserve bound first and last values");
                 assertArrayEqual(terminalSource, [2, 7, 3, 9], "terminal query source remains unchanged");
 
                 const singleSource = [2, 7, 3];
                 assertEqual(
-                    terminalSingleScore([7], singleSource, 3),
+                    TerminalSingleScore([7], singleSource, 3),
                     14,
                     "single query operators preserve the unique bound values");
                 assertArrayEqual(singleSource, [2, 7, 3], "single query source remains unchanged");
 
                 const aggregateSource = [2, 3];
                 assertEqual(
-                    aggregateReleaseScore(aggregateSource, 10),
+                    AggregateReleaseScore(aggregateSource, 10),
                     50,
                     "aggregate query operators preserve accumulator and result selector values");
                 assertArrayEqual(aggregateSource, [2, 3], "aggregate query source remains unchanged");
@@ -1356,13 +1357,13 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             "import { createRouter, createWebHistory, useRouter } from \"vue-router\";",
             GetImportLine(module, "vue-router"));
-        StringAssert.Contains(module, "export function createAppRouter()");
+        StringAssert.Contains(module, "export function CreateAppRouter()");
         StringAssert.Contains(module, "history: createWebHistory()");
         StringAssert.Contains(module, "redirect: \"/home\"");
         StringAssert.Contains(module, "path: \"/users\"");
         StringAssert.Contains(module, "props: true");
         StringAssert.Contains(module, "return createRouter(");
-        StringAssert.Contains(module, "export function currentPath()");
+        StringAssert.Contains(module, "export function CurrentPath()");
         StringAssert.Contains(module, "return useRouter().currentRoute.value.path;");
 
         var emittedRelativePaths = LoadManifest(manifestPath).Modules
@@ -1988,6 +1989,7 @@ public sealed class SdkIntegrationTests
                 public string Value { get; set; } = "";
 
                 [Parameter]
+                [ECMAScriptName("onUpdate:modelValue")]
                 public EventCallback<string> ValueChanged { get; set; }
             }
             """);
@@ -2015,9 +2017,9 @@ public sealed class SdkIntegrationTests
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "setNoteAsync(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "SetNoteAsync(__value)", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "from \"./release-editor.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "modelValue: state.note", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "modelValue: state.Note", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "onUpdate:modelValue", StringComparison.Ordinal);
         Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
         var generatedModules = Directory
@@ -2034,20 +2036,19 @@ public sealed class SdkIntegrationTests
             Assert.IsFalse(moduleText.Contains(".vue", StringComparison.OrdinalIgnoreCase), modulePath);
         }
 
-        // The emitted module imports the real Vue package by bare specifier. This minimal local
-        // implementation keeps the closed-loop test focused on Jazor's generated artifact.
+        // Resolve the generated bare Vue import through Deno's local import map. The fixture is
+        // intentionally adjacent to the artifact so this consumer path never needs node_modules.
         WriteFile(
-            Path.Combine(outputRoot, "package.json"),
+            Path.Combine(outputRoot, "deno.json"),
             """
-            {"type":"module"}
+            {
+              "imports": {
+                "vue": "./vue-test-runtime.mjs"
+              }
+            }
             """);
         WriteFile(
-            Path.Combine(outputRoot, "node_modules", "vue", "package.json"),
-            """
-            {"type":"module","exports":"./index.mjs"}
-            """);
-        WriteFile(
-            Path.Combine(outputRoot, "node_modules", "vue", "index.mjs"),
+            Path.Combine(outputRoot, "vue-test-runtime.mjs"),
             """
             export const Fragment = Symbol("Fragment");
 
@@ -2168,6 +2169,9 @@ public sealed class SdkIntegrationTests
             """);
 
         await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(outputRoot, "node_modules")),
+            "The materialized RazorVue consumer test must resolve Vue without frontend node_modules.");
     }
 
     [TestMethod]
@@ -2178,11 +2182,6 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgNetpackBundleConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        if (!TryWriteVueBrowserPackage(package.RepoRoot, projectRoot, out var vuePackageError))
-        {
-            Assert.Inconclusive(vuePackageError);
-            return;
-        }
 
         var restorePackagesPath = package.RestorePackagesPath;
         var bundleRoot = Path.Combine(projectRoot, "wwwroot", "netpack");
@@ -2223,6 +2222,9 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(
             bundle.Contains("deno", StringComparison.OrdinalIgnoreCase),
             "Netpack package consumer bundle should not show Deno fallback output.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "Netpack package consumer must use NuGet-carried library assets instead of frontend node_modules.");
     }
 
     [TestMethod]
@@ -3146,37 +3148,6 @@ public sealed class SdkIntegrationTests
 
             File.Copy(file, destinationPath, overwrite: true);
         }
-    }
-
-    private static bool TryWriteVueBrowserPackage(string repoRoot, string projectRoot, out string error)
-    {
-        var vueBrowserModule = Path.Combine(repoRoot, "node_modules", "vue", "dist", "vue.esm-browser.prod.js");
-        if (!File.Exists(vueBrowserModule))
-        {
-            error =
-                "Netpack package consumer smoke requires node_modules/vue/dist/vue.esm-browser.prod.js. " +
-                "Install repository frontend dependencies before running this test.";
-            return false;
-        }
-
-        var packageRoot = Path.Combine(projectRoot, "node_modules", "vue");
-        var distRoot = Path.Combine(packageRoot, "dist");
-        Directory.CreateDirectory(distRoot);
-        File.Copy(vueBrowserModule, Path.Combine(distRoot, "vue.esm-browser.prod.js"), overwrite: true);
-        WriteFile(Path.Combine(packageRoot, "package.json"),
-            """
-            {
-              "name": "vue",
-              "type": "module",
-              "module": "./dist/vue.esm-browser.prod.js",
-              "exports": {
-                ".": "./dist/vue.esm-browser.prod.js"
-              }
-            }
-            """);
-
-        error = string.Empty;
-        return true;
     }
 
     private static void WriteFile(string path, string content)

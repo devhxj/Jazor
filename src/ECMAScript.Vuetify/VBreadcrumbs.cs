@@ -15,6 +15,7 @@ public sealed class VBreadcrumbs : ComponentBase
     /// Breadcrumb navigation items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VuetifyBreadcrumbItems? Items { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VBreadcrumbs : ComponentBase
     /// Divider between items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divider")]
     public string? Divider { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VBreadcrumbs : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VBreadcrumbs : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -43,5 +47,6 @@ public sealed class VBreadcrumbs : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

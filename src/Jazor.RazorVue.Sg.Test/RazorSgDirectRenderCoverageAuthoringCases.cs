@@ -24,7 +24,7 @@ internal static partial class DirectRenderCaseCatalog
             "coverage_emitter_local_render_fragment_invoke",
             "RenderFragment fragment = child => { child.AddContent(0, \"local-fragment-invoke\"); child.AddContent(1, Text); }; fragment.Invoke(builder);",
             "local-fragment-invoke",
-            "props.text",
+            "props.Text",
             usesFragment: true,
             usesStaticVNode: false,
             group: DirectRenderCaseGroup.Coverage,
@@ -36,7 +36,7 @@ internal static partial class DirectRenderCaseCatalog
             "coverage_emitter_local_generic_render_fragment_invoke",
             "RenderFragment<string> fragment = value => child => child.AddContent(0, \"local-generic-fragment-invoke:\" + value); fragment.Invoke(Text).Invoke(builder);",
             "local-generic-fragment-invoke:",
-            "props.text",
+            "props.Text",
             usesFragment: false,
             usesStaticVNode: false,
             group: DirectRenderCaseGroup.Coverage,
@@ -57,7 +57,7 @@ internal static partial class DirectRenderCaseCatalog
             cases,
             "coverage_emitter_foreach_deconstruction",
             "foreach (var (key, value) in Items) { builder.AddContent(0, key + \":\" + value); }",
-            "Array.from(props.items ?? []",
+            "Array.from(props.Items ?? []",
             "key",
             usesFragment: false,
             usesStaticVNode: false,
@@ -121,14 +121,14 @@ internal static partial class DirectRenderCaseCatalog
                 marker),
             1 => new(
                 "builder.AddContent(" + (hostIndex + 100).ToString(CultureInfo.InvariantCulture) + ", Text);",
-                "props.text")
+                "props.Text")
             {
                 Members = "[Parameter] public string Text { get; set; } = " + CSharpStringLiteral(marker) + ";",
                 UsesProps = true
             },
             2 => new(
                 "builder.AddContent(" + hostIndex.ToString(CultureInfo.InvariantCulture) + ", Count + " + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + ");",
-                "props.count")
+                "props.Count")
             {
                 AdditionalExpectedFragment = (hostIndex + 1).ToString(CultureInfo.InvariantCulture),
                 Members = "[Parameter] public int Count { get; set; }",
@@ -136,7 +136,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             3 => new(
                 "builder.AddContent(" + hostIndex.ToString(CultureInfo.InvariantCulture) + ", Visible ? " + CSharpStringLiteral(marker + "-visible") + " : " + CSharpStringLiteral(marker + "-hidden") + ");",
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = marker + "-visible",
                 TertiaryExpectedFragment = marker + "-hidden",
@@ -145,7 +145,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             4 => new(
                 "builder.AddContent(0, " + CSharpStringLiteral(marker + "-before") + "); builder.AddContent(" + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + ", Text); builder.AddContent(" + (hostIndex + 10).ToString(CultureInfo.InvariantCulture) + ", " + CSharpStringLiteral(marker + "-after") + ");",
-                "props.text")
+                "props.Text")
             {
                 AdditionalExpectedFragment = marker + "-before",
                 TertiaryExpectedFragment = marker + "-after",
@@ -158,7 +158,7 @@ internal static partial class DirectRenderCaseCatalog
                 marker),
             6 => new(
                 "builder.AddContent(" + hostIndex.ToString(CultureInfo.InvariantCulture) + ", Items.Length + " + (hostIndex + 2).ToString(CultureInfo.InvariantCulture) + ");",
-                "props.items.length")
+                "props.Items.length")
             {
                 Members = "[Parameter] public string[] Items { get; set; } = [];",
                 UsesProps = true
@@ -167,7 +167,7 @@ internal static partial class DirectRenderCaseCatalog
                 "RenderFragment fragment" + hostIndex.ToString("D2", CultureInfo.InvariantCulture) + " = child => { child.AddContent(0, " + CSharpStringLiteral(marker) + "); child.AddContent(1, Text); }; builder.AddContent(2, fragment" + hostIndex.ToString("D2", CultureInfo.InvariantCulture) + ");",
                 marker)
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 Members = "[Parameter] public string Text { get; set; } = \"\";",
                 UsesFragment = true,
                 UsesProps = true
@@ -194,7 +194,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", Count + " + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + ");" + close,
                 property)
             {
-                AdditionalExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true
             },
@@ -202,8 +202,8 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", Visible && Count >= " + hostIndex.ToString(CultureInfo.InvariantCulture) + ");" + close,
                 property)
             {
-                AdditionalExpectedFragment = "props.visible",
-                TertiaryExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Visible",
+                TertiaryExpectedFragment = "props.Count",
                 Members = "[Parameter] public bool Visible { get; set; } [Parameter] public int Count { get; set; }",
                 UsesProps = true
             },
@@ -218,8 +218,8 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", Visible ? " + CSharpStringLiteral(marker) + " : Text);" + close,
                 property)
             {
-                AdditionalExpectedFragment = "props.visible",
-                TertiaryExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Visible",
+                TertiaryExpectedFragment = "props.Text",
                 Members = "[Parameter] public bool Visible { get; set; } [Parameter] public string Text { get; set; } = \"\";",
                 UsesProps = true
             },
@@ -234,7 +234,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", Items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "]);" + close,
                 property)
             {
-                AdditionalExpectedFragment = "props.items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "]",
+                AdditionalExpectedFragment = "props.Items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "]",
                 Members = "[Parameter] public string?[] Items { get; set; } = [];",
                 UsesProps = true
             },
@@ -243,7 +243,7 @@ internal static partial class DirectRenderCaseCatalog
                 property)
             {
                 AdditionalExpectedFragment = marker,
-                TertiaryExpectedFragment = "props.count",
+                TertiaryExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true
             }
@@ -285,7 +285,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             3 => new(
                 open + "if (Visible) { builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", " + CSharpStringLiteral(marker + "-conditional") + "); } builder.AddAttribute(2, " + CSharpStringLiteral(name) + ", " + CSharpStringLiteral(after) + ");" + close,
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = property,
                 TertiaryExpectedFragment = after,
@@ -295,7 +295,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             4 => new(
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", " + CSharpStringLiteral(before) + "); if (Visible) { builder.AddAttribute(2, " + CSharpStringLiteral(name) + ", " + CSharpStringLiteral(after) + "); }" + close,
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = property,
                 TertiaryExpectedFragment = before,
@@ -307,7 +307,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(name) + ", " + CSharpStringLiteral(before) + "); builder.SetAttributeValue(2, Text + " + CSharpStringLiteral(after) + ");" + close,
                 property)
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 TertiaryExpectedFragment = after,
                 UnexpectedFragment = CSharpStringLiteral(before),
                 Members = "[Parameter] public string Text { get; set; } = \"\";",
@@ -352,7 +352,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Count\", Count + " + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + ");" + close,
                 "count")
             {
-                AdditionalExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true,
                 ImportCount = 1
@@ -361,8 +361,8 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Enabled\", Visible && Count > " + hostIndex.ToString(CultureInfo.InvariantCulture) + ");" + close,
                 "enabled")
             {
-                AdditionalExpectedFragment = "props.visible",
-                TertiaryExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Visible",
+                TertiaryExpectedFragment = "props.Count",
                 Members = "[Parameter] public bool Visible { get; set; } [Parameter] public int Count { get; set; }",
                 UsesProps = true,
                 ImportCount = 1
@@ -371,7 +371,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Value\", Text ?? " + CSharpStringLiteral(marker) + ");" + close,
                 "modelValue")
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 TertiaryExpectedFragment = marker,
                 Members = "[Parameter] public string? Text { get; set; }",
                 UsesProps = true,
@@ -382,7 +382,7 @@ internal static partial class DirectRenderCaseCatalog
                 "heading")
             {
                 AdditionalExpectedFragment = marker,
-                TertiaryExpectedFragment = "props.count",
+                TertiaryExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true,
                 ImportCount = 1
@@ -391,7 +391,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Count\", Items.Length + " + hostIndex.ToString(CultureInfo.InvariantCulture) + ");" + close,
                 "count")
             {
-                AdditionalExpectedFragment = "props.items.length",
+                AdditionalExpectedFragment = "props.Items.length",
                 Members = "[Parameter] public string[] Items { get; set; } = [];",
                 UsesProps = true,
                 ImportCount = 1
@@ -400,7 +400,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Enabled\", Count >= " + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + ");" + close,
                 "enabled")
             {
-                AdditionalExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true,
                 ImportCount = 1
@@ -409,7 +409,7 @@ internal static partial class DirectRenderCaseCatalog
                 open + "builder.AddComponentParameter(1, \"Value\", Text); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + ");" + close,
                 "modelValue")
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 TertiaryExpectedFragment = marker,
                 Members = "[Parameter] public string? Text { get; set; }",
                 UsesProps = true,
@@ -431,7 +431,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(Count + " + (hostIndex + 1).ToString(CultureInfo.InvariantCulture) + "); builder.CloseElement();",
                 "key")
             {
-                AdditionalExpectedFragment = "props.count",
+                AdditionalExpectedFragment = "props.Count",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true
             },
@@ -439,7 +439,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(Visible ? " + CSharpStringLiteral(marker + "-on") + " : " + CSharpStringLiteral(marker + "-off") + "); builder.CloseElement();",
                 "key")
             {
-                AdditionalExpectedFragment = "props.visible",
+                AdditionalExpectedFragment = "props.Visible",
                 TertiaryExpectedFragment = marker,
                 Members = "[Parameter] public bool Visible { get; set; }",
                 UsesProps = true
@@ -455,7 +455,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.OpenComponent(0, typeof(MatrixChild)); builder.SetKey(Text ?? " + CSharpStringLiteral(marker) + "); builder.CloseComponent();",
                 "key")
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 TertiaryExpectedFragment = marker,
                 Members = "[Parameter] public string? Text { get; set; }",
                 UsesProps = true,
@@ -465,7 +465,7 @@ internal static partial class DirectRenderCaseCatalog
                 "foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddContent(1, item); builder.CloseElement(); }",
                 "key")
             {
-                AdditionalExpectedFragment = "Array.from(props.items ?? []",
+                AdditionalExpectedFragment = "Array.from(props.Items ?? []",
                 TertiaryExpectedFragment = marker,
                 Members = "[Parameter] public string[] Items { get; set; } = [];",
                 UsesProps = true
@@ -474,7 +474,7 @@ internal static partial class DirectRenderCaseCatalog
                 "foreach (var item in Items) { builder.OpenComponent<MatrixChild>(0); builder.SetKey(" + CSharpStringLiteral(marker + ":") + " + item); builder.AddComponentParameter(1, \"Title\", item); builder.CloseComponent(); }",
                 "key")
             {
-                AdditionalExpectedFragment = "Array.from(props.items ?? []",
+                AdditionalExpectedFragment = "Array.from(props.Items ?? []",
                 TertiaryExpectedFragment = "heading",
                 Members = "[Parameter] public string[] Items { get; set; } = [];",
                 UsesProps = true,
@@ -484,7 +484,7 @@ internal static partial class DirectRenderCaseCatalog
                 "var key" + hostIndex.ToString("D2", CultureInfo.InvariantCulture) + " = Text ?? " + CSharpStringLiteral(marker) + "; builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.SetKey(key" + hostIndex.ToString("D2", CultureInfo.InvariantCulture) + "); builder.CloseElement();",
                 "const key" + hostIndex.ToString("D2", CultureInfo.InvariantCulture))
             {
-                AdditionalExpectedFragment = "props.text",
+                AdditionalExpectedFragment = "props.Text",
                 TertiaryExpectedFragment = "key: key" + hostIndex.ToString("D2", CultureInfo.InvariantCulture),
                 Members = "[Parameter] public string? Text { get; set; }",
                 UsesProps = true
@@ -520,7 +520,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             3 => new(
                 "var " + alias + " = typeof(MatrixChild); if (Visible) { builder.OpenComponent(0, " + alias + "); builder.AddComponentParameter(1, \"Title\", " + CSharpStringLiteral(marker + "-visible") + "); builder.CloseComponent(); } else { builder.OpenComponent(2, " + alias + "); builder.AddComponentParameter(3, \"Title\", " + CSharpStringLiteral(marker + "-hidden") + "); builder.CloseComponent(); }",
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = "heading",
                 TertiaryExpectedFragment = marker,
@@ -545,7 +545,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             6 => new(
                 "var " + alias + " = typeof(MatrixChild); foreach (var item in Items) { builder.OpenComponent(0, " + alias + "); builder.AddComponentParameter(1, \"Title\", " + CSharpStringLiteral(marker + ":") + " + item); builder.CloseComponent(); }",
-                "Array.from(props.items ?? []")
+                "Array.from(props.Items ?? []")
             {
                 AdditionalExpectedFragment = "heading",
                 TertiaryExpectedFragment = marker,
@@ -601,7 +601,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             6 => new(
                 "builder.OpenRegion(" + hostIndex.ToString(CultureInfo.InvariantCulture) + "); if (Visible) { builder.AddContent(1, " + CSharpStringLiteral(marker + "-visible") + "); } else { builder.AddContent(2, " + CSharpStringLiteral(marker + "-hidden") + "); } builder.CloseRegion();",
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = marker,
                 Members = "[Parameter] public bool Visible { get; set; }",
@@ -609,7 +609,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             _ => new(
                 "builder.OpenRegion(" + hostIndex.ToString(CultureInfo.InvariantCulture) + "); foreach (var item in Items) { builder.OpenElement(1, " + CSharpStringLiteral(tag) + "); builder.AddContent(2, " + CSharpStringLiteral(marker + ":") + " + item); builder.CloseElement(); } builder.CloseRegion();",
-                "Array.from(props.items ?? []")
+                "Array.from(props.Items ?? []")
             {
                 AdditionalExpectedFragment = marker,
                 Members = "[Parameter] public string[] Items { get; set; } = [];",
@@ -637,7 +637,7 @@ internal static partial class DirectRenderCaseCatalog
                 "if (!Visible) { return; } builder.AddContent(" + hostIndex.ToString(CultureInfo.InvariantCulture) + ", " + CSharpStringLiteral(marker) + ");",
                 marker)
             {
-                AdditionalExpectedFragment = "props.visible",
+                AdditionalExpectedFragment = "props.Visible",
                 Members = "[Parameter] public bool Visible { get; set; }",
                 UsesProps = true
             },
@@ -656,7 +656,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             _ => new(
                 "if (Visible) { builder.AddContent(" + hostIndex.ToString(CultureInfo.InvariantCulture) + ", (string?)null); } else { builder.AddContent(" + (hostIndex + 8).ToString(CultureInfo.InvariantCulture) + ", (string?)null); }",
-                "props.visible")
+                "props.Visible")
             {
                 AdditionalExpectedFragment = "null",
                 Members = "[Parameter] public bool Visible { get; set; }",

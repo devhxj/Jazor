@@ -35,8 +35,8 @@ internal static class ClrRuntimeSingleScenarios
         Success("single.clamp-native.nan-min-selects-max", "static float.ClampNative(float, float, float)", [Number(0.5), Number(double.NaN), Number(1)], Number(1)),
         Failure("single.clamp-native.rejects-inverted-range", "static float.ClampNative(float, float, float)", [Number(1), Number(2), Number(0)], "ArgumentException"),
 
-        Success("single.sin-cos.zero", "static float.SinCos(float)", [Number(0)], Record(("sin", Number(0)), ("cos", Number(1)))),
-        Success("single.sin-cos-pi.zero", "static float.SinCosPi(float)", [Number(0)], Record(("sinPi", Number(0)), ("cosPi", Number(1)))),
+        Success("single.sin-cos.zero", "static float.SinCos(float)", [Number(0)], Record(("Sin", Number(0)), ("Cos", Number(1)))),
+        Success("single.sin-cos-pi.zero", "static float.SinCosPi(float)", [Number(0)], Record(("SinPi", Number(0)), ("CosPi", Number(1)))),
         Success("single.round.positive-even-midpoint", "static float.Round(float)", [Number(2.5)], Number(2)),
         Success("single.round.negative-even-midpoint", "static float.Round(float)", [Number(-2.5)], Number(-2)),
         Success("single.round.decimal-digits", "static float.Round(float, int)", [Number(2.675f), Number(2)], Number(float.Round(2.675f, 2))),

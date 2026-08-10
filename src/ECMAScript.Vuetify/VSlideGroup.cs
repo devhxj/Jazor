@@ -14,6 +14,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Currently selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Callback when the selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Allows multiple selections.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Whether selection is mandatory.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Maximum number of selectable items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public int? Max { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSlideGroup : ComponentBase
     /// CSS class applied to selected items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSlideGroup : ComponentBase
     /// HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Whether mobile layout is active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobile")]
     public VuetifyMobileValue? Mobile { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Mobile breakpoint threshold.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobileBreakpoint")]
     public VuetifyDisplayBreakpoint? MobileBreakpoint { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Always center the active item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("centerActive")]
     public bool CenterActive { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Slide direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyInputDirection? Direction { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Icon for the next navigation arrow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public VuetifyIconValue? NextIcon { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Icon for the previous navigation arrow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public VuetifyIconValue? PrevIcon { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSlideGroup : ComponentBase
     /// When to show navigation arrows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showArrows")]
     public VuetifyShowArrowsValue? ShowArrows { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Additional unmatched HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VSlideGroupSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VSlideGroup : ComponentBase
     /// Previous navigation slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prev")]
     public RenderFragment<VSlideGroupSlotContext>? Prev { get; set; }
 
     /// <summary>
@@ -140,5 +158,6 @@ public sealed class VSlideGroup : ComponentBase
     /// Next navigation slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("next")]
     public RenderFragment<VSlideGroupSlotContext>? Next { get; set; }
 }

@@ -35,11 +35,11 @@ public sealed class RazorSgOfficialAttributeSplatAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"vue\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "mergeProps(props.inputAttributes, {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "mergeProps(props.InputAttributes, {", StringComparison.Ordinal);
         StringAssert.Contains(script, "class: \"form-control\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"data-role\": \"account-name\"", StringComparison.Ordinal);
 
-        var splat = script.IndexOf("mergeProps(props.inputAttributes, {", StringComparison.Ordinal);
+        var splat = script.IndexOf("mergeProps(props.InputAttributes, {", StringComparison.Ordinal);
         var classAttribute = script.IndexOf("class: \"form-control\"", splat, StringComparison.Ordinal);
         var dataRole = script.IndexOf("\"data-role\": \"account-name\"", classAttribute, StringComparison.Ordinal);
         Assert.IsTrue(splat < classAttribute, script);

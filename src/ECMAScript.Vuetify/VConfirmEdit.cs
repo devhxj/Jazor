@@ -14,6 +14,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// The bound value being edited.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// Callback invoked when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// The theme color for action buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// The text for the cancel button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("cancelText")]
     public string? CancelText { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// The text for the confirm button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("okText")]
     public string? OkText { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// The disabled configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public VuetifyConfirmEditDisabled? Disabled { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// Whether to hide the action buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideActions")]
     public bool HideActions { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// Callback invoked when the value is saved.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onSave")]
     public EventCallback<VueValue?> OnSave { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// Callback invoked when editing is cancelled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback OnCancel { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VConfirmEdit : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -84,5 +94,6 @@ public sealed class VConfirmEdit : ComponentBase
     /// Slot for child content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VConfirmEditSlotContext>? ChildContent { get; set; }
 }

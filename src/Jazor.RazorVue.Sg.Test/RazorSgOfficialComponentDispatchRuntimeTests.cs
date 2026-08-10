@@ -42,7 +42,7 @@ public sealed class RazorSgOfficialComponentDispatchRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "EventCallback.Factory.Create", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "invokeAsync(refreshCoreAsync)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "invokeAsync(RefreshCoreAsync)", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "stateHasChanged", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("this.", StringComparison.Ordinal), observation.ModuleText);
 

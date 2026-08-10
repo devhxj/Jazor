@@ -77,17 +77,17 @@ public sealed class AstConverterConstructorRefOutScenarioTests
             await File.WriteAllTextAsync(
                 testPath,
                 """
-                import { run, runNamed } from "./constructor-ref-out.mjs";
+                import { Run, RunNamed } from "./constructor-ref-out.mjs";
 
                 Deno.test("member constructors write ref and out values through the compiler sink", () => {
-                  if (run(3) !== 155)
-                    throw new Error(`positive path: ${run(3)}`);
-                  if (run(-2) !== 387)
-                    throw new Error(`early return path: ${run(-2)}`);
-                  if (runNamed(3) !== 155)
-                    throw new Error(`named positive path: ${runNamed(3)}`);
-                  if (runNamed(-2) !== 387)
-                    throw new Error(`named early return path: ${runNamed(-2)}`);
+                  if (Run(3) !== 155)
+                    throw new Error(`positive path: ${Run(3)}`);
+                  if (Run(-2) !== 387)
+                    throw new Error(`early return path: ${Run(-2)}`);
+                  if (RunNamed(3) !== 155)
+                    throw new Error(`named positive path: ${RunNamed(3)}`);
+                  if (RunNamed(-2) !== 387)
+                    throw new Error(`named early return path: ${RunNamed(-2)}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

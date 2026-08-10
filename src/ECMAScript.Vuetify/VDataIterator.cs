@@ -15,6 +15,7 @@ public sealed class VDataIterator : ComponentBase
     /// The bound value of the selected items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyDataIteratorSelectedValues? ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the selected items change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyDataIteratorSelectedValues?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VDataIterator : ComponentBase
     /// The collection of data items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VuetifyDataIteratorItems? Items { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VDataIterator : ComponentBase
     /// The key used to identify item values.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VDataIterator : ComponentBase
     /// The key used to identify selectable items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemSelectable")]
     public VuetifySelectItemKey? ItemSelectable { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to return full objects instead of key values.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("returnObject")]
     public bool ReturnObject { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VDataIterator : ComponentBase
     /// The current page number.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("page")]
     public VueStringNumberValue? Page { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the page changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:page")]
     public EventCallback<int> PageChanged { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VDataIterator : ComponentBase
     /// The number of items displayed per page.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemsPerPage")]
     public VueStringNumberValue? ItemsPerPage { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the items-per-page count changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:itemsPerPage")]
     public EventCallback<int> ItemsPerPageChanged { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VDataIterator : ComponentBase
     /// The sort criteria.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sortBy")]
     public VuetifyDataTableSortItems? SortBy { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the sort criteria change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:sortBy")]
     public EventCallback<VuetifyDataTableSortItems?> SortByChanged { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VDataIterator : ComponentBase
     /// The group-by criteria.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("groupBy")]
     public VuetifyDataTableSortItems? GroupBy { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the group-by criteria change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:groupBy")]
     public EventCallback<VuetifyDataTableSortItems?> GroupByChanged { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VDataIterator : ComponentBase
     /// The array of identifiers for expanded rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expanded")]
     public string[]? Expanded { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when expanded rows change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:expanded")]
     public EventCallback<string[]?> ExpandedChanged { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when pagination/sort/group options change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("optionsChanged")]
     public EventCallback<VuetifyDataTableOptions?> OptionsChanged { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VDataIterator : ComponentBase
     /// Callback invoked when the currently displayed items change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("currentItemsChanged")]
     public EventCallback<VuetifyDataIteratorItems?> CurrentItemsChanged { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VDataIterator : ComponentBase
     /// The search filter text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("search")]
     public string? Search { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to show the loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool Loading { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to show row selection checkboxes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showSelect")]
     public bool ShowSelect { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VDataIterator : ComponentBase
     /// The row selection strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectStrategy")]
     public VuetifyDataTableSelectStrategy? SelectStrategy { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VDataIterator : ComponentBase
     /// The value comparator function.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("valueComparator")]
     public VuetifyDataIteratorValueComparator? ValueComparator { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to show the expand toggle.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showExpand")]
     public bool ShowExpand { get; set; }
 
     /// <summary>
@@ -183,6 +207,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to expand rows on click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expandOnClick")]
     public bool ExpandOnClick { get; set; }
 
     /// <summary>
@@ -190,6 +215,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to enable multi-column sorting.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiSort")]
     public bool MultiSort { get; set; }
 
     /// <summary>
@@ -197,6 +223,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to force sorting.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mustSort")]
     public bool MustSort { get; set; }
 
     /// <summary>
@@ -204,6 +231,7 @@ public sealed class VDataIterator : ComponentBase
     /// The custom key-sort functions.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customKeySort")]
     public VuetifyDataIteratorSortFunctions? CustomKeySort { get; set; }
 
     /// <summary>
@@ -211,6 +239,7 @@ public sealed class VDataIterator : ComponentBase
     /// The custom filter function.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customFilter")]
     public VuetifyFilterFunction? CustomFilter { get; set; }
 
     /// <summary>
@@ -218,6 +247,7 @@ public sealed class VDataIterator : ComponentBase
     /// The custom key-filter functions.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customKeyFilter")]
     public VuetifyFilterKeyFunctions? CustomKeyFilter { get; set; }
 
     /// <summary>
@@ -225,6 +255,7 @@ public sealed class VDataIterator : ComponentBase
     /// The keys used for filtering items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }
 
     /// <summary>
@@ -232,6 +263,7 @@ public sealed class VDataIterator : ComponentBase
     /// The filter matching mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterMode")]
     public VuetifyFilterMode? FilterMode { get; set; }
 
     /// <summary>
@@ -239,6 +271,7 @@ public sealed class VDataIterator : ComponentBase
     /// Whether to disable filtering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noFilter")]
     public bool NoFilter { get; set; }
 
     /// <summary>
@@ -246,6 +279,7 @@ public sealed class VDataIterator : ComponentBase
     /// The HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -253,6 +287,7 @@ public sealed class VDataIterator : ComponentBase
     /// The transition animation effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -260,6 +295,7 @@ public sealed class VDataIterator : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -267,6 +303,7 @@ public sealed class VDataIterator : ComponentBase
     /// Default slot for child content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VDataIteratorSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -274,6 +311,7 @@ public sealed class VDataIterator : ComponentBase
     /// Slot for the header area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment<VDataIteratorSlotContext>? Header { get; set; }
 
     /// <summary>
@@ -281,6 +319,7 @@ public sealed class VDataIterator : ComponentBase
     /// Slot for the footer area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("footer")]
     public RenderFragment<VDataIteratorSlotContext>? Footer { get; set; }
 
     /// <summary>
@@ -288,6 +327,7 @@ public sealed class VDataIterator : ComponentBase
     /// Slot for the loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loader")]
     public RenderFragment<VuetifyLoaderSlotContext>? Loader { get; set; }
 
     /// <summary>
@@ -295,5 +335,6 @@ public sealed class VDataIterator : ComponentBase
     /// Slot for the no-data state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("no-data")]
     public RenderFragment? NoData { get; set; }
 }

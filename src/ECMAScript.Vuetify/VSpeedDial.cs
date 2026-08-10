@@ -14,6 +14,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Controls whether the speed dial is open.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Callback invoked when the open state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Offset of the speed dial relative to its anchor.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VuetifyOverlayOffsetValue? Offset { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Position where the speed dial appears.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Transform origin of the speed dial animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyOriginValue? Origin { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Height of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Width of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Maximum height of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Maximum width of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Minimum height of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Minimum width of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Opacity of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Transition animation of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Z-index level of the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to eagerly mount the content on first render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether the speed dial is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether the speed dial persists when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Location strategy used by the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("locationStrategy")]
     public VuetifyLocationStrategy? LocationStrategy { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Scroll strategy used by the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollStrategy")]
     public VuetifyScrollStrategy? ScrollStrategy { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Delay in milliseconds before closing the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Delay in milliseconds before opening the speed dial.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Props applied to the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to open the speed dial on click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool OpenOnClick { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to open the speed dial on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to open the speed dial on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool OpenOnFocus { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to close the speed dial when content is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnContentClick")]
     public bool CloseOnContentClick { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to close the speed dial on browser back navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnBack")]
     public bool CloseOnBack { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to contain the speed dial within its parent.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contained")]
     public bool Contained { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Props applied to the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to disable the click animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noClickAnimation")]
     public bool NoClickAnimation { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Scrim configuration of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Container target where the speed dial is attached.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("attach")]
     public VuetifyAttachTarget? Attach { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Unique identifier of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Whether to display in submenu mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("submenu")]
     public bool Submenu { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Captures unmatched additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VSpeedDial : ComponentBase
     /// Default slot for the speed dial content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VSpeedDialDefaultSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -273,5 +310,6 @@ public sealed class VSpeedDial : ComponentBase
     /// Activator slot for customizing the trigger element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VOverlayActivatorContext>? Activator { get; set; }
 }

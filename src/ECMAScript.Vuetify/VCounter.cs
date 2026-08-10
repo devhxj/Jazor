@@ -14,6 +14,7 @@ public sealed class VCounter : ComponentBase
     /// Whether to show the counter.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VCounter : ComponentBase
     /// Whether to disable the counter.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VCounter : ComponentBase
     /// The maximum count value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VCounter : ComponentBase
     /// The current count value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VueStringNumberValue? Value { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VCounter : ComponentBase
     /// The transition animation effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VCounter : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -56,5 +62,6 @@ public sealed class VCounter : ComponentBase
     /// Default slot for counter content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VCounterDefaultSlotContext>? ChildContent { get; set; }
 }

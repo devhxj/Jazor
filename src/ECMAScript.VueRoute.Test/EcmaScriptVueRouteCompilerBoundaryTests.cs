@@ -389,12 +389,12 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export function buildRelative()");
+        StringAssert.Contains(script, "export function BuildRelative()");
         StringAssert.Contains(script, "name: \"user\"");
         StringAssert.Contains(script, "params: { id: \"42\" }");
         StringAssert.Contains(script, "query: { from: \"search\" }");
         StringAssert.Contains(script, "hash: \"#top\"");
-        StringAssert.Contains(script, "export function buildPath()");
+        StringAssert.Contains(script, "export function BuildPath()");
         StringAssert.Contains(script, "path: \"/users/42\"");
         StringAssert.Contains(script, "query: { preview: \"1\" }");
         StringAssert.Contains(script, "hash: \"#section\"");
@@ -895,7 +895,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "let component = null;");
         StringAssert.Contains(script, "component: () => {");
         StringAssert.Contains(script, "return Promise.resolve(component);");
-        StringAssert.Contains(script, "export function buildTypedLoader()");
+        StringAssert.Contains(script, "export function BuildTypedLoader()");
         StringAssert.Contains(script, "return () => {");
     }
 
@@ -1383,15 +1383,15 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export function readHistoryStateValue(value)");
-        StringAssert.Contains(script, "export function readRouteParamRaw(value)");
-        StringAssert.Contains(script, "export function readLocationQueryValue(value)");
-        StringAssert.Contains(script, "export function readLocationQueryValueRaw(value)");
-        StringAssert.Contains(script, "export function readScrollPositionTarget(value)");
-        StringAssert.Contains(script, "export function readRouterViewDepthValue(value)");
-        StringAssert.Contains(script, "export function readRouterScrollResult(value)");
-        StringAssert.Contains(script, "export function readRouterScrollHandler(value)");
-        StringAssert.Contains(script, "export function readRouteRecordRaw(value)");
+        StringAssert.Contains(script, "export function ReadHistoryStateValue(value)");
+        StringAssert.Contains(script, "export function ReadRouteParamRaw(value)");
+        StringAssert.Contains(script, "export function ReadLocationQueryValue(value)");
+        StringAssert.Contains(script, "export function ReadLocationQueryValueRaw(value)");
+        StringAssert.Contains(script, "export function ReadScrollPositionTarget(value)");
+        StringAssert.Contains(script, "export function ReadRouterViewDepthValue(value)");
+        StringAssert.Contains(script, "export function ReadRouterScrollResult(value)");
+        StringAssert.Contains(script, "export function ReadRouterScrollHandler(value)");
+        StringAssert.Contains(script, "export function ReadRouteRecordRaw(value)");
         Assert.AreEqual(9, CountOccurrences(script, "return value;"));
     }
 

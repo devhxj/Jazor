@@ -1029,7 +1029,7 @@ public sealed class SemanticWalkerSourceOriginTest
 
         var node = new SemanticWalker(true).Visit(operation, new());
         Assert.IsNotNull(node);
-        Assert.AreEqual("@JsDecorator(1, { name: \"entry\" })", node.ToKnRECMAScript());
+        Assert.AreEqual("@JsDecorator(1, { Name: \"entry\" })", node.ToKnRECMAScript());
         AssertHasSourceOrigin(node, operation);
     }
 

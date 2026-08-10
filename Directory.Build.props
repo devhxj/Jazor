@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AcornimaVersion>1.7.0</AcornimaVersion>
     <DenoHostVersion>2.9.5</DenoHostVersion>
-    <NetPackVersion>0.6.0</NetPackVersion>
+    <NetPackVersion>0.8.0</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
     <CodeAnalysisVersion>5.9.0-1.26359.118</CodeAnalysisVersion>
     <Net110AssembliesVersion>1.8.7</Net110AssembliesVersion>

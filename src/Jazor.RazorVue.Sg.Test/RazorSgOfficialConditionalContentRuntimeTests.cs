@@ -44,7 +44,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "Fragment", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "toggleDetails", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "ToggleDetails", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-details-toggle-runtime.mjs",

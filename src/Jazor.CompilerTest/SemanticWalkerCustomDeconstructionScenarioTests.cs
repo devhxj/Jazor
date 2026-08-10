@@ -279,7 +279,7 @@ internal static class CustomDeconstructionScenarioCatalog
                 void Run() { int left, right; (left, right) = Create(); }
             }
             """,
-            ["Point.Deconstruct"], [Invocation], [2], ["left", "right"], expectedNonDeconstructCallNames: ["create"]),
+            ["Point.Deconstruct"], [Invocation], [2], ["left", "right"], expectedNonDeconstructCallNames: ["Create"]),
         Success(
             "property-source",
             "property-source-is-evaluated-as-custom-receiver",
@@ -501,7 +501,7 @@ internal static class CustomDeconstructionScenarioCatalog
                 }
             }
             """,
-            ["Envelope.Deconstruct"], [], [], ["id"], expectedNonDeconstructCallNames: ["create"]),
+            ["Envelope.Deconstruct"], [], [], ["id"], expectedNonDeconstructCallNames: ["Create"]),
         Success(
             "custom-with-nested-custom",
             "nested-protocol-calls-precede-source-order-writes",

@@ -60,7 +60,7 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "ItemTemplate(Current)", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "slots[\"release-item\"](state.current)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "slots[\"release-item\"](state.Current)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-release-template-runtime.mjs",
@@ -83,8 +83,8 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
                         "release-item": release => [
                             {
                                 name: "strong",
-                                props: { "data-release-id": release.id },
-                                children: ["Inherited: " + release.label]
+                                props: { "data-release-id": release.Id },
+                                children: ["Inherited: " + release.Label]
                             }
                         ]
                     }

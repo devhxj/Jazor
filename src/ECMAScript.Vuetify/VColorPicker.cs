@@ -14,6 +14,7 @@ public sealed class VColorPicker : ComponentBase
     /// The bound value of the selected color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyColorValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VColorPicker : ComponentBase
     /// Callback invoked when the color value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyColorValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VColorPicker : ComponentBase
     /// The color selection mode (e.g., RGB, HSL, HEX).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mode")]
     public VuetifyColorPickerMode? Mode { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VColorPicker : ComponentBase
     /// Callback invoked when the selection mode changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:mode")]
     public EventCallback<VuetifyColorPickerMode> ModeChanged { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VColorPicker : ComponentBase
     /// The available color selection modes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modes")]
     public VuetifyColorPickerModes? Modes { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VColorPicker : ComponentBase
     /// The height of the color canvas.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("canvasHeight")]
     public VueStringNumberValue? CanvasHeight { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to disable the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VColorPicker : ComponentBase
     /// The size of the indicator dot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dotSize")]
     public VueStringNumberValue? DotSize { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to hide the color canvas.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideCanvas")]
     public bool HideCanvas { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to hide the sliders.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideSliders")]
     public bool HideSliders { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to hide the input fields.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideInputs")]
     public bool HideInputs { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to show the color swatches.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showSwatches")]
     public bool ShowSwatches { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VColorPicker : ComponentBase
     /// The selectable color swatches.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("swatches")]
     public VuetifyColorPickerSwatches? Swatches { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VColorPicker : ComponentBase
     /// The maximum height of the swatches area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("swatchesMaxHeight")]
     public VueStringNumberValue? SwatchesMaxHeight { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VColorPicker : ComponentBase
     /// The component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VColorPicker : ComponentBase
     /// The HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VColorPicker : ComponentBase
     /// The border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VColorPicker : ComponentBase
     /// The position of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VColorPicker : ComponentBase
     /// The location of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VColorPicker : ComponentBase
     /// The elevation shadow height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VColorPicker : ComponentBase
     /// The height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VColorPicker : ComponentBase
     /// The maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VColorPicker : ComponentBase
     /// The maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VColorPicker : ComponentBase
     /// The minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VColorPicker : ComponentBase
     /// The minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VColorPicker : ComponentBase
     /// The width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VColorPicker : ComponentBase
     /// The border style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VColorPicker : ComponentBase
     /// The theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VColorPicker : ComponentBase
     /// The background color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to show dividers.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divided")]
     public bool Divided { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to display in landscape orientation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("landscape")]
     public bool Landscape { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VColorPicker : ComponentBase
     /// The title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VColorPicker : ComponentBase
     /// Whether to hide the header area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideHeader")]
     public bool HideHeader { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VColorPicker : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VColorPicker : ComponentBase
     /// Slot for child content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VColorPicker : ComponentBase
     /// Slot for the header content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VColorPicker : ComponentBase
     /// Slot for action buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
     /// <summary>
@@ -280,5 +318,6 @@ public sealed class VColorPicker : ComponentBase
     /// Slot for the title content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }

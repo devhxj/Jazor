@@ -14,6 +14,7 @@ public sealed class VLayout : ComponentBase
     /// Array of region names that are allowed to overlap.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("overlaps")]
     public string[]? Overlaps { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VLayout : ComponentBase
     /// Whether to take up full height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fullHeight")]
     public bool FullHeight { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VLayout : ComponentBase
     /// Height of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VLayout : ComponentBase
     /// Maximum height of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VLayout : ComponentBase
     /// Maximum width of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VLayout : ComponentBase
     /// Minimum height of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VLayout : ComponentBase
     /// Minimum width of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VLayout : ComponentBase
     /// Width of the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VLayout : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -77,5 +86,6 @@ public sealed class VLayout : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

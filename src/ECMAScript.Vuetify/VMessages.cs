@@ -14,6 +14,7 @@ public sealed class VMessages : ComponentBase
     /// Whether the messages are in an active visible state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VMessages : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VMessages : ComponentBase
     /// List of messages to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VMessages : ComponentBase
     /// Transition animation when messages appear or disappear.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VMessages : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -49,5 +54,6 @@ public sealed class VMessages : ComponentBase
     /// Individual message slot content, providing message slot context.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("message")]
     public RenderFragment<VMessagesMessageSlotContext>? Message { get; set; }
 }

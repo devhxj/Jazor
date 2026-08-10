@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Acornima;
 using Acornima.Ast;
+using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -194,6 +195,57 @@ public static class Util
     public static bool HasNameResolutionBoundary(ISymbol symbol)
         => GetSymbolNameConfig(symbol).Kind == JsNameConfigKind.Stop;
 
+    /// <summary>
+    /// Resolves the producer-side CLR runtime mapping declared by <c>Jazor(Op.Import, ...)</c>.
+    /// Import values name physical module exports; they are not general symbol-name metadata and
+    /// must not be inferred from C# casing or confused with <c>Op.Alias</c> member access.
+    /// </summary>
+    internal static bool TryGetJazorImportRuntimeName(ISymbol symbol, out string runtimeName)
+    {
+        if (!TryGetJazorImportMapping(symbol, out _, out runtimeName))
+        {
+            runtimeName = string.Empty;
+            return false;
+        }
+
+        return runtimeName.Length > 0;
+    }
+
+    internal static bool TryGetJazorImportMapping(
+        ISymbol symbol,
+        out string memberName,
+        out string runtimeName)
+    {
+        memberName = string.Empty;
+        runtimeName = string.Empty;
+
+        var annotatedSymbol = symbol is IMethodSymbol method
+            ? method.AssociatedSymbol ?? symbol
+            : symbol;
+        foreach (var attribute in annotatedSymbol.GetAttributes())
+        {
+            if (attribute.AttributeClass?.Name != "JazorAttribute" ||
+                attribute.ConstructorArguments.Length < 2 ||
+                attribute.ConstructorArguments[0].Value is null ||
+                Convert.ToInt32(attribute.ConstructorArguments[0].Value) != (int)Op.Import ||
+                attribute.ConstructorArguments[1].Value is not string { Length: > 0 } authoredMemberName)
+            {
+                continue;
+            }
+
+            memberName = authoredMemberName;
+            if (attribute.ConstructorArguments.Length > 2 &&
+                attribute.ConstructorArguments[2].Value is string { Length: > 0 } authoredRuntimeName)
+            {
+                runtimeName = authoredRuntimeName;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     private static JsNameConfig GetSymbolNameConfig(ISymbol symbol)
     {
         // todo:属性的别名如何处理（因为存在get、set）
@@ -266,11 +318,7 @@ public static class Util
                 tupleFallbackName = tupleField.Name;
         }
 
-        var fallbackName = tupleFallbackName ?? symbol.Name;
-        if (ShouldUseJsMemberNamingFallback(symbol))
-            fallbackName = ConvertPascalCaseIdentifierToJsNaming(fallbackName);
-
-        return AppendMethodOverloadSuffixIfNeeded(symbol, fallbackName);
+        return AppendMethodOverloadSuffixIfNeeded(symbol, tupleFallbackName ?? symbol.Name);
     }
 
     public static string GetMemberConstructorHelperName(IMethodSymbol symbol)
@@ -291,43 +339,6 @@ public static class Util
         };
 
         return prefix + Format.HashName(symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
-    }
-
-    private static bool ShouldUseJsMemberNamingFallback(ISymbol symbol)
-        => symbol switch
-        {
-            IMethodSymbol methodSymbol => methodSymbol.MethodKind is not MethodKind.LocalFunction
-                and not MethodKind.AnonymousFunction
-                and not MethodKind.LambdaMethod,
-            IPropertySymbol or IFieldSymbol or IEventSymbol => true,
-            _ => false,
-        };
-
-    internal static string ConvertPascalCaseIdentifierToJsNaming(string name)
-    {
-        if (string.IsNullOrEmpty(name) ||
-            !char.IsUpper(name[0]))
-            return name;
-
-        if (name.Length == 1)
-            return char.ToLowerInvariant(name[0]).ToString();
-
-        var chars = name.ToCharArray();
-        chars[0] = char.ToLowerInvariant(chars[0]);
-
-        for (var index = 1; index < chars.Length; index++)
-        {
-            if (!char.IsUpper(chars[index]))
-                break;
-
-            var hasNext = index + 1 < chars.Length;
-            if (hasNext && !char.IsUpper(chars[index + 1]))
-                break;
-
-            chars[index] = char.ToLowerInvariant(chars[index]);
-        }
-
-        return new string(chars);
     }
 
     private static string AppendMethodOverloadSuffixIfNeeded(ISymbol symbol, string name)

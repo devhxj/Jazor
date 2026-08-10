@@ -14,6 +14,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Default prop values for descendant components.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("defaults")]
     public VueProps? Defaults { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Whether to disable the defaults provider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Scope depth at which to reset defaults.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reset")]
     public VueStringNumberValue? Reset { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Whether to act as the root defaults provider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("root")]
     public VuetifyBooleanStringValue? Root { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Whether to scope defaults to the current provider only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scoped")]
     public bool Scoped { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -56,5 +62,6 @@ public sealed class VDefaultsProvider : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

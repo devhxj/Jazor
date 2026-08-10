@@ -60,6 +60,7 @@ public sealed class MemberClosureTests
             """
             using System;
             using ECMAScript;
+            using ECMAScript.VueContract;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -202,11 +203,11 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "class HeaderState", StringComparison.Ordinal);
         StringAssert.Contains(script, "class PrefixFormatter", StringComparison.Ordinal);
-        StringAssert.Contains(script, "import { compose } from \"../format.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { Compose } from \"../format.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "return new HeaderState(\"ready\");", StringComparison.Ordinal);
         StringAssert.Contains(script, "new PrefixFormatter(\"header:\")", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return compose(this.#prefix, suffix);", StringComparison.Ordinal);
-        var importIndex = script.IndexOf("import { compose } from \"../format.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Compose(this.#prefix, suffix);", StringComparison.Ordinal);
+        var importIndex = script.IndexOf("import { Compose } from \"../format.mjs\";", StringComparison.Ordinal);
         var formatterIndex = script.IndexOf("class PrefixFormatter", StringComparison.Ordinal);
         var headerIndex = script.IndexOf("class HeaderState", StringComparison.Ordinal);
         Assert.IsTrue(
@@ -223,7 +224,6 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using ECMAScript.VueContract;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -231,14 +231,13 @@ public sealed class MemberClosureTests
             namespace Demo.Pages
             {
                 [ECMAScriptModule("./components/counter")]
-                [VueLibraryEmit(nameof(OnSave), Name = "saved")]
                 public partial class Counter : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     [ECMAScriptName("data-title")]
                     public string Title { get; set; } = "";
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onSaved")]
                     public EventCallback<string> OnSave { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -272,9 +271,9 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "return props[\"data-title\"];", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.onSaved?.(props[\"data-title\"]);", StringComparison.Ordinal);
         StringAssert.Contains(script, "props: [\"data-title\", \"onSaved\"]", StringComparison.Ordinal);
-        StringAssert.Contains(script, "emits: [\"saved\"]", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("props.title", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("props.onSave?.", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("emits:", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -334,11 +333,11 @@ public sealed class MemberClosureTests
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "function buildRenderTree(builder)", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addContent(props.title);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function BuildRenderTree(builder)", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", Increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addContent(props.Title);", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.addContent(state.count);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "function increment()", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function Increment()", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("function unused()", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), script);
@@ -399,14 +398,14 @@ public sealed class MemberClosureTests
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "builder.setAttributeValue(\"after\");", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.openComponent(", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.addAttribute(\"Title\", \"from attribute\");", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addComponentRenderMode(renderMode(null));", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addComponentRenderMode(RenderMode(null));", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.clear();", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.dispose();", StringComparison.Ordinal);
         StringAssert.Contains(script!, "let nested = createRenderContext(h);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "nested.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "nested.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
         StringAssert.Contains(script!, "from \"./components/child.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script!, "@jazor/vue-runtime/render-context.mjs", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("MarkupString", StringComparison.Ordinal), script);
@@ -747,7 +746,7 @@ public sealed class MemberClosureTests
                 import component from "./components/structured.mjs";
 
                 test("structured children lower directly to VNodes", () => {
-                    const render = component.setup({ additionalAttributes: { id: "root" } }, { slots: {} });
+                    const render = component.setup({ AdditionalAttributes: { id: "root" } }, { slots: {} });
                     const vnode = render();
 
                     assert.equal(vnode.name, "section");
@@ -877,18 +876,18 @@ public sealed class MemberClosureTests
                 import component from "./components/conditional-props.mjs";
 
                 test("conditional attribute groups preserve branch and overwrite order", () => {
-                    const renderTrue = component.setup({ selected: true }, { slots: {} });
+                    const renderTrue = component.setup({ Selected: true }, { slots: {} });
                     const trueVNode = renderTrue();
                     assert.deepEqual(trueVNode.props, {
-                        mode: "after:4",
-                        trueOnly: "true-only:3"
+                        Mode: "after:4",
+                        TrueOnly: "true-only:3"
                     });
 
-                    const renderFalse = component.setup({ selected: false }, { slots: {} });
+                    const renderFalse = component.setup({ Selected: false }, { slots: {} });
                     const falseVNode = renderFalse();
                     assert.deepEqual(falseVNode.props, {
-                        mode: "after:4",
-                        falseOnly: "false-only:3"
+                        Mode: "after:4",
+                        FalseOnly: "false-only:3"
                     });
                 });
                 """);
@@ -962,8 +961,8 @@ public sealed class MemberClosureTests
 
         Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof slots.headerNavigation", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "...props.top ? { navigation:", StringComparison.Ordinal);
-        StringAssert.Contains(script, "horizontal: true", StringComparison.Ordinal);
+        StringAssert.Contains(script, "...props.Top ? { Navigation:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Horizontal: true", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1005,7 +1004,7 @@ public sealed class MemberClosureTests
                 test("computed RenderFragment properties lower to direct Vue slots", () => {
                     let topReads = 0;
                     const topProps = {};
-                    Object.defineProperty(topProps, "top", {
+                    Object.defineProperty(topProps, "Top", {
                         get() {
                             topReads++;
                             return true;
@@ -1014,14 +1013,14 @@ public sealed class MemberClosureTests
                     const renderTop = component.setup(topProps, { slots: {} });
                     const topChild = renderTop();
                     assert.equal(topReads, 1);
-                    const navigation = topChild.children.navigation();
+                    const navigation = topChild.children.Navigation();
                     assert.equal(topReads, 1);
                     assert.equal(navigation[0].name.name, "Navigation");
-                    assert.equal(navigation[0].props.horizontal, true);
+                    assert.equal(navigation[0].props.Horizontal, true);
 
                     let sidebarReads = 0;
                     const sidebarProps = {};
-                    Object.defineProperty(sidebarProps, "top", {
+                    Object.defineProperty(sidebarProps, "Top", {
                         get() {
                             sidebarReads++;
                             return false;
@@ -1030,7 +1029,7 @@ public sealed class MemberClosureTests
                     const renderSidebar = component.setup(sidebarProps, { slots: {} });
                     const sidebarChild = renderSidebar();
                     assert.equal(sidebarReads, 1);
-                    assert.equal("navigation" in sidebarChild.children, false);
+                    assert.equal("Navigation" in sidebarChild.children, false);
                 });
                 """);
 
@@ -1105,7 +1104,7 @@ public sealed class MemberClosureTests
             script.IndexOf("function $renderDirect()", StringComparison.Ordinal) <
             script.IndexOf("function renderRenderItem(", StringComparison.Ordinal) &&
             script.IndexOf("function renderRenderItem(", StringComparison.Ordinal) <
-            script.IndexOf("props.showFirst ? renderRenderItem", StringComparison.Ordinal),
+            script.IndexOf("props.ShowFirst ? renderRenderItem", StringComparison.Ordinal),
             script);
 
         var tempRoot = Path.Combine(
@@ -1144,7 +1143,7 @@ public sealed class MemberClosureTests
                 import component from "./components/recursive-fragment.mjs";
 
                 test("recursive RenderFragment helper is shared by sibling scopes", () => {
-                    const render = component.setup({ showFirst: true, showSecond: true }, { slots: {} });
+                    const render = component.setup({ ShowFirst: true, ShowSecond: true }, { slots: {} });
                     const root = render();
                     const first = root.children[0];
                     const second = root.children[1];
@@ -1214,8 +1213,8 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return h(\"section\", null, [h(", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ title: \"direct\" }", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ title: \"alias\" }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ Title: \"direct\" }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ Title: \"alias\" }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1285,9 +1284,9 @@ public sealed class MemberClosureTests
 
                     assert.equal(vnode.name, "section");
                     assert.equal(vnode.children[0].name.name, "Child");
-                    assert.deepEqual(vnode.children[0].props, { title: "direct" });
+                    assert.deepEqual(vnode.children[0].props, { Title: "direct" });
                     assert.equal(vnode.children[1].name.name, "Child");
-                    assert.deepEqual(vnode.children[1].props, { title: "alias" });
+                    assert.deepEqual(vnode.children[1].props, { Title: "alias" });
                 });
                 """);
 
@@ -1352,7 +1351,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "default: () => [].concat(h(\"span\", null, [state.title]) ?? [])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ChildContent: () => [].concat(h(\"span\", null, [state.title]) ?? [])", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1395,7 +1394,7 @@ public sealed class MemberClosureTests
                 test("inline RenderFragment parameter lowers to a Vue slot function", () => {
                     const render = component.setup({}, { slots: {} });
                     const child = render();
-                    const slot = child.children.default();
+                    const slot = child.children.ChildContent();
 
                     assert.equal(child.name.name, "Child");
                     assert.equal(slot[0].name, "span");
@@ -1456,9 +1455,9 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "function theme()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ theme: theme() }", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("function Theme()", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function Theme()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ Theme: Theme() }", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("function theme()", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -1477,7 +1476,7 @@ public sealed class MemberClosureTests
                 [VueLibraryComponent("npm:demo-links@1.mjs", "DemoLink")]
                 public sealed class DemoLink : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("default")]
                     public RenderFragment? ChildContent { get; set; }
                 }
 
@@ -1648,7 +1647,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "function createCounterSetupScope(slots)", StringComparison.Ordinal);
         StringAssert.Contains(
             script,
-            "...suppressLogo() ? {} : typeof slots.logo === \"function\" ? { logo: () => [].concat(slots.logo() ?? []) } : {}",
+            "...SuppressLogo() ? {} : typeof slots.Logo === \"function\" ? { Logo: () => [].concat(slots.Logo() ?? []) } : {}",
             StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
@@ -1690,14 +1689,14 @@ public sealed class MemberClosureTests
                 import component from "./components/parent.mjs";
 
                 test("conditional RenderFragment local projects slot presence", () => {
-                    const child = component.setup({}, { slots: { logo: () => h("span", null, ["brand"]) } })();
+                    const child = component.setup({}, { slots: { Logo: () => h("span", null, ["brand"]) } })();
                     const withoutLogo = component.setup({}, { slots: {} })();
-                    const logo = child.children.logo();
+                    const logo = child.children.Logo();
 
                     assert.equal(child.name.name, "Child");
                     assert.equal(logo[0].name, "span");
                     assert.deepEqual(logo[0].children, ["brand"]);
-                    assert.equal("logo" in withoutLogo.children, false);
+                    assert.equal("Logo" in withoutLogo.children, false);
                 });
                 """);
 
@@ -1752,10 +1751,10 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(
             script,
-            "...typeof slots.logo === \"function\" ? { logo: () => [].concat(slots.logo() ?? []) } : {}",
+            "...typeof slots.Logo === \"function\" ? { Logo: () => [].concat(slots.Logo() ?? []) } : {}",
             StringComparison.Ordinal);
         Assert.IsFalse(
-            script.Contains("logo: () => typeof slots.logo", StringComparison.Ordinal),
+            script.Contains("Logo: () => typeof slots.Logo", StringComparison.Ordinal),
             script);
 
         var tempRoot = Path.Combine(
@@ -1794,12 +1793,12 @@ public sealed class MemberClosureTests
                 import component from "./components/parent.mjs";
 
                 test("missing forwarded RenderFragment omits the target Vue slot", () => {
-                    const withLogo = component.setup({}, { slots: { logo: () => h("span", null, ["brand"]) } })();
+                    const withLogo = component.setup({}, { slots: { Logo: () => h("span", null, ["brand"]) } })();
                     const withoutLogo = component.setup({}, { slots: {} })();
 
-                    assert.equal(typeof withLogo.children.logo, "function");
-                    assert.equal(withLogo.children.logo()[0].name, "span");
-                    assert.equal("logo" in withoutLogo.children, false);
+                    assert.equal(typeof withLogo.children.Logo, "function");
+                    assert.equal(withLogo.children.Logo()[0].name, "span");
+                    assert.equal("Logo" in withoutLogo.children, false);
                 });
                 """);
 
@@ -1979,7 +1978,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "slots.extra", StringComparison.Ordinal);
+        StringAssert.Contains(script, "slots.Extra", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -2019,7 +2018,7 @@ public sealed class MemberClosureTests
                 test("object-carried RenderFragment property lowers to the original Vue slot", () => {
                     const render = component.setup({}, {
                         slots: {
-                            extra: () => ({ name: "strong", props: null, children: ["tools"] })
+                            Extra: () => ({ name: "strong", props: null, children: ["tools"] })
                         }
                     });
                     const vnode = render();
@@ -2427,7 +2426,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "key: \"form-key\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "event?.preventDefault?.();", StringComparison.Ordinal);
         StringAssert.Contains(script, "event?.stopPropagation?.();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ title: \"bulk\", count: 3 }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ Title: \"bulk\", Count: 3 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -2511,7 +2510,7 @@ public sealed class MemberClosureTests
                     assert.equal(stopped, true);
 
                     assert.equal(child.name.name, "Child");
-                    assert.deepEqual(child.props, { title: "bulk", count: 3 });
+                    assert.deepEqual(child.props, { Title: "bulk", Count: 3 });
                 });
                 """);
 
@@ -2803,8 +2802,8 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addMultipleAttributes(", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "h(Fragment, null, [h(\"form\", { class: \"checkout\", onSubmit: submit }, [state.submitted])", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ title: \"bulk\", count: 3 })", StringComparison.Ordinal);
+        StringAssert.Contains(script, "h(Fragment, null, [h(\"form\", { class: \"checkout\", onSubmit: Submit }, [state.submitted])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ Title: \"bulk\", Count: 3 })", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -2854,7 +2853,7 @@ public sealed class MemberClosureTests
                     assert.equal(form.props.class, "checkout");
                     assert.equal(typeof form.props.onSubmit, "function");
                     assert.equal(form.children[0], "idle");
-                    assert.deepEqual(child.props, { title: "bulk", count: 3 });
+                    assert.deepEqual(child.props, { Title: "bulk", Count: 3 });
 
                     form.props.onSubmit();
                     assert.equal(render().children[0].children[0], "submitted");
@@ -3062,10 +3061,10 @@ public sealed class MemberClosureTests
                 [ECMAScriptModule("./components/child")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public string Title { get; set; } = "";
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onValueChanged")]
                     public EventCallback<string> OnValueChanged { get; set; }
 
                     [Parameter]
@@ -3583,6 +3582,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
+            using ECMAScript.VueContract;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -3650,16 +3650,16 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function createCounterSetupScope(props) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
-        StringAssert.Contains(script, "count: seed()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "count: Seed()", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("function buildRenderTree(builder)", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addContent(props.title);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addContent(state.count);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return h(\"button\", { onClick: increment }, [props.title, state.count]);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return h(\"button\", { onClick: Increment }, [props.Title, state.count]);", StringComparison.Ordinal);
         StringAssert.Contains(script, "return { $renderDirect };", StringComparison.Ordinal);
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"Title\"", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("let invalidate = null;", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("let pendingInvalidations = 0;", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("const stateHasChanged = () => {", StringComparison.Ordinal), script);
@@ -3840,12 +3840,12 @@ public sealed class MemberClosureTests
 
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
         StringAssert.Contains(script, "import { defineComponent, h, reactive, watch } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onParametersSet();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.OnParametersSet();", StringComparison.Ordinal);
         StringAssert.Contains(script, "watch(", StringComparison.Ordinal);
         StringAssert.Contains(script, "() => props,", StringComparison.Ordinal);
         StringAssert.Contains(script, "{ deep: true }", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function onParametersSet()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.count = props.title.length;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function OnParametersSet()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.count = props.Title.length;", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -3888,10 +3888,10 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "onMounted(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onAfterRender(true);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.OnAfterRender(true);", StringComparison.Ordinal);
         StringAssert.Contains(script, "onUpdated(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onAfterRender(false);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function onAfterRender(firstRender)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.OnAfterRender(false);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function OnAfterRender(firstRender)", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -3936,9 +3936,9 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "import { defineComponent, h, onUnmounted, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "onUnmounted(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.dispose();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.Dispose();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("scope.disposeAsync();", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "function dispose()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function Dispose()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.disposeCount++;", StringComparison.Ordinal);
     }
 
@@ -4099,7 +4099,7 @@ public sealed class MemberClosureTests
                 import component from "./components/counter.mjs";
 
                 test("lifecycle hooks run across mount, prop update, and unmount", () => {
-                    const props = { title: "one" };
+                    const props = { Title: "one" };
                     const render = component.setup(props, { slots: {} });
 
                     assert.deepEqual(render().children, ["init|params:one|"]);
@@ -4107,7 +4107,7 @@ public sealed class MemberClosureTests
                     __runMounted();
                     assert.deepEqual(render().children, ["init|params:one|after:first|"]);
 
-                    props.title = "two";
+                    props.Title = "two";
                     __runWatchers();
                     __runUpdated();
                     assert.deepEqual(render().children, ["init|params:one|after:first|params:two|after:update|"]);
@@ -4166,9 +4166,9 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "let hasRendered = false;", StringComparison.Ordinal);
         StringAssert.Contains(script, "let cachedVNode = null;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (hasRendered && !scope.shouldRender()) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "if (hasRendered && !scope.ShouldRender()) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function shouldRender()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function ShouldRender()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return state.count % 2 === 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return h(\"div\", null, [state.count]);", StringComparison.Ordinal);
@@ -4494,9 +4494,9 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "Promise.resolve(scope.onInitializedAsync()).then(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Promise.resolve(scope.OnInitializedAsync()).then(", StringComparison.Ordinal);
         StringAssert.Contains(script, "stateHasChanged();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function onInitializedAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function OnInitializedAsync()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.count = 1;", StringComparison.Ordinal);
     }
 
@@ -4551,7 +4551,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "return Promise.reject(error);", StringComparison.Ordinal);
         StringAssert.Contains(script, "setup() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const scope = createCounterSetupScope(stateHasChanged, invokeAsync);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "invokeAsync(increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAsync(Increment);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -4843,11 +4843,11 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "const gen = ++parametersSetAsyncGen;", StringComparison.Ordinal);
         StringAssert.Contains(script, "parametersSetAsyncTail = parametersSetAsyncTail", StringComparison.Ordinal);
         StringAssert.Contains(script, "if (gen !== parametersSetAsyncGen) {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return Promise.resolve(scope.onParametersSetAsync()).then(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Promise.resolve(scope.OnParametersSetAsync()).then(", StringComparison.Ordinal);
         StringAssert.Contains(script, "if (gen === parametersSetAsyncGen) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "runOnParametersSetAsync();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function onParametersSetAsync()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.count = props.title.length;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function OnParametersSetAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.count = props.Title.length;", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -4968,14 +4968,14 @@ public sealed class MemberClosureTests
                 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
                 test("OnParametersSetAsync applies only the latest queued parameter generation", async () => {
-                    const props = { title: "one" };
+                    const props = { Title: "one" };
                     const render = component.setup(props, { slots: {} });
 
                     assert.deepEqual(render().children, ["", 0]);
 
-                    props.title = "two";
+                    props.Title = "two";
                     __runWatchers();
-                    props.title = "three";
+                    props.Title = "three";
                     __runWatchers();
 
                     await flush();
@@ -4983,7 +4983,7 @@ public sealed class MemberClosureTests
 
                     assert.deepEqual(render().children, ["three", 1]);
 
-                    props.title = "four";
+                    props.Title = "four";
                     __runWatchers();
 
                     await flush();
@@ -5043,9 +5043,9 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "void Promise.resolve(scope.onAfterRenderAsync(true));", StringComparison.Ordinal);
-        StringAssert.Contains(script, "void Promise.resolve(scope.onAfterRenderAsync(false));", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function onAfterRenderAsync(firstRender)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "void Promise.resolve(scope.OnAfterRenderAsync(true));", StringComparison.Ordinal);
+        StringAssert.Contains(script, "void Promise.resolve(scope.OnAfterRenderAsync(false));", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function OnAfterRenderAsync(firstRender)", StringComparison.Ordinal);
         // Completion must not auto-invalidate/render.
         Assert.IsFalse(
             script.Contains("onAfterRenderAsync(true)).then", StringComparison.Ordinal) ||
@@ -5256,11 +5256,11 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("\"childContent\"", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "\"Title\"", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("\"ChildContent\"", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "setup(props, { slots }) {", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
-        StringAssert.Contains(script, "slots.default", StringComparison.Ordinal);
+        StringAssert.Contains(script, "slots.ChildContent", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("componentProps", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("syncSlotParameters", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "createPanelSetupScope(props, slots)", StringComparison.Ordinal);
@@ -5304,8 +5304,8 @@ public sealed class MemberClosureTests
             childClosure);
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
-        StringAssert.Contains(childScript, "slots.header", StringComparison.Ordinal);
-        Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
+        StringAssert.Contains(childScript, "slots.Header", StringComparison.Ordinal);
+        Assert.IsFalse(childScript.Contains("slots.header", StringComparison.Ordinal), childScript);
 
         var parentFixture = CreateManualGeneratedFixture(
             """
@@ -5352,7 +5352,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ header: () => [].concat(h(\"h1\", null, [\"Named header\"]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: () => [].concat(h(\"h1\", null, [\"Named header\"]) ?? []) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5425,12 +5425,12 @@ public sealed class MemberClosureTests
                     const withoutHeader = render();
                     assert.equal(withoutHeader.children[1], null);
 
-                    slots.header = () => [h("h1", null, ["Dynamic header"])];
+                    slots.Header = () => [h("h1", null, ["Dynamic header"])];
                     const withHeader = render();
                     assert.equal(withHeader.children[1][0].name, "h1");
                     assert.deepEqual(withHeader.children[1][0].children, ["Dynamic header"]);
 
-                    delete slots.header;
+                    delete slots.Header;
                     const removedHeader = render();
                     assert.equal(removedHeader.children[1], null);
                 });
@@ -5439,8 +5439,8 @@ public sealed class MemberClosureTests
                     const parentRender = parent.setup({}, { slots: {} });
                     const childVNode = parentRender();
 
-                    assert.equal(typeof childVNode.children.header, "function");
-                    assert.equal(childVNode.props?.header, undefined);
+                    assert.equal(typeof childVNode.children.Header, "function");
+                    assert.equal(childVNode.props?.Header, undefined);
 
                     const childRender = childVNode.name.setup(childVNode.props ?? {}, { slots: childVNode.children });
                     const rendered = childRender();
@@ -5497,8 +5497,8 @@ public sealed class MemberClosureTests
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
         StringAssert.Contains(childScript, "setup(props, { slots }) {", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(childScript);
-        StringAssert.Contains(childScript, "slots.header(\"Scoped header\")", StringComparison.Ordinal);
-        Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
+        StringAssert.Contains(childScript, "slots.Header(\"Scoped header\")", StringComparison.Ordinal);
+        Assert.IsFalse(childScript.Contains("slots.header", StringComparison.Ordinal), childScript);
 
         var parentFixture = CreateManualGeneratedFixture(
             """
@@ -5545,7 +5545,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ header: value => [].concat(h(\"h1\", null, [value]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: value => [].concat(h(\"h1\", null, [value]) ?? []) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5613,8 +5613,8 @@ public sealed class MemberClosureTests
                     const parentRender = parent.setup({}, { slots: {} });
                     const childVNode = parentRender();
 
-                    assert.equal(typeof childVNode.children.header, "function");
-                    assert.equal(childVNode.props?.header, undefined);
+                    assert.equal(typeof childVNode.children.Header, "function");
+                    assert.equal(childVNode.props?.Header, undefined);
 
                     const childRender = childVNode.name.setup(childVNode.props ?? {}, { slots: childVNode.children });
                     const rendered = childRender();
@@ -6035,13 +6035,13 @@ public sealed class MemberClosureTests
                 import { reactiveCalls } from "vue";
 
                 test("state initializer runs once per setup and handler identity is stable", () => {
-                    const render = component.setup({ title: "Count: " }, { slots: {} });
+                    const render = component.setup({ Title: "Count: " }, { slots: {} });
 
                     // One reactive(state) per setup.
                     console.error("DBG reactiveCalls:", JSON.stringify(reactiveCalls));
                     assert.equal(reactiveCalls.length, 1);
                     assert.ok("count" in reactiveCalls[0]);
-                    assert.deepEqual(component.props, ["title"]);
+                    assert.deepEqual(component.props, ["Title"]);
 
                     const first = render();
                     const handler = first.props.onClick;
@@ -6059,7 +6059,7 @@ public sealed class MemberClosureTests
                     assert.deepEqual(third.children, ["Count: ", 2]);
                     assert.equal(reactiveCalls.length, 1);
 
-                    const otherRender = component.setup({ title: "Other: " }, { slots: {} });
+                    const otherRender = component.setup({ Title: "Other: " }, { slots: {} });
                     const other = otherRender();
                     assert.equal(reactiveCalls.length, 2);
                     assert.notEqual(other.props.onClick, handler);
@@ -6091,10 +6091,10 @@ public sealed class MemberClosureTests
                 [ECMAScriptModule("./components/child")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public string Title { get; set; } = "";
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onValueChanged")]
                     public EventCallback<string> OnValueChanged { get; set; }
                 }
 
@@ -6134,7 +6134,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "{ title: props.title, onValueChanged: handleValueChanged }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ title: props.Title, onValueChanged: HandleValueChanged }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -6199,7 +6199,7 @@ public sealed class MemberClosureTests
                 import component from "./components/parent.mjs";
 
                 test("component parameters normalize to generated child runtime prop names", () => {
-                    const render = component.setup({ title: "Hello" }, { slots: {} });
+                    const render = component.setup({ Title: "Hello" }, { slots: {} });
                     const vnode = render();
 
                     assert.equal(vnode.name.name, "Child");
@@ -6225,6 +6225,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
+            using ECMAScript.VueContract;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -6234,10 +6235,10 @@ public sealed class MemberClosureTests
                 [ECMAScriptModule("./components/child")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public string Title { get; set; } = "";
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onValueChanged")]
                     public EventCallback<string> OnValueChanged { get; set; }
                 }
 
@@ -6378,10 +6379,10 @@ public sealed class MemberClosureTests
                 [ECMAScriptModule("./components/child")]
                 public partial class Child : ComponentBase, IVueComponent
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("value")]
                     public string Value { get; set; } = "";
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onUpdate:value")]
                     public EventCallback<string> ValueChanged { get; set; }
                 }
 
@@ -6529,6 +6530,7 @@ public sealed class MemberClosureTests
                     public string Value { get; set; } = "";
 
                     [Parameter]
+                    [ECMAScriptName("onUpdate:modelValue")]
                     public EventCallback<string> ValueChanged { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -6561,7 +6563,7 @@ public sealed class MemberClosureTests
         var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(childScript, "\"modelValue\"", StringComparison.Ordinal);
-        StringAssert.Contains(childScript, "\"update:modelValue\"", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "\"onUpdate:modelValue\"", StringComparison.Ordinal);
         StringAssert.Contains(childScript, "props.modelValue", StringComparison.Ordinal);
         Assert.IsFalse(childScript.Contains("props.value", StringComparison.Ordinal), childScript);
 
@@ -6686,9 +6688,11 @@ public sealed class MemberClosureTests
                     public string Value { get; set; } = "";
 
                     [Parameter]
+                    [ECMAScriptName("onUpdate:modelValue")]
                     public EventCallback<string> ValueChanged { get; set; }
 
                     [Parameter]
+                    [ECMAScriptName("onAction")]
                     public EventCallback<string> OnAction { get; set; }
 
                     [Parameter]
@@ -6773,7 +6777,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __value => state.text = __value", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "onAction: handleAction", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "{ title: value => [].concat(h(\"h1\", null, [\"slot:\", value]) ?? []) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
@@ -6902,10 +6906,10 @@ public sealed class MemberClosureTests
                 [ECMAScriptModule("./components/callbacks")]
                 public partial class Counter : ComponentBase, IVueComponent
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onClick")]
                     public EventCallback OnClick { get; set; }
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onValueChanged")]
                     public EventCallback<string> ValueChanged { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -6926,23 +6930,12 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"onClick\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"valueChanged\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "emits: [", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"click\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"valueChanged\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"onValueChanged\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.onClick?.();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "props.valueChanged?.(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props.onValueChanged?.(\"ready\");", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("stateHasChanged();", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("Promise.resolve(props.", StringComparison.Ordinal), script);
-        Assert.IsTrue(
-            script.IndexOf("props: [", StringComparison.Ordinal) <
-            script.IndexOf("emits: [", StringComparison.Ordinal),
-            script);
-        var emitsIndex = script.IndexOf("emits: [", StringComparison.Ordinal);
-        Assert.IsTrue(
-            script.IndexOf("\"click\"", emitsIndex, StringComparison.Ordinal) <
-            script.IndexOf("\"valueChanged\"", emitsIndex, StringComparison.Ordinal),
-            script);
+        Assert.IsFalse(script.Contains("emits:", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -6983,10 +6976,10 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "props.ready?.(\"ready\");", StringComparison.Ordinal);
-        StringAssert.Contains(script, "async function onInitializedAsync()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "await props.ready?.(\"ready\");", StringComparison.Ordinal);
-        StringAssert.Contains(script, "Promise.resolve(scope.onInitializedAsync()).then(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props.Ready?.(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "async function OnInitializedAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "await props.Ready?.(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Promise.resolve(scope.OnInitializedAsync()).then(", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("try {", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("catch (", StringComparison.Ordinal), script);
     }

@@ -15,6 +15,7 @@ public sealed class VSelect : VSelectLikeComponentBase
     /// The currently selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VSelect : VSelectLikeComponentBase
     /// Callback invoked when the selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -37,6 +39,7 @@ public sealed class VSelect : VSelectLikeComponentBase
     /// Callback invoked when the selected item value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifySelectModelValue?> SelectedValueChanged { get; set; }
 
     /// <summary>
@@ -44,5 +47,6 @@ public sealed class VSelect : VSelectLikeComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

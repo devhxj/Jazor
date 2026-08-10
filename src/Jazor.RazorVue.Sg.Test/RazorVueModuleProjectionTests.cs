@@ -60,10 +60,10 @@ public sealed class RazorVueModuleProjectionTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "function label()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "export { label as get_Label };", StringComparison.Ordinal);
-        StringAssert.Contains(script, "export function build(value)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return new RuntimeState(\"ready:\").format(value);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function Label()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export { Label as get_Label };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export function Build(value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return new RuntimeState(\"ready:\").Format(value);", StringComparison.Ordinal);
         StringAssert.Contains(script, "class RuntimeState", StringComparison.Ordinal);
         StringAssert.Contains(script, "return this.#_prefix + value;", StringComparison.Ordinal);
         _ = new Acornima.Parser().ParseModule(script);
@@ -116,7 +116,7 @@ public sealed class RazorVueModuleProjectionTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "function buildCssClass(value)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let cssClass = buildCssClass(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function BuildCssClass(value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let cssClass = BuildCssClass(\"ready\");", StringComparison.Ordinal);
     }
 }

@@ -133,10 +133,10 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 			await File.WriteAllTextAsync(
 				testPath,
 				"""
-				import { run } from "./anonymous-ref-out.mjs";
+				import { Run } from "./anonymous-ref-out.mjs";
 
 				Deno.test("anonymous ref and out delegates write values back through the shared protocol", () => {
-				  const result = run(3);
+				  const result = Run(3);
 				  if (result !== 56)
 				    throw new Error(`expected 56 after ref and out write-back, got ${result}`);
 				});
@@ -274,13 +274,13 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 			await File.WriteAllTextAsync(
 				testPath,
 				"""
-				import { invoke, construct } from "./ref-out-complex-targets.mjs";
+				import { Invoke, Construct } from "./ref-out-complex-targets.mjs";
 
 				Deno.test("ref and out locations are evaluated once before the protocol call", () => {
-				  if (invoke() !== 34560891)
-				    throw new Error(`invocation result: ${invoke()}`);
-				  if (construct() !== 1230803)
-				    throw new Error(`constructor result: ${construct()}`);
+				  if (Invoke() !== 34560891)
+				    throw new Error(`invocation result: ${Invoke()}`);
+				  if (Construct() !== 1230803)
+				    throw new Error(`constructor result: ${Construct()}`);
 				});
 				""",
 				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

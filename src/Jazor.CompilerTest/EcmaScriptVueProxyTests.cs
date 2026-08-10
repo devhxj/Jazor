@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ECMAScript;
@@ -2291,6 +2292,7 @@ public sealed class EcmaScriptVueProxyTests
         var teleportProps = typeof(VueTeleportProps);
         var suspenseProps = typeof(VueSuspenseProps);
         var suspenseSlots = typeof(VueSuspenseSlots);
+        var defaultSlots = typeof(VueDefaultSlots);
 
         Assert.IsNotNull(inheritAttrs);
         Assert.IsNotNull(expose);
@@ -2304,10 +2306,10 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(keepAlive);
         Assert.IsNotNull(teleport);
         Assert.IsNotNull(suspense);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionProps>), transition.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionGroupProps>), transitionGroup.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueKeepAliveProps>), keepAlive.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTeleportProps>), teleport.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionProps, VueDefaultSlots>), transition.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionGroupProps, VueDefaultSlots>), transitionGroup.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueKeepAliveProps, VueDefaultSlots>), keepAlive.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTeleportProps, VueDefaultSlots>), teleport.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueSuspenseProps, VueSuspenseSlots>), suspense.PropertyType);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(transitionProps));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(transitionGroupProps));
@@ -2315,12 +2317,14 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(teleportProps));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(suspenseProps));
         Assert.IsTrue(typeof(VueSlots).IsAssignableFrom(suspenseSlots));
+        Assert.IsTrue(typeof(VueSlots).IsAssignableFrom(defaultSlots));
         Assert.AreEqual(typeof(VueTransitionDurationValue), transitionProps.GetProperty(nameof(VueTransitionProps.Duration))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueTransitionMode), transitionProps.GetProperty(nameof(VueTransitionProps.Mode))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueKeepAliveMatch), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Include))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueIntStringValue), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Max))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueTeleportTarget), teleportProps.GetProperty(nameof(VueTeleportProps.To))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueSlotCallback), suspenseSlots.GetProperty(nameof(VueSuspenseSlots.Fallback))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueSlotCallback), defaultSlots.GetProperty(nameof(VueDefaultSlots.Default))!.PropertyType.UnwrapNullable());
 
         AssertNotObject(transitionProps, nameof(VueTransitionProps));
         AssertNotObject(transitionGroupProps, nameof(VueTransitionGroupProps));
@@ -2328,6 +2332,7 @@ public sealed class EcmaScriptVueProxyTests
         AssertNotObject(teleportProps, nameof(VueTeleportProps));
         AssertNotObject(suspenseProps, nameof(VueSuspenseProps));
         AssertNotObject(suspenseSlots, nameof(VueSuspenseSlots));
+        AssertNotObject(defaultSlots, nameof(VueDefaultSlots));
     }
 
     [TestMethod]
@@ -3226,7 +3231,7 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void Vuetify_EventParameters_UseStandardNamesAndOnlyExceptionalEmitMetadata()
+    public void Vuetify_EventParameters_DeclareExactListenerNames()
     {
         var componentTypes = typeof(Vuetify).Assembly
             .GetTypes()
@@ -3247,42 +3252,25 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(eventProperties.Length > 0);
         foreach (var property in eventProperties)
         {
-            Assert.IsTrue(
-                property.Name.EndsWith("Changed", StringComparison.Ordinal) ||
-                property.Name.Length > 2 &&
-                property.Name.StartsWith("On", StringComparison.Ordinal) &&
-                char.IsUpper(property.Name[2]),
-                $"{property.DeclaringType?.Name}.{property.Name}");
+            var runtimeName = property.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name;
+            Assert.IsFalse(string.IsNullOrWhiteSpace(runtimeName), $"{property.DeclaringType?.Name}.{property.Name}");
         }
 
-        var exceptionalEmits = componentTypes
-            .SelectMany(static type => type
-                .GetCustomAttributes<ECMAScript.VueContract.VueLibraryEmitAttribute>()
-                .Select(attribute => $"{type.Name}.{attribute.RazorAlias}={attribute.Name}"))
-            .OrderBy(static value => value, StringComparer.Ordinal)
-            .ToArray();
-
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "VAlert.OnClickClose=click:close",
-                "VChip.OnClickClose=click:close",
-                "VChip.OnGroupSelected=group:selected",
-                "VDialog.OnClickOutside=click:outside",
-                "VEmptyState.OnActionClick=click:action",
-                "VField.OnAppendInnerClick=click:appendInner",
-                "VField.OnClearClick=click:clear",
-                "VField.OnPrependInnerClick=click:prependInner",
-                "VImg.OnLoadStart=loadstart",
-                "VInput.OnAppendClick=click:append",
-                "VInput.OnPrependClick=click:prepend",
-                "VOverlay.OnClickOutside=click:outside",
-                "VSnackbar.OnClickOutside=click:outside",
-                "VTabsWindowItem.OnGroupSelected=group:selected",
-                "VTreeview.OnOpenClick=click:open",
-                "VTreeview.OnSelectClick=click:select"
-            },
-            exceptionalEmits);
+        Assert.AreEqual(
+            "onClick:close",
+            typeof(VAlert).GetProperty(nameof(VAlert.OnClickClose))?.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+        Assert.AreEqual(
+            "onUpdate:modelValue",
+            typeof(VAlert).GetProperty(nameof(VAlert.ModelValueChanged))?.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+        Assert.AreEqual(
+            "onLoadstart",
+            typeof(VImg).GetProperty(nameof(VImg.OnLoadStart))?.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+        Assert.AreEqual(
+            "optionsChanged",
+            typeof(VDataIterator).GetProperty(nameof(VDataIterator.OptionsChanged))?.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+        Assert.IsNull(
+            typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly
+                .GetType("ECMAScript.VueContract.VueLibraryEmitAttribute"));
 
         Assert.IsNotNull(typeof(VDialog).GetProperty(nameof(VDialog.OnKeydown)));
         Assert.IsNotNull(typeof(VImg).GetProperty(nameof(VImg.OnError)));
@@ -3362,12 +3350,15 @@ public sealed class EcmaScriptVueProxyTests
                 .ToHashSet(StringComparer.Ordinal);
             var eventNames = authoringProperties
                 .Where(static property => IsEventCallback(property.PropertyType))
-                .Select(GetTDesignEventName)
+                .Select(GetTDesignMemberName)
                 .ToHashSet(StringComparer.Ordinal);
 
             Assert.IsTrue(contract.Props.IsSubsetOf(parameterNames), $"{componentType.Name} missing props: {string.Join(", ", contract.Props.Except(parameterNames))}");
             Assert.IsTrue(contract.Slots.IsSubsetOf(slotNames), $"{componentType.Name} missing slots: {string.Join(", ", contract.Slots.Except(slotNames))}");
-            Assert.IsTrue(contract.Events.SetEquals(eventNames), $"{componentType.Name} events differ: expected [{string.Join(", ", contract.Events)}], actual [{string.Join(", ", eventNames)}]");
+            var expectedEventNames = contract.Events
+                .Select(ToTDesignListenerName)
+                .ToHashSet(StringComparer.Ordinal);
+            Assert.IsTrue(expectedEventNames.SetEquals(eventNames), $"{componentType.Name} events differ: expected [{string.Join(", ", expectedEventNames)}], actual [{string.Join(", ", eventNames)}]");
 
             var additionalAttributes = componentType.GetProperty(nameof(TComponentBase.AdditionalAttributes), BindingFlags.Public | BindingFlags.Instance);
             Assert.IsNotNull(additionalAttributes, componentType.FullName);
@@ -3421,9 +3412,10 @@ public sealed class EcmaScriptVueProxyTests
             "title",
             typeof(ElAlert).GetProperty(nameof(ElAlert.TitleSlot))!
                 .GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
-        Assert.IsNull(
+        Assert.AreEqual(
+            "offset",
             typeof(ElAffix).GetProperty(nameof(ElAffix.Offset))!
-                .GetCustomAttribute<ECMAScriptNameAttribute>());
+                .GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
     }
 
     private static IEnumerable<string> GetVuetifyRuntimeComponentNames()
@@ -4258,29 +4250,35 @@ public sealed class EcmaScriptVueProxyTests
            type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RenderFragment<>);
 
     private static string GetTDesignMemberName(PropertyInfo property)
-        => property.GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name ??
-           property.Name switch
-           {
-               nameof(TContentComponentBase.ChildContent) => "default",
-               _ => char.ToLowerInvariant(property.Name[0]) + property.Name[1..]
-           };
+        => property.GetCustomAttribute<ECMAScriptNameAttribute>(inherit: true)?.Name ?? property.Name;
 
-    private static string GetTDesignEventName(PropertyInfo property)
+    private static string ToTDesignListenerName(string eventName)
     {
-        var emittedName = property.DeclaringType?
-            .GetCustomAttributes<ECMAScript.VueContract.VueLibraryEmitAttribute>(inherit: false)
-            .SingleOrDefault(attribute => attribute.RazorAlias == property.Name)
-            ?.Name;
-        return emittedName ?? ToKebabCase(property.Name[2..]);
-    }
+        if (eventName.Length == 0 ||
+            eventName.StartsWith("on", StringComparison.Ordinal) &&
+            eventName.Length > 2 &&
+            char.IsUpper(eventName[2]))
+        {
+            return eventName;
+        }
 
-    private static string ToKebabCase(string value)
-        => Regex.Replace(
-            Regex.Replace(value, "([a-z0-9])([A-Z])", "$1-$2", RegexOptions.CultureInvariant),
-            "([A-Z])([A-Z][a-z])",
-            "$1-$2",
-            RegexOptions.CultureInvariant)
-            .ToLowerInvariant();
+        var builder = new StringBuilder(eventName.Length + 2);
+        builder.Append("on");
+        var capitalizeNext = true;
+        foreach (var character in eventName)
+        {
+            if (character == '-')
+            {
+                capitalizeNext = true;
+                continue;
+            }
+
+            builder.Append(capitalizeNext ? char.ToUpperInvariant(character) : character);
+            capitalizeNext = false;
+        }
+
+        return builder.ToString();
+    }
 
     private static void AssertTDesignStrongType(Type type, string message)
     {

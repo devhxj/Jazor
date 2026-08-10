@@ -15,6 +15,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Whether to auto-select the first matching item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoSelectFirst")]
     public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Whether to clear the search text after selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearOnSelect")]
     public bool ClearOnSelect { get; set; } = true;
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The array of delimiters for multiple selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("delimiters")]
     public string[]? Delimiters { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The current search text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("search")]
     public string? Search { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Callback invoked when the search text changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:search")]
     public EventCallback<string?> SearchChanged { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The custom filter function.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customFilter")]
     public VuetifyFilterFunction? CustomFilter { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The custom key-filter functions.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customKeyFilter")]
     public VuetifyFilterKeyFunctions? CustomKeyFilter { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The keys used for filtering items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The filter matching mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterMode")]
     public VuetifyFilterMode? FilterMode { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Whether to disable filtering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noFilter")]
     public bool NoFilter { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// The bound text value of the combobox.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Callback invoked when the text value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -107,6 +119,7 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Callback invoked when the selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifySelectModelValue?> SelectedValueChanged { get; set; }
 
     /// <summary>
@@ -114,5 +127,6 @@ public sealed class VCombobox : VSelectLikeComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

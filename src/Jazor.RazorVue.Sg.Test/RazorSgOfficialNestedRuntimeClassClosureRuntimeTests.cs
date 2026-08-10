@@ -55,7 +55,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "class ReleaseFormatter", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "new ReleaseFormatter(\"release\")", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "combine(title)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "Combine(title)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/nested-runtime-class-closure-runtime.mjs",
@@ -68,7 +68,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
             import component from "./components/nested-runtime-class-closure-runtime.mjs";
 
             test("official Razor nested runtime classes retain reachable field, property, and helper semantics", () => {
-                const render = component.setup({ title: "Deploy API" }, { slots: {} });
+                const render = component.setup({ Title: "Deploy API" }, { slots: {} });
                 const article = render();
 
                 assert.equal(article.name, "article");

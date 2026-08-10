@@ -80,6 +80,8 @@ public sealed class MemberClosureBuilderContractTests
         var fixture = CreateFixture();
         var compilation = fixture.Binding.Compilation;
         var component = fixture.Component.ComponentSymbol;
+        var hiddenLifecycleComponent = compilation.GetTypeByMetadataName("ClosureContract.HiddenLifecycleComponent");
+        var indirectLifecycleComponent = compilation.GetTypeByMetadataName("ClosureContract.IndirectLifecycleComponent");
         var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
         var disposable = compilation.GetTypeByMetadataName("System.IDisposable");
         var asyncDisposable = compilation.GetTypeByMetadataName("System.IAsyncDisposable");
@@ -88,6 +90,8 @@ public sealed class MemberClosureBuilderContractTests
         var valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
         var valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
         Assert.IsNotNull(componentBase);
+        Assert.IsNotNull(hiddenLifecycleComponent);
+        Assert.IsNotNull(indirectLifecycleComponent);
         Assert.IsNotNull(disposable);
         Assert.IsNotNull(asyncDisposable);
         Assert.IsNotNull(task);
@@ -97,7 +101,13 @@ public sealed class MemberClosureBuilderContractTests
 
         var initialized = component.GetMembers("OnInitialized")
             .OfType<IMethodSymbol>()
-            .Single(method => !method.IsStatic && method.Parameters.Length == 0);
+            .Single(method => method.IsOverride);
+        var hiddenInitialized = hiddenLifecycleComponent!.GetMembers("OnInitialized")
+            .OfType<IMethodSymbol>()
+            .Single(method => !method.IsStatic && !method.IsOverride && method.Parameters.Length == 0);
+        var indirectInitialized = indirectLifecycleComponent!.GetMembers("OnInitialized")
+            .OfType<IMethodSymbol>()
+            .Single(method => method.IsOverride);
         var staticInitialized = component.GetMembers("OnInitialized")
             .OfType<IMethodSymbol>()
             .Single(method => method.IsStatic);
@@ -110,9 +120,16 @@ public sealed class MemberClosureBuilderContractTests
         var disposeOverload = component.GetMembers("Dispose")
             .OfType<IMethodSymbol>()
             .Single(method => method.Parameters.Length == 1);
+        var statusGetter = component.GetMembers("Status")
+            .OfType<IPropertySymbol>()
+            .Single()
+            .GetMethod;
+        Assert.IsNotNull(statusGetter);
 
         Assert.IsTrue(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, initialized, componentBase));
         Assert.IsTrue(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, initialized, null));
+        Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", hiddenLifecycleComponent, hiddenInitialized, componentBase));
+        Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", indirectLifecycleComponent, indirectInitialized, componentBase));
         Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, staticInitialized, componentBase));
         Assert.IsFalse(InvokeStatic<bool>("IsSupportedLifecycleMethod", component, fixture.NonRenderTreeMethod, componentBase));
         var inheritedInitialized = componentBase!.GetMembers("OnInitialized").OfType<IMethodSymbol>().Single();
@@ -120,7 +137,9 @@ public sealed class MemberClosureBuilderContractTests
 
         Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, dispose, disposable, asyncDisposable));
         Assert.IsTrue(InvokeStatic<bool>("IsDisposeRoot", component, disposeAsync, disposable, asyncDisposable));
+        Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, fixture.NonRenderTreeMethod, disposable, asyncDisposable));
         Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, disposeOverload, disposable, asyncDisposable));
+        Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, statusGetter!, disposable, asyncDisposable));
         var interfaceDispose = disposable!.GetMembers("Dispose").OfType<IMethodSymbol>().Single();
         Assert.IsFalse(InvokeStatic<bool>("IsDisposeRoot", component, interfaceDispose, disposable, asyncDisposable));
         Assert.IsTrue(InvokeStatic<bool>("ImplementsInterface", component, disposable));
@@ -155,6 +174,12 @@ public sealed class MemberClosureBuilderContractTests
             fixture.ExplicitDisposeComponent,
             explicitDisposeAsync,
             disposable,
+            asyncDisposable));
+        Assert.IsTrue(InvokeStatic<bool>(
+            "IsDisposeRoot",
+            fixture.ExplicitDisposeComponent,
+            explicitDisposeAsync,
+            null,
             asyncDisposable));
 
         StringAssert.Contains(
@@ -231,6 +256,8 @@ public sealed class MemberClosureBuilderContractTests
                 private void Dispose(int marker)
                 {
                 }
+
+                public string Status => "ready";
             }
 
             public sealed class ExplicitDisposeComponent : ComponentBase, IDisposable, IAsyncDisposable
@@ -240,6 +267,27 @@ public sealed class MemberClosureBuilderContractTests
                 }
 
                 ValueTask IAsyncDisposable.DisposeAsync() => ValueTask.CompletedTask;
+            }
+
+            public sealed class HiddenLifecycleComponent : ComponentBase
+            {
+                public new void OnInitialized()
+                {
+                }
+            }
+
+            public abstract class IntermediateLifecycleComponentBase : ComponentBase
+            {
+                protected override void OnInitialized()
+                {
+                }
+            }
+
+            public sealed class IndirectLifecycleComponent : IntermediateLifecycleComponentBase
+            {
+                protected override void OnInitialized()
+                {
+                }
             }
 
             internal sealed class ForeignComponent

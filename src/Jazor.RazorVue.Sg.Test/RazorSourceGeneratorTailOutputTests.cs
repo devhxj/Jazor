@@ -144,4 +144,46 @@ public sealed class RazorTailOutputTests
         StringAssert.Contains(failure, "Demo.Pages.DynamicTag", StringComparison.Ordinal);
         StringAssert.Contains(failure, "OpenElement tag names must be compile-time strings", StringComparison.Ordinal);
     }
+
+    [TestMethod]
+    public void TryBuildFinalCompilationCatalog_RejectsExpressionBodiedBuildRenderTreeAtBindingBoundary()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.ExpressionBodied",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+                using Microsoft.AspNetCore.Components;
+                using Microsoft.AspNetCore.Components.Rendering;
+                using static ECMAScript.Vue3;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/expression-bodied")]
+                public sealed class ExpressionBodied : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        => builder.AddContent(0, "expression-bodied");
+                }
+                """,
+                parseOptions,
+                "Pages/ExpressionBodied.razor.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
+
+        var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
+            compilation,
+            CancellationToken.None,
+            out var catalogSource,
+            out var failure);
+
+        Assert.IsFalse(result);
+        Assert.IsNull(catalogSource);
+        Assert.IsNotNull(failure);
+        StringAssert.Contains(failure, "Demo.Pages.ExpressionBodied", StringComparison.Ordinal);
+        StringAssert.Contains(failure, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
+    }
 }

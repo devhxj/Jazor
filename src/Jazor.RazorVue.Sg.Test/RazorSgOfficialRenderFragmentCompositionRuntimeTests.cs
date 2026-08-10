@@ -24,7 +24,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 [ECMAScriptModule("./components/slot-host-render-fragment-composition-runtime")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Content { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#content")] public RenderFragment? Content { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -83,7 +83,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             import slotHost from "./components/slot-host-render-fragment-composition-runtime.mjs";
 
             test("official Razor local RenderFragment composition forwards the complete named slot", () => {
-                const host = component.setup({ releaseName: "May deployment" }, { slots: {} })();
+                const host = component.setup({ ReleaseName: "May deployment" }, { slots: {} })();
                 assert.equal(host.name, slotHost);
                 assert.equal(typeof host.children.content, "function");
 
@@ -199,7 +199,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 assert.equal(panel.name, itemPanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ id: 42, label: "Production" });
+                const nodes = panel.children.item({ Id: 42, Label: "Production" });
                 assert.equal(nodes.length, 1);
                 const item = nodes[0];
                 assert.equal(item.name, "li");
@@ -290,7 +290,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "ComposeItemTemplate()", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.detailed", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-item-variant-render-fragment-runtime.mjs",
@@ -303,14 +303,14 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             import component from "./components/release-item-variant-render-fragment-runtime.mjs";
 
             test("official Razor conditional local generic RenderFragment selects the matching scoped slot content", () => {
-                const compactPanel = component.setup({ detailed: false }, { slots: {} })();
-                const compact = compactPanel.children.item({ id: 9, label: "Review" })[0];
+                const compactPanel = component.setup({ Detailed: false }, { slots: {} })();
+                const compact = compactPanel.children.item({ Id: 9, Label: "Review" })[0];
                 assert.equal(compact.name, "span");
                 assert.equal(compact.props["data-variant"], "compact");
                 assert.deepEqual(compact.children, ["Review"]);
 
-                const detailedPanel = component.setup({ detailed: true }, { slots: {} })();
-                const detailed = detailedPanel.children.item({ id: 9, label: "Review" })[0];
+                const detailedPanel = component.setup({ Detailed: true }, { slots: {} })();
+                const detailed = detailedPanel.children.item({ Id: 9, Label: "Review" })[0];
                 assert.equal(detailed.name, "strong");
                 assert.equal(detailed.props["data-variant"], "detailed");
                 assert.deepEqual(detailed.children, ["9:Review"]);
@@ -343,7 +343,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 [ECMAScriptModule("./components/tree-panel-local-render-fragment-runtime")]
                 public sealed class TreePanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Content { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#content")] public RenderFragment? Content { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -398,7 +398,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             import component from "./components/release-tree-local-render-fragment-runtime.mjs";
 
             test("official Razor recursive local RenderFragment keeps nested node order", () => {
-                const panel = component.setup({ depth: 2 }, { slots: {} })();
+                const panel = component.setup({ Depth: 2 }, { slots: {} })();
                 const root = panel.children.content()[0];
                 assert.equal(root.name, "li");
                 assert.equal(root.props["data-depth"], 2);
@@ -442,7 +442,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 [ECMAScriptModule("./components/slot-host-expression-fragment-runtime")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Content { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#content")] public RenderFragment? Content { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -484,7 +484,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             import component from "./components/release-notice-expression-fragment-runtime.mjs";
 
             test("official Razor expression-bodied RenderFragment factory forwards current props", () => {
-                const host = component.setup({ message: "Approval pending" }, { slots: {} })();
+                const host = component.setup({ Message: "Approval pending" }, { slots: {} })();
                 const notice = host.children.content()[0];
                 assert.equal(notice.name, "aside");
                 assert.equal(notice.props["data-notice"], "release");

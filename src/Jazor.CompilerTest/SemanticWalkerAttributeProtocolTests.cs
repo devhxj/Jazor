@@ -176,7 +176,7 @@ internal static class AttributeProtocolCatalog
                 }
             }
             """,
-            "@Metadata({ label: \"entry\", enabled: true })"),
+            "@Metadata({ Label: \"entry\", Enabled: true })"),
         Emit(
             "constructor-and-initializer.mixed",
             "marker=exact;constructor=int;named=property+field;shape=args-then-options",
@@ -199,7 +199,7 @@ internal static class AttributeProtocolCatalog
                 }
             }
             """,
-            "@Audit(3, { category: \"ops\", critical: true })"),
+            "@Audit(3, { Category: \"ops\", Critical: true })"),
         Emit(
             "configured.type-and-member-aliases",
             "marker=exact;constructor=parameterless;named=configured-property;name=configured",

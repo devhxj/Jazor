@@ -36,8 +36,8 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("Field", Invoke<string>("GetSourceDeclaredNameCandidate", normalField));
         Assert.IsNull(Invoke<string?>("GetSourceDeclaredNameCandidate", backingField));
         Assert.AreEqual("Auto", Invoke<string>("GetSourceDeclaredNameCandidate", autoProperty.GetMethod!));
-        Assert.AreEqual("auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty.GetMethod!));
-        Assert.AreEqual("auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty));
+        Assert.AreEqual("Auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty.GetMethod!));
+        Assert.AreEqual("Auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty));
         Assert.AreEqual("Ordinary", Invoke<string>("GetSourceDeclaredNameCandidate", ordinaryMethod));
         Assert.AreEqual("Nested", Invoke<string>("GetSourceDeclaredNameCandidate", nested));
         Assert.IsTrue(Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod).StartsWith("m$", StringComparison.Ordinal));
@@ -75,6 +75,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         var compilation = CreateCompilation();
         var marked = GetNamedType(compilation, "PrivateContracts.Marked");
         var blank = GetNamedType(compilation, "PrivateContracts.Blank");
+        var nullMarked = GetNamedType(compilation, "PrivateContracts.NullMarked");
         var plain = GetNamedType(compilation, "PrivateContracts.Plain");
         var record = GetNamedType(compilation, "PrivateContracts.RecordShape");
         var value = GetNamedType(compilation, "PrivateContracts.ValueShape");
@@ -85,6 +86,7 @@ public sealed class VueModuleBuilderPrivateContractTests
 
         Assert.AreEqual("components/marked.mjs", Invoke<string>("GetRelativePath", marked));
         Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Blank.mjs", Invoke<string>("GetRelativePath", blank));
+        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/NullMarked.mjs", Invoke<string>("GetRelativePath", nullMarked));
         Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Plain.mjs", Invoke<string>("GetRelativePath", plain));
 
         Assert.IsTrue(Invoke<bool>("IsRuntimeMemberClass", plain));
@@ -182,7 +184,7 @@ public sealed class VueModuleBuilderPrivateContractTests
     }
 
     [TestMethod]
-    public void ComponentTypeHelpers_ClassifySlotsCallbacksAndMemberNames()
+    public void ComponentTypeHelpers_ClassifyRenderFragmentsCallbacksAndMemberNames()
     {
         var compilation = CreateCompilation();
         var shapes = GetNamedType(compilation, "PrivateContracts.ComponentShapes");
@@ -193,8 +195,8 @@ public sealed class VueModuleBuilderPrivateContractTests
         var auto = GetProperty(shapes, "Auto");
         var ordinary = GetMethod(shapes, "Ordinary");
 
-        Assert.IsTrue(Invoke<bool>("IsChildContentParameter", childContent));
-        Assert.IsFalse(Invoke<bool>("IsChildContentParameter", title));
+        Assert.IsTrue(Invoke<bool>("IsAnyRenderFragmentType", childContent.Type));
+        Assert.IsFalse(Invoke<bool>("IsAnyRenderFragmentType", title.Type));
         Assert.IsTrue(Invoke<bool>("IsEventCallbackType", callback.Type));
         Assert.IsTrue(Invoke<bool>("IsEventCallbackType", genericCallback.Type));
         Assert.IsFalse(Invoke<bool>("IsEventCallbackType", title.Type));
@@ -206,7 +208,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         };
         Assert.AreEqual("mappedOrdinary", Invoke<string>("GetRuntimeMemberName", ordinary, declaredNames));
         declaredNames[ordinary.OriginalDefinition] = string.Empty;
-        Assert.AreEqual("ordinary", Invoke<string>("GetRuntimeMemberName", ordinary, declaredNames));
+        Assert.AreEqual("Ordinary", Invoke<string>("GetRuntimeMemberName", ordinary, declaredNames));
         Assert.IsNotNull(Invoke<string?>("GetPropertyBackingFieldName", shapes, auto));
         StringAssert.Contains(Invoke<string>("GetStableSymbolSortKey", ordinary), "PrivateContracts.cs", StringComparison.Ordinal);
         Assert.IsFalse(string.IsNullOrWhiteSpace(Invoke<string>("GetStableSymbolSortKey", compilation.GetSpecialType(SpecialType.System_String))));
@@ -317,7 +319,7 @@ public sealed class VueModuleBuilderPrivateContractTests
             ordinary,
             new HashSet<string>(StringComparer.Ordinal) { preferredName },
             new HashSet<string>(StringComparer.Ordinal));
-        Assert.AreEqual(sourceName, sourceFallback);
+        Assert.IsTrue(sourceFallback.StartsWith("m$", StringComparison.Ordinal));
         var firstAlias = Invoke<string>(
             "ChooseModuleDeclaredName",
             ordinary,
@@ -957,6 +959,9 @@ public sealed class VueModuleBuilderPrivateContractTests
 
             [ECMAScriptModule("")]
             public sealed class Blank { }
+
+            [ECMAScriptModule(null)]
+            public sealed class NullMarked { }
 
             [ECMAScriptModule]
             public sealed class NoArgumentMarked { }

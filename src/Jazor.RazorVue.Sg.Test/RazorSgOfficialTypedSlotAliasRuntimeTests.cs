@@ -41,7 +41,7 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "const activeTemplate = typeof slots.item", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "activeTemplate(state.current)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "activeTemplate(state.Current)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-row-template.mjs",
@@ -61,8 +61,8 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
                     slots: {
                         item: release => [{
                             name: "span",
-                            props: { "data-release-id": release.id },
-                            children: [release.label]
+                            props: { "data-release-id": release.Id },
+                            children: [release.Label]
                         }]
                     }
                 })();

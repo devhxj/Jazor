@@ -23,7 +23,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
                 [ECMAScriptModule("./components/release-footer-slot-panel-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Footer { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#footer")] public RenderFragment? Footer { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -64,7 +64,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Queued: ", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "props.releaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-footer-composition-runtime.mjs",
@@ -79,7 +79,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
             import slotPanel from "./components/release-footer-slot-panel-runtime.mjs";
 
             test("official Razor local RenderFragment composition produces the footer slot", () => {
-                const panel = component.setup({ releaseName: "Accounts API" }, { slots: {} })();
+                const panel = component.setup({ ReleaseName: "Accounts API" }, { slots: {} })();
                 assert.equal(panel.name, slotPanel);
                 assert.equal(typeof panel.children.footer, "function");
 

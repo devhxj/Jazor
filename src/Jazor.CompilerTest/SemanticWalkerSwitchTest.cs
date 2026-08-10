@@ -91,7 +91,7 @@ public sealed class SemanticWalkerSwitchTest
 	}
 
 	private static void AssertScriptEqual(string expected, string? actual)
-		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
 	// ==================== 传统 Switch 语句测试 ====================
 
@@ -2524,9 +2524,9 @@ public sealed class SemanticWalkerSwitchTest
 			@"{
   return (() => {
     const v$0 = p;
-    if (v$0 != null && ""name"" in v$0 && v$0.name === ""Alice"")
+    if (v$0 != null && ""Name"" in v$0 && v$0.Name === ""Alice"")
       return ""Hi Alice"";
-    if (v$0 != null && ""name"" in v$0 && v$0.name === ""Bob"")
+    if (v$0 != null && ""Name"" in v$0 && v$0.Name === ""Bob"")
       return ""Hey Bob"";
     return ""Hello stranger"";
   })();

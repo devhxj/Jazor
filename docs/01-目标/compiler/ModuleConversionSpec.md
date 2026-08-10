@@ -87,13 +87,13 @@
 
 ### 5.3 名称来源
 
-模块成员名称必须统一走：
+模块成员名称必须统一走 [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md) 定义的名称合同：
 
 1. `ECMAScriptNameAttribute`
 2. `Description("@#name")`
-3. 默认符号名 / 哈希名
+3. 默认源符号名 / 必要的稳定哈希名
 
-不允许在字段、属性、方法之间混用不同命名策略。
+不得在字段、属性、方法之间引入额外的大小写 fallback；不允许由 RazorVue 或模块发射层各自重写同一成员名称。
 
 ## 6. 方法输出规范
 

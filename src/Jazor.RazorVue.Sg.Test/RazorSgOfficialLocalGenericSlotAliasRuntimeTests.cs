@@ -66,10 +66,10 @@ public sealed class RazorSgOfficialLocalGenericSlotAliasRuntimeTests
                             {
                                 name: "li",
                                 props: {
-                                    "data-release": release.name,
-                                    "data-pending": release.pending
+                                    "data-release": release.Name,
+                                    "data-pending": release.Pending
                                 },
-                                children: [release.name]
+                                children: [release.Name]
                             }
                         ]
                     }

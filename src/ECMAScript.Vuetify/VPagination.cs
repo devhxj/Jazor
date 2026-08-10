@@ -15,6 +15,7 @@ public sealed class VPagination : ComponentBase
     /// The currently selected page number.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public int ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VPagination : ComponentBase
     /// Callback invoked when the page number changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<int> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VPagination : ComponentBase
     /// The total number of pages.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VPagination : ComponentBase
     /// The number of visible pagination buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("totalVisible")]
     public VueStringNumberValue? TotalVisible { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VPagination : ComponentBase
     /// Whether the pagination is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -50,5 +55,6 @@ public sealed class VPagination : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

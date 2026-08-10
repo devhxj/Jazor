@@ -42,13 +42,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
             test("official Razor nullable MarkupString renders markup only when a value exists", () => {
                 const populated = component.setup(
-                    { summary: "<strong data-release=\"orders\">Orders ready</strong>" },
+                    { Summary: "<strong data-release=\"orders\">Orders ready</strong>" },
                     { slots: {} })();
                 assert.equal(populated.name, "__static");
                 assert.equal(populated.props.html, "<strong data-release=\"orders\">Orders ready</strong>");
                 assert.equal(populated.props.count, 1);
 
-                const empty = component.setup({ summary: null }, { slots: {} })();
+                const empty = component.setup({ Summary: null }, { slots: {} })();
                 assert.equal(empty, null);
             });
             """);
@@ -92,7 +92,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
             test("official Razor nullable MarkupString expands to zero or one element child", () => {
                 const populated = component.setup(
-                    { summary: "<em>Deployment pending</em>" },
+                    { Summary: "<em>Deployment pending</em>" },
                     { slots: {} })();
                 assert.equal(populated.name, "section");
                 assert.equal(populated.props["data-release-summary"], "panel");
@@ -100,7 +100,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
                 assert.equal(populated.children[0].name, "__static");
                 assert.equal(populated.children[0].props.html, "<em>Deployment pending</em>");
 
-                const empty = component.setup({ summary: null }, { slots: {} })();
+                const empty = component.setup({ Summary: null }, { slots: {} })();
                 assert.equal(empty.name, "section");
                 assert.deepEqual(empty.children, []);
             });
@@ -139,7 +139,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             componentMetadataName: "Demo.Pages.NullableReleaseSummaryMethod");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "readSummary()", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "ReadSummary()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-method-runtime.mjs",
@@ -154,7 +154,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
             test("official Razor nullable MarkupString methods are evaluated once per render", () => {
                 const render = component.setup(
-                    { summary: "<b>Deploy ready</b>" },
+                    { Summary: "<b>Deploy ready</b>" },
                     { slots: {} });
                 const output = render();
 
@@ -184,6 +184,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using ECMAScript.VueContract;
 
             namespace Demo.Components
@@ -191,7 +192,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
                 [ECMAScriptModule("./components/nullable-release-summary-slot-panel-runtime")]
                 public sealed class ReleaseSummaryPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? ChildContent { get; set; }
+                    [Parameter, Description("@#default")] public RenderFragment? ChildContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -230,7 +231,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
             test("official Razor nullable MarkupString child content emits an empty default slot when absent", () => {
                 const populated = component.setup(
-                    { summary: "<i>Release verified</i>" },
+                    { Summary: "<i>Release verified</i>" },
                     { slots: {} })();
                 assert.equal(populated.name, panelComponent);
                 assert.equal(typeof populated.children.default, "function");
@@ -239,7 +240,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
                 assert.equal(populatedNodes[0].name, "__static");
                 assert.equal(populatedNodes[0].props.html, "<i>Release verified</i>");
 
-                const empty = component.setup({ summary: null }, { slots: {} })();
+                const empty = component.setup({ Summary: null }, { slots: {} })();
                 assert.equal(empty.name, panelComponent);
                 assert.deepEqual(empty.children.default(), []);
             });
@@ -283,7 +284,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "Array.from(props.releases ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "Array.from(props.Releases ?? []", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-list-runtime.mjs",
@@ -298,9 +299,9 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             test("official Razor nullable MarkupString expands independently inside foreach element children", () => {
                 const releases = component.setup(
                     {
-                        releases: [
-                            { id: "orders", summary: "<strong>Orders ready</strong>" },
-                            { id: "billing", summary: null }
+                        Releases: [
+                            { Id: "orders", Summary: "<strong>Orders ready</strong>" },
+                            { Id: "billing", Summary: null }
                         ]
                     },
                     { slots: {} })();

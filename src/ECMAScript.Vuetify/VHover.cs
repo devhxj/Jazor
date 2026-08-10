@@ -14,6 +14,7 @@ public sealed class VHover : ComponentBase
     /// Whether to disable hover detection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VHover : ComponentBase
     /// The hover state model value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VHover : ComponentBase
     /// Callback when the hover state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VHover : ComponentBase
     /// Delay in milliseconds before activating the hover state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VHover : ComponentBase
     /// Delay in milliseconds before deactivating the hover state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VHover : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -56,5 +62,6 @@ public sealed class VHover : ComponentBase
     /// Default slot content of the hover component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VHoverDefaultSlotContext>? ChildContent { get; set; }
 }

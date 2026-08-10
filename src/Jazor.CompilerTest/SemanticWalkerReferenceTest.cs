@@ -1,5 +1,7 @@
 using Acornima.Ast;
 using ECMAScript;
+using ECMAScript.Contract;
+using Jazor.Common;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -77,7 +79,7 @@ public sealed class SemanticWalkerReferenceTest
 		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
 	private static void AssertJsNamingScriptEqual(string expected, string? actual)
-		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
 	private static TOperation GetFirstOperation<TOperation>(string code)
 		where TOperation : class, IOperation
@@ -1870,8 +1872,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let current = this.count;
-  let total = current + SharedState.limit;
+  let current = this.Count;
+  let total = current + SharedState.Limit;
 }", script);
 	}
 
@@ -3097,8 +3099,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "_1c7a1e658ed790ff(range, values.length)");
-		StringAssert.Contains(script, ".offset");
-		StringAssert.Contains(script, ".length");
+		StringAssert.Contains(script, ".Offset");
+		StringAssert.Contains(script, ".Length");
 	}
 
 	[TestMethod]
@@ -4469,7 +4471,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let nextAge = person.age + 1;
+  let nextAge = person.Age + 1;
 }", script);
 	}
 
@@ -4496,8 +4498,8 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
-  let name = person.name;
+	AssertScriptEqual(@"{
+  let name = person.Name;
 }", script);
 	}
 
@@ -5676,7 +5678,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1;
-			  v$0 = this.getValues(), v$1 = this.nextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			  v$0 = this.GetValues(), v$1 = this.NextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
 			}
 			""", script);
 	}
@@ -5704,7 +5706,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1;
-			  v$0 = this.getValues(), v$1 = v$0.length - this.nextOffset(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			  v$0 = this.GetValues(), v$1 = v$0.length - this.NextOffset(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
 			}
 			""", script);
 	}
@@ -5733,7 +5735,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1, v$2, v$3;
-			  v$0 = this.getValues(), v$1 = this.nextRow(), v$2 = v$0[v$1], v$3 = this.nextColumn(), v$2[v$3] = _24670e70abc0feb8(v$2[v$3], increment);
+			  v$0 = this.GetValues(), v$1 = this.NextRow(), v$2 = v$0[v$1], v$3 = this.NextColumn(), v$2[v$3] = _24670e70abc0feb8(v$2[v$3], increment);
 			}
 			""", script);
 	}
@@ -5766,7 +5768,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0;
-			  v$0 = this.getHolder(), v$0.value = _24670e70abc0feb8(v$0.value, increment);
+			  v$0 = this.GetHolder(), v$0.Value = _24670e70abc0feb8(v$0.Value, increment);
 			}
 			""", script);
 	}
@@ -5799,7 +5801,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0;
-			  v$0 = this.getHolder(), v$0.value = _24670e70abc0feb8(v$0.value, increment);
+			  v$0 = this.GetHolder(), v$0.Value = _24670e70abc0feb8(v$0.Value, increment);
 			}
 			""", script);
 	}
@@ -5833,7 +5835,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1;
-			  v$0 = this.getHolder(), v$1 = this.nextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
+			  v$0 = this.GetHolder(), v$1 = this.NextIndex(), v$0[v$1] = _24670e70abc0feb8(v$0[v$1], increment);
 			}
 			""", script);
 	}
@@ -5885,7 +5887,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1, v$2;
-			  let before = (v$0 = this.getValues(), v$1 = this.nextIndex(), (v$2 = v$0[v$1], v$0[v$1] = BigInt.asIntN(128, v$2 + 1n), v$2));
+			  let before = (v$0 = this.GetValues(), v$1 = this.NextIndex(), (v$2 = v$0[v$1], v$0[v$1] = BigInt.asIntN(128, v$2 + 1n), v$2));
 			}
 			""", script);
 	}
@@ -5918,7 +5920,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual("""
 			{
 			  let v$0, v$1;
-			  let before = (v$0 = this.getHolder(), (v$1 = v$0.value, v$0.value = BigInt.asIntN(128, v$1 + 1n), v$1));
+			  let before = (v$0 = this.GetHolder(), (v$1 = v$0.Value, v$0.Value = BigInt.asIntN(128, v$1 + 1n), v$1));
 			}
 			""", script);
 	}
@@ -6236,7 +6238,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let v$0;
-  let value = (v$0 = this.getValues(), v$0[v$0.length - this.nextIndex()] ??= this.nextValue());
+  let value = (v$0 = this.GetValues(), v$0[v$0.length - this.NextIndex()] ??= this.NextValue());
 }", script);
 	}
 
@@ -6511,6 +6513,118 @@ public sealed class SemanticWalkerReferenceTest
   let nan = Number.NaN;
   let utc = Date.UTC(2024, 0, 2, 3, 4, 5, 6);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PropertyAssignment_ClrImportValueUsesTheRuntimeKey()
+	{
+		var block = GetBlockOperation("""
+            using System;
+
+            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+            sealed class JazorAttribute : Attribute
+            {
+                public JazorAttribute(int op, string member, string? value = null)
+                {
+                }
+            }
+
+            class TestClass
+            {
+                sealed class QueueState
+                {
+                    [Jazor(3, "Demo.QueueState.Value.set", "runtimeValue")]
+                    public int Value { get; set; }
+                }
+
+                void TestMethod(QueueState state)
+                {
+                    state.Value = 1;
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              state.runtimeValue = 1;
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PropertyAssignment_WithoutAliasKeepsTheClrMemberName()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                sealed class DefaultPropertyProbe
+                {
+                    public int Value { get; set; }
+                }
+
+                void TestMethod(DefaultPropertyProbe state)
+                {
+                    state.Value = 1;
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              state.Value = 1;
+            }
+            """, script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PropertyAssignment_WhiteListAliasOverridesTheClrMemberName()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                sealed class WhiteListAliasProbe
+                {
+                    public int Value { get; set; }
+                }
+
+                void TestMethod(WhiteListAliasProbe state)
+                {
+                    state.Value = 1;
+                }
+            }
+            """);
+		var setter = EnumerateOperations(block)
+			.OfType<IPropertyReferenceOperation>()
+			.Single()
+			.Property
+			.SetMethod!;
+		var setterKey = setter.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		var originalTypes = WhiteList.Types.ToArray();
+		var originalMembers = WhiteList.Members.ToArray();
+		var aliasedMembers = new Dictionary<string, WhiteListValue>(WhiteList.Members, StringComparer.Ordinal)
+		{
+			[setterKey] = new(Op.Alias, "runtimeAlias")
+		};
+
+		WhiteList.ReplaceForCurrentProcess(originalTypes, aliasedMembers);
+		try
+		{
+			var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+			AssertScriptEqual("""
+                {
+                  state.runtimeAlias = 1;
+                }
+                """, script);
+		}
+		finally
+		{
+			WhiteList.ReplaceForCurrentProcess(originalTypes, originalMembers);
+		}
 	}
 
 	[TestMethod]
@@ -6983,7 +7097,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let result = Inner.value;
+  let result = Inner.Value;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -7501,7 +7615,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "Object.defineProperty(this, Symbol.toPrimitive, {");
-		StringAssert.Contains(script, "value: this.toPrimitive.bind(this),");
+		StringAssert.Contains(script, "value: this.ToPrimitive.bind(this),");
 		StringAssert.Contains(script, "configurable: true");
 		Assert.IsFalse(script.Contains("new PropertyDescriptor", StringComparison.Ordinal), script);
 	}
@@ -10170,7 +10284,7 @@ public sealed class SemanticWalkerReferenceTest
             {
               let v$0, v$1;
               let values = [2, 3];
-              let result = RuntimeProbe.combine((v$0 = values, v$1 = 1, v$1), ...v$0);
+              let result = RuntimeProbe.Combine((v$0 = values, v$1 = 1, v$1), ...v$0);
             }
             """, script);
 		_ = new Acornima.Parser().ParseScript(script!);

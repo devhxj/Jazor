@@ -15,6 +15,7 @@ public sealed class VRadioGroup : ComponentBase
     /// The label text of the radio group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VRadioGroup : ComponentBase
     /// The color of the radio group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VRadioGroup : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Whether the radio group is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Whether to hide the details/hints section.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VRadioGroup : ComponentBase
     /// The hint messages to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Whether the entire radio group is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Whether to display radio buttons inline horizontally.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool Inline { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VRadioGroup : ComponentBase
     /// The currently selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Callback invoked when the selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VRadioGroup : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -92,5 +103,6 @@ public sealed class VRadioGroup : ComponentBase
     /// The default slot for placing radio buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

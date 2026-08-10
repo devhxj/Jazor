@@ -11,19 +11,24 @@ public delegate (TDateValue Item1, TDateValue Item2) TPresetRangeIndexOption2();
 [ECMAScript]
 public record TActiveChangeContext<T> : VueProps
 {
+    [ECMAScriptName("activeRowList")]
     [EditorRequired]
     public TActiveChangeContextActiveRowListItem<T>[] ActiveRowList { get; init; } = default!;
 
+    [ECMAScriptName("currentRowData")]
     public T? CurrentRowData { get; init; }
 
+    [ECMAScriptName("type")]
     public TActiveChangeContextType Type { get; init; }
 }
 
 [ECMAScript]
 public record TActiveChangeContextActiveRowListItem<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 }
 
@@ -40,8 +45,10 @@ public enum TActiveChangeContextType
 [ECMAScript]
 public record TActiveRowActionContext<T> : VueProps
 {
+    [ECMAScriptName("action")]
     public TActiveRowActionType Action { get; init; }
 
+    [ECMAScriptName("activeRowList")]
     [EditorRequired]
     public TActiveRowActionContextActiveRowListItem<T>[] ActiveRowList { get; init; } = default!;
 }
@@ -49,8 +56,10 @@ public record TActiveRowActionContext<T> : VueProps
 [ECMAScript]
 public record TActiveRowActionContextActiveRowListItem<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 }
 
@@ -71,6 +80,7 @@ public enum TActiveRowActionType
 [ECMAScript]
 public record TAffixFixedChangeEventContext : VueProps
 {
+    [ECMAScriptName("top")]
     public Number Top { get; init; }
 }
 
@@ -82,6 +92,7 @@ public readonly union TAlertCloseBtnValue(string, bool)
 [ECMAScript]
 public record TAlertCloseEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -94,6 +105,7 @@ public readonly union TAlertCloseValue(string, bool)
 [ECMAScript]
 public record TAlertClosedEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public TransitionEvent E { get; init; } = default!;
 }
@@ -101,8 +113,10 @@ public record TAlertClosedEventContext : VueProps
 [ECMAScript]
 public record TAlertConfig : VueProps
 {
+    [ECMAScriptName("collapseText")]
     public string? CollapseText { get; init; }
 
+    [ECMAScriptName("expandText")]
     public string? ExpandText { get; init; }
 }
 
@@ -128,12 +142,15 @@ public readonly union TAllValidateResult(TCustomValidateObj, TValidateResultType
 [ECMAScript]
 public record TAnchorClickEventLink : VueProps
 {
+    [ECMAScriptName("href")]
     [EditorRequired]
     public string Href { get; init; } = default!;
 
+    [ECMAScriptName("title")]
     [EditorRequired]
     public string Title { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -141,8 +158,10 @@ public record TAnchorClickEventLink : VueProps
 [ECMAScript]
 public record TAnchorConfig : VueProps
 {
+    [ECMAScriptName("copySuccessText")]
     public string? CopySuccessText { get; init; }
 
+    [ECMAScriptName("copyText")]
     public string? CopyText { get; init; }
 }
 
@@ -256,9 +275,11 @@ public readonly struct TAttachNodeReturnValue : IUnion
 [ECMAScript]
 public record TAutoCompleteBlurEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -266,6 +287,7 @@ public record TAutoCompleteBlurEventContext<T> : VueProps
 [ECMAScript]
 public record TAutoCompleteChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public TAutoCompleteChangeEventContextE<T>? E { get; init; }
 }
 
@@ -277,6 +299,7 @@ public readonly union TAutoCompleteChangeEventContextE<T>(InputEvent, MouseEvent
 [ECMAScript]
 public record TAutoCompleteClearEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -284,9 +307,11 @@ public record TAutoCompleteClearEventContext<T> : VueProps
 [ECMAScript]
 public record TAutoCompleteCompositionendEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -294,9 +319,11 @@ public record TAutoCompleteCompositionendEventContext<T> : VueProps
 [ECMAScript]
 public record TAutoCompleteCompositionstartEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -304,15 +331,18 @@ public record TAutoCompleteCompositionstartEventContext<T> : VueProps
 [ECMAScript]
 public record TAutoCompleteConfig : VueProps
 {
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 }
 
 [ECMAScript]
 public record TAutoCompleteEnterEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -328,9 +358,11 @@ public readonly union TAutoCompleteFilterValueResult<T>(bool, IPromise<bool>)
 [ECMAScript]
 public record TAutoCompleteFocusEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -343,8 +375,10 @@ public readonly union TAutoCompleteOption(string, TAutoCompleteOptionObj)
 [ECMAScript]
 public record TAutoCompleteOptionObj : VueProps
 {
+    [ECMAScriptName("label")]
     public TAutoCompleteOptionObjLabel? Label { get; init; }
 
+    [ECMAScriptName("text")]
     public string? Text { get; init; }
 }
 
@@ -356,6 +390,7 @@ public readonly union TAutoCompleteOptionObjLabel(string, RenderFragment)
 [ECMAScript]
 public record TAutoCompleteSelectEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public TAutoCompleteSelectEventContextE<T> E { get; init; }
 }
 
@@ -381,6 +416,7 @@ public enum TAutoCompleteStatusValue
 [ECMAScript]
 public record TAvatarErrorEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -388,6 +424,7 @@ public record TAvatarErrorEventContext : VueProps
 [ECMAScript]
 public record TBackTopClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -467,14 +504,19 @@ public enum TBadgeSizeValue
 [ECMAScript]
 public record TBaseColProps : VueProps
 {
+    [ECMAScriptName("offset")]
     public Number? Offset { get; init; }
 
+    [ECMAScriptName("order")]
     public Number? Order { get; init; }
 
+    [ECMAScriptName("pull")]
     public Number? Pull { get; init; }
 
+    [ECMAScriptName("push")]
     public Number? Push { get; init; }
 
+    [ECMAScriptName("span")]
     public Number? Span { get; init; }
 }
 
@@ -501,15 +543,20 @@ public enum TBaseTableActiveRowTypeValue
 [ECMAScript]
 public record TBaseTableCellEventContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<TTableRowData> Col { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -517,55 +564,78 @@ public record TBaseTableCellEventContext<T> : VueProps
 [ECMAScript]
 public record TBaseTableCellParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
 [ECMAScript]
 public record TBaseTableCol<T> : VueProps
 {
+    [ECMAScriptName("align")]
     public TBaseTableColAlign? Align { get; init; }
 
+    [ECMAScriptName("attrs")]
     public TBaseTableColumnAttributes<T>? Attrs { get; init; }
 
+    [ECMAScriptName("cell")]
     public TBaseTableColCell<T>? Cell { get; init; }
 
+    [ECMAScriptName("children")]
     public TBaseTableCol<T>[]? Children { get; init; }
 
+    [ECMAScriptName("className")]
     public TBaseTableColClassName<T>? ClassName { get; init; }
 
+    [ECMAScriptName("colKey")]
     public string? ColKey { get; init; }
 
+    [ECMAScriptName("colspan")]
     public Number? Colspan { get; init; }
 
+    [ECMAScriptName("ellipsis")]
     public TBaseTableColEllipsis<T>? Ellipsis { get; init; }
 
+    [ECMAScriptName("ellipsisTitle")]
     public TBaseTableColEllipsisTitle<T>? EllipsisTitle { get; init; }
 
+    [ECMAScriptName("fixed")]
     public TBaseTableColFixed? Fixed { get; init; }
 
+    [ECMAScriptName("foot")]
     public TBaseTableColFoot<T>? Foot { get; init; }
 
+    [ECMAScriptName("minWidth")]
     public TBaseTableColMinWidth<T>? MinWidth { get; init; }
 
+    [ECMAScriptName("render")]
     public RenderFragment<TBaseTableRenderParams<T>>? Render { get; init; }
 
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; init; }
 
+    [ECMAScriptName("resize")]
     public TTableColumnResizeConfig? Resize { get; init; }
 
+    [ECMAScriptName("stopPropagation")]
     public bool? StopPropagation { get; init; }
 
+    [ECMAScriptName("thClassName")]
     public TBaseTableColThClassName<T>? ThClassName { get; init; }
 
+    [ECMAScriptName("title")]
     public TBaseTableColTitle<T>? Title { get; init; }
 
+    [ECMAScriptName("width")]
     public TBaseTableColWidth<T>? Width { get; init; }
 }
 
@@ -599,9 +669,11 @@ public readonly union TBaseTableColEllipsis<T>(bool, RenderFragment<TBaseTableCe
 [ECMAScript]
 public record TBaseTableColEllipsisOption4<T> : VueProps
 {
+    [ECMAScriptName("props")]
     [EditorRequired]
     public TdTooltipProps Props { get; init; } = default!;
 
+    [ECMAScriptName("content")]
     [EditorRequired]
     public RenderFragment<TBaseTableCellParams<T>> Content { get; init; } = default!;
 }
@@ -614,9 +686,11 @@ public readonly union TBaseTableColEllipsisTitle<T>(bool, RenderFragment<TBaseTa
 [ECMAScript]
 public record TBaseTableColEllipsisTitleOption4<T> : VueProps
 {
+    [ECMAScriptName("props")]
     [EditorRequired]
     public TdTooltipProps Props { get; init; } = default!;
 
+    [ECMAScriptName("content")]
     [EditorRequired]
     public RenderFragment<TBaseTableColParams<T>> Content { get; init; } = default!;
 }
@@ -639,9 +713,11 @@ public readonly union TBaseTableColFoot<T>(string, RenderFragment<TBaseTableColF
 [ECMAScript]
 public record TBaseTableColFootOption2Context<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<TTableRowData> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -653,9 +729,11 @@ public readonly union TBaseTableColMinWidth<T>(string, Number)
 [ECMAScript]
 public record TBaseTableColParams<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -672,9 +750,11 @@ public readonly union TBaseTableColTitle<T>(string, RenderFragment<TBaseTableCol
 [ECMAScript]
 public record TBaseTableColTitleOption2Context<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<TTableRowData> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -694,6 +774,7 @@ public delegate TJsonObject TBaseTableColumnAttributesOption2<T>(TCellData<T> co
 [ECMAScript]
 public record TBaseTableColumnResizeChangeEventContext : VueProps
 {
+    [ECMAScriptName("columnsWidth")]
     [EditorRequired]
     public TBaseTableColumnResizeChangeEventContextColumnsWidth ColumnsWidth { get; init; } = default!;
 }
@@ -736,15 +817,20 @@ public readonly union TBaseTablePaginationAffixedBottomValue(bool, TdAffixProps)
 [ECMAScript]
 public record TBaseTableRenderParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("type")]
     public TRenderType Type { get; init; }
 }
 
@@ -759,6 +845,7 @@ public delegate TClassName TBaseTableRowClassNameValueOption2(TRowClassNameParam
 [ECMAScript]
 public record TBaseTableScrollEventParams : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -766,6 +853,7 @@ public record TBaseTableScrollEventParams : VueProps
 [ECMAScript]
 public record TBaseTableScrollXEventParams : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -773,6 +861,7 @@ public record TBaseTableScrollXEventParams : VueProps
 [ECMAScript]
 public record TBaseTableScrollYEventParams : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -802,9 +891,11 @@ public enum TBaseTableVerticalAlignValue
 [ECMAScript]
 public record TBreadcrumbEllipsisSlotContext : VueProps
 {
+    [ECMAScriptName("items")]
     [EditorRequired]
     public TdBreadcrumbItemProps[] Items { get; init; } = default!;
 
+    [ECMAScriptName("separator")]
     public TBreadcrumbEllipsisSlotContextSeparator Separator { get; init; }
 }
 
@@ -911,36 +1002,48 @@ public enum TButtonVariantValue
 [ECMAScript]
 public record TCalendarCell : VueProps
 {
+    [ECMAScriptName("filterDate")]
     [EditorRequired]
     public Date FilterDate { get; init; } = default!;
 
+    [ECMAScriptName("formattedFilterDate")]
     [EditorRequired]
     public string FormattedFilterDate { get; init; } = default!;
 
+    [ECMAScriptName("mode")]
     [EditorRequired]
     public string Mode { get; init; } = default!;
 
+    [ECMAScriptName("isShowWeekend")]
     public bool IsShowWeekend { get; init; }
 
+    [ECMAScriptName("belongTo")]
     public Number? BelongTo { get; init; }
 
+    [ECMAScriptName("date")]
     public Date? Date { get; init; }
 
+    [ECMAScriptName("day")]
     public Number? Day { get; init; }
 
+    [ECMAScriptName("formattedDate")]
     public string? FormattedDate { get; init; }
 
+    [ECMAScriptName("isCurrent")]
     public bool? IsCurrent { get; init; }
 
+    [ECMAScriptName("weekOrder")]
     public Number? WeekOrder { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarCellClickEventOptions : VueProps
 {
+    [ECMAScriptName("cell")]
     [EditorRequired]
     public TCalendarCell Cell { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -948,9 +1051,11 @@ public record TCalendarCellClickEventOptions : VueProps
 [ECMAScript]
 public record TCalendarCellDoubleClickEventOptions : VueProps
 {
+    [ECMAScriptName("cell")]
     [EditorRequired]
     public TCalendarCell Cell { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -958,9 +1063,11 @@ public record TCalendarCellDoubleClickEventOptions : VueProps
 [ECMAScript]
 public record TCalendarCellRightClickEventOptions : VueProps
 {
+    [ECMAScriptName("cell")]
     [EditorRequired]
     public TCalendarCell Cell { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -968,30 +1075,43 @@ public record TCalendarCellRightClickEventOptions : VueProps
 [ECMAScript]
 public record TCalendarConfig : VueProps
 {
+    [ECMAScriptName("cellMonth")]
     public string? CellMonth { get; init; }
 
+    [ECMAScriptName("controllerConfig")]
     public TCalendarController? ControllerConfig { get; init; }
 
+    [ECMAScriptName("fillWithZero")]
     public bool? FillWithZero { get; init; }
 
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; init; }
 
+    [ECMAScriptName("hideWeekend")]
     public string? HideWeekend { get; init; }
 
+    [ECMAScriptName("monthRadio")]
     public string? MonthRadio { get; init; }
 
+    [ECMAScriptName("monthSelection")]
     public TCalendarConfigMonthSelection? MonthSelection { get; init; }
 
+    [ECMAScriptName("showWeekend")]
     public string? ShowWeekend { get; init; }
 
+    [ECMAScriptName("thisMonth")]
     public string? ThisMonth { get; init; }
 
+    [ECMAScriptName("today")]
     public string? Today { get; init; }
 
+    [ECMAScriptName("week")]
     public string? Week { get; init; }
 
+    [ECMAScriptName("yearRadio")]
     public string? YearRadio { get; init; }
 
+    [ECMAScriptName("yearSelection")]
     public string? YearSelection { get; init; }
 }
 
@@ -1006,22 +1126,29 @@ public delegate string TCalendarConfigMonthSelectionOption2(TCalendarConfigMonth
 [ECMAScript]
 public record TCalendarConfigMonthSelectionOption2Data : VueProps
 {
+    [ECMAScriptName("month")]
     public Number Month { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarController : VueProps
 {
+    [ECMAScriptName("current")]
     public TCalendarControllerCurrent? Current { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("mode")]
     public TCalendarControllerMode? Mode { get; init; }
 
+    [ECMAScriptName("month")]
     public TCalendarControllerMonth? Month { get; init; }
 
+    [ECMAScriptName("weekend")]
     public TCalendarControllerWeekend? Weekend { get; init; }
 
+    [ECMAScriptName("year")]
     public TCalendarControllerYear? Year { get; init; }
 }
 
@@ -1033,44 +1160,56 @@ public readonly union TCalendarControllerConfigValue(bool, TCalendarController)
 [ECMAScript]
 public record TCalendarControllerCurrent : VueProps
 {
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("currentDayButtonProps")]
     public TdButtonProps? CurrentDayButtonProps { get; init; }
 
+    [ECMAScriptName("currentMonthButtonProps")]
     public TdButtonProps? CurrentMonthButtonProps { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarControllerMode : VueProps
 {
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("radioGroupProps")]
     public TdRadioGroupProps<TRadioValue>? RadioGroupProps { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarControllerMonth : VueProps
 {
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("selectProps")]
     public TdSelectProps<TSelectOption>? SelectProps { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarControllerWeekend : VueProps
 {
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("showWeekendButtonProps")]
     public TdCheckTagProps? ShowWeekendButtonProps { get; init; }
 
+    [ECMAScriptName("hideWeekendButtonProps")]
     public TdCheckTagProps? HideWeekendButtonProps { get; init; }
 }
 
 [ECMAScript]
 public record TCalendarControllerYear : VueProps
 {
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("selectProps")]
     public TdSelectProps<TSelectOption>? SelectProps { get; init; }
 }
 
@@ -1087,9 +1226,11 @@ public enum TCalendarModeValue
 [ECMAScript]
 public record TCalendarMonthChangeEventOptions : VueProps
 {
+    [ECMAScriptName("month")]
     [EditorRequired]
     public string Month { get; init; } = default!;
 
+    [ECMAScriptName("year")]
     [EditorRequired]
     public string Year { get; init; } = default!;
 }
@@ -1122,6 +1263,7 @@ public readonly union TCalendarValueValue(TCalendarValue, TCalendarValue[])
 [ECMAScript]
 public record TCalendarWeek : VueProps
 {
+    [ECMAScriptName("day")]
     public Number Day { get; init; }
 }
 
@@ -1158,15 +1300,20 @@ public enum TCardThemeValue
 [ECMAScript]
 public record TCascaderBlurEventContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("e")]
     public TPopupTriggerEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TPopupTriggerSource? Trigger { get; init; }
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 
+    [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption> Value { get; init; }
 }
 
@@ -1178,8 +1325,10 @@ public readonly union TCascaderCascaderOptionDefaultTDefault(string, Number)
 [ECMAScript]
 public record TCascaderChangeContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("node")]
     public TTreeNodeModel<CascaderOption>? Node { get; init; }
 
+    [ECMAScriptName("source")]
     public TCascaderChangeSource Source { get; init; }
 }
 
@@ -1200,14 +1349,18 @@ public enum TCascaderChangeSource
 [ECMAScript]
 public record TCascaderCollapsedItemsSlotContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public CascaderOption[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public CascaderOption[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TCascaderCollapsedItemsSlotContextOnClose<CascaderOption> OnClose { get; init; } = default!;
 }
@@ -1218,18 +1371,23 @@ public delegate void TCascaderCollapsedItemsSlotContextOnClose<CascaderOption>(T
 [ECMAScript]
 public record TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TCascaderConfig : VueProps
 {
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 }
 
@@ -1249,8 +1407,10 @@ public readonly union TCascaderFilterValueResult<CascaderOption>(bool, IPromise<
 [ECMAScript]
 public record TCascaderFocusEventContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption> Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -1261,13 +1421,17 @@ public delegate IPromise<CascaderOption[]> TCascaderLoadValue<CascaderOption>(TT
 [ECMAScript]
 public record TCascaderOptionSlotContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("item")]
     public CascaderOption Item { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("onChange")]
     [EditorRequired]
     public TCascaderOptionSlotContextOnChange<CascaderOption> OnChange { get; init; } = default!;
 
+    [ECMAScriptName("onExpand")]
     [EditorRequired]
     public TCascaderOptionSlotContextOnExpand<CascaderOption> OnExpand { get; init; } = default!;
 }
@@ -1310,13 +1474,17 @@ public readonly union TCascaderValue<T>(string, Number, T, TCascaderValue<T>[])
 [ECMAScript]
 public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
 {
+    [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption> Value { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TCascaderValueDisplaySlotContextOnClose<CascaderOption> OnClose { get; init; } = default!;
 
+    [ECMAScriptName("displayValue")]
     public TCascaderValue<CascaderOption>? DisplayValue { get; init; }
 
+    [ECMAScriptName("selectedOptions")]
     [EditorRequired]
     public CascaderOption[] SelectedOptions { get; init; } = default!;
 }
@@ -1359,15 +1527,20 @@ public enum TCascadingValue
 [ECMAScript]
 public record TCellData<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TBaseTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("type")]
     public TCellDataType Type { get; init; }
 }
 
@@ -1384,8 +1557,10 @@ public enum TCellDataType
 [ECMAScript]
 public record TChangeContext : VueProps
 {
+    [ECMAScriptName("type")]
     public TChangeSource Type { get; init; }
 
+    [ECMAScriptName("e")]
     public TChangeContextE E { get; init; }
 }
 
@@ -1417,38 +1592,55 @@ public enum TChangeSource
 [ECMAScript]
 public record TChatConfig : VueProps
 {
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("stopBtnText")]
     public string? StopBtnText { get; init; }
 
+    [ECMAScriptName("refreshTipText")]
     public string? RefreshTipText { get; init; }
 
+    [ECMAScriptName("copyTipText")]
     public string? CopyTipText { get; init; }
 
+    [ECMAScriptName("likeTipText")]
     public string? LikeTipText { get; init; }
 
+    [ECMAScriptName("dislikeTipText")]
     public string? DislikeTipText { get; init; }
 
+    [ECMAScriptName("shareTipText")]
     public string? ShareTipText { get; init; }
 
+    [ECMAScriptName("copyCodeBtnText")]
     public string? CopyCodeBtnText { get; init; }
 
+    [ECMAScriptName("copyCodeSuccessText")]
     public string? CopyCodeSuccessText { get; init; }
 
+    [ECMAScriptName("clearHistoryBtnText")]
     public string? ClearHistoryBtnText { get; init; }
 
+    [ECMAScriptName("copyTextSuccess")]
     public string? CopyTextSuccess { get; init; }
 
+    [ECMAScriptName("copyTextFail")]
     public string? CopyTextFail { get; init; }
 
+    [ECMAScriptName("confirmClearHistory")]
     public string? ConfirmClearHistory { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("loadingEndText")]
     public string? LoadingEndText { get; init; }
 
+    [ECMAScriptName("uploadImageText")]
     public string? UploadImageText { get; init; }
 
+    [ECMAScriptName("uploadAttachmentText")]
     public string? UploadAttachmentText { get; init; }
 }
 
@@ -1463,8 +1655,10 @@ public delegate TCheckPropsOption3Result<T> TCheckPropsOption3<T>(TCheckPropsOpt
 [ECMAScript]
 public record TCheckPropsOption3Options<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 }
 
@@ -1476,8 +1670,10 @@ public readonly union TCheckPropsOption3Result<T>(TdCheckboxProps, TdRadioProps<
 [ECMAScript]
 public record TCheckTagChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TCheckTagChangeContextE E { get; init; }
 
+    [ECMAScriptName("value")]
     public TCheckTagChangeContextValue Value { get; init; }
 }
 
@@ -1494,6 +1690,7 @@ public readonly union TCheckTagChangeContextValue(string, Number)
 [ECMAScript]
 public record TCheckTagClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -1506,10 +1703,13 @@ public readonly union TCheckTagContentValue(string, Number, string[])
 [ECMAScript]
 public record TCheckTagGroupChangeContext : VueProps
 {
+    [ECMAScriptName("type")]
     public TCheckTagGroupChangeContextType Type { get; init; }
 
+    [ECMAScriptName("e")]
     public TCheckTagGroupChangeContextE E { get; init; }
 
+    [ECMAScriptName("value")]
     public TCheckTagGroupChangeContextValue Value { get; init; }
 }
 
@@ -1536,30 +1736,43 @@ public readonly union TCheckTagGroupChangeContextValue(string, Number)
 [ECMAScript]
 public record TCheckTagGroupOption : VueProps
 {
+    [ECMAScriptName("checked")]
     public bool? Checked { get; init; }
 
+    [ECMAScriptName("defaultChecked")]
     public bool? DefaultChecked { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; init; }
 
+    [ECMAScriptName("content")]
     public TCheckTagGroupOptionContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TCheckTagGroupOptionDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; init; }
 
+    [ECMAScriptName("value")]
     public TCheckTagGroupOptionValue Value { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TCheckTagGroupOptionOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TCheckTagGroupOptionOnClick? OnClick { get; init; }
 
+    [ECMAScriptName("label")]
     public TCheckTagGroupOptionLabel Label { get; init; }
 }
 
@@ -1587,6 +1800,7 @@ public delegate void TCheckTagGroupOptionOnClick(TCheckTagGroupOptionOnClickCont
 [ECMAScript]
 public record TCheckTagGroupOptionOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -1609,6 +1823,7 @@ public readonly union TCheckTagValueValue(string, Number)
 [ECMAScript]
 public record TCheckboxChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -1616,13 +1831,17 @@ public record TCheckboxChangeEventContext : VueProps
 [ECMAScript]
 public record TCheckboxGroupChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 
+    [ECMAScriptName("current")]
     public TCheckboxGroupChangeContextCurrent Current { get; init; }
 
+    [ECMAScriptName("option")]
     public TCheckboxGroupChangeContextOption Option { get; init; }
 
+    [ECMAScriptName("type")]
     public TCheckboxGroupChangeContextType Type { get; init; }
 }
 
@@ -1659,34 +1878,49 @@ public readonly union TCheckboxOption(string, Number, TCheckboxOptionObj)
 [ECMAScript]
 public record TCheckboxOptionObj : VueProps
 {
+    [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; init; }
 
+    [ECMAScriptName("checked")]
     public bool? Checked { get; init; }
 
+    [ECMAScriptName("defaultChecked")]
     public bool? DefaultChecked { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("default")]
     public TCheckboxOptionObjDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; init; }
 
+    [ECMAScriptName("label")]
     public TCheckboxOptionObjLabel? Label { get; init; }
 
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("title")]
     public string? Title { get; init; }
 
+    [ECMAScriptName("value")]
     public TCheckboxOptionObjValue? Value { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TCheckboxOptionObjOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("text")]
     public string? Text { get; init; }
 }
 
@@ -1706,6 +1940,7 @@ public delegate void TCheckboxOptionObjOnChange(bool @checked, TCheckboxOptionOb
 [ECMAScript]
 public record TCheckboxOptionObjOnChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -1723,15 +1958,19 @@ public readonly union TCheckboxValueValue(string, Number, bool)
 [ECMAScript]
 public record TCheckedOptions : VueProps
 {
+    [ECMAScriptName("checked")]
     [EditorRequired]
     public TTransferValue[] Checked { get; init; } = default!;
 
+    [ECMAScriptName("sourceChecked")]
     [EditorRequired]
     public TTransferValue[] SourceChecked { get; init; } = default!;
 
+    [ECMAScriptName("targetChecked")]
     [EditorRequired]
     public TTransferValue[] TargetChecked { get; init; } = default!;
 
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -1803,50 +2042,66 @@ public readonly union TCollapseValueItem(string, Number)
 [ECMAScript]
 public record TColorObject : VueProps
 {
+    [ECMAScriptName("alpha")]
     public Number Alpha { get; init; }
 
+    [ECMAScriptName("css")]
     [EditorRequired]
     public string Css { get; init; } = default!;
 
+    [ECMAScriptName("hex")]
     [EditorRequired]
     public string Hex { get; init; } = default!;
 
+    [ECMAScriptName("hex8")]
     [EditorRequired]
     public string Hex8 { get; init; } = default!;
 
+    [ECMAScriptName("hsl")]
     [EditorRequired]
     public string Hsl { get; init; } = default!;
 
+    [ECMAScriptName("hsla")]
     [EditorRequired]
     public string Hsla { get; init; } = default!;
 
+    [ECMAScriptName("hsv")]
     [EditorRequired]
     public string Hsv { get; init; } = default!;
 
+    [ECMAScriptName("hsva")]
     [EditorRequired]
     public string Hsva { get; init; } = default!;
 
+    [ECMAScriptName("rgb")]
     [EditorRequired]
     public string Rgb { get; init; } = default!;
 
+    [ECMAScriptName("rgba")]
     [EditorRequired]
     public string Rgba { get; init; } = default!;
 
+    [ECMAScriptName("saturation")]
     public Number Saturation { get; init; }
 
+    [ECMAScriptName("value")]
     public Number Value { get; init; }
 
+    [ECMAScriptName("isGradient")]
     public bool IsGradient { get; init; }
 
+    [ECMAScriptName("linearGradient")]
     public string? LinearGradient { get; init; }
 }
 
 [ECMAScript]
 public record TColorPickerChangeEventContext : VueProps
 {
+    [ECMAScriptName("color")]
     [EditorRequired]
     public TColorObject Color { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TColorPickerChangeTrigger Trigger { get; init; }
 }
 
@@ -1875,6 +2130,7 @@ public enum TColorPickerChangeTrigger
 [ECMAScript]
 public record TColorPickerClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -1892,10 +2148,13 @@ public enum TColorPickerColorModesValueItem
 [ECMAScript]
 public record TColorPickerConfig : VueProps
 {
+    [ECMAScriptName("clearConfirmText")]
     public string? ClearConfirmText { get; init; }
 
+    [ECMAScriptName("recentColorTitle")]
     public string? RecentColorTitle { get; init; }
 
+    [ECMAScriptName("swatchColorTitle")]
     public string? SwatchColorTitle { get; init; }
 }
 
@@ -1928,6 +2187,7 @@ public enum TColorPickerFormatValue
 [ECMAScript]
 public record TColorPickerPaletteBarChangeEventContext : VueProps
 {
+    [ECMAScriptName("color")]
     [EditorRequired]
     public TColorObject Color { get; init; } = default!;
 }
@@ -1935,15 +2195,18 @@ public record TColorPickerPaletteBarChangeEventContext : VueProps
 [ECMAScript]
 public record TColorPickerPanelChangeEventContext : VueProps
 {
+    [ECMAScriptName("color")]
     [EditorRequired]
     public TColorObject Color { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TColorPickerChangeTrigger Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TColorPickerPanelClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -1987,6 +2250,7 @@ public enum TColorPickerPanelFormatValue
 [ECMAScript]
 public record TColorPickerPanelPaletteBarChangeEventContext : VueProps
 {
+    [ECMAScriptName("color")]
     [EditorRequired]
     public TColorObject Color { get; init; } = default!;
 }
@@ -2022,26 +2286,33 @@ public delegate TDateConfigValue TConfigPresetDateIndexOption2();
 [ECMAScript]
 public record TControllerOptions : VueProps
 {
+    [ECMAScriptName("filterDate")]
     [EditorRequired]
     public Date FilterDate { get; init; } = default!;
 
+    [ECMAScriptName("formattedFilterDate")]
     [EditorRequired]
     public string FormattedFilterDate { get; init; } = default!;
 
+    [ECMAScriptName("mode")]
     [EditorRequired]
     public string Mode { get; init; } = default!;
 
+    [ECMAScriptName("isShowWeekend")]
     public bool IsShowWeekend { get; init; }
 }
 
 [ECMAScript]
 public record TCustomValidateObj : VueProps
 {
+    [ECMAScriptName("result")]
     public bool Result { get; init; }
 
+    [ECMAScriptName("message")]
     [EditorRequired]
     public string Message { get; init; } = default!;
 
+    [ECMAScriptName("type")]
     public TCustomValidateObjType? Type { get; init; }
 }
 
@@ -2068,9 +2339,11 @@ public delegate TCustomValidatorResult TCustomValidator(TJsonValue val, TCustomV
 [ECMAScript]
 public record TCustomValidatorContext : VueProps
 {
+    [ECMAScriptName("formData")]
     [EditorRequired]
     public TJsonObject FormData { get; init; } = default!;
 
+    [ECMAScriptName("name")]
     [EditorRequired]
     public string Name { get; init; } = default!;
 }
@@ -2083,30 +2356,41 @@ public readonly union TCustomValidatorResult(TCustomValidateResolveType, IPromis
 [ECMAScript]
 public record TDOMRect : VueProps
 {
+    [ECMAScriptName("bottom")]
     public Number Bottom { get; init; }
 
+    [ECMAScriptName("height")]
     public Number Height { get; init; }
 
+    [ECMAScriptName("left")]
     public Number Left { get; init; }
 
+    [ECMAScriptName("right")]
     public Number Right { get; init; }
 
+    [ECMAScriptName("top")]
     public Number Top { get; init; }
 
+    [ECMAScriptName("width")]
     public Number Width { get; init; }
 
+    [ECMAScriptName("x")]
     public Number X { get; init; }
 
+    [ECMAScriptName("y")]
     public Number Y { get; init; }
 }
 
 [ECMAScript]
 public record TDataOption : VueProps
 {
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("value")]
     public TTransferValue? Value { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 }
 
@@ -2118,8 +2402,10 @@ public readonly union TDateConfigValue(string, Date, TDateConfigValue[])
 [ECMAScript]
 public record TDatePickerBlurEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TDatePickerBlurEventContextValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -2132,8 +2418,10 @@ public readonly union TDatePickerBlurEventContextValue(TDateValue, TDateValue[])
 [ECMAScript]
 public record TDatePickerChangeEventContext : VueProps
 {
+    [ECMAScriptName("dayjsValue")]
     public TDayjs? DayjsValue { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
@@ -2145,6 +2433,7 @@ public readonly union TDatePickerChangeEventValue(TDateValue, TDateValue[])
 [ECMAScript]
 public record TDatePickerClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2152,71 +2441,100 @@ public record TDatePickerClearEventContext : VueProps
 [ECMAScript]
 public record TDatePickerConfig : VueProps
 {
+    [ECMAScriptName("confirm")]
     public string? Confirm { get; init; }
 
+    [ECMAScriptName("dayAriaLabel")]
     public string? DayAriaLabel { get; init; }
 
+    [ECMAScriptName("dayjsLocale")]
     public string? DayjsLocale { get; init; }
 
+    [ECMAScriptName("direction")]
     public string? Direction { get; init; }
 
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; init; }
 
+    [ECMAScriptName("format")]
     public string? Format { get; init; }
 
+    [ECMAScriptName("monthAriaLabel")]
     public string? MonthAriaLabel { get; init; }
 
+    [ECMAScriptName("months")]
     public string[]? Months { get; init; }
 
+    [ECMAScriptName("nextDecade")]
     public string? NextDecade { get; init; }
 
+    [ECMAScriptName("nextMonth")]
     public string? NextMonth { get; init; }
 
+    [ECMAScriptName("nextYear")]
     public string? NextYear { get; init; }
 
+    [ECMAScriptName("now")]
     public string? Now { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public TDatePickerConfigPlaceholder? Placeholder { get; init; }
 
+    [ECMAScriptName("preDecade")]
     public string? PreDecade { get; init; }
 
+    [ECMAScriptName("preMonth")]
     public string? PreMonth { get; init; }
 
+    [ECMAScriptName("preYear")]
     public string? PreYear { get; init; }
 
+    [ECMAScriptName("presets")]
     public TConfigPresetDate? Presets { get; init; }
 
+    [ECMAScriptName("quarters")]
     public string[]? Quarters { get; init; }
 
+    [ECMAScriptName("rangeSeparator")]
     public string? RangeSeparator { get; init; }
 
+    [ECMAScriptName("selectDate")]
     public string? SelectDate { get; init; }
 
+    [ECMAScriptName("selectTime")]
     public string? SelectTime { get; init; }
 
+    [ECMAScriptName("weekAbbreviation")]
     public string? WeekAbbreviation { get; init; }
 
+    [ECMAScriptName("weekdays")]
     public string[]? Weekdays { get; init; }
 
+    [ECMAScriptName("yearAriaLabel")]
     public string? YearAriaLabel { get; init; }
 }
 
 [ECMAScript]
 public record TDatePickerConfigPlaceholder : VueProps
 {
+    [ECMAScriptName("date")]
     public string? Date { get; init; }
 
+    [ECMAScriptName("month")]
     public string? Month { get; init; }
 
+    [ECMAScriptName("year")]
     public string? Year { get; init; }
 }
 
 [ECMAScript]
 public record TDatePickerConfirmEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2227,15 +2545,19 @@ public delegate TDatePickerDisableTimeValueResultPartial TDatePickerDisableTimeV
 [ECMAScript]
 public record TDatePickerDisableTimeValueResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 
+    [ECMAScriptName("millisecond")]
     [EditorRequired]
     public Number[] Millisecond { get; init; } = default!;
 }
@@ -2243,8 +2565,10 @@ public record TDatePickerDisableTimeValueResultPartial : VueProps
 [ECMAScript]
 public record TDatePickerFocusEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TDatePickerFocusEventContextValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -2273,13 +2597,17 @@ public enum TDatePickerModeValue
 [ECMAScript]
 public record TDatePickerMonthChangeEventContext : VueProps
 {
+    [ECMAScriptName("month")]
     public Number Month { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
@@ -2300,9 +2628,11 @@ public enum TDatePickerMonthChangeTrigger
 [ECMAScript]
 public record TDatePickerPanelCellClickEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2310,19 +2640,24 @@ public record TDatePickerPanelCellClickEventContext : VueProps
 [ECMAScript]
 public record TDatePickerPanelChangeEventContext : VueProps
 {
+    [ECMAScriptName("dayjsValue")]
     public TDayjs? DayjsValue { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDatePickerPanelConfirmEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2333,15 +2668,19 @@ public delegate TDatePickerPanelDisableTimeValueResultPartial TDatePickerPanelDi
 [ECMAScript]
 public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 
+    [ECMAScriptName("millisecond")]
     [EditorRequired]
     public Number[] Millisecond { get; init; } = default!;
 }
@@ -2365,19 +2704,24 @@ public enum TDatePickerPanelModeValue
 [ECMAScript]
 public record TDatePickerPanelMonthChangeEventContext : VueProps
 {
+    [ECMAScriptName("month")]
     public Number Month { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDatePickerPanelPanelClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2385,9 +2729,11 @@ public record TDatePickerPanelPanelClickEventContext : VueProps
 [ECMAScript]
 public record TDatePickerPanelPresetClickEventContext : VueProps
 {
+    [ECMAScriptName("preset")]
     [EditorRequired]
     public TPresetDate Preset { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2409,14 +2755,18 @@ public enum TDatePickerPanelPresetsPlacementValue
 [ECMAScript]
 public record TDatePickerPanelTimeChangeEventContext : VueProps
 {
+    [ECMAScriptName("time")]
     [EditorRequired]
     public string Time { get; init; } = default!;
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTimeChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -2428,22 +2778,28 @@ public readonly union TDatePickerPanelValueValue(TDateValue, TDateValue[])
 [ECMAScript]
 public record TDatePickerPanelYearChangeEventContext : VueProps
 {
+    [ECMAScriptName("year")]
     public Number Year { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TDatePickerYearChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TDatePickerPresetClickEventContext : VueProps
 {
+    [ECMAScriptName("preset")]
     [EditorRequired]
     public TPresetDate Preset { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2509,8 +2865,10 @@ public enum TDatePickerTriggerSource
 [ECMAScript]
 public record TDatePickerValueDisplaySlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TDateValue Value { get; init; }
 
+    [ECMAScriptName("displayValue")]
     public TDateValue? DisplayValue { get; init; }
 }
 
@@ -2546,13 +2904,17 @@ public readonly union TDatePickerValueValue(TDateValue, TDateValue[])
 [ECMAScript]
 public record TDatePickerYearChangeEventContext : VueProps
 {
+    [ECMAScriptName("year")]
     public Number Year { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date Date { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TDatePickerYearChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -2573,11 +2935,14 @@ public enum TDatePickerYearChangeTrigger
 [ECMAScript]
 public record TDateRangePickerBlurEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TDateValue[] Value { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -2585,20 +2950,25 @@ public record TDateRangePickerBlurEventContext : VueProps
 [ECMAScript]
 public record TDateRangePickerChangeEventContext : VueProps
 {
+    [ECMAScriptName("dayjsValue")]
     public TDayjs[]? DayjsValue { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerConfirmEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 }
 
@@ -2608,18 +2978,22 @@ public delegate TDateRangePickerDisableTimeValueResultPartial TDateRangePickerDi
 [ECMAScript]
 public record TDateRangePickerDisableTimeValueContext : VueProps
 {
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerDisableTimeValueResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 }
@@ -2632,11 +3006,14 @@ public readonly union TDateRangePickerDisabledValue(bool, bool[])
 [ECMAScript]
 public record TDateRangePickerFocusEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TDateValue[] Value { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -2644,14 +3021,18 @@ public record TDateRangePickerFocusEventContext : VueProps
 [ECMAScript]
 public record TDateRangePickerInputEventContext : VueProps
 {
+    [ECMAScriptName("input")]
     [EditorRequired]
     public string Input { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TDateValue[] Value { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public InputEvent E { get; init; } = default!;
 }
@@ -2675,26 +3056,34 @@ public enum TDateRangePickerModeValue
 [ECMAScript]
 public record TDateRangePickerMonthChangeEventContext : VueProps
 {
+    [ECMAScriptName("month")]
     public Number Month { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerPanelCellClickEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2702,21 +3091,27 @@ public record TDateRangePickerPanelCellClickEventContext : VueProps
 [ECMAScript]
 public record TDateRangePickerPanelChangeEventContext : VueProps
 {
+    [ECMAScriptName("dayjsValue")]
     public TDayjs[]? DayjsValue { get; init; }
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerPanelConfirmEventContext : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2740,21 +3135,27 @@ public enum TDateRangePickerPanelModeValue
 [ECMAScript]
 public record TDateRangePickerPanelMonthChangeEventContext : VueProps
 {
+    [ECMAScriptName("month")]
     public Number Month { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerPanelPanelClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2762,9 +3163,11 @@ public record TDateRangePickerPanelPanelClickEventContext : VueProps
 [ECMAScript]
 public record TDateRangePickerPanelPresetClickEventContext : VueProps
 {
+    [ECMAScriptName("preset")]
     [EditorRequired]
     public TPresetDate Preset { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2786,31 +3189,41 @@ public enum TDateRangePickerPanelPresetsPlacementValue
 [ECMAScript]
 public record TDateRangePickerPanelTimeChangeEventContext : VueProps
 {
+    [ECMAScriptName("time")]
     [EditorRequired]
     public string Time { get; init; } = default!;
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerTimeChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TDateRangePickerPanelYearChangeEventContext : VueProps
 {
+    [ECMAScriptName("year")]
     public Number Year { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerYearChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -2832,9 +3245,11 @@ public readonly union TDateRangePickerPlaceholderValue(string, string[])
 [ECMAScript]
 public record TDateRangePickerPresetClickEventContext : VueProps
 {
+    [ECMAScriptName("preset")]
     [EditorRequired]
     public TPresetDate Preset { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2894,15 +3309,20 @@ public enum TDateRangePickerValueTypeValue
 [ECMAScript]
 public record TDateRangePickerYearChangeEventContext : VueProps
 {
+    [ECMAScriptName("year")]
     public Number Year { get; init; }
 
+    [ECMAScriptName("date")]
     [EditorRequired]
     public Date[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TDatePickerYearChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -2919,6 +3339,7 @@ public sealed record TDayjs : VueProps
 [ECMAScript]
 public record TDescriptionsConfig : VueProps
 {
+    [ECMAScriptName("colonText")]
     public string? ColonText { get; init; }
 }
 
@@ -2960,6 +3381,7 @@ public readonly union TDialogCancelBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TDialogCancelEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2972,6 +3394,7 @@ public readonly union TDialogCardCancelBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TDialogCardCancelEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2979,6 +3402,7 @@ public record TDialogCardCancelEventContext : VueProps
 [ECMAScript]
 public record TDialogCardCloseBtnClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -2996,6 +3420,7 @@ public readonly union TDialogCardConfirmBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TDialogCardConfirmEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TDialogCardConfirmEventContextE E { get; init; }
 }
 
@@ -3028,6 +3453,7 @@ public enum TDialogCardThemeValue
 [ECMAScript]
 public record TDialogCloseBtnClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3040,8 +3466,10 @@ public readonly union TDialogCloseBtnValue(string, bool)
 [ECMAScript]
 public record TDialogCloseContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TDialogEventSource Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TDialogCloseContextE E { get; init; }
 }
 
@@ -3053,18 +3481,25 @@ public readonly union TDialogCloseContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public record TDialogConfig : VueProps
 {
+    [ECMAScriptName("cancel")]
     public TDialogConfigCancel? Cancel { get; init; }
 
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; init; }
 
+    [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; init; }
 
+    [ECMAScriptName("confirm")]
     public TDialogConfigConfirm? Confirm { get; init; }
 
+    [ECMAScriptName("confirmBtnTheme")]
     public TDialogConfigConfirmBtnTheme? ConfirmBtnTheme { get; init; }
 
+    [ECMAScriptName("placement")]
     public TDialogConfigPlacement? Placement { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 }
 
@@ -3081,18 +3516,23 @@ public readonly union TDialogConfigConfirm(string, TdButtonProps)
 [ECMAScript]
 public record TDialogConfigConfirmBtnTheme : VueProps
 {
+    [ECMAScriptName("default")]
     [EditorRequired]
     public string Default { get; init; } = default!;
 
+    [ECMAScriptName("info")]
     [EditorRequired]
     public string Info { get; init; } = default!;
 
+    [ECMAScriptName("warning")]
     [EditorRequired]
     public string Warning { get; init; } = default!;
 
+    [ECMAScriptName("danger")]
     [EditorRequired]
     public string Danger { get; init; } = default!;
 
+    [ECMAScriptName("success")]
     [EditorRequired]
     public string Success { get; init; } = default!;
 }
@@ -3115,6 +3555,7 @@ public readonly union TDialogConfirmBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TDialogConfirmEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TDialogConfirmEventContextE E { get; init; }
 }
 
@@ -3126,6 +3567,7 @@ public readonly union TDialogConfirmEventContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public record TDialogEscKeydownEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -3166,6 +3608,7 @@ public enum TDialogModeValue
 [ECMAScript]
 public record TDialogOverlayClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3224,12 +3667,16 @@ public readonly union TDisableDate(TDateValue[], TDisableDateObj, TDisableDateOp
 [ECMAScript]
 public record TDisableDateObj : VueProps
 {
+    [ECMAScriptName("from")]
     public string? From { get; init; }
 
+    [ECMAScriptName("to")]
     public string? To { get; init; }
 
+    [ECMAScriptName("before")]
     public string? Before { get; init; }
 
+    [ECMAScriptName("after")]
     public string? After { get; init; }
 }
 
@@ -3247,9 +3694,11 @@ public delegate bool TDisableRangeDateOption3(TDisableRangeDateOption3Context co
 [ECMAScript]
 public record TDisableRangeDateOption3Context : VueProps
 {
+    [ECMAScriptName("date")]
     [EditorRequired]
     public TDateValue[] Date { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 }
 
@@ -3288,25 +3737,34 @@ public enum TDividerThemeValue
 [ECMAScript]
 public record TDragSortContext<T> : VueProps
 {
+    [ECMAScriptName("currentIndex")]
     public Number CurrentIndex { get; init; }
 
+    [ECMAScriptName("current")]
     public T Current { get; init; } = default!;
 
+    [ECMAScriptName("targetIndex")]
     public Number TargetIndex { get; init; }
 
+    [ECMAScriptName("target")]
     public T Target { get; init; } = default!;
 
+    [ECMAScriptName("data")]
     [EditorRequired]
     public T[] Data { get; init; } = default!;
 
+    [ECMAScriptName("newData")]
     [EditorRequired]
     public T[] NewData { get; init; } = default!;
 
+    [ECMAScriptName("currentData")]
     public T[]? CurrentData { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public TSortableEvent E { get; init; } = default!;
 
+    [ECMAScriptName("sort")]
     public TDragSortContextSort Sort { get; init; }
 }
 
@@ -3323,6 +3781,7 @@ public enum TDragSortContextSort
 [ECMAScript]
 public record TDrawerCancelEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3330,6 +3789,7 @@ public record TDrawerCancelEventContext : VueProps
 [ECMAScript]
 public record TDrawerCloseBtnClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3342,8 +3802,10 @@ public readonly union TDrawerCloseBtnValue(string, bool)
 [ECMAScript]
 public record TDrawerCloseContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TDrawerEventSource Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TDrawerCloseContextE E { get; init; }
 }
 
@@ -3355,14 +3817,19 @@ public readonly union TDrawerCloseContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public record TDrawerConfig : VueProps
 {
+    [ECMAScriptName("cancel")]
     public TDrawerConfigCancel? Cancel { get; init; }
 
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; init; }
 
+    [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; init; }
 
+    [ECMAScriptName("confirm")]
     public TDrawerConfigConfirm? Confirm { get; init; }
 
+    [ECMAScriptName("size")]
     public string? Size { get; init; }
 }
 
@@ -3379,6 +3846,7 @@ public readonly union TDrawerConfigConfirm(string, TdButtonProps)
 [ECMAScript]
 public record TDrawerConfirmEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3386,6 +3854,7 @@ public record TDrawerConfirmEventContext : VueProps
 [ECMAScript]
 public record TDrawerEscKeydownEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -3422,6 +3891,7 @@ public enum TDrawerModeValue
 [ECMAScript]
 public record TDrawerOverlayClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3443,9 +3913,11 @@ public enum TDrawerPlacementValue
 [ECMAScript]
 public record TDrawerSizeDragEndEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("size")]
     public Number Size { get; init; }
 }
 
@@ -3457,6 +3929,7 @@ public readonly union TDrawerSizeDraggableValue(bool, TSizeDragLimit)
 [ECMAScript]
 public record TDropdownClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3474,6 +3947,7 @@ public enum TDropdownDirectionValue
 [ECMAScript]
 public record TDropdownItemClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -3510,22 +3984,31 @@ public readonly union TDropdownMinColumnWidthValue(string, Number)
 [ECMAScript]
 public record TDropdownOption : VueProps
 {
+    [ECMAScriptName("active")]
     public bool? Active { get; init; }
 
+    [ECMAScriptName("content")]
     public TdDropdownItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("divider")]
     public bool? Divider { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("theme")]
     public TDropdownItemTheme? Theme { get; init; }
 
+    [ECMAScriptName("value")]
     public TdDropdownItemPropsValue? Value { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdDropdownItemPropsOnClick? OnClick { get; init; }
 
+    [ECMAScriptName("children")]
     public TDropdownOption[]? Children { get; init; }
 }
 
@@ -3579,26 +4062,33 @@ public delegate bool TEditableCellType<T>(TPrimaryTableCellParams<T> @params);
 [ECMAScript]
 public record TEmptyConfig : VueProps
 {
+    [ECMAScriptName("image")]
     public TEmptyConfigImage? Image { get; init; }
 
+    [ECMAScriptName("titleText")]
     public TEmptyConfigTitleText? TitleText { get; init; }
 }
 
 [ECMAScript]
 public record TEmptyConfigImage : VueProps
 {
+    [ECMAScriptName("maintenance")]
     [EditorRequired]
     public RenderFragment Maintenance { get; init; } = default!;
 
+    [ECMAScriptName("success")]
     [EditorRequired]
     public RenderFragment Success { get; init; } = default!;
 
+    [ECMAScriptName("fail")]
     [EditorRequired]
     public RenderFragment Fail { get; init; } = default!;
 
+    [ECMAScriptName("empty")]
     [EditorRequired]
     public RenderFragment Empty { get; init; } = default!;
 
+    [ECMAScriptName("networkError")]
     [EditorRequired]
     public RenderFragment NetworkError { get; init; } = default!;
 }
@@ -3606,18 +4096,23 @@ public record TEmptyConfigImage : VueProps
 [ECMAScript]
 public record TEmptyConfigTitleText : VueProps
 {
+    [ECMAScriptName("maintenance")]
     [EditorRequired]
     public string Maintenance { get; init; } = default!;
 
+    [ECMAScriptName("success")]
     [EditorRequired]
     public string Success { get; init; } = default!;
 
+    [ECMAScriptName("fail")]
     [EditorRequired]
     public string Fail { get; init; } = default!;
 
+    [ECMAScriptName("empty")]
     [EditorRequired]
     public string Empty { get; init; } = default!;
 
+    [ECMAScriptName("networkError")]
     [EditorRequired]
     public string NetworkError { get; init; } = default!;
 }
@@ -3656,6 +4151,7 @@ public readonly union TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(string
 [ECMAScript]
 public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("status")]
     public TEnhancedTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
@@ -3675,6 +4171,7 @@ public delegate bool TEnhancedTableBeforeDragSortValue<T>(TDragSortContext<T> co
 [ECMAScript]
 public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TEnhancedTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -3693,6 +4190,7 @@ public enum TEnhancedTableColumnControllerVisibleChangeEventContextTrigger
 [ECMAScript]
 public record TEnhancedTableColumnResizeChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("columnsWidth")]
     [EditorRequired]
     public TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
@@ -3720,6 +4218,7 @@ public readonly union TEnhancedTableExpandedTreeNodesValueItem<T>(string, Number
 [ECMAScript]
 public record TEnhancedTableScrollEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -3727,6 +4226,7 @@ public record TEnhancedTableScrollEventParams<T> : VueProps
 [ECMAScript]
 public record TEnhancedTableScrollXEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -3734,6 +4234,7 @@ public record TEnhancedTableScrollXEventParams<T> : VueProps
 [ECMAScript]
 public record TEnhancedTableScrollYEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -3746,8 +4247,10 @@ public readonly union TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(stri
 [ECMAScript]
 public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
 {
+    [ECMAScriptName("type")]
     public TEnhancedTableTreeExpandAndFoldIconSlotContextType Type { get; init; }
 
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 }
 
@@ -3764,17 +4267,21 @@ public enum TEnhancedTableTreeExpandAndFoldIconSlotContextType
 [ECMAScript]
 public record TExpandArrowRenderParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 }
 
 [ECMAScript]
 public record TExpandOptions<T> : VueProps
 {
+    [ECMAScriptName("expandedRowData")]
     [EditorRequired]
     public T[] ExpandedRowData { get; init; } = default!;
 
+    [ECMAScriptName("currentRowData")]
     public T CurrentRowData { get; init; } = default!;
 }
 
@@ -3803,12 +4310,16 @@ public readonly union TFooterButton(string, TdButtonProps, RenderFragment)
 [ECMAScript]
 public record TFormConfig : VueProps
 {
+    [ECMAScriptName("colonText")]
     public string? ColonText { get; init; }
 
+    [ECMAScriptName("errorMessage")]
     public TFormErrorMessage? ErrorMessage { get; init; }
 
+    [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; init; }
 
+    [ECMAScriptName("requiredMarkPosition")]
     public TFormConfigRequiredMarkPosition? RequiredMarkPosition { get; init; }
 }
 
@@ -3825,32 +4336,46 @@ public enum TFormConfigRequiredMarkPosition
 [ECMAScript]
 public record TFormErrorMessage : VueProps
 {
+    [ECMAScriptName("boolean")]
     public string? Boolean { get; init; }
 
+    [ECMAScriptName("date")]
     public string? Date { get; init; }
 
+    [ECMAScriptName("enum")]
     public string? Enum { get; init; }
 
+    [ECMAScriptName("idcard")]
     public string? Idcard { get; init; }
 
+    [ECMAScriptName("len")]
     public string? Len { get; init; }
 
+    [ECMAScriptName("max")]
     public string? Max { get; init; }
 
+    [ECMAScriptName("min")]
     public string? Min { get; init; }
 
+    [ECMAScriptName("number")]
     public string? Number { get; init; }
 
+    [ECMAScriptName("pattern")]
     public string? Pattern { get; init; }
 
+    [ECMAScriptName("required")]
     public string? Required { get; init; }
 
+    [ECMAScriptName("telnumber")]
     public string? Telnumber { get; init; }
 
+    [ECMAScriptName("url")]
     public string? Url { get; init; }
 
+    [ECMAScriptName("validator")]
     public string? Validator { get; init; }
 
+    [ECMAScriptName("whitespace")]
     public string? Whitespace { get; init; }
 }
 
@@ -3923,6 +4448,7 @@ public enum TFormRequiredMarkPositionValue
 [ECMAScript]
 public record TFormResetEventContext<FormData> : VueProps
 {
+    [ECMAScriptName("e")]
     public Event? E { get; init; }
 }
 
@@ -3939,40 +4465,58 @@ public enum TFormResetTypeValue
 [ECMAScript]
 public record TFormRule : VueProps
 {
+    [ECMAScriptName("boolean")]
     public bool? Boolean { get; init; }
 
+    [ECMAScriptName("date")]
     public TFormRuleDate? Date { get; init; }
 
+    [ECMAScriptName("email")]
     public TFormRuleEmail? Email { get; init; }
 
+    [ECMAScriptName("enum")]
     public string[]? Enum { get; init; }
 
+    [ECMAScriptName("idcard")]
     public bool? Idcard { get; init; }
 
+    [ECMAScriptName("len")]
     public TFormRuleLen? Len { get; init; }
 
+    [ECMAScriptName("max")]
     public TFormRuleMax? Max { get; init; }
 
+    [ECMAScriptName("message")]
     public string? Message { get; init; }
 
+    [ECMAScriptName("min")]
     public TFormRuleMin? Min { get; init; }
 
+    [ECMAScriptName("number")]
     public bool? Number { get; init; }
 
+    [ECMAScriptName("pattern")]
     public TFormRulePattern? Pattern { get; init; }
 
+    [ECMAScriptName("required")]
     public bool? Required { get; init; }
 
+    [ECMAScriptName("telnumber")]
     public bool? Telnumber { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TValidateTriggerType? Trigger { get; init; }
 
+    [ECMAScriptName("type")]
     public TFormRuleType? Type { get; init; }
 
+    [ECMAScriptName("url")]
     public TFormRuleUrl? Url { get; init; }
 
+    [ECMAScriptName("validator")]
     public TCustomValidator? Validator { get; init; }
 
+    [ECMAScriptName("whitespace")]
     public bool? Whitespace { get; init; }
 }
 
@@ -4046,7153 +4590,4838 @@ public readonly union TFormValidateResult<T>(bool, TValidateResultObj<T>)
 [ECMAScript]
 public record TFormatResponseContext : VueProps
 {
+    [ECMAScriptName("file")]
     [EditorRequired]
     public TUploadFile File { get; init; } = default!;
 
+    [ECMAScriptName("currentFiles")]
     public TUploadFile[]? CurrentFiles { get; init; }
 }
 
 [ECMAScript]
 public record TGlobalConfigProvider : VueProps
 {
+    [ECMAScriptName("alert")]
     public TAlertConfig? Alert { get; init; }
 
+    [ECMAScriptName("anchor")]
     public TAnchorConfig? Anchor { get; init; }
 
+    [ECMAScriptName("animation")]
     public VueDictionary<TAnimationType[]>? Animation { get; init; }
 
+    [ECMAScriptName("autoComplete")]
     public TAutoCompleteConfig? AutoComplete { get; init; }
 
+    [ECMAScriptName("calendar")]
     public TCalendarConfig? Calendar { get; init; }
 
+    [ECMAScriptName("cascader")]
     public TCascaderConfig? Cascader { get; init; }
 
+    [ECMAScriptName("chat")]
     public TChatConfig? Chat { get; init; }
 
+    [ECMAScriptName("classPrefix")]
     public string? ClassPrefix { get; init; }
 
+    [ECMAScriptName("colorPicker")]
     public TColorPickerConfig? ColorPicker { get; init; }
 
+    [ECMAScriptName("datePicker")]
     public TDatePickerConfig? DatePicker { get; init; }
 
+    [ECMAScriptName("descriptions")]
     public TDescriptionsConfig? Descriptions { get; init; }
 
+    [ECMAScriptName("dialog")]
     public TDialogConfig? Dialog { get; init; }
 
+    [ECMAScriptName("drawer")]
     public TDrawerConfig? Drawer { get; init; }
 
+    [ECMAScriptName("empty")]
     public TEmptyConfig? Empty { get; init; }
 
+    [ECMAScriptName("form")]
     public TFormConfig? Form { get; init; }
 
+    [ECMAScriptName("guide")]
     public TGuideConfig? Guide { get; init; }
 
+    [ECMAScriptName("icon")]
     public TGlobalIconConfig? Icon { get; init; }
 
+    [ECMAScriptName("image")]
     public TImageConfig? Image { get; init; }
 
+    [ECMAScriptName("imageViewer")]
     public TImageViewerConfig? ImageViewer { get; init; }
 
+    [ECMAScriptName("input")]
     public TInputConfig? Input { get; init; }
 
+    [ECMAScriptName("list")]
     public TListConfig? List { get; init; }
 
+    [ECMAScriptName("loading")]
     public TLoadingConfig? Loading { get; init; }
 
+    [ECMAScriptName("message")]
     public TMessageConfig? Message { get; init; }
 
+    [ECMAScriptName("pagination")]
     public TPaginationConfig? Pagination { get; init; }
 
+    [ECMAScriptName("popconfirm")]
     public TPopconfirmConfig? Popconfirm { get; init; }
 
+    [ECMAScriptName("qrcode")]
     public TQRCodeConfig? Qrcode { get; init; }
 
+    [ECMAScriptName("rate")]
     public TRateConfig? Rate { get; init; }
 
+    [ECMAScriptName("select")]
     public TSelectConfig? Select { get; init; }
 
+    [ECMAScriptName("steps")]
     public TStepsConfig? Steps { get; init; }
 
+    [ECMAScriptName("table")]
     public TTableConfig? Table { get; init; }
 
+    [ECMAScriptName("tag")]
     public TTagConfig? Tag { get; init; }
 
+    [ECMAScriptName("timePicker")]
     public TTimePickerConfig? TimePicker { get; init; }
 
+    [ECMAScriptName("transfer")]
     public TTransferConfig? Transfer { get; init; }
 
+    [ECMAScriptName("tree")]
     public TTreeConfig? Tree { get; init; }
 
+    [ECMAScriptName("treeSelect")]
     public TTreeSelectConfig? TreeSelect { get; init; }
 
+    [ECMAScriptName("typography")]
     public TTypographyConfig? Typography { get; init; }
 
+    [ECMAScriptName("upload")]
     public TUploadConfig? Upload { get; init; }
 }
 
 [ECMAScript]
 public record TGlobalIconConfig : VueProps
 {
-    [ECMAScriptName("AbilityOpenIcon")]
     public TGlobalIconType? AbilityOpenIcon { get; init; }
 
-    [ECMAScriptName("AbstractFilledIcon")]
     public TGlobalIconType? AbstractFilledIcon { get; init; }
 
-    [ECMAScriptName("AbstractIcon")]
     public TGlobalIconType? AbstractIcon { get; init; }
 
-    [ECMAScriptName("AccessibilityFilledIcon")]
     public TGlobalIconType? AccessibilityFilledIcon { get; init; }
 
-    [ECMAScriptName("AccessibilityIcon")]
     public TGlobalIconType? AccessibilityIcon { get; init; }
 
-    [ECMAScriptName("ActivityFilledIcon")]
     public TGlobalIconType? ActivityFilledIcon { get; init; }
 
-    [ECMAScriptName("ActivityIcon")]
     public TGlobalIconType? ActivityIcon { get; init; }
 
-    [ECMAScriptName("AddAndSubtractIcon")]
     public TGlobalIconType? AddAndSubtractIcon { get; init; }
 
-    [ECMAScriptName("AddCircleFilledIcon")]
     public TGlobalIconType? AddCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("AddCircleIcon")]
     public TGlobalIconType? AddCircleIcon { get; init; }
 
-    [ECMAScriptName("AddRectangleFilledIcon")]
     public TGlobalIconType? AddRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("AddRectangleIcon")]
     public TGlobalIconType? AddRectangleIcon { get; init; }
 
-    [ECMAScriptName("AddIcon")]
     public TGlobalIconType? AddIcon { get; init; }
 
-    [ECMAScriptName("AddressBookFilledIcon")]
     public TGlobalIconType? AddressBookFilledIcon { get; init; }
 
-    [ECMAScriptName("AddressBookIcon")]
     public TGlobalIconType? AddressBookIcon { get; init; }
 
-    [ECMAScriptName("AdjustmentFilledIcon")]
     public TGlobalIconType? AdjustmentFilledIcon { get; init; }
 
-    [ECMAScriptName("AdjustmentIcon")]
     public TGlobalIconType? AdjustmentIcon { get; init; }
 
-    [ECMAScriptName("Ai1FilledIcon")]
     public TGlobalIconType? Ai1FilledIcon { get; init; }
 
-    [ECMAScriptName("Ai1Icon")]
     public TGlobalIconType? Ai1Icon { get; init; }
 
-    [ECMAScriptName("AiArticleFilledIcon")]
     public TGlobalIconType? AiArticleFilledIcon { get; init; }
 
-    [ECMAScriptName("AiArticleIcon")]
     public TGlobalIconType? AiArticleIcon { get; init; }
 
-    [ECMAScriptName("AiBookOpenFilledIcon")]
     public TGlobalIconType? AiBookOpenFilledIcon { get; init; }
 
-    [ECMAScriptName("AiBookOpenIcon")]
     public TGlobalIconType? AiBookOpenIcon { get; init; }
 
-    [ECMAScriptName("AiChartBarFilledIcon")]
     public TGlobalIconType? AiChartBarFilledIcon { get; init; }
 
-    [ECMAScriptName("AiChartBarIcon")]
     public TGlobalIconType? AiChartBarIcon { get; init; }
 
-    [ECMAScriptName("AiCoordinateSystemFilledIcon")]
     public TGlobalIconType? AiCoordinateSystemFilledIcon { get; init; }
 
-    [ECMAScriptName("AiCoordinateSystemIcon")]
     public TGlobalIconType? AiCoordinateSystemIcon { get; init; }
 
-    [ECMAScriptName("AiCutIcon")]
     public TGlobalIconType? AiCutIcon { get; init; }
 
-    [ECMAScriptName("AiEdit1FilledIcon")]
     public TGlobalIconType? AiEdit1FilledIcon { get; init; }
 
-    [ECMAScriptName("AiEdit1Icon")]
     public TGlobalIconType? AiEdit1Icon { get; init; }
 
-    [ECMAScriptName("AiEditFilledIcon")]
     public TGlobalIconType? AiEditFilledIcon { get; init; }
 
-    [ECMAScriptName("AiEditIcon")]
     public TGlobalIconType? AiEditIcon { get; init; }
 
-    [ECMAScriptName("AiEducationFilledIcon")]
     public TGlobalIconType? AiEducationFilledIcon { get; init; }
 
-    [ECMAScriptName("AiEducationIcon")]
     public TGlobalIconType? AiEducationIcon { get; init; }
 
-    [ECMAScriptName("AiGitBranchFilledIcon")]
     public TGlobalIconType? AiGitBranchFilledIcon { get; init; }
 
-    [ECMAScriptName("AiGitBranchIcon")]
     public TGlobalIconType? AiGitBranchIcon { get; init; }
 
-    [ECMAScriptName("AiImage1FilledIcon")]
     public TGlobalIconType? AiImage1FilledIcon { get; init; }
 
-    [ECMAScriptName("AiImage1Icon")]
     public TGlobalIconType? AiImage1Icon { get; init; }
 
-    [ECMAScriptName("AiImageFilledIcon")]
     public TGlobalIconType? AiImageFilledIcon { get; init; }
 
-    [ECMAScriptName("AiImageIcon")]
     public TGlobalIconType? AiImageIcon { get; init; }
 
-    [ECMAScriptName("AiLayoutFilledIcon")]
     public TGlobalIconType? AiLayoutFilledIcon { get; init; }
 
-    [ECMAScriptName("AiLayoutIcon")]
     public TGlobalIconType? AiLayoutIcon { get; init; }
 
-    [ECMAScriptName("AiMusicFilledIcon")]
     public TGlobalIconType? AiMusicFilledIcon { get; init; }
 
-    [ECMAScriptName("AiMusicIcon")]
     public TGlobalIconType? AiMusicIcon { get; init; }
 
-    [ECMAScriptName("AiScreenshotIcon")]
     public TGlobalIconType? AiScreenshotIcon { get; init; }
 
-    [ECMAScriptName("AiSearchFilledIcon")]
     public TGlobalIconType? AiSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("AiSearchIcon")]
     public TGlobalIconType? AiSearchIcon { get; init; }
 
-    [ECMAScriptName("AiTerminal1FilledIcon")]
     public TGlobalIconType? AiTerminal1FilledIcon { get; init; }
 
-    [ECMAScriptName("AiTerminal1Icon")]
     public TGlobalIconType? AiTerminal1Icon { get; init; }
 
-    [ECMAScriptName("AiTerminalFilledIcon")]
     public TGlobalIconType? AiTerminalFilledIcon { get; init; }
 
-    [ECMAScriptName("AiTerminalIcon")]
     public TGlobalIconType? AiTerminalIcon { get; init; }
 
-    [ECMAScriptName("AiTextformatItalicIcon")]
     public TGlobalIconType? AiTextformatItalicIcon { get; init; }
 
-    [ECMAScriptName("AiToolFilledIcon")]
     public TGlobalIconType? AiToolFilledIcon { get; init; }
 
-    [ECMAScriptName("AiToolIcon")]
     public TGlobalIconType? AiToolIcon { get; init; }
 
-    [ECMAScriptName("AiVideoFilledIcon")]
     public TGlobalIconType? AiVideoFilledIcon { get; init; }
 
-    [ECMAScriptName("AiVideoIcon")]
     public TGlobalIconType? AiVideoIcon { get; init; }
 
-    [ECMAScriptName("AiIcon")]
     public TGlobalIconType? AiIcon { get; init; }
 
-    [ECMAScriptName("AirplayWaveFilledIcon")]
     public TGlobalIconType? AirplayWaveFilledIcon { get; init; }
 
-    [ECMAScriptName("AirplayWaveIcon")]
     public TGlobalIconType? AirplayWaveIcon { get; init; }
 
-    [ECMAScriptName("AlarmAddFilledIcon")]
     public TGlobalIconType? AlarmAddFilledIcon { get; init; }
 
-    [ECMAScriptName("AlarmAddIcon")]
     public TGlobalIconType? AlarmAddIcon { get; init; }
 
-    [ECMAScriptName("AlarmFilledIcon")]
     public TGlobalIconType? AlarmFilledIcon { get; init; }
 
-    [ECMAScriptName("AlarmOffFilledIcon")]
     public TGlobalIconType? AlarmOffFilledIcon { get; init; }
 
-    [ECMAScriptName("AlarmOffIcon")]
     public TGlobalIconType? AlarmOffIcon { get; init; }
 
-    [ECMAScriptName("AlarmIcon")]
     public TGlobalIconType? AlarmIcon { get; init; }
 
-    [ECMAScriptName("AlignBottomIcon")]
     public TGlobalIconType? AlignBottomIcon { get; init; }
 
-    [ECMAScriptName("AlignTopIcon")]
     public TGlobalIconType? AlignTopIcon { get; init; }
 
-    [ECMAScriptName("AlignVerticalIcon")]
     public TGlobalIconType? AlignVerticalIcon { get; init; }
 
-    [ECMAScriptName("AlphaIcon")]
     public TGlobalIconType? AlphaIcon { get; init; }
 
-    [ECMAScriptName("AnalyticsFilledIcon")]
     public TGlobalIconType? AnalyticsFilledIcon { get; init; }
 
-    [ECMAScriptName("AnalyticsIcon")]
     public TGlobalIconType? AnalyticsIcon { get; init; }
 
-    [ECMAScriptName("AnchorIcon")]
     public TGlobalIconType? AnchorIcon { get; init; }
 
-    [ECMAScriptName("AngryFilledIcon")]
     public TGlobalIconType? AngryFilledIcon { get; init; }
 
-    [ECMAScriptName("AngryIcon")]
     public TGlobalIconType? AngryIcon { get; init; }
 
-    [ECMAScriptName("Animation1FilledIcon")]
     public TGlobalIconType? Animation1FilledIcon { get; init; }
 
-    [ECMAScriptName("Animation1Icon")]
     public TGlobalIconType? Animation1Icon { get; init; }
 
-    [ECMAScriptName("AnimationFilledIcon")]
     public TGlobalIconType? AnimationFilledIcon { get; init; }
 
-    [ECMAScriptName("AnimationIcon")]
     public TGlobalIconType? AnimationIcon { get; init; }
 
-    [ECMAScriptName("AnticlockwiseFilledIcon")]
     public TGlobalIconType? AnticlockwiseFilledIcon { get; init; }
 
-    [ECMAScriptName("AnticlockwiseIcon")]
     public TGlobalIconType? AnticlockwiseIcon { get; init; }
 
-    [ECMAScriptName("ApiIcon")]
     public TGlobalIconType? ApiIcon { get; init; }
 
-    [ECMAScriptName("AppFilledIcon")]
     public TGlobalIconType? AppFilledIcon { get; init; }
 
-    [ECMAScriptName("AppIcon")]
     public TGlobalIconType? AppIcon { get; init; }
 
-    [ECMAScriptName("AppleFilledIcon")]
     public TGlobalIconType? AppleFilledIcon { get; init; }
 
-    [ECMAScriptName("AppleIcon")]
     public TGlobalIconType? AppleIcon { get; init; }
 
-    [ECMAScriptName("ApplicationFilledIcon")]
     public TGlobalIconType? ApplicationFilledIcon { get; init; }
 
-    [ECMAScriptName("ApplicationIcon")]
     public TGlobalIconType? ApplicationIcon { get; init; }
 
-    [ECMAScriptName("ArchitectureHuiStyleFilledIcon")]
     public TGlobalIconType? ArchitectureHuiStyleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArchitectureHuiStyleIcon")]
     public TGlobalIconType? ArchitectureHuiStyleIcon { get; init; }
 
-    [ECMAScriptName("Archway1FilledIcon")]
     public TGlobalIconType? Archway1FilledIcon { get; init; }
 
-    [ECMAScriptName("Archway1Icon")]
     public TGlobalIconType? Archway1Icon { get; init; }
 
-    [ECMAScriptName("ArchwayFilledIcon")]
     public TGlobalIconType? ArchwayFilledIcon { get; init; }
 
-    [ECMAScriptName("ArchwayIcon")]
     public TGlobalIconType? ArchwayIcon { get; init; }
 
-    [ECMAScriptName("ArrowDownCircleFilledIcon")]
     public TGlobalIconType? ArrowDownCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowDownCircleIcon")]
     public TGlobalIconType? ArrowDownCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowDownRectangleFilledIcon")]
     public TGlobalIconType? ArrowDownRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowDownRectangleIcon")]
     public TGlobalIconType? ArrowDownRectangleIcon { get; init; }
 
-    [ECMAScriptName("ArrowDownIcon")]
     public TGlobalIconType? ArrowDownIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftCircleFilledIcon")]
     public TGlobalIconType? ArrowLeftCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftCircleIcon")]
     public TGlobalIconType? ArrowLeftCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftDownCircleFilledIcon")]
     public TGlobalIconType? ArrowLeftDownCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftDownCircleIcon")]
     public TGlobalIconType? ArrowLeftDownCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftDownIcon")]
     public TGlobalIconType? ArrowLeftDownIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftRight1Icon")]
     public TGlobalIconType? ArrowLeftRight1Icon { get; init; }
 
-    [ECMAScriptName("ArrowLeftRight2Icon")]
     public TGlobalIconType? ArrowLeftRight2Icon { get; init; }
 
-    [ECMAScriptName("ArrowLeftRight3Icon")]
     public TGlobalIconType? ArrowLeftRight3Icon { get; init; }
 
-    [ECMAScriptName("ArrowLeftRightCircleFilledIcon")]
     public TGlobalIconType? ArrowLeftRightCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftRightCircleIcon")]
     public TGlobalIconType? ArrowLeftRightCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftUpCircleFilledIcon")]
     public TGlobalIconType? ArrowLeftUpCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftUpCircleIcon")]
     public TGlobalIconType? ArrowLeftUpCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftUpIcon")]
     public TGlobalIconType? ArrowLeftUpIcon { get; init; }
 
-    [ECMAScriptName("ArrowLeftIcon")]
     public TGlobalIconType? ArrowLeftIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightCircleFilledIcon")]
     public TGlobalIconType? ArrowRightCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightCircleIcon")]
     public TGlobalIconType? ArrowRightCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightDownCircleFilledIcon")]
     public TGlobalIconType? ArrowRightDownCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightDownCircleIcon")]
     public TGlobalIconType? ArrowRightDownCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightDownIcon")]
     public TGlobalIconType? ArrowRightDownIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightUpCircleFilledIcon")]
     public TGlobalIconType? ArrowRightUpCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightUpCircleIcon")]
     public TGlobalIconType? ArrowRightUpCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightUpIcon")]
     public TGlobalIconType? ArrowRightUpIcon { get; init; }
 
-    [ECMAScriptName("ArrowRightIcon")]
     public TGlobalIconType? ArrowRightIcon { get; init; }
 
-    [ECMAScriptName("ArrowTriangleDownFilledIcon")]
     public TGlobalIconType? ArrowTriangleDownFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowTriangleDownIcon")]
     public TGlobalIconType? ArrowTriangleDownIcon { get; init; }
 
-    [ECMAScriptName("ArrowTriangleUpFilledIcon")]
     public TGlobalIconType? ArrowTriangleUpFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowTriangleUpIcon")]
     public TGlobalIconType? ArrowTriangleUpIcon { get; init; }
 
-    [ECMAScriptName("ArrowUpCircleFilledIcon")]
     public TGlobalIconType? ArrowUpCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowUpCircleIcon")]
     public TGlobalIconType? ArrowUpCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowUpDown1Icon")]
     public TGlobalIconType? ArrowUpDown1Icon { get; init; }
 
-    [ECMAScriptName("ArrowUpDown2Icon")]
     public TGlobalIconType? ArrowUpDown2Icon { get; init; }
 
-    [ECMAScriptName("ArrowUpDown3Icon")]
     public TGlobalIconType? ArrowUpDown3Icon { get; init; }
 
-    [ECMAScriptName("ArrowUpDownCircleFilledIcon")]
     public TGlobalIconType? ArrowUpDownCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArrowUpDownCircleIcon")]
     public TGlobalIconType? ArrowUpDownCircleIcon { get; init; }
 
-    [ECMAScriptName("ArrowUpIcon")]
     public TGlobalIconType? ArrowUpIcon { get; init; }
 
-    [ECMAScriptName("ArtboardIcon")]
     public TGlobalIconType? ArtboardIcon { get; init; }
 
-    [ECMAScriptName("ArticleFilledIcon")]
     public TGlobalIconType? ArticleFilledIcon { get; init; }
 
-    [ECMAScriptName("ArticleIcon")]
     public TGlobalIconType? ArticleIcon { get; init; }
 
-    [ECMAScriptName("AssignmentCheckedFilledIcon")]
     public TGlobalIconType? AssignmentCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("AssignmentCheckedIcon")]
     public TGlobalIconType? AssignmentCheckedIcon { get; init; }
 
-    [ECMAScriptName("AssignmentCodeFilledIcon")]
     public TGlobalIconType? AssignmentCodeFilledIcon { get; init; }
 
-    [ECMAScriptName("AssignmentCodeIcon")]
     public TGlobalIconType? AssignmentCodeIcon { get; init; }
 
-    [ECMAScriptName("AssignmentErrorFilledIcon")]
     public TGlobalIconType? AssignmentErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("AssignmentErrorIcon")]
     public TGlobalIconType? AssignmentErrorIcon { get; init; }
 
-    [ECMAScriptName("AssignmentFilledIcon")]
     public TGlobalIconType? AssignmentFilledIcon { get; init; }
 
-    [ECMAScriptName("AssignmentUserFilledIcon")]
     public TGlobalIconType? AssignmentUserFilledIcon { get; init; }
 
-    [ECMAScriptName("AssignmentUserIcon")]
     public TGlobalIconType? AssignmentUserIcon { get; init; }
 
-    [ECMAScriptName("AssignmentIcon")]
     public TGlobalIconType? AssignmentIcon { get; init; }
 
-    [ECMAScriptName("AttachIcon")]
     public TGlobalIconType? AttachIcon { get; init; }
 
-    [ECMAScriptName("AttachmentListIcon")]
     public TGlobalIconType? AttachmentListIcon { get; init; }
 
-    [ECMAScriptName("Attic1FilledIcon")]
     public TGlobalIconType? Attic1FilledIcon { get; init; }
 
-    [ECMAScriptName("Attic1Icon")]
     public TGlobalIconType? Attic1Icon { get; init; }
 
-    [ECMAScriptName("AtticFilledIcon")]
     public TGlobalIconType? AtticFilledIcon { get; init; }
 
-    [ECMAScriptName("AtticIcon")]
     public TGlobalIconType? AtticIcon { get; init; }
 
-    [ECMAScriptName("AudioFilledIcon")]
     public TGlobalIconType? AudioFilledIcon { get; init; }
 
-    [ECMAScriptName("AudioIcon")]
     public TGlobalIconType? AudioIcon { get; init; }
 
-    [ECMAScriptName("AutomaticNumberingIcon")]
     public TGlobalIconType? AutomaticNumberingIcon { get; init; }
 
-    [ECMAScriptName("AutomationFilledIcon")]
     public TGlobalIconType? AutomationFilledIcon { get; init; }
 
-    [ECMAScriptName("AutomationIcon")]
     public TGlobalIconType? AutomationIcon { get; init; }
 
-    [ECMAScriptName("AwkwardFilledIcon")]
     public TGlobalIconType? AwkwardFilledIcon { get; init; }
 
-    [ECMAScriptName("AwkwardIcon")]
     public TGlobalIconType? AwkwardIcon { get; init; }
 
-    [ECMAScriptName("BacktopRectangleFilledIcon")]
     public TGlobalIconType? BacktopRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("BacktopRectangleIcon")]
     public TGlobalIconType? BacktopRectangleIcon { get; init; }
 
-    [ECMAScriptName("BacktopIcon")]
     public TGlobalIconType? BacktopIcon { get; init; }
 
-    [ECMAScriptName("BackupFilledIcon")]
     public TGlobalIconType? BackupFilledIcon { get; init; }
 
-    [ECMAScriptName("BackupIcon")]
     public TGlobalIconType? BackupIcon { get; init; }
 
-    [ECMAScriptName("BackwardFilledIcon")]
     public TGlobalIconType? BackwardFilledIcon { get; init; }
 
-    [ECMAScriptName("BackwardIcon")]
     public TGlobalIconType? BackwardIcon { get; init; }
 
-    [ECMAScriptName("BadLaughFilledIcon")]
     public TGlobalIconType? BadLaughFilledIcon { get; init; }
 
-    [ECMAScriptName("BadLaughIcon")]
     public TGlobalIconType? BadLaughIcon { get; init; }
 
-    [ECMAScriptName("BambooShootFilledIcon")]
     public TGlobalIconType? BambooShootFilledIcon { get; init; }
 
-    [ECMAScriptName("BambooShootIcon")]
     public TGlobalIconType? BambooShootIcon { get; init; }
 
-    [ECMAScriptName("BananaFilledIcon")]
     public TGlobalIconType? BananaFilledIcon { get; init; }
 
-    [ECMAScriptName("BananaIcon")]
     public TGlobalIconType? BananaIcon { get; init; }
 
-    [ECMAScriptName("BarbecueFilledIcon")]
     public TGlobalIconType? BarbecueFilledIcon { get; init; }
 
-    [ECMAScriptName("BarbecueIcon")]
     public TGlobalIconType? BarbecueIcon { get; init; }
 
-    [ECMAScriptName("Barcode1Icon")]
     public TGlobalIconType? Barcode1Icon { get; init; }
 
-    [ECMAScriptName("BarcodeIcon")]
     public TGlobalIconType? BarcodeIcon { get; init; }
 
-    [ECMAScriptName("BaseStationIcon")]
     public TGlobalIconType? BaseStationIcon { get; init; }
 
-    [ECMAScriptName("BatteryAddFilledIcon")]
     public TGlobalIconType? BatteryAddFilledIcon { get; init; }
 
-    [ECMAScriptName("BatteryAddIcon")]
     public TGlobalIconType? BatteryAddIcon { get; init; }
 
-    [ECMAScriptName("BatteryChargingFilledIcon")]
     public TGlobalIconType? BatteryChargingFilledIcon { get; init; }
 
-    [ECMAScriptName("BatteryChargingIcon")]
     public TGlobalIconType? BatteryChargingIcon { get; init; }
 
-    [ECMAScriptName("BatteryFilledIcon")]
     public TGlobalIconType? BatteryFilledIcon { get; init; }
 
-    [ECMAScriptName("BatteryLowFilledIcon")]
     public TGlobalIconType? BatteryLowFilledIcon { get; init; }
 
-    [ECMAScriptName("BatteryLowIcon")]
     public TGlobalIconType? BatteryLowIcon { get; init; }
 
-    [ECMAScriptName("BatteryIcon")]
     public TGlobalIconType? BatteryIcon { get; init; }
 
-    [ECMAScriptName("BeanFilledIcon")]
     public TGlobalIconType? BeanFilledIcon { get; init; }
 
-    [ECMAScriptName("BeanIcon")]
     public TGlobalIconType? BeanIcon { get; init; }
 
-    [ECMAScriptName("BeerFilledIcon")]
     public TGlobalIconType? BeerFilledIcon { get; init; }
 
-    [ECMAScriptName("BeerIcon")]
     public TGlobalIconType? BeerIcon { get; init; }
 
-    [ECMAScriptName("BetaIcon")]
     public TGlobalIconType? BetaIcon { get; init; }
 
-    [ECMAScriptName("BifurcateFilledIcon")]
     public TGlobalIconType? BifurcateFilledIcon { get; init; }
 
-    [ECMAScriptName("BifurcateIcon")]
     public TGlobalIconType? BifurcateIcon { get; init; }
 
-    [ECMAScriptName("BillFilledIcon")]
     public TGlobalIconType? BillFilledIcon { get; init; }
 
-    [ECMAScriptName("BillIcon")]
     public TGlobalIconType? BillIcon { get; init; }
 
-    [ECMAScriptName("BluetoothIcon")]
     public TGlobalIconType? BluetoothIcon { get; init; }
 
-    [ECMAScriptName("BoneFilledIcon")]
     public TGlobalIconType? BoneFilledIcon { get; init; }
 
-    [ECMAScriptName("BoneIcon")]
     public TGlobalIconType? BoneIcon { get; init; }
 
-    [ECMAScriptName("BookFilledIcon")]
     public TGlobalIconType? BookFilledIcon { get; init; }
 
-    [ECMAScriptName("BookOpenFilledIcon")]
     public TGlobalIconType? BookOpenFilledIcon { get; init; }
 
-    [ECMAScriptName("BookOpenIcon")]
     public TGlobalIconType? BookOpenIcon { get; init; }
 
-    [ECMAScriptName("BookUnknownFilledIcon")]
     public TGlobalIconType? BookUnknownFilledIcon { get; init; }
 
-    [ECMAScriptName("BookUnknownIcon")]
     public TGlobalIconType? BookUnknownIcon { get; init; }
 
-    [ECMAScriptName("BookIcon")]
     public TGlobalIconType? BookIcon { get; init; }
 
-    [ECMAScriptName("BookmarkAddFilledIcon")]
     public TGlobalIconType? BookmarkAddFilledIcon { get; init; }
 
-    [ECMAScriptName("BookmarkAddIcon")]
     public TGlobalIconType? BookmarkAddIcon { get; init; }
 
-    [ECMAScriptName("BookmarkCheckedFilledIcon")]
     public TGlobalIconType? BookmarkCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("BookmarkCheckedIcon")]
     public TGlobalIconType? BookmarkCheckedIcon { get; init; }
 
-    [ECMAScriptName("BookmarkDoubleFilledIcon")]
     public TGlobalIconType? BookmarkDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("BookmarkDoubleIcon")]
     public TGlobalIconType? BookmarkDoubleIcon { get; init; }
 
-    [ECMAScriptName("BookmarkFilledIcon")]
     public TGlobalIconType? BookmarkFilledIcon { get; init; }
 
-    [ECMAScriptName("BookmarkMinusFilledIcon")]
     public TGlobalIconType? BookmarkMinusFilledIcon { get; init; }
 
-    [ECMAScriptName("BookmarkMinusIcon")]
     public TGlobalIconType? BookmarkMinusIcon { get; init; }
 
-    [ECMAScriptName("BookmarkIcon")]
     public TGlobalIconType? BookmarkIcon { get; init; }
 
-    [ECMAScriptName("BracesIcon")]
     public TGlobalIconType? BracesIcon { get; init; }
 
-    [ECMAScriptName("BracketsIcon")]
     public TGlobalIconType? BracketsIcon { get; init; }
 
-    [ECMAScriptName("BreadFilledIcon")]
     public TGlobalIconType? BreadFilledIcon { get; init; }
 
-    [ECMAScriptName("BreadIcon")]
     public TGlobalIconType? BreadIcon { get; init; }
 
-    [ECMAScriptName("Bridge1FilledIcon")]
     public TGlobalIconType? Bridge1FilledIcon { get; init; }
 
-    [ECMAScriptName("Bridge1Icon")]
     public TGlobalIconType? Bridge1Icon { get; init; }
 
-    [ECMAScriptName("Bridge2FilledIcon")]
     public TGlobalIconType? Bridge2FilledIcon { get; init; }
 
-    [ECMAScriptName("Bridge2Icon")]
     public TGlobalIconType? Bridge2Icon { get; init; }
 
-    [ECMAScriptName("Bridge3Icon")]
     public TGlobalIconType? Bridge3Icon { get; init; }
 
-    [ECMAScriptName("Bridge4Icon")]
     public TGlobalIconType? Bridge4Icon { get; init; }
 
-    [ECMAScriptName("Bridge5FilledIcon")]
     public TGlobalIconType? Bridge5FilledIcon { get; init; }
 
-    [ECMAScriptName("Bridge5Icon")]
     public TGlobalIconType? Bridge5Icon { get; init; }
 
-    [ECMAScriptName("Bridge6FilledIcon")]
     public TGlobalIconType? Bridge6FilledIcon { get; init; }
 
-    [ECMAScriptName("Bridge6Icon")]
     public TGlobalIconType? Bridge6Icon { get; init; }
 
-    [ECMAScriptName("BridgeIcon")]
     public TGlobalIconType? BridgeIcon { get; init; }
 
-    [ECMAScriptName("Brightness1FilledIcon")]
     public TGlobalIconType? Brightness1FilledIcon { get; init; }
 
-    [ECMAScriptName("Brightness1Icon")]
     public TGlobalIconType? Brightness1Icon { get; init; }
 
-    [ECMAScriptName("BrightnessFilledIcon")]
     public TGlobalIconType? BrightnessFilledIcon { get; init; }
 
-    [ECMAScriptName("BrightnessIcon")]
     public TGlobalIconType? BrightnessIcon { get; init; }
 
-    [ECMAScriptName("BroccoliFilledIcon")]
     public TGlobalIconType? BroccoliFilledIcon { get; init; }
 
-    [ECMAScriptName("BroccoliIcon")]
     public TGlobalIconType? BroccoliIcon { get; init; }
 
-    [ECMAScriptName("BrowseFilledIcon")]
     public TGlobalIconType? BrowseFilledIcon { get; init; }
 
-    [ECMAScriptName("BrowseGalleryFilledIcon")]
     public TGlobalIconType? BrowseGalleryFilledIcon { get; init; }
 
-    [ECMAScriptName("BrowseGalleryIcon")]
     public TGlobalIconType? BrowseGalleryIcon { get; init; }
 
-    [ECMAScriptName("BrowseOffFilledIcon")]
     public TGlobalIconType? BrowseOffFilledIcon { get; init; }
 
-    [ECMAScriptName("BrowseOffIcon")]
     public TGlobalIconType? BrowseOffIcon { get; init; }
 
-    [ECMAScriptName("BrowseIcon")]
     public TGlobalIconType? BrowseIcon { get; init; }
 
-    [ECMAScriptName("BrushFilledIcon")]
     public TGlobalIconType? BrushFilledIcon { get; init; }
 
-    [ECMAScriptName("BrushIcon")]
     public TGlobalIconType? BrushIcon { get; init; }
 
-    [ECMAScriptName("BugFilledIcon")]
     public TGlobalIconType? BugFilledIcon { get; init; }
 
-    [ECMAScriptName("BugReportFilledIcon")]
     public TGlobalIconType? BugReportFilledIcon { get; init; }
 
-    [ECMAScriptName("BugReportIcon")]
     public TGlobalIconType? BugReportIcon { get; init; }
 
-    [ECMAScriptName("BugIcon")]
     public TGlobalIconType? BugIcon { get; init; }
 
-    [ECMAScriptName("Building1FilledIcon")]
     public TGlobalIconType? Building1FilledIcon { get; init; }
 
-    [ECMAScriptName("Building1Icon")]
     public TGlobalIconType? Building1Icon { get; init; }
 
-    [ECMAScriptName("Building2FilledIcon")]
     public TGlobalIconType? Building2FilledIcon { get; init; }
 
-    [ECMAScriptName("Building2Icon")]
     public TGlobalIconType? Building2Icon { get; init; }
 
-    [ECMAScriptName("Building3FilledIcon")]
     public TGlobalIconType? Building3FilledIcon { get; init; }
 
-    [ECMAScriptName("Building3Icon")]
     public TGlobalIconType? Building3Icon { get; init; }
 
-    [ECMAScriptName("Building4FilledIcon")]
     public TGlobalIconType? Building4FilledIcon { get; init; }
 
-    [ECMAScriptName("Building4Icon")]
     public TGlobalIconType? Building4Icon { get; init; }
 
-    [ECMAScriptName("Building5FilledIcon")]
     public TGlobalIconType? Building5FilledIcon { get; init; }
 
-    [ECMAScriptName("Building5Icon")]
     public TGlobalIconType? Building5Icon { get; init; }
 
-    [ECMAScriptName("BuildingFilledIcon")]
     public TGlobalIconType? BuildingFilledIcon { get; init; }
 
-    [ECMAScriptName("BuildingIcon")]
     public TGlobalIconType? BuildingIcon { get; init; }
 
-    [ECMAScriptName("BulletpointIcon")]
     public TGlobalIconType? BulletpointIcon { get; init; }
 
-    [ECMAScriptName("ButtonFilledIcon")]
     public TGlobalIconType? ButtonFilledIcon { get; init; }
 
-    [ECMAScriptName("ButtonIcon")]
     public TGlobalIconType? ButtonIcon { get; init; }
 
-    [ECMAScriptName("CabbageFilledIcon")]
     public TGlobalIconType? CabbageFilledIcon { get; init; }
 
-    [ECMAScriptName("CabbageIcon")]
     public TGlobalIconType? CabbageIcon { get; init; }
 
-    [ECMAScriptName("CakeFilledIcon")]
     public TGlobalIconType? CakeFilledIcon { get; init; }
 
-    [ECMAScriptName("CakeIcon")]
     public TGlobalIconType? CakeIcon { get; init; }
 
-    [ECMAScriptName("Calculation1FilledIcon")]
     public TGlobalIconType? Calculation1FilledIcon { get; init; }
 
-    [ECMAScriptName("Calculation1Icon")]
     public TGlobalIconType? Calculation1Icon { get; init; }
 
-    [ECMAScriptName("CalculationIcon")]
     public TGlobalIconType? CalculationIcon { get; init; }
 
-    [ECMAScriptName("Calculator1Icon")]
     public TGlobalIconType? Calculator1Icon { get; init; }
 
-    [ECMAScriptName("CalculatorFilledIcon")]
     public TGlobalIconType? CalculatorFilledIcon { get; init; }
 
-    [ECMAScriptName("CalculatorIcon")]
     public TGlobalIconType? CalculatorIcon { get; init; }
 
-    [ECMAScriptName("Calendar1FilledIcon")]
     public TGlobalIconType? Calendar1FilledIcon { get; init; }
 
-    [ECMAScriptName("Calendar1Icon")]
     public TGlobalIconType? Calendar1Icon { get; init; }
 
-    [ECMAScriptName("Calendar2FilledIcon")]
     public TGlobalIconType? Calendar2FilledIcon { get; init; }
 
-    [ECMAScriptName("Calendar2Icon")]
     public TGlobalIconType? Calendar2Icon { get; init; }
 
-    [ECMAScriptName("Calendar3FilledIcon")]
     public TGlobalIconType? Calendar3FilledIcon { get; init; }
 
-    [ECMAScriptName("Calendar3Icon")]
     public TGlobalIconType? Calendar3Icon { get; init; }
 
-    [ECMAScriptName("CalendarEditFilledIcon")]
     public TGlobalIconType? CalendarEditFilledIcon { get; init; }
 
-    [ECMAScriptName("CalendarEditIcon")]
     public TGlobalIconType? CalendarEditIcon { get; init; }
 
-    [ECMAScriptName("CalendarEventFilledIcon")]
     public TGlobalIconType? CalendarEventFilledIcon { get; init; }
 
-    [ECMAScriptName("CalendarEventIcon")]
     public TGlobalIconType? CalendarEventIcon { get; init; }
 
-    [ECMAScriptName("CalendarFilledIcon")]
     public TGlobalIconType? CalendarFilledIcon { get; init; }
 
-    [ECMAScriptName("CalendarIcon")]
     public TGlobalIconType? CalendarIcon { get; init; }
 
-    [ECMAScriptName("Call1FilledIcon")]
     public TGlobalIconType? Call1FilledIcon { get; init; }
 
-    [ECMAScriptName("Call1Icon")]
     public TGlobalIconType? Call1Icon { get; init; }
 
-    [ECMAScriptName("CallCancelFilledIcon")]
     public TGlobalIconType? CallCancelFilledIcon { get; init; }
 
-    [ECMAScriptName("CallCancelIcon")]
     public TGlobalIconType? CallCancelIcon { get; init; }
 
-    [ECMAScriptName("CallFilledIcon")]
     public TGlobalIconType? CallFilledIcon { get; init; }
 
-    [ECMAScriptName("CallForwardedFilledIcon")]
     public TGlobalIconType? CallForwardedFilledIcon { get; init; }
 
-    [ECMAScriptName("CallForwardedIcon")]
     public TGlobalIconType? CallForwardedIcon { get; init; }
 
-    [ECMAScriptName("CallIncomingFilledIcon")]
     public TGlobalIconType? CallIncomingFilledIcon { get; init; }
 
-    [ECMAScriptName("CallIncomingIcon")]
     public TGlobalIconType? CallIncomingIcon { get; init; }
 
-    [ECMAScriptName("CallOffFilledIcon")]
     public TGlobalIconType? CallOffFilledIcon { get; init; }
 
-    [ECMAScriptName("CallOffIcon")]
     public TGlobalIconType? CallOffIcon { get; init; }
 
-    [ECMAScriptName("CallIcon")]
     public TGlobalIconType? CallIcon { get; init; }
 
-    [ECMAScriptName("Calm1FilledIcon")]
     public TGlobalIconType? Calm1FilledIcon { get; init; }
 
-    [ECMAScriptName("Calm1Icon")]
     public TGlobalIconType? Calm1Icon { get; init; }
 
-    [ECMAScriptName("CalmFilledIcon")]
     public TGlobalIconType? CalmFilledIcon { get; init; }
 
-    [ECMAScriptName("CalmIcon")]
     public TGlobalIconType? CalmIcon { get; init; }
 
-    [ECMAScriptName("Camera1FilledIcon")]
     public TGlobalIconType? Camera1FilledIcon { get; init; }
 
-    [ECMAScriptName("Camera1Icon")]
     public TGlobalIconType? Camera1Icon { get; init; }
 
-    [ECMAScriptName("Camera2FilledIcon")]
     public TGlobalIconType? Camera2FilledIcon { get; init; }
 
-    [ECMAScriptName("Camera2Icon")]
     public TGlobalIconType? Camera2Icon { get; init; }
 
-    [ECMAScriptName("CameraFilledIcon")]
     public TGlobalIconType? CameraFilledIcon { get; init; }
 
-    [ECMAScriptName("CameraOffFilledIcon")]
     public TGlobalIconType? CameraOffFilledIcon { get; init; }
 
-    [ECMAScriptName("CameraOffIcon")]
     public TGlobalIconType? CameraOffIcon { get; init; }
 
-    [ECMAScriptName("CameraIcon")]
     public TGlobalIconType? CameraIcon { get; init; }
 
-    [ECMAScriptName("CandyFilledIcon")]
     public TGlobalIconType? CandyFilledIcon { get; init; }
 
-    [ECMAScriptName("CandyIcon")]
     public TGlobalIconType? CandyIcon { get; init; }
 
-    [ECMAScriptName("CardFilledIcon")]
     public TGlobalIconType? CardFilledIcon { get; init; }
 
-    [ECMAScriptName("CardIcon")]
     public TGlobalIconType? CardIcon { get; init; }
 
-    [ECMAScriptName("CardmembershipFilledIcon")]
     public TGlobalIconType? CardmembershipFilledIcon { get; init; }
 
-    [ECMAScriptName("CardmembershipIcon")]
     public TGlobalIconType? CardmembershipIcon { get; init; }
 
-    [ECMAScriptName("CaretDownSmallIcon")]
     public TGlobalIconType? CaretDownSmallIcon { get; init; }
 
-    [ECMAScriptName("CaretDownIcon")]
     public TGlobalIconType? CaretDownIcon { get; init; }
 
-    [ECMAScriptName("CaretLeftSmallIcon")]
     public TGlobalIconType? CaretLeftSmallIcon { get; init; }
 
-    [ECMAScriptName("CaretLeftIcon")]
     public TGlobalIconType? CaretLeftIcon { get; init; }
 
-    [ECMAScriptName("CaretRightSmallIcon")]
     public TGlobalIconType? CaretRightSmallIcon { get; init; }
 
-    [ECMAScriptName("CaretRightIcon")]
     public TGlobalIconType? CaretRightIcon { get; init; }
 
-    [ECMAScriptName("CaretUpSmallIcon")]
     public TGlobalIconType? CaretUpSmallIcon { get; init; }
 
-    [ECMAScriptName("CaretUpIcon")]
     public TGlobalIconType? CaretUpIcon { get; init; }
 
-    [ECMAScriptName("CartAddFilledIcon")]
     public TGlobalIconType? CartAddFilledIcon { get; init; }
 
-    [ECMAScriptName("CartAddIcon")]
     public TGlobalIconType? CartAddIcon { get; init; }
 
-    [ECMAScriptName("CartFilledIcon")]
     public TGlobalIconType? CartFilledIcon { get; init; }
 
-    [ECMAScriptName("CartIcon")]
     public TGlobalIconType? CartIcon { get; init; }
 
-    [ECMAScriptName("CastFilledIcon")]
     public TGlobalIconType? CastFilledIcon { get; init; }
 
-    [ECMAScriptName("CastIcon")]
     public TGlobalIconType? CastIcon { get; init; }
 
-    [ECMAScriptName("Castle1FilledIcon")]
     public TGlobalIconType? Castle1FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle1Icon")]
     public TGlobalIconType? Castle1Icon { get; init; }
 
-    [ECMAScriptName("Castle2FilledIcon")]
     public TGlobalIconType? Castle2FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle2Icon")]
     public TGlobalIconType? Castle2Icon { get; init; }
 
-    [ECMAScriptName("Castle3FilledIcon")]
     public TGlobalIconType? Castle3FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle3Icon")]
     public TGlobalIconType? Castle3Icon { get; init; }
 
-    [ECMAScriptName("Castle4FilledIcon")]
     public TGlobalIconType? Castle4FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle4Icon")]
     public TGlobalIconType? Castle4Icon { get; init; }
 
-    [ECMAScriptName("Castle5FilledIcon")]
     public TGlobalIconType? Castle5FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle5Icon")]
     public TGlobalIconType? Castle5Icon { get; init; }
 
-    [ECMAScriptName("Castle6FilledIcon")]
     public TGlobalIconType? Castle6FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle6Icon")]
     public TGlobalIconType? Castle6Icon { get; init; }
 
-    [ECMAScriptName("Castle7FilledIcon")]
     public TGlobalIconType? Castle7FilledIcon { get; init; }
 
-    [ECMAScriptName("Castle7Icon")]
     public TGlobalIconType? Castle7Icon { get; init; }
 
-    [ECMAScriptName("CastleFilledIcon")]
     public TGlobalIconType? CastleFilledIcon { get; init; }
 
-    [ECMAScriptName("CastleIcon")]
     public TGlobalIconType? CastleIcon { get; init; }
 
-    [ECMAScriptName("CatFilledIcon")]
     public TGlobalIconType? CatFilledIcon { get; init; }
 
-    [ECMAScriptName("CatIcon")]
     public TGlobalIconType? CatIcon { get; init; }
 
-    [ECMAScriptName("Catalog1Icon")]
     public TGlobalIconType? Catalog1Icon { get; init; }
 
-    [ECMAScriptName("CatalogFilledIcon")]
     public TGlobalIconType? CatalogFilledIcon { get; init; }
 
-    [ECMAScriptName("CatalogIcon")]
     public TGlobalIconType? CatalogIcon { get; init; }
 
-    [ECMAScriptName("CdFilledIcon")]
     public TGlobalIconType? CdFilledIcon { get; init; }
 
-    [ECMAScriptName("CdIcon")]
     public TGlobalIconType? CdIcon { get; init; }
 
-    [ECMAScriptName("CelsiusIcon")]
     public TGlobalIconType? CelsiusIcon { get; init; }
 
-    [ECMAScriptName("CenterFocusStrongFilledIcon")]
     public TGlobalIconType? CenterFocusStrongFilledIcon { get; init; }
 
-    [ECMAScriptName("CenterFocusStrongIcon")]
     public TGlobalIconType? CenterFocusStrongIcon { get; init; }
 
-    [ECMAScriptName("CentimeterIcon")]
     public TGlobalIconType? CentimeterIcon { get; init; }
 
-    [ECMAScriptName("Certificate1FilledIcon")]
     public TGlobalIconType? Certificate1FilledIcon { get; init; }
 
-    [ECMAScriptName("Certificate1Icon")]
     public TGlobalIconType? Certificate1Icon { get; init; }
 
-    [ECMAScriptName("CertificateFilledIcon")]
     public TGlobalIconType? CertificateFilledIcon { get; init; }
 
-    [ECMAScriptName("CertificateIcon")]
     public TGlobalIconType? CertificateIcon { get; init; }
 
-    [ECMAScriptName("Chart3DFilledIcon")]
     public TGlobalIconType? Chart3DFilledIcon { get; init; }
 
-    [ECMAScriptName("Chart3DIcon")]
     public TGlobalIconType? Chart3DIcon { get; init; }
 
-    [ECMAScriptName("ChartAddFilledIcon")]
     public TGlobalIconType? ChartAddFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartAddIcon")]
     public TGlobalIconType? ChartAddIcon { get; init; }
 
-    [ECMAScriptName("ChartAnalyticsIcon")]
     public TGlobalIconType? ChartAnalyticsIcon { get; init; }
 
-    [ECMAScriptName("ChartAreaFilledIcon")]
     public TGlobalIconType? ChartAreaFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartAreaMultiFilledIcon")]
     public TGlobalIconType? ChartAreaMultiFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartAreaMultiIcon")]
     public TGlobalIconType? ChartAreaMultiIcon { get; init; }
 
-    [ECMAScriptName("ChartAreaIcon")]
     public TGlobalIconType? ChartAreaIcon { get; init; }
 
-    [ECMAScriptName("ChartBarFilledIcon")]
     public TGlobalIconType? ChartBarFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartBarIcon")]
     public TGlobalIconType? ChartBarIcon { get; init; }
 
-    [ECMAScriptName("ChartBubbleFilledIcon")]
     public TGlobalIconType? ChartBubbleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartBubbleIcon")]
     public TGlobalIconType? ChartBubbleIcon { get; init; }
 
-    [ECMAScriptName("ChartColumnFilledIcon")]
     public TGlobalIconType? ChartColumnFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartColumnIcon")]
     public TGlobalIconType? ChartColumnIcon { get; init; }
 
-    [ECMAScriptName("ChartComboFilledIcon")]
     public TGlobalIconType? ChartComboFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartComboIcon")]
     public TGlobalIconType? ChartComboIcon { get; init; }
 
-    [ECMAScriptName("ChartDrawIoFilledIcon")]
     public TGlobalIconType? ChartDrawIoFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartDrawIoIcon")]
     public TGlobalIconType? ChartDrawIoIcon { get; init; }
 
-    [ECMAScriptName("ChartFilledIcon")]
     public TGlobalIconType? ChartFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartLineBoardFilledIcon")]
     public TGlobalIconType? ChartLineBoardFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartLineBoardIcon")]
     public TGlobalIconType? ChartLineBoardIcon { get; init; }
 
-    [ECMAScriptName("ChartLineData1Icon")]
     public TGlobalIconType? ChartLineData1Icon { get; init; }
 
-    [ECMAScriptName("ChartLineDataIcon")]
     public TGlobalIconType? ChartLineDataIcon { get; init; }
 
-    [ECMAScriptName("ChartLineMultiIcon")]
     public TGlobalIconType? ChartLineMultiIcon { get; init; }
 
-    [ECMAScriptName("ChartLineIcon")]
     public TGlobalIconType? ChartLineIcon { get; init; }
 
-    [ECMAScriptName("ChartMaximumIcon")]
     public TGlobalIconType? ChartMaximumIcon { get; init; }
 
-    [ECMAScriptName("ChartMedianIcon")]
     public TGlobalIconType? ChartMedianIcon { get; init; }
 
-    [ECMAScriptName("ChartMinimumIcon")]
     public TGlobalIconType? ChartMinimumIcon { get; init; }
 
-    [ECMAScriptName("ChartPieFilledIcon")]
     public TGlobalIconType? ChartPieFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartPieIcon")]
     public TGlobalIconType? ChartPieIcon { get; init; }
 
-    [ECMAScriptName("ChartRadarFilledIcon")]
     public TGlobalIconType? ChartRadarFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartRadarIcon")]
     public TGlobalIconType? ChartRadarIcon { get; init; }
 
-    [ECMAScriptName("ChartRadialIcon")]
     public TGlobalIconType? ChartRadialIcon { get; init; }
 
-    [ECMAScriptName("ChartRing1FilledIcon")]
     public TGlobalIconType? ChartRing1FilledIcon { get; init; }
 
-    [ECMAScriptName("ChartRing1Icon")]
     public TGlobalIconType? ChartRing1Icon { get; init; }
 
-    [ECMAScriptName("ChartRingFilledIcon")]
     public TGlobalIconType? ChartRingFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartRingIcon")]
     public TGlobalIconType? ChartRingIcon { get; init; }
 
-    [ECMAScriptName("ChartScatterIcon")]
     public TGlobalIconType? ChartScatterIcon { get; init; }
 
-    [ECMAScriptName("ChartStackedFilledIcon")]
     public TGlobalIconType? ChartStackedFilledIcon { get; init; }
 
-    [ECMAScriptName("ChartStackedIcon")]
     public TGlobalIconType? ChartStackedIcon { get; init; }
 
-    [ECMAScriptName("ChartIcon")]
     public TGlobalIconType? ChartIcon { get; init; }
 
-    [ECMAScriptName("ChatAddFilledIcon")]
     public TGlobalIconType? ChatAddFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatAddIcon")]
     public TGlobalIconType? ChatAddIcon { get; init; }
 
-    [ECMAScriptName("ChatBubble1FilledIcon")]
     public TGlobalIconType? ChatBubble1FilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubble1Icon")]
     public TGlobalIconType? ChatBubble1Icon { get; init; }
 
-    [ECMAScriptName("ChatBubbleAddFilledIcon")]
     public TGlobalIconType? ChatBubbleAddFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleAddIcon")]
     public TGlobalIconType? ChatBubbleAddIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleErrorFilledIcon")]
     public TGlobalIconType? ChatBubbleErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleErrorIcon")]
     public TGlobalIconType? ChatBubbleErrorIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleFilledIcon")]
     public TGlobalIconType? ChatBubbleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleHelpFilledIcon")]
     public TGlobalIconType? ChatBubbleHelpFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleHelpIcon")]
     public TGlobalIconType? ChatBubbleHelpIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleHistoryFilledIcon")]
     public TGlobalIconType? ChatBubbleHistoryFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleHistoryIcon")]
     public TGlobalIconType? ChatBubbleHistoryIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleLockedFilledIcon")]
     public TGlobalIconType? ChatBubbleLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleLockedIcon")]
     public TGlobalIconType? ChatBubbleLockedIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleSmileFilledIcon")]
     public TGlobalIconType? ChatBubbleSmileFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleSmileIcon")]
     public TGlobalIconType? ChatBubbleSmileIcon { get; init; }
 
-    [ECMAScriptName("ChatBubbleIcon")]
     public TGlobalIconType? ChatBubbleIcon { get; init; }
 
-    [ECMAScriptName("ChatCheckedFilledIcon")]
     public TGlobalIconType? ChatCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatCheckedIcon")]
     public TGlobalIconType? ChatCheckedIcon { get; init; }
 
-    [ECMAScriptName("ChatClearFilledIcon")]
     public TGlobalIconType? ChatClearFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatClearIcon")]
     public TGlobalIconType? ChatClearIcon { get; init; }
 
-    [ECMAScriptName("ChatDoubleFilledIcon")]
     public TGlobalIconType? ChatDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatDoubleIcon")]
     public TGlobalIconType? ChatDoubleIcon { get; init; }
 
-    [ECMAScriptName("ChatErrorFilledIcon")]
     public TGlobalIconType? ChatErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatErrorIcon")]
     public TGlobalIconType? ChatErrorIcon { get; init; }
 
-    [ECMAScriptName("ChatFilledIcon")]
     public TGlobalIconType? ChatFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatHeartFilledIcon")]
     public TGlobalIconType? ChatHeartFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatHeartIcon")]
     public TGlobalIconType? ChatHeartIcon { get; init; }
 
-    [ECMAScriptName("ChatMessageFilledIcon")]
     public TGlobalIconType? ChatMessageFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatMessageIcon")]
     public TGlobalIconType? ChatMessageIcon { get; init; }
 
-    [ECMAScriptName("ChatOffFilledIcon")]
     public TGlobalIconType? ChatOffFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatOffIcon")]
     public TGlobalIconType? ChatOffIcon { get; init; }
 
-    [ECMAScriptName("ChatPollFilledIcon")]
     public TGlobalIconType? ChatPollFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatPollIcon")]
     public TGlobalIconType? ChatPollIcon { get; init; }
 
-    [ECMAScriptName("ChatSettingFilledIcon")]
     public TGlobalIconType? ChatSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("ChatSettingIcon")]
     public TGlobalIconType? ChatSettingIcon { get; init; }
 
-    [ECMAScriptName("ChatIcon")]
     public TGlobalIconType? ChatIcon { get; init; }
 
-    [ECMAScriptName("CheckCircleFilledIcon")]
     public TGlobalIconType? CheckCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("CheckCircleIcon")]
     public TGlobalIconType? CheckCircleIcon { get; init; }
 
-    [ECMAScriptName("CheckDoubleIcon")]
     public TGlobalIconType? CheckDoubleIcon { get; init; }
 
-    [ECMAScriptName("CheckRectangleFilledIcon")]
     public TGlobalIconType? CheckRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("CheckRectangleIcon")]
     public TGlobalIconType? CheckRectangleIcon { get; init; }
 
-    [ECMAScriptName("CheckIcon")]
     public TGlobalIconType? CheckIcon { get; init; }
 
-    [ECMAScriptName("CheeseFilledIcon")]
     public TGlobalIconType? CheeseFilledIcon { get; init; }
 
-    [ECMAScriptName("CheeseIcon")]
     public TGlobalIconType? CheeseIcon { get; init; }
 
-    [ECMAScriptName("CherryFilledIcon")]
     public TGlobalIconType? CherryFilledIcon { get; init; }
 
-    [ECMAScriptName("CherryIcon")]
     public TGlobalIconType? CherryIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownCircleFilledIcon")]
     public TGlobalIconType? ChevronDownCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownCircleIcon")]
     public TGlobalIconType? ChevronDownCircleIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownDoubleSIcon")]
     public TGlobalIconType? ChevronDownDoubleSIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownDoubleIcon")]
     public TGlobalIconType? ChevronDownDoubleIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownRectangleFilledIcon")]
     public TGlobalIconType? ChevronDownRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownRectangleIcon")]
     public TGlobalIconType? ChevronDownRectangleIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownSIcon")]
     public TGlobalIconType? ChevronDownSIcon { get; init; }
 
-    [ECMAScriptName("ChevronDownIcon")]
     public TGlobalIconType? ChevronDownIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftCircleFilledIcon")]
     public TGlobalIconType? ChevronLeftCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftCircleIcon")]
     public TGlobalIconType? ChevronLeftCircleIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftDoubleSIcon")]
     public TGlobalIconType? ChevronLeftDoubleSIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftDoubleIcon")]
     public TGlobalIconType? ChevronLeftDoubleIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftRectangleFilledIcon")]
     public TGlobalIconType? ChevronLeftRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftRectangleIcon")]
     public TGlobalIconType? ChevronLeftRectangleIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftSIcon")]
     public TGlobalIconType? ChevronLeftSIcon { get; init; }
 
-    [ECMAScriptName("ChevronLeftIcon")]
     public TGlobalIconType? ChevronLeftIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightCircleFilledIcon")]
     public TGlobalIconType? ChevronRightCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightCircleIcon")]
     public TGlobalIconType? ChevronRightCircleIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightDoubleSIcon")]
     public TGlobalIconType? ChevronRightDoubleSIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightDoubleIcon")]
     public TGlobalIconType? ChevronRightDoubleIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightRectangleFilledIcon")]
     public TGlobalIconType? ChevronRightRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightRectangleIcon")]
     public TGlobalIconType? ChevronRightRectangleIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightSIcon")]
     public TGlobalIconType? ChevronRightSIcon { get; init; }
 
-    [ECMAScriptName("ChevronRightIcon")]
     public TGlobalIconType? ChevronRightIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpCircleFilledIcon")]
     public TGlobalIconType? ChevronUpCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpCircleIcon")]
     public TGlobalIconType? ChevronUpCircleIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpDoubleSIcon")]
     public TGlobalIconType? ChevronUpDoubleSIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpDoubleIcon")]
     public TGlobalIconType? ChevronUpDoubleIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpRectangleFilledIcon")]
     public TGlobalIconType? ChevronUpRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpRectangleIcon")]
     public TGlobalIconType? ChevronUpRectangleIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpSIcon")]
     public TGlobalIconType? ChevronUpSIcon { get; init; }
 
-    [ECMAScriptName("ChevronUpIcon")]
     public TGlobalIconType? ChevronUpIcon { get; init; }
 
-    [ECMAScriptName("ChickenIcon")]
     public TGlobalIconType? ChickenIcon { get; init; }
 
-    [ECMAScriptName("ChiliFilledIcon")]
     public TGlobalIconType? ChiliFilledIcon { get; init; }
 
-    [ECMAScriptName("ChiliIcon")]
     public TGlobalIconType? ChiliIcon { get; init; }
 
-    [ECMAScriptName("Chimney1FilledIcon")]
     public TGlobalIconType? Chimney1FilledIcon { get; init; }
 
-    [ECMAScriptName("Chimney1Icon")]
     public TGlobalIconType? Chimney1Icon { get; init; }
 
-    [ECMAScriptName("Chimney2FilledIcon")]
     public TGlobalIconType? Chimney2FilledIcon { get; init; }
 
-    [ECMAScriptName("Chimney2Icon")]
     public TGlobalIconType? Chimney2Icon { get; init; }
 
-    [ECMAScriptName("ChimneyFilledIcon")]
     public TGlobalIconType? ChimneyFilledIcon { get; init; }
 
-    [ECMAScriptName("ChimneyIcon")]
     public TGlobalIconType? ChimneyIcon { get; init; }
 
-    [ECMAScriptName("ChineseCabbageFilledIcon")]
     public TGlobalIconType? ChineseCabbageFilledIcon { get; init; }
 
-    [ECMAScriptName("ChineseCabbageIcon")]
     public TGlobalIconType? ChineseCabbageIcon { get; init; }
 
-    [ECMAScriptName("ChineseRectangleFilledIcon")]
     public TGlobalIconType? ChineseRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ChineseRectangleIcon")]
     public TGlobalIconType? ChineseRectangleIcon { get; init; }
 
-    [ECMAScriptName("ChurchFilledIcon")]
     public TGlobalIconType? ChurchFilledIcon { get; init; }
 
-    [ECMAScriptName("ChurchIcon")]
     public TGlobalIconType? ChurchIcon { get; init; }
 
-    [ECMAScriptName("CircleFilledIcon")]
     public TGlobalIconType? CircleFilledIcon { get; init; }
 
-    [ECMAScriptName("CircleIcon")]
     public TGlobalIconType? CircleIcon { get; init; }
 
-    [ECMAScriptName("City1FilledIcon")]
     public TGlobalIconType? City1FilledIcon { get; init; }
 
-    [ECMAScriptName("City1Icon")]
     public TGlobalIconType? City1Icon { get; init; }
 
-    [ECMAScriptName("City10FilledIcon")]
     public TGlobalIconType? City10FilledIcon { get; init; }
 
-    [ECMAScriptName("City10Icon")]
     public TGlobalIconType? City10Icon { get; init; }
 
-    [ECMAScriptName("City11FilledIcon")]
     public TGlobalIconType? City11FilledIcon { get; init; }
 
-    [ECMAScriptName("City11Icon")]
     public TGlobalIconType? City11Icon { get; init; }
 
-    [ECMAScriptName("City12FilledIcon")]
     public TGlobalIconType? City12FilledIcon { get; init; }
 
-    [ECMAScriptName("City12Icon")]
     public TGlobalIconType? City12Icon { get; init; }
 
-    [ECMAScriptName("City13FilledIcon")]
     public TGlobalIconType? City13FilledIcon { get; init; }
 
-    [ECMAScriptName("City13Icon")]
     public TGlobalIconType? City13Icon { get; init; }
 
-    [ECMAScriptName("City14FilledIcon")]
     public TGlobalIconType? City14FilledIcon { get; init; }
 
-    [ECMAScriptName("City14Icon")]
     public TGlobalIconType? City14Icon { get; init; }
 
-    [ECMAScriptName("City15FilledIcon")]
     public TGlobalIconType? City15FilledIcon { get; init; }
 
-    [ECMAScriptName("City15Icon")]
     public TGlobalIconType? City15Icon { get; init; }
 
-    [ECMAScriptName("City2FilledIcon")]
     public TGlobalIconType? City2FilledIcon { get; init; }
 
-    [ECMAScriptName("City2Icon")]
     public TGlobalIconType? City2Icon { get; init; }
 
-    [ECMAScriptName("City3FilledIcon")]
     public TGlobalIconType? City3FilledIcon { get; init; }
 
-    [ECMAScriptName("City3Icon")]
     public TGlobalIconType? City3Icon { get; init; }
 
-    [ECMAScriptName("City4FilledIcon")]
     public TGlobalIconType? City4FilledIcon { get; init; }
 
-    [ECMAScriptName("City4Icon")]
     public TGlobalIconType? City4Icon { get; init; }
 
-    [ECMAScriptName("City5FilledIcon")]
     public TGlobalIconType? City5FilledIcon { get; init; }
 
-    [ECMAScriptName("City5Icon")]
     public TGlobalIconType? City5Icon { get; init; }
 
-    [ECMAScriptName("City6FilledIcon")]
     public TGlobalIconType? City6FilledIcon { get; init; }
 
-    [ECMAScriptName("City6Icon")]
     public TGlobalIconType? City6Icon { get; init; }
 
-    [ECMAScriptName("City7FilledIcon")]
     public TGlobalIconType? City7FilledIcon { get; init; }
 
-    [ECMAScriptName("City7Icon")]
     public TGlobalIconType? City7Icon { get; init; }
 
-    [ECMAScriptName("City8FilledIcon")]
     public TGlobalIconType? City8FilledIcon { get; init; }
 
-    [ECMAScriptName("City8Icon")]
     public TGlobalIconType? City8Icon { get; init; }
 
-    [ECMAScriptName("City9FilledIcon")]
     public TGlobalIconType? City9FilledIcon { get; init; }
 
-    [ECMAScriptName("City9Icon")]
     public TGlobalIconType? City9Icon { get; init; }
 
-    [ECMAScriptName("CityAncient1FilledIcon")]
     public TGlobalIconType? CityAncient1FilledIcon { get; init; }
 
-    [ECMAScriptName("CityAncient1Icon")]
     public TGlobalIconType? CityAncient1Icon { get; init; }
 
-    [ECMAScriptName("CityAncient2FilledIcon")]
     public TGlobalIconType? CityAncient2FilledIcon { get; init; }
 
-    [ECMAScriptName("CityAncient2Icon")]
     public TGlobalIconType? CityAncient2Icon { get; init; }
 
-    [ECMAScriptName("CityAncientFilledIcon")]
     public TGlobalIconType? CityAncientFilledIcon { get; init; }
 
-    [ECMAScriptName("CityAncientIcon")]
     public TGlobalIconType? CityAncientIcon { get; init; }
 
-    [ECMAScriptName("CityFilledIcon")]
     public TGlobalIconType? CityFilledIcon { get; init; }
 
-    [ECMAScriptName("CityIcon")]
     public TGlobalIconType? CityIcon { get; init; }
 
-    [ECMAScriptName("ClearFilledIcon")]
     public TGlobalIconType? ClearFilledIcon { get; init; }
 
-    [ECMAScriptName("ClearFormatting1FilledIcon")]
     public TGlobalIconType? ClearFormatting1FilledIcon { get; init; }
 
-    [ECMAScriptName("ClearFormatting1Icon")]
     public TGlobalIconType? ClearFormatting1Icon { get; init; }
 
-    [ECMAScriptName("ClearFormattingFilledIcon")]
     public TGlobalIconType? ClearFormattingFilledIcon { get; init; }
 
-    [ECMAScriptName("ClearFormattingIcon")]
     public TGlobalIconType? ClearFormattingIcon { get; init; }
 
-    [ECMAScriptName("ClearIcon")]
     public TGlobalIconType? ClearIcon { get; init; }
 
-    [ECMAScriptName("CloseCircleFilledIcon")]
     public TGlobalIconType? CloseCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("CloseCircleIcon")]
     public TGlobalIconType? CloseCircleIcon { get; init; }
 
-    [ECMAScriptName("CloseOctagonFilledIcon")]
     public TGlobalIconType? CloseOctagonFilledIcon { get; init; }
 
-    [ECMAScriptName("CloseOctagonIcon")]
     public TGlobalIconType? CloseOctagonIcon { get; init; }
 
-    [ECMAScriptName("CloseRectangleFilledIcon")]
     public TGlobalIconType? CloseRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("CloseRectangleIcon")]
     public TGlobalIconType? CloseRectangleIcon { get; init; }
 
-    [ECMAScriptName("CloseIcon")]
     public TGlobalIconType? CloseIcon { get; init; }
 
-    [ECMAScriptName("CloudDownloadIcon")]
     public TGlobalIconType? CloudDownloadIcon { get; init; }
 
-    [ECMAScriptName("CloudFilledIcon")]
     public TGlobalIconType? CloudFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudUploadIcon")]
     public TGlobalIconType? CloudUploadIcon { get; init; }
 
-    [ECMAScriptName("CloudIcon")]
     public TGlobalIconType? CloudIcon { get; init; }
 
-    [ECMAScriptName("CloudyDayFilledIcon")]
     public TGlobalIconType? CloudyDayFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudyDayIcon")]
     public TGlobalIconType? CloudyDayIcon { get; init; }
 
-    [ECMAScriptName("CloudyNightFilledIcon")]
     public TGlobalIconType? CloudyNightFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudyNightRainFilledIcon")]
     public TGlobalIconType? CloudyNightRainFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudyNightRainIcon")]
     public TGlobalIconType? CloudyNightRainIcon { get; init; }
 
-    [ECMAScriptName("CloudyNightIcon")]
     public TGlobalIconType? CloudyNightIcon { get; init; }
 
-    [ECMAScriptName("CloudyRainFilledIcon")]
     public TGlobalIconType? CloudyRainFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudyRainIcon")]
     public TGlobalIconType? CloudyRainIcon { get; init; }
 
-    [ECMAScriptName("CloudySunnyFilledIcon")]
     public TGlobalIconType? CloudySunnyFilledIcon { get; init; }
 
-    [ECMAScriptName("CloudySunnyIcon")]
     public TGlobalIconType? CloudySunnyIcon { get; init; }
 
-    [ECMAScriptName("Code1Icon")]
     public TGlobalIconType? Code1Icon { get; init; }
 
-    [ECMAScriptName("CodeOffIcon")]
     public TGlobalIconType? CodeOffIcon { get; init; }
 
-    [ECMAScriptName("CodeIcon")]
     public TGlobalIconType? CodeIcon { get; init; }
 
-    [ECMAScriptName("ColaFilledIcon")]
     public TGlobalIconType? ColaFilledIcon { get; init; }
 
-    [ECMAScriptName("ColaIcon")]
     public TGlobalIconType? ColaIcon { get; init; }
 
-    [ECMAScriptName("CollageFilledIcon")]
     public TGlobalIconType? CollageFilledIcon { get; init; }
 
-    [ECMAScriptName("CollageIcon")]
     public TGlobalIconType? CollageIcon { get; init; }
 
-    [ECMAScriptName("CollapsibleBlockIcon")]
     public TGlobalIconType? CollapsibleBlockIcon { get; init; }
 
-    [ECMAScriptName("Collection1FilledIcon")]
     public TGlobalIconType? Collection1FilledIcon { get; init; }
 
-    [ECMAScriptName("Collection1Icon")]
     public TGlobalIconType? Collection1Icon { get; init; }
 
-    [ECMAScriptName("CollectionFilledIcon")]
     public TGlobalIconType? CollectionFilledIcon { get; init; }
 
-    [ECMAScriptName("CollectionIcon")]
     public TGlobalIconType? CollectionIcon { get; init; }
 
-    [ECMAScriptName("ColorInvertFilledIcon")]
     public TGlobalIconType? ColorInvertFilledIcon { get; init; }
 
-    [ECMAScriptName("ColorInvertIcon")]
     public TGlobalIconType? ColorInvertIcon { get; init; }
 
-    [ECMAScriptName("ColumnLayoutFilledIcon")]
     public TGlobalIconType? ColumnLayoutFilledIcon { get; init; }
 
-    [ECMAScriptName("ColumnLayoutIcon")]
     public TGlobalIconType? ColumnLayoutIcon { get; init; }
 
-    [ECMAScriptName("CombinationFilledIcon")]
     public TGlobalIconType? CombinationFilledIcon { get; init; }
 
-    [ECMAScriptName("CombinationIcon")]
     public TGlobalIconType? CombinationIcon { get; init; }
 
-    [ECMAScriptName("CommandIcon")]
     public TGlobalIconType? CommandIcon { get; init; }
 
-    [ECMAScriptName("Compass1FilledIcon")]
     public TGlobalIconType? Compass1FilledIcon { get; init; }
 
-    [ECMAScriptName("Compass1Icon")]
     public TGlobalIconType? Compass1Icon { get; init; }
 
-    [ECMAScriptName("CompassFilledIcon")]
     public TGlobalIconType? CompassFilledIcon { get; init; }
 
-    [ECMAScriptName("CompassIcon")]
     public TGlobalIconType? CompassIcon { get; init; }
 
-    [ECMAScriptName("ComponentBreadcrumbFilledIcon")]
     public TGlobalIconType? ComponentBreadcrumbFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentBreadcrumbIcon")]
     public TGlobalIconType? ComponentBreadcrumbIcon { get; init; }
 
-    [ECMAScriptName("ComponentCheckboxFilledIcon")]
     public TGlobalIconType? ComponentCheckboxFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentCheckboxIcon")]
     public TGlobalIconType? ComponentCheckboxIcon { get; init; }
 
-    [ECMAScriptName("ComponentDividerHorizontalFilledIcon")]
     public TGlobalIconType? ComponentDividerHorizontalFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentDividerHorizontalIcon")]
     public TGlobalIconType? ComponentDividerHorizontalIcon { get; init; }
 
-    [ECMAScriptName("ComponentDividerVerticalFilledIcon")]
     public TGlobalIconType? ComponentDividerVerticalFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentDividerVerticalIcon")]
     public TGlobalIconType? ComponentDividerVerticalIcon { get; init; }
 
-    [ECMAScriptName("ComponentDropdownFilledIcon")]
     public TGlobalIconType? ComponentDropdownFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentDropdownIcon")]
     public TGlobalIconType? ComponentDropdownIcon { get; init; }
 
-    [ECMAScriptName("ComponentGridFilledIcon")]
     public TGlobalIconType? ComponentGridFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentGridIcon")]
     public TGlobalIconType? ComponentGridIcon { get; init; }
 
-    [ECMAScriptName("ComponentInputFilledIcon")]
     public TGlobalIconType? ComponentInputFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentInputIcon")]
     public TGlobalIconType? ComponentInputIcon { get; init; }
 
-    [ECMAScriptName("ComponentLayoutFilledIcon")]
     public TGlobalIconType? ComponentLayoutFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentLayoutIcon")]
     public TGlobalIconType? ComponentLayoutIcon { get; init; }
 
-    [ECMAScriptName("ComponentRadioIcon")]
     public TGlobalIconType? ComponentRadioIcon { get; init; }
 
-    [ECMAScriptName("ComponentSpaceFilledIcon")]
     public TGlobalIconType? ComponentSpaceFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentSpaceIcon")]
     public TGlobalIconType? ComponentSpaceIcon { get; init; }
 
-    [ECMAScriptName("ComponentSteps1FilledIcon")]
     public TGlobalIconType? ComponentSteps1FilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentSteps1Icon")]
     public TGlobalIconType? ComponentSteps1Icon { get; init; }
 
-    [ECMAScriptName("ComponentStepsFilledIcon")]
     public TGlobalIconType? ComponentStepsFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentStepsIcon")]
     public TGlobalIconType? ComponentStepsIcon { get; init; }
 
-    [ECMAScriptName("ComponentStickytoolFilledIcon")]
     public TGlobalIconType? ComponentStickytoolFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentStickytoolIcon")]
     public TGlobalIconType? ComponentStickytoolIcon { get; init; }
 
-    [ECMAScriptName("ComponentSwitchFilledIcon")]
     public TGlobalIconType? ComponentSwitchFilledIcon { get; init; }
 
-    [ECMAScriptName("ComponentSwitchIcon")]
     public TGlobalIconType? ComponentSwitchIcon { get; init; }
 
-    [ECMAScriptName("ConstraintIcon")]
     public TGlobalIconType? ConstraintIcon { get; init; }
 
-    [ECMAScriptName("Contrast1FilledIcon")]
     public TGlobalIconType? Contrast1FilledIcon { get; init; }
 
-    [ECMAScriptName("Contrast1Icon")]
     public TGlobalIconType? Contrast1Icon { get; init; }
 
-    [ECMAScriptName("ContrastFilledIcon")]
     public TGlobalIconType? ContrastFilledIcon { get; init; }
 
-    [ECMAScriptName("ContrastIcon")]
     public TGlobalIconType? ContrastIcon { get; init; }
 
-    [ECMAScriptName("ContributeFilledIcon")]
     public TGlobalIconType? ContributeFilledIcon { get; init; }
 
-    [ECMAScriptName("ContributeIcon")]
     public TGlobalIconType? ContributeIcon { get; init; }
 
-    [ECMAScriptName("ControlPlatformFilledIcon")]
     public TGlobalIconType? ControlPlatformFilledIcon { get; init; }
 
-    [ECMAScriptName("ControlPlatformIcon")]
     public TGlobalIconType? ControlPlatformIcon { get; init; }
 
-    [ECMAScriptName("CooperateFilledIcon")]
     public TGlobalIconType? CooperateFilledIcon { get; init; }
 
-    [ECMAScriptName("CooperateIcon")]
     public TGlobalIconType? CooperateIcon { get; init; }
 
-    [ECMAScriptName("CoordinateSystemFilledIcon")]
     public TGlobalIconType? CoordinateSystemFilledIcon { get; init; }
 
-    [ECMAScriptName("CoordinateSystemIcon")]
     public TGlobalIconType? CoordinateSystemIcon { get; init; }
 
-    [ECMAScriptName("CopyFilledIcon")]
     public TGlobalIconType? CopyFilledIcon { get; init; }
 
-    [ECMAScriptName("CopyIcon")]
     public TGlobalIconType? CopyIcon { get; init; }
 
-    [ECMAScriptName("CopyrightFilledIcon")]
     public TGlobalIconType? CopyrightFilledIcon { get; init; }
 
-    [ECMAScriptName("CopyrightIcon")]
     public TGlobalIconType? CopyrightIcon { get; init; }
 
-    [ECMAScriptName("CornFilledIcon")]
     public TGlobalIconType? CornFilledIcon { get; init; }
 
-    [ECMAScriptName("CornIcon")]
     public TGlobalIconType? CornIcon { get; init; }
 
-    [ECMAScriptName("CorrectFilledIcon")]
     public TGlobalIconType? CorrectFilledIcon { get; init; }
 
-    [ECMAScriptName("CorrectIcon")]
     public TGlobalIconType? CorrectIcon { get; init; }
 
-    [ECMAScriptName("CouponFilledIcon")]
     public TGlobalIconType? CouponFilledIcon { get; init; }
 
-    [ECMAScriptName("CouponIcon")]
     public TGlobalIconType? CouponIcon { get; init; }
 
-    [ECMAScriptName("CourseFilledIcon")]
     public TGlobalIconType? CourseFilledIcon { get; init; }
 
-    [ECMAScriptName("CourseIcon")]
     public TGlobalIconType? CourseIcon { get; init; }
 
-    [ECMAScriptName("CpuFilledIcon")]
     public TGlobalIconType? CpuFilledIcon { get; init; }
 
-    [ECMAScriptName("CpuIcon")]
     public TGlobalIconType? CpuIcon { get; init; }
 
-    [ECMAScriptName("CrackFilledIcon")]
     public TGlobalIconType? CrackFilledIcon { get; init; }
 
-    [ECMAScriptName("CrackIcon")]
     public TGlobalIconType? CrackIcon { get; init; }
 
-    [ECMAScriptName("CreditcardAddFilledIcon")]
     public TGlobalIconType? CreditcardAddFilledIcon { get; init; }
 
-    [ECMAScriptName("CreditcardAddIcon")]
     public TGlobalIconType? CreditcardAddIcon { get; init; }
 
-    [ECMAScriptName("CreditcardFilledIcon")]
     public TGlobalIconType? CreditcardFilledIcon { get; init; }
 
-    [ECMAScriptName("CreditcardOffFilledIcon")]
     public TGlobalIconType? CreditcardOffFilledIcon { get; init; }
 
-    [ECMAScriptName("CreditcardOffIcon")]
     public TGlobalIconType? CreditcardOffIcon { get; init; }
 
-    [ECMAScriptName("CreditcardIcon")]
     public TGlobalIconType? CreditcardIcon { get; init; }
 
-    [ECMAScriptName("CrookedSmileFilledIcon")]
     public TGlobalIconType? CrookedSmileFilledIcon { get; init; }
 
-    [ECMAScriptName("CrookedSmileIcon")]
     public TGlobalIconType? CrookedSmileIcon { get; init; }
 
-    [ECMAScriptName("CryAndLaughFilledIcon")]
     public TGlobalIconType? CryAndLaughFilledIcon { get; init; }
 
-    [ECMAScriptName("CryAndLaughIcon")]
     public TGlobalIconType? CryAndLaughIcon { get; init; }
 
-    [ECMAScriptName("CryLoudlyFilledIcon")]
     public TGlobalIconType? CryLoudlyFilledIcon { get; init; }
 
-    [ECMAScriptName("CryLoudlyIcon")]
     public TGlobalIconType? CryLoudlyIcon { get; init; }
 
-    [ECMAScriptName("Css3FilledIcon")]
     public TGlobalIconType? Css3FilledIcon { get; init; }
 
-    [ECMAScriptName("Css3Icon")]
     public TGlobalIconType? Css3Icon { get; init; }
 
-    [ECMAScriptName("CucumberIcon")]
     public TGlobalIconType? CucumberIcon { get; init; }
 
-    [ECMAScriptName("CurrencyExchangeIcon")]
     public TGlobalIconType? CurrencyExchangeIcon { get; init; }
 
-    [ECMAScriptName("CursorFilledIcon")]
     public TGlobalIconType? CursorFilledIcon { get; init; }
 
-    [ECMAScriptName("CursorIcon")]
     public TGlobalIconType? CursorIcon { get; init; }
 
-    [ECMAScriptName("CurtainFilledIcon")]
     public TGlobalIconType? CurtainFilledIcon { get; init; }
 
-    [ECMAScriptName("CurtainIcon")]
     public TGlobalIconType? CurtainIcon { get; init; }
 
-    [ECMAScriptName("CurveIcon")]
     public TGlobalIconType? CurveIcon { get; init; }
 
-    [ECMAScriptName("Cut1Icon")]
     public TGlobalIconType? Cut1Icon { get; init; }
 
-    [ECMAScriptName("CutIcon")]
     public TGlobalIconType? CutIcon { get; init; }
 
-    [ECMAScriptName("Dam1FilledIcon")]
     public TGlobalIconType? Dam1FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam1Icon")]
     public TGlobalIconType? Dam1Icon { get; init; }
 
-    [ECMAScriptName("Dam2FilledIcon")]
     public TGlobalIconType? Dam2FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam2Icon")]
     public TGlobalIconType? Dam2Icon { get; init; }
 
-    [ECMAScriptName("Dam3FilledIcon")]
     public TGlobalIconType? Dam3FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam3Icon")]
     public TGlobalIconType? Dam3Icon { get; init; }
 
-    [ECMAScriptName("Dam4FilledIcon")]
     public TGlobalIconType? Dam4FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam4Icon")]
     public TGlobalIconType? Dam4Icon { get; init; }
 
-    [ECMAScriptName("Dam5FilledIcon")]
     public TGlobalIconType? Dam5FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam5Icon")]
     public TGlobalIconType? Dam5Icon { get; init; }
 
-    [ECMAScriptName("Dam6FilledIcon")]
     public TGlobalIconType? Dam6FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam6Icon")]
     public TGlobalIconType? Dam6Icon { get; init; }
 
-    [ECMAScriptName("Dam7FilledIcon")]
     public TGlobalIconType? Dam7FilledIcon { get; init; }
 
-    [ECMAScriptName("Dam7Icon")]
     public TGlobalIconType? Dam7Icon { get; init; }
 
-    [ECMAScriptName("DamFilledIcon")]
     public TGlobalIconType? DamFilledIcon { get; init; }
 
-    [ECMAScriptName("DamIcon")]
     public TGlobalIconType? DamIcon { get; init; }
 
-    [ECMAScriptName("DartBoardFilledIcon")]
     public TGlobalIconType? DartBoardFilledIcon { get; init; }
 
-    [ECMAScriptName("DartBoardIcon")]
     public TGlobalIconType? DartBoardIcon { get; init; }
 
-    [ECMAScriptName("Dashboard1FilledIcon")]
     public TGlobalIconType? Dashboard1FilledIcon { get; init; }
 
-    [ECMAScriptName("Dashboard1Icon")]
     public TGlobalIconType? Dashboard1Icon { get; init; }
 
-    [ECMAScriptName("DashboardFilledIcon")]
     public TGlobalIconType? DashboardFilledIcon { get; init; }
 
-    [ECMAScriptName("DashboardIcon")]
     public TGlobalIconType? DashboardIcon { get; init; }
 
-    [ECMAScriptName("DataBaseFilledIcon")]
     public TGlobalIconType? DataBaseFilledIcon { get; init; }
 
-    [ECMAScriptName("DataBaseIcon")]
     public TGlobalIconType? DataBaseIcon { get; init; }
 
-    [ECMAScriptName("DataCheckedFilledIcon")]
     public TGlobalIconType? DataCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("DataCheckedIcon")]
     public TGlobalIconType? DataCheckedIcon { get; init; }
 
-    [ECMAScriptName("DataDisplayIcon")]
     public TGlobalIconType? DataDisplayIcon { get; init; }
 
-    [ECMAScriptName("DataErrorFilledIcon")]
     public TGlobalIconType? DataErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("DataErrorIcon")]
     public TGlobalIconType? DataErrorIcon { get; init; }
 
-    [ECMAScriptName("DataFilledIcon")]
     public TGlobalIconType? DataFilledIcon { get; init; }
 
-    [ECMAScriptName("DataSearchFilledIcon")]
     public TGlobalIconType? DataSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("DataSearchIcon")]
     public TGlobalIconType? DataSearchIcon { get; init; }
 
-    [ECMAScriptName("DataIcon")]
     public TGlobalIconType? DataIcon { get; init; }
 
-    [ECMAScriptName("Delete1FilledIcon")]
     public TGlobalIconType? Delete1FilledIcon { get; init; }
 
-    [ECMAScriptName("Delete1Icon")]
     public TGlobalIconType? Delete1Icon { get; init; }
 
-    [ECMAScriptName("DeleteFilledIcon")]
     public TGlobalIconType? DeleteFilledIcon { get; init; }
 
-    [ECMAScriptName("DeleteTimeFilledIcon")]
     public TGlobalIconType? DeleteTimeFilledIcon { get; init; }
 
-    [ECMAScriptName("DeleteTimeIcon")]
     public TGlobalIconType? DeleteTimeIcon { get; init; }
 
-    [ECMAScriptName("DeleteIcon")]
     public TGlobalIconType? DeleteIcon { get; init; }
 
-    [ECMAScriptName("DeltaFilledIcon")]
     public TGlobalIconType? DeltaFilledIcon { get; init; }
 
-    [ECMAScriptName("DeltaIcon")]
     public TGlobalIconType? DeltaIcon { get; init; }
 
-    [ECMAScriptName("DepressedFilledIcon")]
     public TGlobalIconType? DepressedFilledIcon { get; init; }
 
-    [ECMAScriptName("DepressedIcon")]
     public TGlobalIconType? DepressedIcon { get; init; }
 
-    [ECMAScriptName("Desktop1FilledIcon")]
     public TGlobalIconType? Desktop1FilledIcon { get; init; }
 
-    [ECMAScriptName("Desktop1Icon")]
     public TGlobalIconType? Desktop1Icon { get; init; }
 
-    [ECMAScriptName("DesktopFilledIcon")]
     public TGlobalIconType? DesktopFilledIcon { get; init; }
 
-    [ECMAScriptName("DesktopIcon")]
     public TGlobalIconType? DesktopIcon { get; init; }
 
-    [ECMAScriptName("DespiseFilledIcon")]
     public TGlobalIconType? DespiseFilledIcon { get; init; }
 
-    [ECMAScriptName("DespiseIcon")]
     public TGlobalIconType? DespiseIcon { get; init; }
 
-    [ECMAScriptName("DeviceFilledIcon")]
     public TGlobalIconType? DeviceFilledIcon { get; init; }
 
-    [ECMAScriptName("DeviceIcon")]
     public TGlobalIconType? DeviceIcon { get; init; }
 
-    [ECMAScriptName("DialogHistoryFilledIcon")]
     public TGlobalIconType? DialogHistoryFilledIcon { get; init; }
 
-    [ECMAScriptName("DialogHistoryIcon")]
     public TGlobalIconType? DialogHistoryIcon { get; init; }
 
-    [ECMAScriptName("DiscountFilledIcon")]
     public TGlobalIconType? DiscountFilledIcon { get; init; }
 
-    [ECMAScriptName("DiscountListFilledIcon")]
     public TGlobalIconType? DiscountListFilledIcon { get; init; }
 
-    [ECMAScriptName("DiscountListIcon")]
     public TGlobalIconType? DiscountListIcon { get; init; }
 
-    [ECMAScriptName("DiscountIcon")]
     public TGlobalIconType? DiscountIcon { get; init; }
 
-    [ECMAScriptName("DissatisfactionFilledIcon")]
     public TGlobalIconType? DissatisfactionFilledIcon { get; init; }
 
-    [ECMAScriptName("DissatisfactionIcon")]
     public TGlobalIconType? DissatisfactionIcon { get; init; }
 
-    [ECMAScriptName("DivideIcon")]
     public TGlobalIconType? DivideIcon { get; init; }
 
-    [ECMAScriptName("Divider1Icon")]
     public TGlobalIconType? Divider1Icon { get; init; }
 
-    [ECMAScriptName("Dividers1Icon")]
     public TGlobalIconType? Dividers1Icon { get; init; }
 
-    [ECMAScriptName("DividersIcon")]
     public TGlobalIconType? DividersIcon { get; init; }
 
-    [ECMAScriptName("DocumentLocationFilledIcon")]
     public TGlobalIconType? DocumentLocationFilledIcon { get; init; }
 
-    [ECMAScriptName("DocumentLocationIcon")]
     public TGlobalIconType? DocumentLocationIcon { get; init; }
 
-    [ECMAScriptName("DocumentPopularFilledIcon")]
     public TGlobalIconType? DocumentPopularFilledIcon { get; init; }
 
-    [ECMAScriptName("DocumentPopularIcon")]
     public TGlobalIconType? DocumentPopularIcon { get; init; }
 
-    [ECMAScriptName("DocumentUpdateFilledIcon")]
     public TGlobalIconType? DocumentUpdateFilledIcon { get; init; }
 
-    [ECMAScriptName("DocumentUpdateIcon")]
     public TGlobalIconType? DocumentUpdateIcon { get; init; }
 
-    [ECMAScriptName("DogeFilledIcon")]
     public TGlobalIconType? DogeFilledIcon { get; init; }
 
-    [ECMAScriptName("DogeIcon")]
     public TGlobalIconType? DogeIcon { get; init; }
 
-    [ECMAScriptName("DoubleStoreyFilledIcon")]
     public TGlobalIconType? DoubleStoreyFilledIcon { get; init; }
 
-    [ECMAScriptName("DoubleStoreyIcon")]
     public TGlobalIconType? DoubleStoreyIcon { get; init; }
 
-    [ECMAScriptName("Download1Icon")]
     public TGlobalIconType? Download1Icon { get; init; }
 
-    [ECMAScriptName("Download2FilledIcon")]
     public TGlobalIconType? Download2FilledIcon { get; init; }
 
-    [ECMAScriptName("Download2Icon")]
     public TGlobalIconType? Download2Icon { get; init; }
 
-    [ECMAScriptName("DownloadIcon")]
     public TGlobalIconType? DownloadIcon { get; init; }
 
-    [ECMAScriptName("DownscaleIcon")]
     public TGlobalIconType? DownscaleIcon { get; init; }
 
-    [ECMAScriptName("DraftFilledIcon")]
     public TGlobalIconType? DraftFilledIcon { get; init; }
 
-    [ECMAScriptName("DraftIcon")]
     public TGlobalIconType? DraftIcon { get; init; }
 
-    [ECMAScriptName("DragDropIcon")]
     public TGlobalIconType? DragDropIcon { get; init; }
 
-    [ECMAScriptName("DragMoveIcon")]
     public TGlobalIconType? DragMoveIcon { get; init; }
 
-    [ECMAScriptName("DrinkFilledIcon")]
     public TGlobalIconType? DrinkFilledIcon { get; init; }
 
-    [ECMAScriptName("DrinkIcon")]
     public TGlobalIconType? DrinkIcon { get; init; }
 
-    [ECMAScriptName("DrumstickFilledIcon")]
     public TGlobalIconType? DrumstickFilledIcon { get; init; }
 
-    [ECMAScriptName("DrumstickIcon")]
     public TGlobalIconType? DrumstickIcon { get; init; }
 
-    [ECMAScriptName("DvFilledIcon")]
     public TGlobalIconType? DvFilledIcon { get; init; }
 
-    [ECMAScriptName("DvIcon")]
     public TGlobalIconType? DvIcon { get; init; }
 
-    [ECMAScriptName("DvdFilledIcon")]
     public TGlobalIconType? DvdFilledIcon { get; init; }
 
-    [ECMAScriptName("DvdIcon")]
     public TGlobalIconType? DvdIcon { get; init; }
 
-    [ECMAScriptName("EarphoneFilledIcon")]
     public TGlobalIconType? EarphoneFilledIcon { get; init; }
 
-    [ECMAScriptName("EarphoneIcon")]
     public TGlobalIconType? EarphoneIcon { get; init; }
 
-    [ECMAScriptName("EarthFilledIcon")]
     public TGlobalIconType? EarthFilledIcon { get; init; }
 
-    [ECMAScriptName("EarthIcon")]
     public TGlobalIconType? EarthIcon { get; init; }
 
-    [ECMAScriptName("Edit1FilledIcon")]
     public TGlobalIconType? Edit1FilledIcon { get; init; }
 
-    [ECMAScriptName("Edit1Icon")]
     public TGlobalIconType? Edit1Icon { get; init; }
 
-    [ECMAScriptName("Edit2FilledIcon")]
     public TGlobalIconType? Edit2FilledIcon { get; init; }
 
-    [ECMAScriptName("Edit2Icon")]
     public TGlobalIconType? Edit2Icon { get; init; }
 
-    [ECMAScriptName("EditFilledIcon")]
     public TGlobalIconType? EditFilledIcon { get; init; }
 
-    [ECMAScriptName("EditOffFilledIcon")]
     public TGlobalIconType? EditOffFilledIcon { get; init; }
 
-    [ECMAScriptName("EditOffIcon")]
     public TGlobalIconType? EditOffIcon { get; init; }
 
-    [ECMAScriptName("EditIcon")]
     public TGlobalIconType? EditIcon { get; init; }
 
-    [ECMAScriptName("EducationFilledIcon")]
     public TGlobalIconType? EducationFilledIcon { get; init; }
 
-    [ECMAScriptName("EducationIcon")]
     public TGlobalIconType? EducationIcon { get; init; }
 
-    [ECMAScriptName("EggplantFilledIcon")]
     public TGlobalIconType? EggplantFilledIcon { get; init; }
 
-    [ECMAScriptName("EggplantIcon")]
     public TGlobalIconType? EggplantIcon { get; init; }
 
-    [ECMAScriptName("EllipsisIcon")]
     public TGlobalIconType? EllipsisIcon { get; init; }
 
-    [ECMAScriptName("EmoEmotionalFilledIcon")]
     public TGlobalIconType? EmoEmotionalFilledIcon { get; init; }
 
-    [ECMAScriptName("EmoEmotionalIcon")]
     public TGlobalIconType? EmoEmotionalIcon { get; init; }
 
-    [ECMAScriptName("EnglishRectangleFilledIcon")]
     public TGlobalIconType? EnglishRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("EnglishRectangleIcon")]
     public TGlobalIconType? EnglishRectangleIcon { get; init; }
 
-    [ECMAScriptName("EnterIcon")]
     public TGlobalIconType? EnterIcon { get; init; }
 
-    [ECMAScriptName("EqualIcon")]
     public TGlobalIconType? EqualIcon { get; init; }
 
-    [ECMAScriptName("ErrorCircleFilledIcon")]
     public TGlobalIconType? ErrorCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ErrorCircleIcon")]
     public TGlobalIconType? ErrorCircleIcon { get; init; }
 
-    [ECMAScriptName("ErrorTriangleFilledIcon")]
     public TGlobalIconType? ErrorTriangleFilledIcon { get; init; }
 
-    [ECMAScriptName("ErrorTriangleIcon")]
     public TGlobalIconType? ErrorTriangleIcon { get; init; }
 
-    [ECMAScriptName("ErrorIcon")]
     public TGlobalIconType? ErrorIcon { get; init; }
 
-    [ECMAScriptName("Excited1FilledIcon")]
     public TGlobalIconType? Excited1FilledIcon { get; init; }
 
-    [ECMAScriptName("Excited1Icon")]
     public TGlobalIconType? Excited1Icon { get; init; }
 
-    [ECMAScriptName("ExcitedFilledIcon")]
     public TGlobalIconType? ExcitedFilledIcon { get; init; }
 
-    [ECMAScriptName("ExcitedIcon")]
     public TGlobalIconType? ExcitedIcon { get; init; }
 
-    [ECMAScriptName("ExpandDownFilledIcon")]
     public TGlobalIconType? ExpandDownFilledIcon { get; init; }
 
-    [ECMAScriptName("ExpandDownIcon")]
     public TGlobalIconType? ExpandDownIcon { get; init; }
 
-    [ECMAScriptName("ExpandHorizontalIcon")]
     public TGlobalIconType? ExpandHorizontalIcon { get; init; }
 
-    [ECMAScriptName("ExpandUpFilledIcon")]
     public TGlobalIconType? ExpandUpFilledIcon { get; init; }
 
-    [ECMAScriptName("ExpandUpIcon")]
     public TGlobalIconType? ExpandUpIcon { get; init; }
 
-    [ECMAScriptName("ExpandVerticalIcon")]
     public TGlobalIconType? ExpandVerticalIcon { get; init; }
 
-    [ECMAScriptName("ExploreFilledIcon")]
     public TGlobalIconType? ExploreFilledIcon { get; init; }
 
-    [ECMAScriptName("ExploreOffFilledIcon")]
     public TGlobalIconType? ExploreOffFilledIcon { get; init; }
 
-    [ECMAScriptName("ExploreOffIcon")]
     public TGlobalIconType? ExploreOffIcon { get; init; }
 
-    [ECMAScriptName("ExploreIcon")]
     public TGlobalIconType? ExploreIcon { get; init; }
 
-    [ECMAScriptName("ExportIcon")]
     public TGlobalIconType? ExportIcon { get; init; }
 
-    [ECMAScriptName("ExposureFilledIcon")]
     public TGlobalIconType? ExposureFilledIcon { get; init; }
 
-    [ECMAScriptName("ExposureIcon")]
     public TGlobalIconType? ExposureIcon { get; init; }
 
-    [ECMAScriptName("ExtensionFilledIcon")]
     public TGlobalIconType? ExtensionFilledIcon { get; init; }
 
-    [ECMAScriptName("ExtensionOffFilledIcon")]
     public TGlobalIconType? ExtensionOffFilledIcon { get; init; }
 
-    [ECMAScriptName("ExtensionOffIcon")]
     public TGlobalIconType? ExtensionOffIcon { get; init; }
 
-    [ECMAScriptName("ExtensionIcon")]
     public TGlobalIconType? ExtensionIcon { get; init; }
 
-    [ECMAScriptName("FaceRetouchingFilledIcon")]
     public TGlobalIconType? FaceRetouchingFilledIcon { get; init; }
 
-    [ECMAScriptName("FaceRetouchingIcon")]
     public TGlobalIconType? FaceRetouchingIcon { get; init; }
 
-    [ECMAScriptName("FactCheckFilledIcon")]
     public TGlobalIconType? FactCheckFilledIcon { get; init; }
 
-    [ECMAScriptName("FactCheckIcon")]
     public TGlobalIconType? FactCheckIcon { get; init; }
 
-    [ECMAScriptName("FahrenheitScaleIcon")]
     public TGlobalIconType? FahrenheitScaleIcon { get; init; }
 
-    [ECMAScriptName("FeelAtEaseFilledIcon")]
     public TGlobalIconType? FeelAtEaseFilledIcon { get; init; }
 
-    [ECMAScriptName("FeelAtEaseIcon")]
     public TGlobalIconType? FeelAtEaseIcon { get; init; }
 
-    [ECMAScriptName("FerociousFilledIcon")]
     public TGlobalIconType? FerociousFilledIcon { get; init; }
 
-    [ECMAScriptName("FerociousIcon")]
     public TGlobalIconType? FerociousIcon { get; init; }
 
-    [ECMAScriptName("FerrisWheelFilledIcon")]
     public TGlobalIconType? FerrisWheelFilledIcon { get; init; }
 
-    [ECMAScriptName("FerrisWheelIcon")]
     public TGlobalIconType? FerrisWheelIcon { get; init; }
 
-    [ECMAScriptName("File1FilledIcon")]
     public TGlobalIconType? File1FilledIcon { get; init; }
 
-    [ECMAScriptName("File1Icon")]
     public TGlobalIconType? File1Icon { get; init; }
 
-    [ECMAScriptName("FileAdd1FilledIcon")]
     public TGlobalIconType? FileAdd1FilledIcon { get; init; }
 
-    [ECMAScriptName("FileAdd1Icon")]
     public TGlobalIconType? FileAdd1Icon { get; init; }
 
-    [ECMAScriptName("FileAddFilledIcon")]
     public TGlobalIconType? FileAddFilledIcon { get; init; }
 
-    [ECMAScriptName("FileAddIcon")]
     public TGlobalIconType? FileAddIcon { get; init; }
 
-    [ECMAScriptName("FileAttachmentFilledIcon")]
     public TGlobalIconType? FileAttachmentFilledIcon { get; init; }
 
-    [ECMAScriptName("FileAttachmentIcon")]
     public TGlobalIconType? FileAttachmentIcon { get; init; }
 
-    [ECMAScriptName("FileBlockedFilledIcon")]
     public TGlobalIconType? FileBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FileBlockedIcon")]
     public TGlobalIconType? FileBlockedIcon { get; init; }
 
-    [ECMAScriptName("FileCode1FilledIcon")]
     public TGlobalIconType? FileCode1FilledIcon { get; init; }
 
-    [ECMAScriptName("FileCode1Icon")]
     public TGlobalIconType? FileCode1Icon { get; init; }
 
-    [ECMAScriptName("FileCodeFilledIcon")]
     public TGlobalIconType? FileCodeFilledIcon { get; init; }
 
-    [ECMAScriptName("FileCodeIcon")]
     public TGlobalIconType? FileCodeIcon { get; init; }
 
-    [ECMAScriptName("FileCopyFilledIcon")]
     public TGlobalIconType? FileCopyFilledIcon { get; init; }
 
-    [ECMAScriptName("FileCopyIcon")]
     public TGlobalIconType? FileCopyIcon { get; init; }
 
-    [ECMAScriptName("FileCsvFilledIcon")]
     public TGlobalIconType? FileCsvFilledIcon { get; init; }
 
-    [ECMAScriptName("FileCsvIcon")]
     public TGlobalIconType? FileCsvIcon { get; init; }
 
-    [ECMAScriptName("FileDownloadFilledIcon")]
     public TGlobalIconType? FileDownloadFilledIcon { get; init; }
 
-    [ECMAScriptName("FileDownloadIcon")]
     public TGlobalIconType? FileDownloadIcon { get; init; }
 
-    [ECMAScriptName("FileEditFilledIcon")]
     public TGlobalIconType? FileEditFilledIcon { get; init; }
 
-    [ECMAScriptName("FileEditIcon")]
     public TGlobalIconType? FileEditIcon { get; init; }
 
-    [ECMAScriptName("FileExcelFilledIcon")]
     public TGlobalIconType? FileExcelFilledIcon { get; init; }
 
-    [ECMAScriptName("FileExcelIcon")]
     public TGlobalIconType? FileExcelIcon { get; init; }
 
-    [ECMAScriptName("FileExportFilledIcon")]
     public TGlobalIconType? FileExportFilledIcon { get; init; }
 
-    [ECMAScriptName("FileExportIcon")]
     public TGlobalIconType? FileExportIcon { get; init; }
 
-    [ECMAScriptName("FileFilledIcon")]
     public TGlobalIconType? FileFilledIcon { get; init; }
 
-    [ECMAScriptName("FileIconFilledIcon")]
     public TGlobalIconType? FileIconFilledIcon { get; init; }
 
-    [ECMAScriptName("FileIconIcon")]
     public TGlobalIconType? FileIconIcon { get; init; }
 
-    [ECMAScriptName("FileImageFilledIcon")]
     public TGlobalIconType? FileImageFilledIcon { get; init; }
 
-    [ECMAScriptName("FileImageIcon")]
     public TGlobalIconType? FileImageIcon { get; init; }
 
-    [ECMAScriptName("FileImportFilledIcon")]
     public TGlobalIconType? FileImportFilledIcon { get; init; }
 
-    [ECMAScriptName("FileImportIcon")]
     public TGlobalIconType? FileImportIcon { get; init; }
 
-    [ECMAScriptName("FileJsonFilledIcon")]
     public TGlobalIconType? FileJsonFilledIcon { get; init; }
 
-    [ECMAScriptName("FileJsonIcon")]
     public TGlobalIconType? FileJsonIcon { get; init; }
 
-    [ECMAScriptName("FileLockedFilledIcon")]
     public TGlobalIconType? FileLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FileLockedIcon")]
     public TGlobalIconType? FileLockedIcon { get; init; }
 
-    [ECMAScriptName("FileMarkdownFilledIcon")]
     public TGlobalIconType? FileMarkdownFilledIcon { get; init; }
 
-    [ECMAScriptName("FileMarkdownIcon")]
     public TGlobalIconType? FileMarkdownIcon { get; init; }
 
-    [ECMAScriptName("FileMinusFilledIcon")]
     public TGlobalIconType? FileMinusFilledIcon { get; init; }
 
-    [ECMAScriptName("FileMinusIcon")]
     public TGlobalIconType? FileMinusIcon { get; init; }
 
-    [ECMAScriptName("FileMusicFilledIcon")]
     public TGlobalIconType? FileMusicFilledIcon { get; init; }
 
-    [ECMAScriptName("FileMusicIcon")]
     public TGlobalIconType? FileMusicIcon { get; init; }
 
-    [ECMAScriptName("FileOnenoteFilledIcon")]
     public TGlobalIconType? FileOnenoteFilledIcon { get; init; }
 
-    [ECMAScriptName("FileOnenoteIcon")]
     public TGlobalIconType? FileOnenoteIcon { get; init; }
 
-    [ECMAScriptName("FileOutlookFilledIcon")]
     public TGlobalIconType? FileOutlookFilledIcon { get; init; }
 
-    [ECMAScriptName("FileOutlookIcon")]
     public TGlobalIconType? FileOutlookIcon { get; init; }
 
-    [ECMAScriptName("FilePasteFilledIcon")]
     public TGlobalIconType? FilePasteFilledIcon { get; init; }
 
-    [ECMAScriptName("FilePasteIcon")]
     public TGlobalIconType? FilePasteIcon { get; init; }
 
-    [ECMAScriptName("FilePdfFilledIcon")]
     public TGlobalIconType? FilePdfFilledIcon { get; init; }
 
-    [ECMAScriptName("FilePdfIcon")]
     public TGlobalIconType? FilePdfIcon { get; init; }
 
-    [ECMAScriptName("FilePowerpointFilledIcon")]
     public TGlobalIconType? FilePowerpointFilledIcon { get; init; }
 
-    [ECMAScriptName("FilePowerpointIcon")]
     public TGlobalIconType? FilePowerpointIcon { get; init; }
 
-    [ECMAScriptName("FileRestoreFilledIcon")]
     public TGlobalIconType? FileRestoreFilledIcon { get; init; }
 
-    [ECMAScriptName("FileRestoreIcon")]
     public TGlobalIconType? FileRestoreIcon { get; init; }
 
-    [ECMAScriptName("FileSafetyFilledIcon")]
     public TGlobalIconType? FileSafetyFilledIcon { get; init; }
 
-    [ECMAScriptName("FileSafetyIcon")]
     public TGlobalIconType? FileSafetyIcon { get; init; }
 
-    [ECMAScriptName("FileSearchFilledIcon")]
     public TGlobalIconType? FileSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("FileSearchIcon")]
     public TGlobalIconType? FileSearchIcon { get; init; }
 
-    [ECMAScriptName("FileSettingFilledIcon")]
     public TGlobalIconType? FileSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("FileSettingIcon")]
     public TGlobalIconType? FileSettingIcon { get; init; }
 
-    [ECMAScriptName("FileTeamsFilledIcon")]
     public TGlobalIconType? FileTeamsFilledIcon { get; init; }
 
-    [ECMAScriptName("FileTeamsIcon")]
     public TGlobalIconType? FileTeamsIcon { get; init; }
 
-    [ECMAScriptName("FileTransmitDoubleFilledIcon")]
     public TGlobalIconType? FileTransmitDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("FileTransmitDoubleIcon")]
     public TGlobalIconType? FileTransmitDoubleIcon { get; init; }
 
-    [ECMAScriptName("FileTransmitFilledIcon")]
     public TGlobalIconType? FileTransmitFilledIcon { get; init; }
 
-    [ECMAScriptName("FileTransmitIcon")]
     public TGlobalIconType? FileTransmitIcon { get; init; }
 
-    [ECMAScriptName("FileTxtFilledIcon")]
     public TGlobalIconType? FileTxtFilledIcon { get; init; }
 
-    [ECMAScriptName("FileTxtIcon")]
     public TGlobalIconType? FileTxtIcon { get; init; }
 
-    [ECMAScriptName("FileUnknownFilledIcon")]
     public TGlobalIconType? FileUnknownFilledIcon { get; init; }
 
-    [ECMAScriptName("FileUnknownIcon")]
     public TGlobalIconType? FileUnknownIcon { get; init; }
 
-    [ECMAScriptName("FileUnlockedFilledIcon")]
     public TGlobalIconType? FileUnlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FileUnlockedIcon")]
     public TGlobalIconType? FileUnlockedIcon { get; init; }
 
-    [ECMAScriptName("FileWordFilledIcon")]
     public TGlobalIconType? FileWordFilledIcon { get; init; }
 
-    [ECMAScriptName("FileWordIcon")]
     public TGlobalIconType? FileWordIcon { get; init; }
 
-    [ECMAScriptName("FileYamlFilledIcon")]
     public TGlobalIconType? FileYamlFilledIcon { get; init; }
 
-    [ECMAScriptName("FileYamlIcon")]
     public TGlobalIconType? FileYamlIcon { get; init; }
 
-    [ECMAScriptName("FileZipFilledIcon")]
     public TGlobalIconType? FileZipFilledIcon { get; init; }
 
-    [ECMAScriptName("FileZipIcon")]
     public TGlobalIconType? FileZipIcon { get; init; }
 
-    [ECMAScriptName("FileIcon")]
     public TGlobalIconType? FileIcon { get; init; }
 
-    [ECMAScriptName("FillColor1FilledIcon")]
     public TGlobalIconType? FillColor1FilledIcon { get; init; }
 
-    [ECMAScriptName("FillColor1Icon")]
     public TGlobalIconType? FillColor1Icon { get; init; }
 
-    [ECMAScriptName("FillColorFilledIcon")]
     public TGlobalIconType? FillColorFilledIcon { get; init; }
 
-    [ECMAScriptName("FillColorIcon")]
     public TGlobalIconType? FillColorIcon { get; init; }
 
-    [ECMAScriptName("Film1FilledIcon")]
     public TGlobalIconType? Film1FilledIcon { get; init; }
 
-    [ECMAScriptName("Film1Icon")]
     public TGlobalIconType? Film1Icon { get; init; }
 
-    [ECMAScriptName("FilmFilledIcon")]
     public TGlobalIconType? FilmFilledIcon { get; init; }
 
-    [ECMAScriptName("FilmIcon")]
     public TGlobalIconType? FilmIcon { get; init; }
 
-    [ECMAScriptName("Filter1FilledIcon")]
     public TGlobalIconType? Filter1FilledIcon { get; init; }
 
-    [ECMAScriptName("Filter1Icon")]
     public TGlobalIconType? Filter1Icon { get; init; }
 
-    [ECMAScriptName("Filter2FilledIcon")]
     public TGlobalIconType? Filter2FilledIcon { get; init; }
 
-    [ECMAScriptName("Filter2Icon")]
     public TGlobalIconType? Filter2Icon { get; init; }
 
-    [ECMAScriptName("Filter3FilledIcon")]
     public TGlobalIconType? Filter3FilledIcon { get; init; }
 
-    [ECMAScriptName("Filter3Icon")]
     public TGlobalIconType? Filter3Icon { get; init; }
 
-    [ECMAScriptName("FilterClearFilledIcon")]
     public TGlobalIconType? FilterClearFilledIcon { get; init; }
 
-    [ECMAScriptName("FilterClearIcon")]
     public TGlobalIconType? FilterClearIcon { get; init; }
 
-    [ECMAScriptName("FilterFilledIcon")]
     public TGlobalIconType? FilterFilledIcon { get; init; }
 
-    [ECMAScriptName("FilterOffFilledIcon")]
     public TGlobalIconType? FilterOffFilledIcon { get; init; }
 
-    [ECMAScriptName("FilterOffIcon")]
     public TGlobalIconType? FilterOffIcon { get; init; }
 
-    [ECMAScriptName("FilterSortFilledIcon")]
     public TGlobalIconType? FilterSortFilledIcon { get; init; }
 
-    [ECMAScriptName("FilterSortIcon")]
     public TGlobalIconType? FilterSortIcon { get; init; }
 
-    [ECMAScriptName("FilterIcon")]
     public TGlobalIconType? FilterIcon { get; init; }
 
-    [ECMAScriptName("Fingerprint1Icon")]
     public TGlobalIconType? Fingerprint1Icon { get; init; }
 
-    [ECMAScriptName("Fingerprint2Icon")]
     public TGlobalIconType? Fingerprint2Icon { get; init; }
 
-    [ECMAScriptName("Fingerprint3Icon")]
     public TGlobalIconType? Fingerprint3Icon { get; init; }
 
-    [ECMAScriptName("FingerprintIcon")]
     public TGlobalIconType? FingerprintIcon { get; init; }
 
-    [ECMAScriptName("FishFilledIcon")]
     public TGlobalIconType? FishFilledIcon { get; init; }
 
-    [ECMAScriptName("FishIcon")]
     public TGlobalIconType? FishIcon { get; init; }
 
-    [ECMAScriptName("Flag1FilledIcon")]
     public TGlobalIconType? Flag1FilledIcon { get; init; }
 
-    [ECMAScriptName("Flag1Icon")]
     public TGlobalIconType? Flag1Icon { get; init; }
 
-    [ECMAScriptName("Flag2FilledIcon")]
     public TGlobalIconType? Flag2FilledIcon { get; init; }
 
-    [ECMAScriptName("Flag2Icon")]
     public TGlobalIconType? Flag2Icon { get; init; }
 
-    [ECMAScriptName("Flag3FilledIcon")]
     public TGlobalIconType? Flag3FilledIcon { get; init; }
 
-    [ECMAScriptName("Flag3Icon")]
     public TGlobalIconType? Flag3Icon { get; init; }
 
-    [ECMAScriptName("Flag4FilledIcon")]
     public TGlobalIconType? Flag4FilledIcon { get; init; }
 
-    [ECMAScriptName("Flag4Icon")]
     public TGlobalIconType? Flag4Icon { get; init; }
 
-    [ECMAScriptName("FlagFilledIcon")]
     public TGlobalIconType? FlagFilledIcon { get; init; }
 
-    [ECMAScriptName("FlagIcon")]
     public TGlobalIconType? FlagIcon { get; init; }
 
-    [ECMAScriptName("FlashlightFilledIcon")]
     public TGlobalIconType? FlashlightFilledIcon { get; init; }
 
-    [ECMAScriptName("FlashlightIcon")]
     public TGlobalIconType? FlashlightIcon { get; init; }
 
-    [ECMAScriptName("FlightLandingFilledIcon")]
     public TGlobalIconType? FlightLandingFilledIcon { get; init; }
 
-    [ECMAScriptName("FlightLandingIcon")]
     public TGlobalIconType? FlightLandingIcon { get; init; }
 
-    [ECMAScriptName("FlightTakeoffFilledIcon")]
     public TGlobalIconType? FlightTakeoffFilledIcon { get; init; }
 
-    [ECMAScriptName("FlightTakeoffIcon")]
     public TGlobalIconType? FlightTakeoffIcon { get; init; }
 
-    [ECMAScriptName("FlipSmilingFaceFilledIcon")]
     public TGlobalIconType? FlipSmilingFaceFilledIcon { get; init; }
 
-    [ECMAScriptName("FlipSmilingFaceIcon")]
     public TGlobalIconType? FlipSmilingFaceIcon { get; init; }
 
-    [ECMAScriptName("FlipToBackFilledIcon")]
     public TGlobalIconType? FlipToBackFilledIcon { get; init; }
 
-    [ECMAScriptName("FlipToBackIcon")]
     public TGlobalIconType? FlipToBackIcon { get; init; }
 
-    [ECMAScriptName("FlipToFrontFilledIcon")]
     public TGlobalIconType? FlipToFrontFilledIcon { get; init; }
 
-    [ECMAScriptName("FlipToFrontIcon")]
     public TGlobalIconType? FlipToFrontIcon { get; init; }
 
-    [ECMAScriptName("FlowchartFilledIcon")]
     public TGlobalIconType? FlowchartFilledIcon { get; init; }
 
-    [ECMAScriptName("FlowchartIcon")]
     public TGlobalIconType? FlowchartIcon { get; init; }
 
-    [ECMAScriptName("FocusFilledIcon")]
     public TGlobalIconType? FocusFilledIcon { get; init; }
 
-    [ECMAScriptName("FocusIcon")]
     public TGlobalIconType? FocusIcon { get; init; }
 
-    [ECMAScriptName("FogFilledIcon")]
     public TGlobalIconType? FogFilledIcon { get; init; }
 
-    [ECMAScriptName("FogNightFilledIcon")]
     public TGlobalIconType? FogNightFilledIcon { get; init; }
 
-    [ECMAScriptName("FogNightIcon")]
     public TGlobalIconType? FogNightIcon { get; init; }
 
-    [ECMAScriptName("FogSunnyFilledIcon")]
     public TGlobalIconType? FogSunnyFilledIcon { get; init; }
 
-    [ECMAScriptName("FogSunnyIcon")]
     public TGlobalIconType? FogSunnyIcon { get; init; }
 
-    [ECMAScriptName("FogIcon")]
     public TGlobalIconType? FogIcon { get; init; }
 
-    [ECMAScriptName("Folder1FilledIcon")]
     public TGlobalIconType? Folder1FilledIcon { get; init; }
 
-    [ECMAScriptName("Folder1Icon")]
     public TGlobalIconType? Folder1Icon { get; init; }
 
-    [ECMAScriptName("FolderAdd1FilledIcon")]
     public TGlobalIconType? FolderAdd1FilledIcon { get; init; }
 
-    [ECMAScriptName("FolderAdd1Icon")]
     public TGlobalIconType? FolderAdd1Icon { get; init; }
 
-    [ECMAScriptName("FolderAddFilledIcon")]
     public TGlobalIconType? FolderAddFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderAddIcon")]
     public TGlobalIconType? FolderAddIcon { get; init; }
 
-    [ECMAScriptName("FolderBlockedFilledIcon")]
     public TGlobalIconType? FolderBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderBlockedIcon")]
     public TGlobalIconType? FolderBlockedIcon { get; init; }
 
-    [ECMAScriptName("FolderDetailsFilledIcon")]
     public TGlobalIconType? FolderDetailsFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderDetailsIcon")]
     public TGlobalIconType? FolderDetailsIcon { get; init; }
 
-    [ECMAScriptName("FolderExportFilledIcon")]
     public TGlobalIconType? FolderExportFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderExportIcon")]
     public TGlobalIconType? FolderExportIcon { get; init; }
 
-    [ECMAScriptName("FolderFilledIcon")]
     public TGlobalIconType? FolderFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderImportFilledIcon")]
     public TGlobalIconType? FolderImportFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderImportIcon")]
     public TGlobalIconType? FolderImportIcon { get; init; }
 
-    [ECMAScriptName("FolderLockedFilledIcon")]
     public TGlobalIconType? FolderLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderLockedIcon")]
     public TGlobalIconType? FolderLockedIcon { get; init; }
 
-    [ECMAScriptName("FolderMinusFilledIcon")]
     public TGlobalIconType? FolderMinusFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderMinusIcon")]
     public TGlobalIconType? FolderMinusIcon { get; init; }
 
-    [ECMAScriptName("FolderMoveFilledIcon")]
     public TGlobalIconType? FolderMoveFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderMoveIcon")]
     public TGlobalIconType? FolderMoveIcon { get; init; }
 
-    [ECMAScriptName("FolderOffFilledIcon")]
     public TGlobalIconType? FolderOffFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderOffIcon")]
     public TGlobalIconType? FolderOffIcon { get; init; }
 
-    [ECMAScriptName("FolderOpen1FilledIcon")]
     public TGlobalIconType? FolderOpen1FilledIcon { get; init; }
 
-    [ECMAScriptName("FolderOpen1Icon")]
     public TGlobalIconType? FolderOpen1Icon { get; init; }
 
-    [ECMAScriptName("FolderOpenFilledIcon")]
     public TGlobalIconType? FolderOpenFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderOpenIcon")]
     public TGlobalIconType? FolderOpenIcon { get; init; }
 
-    [ECMAScriptName("FolderSearchFilledIcon")]
     public TGlobalIconType? FolderSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderSearchIcon")]
     public TGlobalIconType? FolderSearchIcon { get; init; }
 
-    [ECMAScriptName("FolderSettingFilledIcon")]
     public TGlobalIconType? FolderSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderSettingIcon")]
     public TGlobalIconType? FolderSettingIcon { get; init; }
 
-    [ECMAScriptName("FolderSharedFilledIcon")]
     public TGlobalIconType? FolderSharedFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderSharedIcon")]
     public TGlobalIconType? FolderSharedIcon { get; init; }
 
-    [ECMAScriptName("FolderUnlockedFilledIcon")]
     public TGlobalIconType? FolderUnlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderUnlockedIcon")]
     public TGlobalIconType? FolderUnlockedIcon { get; init; }
 
-    [ECMAScriptName("FolderZipFilledIcon")]
     public TGlobalIconType? FolderZipFilledIcon { get; init; }
 
-    [ECMAScriptName("FolderZipIcon")]
     public TGlobalIconType? FolderZipIcon { get; init; }
 
-    [ECMAScriptName("FolderIcon")]
     public TGlobalIconType? FolderIcon { get; init; }
 
-    [ECMAScriptName("FontBackgroundFilledIcon")]
     public TGlobalIconType? FontBackgroundFilledIcon { get; init; }
 
-    [ECMAScriptName("FontBackgroundIcon")]
     public TGlobalIconType? FontBackgroundIcon { get; init; }
 
-    [ECMAScriptName("ForestFilledIcon")]
     public TGlobalIconType? ForestFilledIcon { get; init; }
 
-    [ECMAScriptName("ForestIcon")]
     public TGlobalIconType? ForestIcon { get; init; }
 
-    [ECMAScriptName("ForkFilledIcon")]
     public TGlobalIconType? ForkFilledIcon { get; init; }
 
-    [ECMAScriptName("ForkIcon")]
     public TGlobalIconType? ForkIcon { get; init; }
 
-    [ECMAScriptName("FormFilledIcon")]
     public TGlobalIconType? FormFilledIcon { get; init; }
 
-    [ECMAScriptName("FormIcon")]
     public TGlobalIconType? FormIcon { get; init; }
 
-    [ECMAScriptName("FormatHorizontalAlignBottomIcon")]
     public TGlobalIconType? FormatHorizontalAlignBottomIcon { get; init; }
 
-    [ECMAScriptName("FormatHorizontalAlignCenterIcon")]
     public TGlobalIconType? FormatHorizontalAlignCenterIcon { get; init; }
 
-    [ECMAScriptName("FormatHorizontalAlignTopIcon")]
     public TGlobalIconType? FormatHorizontalAlignTopIcon { get; init; }
 
-    [ECMAScriptName("FormatPainterFilledIcon")]
     public TGlobalIconType? FormatPainterFilledIcon { get; init; }
 
-    [ECMAScriptName("FormatPainterIcon")]
     public TGlobalIconType? FormatPainterIcon { get; init; }
 
-    [ECMAScriptName("FormatVerticalAlignCenterIcon")]
     public TGlobalIconType? FormatVerticalAlignCenterIcon { get; init; }
 
-    [ECMAScriptName("FormatVerticalAlignLeftIcon")]
     public TGlobalIconType? FormatVerticalAlignLeftIcon { get; init; }
 
-    [ECMAScriptName("FormatVerticalAlignRightIcon")]
     public TGlobalIconType? FormatVerticalAlignRightIcon { get; init; }
 
-    [ECMAScriptName("FormulaIcon")]
     public TGlobalIconType? FormulaIcon { get; init; }
 
-    [ECMAScriptName("ForumFilledIcon")]
     public TGlobalIconType? ForumFilledIcon { get; init; }
 
-    [ECMAScriptName("ForumIcon")]
     public TGlobalIconType? ForumIcon { get; init; }
 
-    [ECMAScriptName("ForwardFilledIcon")]
     public TGlobalIconType? ForwardFilledIcon { get; init; }
 
-    [ECMAScriptName("ForwardIcon")]
     public TGlobalIconType? ForwardIcon { get; init; }
 
-    [ECMAScriptName("Frame1FilledIcon")]
     public TGlobalIconType? Frame1FilledIcon { get; init; }
 
-    [ECMAScriptName("Frame1Icon")]
     public TGlobalIconType? Frame1Icon { get; init; }
 
-    [ECMAScriptName("FrameFilledIcon")]
     public TGlobalIconType? FrameFilledIcon { get; init; }
 
-    [ECMAScriptName("FrameIcon")]
     public TGlobalIconType? FrameIcon { get; init; }
 
-    [ECMAScriptName("FriesFilledIcon")]
     public TGlobalIconType? FriesFilledIcon { get; init; }
 
-    [ECMAScriptName("FriesIcon")]
     public TGlobalIconType? FriesIcon { get; init; }
 
-    [ECMAScriptName("Fullscreen1Icon")]
     public TGlobalIconType? Fullscreen1Icon { get; init; }
 
-    [ECMAScriptName("Fullscreen2Icon")]
     public TGlobalIconType? Fullscreen2Icon { get; init; }
 
-    [ECMAScriptName("FullscreenExit1Icon")]
     public TGlobalIconType? FullscreenExit1Icon { get; init; }
 
-    [ECMAScriptName("FullscreenExitIcon")]
     public TGlobalIconType? FullscreenExitIcon { get; init; }
 
-    [ECMAScriptName("FullscreenIcon")]
     public TGlobalIconType? FullscreenIcon { get; init; }
 
-    [ECMAScriptName("FunctionCurveIcon")]
     public TGlobalIconType? FunctionCurveIcon { get; init; }
 
-    [ECMAScriptName("Functions1Icon")]
     public TGlobalIconType? Functions1Icon { get; init; }
 
-    [ECMAScriptName("FunctionsIcon")]
     public TGlobalIconType? FunctionsIcon { get; init; }
 
-    [ECMAScriptName("Gamepad1FilledIcon")]
     public TGlobalIconType? Gamepad1FilledIcon { get; init; }
 
-    [ECMAScriptName("Gamepad1Icon")]
     public TGlobalIconType? Gamepad1Icon { get; init; }
 
-    [ECMAScriptName("GamepadFilledIcon")]
     public TGlobalIconType? GamepadFilledIcon { get; init; }
 
-    [ECMAScriptName("GamepadIcon")]
     public TGlobalIconType? GamepadIcon { get; init; }
 
-    [ECMAScriptName("GammaIcon")]
     public TGlobalIconType? GammaIcon { get; init; }
 
-    [ECMAScriptName("GarlicFilledIcon")]
     public TGlobalIconType? GarlicFilledIcon { get; init; }
 
-    [ECMAScriptName("GarlicIcon")]
     public TGlobalIconType? GarlicIcon { get; init; }
 
-    [ECMAScriptName("GenderFemaleIcon")]
     public TGlobalIconType? GenderFemaleIcon { get; init; }
 
-    [ECMAScriptName("GenderMaleIcon")]
     public TGlobalIconType? GenderMaleIcon { get; init; }
 
-    [ECMAScriptName("GestureApplauseFilledIcon")]
     public TGlobalIconType? GestureApplauseFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureApplauseIcon")]
     public TGlobalIconType? GestureApplauseIcon { get; init; }
 
-    [ECMAScriptName("GestureClickFilledIcon")]
     public TGlobalIconType? GestureClickFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureClickIcon")]
     public TGlobalIconType? GestureClickIcon { get; init; }
 
-    [ECMAScriptName("GestureDownFilledIcon")]
     public TGlobalIconType? GestureDownFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureDownIcon")]
     public TGlobalIconType? GestureDownIcon { get; init; }
 
-    [ECMAScriptName("GestureExpansionFilledIcon")]
     public TGlobalIconType? GestureExpansionFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureExpansionIcon")]
     public TGlobalIconType? GestureExpansionIcon { get; init; }
 
-    [ECMAScriptName("GestureLeftFilledIcon")]
     public TGlobalIconType? GestureLeftFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureLeftSlipFilledIcon")]
     public TGlobalIconType? GestureLeftSlipFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureLeftSlipIcon")]
     public TGlobalIconType? GestureLeftSlipIcon { get; init; }
 
-    [ECMAScriptName("GestureLeftIcon")]
     public TGlobalIconType? GestureLeftIcon { get; init; }
 
-    [ECMAScriptName("GestureOpenFilledIcon")]
     public TGlobalIconType? GestureOpenFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureOpenIcon")]
     public TGlobalIconType? GestureOpenIcon { get; init; }
 
-    [ECMAScriptName("GesturePrayFilledIcon")]
     public TGlobalIconType? GesturePrayFilledIcon { get; init; }
 
-    [ECMAScriptName("GesturePrayIcon")]
     public TGlobalIconType? GesturePrayIcon { get; init; }
 
-    [ECMAScriptName("GesturePressFilledIcon")]
     public TGlobalIconType? GesturePressFilledIcon { get; init; }
 
-    [ECMAScriptName("GesturePressIcon")]
     public TGlobalIconType? GesturePressIcon { get; init; }
 
-    [ECMAScriptName("GestureRanslationFilledIcon")]
     public TGlobalIconType? GestureRanslationFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureRanslationIcon")]
     public TGlobalIconType? GestureRanslationIcon { get; init; }
 
-    [ECMAScriptName("GestureRightFilledIcon")]
     public TGlobalIconType? GestureRightFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureRightSlipFilledIcon")]
     public TGlobalIconType? GestureRightSlipFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureRightSlipIcon")]
     public TGlobalIconType? GestureRightSlipIcon { get; init; }
 
-    [ECMAScriptName("GestureRightIcon")]
     public TGlobalIconType? GestureRightIcon { get; init; }
 
-    [ECMAScriptName("GestureSlideLeftAndRightFilledIcon")]
     public TGlobalIconType? GestureSlideLeftAndRightFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureSlideLeftAndRightIcon")]
     public TGlobalIconType? GestureSlideLeftAndRightIcon { get; init; }
 
-    [ECMAScriptName("GestureSlideUpFilledIcon")]
     public TGlobalIconType? GestureSlideUpFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureSlideUpIcon")]
     public TGlobalIconType? GestureSlideUpIcon { get; init; }
 
-    [ECMAScriptName("GestureTypingFilledIcon")]
     public TGlobalIconType? GestureTypingFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureTypingIcon")]
     public TGlobalIconType? GestureTypingIcon { get; init; }
 
-    [ECMAScriptName("GestureUpAndDownFilledIcon")]
     public TGlobalIconType? GestureUpAndDownFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureUpAndDownIcon")]
     public TGlobalIconType? GestureUpAndDownIcon { get; init; }
 
-    [ECMAScriptName("GestureUpFilledIcon")]
     public TGlobalIconType? GestureUpFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureUpIcon")]
     public TGlobalIconType? GestureUpIcon { get; init; }
 
-    [ECMAScriptName("GestureWipeDownFilledIcon")]
     public TGlobalIconType? GestureWipeDownFilledIcon { get; init; }
 
-    [ECMAScriptName("GestureWipeDownIcon")]
     public TGlobalIconType? GestureWipeDownIcon { get; init; }
 
-    [ECMAScriptName("GiftFilledIcon")]
     public TGlobalIconType? GiftFilledIcon { get; init; }
 
-    [ECMAScriptName("GiftIcon")]
     public TGlobalIconType? GiftIcon { get; init; }
 
-    [ECMAScriptName("GiggleFilledIcon")]
     public TGlobalIconType? GiggleFilledIcon { get; init; }
 
-    [ECMAScriptName("GiggleIcon")]
     public TGlobalIconType? GiggleIcon { get; init; }
 
-    [ECMAScriptName("GitBranchFilledIcon")]
     public TGlobalIconType? GitBranchFilledIcon { get; init; }
 
-    [ECMAScriptName("GitBranchIcon")]
     public TGlobalIconType? GitBranchIcon { get; init; }
 
-    [ECMAScriptName("GitCommit1FilledIcon")]
     public TGlobalIconType? GitCommit1FilledIcon { get; init; }
 
-    [ECMAScriptName("GitCommit1Icon")]
     public TGlobalIconType? GitCommit1Icon { get; init; }
 
-    [ECMAScriptName("GitCommitFilledIcon")]
     public TGlobalIconType? GitCommitFilledIcon { get; init; }
 
-    [ECMAScriptName("GitCommitIcon")]
     public TGlobalIconType? GitCommitIcon { get; init; }
 
-    [ECMAScriptName("GitMergeFilledIcon")]
     public TGlobalIconType? GitMergeFilledIcon { get; init; }
 
-    [ECMAScriptName("GitMergeIcon")]
     public TGlobalIconType? GitMergeIcon { get; init; }
 
-    [ECMAScriptName("GitPullRequestFilledIcon")]
     public TGlobalIconType? GitPullRequestFilledIcon { get; init; }
 
-    [ECMAScriptName("GitPullRequestIcon")]
     public TGlobalIconType? GitPullRequestIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryCommitsFilledIcon")]
     public TGlobalIconType? GitRepositoryCommitsFilledIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryCommitsIcon")]
     public TGlobalIconType? GitRepositoryCommitsIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryFilledIcon")]
     public TGlobalIconType? GitRepositoryFilledIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryPrivateFilledIcon")]
     public TGlobalIconType? GitRepositoryPrivateFilledIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryPrivateIcon")]
     public TGlobalIconType? GitRepositoryPrivateIcon { get; init; }
 
-    [ECMAScriptName("GitRepositoryIcon")]
     public TGlobalIconType? GitRepositoryIcon { get; init; }
 
-    [ECMAScriptName("GpsFilledIcon")]
     public TGlobalIconType? GpsFilledIcon { get; init; }
 
-    [ECMAScriptName("GpsIcon")]
     public TGlobalIconType? GpsIcon { get; init; }
 
-    [ECMAScriptName("GrapeFilledIcon")]
     public TGlobalIconType? GrapeFilledIcon { get; init; }
 
-    [ECMAScriptName("GrapeIcon")]
     public TGlobalIconType? GrapeIcon { get; init; }
 
-    [ECMAScriptName("GraphvizFilledIcon")]
     public TGlobalIconType? GraphvizFilledIcon { get; init; }
 
-    [ECMAScriptName("GraphvizIcon")]
     public TGlobalIconType? GraphvizIcon { get; init; }
 
-    [ECMAScriptName("GreaterThanOrEqualIcon")]
     public TGlobalIconType? GreaterThanOrEqualIcon { get; init; }
 
-    [ECMAScriptName("GreaterThanIcon")]
     public TGlobalIconType? GreaterThanIcon { get; init; }
 
-    [ECMAScriptName("GreenOnionIcon")]
     public TGlobalIconType? GreenOnionIcon { get; init; }
 
-    [ECMAScriptName("GridAddFilledIcon")]
     public TGlobalIconType? GridAddFilledIcon { get; init; }
 
-    [ECMAScriptName("GridAddIcon")]
     public TGlobalIconType? GridAddIcon { get; init; }
 
-    [ECMAScriptName("GridViewFilledIcon")]
     public TGlobalIconType? GridViewFilledIcon { get; init; }
 
-    [ECMAScriptName("GridViewIcon")]
     public TGlobalIconType? GridViewIcon { get; init; }
 
-    [ECMAScriptName("GuitarFilledIcon")]
     public TGlobalIconType? GuitarFilledIcon { get; init; }
 
-    [ECMAScriptName("GuitarIcon")]
     public TGlobalIconType? GuitarIcon { get; init; }
 
-    [ECMAScriptName("HamburgerFilledIcon")]
     public TGlobalIconType? HamburgerFilledIcon { get; init; }
 
-    [ECMAScriptName("HamburgerIcon")]
     public TGlobalIconType? HamburgerIcon { get; init; }
 
-    [ECMAScriptName("HappyFilledIcon")]
     public TGlobalIconType? HappyFilledIcon { get; init; }
 
-    [ECMAScriptName("HappyIcon")]
     public TGlobalIconType? HappyIcon { get; init; }
 
-    [ECMAScriptName("HardDiskStorageFilledIcon")]
     public TGlobalIconType? HardDiskStorageFilledIcon { get; init; }
 
-    [ECMAScriptName("HardDiskStorageIcon")]
     public TGlobalIconType? HardDiskStorageIcon { get; init; }
 
-    [ECMAScriptName("HardDriveFilledIcon")]
     public TGlobalIconType? HardDriveFilledIcon { get; init; }
 
-    [ECMAScriptName("HardDriveIcon")]
     public TGlobalIconType? HardDriveIcon { get; init; }
 
-    [ECMAScriptName("HashtagIcon")]
     public TGlobalIconType? HashtagIcon { get; init; }
 
-    [ECMAScriptName("HdFilledIcon")]
     public TGlobalIconType? HdFilledIcon { get; init; }
 
-    [ECMAScriptName("HdIcon")]
     public TGlobalIconType? HdIcon { get; init; }
 
-    [ECMAScriptName("HeartFilledIcon")]
     public TGlobalIconType? HeartFilledIcon { get; init; }
 
-    [ECMAScriptName("HeartIcon")]
     public TGlobalIconType? HeartIcon { get; init; }
 
-    [ECMAScriptName("HelpCircleFilledIcon")]
     public TGlobalIconType? HelpCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("HelpCircleIcon")]
     public TGlobalIconType? HelpCircleIcon { get; init; }
 
-    [ECMAScriptName("HelpRectangleFilledIcon")]
     public TGlobalIconType? HelpRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("HelpRectangleIcon")]
     public TGlobalIconType? HelpRectangleIcon { get; init; }
 
-    [ECMAScriptName("HelpIcon")]
     public TGlobalIconType? HelpIcon { get; init; }
 
-    [ECMAScriptName("HighLevelFilledIcon")]
     public TGlobalIconType? HighLevelFilledIcon { get; init; }
 
-    [ECMAScriptName("HighLevelIcon")]
     public TGlobalIconType? HighLevelIcon { get; init; }
 
-    [ECMAScriptName("Highlight1FilledIcon")]
     public TGlobalIconType? Highlight1FilledIcon { get; init; }
 
-    [ECMAScriptName("Highlight1Icon")]
     public TGlobalIconType? Highlight1Icon { get; init; }
 
-    [ECMAScriptName("HighlightIcon")]
     public TGlobalIconType? HighlightIcon { get; init; }
 
-    [ECMAScriptName("HighlightedBlockFilledIcon")]
     public TGlobalIconType? HighlightedBlockFilledIcon { get; init; }
 
-    [ECMAScriptName("HighlightedBlockIcon")]
     public TGlobalIconType? HighlightedBlockIcon { get; init; }
 
-    [ECMAScriptName("HistorySettingIcon")]
     public TGlobalIconType? HistorySettingIcon { get; init; }
 
-    [ECMAScriptName("HistoryIcon")]
     public TGlobalIconType? HistoryIcon { get; init; }
 
-    [ECMAScriptName("HomeFilledIcon")]
     public TGlobalIconType? HomeFilledIcon { get; init; }
 
-    [ECMAScriptName("HomeIcon")]
     public TGlobalIconType? HomeIcon { get; init; }
 
-    [ECMAScriptName("HorizontalFilledIcon")]
     public TGlobalIconType? HorizontalFilledIcon { get; init; }
 
-    [ECMAScriptName("HorizontalIcon")]
     public TGlobalIconType? HorizontalIcon { get; init; }
 
-    [ECMAScriptName("Hospital1FilledIcon")]
     public TGlobalIconType? Hospital1FilledIcon { get; init; }
 
-    [ECMAScriptName("Hospital1Icon")]
     public TGlobalIconType? Hospital1Icon { get; init; }
 
-    [ECMAScriptName("HospitalFilledIcon")]
     public TGlobalIconType? HospitalFilledIcon { get; init; }
 
-    [ECMAScriptName("HospitalIcon")]
     public TGlobalIconType? HospitalIcon { get; init; }
 
-    [ECMAScriptName("HotspotWaveFilledIcon")]
     public TGlobalIconType? HotspotWaveFilledIcon { get; init; }
 
-    [ECMAScriptName("HotspotWaveIcon")]
     public TGlobalIconType? HotspotWaveIcon { get; init; }
 
-    [ECMAScriptName("HourglassFilledIcon")]
     public TGlobalIconType? HourglassFilledIcon { get; init; }
 
-    [ECMAScriptName("HourglassIcon")]
     public TGlobalIconType? HourglassIcon { get; init; }
 
-    [ECMAScriptName("Houses1FilledIcon")]
     public TGlobalIconType? Houses1FilledIcon { get; init; }
 
-    [ECMAScriptName("Houses1Icon")]
     public TGlobalIconType? Houses1Icon { get; init; }
 
-    [ECMAScriptName("Houses2FilledIcon")]
     public TGlobalIconType? Houses2FilledIcon { get; init; }
 
-    [ECMAScriptName("Houses2Icon")]
     public TGlobalIconType? Houses2Icon { get; init; }
 
-    [ECMAScriptName("HousesFilledIcon")]
     public TGlobalIconType? HousesFilledIcon { get; init; }
 
-    [ECMAScriptName("HousesIcon")]
     public TGlobalIconType? HousesIcon { get; init; }
 
-    [ECMAScriptName("Html5FilledIcon")]
     public TGlobalIconType? Html5FilledIcon { get; init; }
 
-    [ECMAScriptName("Html5Icon")]
     public TGlobalIconType? Html5Icon { get; init; }
 
-    [ECMAScriptName("HttpsFilledIcon")]
     public TGlobalIconType? HttpsFilledIcon { get; init; }
 
-    [ECMAScriptName("HttpsIcon")]
     public TGlobalIconType? HttpsIcon { get; init; }
 
-    [ECMAScriptName("IceCreamFilledIcon")]
     public TGlobalIconType? IceCreamFilledIcon { get; init; }
 
-    [ECMAScriptName("IceCreamIcon")]
     public TGlobalIconType? IceCreamIcon { get; init; }
 
-    [ECMAScriptName("IconFilledIcon")]
     public TGlobalIconType? IconFilledIcon { get; init; }
 
-    [ECMAScriptName("IconIcon")]
     public TGlobalIconType? IconIcon { get; init; }
 
-    [ECMAScriptName("Image1FilledIcon")]
     public TGlobalIconType? Image1FilledIcon { get; init; }
 
-    [ECMAScriptName("Image1Icon")]
     public TGlobalIconType? Image1Icon { get; init; }
 
-    [ECMAScriptName("ImageAddFilledIcon")]
     public TGlobalIconType? ImageAddFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageAddIcon")]
     public TGlobalIconType? ImageAddIcon { get; init; }
 
-    [ECMAScriptName("ImageCarouselFilledIcon")]
     public TGlobalIconType? ImageCarouselFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageCarouselIcon")]
     public TGlobalIconType? ImageCarouselIcon { get; init; }
 
-    [ECMAScriptName("ImageEditFilledIcon")]
     public TGlobalIconType? ImageEditFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageEditIcon")]
     public TGlobalIconType? ImageEditIcon { get; init; }
 
-    [ECMAScriptName("ImageErrorFilledIcon")]
     public TGlobalIconType? ImageErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageErrorIcon")]
     public TGlobalIconType? ImageErrorIcon { get; init; }
 
-    [ECMAScriptName("ImageFilledIcon")]
     public TGlobalIconType? ImageFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageOffFilledIcon")]
     public TGlobalIconType? ImageOffFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageOffIcon")]
     public TGlobalIconType? ImageOffIcon { get; init; }
 
-    [ECMAScriptName("ImageSearchFilledIcon")]
     public TGlobalIconType? ImageSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("ImageSearchIcon")]
     public TGlobalIconType? ImageSearchIcon { get; init; }
 
-    [ECMAScriptName("ImageIcon")]
     public TGlobalIconType? ImageIcon { get; init; }
 
-    [ECMAScriptName("ImportIcon")]
     public TGlobalIconType? ImportIcon { get; init; }
 
-    [ECMAScriptName("IndentLeftIcon")]
     public TGlobalIconType? IndentLeftIcon { get; init; }
 
-    [ECMAScriptName("IndentRightIcon")]
     public TGlobalIconType? IndentRightIcon { get; init; }
 
-    [ECMAScriptName("IndicatorFilledIcon")]
     public TGlobalIconType? IndicatorFilledIcon { get; init; }
 
-    [ECMAScriptName("IndicatorIcon")]
     public TGlobalIconType? IndicatorIcon { get; init; }
 
-    [ECMAScriptName("InfoCircleFilledIcon")]
     public TGlobalIconType? InfoCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("InfoCircleIcon")]
     public TGlobalIconType? InfoCircleIcon { get; init; }
 
-    [ECMAScriptName("InkFilledIcon")]
     public TGlobalIconType? InkFilledIcon { get; init; }
 
-    [ECMAScriptName("InkIcon")]
     public TGlobalIconType? InkIcon { get; init; }
 
-    [ECMAScriptName("InstallDesktopFilledIcon")]
     public TGlobalIconType? InstallDesktopFilledIcon { get; init; }
 
-    [ECMAScriptName("InstallDesktopIcon")]
     public TGlobalIconType? InstallDesktopIcon { get; init; }
 
-    [ECMAScriptName("InstallFilledIcon")]
     public TGlobalIconType? InstallFilledIcon { get; init; }
 
-    [ECMAScriptName("InstallMobileFilledIcon")]
     public TGlobalIconType? InstallMobileFilledIcon { get; init; }
 
-    [ECMAScriptName("InstallMobileIcon")]
     public TGlobalIconType? InstallMobileIcon { get; init; }
 
-    [ECMAScriptName("InstallIcon")]
     public TGlobalIconType? InstallIcon { get; init; }
 
-    [ECMAScriptName("InstitutionCheckedFilledIcon")]
     public TGlobalIconType? InstitutionCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("InstitutionCheckedIcon")]
     public TGlobalIconType? InstitutionCheckedIcon { get; init; }
 
-    [ECMAScriptName("InstitutionFilledIcon")]
     public TGlobalIconType? InstitutionFilledIcon { get; init; }
 
-    [ECMAScriptName("InstitutionIcon")]
     public TGlobalIconType? InstitutionIcon { get; init; }
 
-    [ECMAScriptName("InternetFilledIcon")]
     public TGlobalIconType? InternetFilledIcon { get; init; }
 
-    [ECMAScriptName("InternetIcon")]
     public TGlobalIconType? InternetIcon { get; init; }
 
-    [ECMAScriptName("IpodFilledIcon")]
     public TGlobalIconType? IpodFilledIcon { get; init; }
 
-    [ECMAScriptName("IpodIcon")]
     public TGlobalIconType? IpodIcon { get; init; }
 
-    [ECMAScriptName("JapaneseRectangleFilledIcon")]
     public TGlobalIconType? JapaneseRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("JapaneseRectangleIcon")]
     public TGlobalIconType? JapaneseRectangleIcon { get; init; }
 
-    [ECMAScriptName("JoyfulFilledIcon")]
     public TGlobalIconType? JoyfulFilledIcon { get; init; }
 
-    [ECMAScriptName("JoyfulIcon")]
     public TGlobalIconType? JoyfulIcon { get; init; }
 
-    [ECMAScriptName("JumpDoubleIcon")]
     public TGlobalIconType? JumpDoubleIcon { get; init; }
 
-    [ECMAScriptName("JumpOffIcon")]
     public TGlobalIconType? JumpOffIcon { get; init; }
 
-    [ECMAScriptName("JumpIcon")]
     public TGlobalIconType? JumpIcon { get; init; }
 
-    [ECMAScriptName("KeyFilledIcon")]
     public TGlobalIconType? KeyFilledIcon { get; init; }
 
-    [ECMAScriptName("KeyIcon")]
     public TGlobalIconType? KeyIcon { get; init; }
 
-    [ECMAScriptName("Keyboard1Icon")]
     public TGlobalIconType? Keyboard1Icon { get; init; }
 
-    [ECMAScriptName("KeyboardFilledIcon")]
     public TGlobalIconType? KeyboardFilledIcon { get; init; }
 
-    [ECMAScriptName("KeyboardIcon")]
     public TGlobalIconType? KeyboardIcon { get; init; }
 
-    [ECMAScriptName("KoreanRectangleFilledIcon")]
     public TGlobalIconType? KoreanRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("KoreanRectangleIcon")]
     public TGlobalIconType? KoreanRectangleIcon { get; init; }
 
-    [ECMAScriptName("LaptopFilledIcon")]
     public TGlobalIconType? LaptopFilledIcon { get; init; }
 
-    [ECMAScriptName("LaptopIcon")]
     public TGlobalIconType? LaptopIcon { get; init; }
 
-    [ECMAScriptName("LayersFilledIcon")]
     public TGlobalIconType? LayersFilledIcon { get; init; }
 
-    [ECMAScriptName("LayersIcon")]
     public TGlobalIconType? LayersIcon { get; init; }
 
-    [ECMAScriptName("LayoutFilledIcon")]
     public TGlobalIconType? LayoutFilledIcon { get; init; }
 
-    [ECMAScriptName("LayoutIcon")]
     public TGlobalIconType? LayoutIcon { get; init; }
 
-    [ECMAScriptName("LeaderboardFilledIcon")]
     public TGlobalIconType? LeaderboardFilledIcon { get; init; }
 
-    [ECMAScriptName("LeaderboardIcon")]
     public TGlobalIconType? LeaderboardIcon { get; init; }
 
-    [ECMAScriptName("LemonFilledIcon")]
     public TGlobalIconType? LemonFilledIcon { get; init; }
 
-    [ECMAScriptName("LemonSliceFilledIcon")]
     public TGlobalIconType? LemonSliceFilledIcon { get; init; }
 
-    [ECMAScriptName("LemonSliceIcon")]
     public TGlobalIconType? LemonSliceIcon { get; init; }
 
-    [ECMAScriptName("LemonIcon")]
     public TGlobalIconType? LemonIcon { get; init; }
 
-    [ECMAScriptName("LessThanOrEqualIcon")]
     public TGlobalIconType? LessThanOrEqualIcon { get; init; }
 
-    [ECMAScriptName("LessThanIcon")]
     public TGlobalIconType? LessThanIcon { get; init; }
 
-    [ECMAScriptName("LettersAIcon")]
     public TGlobalIconType? LettersAIcon { get; init; }
 
-    [ECMAScriptName("LettersBIcon")]
     public TGlobalIconType? LettersBIcon { get; init; }
 
-    [ECMAScriptName("LettersCIcon")]
     public TGlobalIconType? LettersCIcon { get; init; }
 
-    [ECMAScriptName("LettersDIcon")]
     public TGlobalIconType? LettersDIcon { get; init; }
 
-    [ECMAScriptName("LettersEIcon")]
     public TGlobalIconType? LettersEIcon { get; init; }
 
-    [ECMAScriptName("LettersFIcon")]
     public TGlobalIconType? LettersFIcon { get; init; }
 
-    [ECMAScriptName("LettersGIcon")]
     public TGlobalIconType? LettersGIcon { get; init; }
 
-    [ECMAScriptName("LettersHIcon")]
     public TGlobalIconType? LettersHIcon { get; init; }
 
-    [ECMAScriptName("LettersIIcon")]
     public TGlobalIconType? LettersIIcon { get; init; }
 
-    [ECMAScriptName("LettersJIcon")]
     public TGlobalIconType? LettersJIcon { get; init; }
 
-    [ECMAScriptName("LettersKIcon")]
     public TGlobalIconType? LettersKIcon { get; init; }
 
-    [ECMAScriptName("LettersLIcon")]
     public TGlobalIconType? LettersLIcon { get; init; }
 
-    [ECMAScriptName("LettersMIcon")]
     public TGlobalIconType? LettersMIcon { get; init; }
 
-    [ECMAScriptName("LettersNIcon")]
     public TGlobalIconType? LettersNIcon { get; init; }
 
-    [ECMAScriptName("LettersOIcon")]
     public TGlobalIconType? LettersOIcon { get; init; }
 
-    [ECMAScriptName("LettersPIcon")]
     public TGlobalIconType? LettersPIcon { get; init; }
 
-    [ECMAScriptName("LettersQIcon")]
     public TGlobalIconType? LettersQIcon { get; init; }
 
-    [ECMAScriptName("LettersRIcon")]
     public TGlobalIconType? LettersRIcon { get; init; }
 
-    [ECMAScriptName("LettersSIcon")]
     public TGlobalIconType? LettersSIcon { get; init; }
 
-    [ECMAScriptName("LettersTIcon")]
     public TGlobalIconType? LettersTIcon { get; init; }
 
-    [ECMAScriptName("LettersUIcon")]
     public TGlobalIconType? LettersUIcon { get; init; }
 
-    [ECMAScriptName("LettersVIcon")]
     public TGlobalIconType? LettersVIcon { get; init; }
 
-    [ECMAScriptName("LettersWIcon")]
     public TGlobalIconType? LettersWIcon { get; init; }
 
-    [ECMAScriptName("LettersXIcon")]
     public TGlobalIconType? LettersXIcon { get; init; }
 
-    [ECMAScriptName("LettersYIcon")]
     public TGlobalIconType? LettersYIcon { get; init; }
 
-    [ECMAScriptName("LettersZIcon")]
     public TGlobalIconType? LettersZIcon { get; init; }
 
-    [ECMAScriptName("LightbulbCircleFilledIcon")]
     public TGlobalIconType? LightbulbCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("LightbulbCircleIcon")]
     public TGlobalIconType? LightbulbCircleIcon { get; init; }
 
-    [ECMAScriptName("LightbulbFilledIcon")]
     public TGlobalIconType? LightbulbFilledIcon { get; init; }
 
-    [ECMAScriptName("LightbulbIcon")]
     public TGlobalIconType? LightbulbIcon { get; init; }
 
-    [ECMAScriptName("Lighthouse1FilledIcon")]
     public TGlobalIconType? Lighthouse1FilledIcon { get; init; }
 
-    [ECMAScriptName("Lighthouse1Icon")]
     public TGlobalIconType? Lighthouse1Icon { get; init; }
 
-    [ECMAScriptName("Lighthouse2FilledIcon")]
     public TGlobalIconType? Lighthouse2FilledIcon { get; init; }
 
-    [ECMAScriptName("Lighthouse2Icon")]
     public TGlobalIconType? Lighthouse2Icon { get; init; }
 
-    [ECMAScriptName("LighthouseFilledIcon")]
     public TGlobalIconType? LighthouseFilledIcon { get; init; }
 
-    [ECMAScriptName("LighthouseIcon")]
     public TGlobalIconType? LighthouseIcon { get; init; }
 
-    [ECMAScriptName("LightingCircleFilledIcon")]
     public TGlobalIconType? LightingCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("LightingCircleIcon")]
     public TGlobalIconType? LightingCircleIcon { get; init; }
 
-    [ECMAScriptName("LineHeightIcon")]
     public TGlobalIconType? LineHeightIcon { get; init; }
 
-    [ECMAScriptName("Link1Icon")]
     public TGlobalIconType? Link1Icon { get; init; }
 
-    [ECMAScriptName("LinkTransformIcon")]
     public TGlobalIconType? LinkTransformIcon { get; init; }
 
-    [ECMAScriptName("LinkUnlinkIcon")]
     public TGlobalIconType? LinkUnlinkIcon { get; init; }
 
-    [ECMAScriptName("LinkIcon")]
     public TGlobalIconType? LinkIcon { get; init; }
 
-    [ECMAScriptName("LiquorFilledIcon")]
     public TGlobalIconType? LiquorFilledIcon { get; init; }
 
-    [ECMAScriptName("LiquorIcon")]
     public TGlobalIconType? LiquorIcon { get; init; }
 
-    [ECMAScriptName("ListBugFilledIcon")]
     public TGlobalIconType? ListBugFilledIcon { get; init; }
 
-    [ECMAScriptName("ListBugIcon")]
     public TGlobalIconType? ListBugIcon { get; init; }
 
-    [ECMAScriptName("ListDemandIcon")]
     public TGlobalIconType? ListDemandIcon { get; init; }
 
-    [ECMAScriptName("ListNumberedIcon")]
     public TGlobalIconType? ListNumberedIcon { get; init; }
 
-    [ECMAScriptName("LoadIcon")]
     public TGlobalIconType? LoadIcon { get; init; }
 
-    [ECMAScriptName("LoadingIcon")]
     public TGlobalIconType? LoadingIcon { get; init; }
 
-    [ECMAScriptName("Location1FilledIcon")]
     public TGlobalIconType? Location1FilledIcon { get; init; }
 
-    [ECMAScriptName("Location1Icon")]
     public TGlobalIconType? Location1Icon { get; init; }
 
-    [ECMAScriptName("LocationEnlargementFilledIcon")]
     public TGlobalIconType? LocationEnlargementFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationEnlargementIcon")]
     public TGlobalIconType? LocationEnlargementIcon { get; init; }
 
-    [ECMAScriptName("LocationErrorFilledIcon")]
     public TGlobalIconType? LocationErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationErrorIcon")]
     public TGlobalIconType? LocationErrorIcon { get; init; }
 
-    [ECMAScriptName("LocationFilledIcon")]
     public TGlobalIconType? LocationFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationParkingPlaceFilledIcon")]
     public TGlobalIconType? LocationParkingPlaceFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationParkingPlaceIcon")]
     public TGlobalIconType? LocationParkingPlaceIcon { get; init; }
 
-    [ECMAScriptName("LocationReductionFilledIcon")]
     public TGlobalIconType? LocationReductionFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationReductionIcon")]
     public TGlobalIconType? LocationReductionIcon { get; init; }
 
-    [ECMAScriptName("LocationSettingFilledIcon")]
     public TGlobalIconType? LocationSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("LocationSettingIcon")]
     public TGlobalIconType? LocationSettingIcon { get; init; }
 
-    [ECMAScriptName("LocationIcon")]
     public TGlobalIconType? LocationIcon { get; init; }
 
-    [ECMAScriptName("LockCheckedFilledIcon")]
     public TGlobalIconType? LockCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("LockCheckedIcon")]
     public TGlobalIconType? LockCheckedIcon { get; init; }
 
-    [ECMAScriptName("LockOffFilledIcon")]
     public TGlobalIconType? LockOffFilledIcon { get; init; }
 
-    [ECMAScriptName("LockOffIcon")]
     public TGlobalIconType? LockOffIcon { get; init; }
 
-    [ECMAScriptName("LockOnFilledIcon")]
     public TGlobalIconType? LockOnFilledIcon { get; init; }
 
-    [ECMAScriptName("LockOnIcon")]
     public TGlobalIconType? LockOnIcon { get; init; }
 
-    [ECMAScriptName("LockTimeFilledIcon")]
     public TGlobalIconType? LockTimeFilledIcon { get; init; }
 
-    [ECMAScriptName("LockTimeIcon")]
     public TGlobalIconType? LockTimeIcon { get; init; }
 
-    [ECMAScriptName("LoginIcon")]
     public TGlobalIconType? LoginIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobeIllustrateFilledIcon")]
     public TGlobalIconType? LogoAdobeIllustrateFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobeIllustrateIcon")]
     public TGlobalIconType? LogoAdobeIllustrateIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobeLightroomFilledIcon")]
     public TGlobalIconType? LogoAdobeLightroomFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobeLightroomIcon")]
     public TGlobalIconType? LogoAdobeLightroomIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobePhotoshopFilledIcon")]
     public TGlobalIconType? LogoAdobePhotoshopFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAdobePhotoshopIcon")]
     public TGlobalIconType? LogoAdobePhotoshopIcon { get; init; }
 
-    [ECMAScriptName("LogoAlipayFilledIcon")]
     public TGlobalIconType? LogoAlipayFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAlipayIcon")]
     public TGlobalIconType? LogoAlipayIcon { get; init; }
 
-    [ECMAScriptName("LogoAndroidFilledIcon")]
     public TGlobalIconType? LogoAndroidFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAndroidIcon")]
     public TGlobalIconType? LogoAndroidIcon { get; init; }
 
-    [ECMAScriptName("LogoAppleFilledIcon")]
     public TGlobalIconType? LogoAppleFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoAppleIcon")]
     public TGlobalIconType? LogoAppleIcon { get; init; }
 
-    [ECMAScriptName("LogoBehanceFilledIcon")]
     public TGlobalIconType? LogoBehanceFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoBehanceIcon")]
     public TGlobalIconType? LogoBehanceIcon { get; init; }
 
-    [ECMAScriptName("LogoChromeFilledIcon")]
     public TGlobalIconType? LogoChromeFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoChromeIcon")]
     public TGlobalIconType? LogoChromeIcon { get; init; }
 
-    [ECMAScriptName("LogoCinema4DFilledIcon")]
     public TGlobalIconType? LogoCinema4DFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoCinema4DIcon")]
     public TGlobalIconType? LogoCinema4DIcon { get; init; }
 
-    [ECMAScriptName("LogoCnbFilledIcon")]
     public TGlobalIconType? LogoCnbFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoCnbIcon")]
     public TGlobalIconType? LogoCnbIcon { get; init; }
 
-    [ECMAScriptName("LogoCodepenIcon")]
     public TGlobalIconType? LogoCodepenIcon { get; init; }
 
-    [ECMAScriptName("LogoCodesandboxIcon")]
     public TGlobalIconType? LogoCodesandboxIcon { get; init; }
 
-    [ECMAScriptName("LogoCodesignIcon")]
     public TGlobalIconType? LogoCodesignIcon { get; init; }
 
-    [ECMAScriptName("LogoDribbbleFilledIcon")]
     public TGlobalIconType? LogoDribbbleFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoDribbbleIcon")]
     public TGlobalIconType? LogoDribbbleIcon { get; init; }
 
-    [ECMAScriptName("LogoFacebookFilledIcon")]
     public TGlobalIconType? LogoFacebookFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoFacebookIcon")]
     public TGlobalIconType? LogoFacebookIcon { get; init; }
 
-    [ECMAScriptName("LogoFigmaFilledIcon")]
     public TGlobalIconType? LogoFigmaFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoFigmaIcon")]
     public TGlobalIconType? LogoFigmaIcon { get; init; }
 
-    [ECMAScriptName("LogoFramerFilledIcon")]
     public TGlobalIconType? LogoFramerFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoFramerIcon")]
     public TGlobalIconType? LogoFramerIcon { get; init; }
 
-    [ECMAScriptName("LogoGithubFilledIcon")]
     public TGlobalIconType? LogoGithubFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoGithubIcon")]
     public TGlobalIconType? LogoGithubIcon { get; init; }
 
-    [ECMAScriptName("LogoGitlabFilledIcon")]
     public TGlobalIconType? LogoGitlabFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoGitlabIcon")]
     public TGlobalIconType? LogoGitlabIcon { get; init; }
 
-    [ECMAScriptName("LogoHiflowFilledIcon")]
     public TGlobalIconType? LogoHiflowFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoHiflowIcon")]
     public TGlobalIconType? LogoHiflowIcon { get; init; }
 
-    [ECMAScriptName("LogoIeFilledIcon")]
     public TGlobalIconType? LogoIeFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoIeIcon")]
     public TGlobalIconType? LogoIeIcon { get; init; }
 
-    [ECMAScriptName("LogoInstagramFilledIcon")]
     public TGlobalIconType? LogoInstagramFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoInstagramIcon")]
     public TGlobalIconType? LogoInstagramIcon { get; init; }
 
-    [ECMAScriptName("LogoIwikiFilledIcon")]
     public TGlobalIconType? LogoIwikiFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoIwikiIcon")]
     public TGlobalIconType? LogoIwikiIcon { get; init; }
 
-    [ECMAScriptName("LogoMarkdownFilledIcon")]
     public TGlobalIconType? LogoMarkdownFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoMarkdownIcon")]
     public TGlobalIconType? LogoMarkdownIcon { get; init; }
 
-    [ECMAScriptName("LogoMiniprogramFilledIcon")]
     public TGlobalIconType? LogoMiniprogramFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoMiniprogramIcon")]
     public TGlobalIconType? LogoMiniprogramIcon { get; init; }
 
-    [ECMAScriptName("LogoQqFilledIcon")]
     public TGlobalIconType? LogoQqFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoQqIcon")]
     public TGlobalIconType? LogoQqIcon { get; init; }
 
-    [ECMAScriptName("LogoStackblitzFilledIcon")]
     public TGlobalIconType? LogoStackblitzFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoStackblitzIcon")]
     public TGlobalIconType? LogoStackblitzIcon { get; init; }
 
-    [ECMAScriptName("LogoTapdFilledIcon")]
     public TGlobalIconType? LogoTapdFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoTapdIcon")]
     public TGlobalIconType? LogoTapdIcon { get; init; }
 
-    [ECMAScriptName("LogoTbeaconFilledIcon")]
     public TGlobalIconType? LogoTbeaconFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoTbeaconIcon")]
     public TGlobalIconType? LogoTbeaconIcon { get; init; }
 
-    [ECMAScriptName("LogoTdesignFilledIcon")]
     public TGlobalIconType? LogoTdesignFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoTdesignIcon")]
     public TGlobalIconType? LogoTdesignIcon { get; init; }
 
-    [ECMAScriptName("LogoTencentcodeIcon")]
     public TGlobalIconType? LogoTencentcodeIcon { get; init; }
 
-    [ECMAScriptName("LogoTencentmeetingFilledIcon")]
     public TGlobalIconType? LogoTencentmeetingFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoTencentmeetingIcon")]
     public TGlobalIconType? LogoTencentmeetingIcon { get; init; }
 
-    [ECMAScriptName("LogoTwitterFilledIcon")]
     public TGlobalIconType? LogoTwitterFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoTwitterIcon")]
     public TGlobalIconType? LogoTwitterIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatStrokeFilledIcon")]
     public TGlobalIconType? LogoWechatStrokeFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatStrokeIcon")]
     public TGlobalIconType? LogoWechatStrokeIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatWorkdocsFilledIcon")]
     public TGlobalIconType? LogoWechatWorkdocsFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatWorkdocsIcon")]
     public TGlobalIconType? LogoWechatWorkdocsIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatpayFilledIcon")]
     public TGlobalIconType? LogoWechatpayFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoWechatpayIcon")]
     public TGlobalIconType? LogoWechatpayIcon { get; init; }
 
-    [ECMAScriptName("LogoWecomFilledIcon")]
     public TGlobalIconType? LogoWecomFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoWecomIcon")]
     public TGlobalIconType? LogoWecomIcon { get; init; }
 
-    [ECMAScriptName("LogoWindowsFilledIcon")]
     public TGlobalIconType? LogoWindowsFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoWindowsIcon")]
     public TGlobalIconType? LogoWindowsIcon { get; init; }
 
-    [ECMAScriptName("LogoXiaomareportFilledIcon")]
     public TGlobalIconType? LogoXiaomareportFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoXiaomareportIcon")]
     public TGlobalIconType? LogoXiaomareportIcon { get; init; }
 
-    [ECMAScriptName("LogoYoutubeFilledIcon")]
     public TGlobalIconType? LogoYoutubeFilledIcon { get; init; }
 
-    [ECMAScriptName("LogoYoutubeIcon")]
     public TGlobalIconType? LogoYoutubeIcon { get; init; }
 
-    [ECMAScriptName("LogoutIcon")]
     public TGlobalIconType? LogoutIcon { get; init; }
 
-    [ECMAScriptName("LookAroundFilledIcon")]
     public TGlobalIconType? LookAroundFilledIcon { get; init; }
 
-    [ECMAScriptName("LookAroundIcon")]
     public TGlobalIconType? LookAroundIcon { get; init; }
 
-    [ECMAScriptName("LoudspeakerFilledIcon")]
     public TGlobalIconType? LoudspeakerFilledIcon { get; init; }
 
-    [ECMAScriptName("LoudspeakerIcon")]
     public TGlobalIconType? LoudspeakerIcon { get; init; }
 
-    [ECMAScriptName("MailFilledIcon")]
     public TGlobalIconType? MailFilledIcon { get; init; }
 
-    [ECMAScriptName("MailIcon")]
     public TGlobalIconType? MailIcon { get; init; }
 
-    [ECMAScriptName("Map3DFilledIcon")]
     public TGlobalIconType? Map3DFilledIcon { get; init; }
 
-    [ECMAScriptName("Map3DIcon")]
     public TGlobalIconType? Map3DIcon { get; init; }
 
-    [ECMAScriptName("MapAddFilledIcon")]
     public TGlobalIconType? MapAddFilledIcon { get; init; }
 
-    [ECMAScriptName("MapAddIcon")]
     public TGlobalIconType? MapAddIcon { get; init; }
 
-    [ECMAScriptName("MapAimingFilledIcon")]
     public TGlobalIconType? MapAimingFilledIcon { get; init; }
 
-    [ECMAScriptName("MapAimingIcon")]
     public TGlobalIconType? MapAimingIcon { get; init; }
 
-    [ECMAScriptName("MapBlockedFilledIcon")]
     public TGlobalIconType? MapBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("MapBlockedIcon")]
     public TGlobalIconType? MapBlockedIcon { get; init; }
 
-    [ECMAScriptName("MapBubbleFilledIcon")]
     public TGlobalIconType? MapBubbleFilledIcon { get; init; }
 
-    [ECMAScriptName("MapBubbleIcon")]
     public TGlobalIconType? MapBubbleIcon { get; init; }
 
-    [ECMAScriptName("MapCancelFilledIcon")]
     public TGlobalIconType? MapCancelFilledIcon { get; init; }
 
-    [ECMAScriptName("MapCancelIcon")]
     public TGlobalIconType? MapCancelIcon { get; init; }
 
-    [ECMAScriptName("MapChatFilledIcon")]
     public TGlobalIconType? MapChatFilledIcon { get; init; }
 
-    [ECMAScriptName("MapChatIcon")]
     public TGlobalIconType? MapChatIcon { get; init; }
 
-    [ECMAScriptName("MapCheckedFilledIcon")]
     public TGlobalIconType? MapCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("MapCheckedIcon")]
     public TGlobalIconType? MapCheckedIcon { get; init; }
 
-    [ECMAScriptName("MapCollectionFilledIcon")]
     public TGlobalIconType? MapCollectionFilledIcon { get; init; }
 
-    [ECMAScriptName("MapCollectionIcon")]
     public TGlobalIconType? MapCollectionIcon { get; init; }
 
-    [ECMAScriptName("MapConnectionFilledIcon")]
     public TGlobalIconType? MapConnectionFilledIcon { get; init; }
 
-    [ECMAScriptName("MapConnectionIcon")]
     public TGlobalIconType? MapConnectionIcon { get; init; }
 
-    [ECMAScriptName("MapDistanceFilledIcon")]
     public TGlobalIconType? MapDistanceFilledIcon { get; init; }
 
-    [ECMAScriptName("MapDistanceIcon")]
     public TGlobalIconType? MapDistanceIcon { get; init; }
 
-    [ECMAScriptName("MapDoubleFilledIcon")]
     public TGlobalIconType? MapDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("MapDoubleIcon")]
     public TGlobalIconType? MapDoubleIcon { get; init; }
 
-    [ECMAScriptName("MapEditFilledIcon")]
     public TGlobalIconType? MapEditFilledIcon { get; init; }
 
-    [ECMAScriptName("MapEditIcon")]
     public TGlobalIconType? MapEditIcon { get; init; }
 
-    [ECMAScriptName("MapFilledIcon")]
     public TGlobalIconType? MapFilledIcon { get; init; }
 
-    [ECMAScriptName("MapGridFilledIcon")]
     public TGlobalIconType? MapGridFilledIcon { get; init; }
 
-    [ECMAScriptName("MapGridIcon")]
     public TGlobalIconType? MapGridIcon { get; init; }
 
-    [ECMAScriptName("MapInformation1FilledIcon")]
     public TGlobalIconType? MapInformation1FilledIcon { get; init; }
 
-    [ECMAScriptName("MapInformation1Icon")]
     public TGlobalIconType? MapInformation1Icon { get; init; }
 
-    [ECMAScriptName("MapInformation2FilledIcon")]
     public TGlobalIconType? MapInformation2FilledIcon { get; init; }
 
-    [ECMAScriptName("MapInformation2Icon")]
     public TGlobalIconType? MapInformation2Icon { get; init; }
 
-    [ECMAScriptName("MapInformationFilledIcon")]
     public TGlobalIconType? MapInformationFilledIcon { get; init; }
 
-    [ECMAScriptName("MapInformationIcon")]
     public TGlobalIconType? MapInformationIcon { get; init; }
 
-    [ECMAScriptName("MapLocationFilledIcon")]
     public TGlobalIconType? MapLocationFilledIcon { get; init; }
 
-    [ECMAScriptName("MapLocationIcon")]
     public TGlobalIconType? MapLocationIcon { get; init; }
 
-    [ECMAScriptName("MapLockedFilledIcon")]
     public TGlobalIconType? MapLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("MapLockedIcon")]
     public TGlobalIconType? MapLockedIcon { get; init; }
 
-    [ECMAScriptName("MapMarkedFilledIcon")]
     public TGlobalIconType? MapMarkedFilledIcon { get; init; }
 
-    [ECMAScriptName("MapMarkedIcon")]
     public TGlobalIconType? MapMarkedIcon { get; init; }
 
-    [ECMAScriptName("MapNavigationFilledIcon")]
     public TGlobalIconType? MapNavigationFilledIcon { get; init; }
 
-    [ECMAScriptName("MapNavigationIcon")]
     public TGlobalIconType? MapNavigationIcon { get; init; }
 
-    [ECMAScriptName("MapOutlineFilledIcon")]
     public TGlobalIconType? MapOutlineFilledIcon { get; init; }
 
-    [ECMAScriptName("MapOutlineIcon")]
     public TGlobalIconType? MapOutlineIcon { get; init; }
 
-    [ECMAScriptName("MapRoutePlanningFilledIcon")]
     public TGlobalIconType? MapRoutePlanningFilledIcon { get; init; }
 
-    [ECMAScriptName("MapRoutePlanningIcon")]
     public TGlobalIconType? MapRoutePlanningIcon { get; init; }
 
-    [ECMAScriptName("MapRulerFilledIcon")]
     public TGlobalIconType? MapRulerFilledIcon { get; init; }
 
-    [ECMAScriptName("MapRulerIcon")]
     public TGlobalIconType? MapRulerIcon { get; init; }
 
-    [ECMAScriptName("MapSafetyFilledIcon")]
     public TGlobalIconType? MapSafetyFilledIcon { get; init; }
 
-    [ECMAScriptName("MapSafetyIcon")]
     public TGlobalIconType? MapSafetyIcon { get; init; }
 
-    [ECMAScriptName("MapSearch1FilledIcon")]
     public TGlobalIconType? MapSearch1FilledIcon { get; init; }
 
-    [ECMAScriptName("MapSearch1Icon")]
     public TGlobalIconType? MapSearch1Icon { get; init; }
 
-    [ECMAScriptName("MapSearchFilledIcon")]
     public TGlobalIconType? MapSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("MapSearchIcon")]
     public TGlobalIconType? MapSearchIcon { get; init; }
 
-    [ECMAScriptName("MapSettingFilledIcon")]
     public TGlobalIconType? MapSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("MapSettingIcon")]
     public TGlobalIconType? MapSettingIcon { get; init; }
 
-    [ECMAScriptName("MapUnlockedFilledIcon")]
     public TGlobalIconType? MapUnlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("MapUnlockedIcon")]
     public TGlobalIconType? MapUnlockedIcon { get; init; }
 
-    [ECMAScriptName("MapIcon")]
     public TGlobalIconType? MapIcon { get; init; }
 
-    [ECMAScriptName("MarkAsUnreadFilledIcon")]
     public TGlobalIconType? MarkAsUnreadFilledIcon { get; init; }
 
-    [ECMAScriptName("MarkAsUnreadIcon")]
     public TGlobalIconType? MarkAsUnreadIcon { get; init; }
 
-    [ECMAScriptName("MarkupFilledIcon")]
     public TGlobalIconType? MarkupFilledIcon { get; init; }
 
-    [ECMAScriptName("MarkupIcon")]
     public TGlobalIconType? MarkupIcon { get; init; }
 
-    [ECMAScriptName("MathematicsFilledIcon")]
     public TGlobalIconType? MathematicsFilledIcon { get; init; }
 
-    [ECMAScriptName("MathematicsIcon")]
     public TGlobalIconType? MathematicsIcon { get; init; }
 
-    [ECMAScriptName("Measurement1FilledIcon")]
     public TGlobalIconType? Measurement1FilledIcon { get; init; }
 
-    [ECMAScriptName("Measurement1Icon")]
     public TGlobalIconType? Measurement1Icon { get; init; }
 
-    [ECMAScriptName("Measurement2FilledIcon")]
     public TGlobalIconType? Measurement2FilledIcon { get; init; }
 
-    [ECMAScriptName("Measurement2Icon")]
     public TGlobalIconType? Measurement2Icon { get; init; }
 
-    [ECMAScriptName("MeasurementFilledIcon")]
     public TGlobalIconType? MeasurementFilledIcon { get; init; }
 
-    [ECMAScriptName("MeasurementIcon")]
     public TGlobalIconType? MeasurementIcon { get; init; }
 
-    [ECMAScriptName("MeatPepperFilledIcon")]
     public TGlobalIconType? MeatPepperFilledIcon { get; init; }
 
-    [ECMAScriptName("MeatPepperIcon")]
     public TGlobalIconType? MeatPepperIcon { get; init; }
 
-    [ECMAScriptName("MediaLibraryFilledIcon")]
     public TGlobalIconType? MediaLibraryFilledIcon { get; init; }
 
-    [ECMAScriptName("MediaLibraryIcon")]
     public TGlobalIconType? MediaLibraryIcon { get; init; }
 
-    [ECMAScriptName("MemberFilledIcon")]
     public TGlobalIconType? MemberFilledIcon { get; init; }
 
-    [ECMAScriptName("MemberIcon")]
     public TGlobalIconType? MemberIcon { get; init; }
 
-    [ECMAScriptName("MentionedFilledIcon")]
     public TGlobalIconType? MentionedFilledIcon { get; init; }
 
-    [ECMAScriptName("MentionedIcon")]
     public TGlobalIconType? MentionedIcon { get; init; }
 
-    [ECMAScriptName("MenuApplicationIcon")]
     public TGlobalIconType? MenuApplicationIcon { get; init; }
 
-    [ECMAScriptName("MenuFilledIcon")]
     public TGlobalIconType? MenuFilledIcon { get; init; }
 
-    [ECMAScriptName("MenuFoldIcon")]
     public TGlobalIconType? MenuFoldIcon { get; init; }
 
-    [ECMAScriptName("MenuUnfoldIcon")]
     public TGlobalIconType? MenuUnfoldIcon { get; init; }
 
-    [ECMAScriptName("MenuIcon")]
     public TGlobalIconType? MenuIcon { get; init; }
 
-    [ECMAScriptName("MergeCellsFilledIcon")]
     public TGlobalIconType? MergeCellsFilledIcon { get; init; }
 
-    [ECMAScriptName("MergeCellsIcon")]
     public TGlobalIconType? MergeCellsIcon { get; init; }
 
-    [ECMAScriptName("MermaidFilledIcon")]
     public TGlobalIconType? MermaidFilledIcon { get; init; }
 
-    [ECMAScriptName("MermaidIcon")]
     public TGlobalIconType? MermaidIcon { get; init; }
 
-    [ECMAScriptName("Microphone1FilledIcon")]
     public TGlobalIconType? Microphone1FilledIcon { get; init; }
 
-    [ECMAScriptName("Microphone1Icon")]
     public TGlobalIconType? Microphone1Icon { get; init; }
 
-    [ECMAScriptName("Microphone2FilledIcon")]
     public TGlobalIconType? Microphone2FilledIcon { get; init; }
 
-    [ECMAScriptName("Microphone2Icon")]
     public TGlobalIconType? Microphone2Icon { get; init; }
 
-    [ECMAScriptName("MicrophoneFilledIcon")]
     public TGlobalIconType? MicrophoneFilledIcon { get; init; }
 
-    [ECMAScriptName("MicrophoneIcon")]
     public TGlobalIconType? MicrophoneIcon { get; init; }
 
-    [ECMAScriptName("MilkFilledIcon")]
     public TGlobalIconType? MilkFilledIcon { get; init; }
 
-    [ECMAScriptName("MilkIcon")]
     public TGlobalIconType? MilkIcon { get; init; }
 
-    [ECMAScriptName("MindMapFilledIcon")]
     public TGlobalIconType? MindMapFilledIcon { get; init; }
 
-    [ECMAScriptName("MindMapIcon")]
     public TGlobalIconType? MindMapIcon { get; init; }
 
-    [ECMAScriptName("MinusCircleFilledIcon")]
     public TGlobalIconType? MinusCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("MinusCircleIcon")]
     public TGlobalIconType? MinusCircleIcon { get; init; }
 
-    [ECMAScriptName("MinusRectangleFilledIcon")]
     public TGlobalIconType? MinusRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("MinusRectangleIcon")]
     public TGlobalIconType? MinusRectangleIcon { get; init; }
 
-    [ECMAScriptName("MinusIcon")]
     public TGlobalIconType? MinusIcon { get; init; }
 
-    [ECMAScriptName("MirrorFilledIcon")]
     public TGlobalIconType? MirrorFilledIcon { get; init; }
 
-    [ECMAScriptName("MirrorIcon")]
     public TGlobalIconType? MirrorIcon { get; init; }
 
-    [ECMAScriptName("MobileBlockedFilledIcon")]
     public TGlobalIconType? MobileBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileBlockedIcon")]
     public TGlobalIconType? MobileBlockedIcon { get; init; }
 
-    [ECMAScriptName("MobileFilledIcon")]
     public TGlobalIconType? MobileFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileListFilledIcon")]
     public TGlobalIconType? MobileListFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileListIcon")]
     public TGlobalIconType? MobileListIcon { get; init; }
 
-    [ECMAScriptName("MobileNavigationFilledIcon")]
     public TGlobalIconType? MobileNavigationFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileNavigationIcon")]
     public TGlobalIconType? MobileNavigationIcon { get; init; }
 
-    [ECMAScriptName("MobileShortcutFilledIcon")]
     public TGlobalIconType? MobileShortcutFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileShortcutIcon")]
     public TGlobalIconType? MobileShortcutIcon { get; init; }
 
-    [ECMAScriptName("MobileVibrateFilledIcon")]
     public TGlobalIconType? MobileVibrateFilledIcon { get; init; }
 
-    [ECMAScriptName("MobileVibrateIcon")]
     public TGlobalIconType? MobileVibrateIcon { get; init; }
 
-    [ECMAScriptName("MobileIcon")]
     public TGlobalIconType? MobileIcon { get; init; }
 
-    [ECMAScriptName("ModeDarkFilledIcon")]
     public TGlobalIconType? ModeDarkFilledIcon { get; init; }
 
-    [ECMAScriptName("ModeDarkIcon")]
     public TGlobalIconType? ModeDarkIcon { get; init; }
 
-    [ECMAScriptName("ModeEmbeddingFilledIcon")]
     public TGlobalIconType? ModeEmbeddingFilledIcon { get; init; }
 
-    [ECMAScriptName("ModeEmbeddingIcon")]
     public TGlobalIconType? ModeEmbeddingIcon { get; init; }
 
-    [ECMAScriptName("ModeLightFilledIcon")]
     public TGlobalIconType? ModeLightFilledIcon { get; init; }
 
-    [ECMAScriptName("ModeLightIcon")]
     public TGlobalIconType? ModeLightIcon { get; init; }
 
-    [ECMAScriptName("ModePreviewFilledIcon")]
     public TGlobalIconType? ModePreviewFilledIcon { get; init; }
 
-    [ECMAScriptName("ModePreviewIcon")]
     public TGlobalIconType? ModePreviewIcon { get; init; }
 
-    [ECMAScriptName("ModeTextFilledIcon")]
     public TGlobalIconType? ModeTextFilledIcon { get; init; }
 
-    [ECMAScriptName("ModeTextIcon")]
     public TGlobalIconType? ModeTextIcon { get; init; }
 
-    [ECMAScriptName("ModuleFilledIcon")]
     public TGlobalIconType? ModuleFilledIcon { get; init; }
 
-    [ECMAScriptName("ModuleIcon")]
     public TGlobalIconType? ModuleIcon { get; init; }
 
-    [ECMAScriptName("MoneyFilledIcon")]
     public TGlobalIconType? MoneyFilledIcon { get; init; }
 
-    [ECMAScriptName("MoneyIcon")]
     public TGlobalIconType? MoneyIcon { get; init; }
 
-    [ECMAScriptName("MonumentFilledIcon")]
     public TGlobalIconType? MonumentFilledIcon { get; init; }
 
-    [ECMAScriptName("MonumentIcon")]
     public TGlobalIconType? MonumentIcon { get; init; }
 
-    [ECMAScriptName("MoonFallFilledIcon")]
     public TGlobalIconType? MoonFallFilledIcon { get; init; }
 
-    [ECMAScriptName("MoonFallIcon")]
     public TGlobalIconType? MoonFallIcon { get; init; }
 
-    [ECMAScriptName("MoonFilledIcon")]
     public TGlobalIconType? MoonFilledIcon { get; init; }
 
-    [ECMAScriptName("MoonRisingFilledIcon")]
     public TGlobalIconType? MoonRisingFilledIcon { get; init; }
 
-    [ECMAScriptName("MoonRisingIcon")]
     public TGlobalIconType? MoonRisingIcon { get; init; }
 
-    [ECMAScriptName("MoonIcon")]
     public TGlobalIconType? MoonIcon { get; init; }
 
-    [ECMAScriptName("MoreIcon")]
     public TGlobalIconType? MoreIcon { get; init; }
 
-    [ECMAScriptName("MosaicFilledIcon")]
     public TGlobalIconType? MosaicFilledIcon { get; init; }
 
-    [ECMAScriptName("MosaicIcon")]
     public TGlobalIconType? MosaicIcon { get; init; }
 
-    [ECMAScriptName("Mosque1FilledIcon")]
     public TGlobalIconType? Mosque1FilledIcon { get; init; }
 
-    [ECMAScriptName("Mosque1Icon")]
     public TGlobalIconType? Mosque1Icon { get; init; }
 
-    [ECMAScriptName("MosqueFilledIcon")]
     public TGlobalIconType? MosqueFilledIcon { get; init; }
 
-    [ECMAScriptName("MosqueIcon")]
     public TGlobalIconType? MosqueIcon { get; init; }
 
-    [ECMAScriptName("MouseFilledIcon")]
     public TGlobalIconType? MouseFilledIcon { get; init; }
 
-    [ECMAScriptName("MouseIcon")]
     public TGlobalIconType? MouseIcon { get; init; }
 
-    [ECMAScriptName("Move1Icon")]
     public TGlobalIconType? Move1Icon { get; init; }
 
-    [ECMAScriptName("MoveIcon")]
     public TGlobalIconType? MoveIcon { get; init; }
 
-    [ECMAScriptName("MovieClapperFilledIcon")]
     public TGlobalIconType? MovieClapperFilledIcon { get; init; }
 
-    [ECMAScriptName("MovieClapperIcon")]
     public TGlobalIconType? MovieClapperIcon { get; init; }
 
-    [ECMAScriptName("MultiplyIcon")]
     public TGlobalIconType? MultiplyIcon { get; init; }
 
-    [ECMAScriptName("Museum1FilledIcon")]
     public TGlobalIconType? Museum1FilledIcon { get; init; }
 
-    [ECMAScriptName("Museum1Icon")]
     public TGlobalIconType? Museum1Icon { get; init; }
 
-    [ECMAScriptName("Museum2FilledIcon")]
     public TGlobalIconType? Museum2FilledIcon { get; init; }
 
-    [ECMAScriptName("Museum2Icon")]
     public TGlobalIconType? Museum2Icon { get; init; }
 
-    [ECMAScriptName("MuseumFilledIcon")]
     public TGlobalIconType? MuseumFilledIcon { get; init; }
 
-    [ECMAScriptName("MuseumIcon")]
     public TGlobalIconType? MuseumIcon { get; init; }
 
-    [ECMAScriptName("Mushroom1FilledIcon")]
     public TGlobalIconType? Mushroom1FilledIcon { get; init; }
 
-    [ECMAScriptName("Mushroom1Icon")]
     public TGlobalIconType? Mushroom1Icon { get; init; }
 
-    [ECMAScriptName("MushroomFilledIcon")]
     public TGlobalIconType? MushroomFilledIcon { get; init; }
 
-    [ECMAScriptName("MushroomIcon")]
     public TGlobalIconType? MushroomIcon { get; init; }
 
-    [ECMAScriptName("Music1FilledIcon")]
     public TGlobalIconType? Music1FilledIcon { get; init; }
 
-    [ECMAScriptName("Music1Icon")]
     public TGlobalIconType? Music1Icon { get; init; }
 
-    [ECMAScriptName("Music2FilledIcon")]
     public TGlobalIconType? Music2FilledIcon { get; init; }
 
-    [ECMAScriptName("Music2Icon")]
     public TGlobalIconType? Music2Icon { get; init; }
 
-    [ECMAScriptName("MusicFilledIcon")]
     public TGlobalIconType? MusicFilledIcon { get; init; }
 
-    [ECMAScriptName("MusicRectangleAddFilledIcon")]
     public TGlobalIconType? MusicRectangleAddFilledIcon { get; init; }
 
-    [ECMAScriptName("MusicRectangleAddIcon")]
     public TGlobalIconType? MusicRectangleAddIcon { get; init; }
 
-    [ECMAScriptName("MusicIcon")]
     public TGlobalIconType? MusicIcon { get; init; }
 
-    [ECMAScriptName("NavigationArrowFilledIcon")]
     public TGlobalIconType? NavigationArrowFilledIcon { get; init; }
 
-    [ECMAScriptName("NavigationArrowIcon")]
     public TGlobalIconType? NavigationArrowIcon { get; init; }
 
-    [ECMAScriptName("NextFilledIcon")]
     public TGlobalIconType? NextFilledIcon { get; init; }
 
-    [ECMAScriptName("NextIcon")]
     public TGlobalIconType? NextIcon { get; init; }
 
-    [ECMAScriptName("NoExpressionFilledIcon")]
     public TGlobalIconType? NoExpressionFilledIcon { get; init; }
 
-    [ECMAScriptName("NoExpressionIcon")]
     public TGlobalIconType? NoExpressionIcon { get; init; }
 
-    [ECMAScriptName("NoResultFilledIcon")]
     public TGlobalIconType? NoResultFilledIcon { get; init; }
 
-    [ECMAScriptName("NoResultIcon")]
     public TGlobalIconType? NoResultIcon { get; init; }
 
-    [ECMAScriptName("NoodleFilledIcon")]
     public TGlobalIconType? NoodleFilledIcon { get; init; }
 
-    [ECMAScriptName("NoodleIcon")]
     public TGlobalIconType? NoodleIcon { get; init; }
 
-    [ECMAScriptName("NotificationAddFilledIcon")]
     public TGlobalIconType? NotificationAddFilledIcon { get; init; }
 
-    [ECMAScriptName("NotificationAddIcon")]
     public TGlobalIconType? NotificationAddIcon { get; init; }
 
-    [ECMAScriptName("NotificationCircleFilledIcon")]
     public TGlobalIconType? NotificationCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("NotificationCircleIcon")]
     public TGlobalIconType? NotificationCircleIcon { get; init; }
 
-    [ECMAScriptName("NotificationErrorFilledIcon")]
     public TGlobalIconType? NotificationErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("NotificationErrorIcon")]
     public TGlobalIconType? NotificationErrorIcon { get; init; }
 
-    [ECMAScriptName("NotificationFilledIcon")]
     public TGlobalIconType? NotificationFilledIcon { get; init; }
 
-    [ECMAScriptName("NotificationIcon")]
     public TGlobalIconType? NotificationIcon { get; init; }
 
-    [ECMAScriptName("Numbers01Icon")]
     public TGlobalIconType? Numbers01Icon { get; init; }
 
-    [ECMAScriptName("Numbers0Icon")]
     public TGlobalIconType? Numbers0Icon { get; init; }
 
-    [ECMAScriptName("Numbers11Icon")]
     public TGlobalIconType? Numbers11Icon { get; init; }
 
-    [ECMAScriptName("Numbers1Icon")]
     public TGlobalIconType? Numbers1Icon { get; init; }
 
-    [ECMAScriptName("Numbers21Icon")]
     public TGlobalIconType? Numbers21Icon { get; init; }
 
-    [ECMAScriptName("Numbers2Icon")]
     public TGlobalIconType? Numbers2Icon { get; init; }
 
-    [ECMAScriptName("Numbers31Icon")]
     public TGlobalIconType? Numbers31Icon { get; init; }
 
-    [ECMAScriptName("Numbers3Icon")]
     public TGlobalIconType? Numbers3Icon { get; init; }
 
-    [ECMAScriptName("Numbers41Icon")]
     public TGlobalIconType? Numbers41Icon { get; init; }
 
-    [ECMAScriptName("Numbers4Icon")]
     public TGlobalIconType? Numbers4Icon { get; init; }
 
-    [ECMAScriptName("Numbers51Icon")]
     public TGlobalIconType? Numbers51Icon { get; init; }
 
-    [ECMAScriptName("Numbers5Icon")]
     public TGlobalIconType? Numbers5Icon { get; init; }
 
-    [ECMAScriptName("Numbers61Icon")]
     public TGlobalIconType? Numbers61Icon { get; init; }
 
-    [ECMAScriptName("Numbers6Icon")]
     public TGlobalIconType? Numbers6Icon { get; init; }
 
-    [ECMAScriptName("Numbers71Icon")]
     public TGlobalIconType? Numbers71Icon { get; init; }
 
-    [ECMAScriptName("Numbers7Icon")]
     public TGlobalIconType? Numbers7Icon { get; init; }
 
-    [ECMAScriptName("Numbers81Icon")]
     public TGlobalIconType? Numbers81Icon { get; init; }
 
-    [ECMAScriptName("Numbers8Icon")]
     public TGlobalIconType? Numbers8Icon { get; init; }
 
-    [ECMAScriptName("Numbers91Icon")]
     public TGlobalIconType? Numbers91Icon { get; init; }
 
-    [ECMAScriptName("Numbers9Icon")]
     public TGlobalIconType? Numbers9Icon { get; init; }
 
-    [ECMAScriptName("NumbersCircle1FilledIcon")]
     public TGlobalIconType? NumbersCircle1FilledIcon { get; init; }
 
-    [ECMAScriptName("NumbersCircle1Icon")]
     public TGlobalIconType? NumbersCircle1Icon { get; init; }
 
-    [ECMAScriptName("NumbersCircle2FilledIcon")]
     public TGlobalIconType? NumbersCircle2FilledIcon { get; init; }
 
-    [ECMAScriptName("NumbersCircle2Icon")]
     public TGlobalIconType? NumbersCircle2Icon { get; init; }
 
-    [ECMAScriptName("NumbersCircle3FilledIcon")]
     public TGlobalIconType? NumbersCircle3FilledIcon { get; init; }
 
-    [ECMAScriptName("NumbersCircle3Icon")]
     public TGlobalIconType? NumbersCircle3Icon { get; init; }
 
-    [ECMAScriptName("NumbersCircle4FilledIcon")]
     public TGlobalIconType? NumbersCircle4FilledIcon { get; init; }
 
-    [ECMAScriptName("NumbersCircle4Icon")]
     public TGlobalIconType? NumbersCircle4Icon { get; init; }
 
-    [ECMAScriptName("NutFilledIcon")]
     public TGlobalIconType? NutFilledIcon { get; init; }
 
-    [ECMAScriptName("NutIcon")]
     public TGlobalIconType? NutIcon { get; init; }
 
-    [ECMAScriptName("ObjectStorageIcon")]
     public TGlobalIconType? ObjectStorageIcon { get; init; }
 
-    [ECMAScriptName("OpenMouthFilledIcon")]
     public TGlobalIconType? OpenMouthFilledIcon { get; init; }
 
-    [ECMAScriptName("OpenMouthIcon")]
     public TGlobalIconType? OpenMouthIcon { get; init; }
 
-    [ECMAScriptName("OperaFilledIcon")]
     public TGlobalIconType? OperaFilledIcon { get; init; }
 
-    [ECMAScriptName("OperaIcon")]
     public TGlobalIconType? OperaIcon { get; init; }
 
-    [ECMAScriptName("OrderAdjustmentColumnIcon")]
     public TGlobalIconType? OrderAdjustmentColumnIcon { get; init; }
 
-    [ECMAScriptName("OrderAscendingIcon")]
     public TGlobalIconType? OrderAscendingIcon { get; init; }
 
-    [ECMAScriptName("OrderDescendingIcon")]
     public TGlobalIconType? OrderDescendingIcon { get; init; }
 
-    [ECMAScriptName("OrderListIcon")]
     public TGlobalIconType? OrderListIcon { get; init; }
 
-    [ECMAScriptName("OrderIcon")]
     public TGlobalIconType? OrderIcon { get; init; }
 
-    [ECMAScriptName("OutboxFilledIcon")]
     public TGlobalIconType? OutboxFilledIcon { get; init; }
 
-    [ECMAScriptName("OutboxIcon")]
     public TGlobalIconType? OutboxIcon { get; init; }
 
-    [ECMAScriptName("PageFirstIcon")]
     public TGlobalIconType? PageFirstIcon { get; init; }
 
-    [ECMAScriptName("PageHeadFilledIcon")]
     public TGlobalIconType? PageHeadFilledIcon { get; init; }
 
-    [ECMAScriptName("PageHeadIcon")]
     public TGlobalIconType? PageHeadIcon { get; init; }
 
-    [ECMAScriptName("PageIncludedFilledIcon")]
     public TGlobalIconType? PageIncludedFilledIcon { get; init; }
 
-    [ECMAScriptName("PageIncludedIcon")]
     public TGlobalIconType? PageIncludedIcon { get; init; }
 
-    [ECMAScriptName("PageLastIcon")]
     public TGlobalIconType? PageLastIcon { get; init; }
 
-    [ECMAScriptName("PageTabFilledIcon")]
     public TGlobalIconType? PageTabFilledIcon { get; init; }
 
-    [ECMAScriptName("PageTabIcon")]
     public TGlobalIconType? PageTabIcon { get; init; }
 
-    [ECMAScriptName("Palace1FilledIcon")]
     public TGlobalIconType? Palace1FilledIcon { get; init; }
 
-    [ECMAScriptName("Palace1Icon")]
     public TGlobalIconType? Palace1Icon { get; init; }
 
-    [ECMAScriptName("Palace2FilledIcon")]
     public TGlobalIconType? Palace2FilledIcon { get; init; }
 
-    [ECMAScriptName("Palace2Icon")]
     public TGlobalIconType? Palace2Icon { get; init; }
 
-    [ECMAScriptName("Palace3FilledIcon")]
     public TGlobalIconType? Palace3FilledIcon { get; init; }
 
-    [ECMAScriptName("Palace3Icon")]
     public TGlobalIconType? Palace3Icon { get; init; }
 
-    [ECMAScriptName("Palace4FilledIcon")]
     public TGlobalIconType? Palace4FilledIcon { get; init; }
 
-    [ECMAScriptName("Palace4Icon")]
     public TGlobalIconType? Palace4Icon { get; init; }
 
-    [ECMAScriptName("PalaceFilledIcon")]
     public TGlobalIconType? PalaceFilledIcon { get; init; }
 
-    [ECMAScriptName("PalaceIcon")]
     public TGlobalIconType? PalaceIcon { get; init; }
 
-    [ECMAScriptName("Palette1FilledIcon")]
     public TGlobalIconType? Palette1FilledIcon { get; init; }
 
-    [ECMAScriptName("Palette1Icon")]
     public TGlobalIconType? Palette1Icon { get; init; }
 
-    [ECMAScriptName("PaletteFilledIcon")]
     public TGlobalIconType? PaletteFilledIcon { get; init; }
 
-    [ECMAScriptName("PaletteIcon")]
     public TGlobalIconType? PaletteIcon { get; init; }
 
-    [ECMAScriptName("PanoramaHorizontalFilledIcon")]
     public TGlobalIconType? PanoramaHorizontalFilledIcon { get; init; }
 
-    [ECMAScriptName("PanoramaHorizontalIcon")]
     public TGlobalIconType? PanoramaHorizontalIcon { get; init; }
 
-    [ECMAScriptName("PanoramaVerticalFilledIcon")]
     public TGlobalIconType? PanoramaVerticalFilledIcon { get; init; }
 
-    [ECMAScriptName("PanoramaVerticalIcon")]
     public TGlobalIconType? PanoramaVerticalIcon { get; init; }
 
-    [ECMAScriptName("PantoneFilledIcon")]
     public TGlobalIconType? PantoneFilledIcon { get; init; }
 
-    [ECMAScriptName("PantoneIcon")]
     public TGlobalIconType? PantoneIcon { get; init; }
 
-    [ECMAScriptName("ParabolaIcon")]
     public TGlobalIconType? ParabolaIcon { get; init; }
 
-    [ECMAScriptName("ParenthesesIcon")]
     public TGlobalIconType? ParenthesesIcon { get; init; }
 
-    [ECMAScriptName("PasteFilledIcon")]
     public TGlobalIconType? PasteFilledIcon { get; init; }
 
-    [ECMAScriptName("PasteIcon")]
     public TGlobalIconType? PasteIcon { get; init; }
 
-    [ECMAScriptName("PatioFilledIcon")]
     public TGlobalIconType? PatioFilledIcon { get; init; }
 
-    [ECMAScriptName("PatioIcon")]
     public TGlobalIconType? PatioIcon { get; init; }
 
-    [ECMAScriptName("PauseCircleFilledIcon")]
     public TGlobalIconType? PauseCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("PauseCircleStrokeFilledIcon")]
     public TGlobalIconType? PauseCircleStrokeFilledIcon { get; init; }
 
-    [ECMAScriptName("PauseCircleStrokeIcon")]
     public TGlobalIconType? PauseCircleStrokeIcon { get; init; }
 
-    [ECMAScriptName("PauseCircleIcon")]
     public TGlobalIconType? PauseCircleIcon { get; init; }
 
-    [ECMAScriptName("PauseIcon")]
     public TGlobalIconType? PauseIcon { get; init; }
 
-    [ECMAScriptName("PeaFilledIcon")]
     public TGlobalIconType? PeaFilledIcon { get; init; }
 
-    [ECMAScriptName("PeaIcon")]
     public TGlobalIconType? PeaIcon { get; init; }
 
-    [ECMAScriptName("PeachFilledIcon")]
     public TGlobalIconType? PeachFilledIcon { get; init; }
 
-    [ECMAScriptName("PeachIcon")]
     public TGlobalIconType? PeachIcon { get; init; }
 
-    [ECMAScriptName("PearFilledIcon")]
     public TGlobalIconType? PearFilledIcon { get; init; }
 
-    [ECMAScriptName("PearIcon")]
     public TGlobalIconType? PearIcon { get; init; }
 
-    [ECMAScriptName("PearlOfTheOrientFilledIcon")]
     public TGlobalIconType? PearlOfTheOrientFilledIcon { get; init; }
 
-    [ECMAScriptName("PearlOfTheOrientIcon")]
     public TGlobalIconType? PearlOfTheOrientIcon { get; init; }
 
-    [ECMAScriptName("PenBallFilledIcon")]
     public TGlobalIconType? PenBallFilledIcon { get; init; }
 
-    [ECMAScriptName("PenBallIcon")]
     public TGlobalIconType? PenBallIcon { get; init; }
 
-    [ECMAScriptName("PenBrushFilledIcon")]
     public TGlobalIconType? PenBrushFilledIcon { get; init; }
 
-    [ECMAScriptName("PenBrushIcon")]
     public TGlobalIconType? PenBrushIcon { get; init; }
 
-    [ECMAScriptName("PenFilledIcon")]
     public TGlobalIconType? PenFilledIcon { get; init; }
 
-    [ECMAScriptName("PenFluorescenceFilledIcon")]
     public TGlobalIconType? PenFluorescenceFilledIcon { get; init; }
 
-    [ECMAScriptName("PenFluorescenceIcon")]
     public TGlobalIconType? PenFluorescenceIcon { get; init; }
 
-    [ECMAScriptName("PenMarkFilledIcon")]
     public TGlobalIconType? PenMarkFilledIcon { get; init; }
 
-    [ECMAScriptName("PenMarkIcon")]
     public TGlobalIconType? PenMarkIcon { get; init; }
 
-    [ECMAScriptName("PenQuillFilledIcon")]
     public TGlobalIconType? PenQuillFilledIcon { get; init; }
 
-    [ECMAScriptName("PenQuillIcon")]
     public TGlobalIconType? PenQuillIcon { get; init; }
 
-    [ECMAScriptName("PenIcon")]
     public TGlobalIconType? PenIcon { get; init; }
 
-    [ECMAScriptName("PendingFilledIcon")]
     public TGlobalIconType? PendingFilledIcon { get; init; }
 
-    [ECMAScriptName("PendingIcon")]
     public TGlobalIconType? PendingIcon { get; init; }
 
-    [ECMAScriptName("PercentIcon")]
     public TGlobalIconType? PercentIcon { get; init; }
 
-    [ECMAScriptName("PersonalInformationFilledIcon")]
     public TGlobalIconType? PersonalInformationFilledIcon { get; init; }
 
-    [ECMAScriptName("PersonalInformationIcon")]
     public TGlobalIconType? PersonalInformationIcon { get; init; }
 
-    [ECMAScriptName("PhoneLockedFilledIcon")]
     public TGlobalIconType? PhoneLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("PhoneLockedIcon")]
     public TGlobalIconType? PhoneLockedIcon { get; init; }
 
-    [ECMAScriptName("PhoneSearchFilledIcon")]
     public TGlobalIconType? PhoneSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("PhoneSearchIcon")]
     public TGlobalIconType? PhoneSearchIcon { get; init; }
 
-    [ECMAScriptName("PiIcon")]
     public TGlobalIconType? PiIcon { get; init; }
 
-    [ECMAScriptName("PianoFilledIcon")]
     public TGlobalIconType? PianoFilledIcon { get; init; }
 
-    [ECMAScriptName("PianoIcon")]
     public TGlobalIconType? PianoIcon { get; init; }
 
-    [ECMAScriptName("PinFilledIcon")]
     public TGlobalIconType? PinFilledIcon { get; init; }
 
-    [ECMAScriptName("PinIcon")]
     public TGlobalIconType? PinIcon { get; init; }
 
-    [ECMAScriptName("PlaceholderFilledIcon")]
     public TGlobalIconType? PlaceholderFilledIcon { get; init; }
 
-    [ECMAScriptName("PlaceholderIcon")]
     public TGlobalIconType? PlaceholderIcon { get; init; }
 
-    [ECMAScriptName("PlantumlFilledIcon")]
     public TGlobalIconType? PlantumlFilledIcon { get; init; }
 
-    [ECMAScriptName("PlantumlIcon")]
     public TGlobalIconType? PlantumlIcon { get; init; }
 
-    [ECMAScriptName("PlayChartFilledIcon")]
     public TGlobalIconType? PlayChartFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayChartIcon")]
     public TGlobalIconType? PlayChartIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleFilledIcon")]
     public TGlobalIconType? PlayCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleStrokeAddFilledIcon")]
     public TGlobalIconType? PlayCircleStrokeAddFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleStrokeAddIcon")]
     public TGlobalIconType? PlayCircleStrokeAddIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleStrokeFilledIcon")]
     public TGlobalIconType? PlayCircleStrokeFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleStrokeIcon")]
     public TGlobalIconType? PlayCircleStrokeIcon { get; init; }
 
-    [ECMAScriptName("PlayCircleIcon")]
     public TGlobalIconType? PlayCircleIcon { get; init; }
 
-    [ECMAScriptName("PlayDemoFilledIcon")]
     public TGlobalIconType? PlayDemoFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayDemoIcon")]
     public TGlobalIconType? PlayDemoIcon { get; init; }
 
-    [ECMAScriptName("PlayRectangleFilledIcon")]
     public TGlobalIconType? PlayRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("PlayRectangleIcon")]
     public TGlobalIconType? PlayRectangleIcon { get; init; }
 
-    [ECMAScriptName("PlayIcon")]
     public TGlobalIconType? PlayIcon { get; init; }
 
-    [ECMAScriptName("PlusIcon")]
     public TGlobalIconType? PlusIcon { get; init; }
 
-    [ECMAScriptName("PopsicleFilledIcon")]
     public TGlobalIconType? PopsicleFilledIcon { get; init; }
 
-    [ECMAScriptName("PopsicleIcon")]
     public TGlobalIconType? PopsicleIcon { get; init; }
 
-    [ECMAScriptName("PortraitFilledIcon")]
     public TGlobalIconType? PortraitFilledIcon { get; init; }
 
-    [ECMAScriptName("PortraitIcon")]
     public TGlobalIconType? PortraitIcon { get; init; }
 
-    [ECMAScriptName("PoutFilledIcon")]
     public TGlobalIconType? PoutFilledIcon { get; init; }
 
-    [ECMAScriptName("PoutIcon")]
     public TGlobalIconType? PoutIcon { get; init; }
 
-    [ECMAScriptName("PoweroffIcon")]
     public TGlobalIconType? PoweroffIcon { get; init; }
 
-    [ECMAScriptName("PreciseMonitorIcon")]
     public TGlobalIconType? PreciseMonitorIcon { get; init; }
 
-    [ECMAScriptName("PreviousFilledIcon")]
     public TGlobalIconType? PreviousFilledIcon { get; init; }
 
-    [ECMAScriptName("PreviousIcon")]
     public TGlobalIconType? PreviousIcon { get; init; }
 
-    [ECMAScriptName("PrintFilledIcon")]
     public TGlobalIconType? PrintFilledIcon { get; init; }
 
-    [ECMAScriptName("PrintIcon")]
     public TGlobalIconType? PrintIcon { get; init; }
 
-    [ECMAScriptName("PumpkinFilledIcon")]
     public TGlobalIconType? PumpkinFilledIcon { get; init; }
 
-    [ECMAScriptName("PumpkinIcon")]
     public TGlobalIconType? PumpkinIcon { get; init; }
 
-    [ECMAScriptName("PyramidFilledIcon")]
     public TGlobalIconType? PyramidFilledIcon { get; init; }
 
-    [ECMAScriptName("PyramidMayaFilledIcon")]
     public TGlobalIconType? PyramidMayaFilledIcon { get; init; }
 
-    [ECMAScriptName("PyramidMayaIcon")]
     public TGlobalIconType? PyramidMayaIcon { get; init; }
 
-    [ECMAScriptName("PyramidIcon")]
     public TGlobalIconType? PyramidIcon { get; init; }
 
-    [ECMAScriptName("QrcodeIcon")]
     public TGlobalIconType? QrcodeIcon { get; init; }
 
-    [ECMAScriptName("QuadraticIcon")]
     public TGlobalIconType? QuadraticIcon { get; init; }
 
-    [ECMAScriptName("QuestionnaireDoubleFilledIcon")]
     public TGlobalIconType? QuestionnaireDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("QuestionnaireDoubleIcon")]
     public TGlobalIconType? QuestionnaireDoubleIcon { get; init; }
 
-    [ECMAScriptName("QuestionnaireFilledIcon")]
     public TGlobalIconType? QuestionnaireFilledIcon { get; init; }
 
-    [ECMAScriptName("QuestionnaireIcon")]
     public TGlobalIconType? QuestionnaireIcon { get; init; }
 
-    [ECMAScriptName("QueueFilledIcon")]
     public TGlobalIconType? QueueFilledIcon { get; init; }
 
-    [ECMAScriptName("QueueIcon")]
     public TGlobalIconType? QueueIcon { get; init; }
 
-    [ECMAScriptName("QuoteFilledIcon")]
     public TGlobalIconType? QuoteFilledIcon { get; init; }
 
-    [ECMAScriptName("QuoteIcon")]
     public TGlobalIconType? QuoteIcon { get; init; }
 
-    [ECMAScriptName("RadarIcon")]
     public TGlobalIconType? RadarIcon { get; init; }
 
-    [ECMAScriptName("Radio1FilledIcon")]
     public TGlobalIconType? Radio1FilledIcon { get; init; }
 
-    [ECMAScriptName("Radio1Icon")]
     public TGlobalIconType? Radio1Icon { get; init; }
 
-    [ECMAScriptName("Radio2FilledIcon")]
     public TGlobalIconType? Radio2FilledIcon { get; init; }
 
-    [ECMAScriptName("Radio2Icon")]
     public TGlobalIconType? Radio2Icon { get; init; }
 
-    [ECMAScriptName("RadishFilledIcon")]
     public TGlobalIconType? RadishFilledIcon { get; init; }
 
-    [ECMAScriptName("RadishIcon")]
     public TGlobalIconType? RadishIcon { get; init; }
 
-    [ECMAScriptName("RainHeavyIcon")]
     public TGlobalIconType? RainHeavyIcon { get; init; }
 
-    [ECMAScriptName("RainLightFilledIcon")]
     public TGlobalIconType? RainLightFilledIcon { get; init; }
 
-    [ECMAScriptName("RainLightIcon")]
     public TGlobalIconType? RainLightIcon { get; init; }
 
-    [ECMAScriptName("RainMediumIcon")]
     public TGlobalIconType? RainMediumIcon { get; init; }
 
-    [ECMAScriptName("RainbowIcon")]
     public TGlobalIconType? RainbowIcon { get; init; }
 
-    [ECMAScriptName("RectangleFilledIcon")]
     public TGlobalIconType? RectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("RectangleIcon")]
     public TGlobalIconType? RectangleIcon { get; init; }
 
-    [ECMAScriptName("RefreshIcon")]
     public TGlobalIconType? RefreshIcon { get; init; }
 
-    [ECMAScriptName("RelationIcon")]
     public TGlobalIconType? RelationIcon { get; init; }
 
-    [ECMAScriptName("RelativityFilledIcon")]
     public TGlobalIconType? RelativityFilledIcon { get; init; }
 
-    [ECMAScriptName("RelativityIcon")]
     public TGlobalIconType? RelativityIcon { get; init; }
 
-    [ECMAScriptName("RemoteWaveFilledIcon")]
     public TGlobalIconType? RemoteWaveFilledIcon { get; init; }
 
-    [ECMAScriptName("RemoteWaveIcon")]
     public TGlobalIconType? RemoteWaveIcon { get; init; }
 
-    [ECMAScriptName("RemoveIcon")]
     public TGlobalIconType? RemoveIcon { get; init; }
 
-    [ECMAScriptName("RenameFilledIcon")]
     public TGlobalIconType? RenameFilledIcon { get; init; }
 
-    [ECMAScriptName("RenameIcon")]
     public TGlobalIconType? RenameIcon { get; init; }
 
-    [ECMAScriptName("ReplayFilledIcon")]
     public TGlobalIconType? ReplayFilledIcon { get; init; }
 
-    [ECMAScriptName("ReplayIcon")]
     public TGlobalIconType? ReplayIcon { get; init; }
 
-    [ECMAScriptName("RiceBallFilledIcon")]
     public TGlobalIconType? RiceBallFilledIcon { get; init; }
 
-    [ECMAScriptName("RiceBallIcon")]
     public TGlobalIconType? RiceBallIcon { get; init; }
 
-    [ECMAScriptName("RiceFilledIcon")]
     public TGlobalIconType? RiceFilledIcon { get; init; }
 
-    [ECMAScriptName("RiceIcon")]
     public TGlobalIconType? RiceIcon { get; init; }
 
-    [ECMAScriptName("RoastFilledIcon")]
     public TGlobalIconType? RoastFilledIcon { get; init; }
 
-    [ECMAScriptName("RoastIcon")]
     public TGlobalIconType? RoastIcon { get; init; }
 
-    [ECMAScriptName("Robot1FilledIcon")]
     public TGlobalIconType? Robot1FilledIcon { get; init; }
 
-    [ECMAScriptName("Robot1Icon")]
     public TGlobalIconType? Robot1Icon { get; init; }
 
-    [ECMAScriptName("Robot2FilledIcon")]
     public TGlobalIconType? Robot2FilledIcon { get; init; }
 
-    [ECMAScriptName("Robot2Icon")]
     public TGlobalIconType? Robot2Icon { get; init; }
 
-    [ECMAScriptName("RobotFilledIcon")]
     public TGlobalIconType? RobotFilledIcon { get; init; }
 
-    [ECMAScriptName("RobotIcon")]
     public TGlobalIconType? RobotIcon { get; init; }
 
-    [ECMAScriptName("RocketFilledIcon")]
     public TGlobalIconType? RocketFilledIcon { get; init; }
 
-    [ECMAScriptName("RocketIcon")]
     public TGlobalIconType? RocketIcon { get; init; }
 
-    [ECMAScriptName("RollbackIcon")]
     public TGlobalIconType? RollbackIcon { get; init; }
 
-    [ECMAScriptName("RollfrontIcon")]
     public TGlobalIconType? RollfrontIcon { get; init; }
 
-    [ECMAScriptName("RootListFilledIcon")]
     public TGlobalIconType? RootListFilledIcon { get; init; }
 
-    [ECMAScriptName("RootListIcon")]
     public TGlobalIconType? RootListIcon { get; init; }
 
-    [ECMAScriptName("RotateLockedFilledIcon")]
     public TGlobalIconType? RotateLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("RotateLockedIcon")]
     public TGlobalIconType? RotateLockedIcon { get; init; }
 
-    [ECMAScriptName("RotateIcon")]
     public TGlobalIconType? RotateIcon { get; init; }
 
-    [ECMAScriptName("RotationIcon")]
     public TGlobalIconType? RotationIcon { get; init; }
 
-    [ECMAScriptName("RoundFilledIcon")]
     public TGlobalIconType? RoundFilledIcon { get; init; }
 
-    [ECMAScriptName("RoundIcon")]
     public TGlobalIconType? RoundIcon { get; init; }
 
-    [ECMAScriptName("RouterWaveFilledIcon")]
     public TGlobalIconType? RouterWaveFilledIcon { get; init; }
 
-    [ECMAScriptName("RouterWaveIcon")]
     public TGlobalIconType? RouterWaveIcon { get; init; }
 
-    [ECMAScriptName("RssIcon")]
     public TGlobalIconType? RssIcon { get; init; }
 
-    [ECMAScriptName("RulerFilledIcon")]
     public TGlobalIconType? RulerFilledIcon { get; init; }
 
-    [ECMAScriptName("RulerIcon")]
     public TGlobalIconType? RulerIcon { get; init; }
 
-    [ECMAScriptName("SailingHotelFilledIcon")]
     public TGlobalIconType? SailingHotelFilledIcon { get; init; }
 
-    [ECMAScriptName("SailingHotelIcon")]
     public TGlobalIconType? SailingHotelIcon { get; init; }
 
-    [ECMAScriptName("SandwichFilledIcon")]
     public TGlobalIconType? SandwichFilledIcon { get; init; }
 
-    [ECMAScriptName("SandwichIcon")]
     public TGlobalIconType? SandwichIcon { get; init; }
 
-    [ECMAScriptName("SaturationFilledIcon")]
     public TGlobalIconType? SaturationFilledIcon { get; init; }
 
-    [ECMAScriptName("SaturationIcon")]
     public TGlobalIconType? SaturationIcon { get; init; }
 
-    [ECMAScriptName("SausageFilledIcon")]
     public TGlobalIconType? SausageFilledIcon { get; init; }
 
-    [ECMAScriptName("SausageIcon")]
     public TGlobalIconType? SausageIcon { get; init; }
 
-    [ECMAScriptName("SaveFilledIcon")]
     public TGlobalIconType? SaveFilledIcon { get; init; }
 
-    [ECMAScriptName("SaveIcon")]
     public TGlobalIconType? SaveIcon { get; init; }
 
-    [ECMAScriptName("SavingPotFilledIcon")]
     public TGlobalIconType? SavingPotFilledIcon { get; init; }
 
-    [ECMAScriptName("SavingPotIcon")]
     public TGlobalIconType? SavingPotIcon { get; init; }
 
-    [ECMAScriptName("ScanIcon")]
     public TGlobalIconType? ScanIcon { get; init; }
 
-    [ECMAScriptName("Screen4KFilledIcon")]
     public TGlobalIconType? Screen4KFilledIcon { get; init; }
 
-    [ECMAScriptName("Screen4KIcon")]
     public TGlobalIconType? Screen4KIcon { get; init; }
 
-    [ECMAScriptName("ScreenMirroringFilledIcon")]
     public TGlobalIconType? ScreenMirroringFilledIcon { get; init; }
 
-    [ECMAScriptName("ScreenMirroringIcon")]
     public TGlobalIconType? ScreenMirroringIcon { get; init; }
 
-    [ECMAScriptName("ScreencastFilledIcon")]
     public TGlobalIconType? ScreencastFilledIcon { get; init; }
 
-    [ECMAScriptName("ScreencastIcon")]
     public TGlobalIconType? ScreencastIcon { get; init; }
 
-    [ECMAScriptName("ScreenshotIcon")]
     public TGlobalIconType? ScreenshotIcon { get; init; }
 
-    [ECMAScriptName("ScrollBarFilledIcon")]
     public TGlobalIconType? ScrollBarFilledIcon { get; init; }
 
-    [ECMAScriptName("ScrollBarIcon")]
     public TGlobalIconType? ScrollBarIcon { get; init; }
 
-    [ECMAScriptName("SdCard1FilledIcon")]
     public TGlobalIconType? SdCard1FilledIcon { get; init; }
 
-    [ECMAScriptName("SdCard1Icon")]
     public TGlobalIconType? SdCard1Icon { get; init; }
 
-    [ECMAScriptName("SdCardFilledIcon")]
     public TGlobalIconType? SdCardFilledIcon { get; init; }
 
-    [ECMAScriptName("SdCardIcon")]
     public TGlobalIconType? SdCardIcon { get; init; }
 
-    [ECMAScriptName("SealFilledIcon")]
     public TGlobalIconType? SealFilledIcon { get; init; }
 
-    [ECMAScriptName("SealIcon")]
     public TGlobalIconType? SealIcon { get; init; }
 
-    [ECMAScriptName("SearchErrorFilledIcon")]
     public TGlobalIconType? SearchErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("SearchErrorIcon")]
     public TGlobalIconType? SearchErrorIcon { get; init; }
 
-    [ECMAScriptName("SearchFilledIcon")]
     public TGlobalIconType? SearchFilledIcon { get; init; }
 
-    [ECMAScriptName("SearchIcon")]
     public TGlobalIconType? SearchIcon { get; init; }
 
-    [ECMAScriptName("SecuredFilledIcon")]
     public TGlobalIconType? SecuredFilledIcon { get; init; }
 
-    [ECMAScriptName("SecuredIcon")]
     public TGlobalIconType? SecuredIcon { get; init; }
 
-    [ECMAScriptName("Send1FilledIcon")]
     public TGlobalIconType? Send1FilledIcon { get; init; }
 
-    [ECMAScriptName("Send1Icon")]
     public TGlobalIconType? Send1Icon { get; init; }
 
-    [ECMAScriptName("SendCancelFilledIcon")]
     public TGlobalIconType? SendCancelFilledIcon { get; init; }
 
-    [ECMAScriptName("SendCancelIcon")]
     public TGlobalIconType? SendCancelIcon { get; init; }
 
-    [ECMAScriptName("SendFilledIcon")]
     public TGlobalIconType? SendFilledIcon { get; init; }
 
-    [ECMAScriptName("SendIcon")]
     public TGlobalIconType? SendIcon { get; init; }
 
-    [ECMAScriptName("Sensors1Icon")]
     public TGlobalIconType? Sensors1Icon { get; init; }
 
-    [ECMAScriptName("Sensors2Icon")]
     public TGlobalIconType? Sensors2Icon { get; init; }
 
-    [ECMAScriptName("SensorsOffIcon")]
     public TGlobalIconType? SensorsOffIcon { get; init; }
 
-    [ECMAScriptName("SensorsIcon")]
     public TGlobalIconType? SensorsIcon { get; init; }
 
-    [ECMAScriptName("SequenceFilledIcon")]
     public TGlobalIconType? SequenceFilledIcon { get; init; }
 
-    [ECMAScriptName("SequenceIcon")]
     public TGlobalIconType? SequenceIcon { get; init; }
 
-    [ECMAScriptName("SerenityFilledIcon")]
     public TGlobalIconType? SerenityFilledIcon { get; init; }
 
-    [ECMAScriptName("SerenityIcon")]
     public TGlobalIconType? SerenityIcon { get; init; }
 
-    [ECMAScriptName("ServerFilledIcon")]
     public TGlobalIconType? ServerFilledIcon { get; init; }
 
-    [ECMAScriptName("ServerIcon")]
     public TGlobalIconType? ServerIcon { get; init; }
 
-    [ECMAScriptName("ServiceFilledIcon")]
     public TGlobalIconType? ServiceFilledIcon { get; init; }
 
-    [ECMAScriptName("ServiceIcon")]
     public TGlobalIconType? ServiceIcon { get; init; }
 
-    [ECMAScriptName("Setting1FilledIcon")]
     public TGlobalIconType? Setting1FilledIcon { get; init; }
 
-    [ECMAScriptName("Setting1Icon")]
     public TGlobalIconType? Setting1Icon { get; init; }
 
-    [ECMAScriptName("SettingFilledIcon")]
     public TGlobalIconType? SettingFilledIcon { get; init; }
 
-    [ECMAScriptName("SettingIcon")]
     public TGlobalIconType? SettingIcon { get; init; }
 
-    [ECMAScriptName("Share1FilledIcon")]
     public TGlobalIconType? Share1FilledIcon { get; init; }
 
-    [ECMAScriptName("Share1Icon")]
     public TGlobalIconType? Share1Icon { get; init; }
 
-    [ECMAScriptName("ShareFilledIcon")]
     public TGlobalIconType? ShareFilledIcon { get; init; }
 
-    [ECMAScriptName("ShareIcon")]
     public TGlobalIconType? ShareIcon { get; init; }
 
-    [ECMAScriptName("SharpnessFilledIcon")]
     public TGlobalIconType? SharpnessFilledIcon { get; init; }
 
-    [ECMAScriptName("SharpnessIcon")]
     public TGlobalIconType? SharpnessIcon { get; init; }
 
-    [ECMAScriptName("ShieldErrorFilledIcon")]
     public TGlobalIconType? ShieldErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("ShieldErrorIcon")]
     public TGlobalIconType? ShieldErrorIcon { get; init; }
 
-    [ECMAScriptName("ShimenFilledIcon")]
     public TGlobalIconType? ShimenFilledIcon { get; init; }
 
-    [ECMAScriptName("ShimenIcon")]
     public TGlobalIconType? ShimenIcon { get; init; }
 
-    [ECMAScriptName("Shop1FilledIcon")]
     public TGlobalIconType? Shop1FilledIcon { get; init; }
 
-    [ECMAScriptName("Shop1Icon")]
     public TGlobalIconType? Shop1Icon { get; init; }
 
-    [ECMAScriptName("Shop2FilledIcon")]
     public TGlobalIconType? Shop2FilledIcon { get; init; }
 
-    [ECMAScriptName("Shop2Icon")]
     public TGlobalIconType? Shop2Icon { get; init; }
 
-    [ECMAScriptName("Shop3FilledIcon")]
     public TGlobalIconType? Shop3FilledIcon { get; init; }
 
-    [ECMAScriptName("Shop3Icon")]
     public TGlobalIconType? Shop3Icon { get; init; }
 
-    [ECMAScriptName("Shop4FilledIcon")]
     public TGlobalIconType? Shop4FilledIcon { get; init; }
 
-    [ECMAScriptName("Shop4Icon")]
     public TGlobalIconType? Shop4Icon { get; init; }
 
-    [ECMAScriptName("Shop5FilledIcon")]
     public TGlobalIconType? Shop5FilledIcon { get; init; }
 
-    [ECMAScriptName("Shop5Icon")]
     public TGlobalIconType? Shop5Icon { get; init; }
 
-    [ECMAScriptName("ShopFilledIcon")]
     public TGlobalIconType? ShopFilledIcon { get; init; }
 
-    [ECMAScriptName("ShopIcon")]
     public TGlobalIconType? ShopIcon { get; init; }
 
-    [ECMAScriptName("ShortcutIcon")]
     public TGlobalIconType? ShortcutIcon { get; init; }
 
-    [ECMAScriptName("ShrimpFilledIcon")]
     public TGlobalIconType? ShrimpFilledIcon { get; init; }
 
-    [ECMAScriptName("ShrimpIcon")]
     public TGlobalIconType? ShrimpIcon { get; init; }
 
-    [ECMAScriptName("ShrinkHorizontalIcon")]
     public TGlobalIconType? ShrinkHorizontalIcon { get; init; }
 
-    [ECMAScriptName("ShrinkVerticalIcon")]
     public TGlobalIconType? ShrinkVerticalIcon { get; init; }
 
-    [ECMAScriptName("ShutterFilledIcon")]
     public TGlobalIconType? ShutterFilledIcon { get; init; }
 
-    [ECMAScriptName("ShutterIcon")]
     public TGlobalIconType? ShutterIcon { get; init; }
 
-    [ECMAScriptName("ShutupFilledIcon")]
     public TGlobalIconType? ShutupFilledIcon { get; init; }
 
-    [ECMAScriptName("ShutupIcon")]
     public TGlobalIconType? ShutupIcon { get; init; }
 
-    [ECMAScriptName("SimCard1FilledIcon")]
     public TGlobalIconType? SimCard1FilledIcon { get; init; }
 
-    [ECMAScriptName("SimCard1Icon")]
     public TGlobalIconType? SimCard1Icon { get; init; }
 
-    [ECMAScriptName("SimCard2FilledIcon")]
     public TGlobalIconType? SimCard2FilledIcon { get; init; }
 
-    [ECMAScriptName("SimCard2Icon")]
     public TGlobalIconType? SimCard2Icon { get; init; }
 
-    [ECMAScriptName("SimCardFilledIcon")]
     public TGlobalIconType? SimCardFilledIcon { get; init; }
 
-    [ECMAScriptName("SimCardIcon")]
     public TGlobalIconType? SimCardIcon { get; init; }
 
-    [ECMAScriptName("SinisterSmileFilledIcon")]
     public TGlobalIconType? SinisterSmileFilledIcon { get; init; }
 
-    [ECMAScriptName("SinisterSmileIcon")]
     public TGlobalIconType? SinisterSmileIcon { get; init; }
 
-    [ECMAScriptName("SipFilledIcon")]
     public TGlobalIconType? SipFilledIcon { get; init; }
 
-    [ECMAScriptName("SipIcon")]
     public TGlobalIconType? SipIcon { get; init; }
 
-    [ECMAScriptName("SitemapFilledIcon")]
     public TGlobalIconType? SitemapFilledIcon { get; init; }
 
-    [ECMAScriptName("SitemapIcon")]
     public TGlobalIconType? SitemapIcon { get; init; }
 
-    [ECMAScriptName("SizeChangeIcon")]
     public TGlobalIconType? SizeChangeIcon { get; init; }
 
-    [ECMAScriptName("SlashIcon")]
     public TGlobalIconType? SlashIcon { get; init; }
 
-    [ECMAScriptName("SleepFilledIcon")]
     public TGlobalIconType? SleepFilledIcon { get; init; }
 
-    [ECMAScriptName("SleepIcon")]
     public TGlobalIconType? SleepIcon { get; init; }
 
-    [ECMAScriptName("SliceFilledIcon")]
     public TGlobalIconType? SliceFilledIcon { get; init; }
 
-    [ECMAScriptName("SliceIcon")]
     public TGlobalIconType? SliceIcon { get; init; }
 
-    [ECMAScriptName("SlideshowFilledIcon")]
     public TGlobalIconType? SlideshowFilledIcon { get; init; }
 
-    [ECMAScriptName("SlideshowIcon")]
     public TGlobalIconType? SlideshowIcon { get; init; }
 
-    [ECMAScriptName("SmileFilledIcon")]
     public TGlobalIconType? SmileFilledIcon { get; init; }
 
-    [ECMAScriptName("SmileIcon")]
     public TGlobalIconType? SmileIcon { get; init; }
 
-    [ECMAScriptName("SneerFilledIcon")]
     public TGlobalIconType? SneerFilledIcon { get; init; }
 
-    [ECMAScriptName("SneerIcon")]
     public TGlobalIconType? SneerIcon { get; init; }
 
-    [ECMAScriptName("SnowflakeIcon")]
     public TGlobalIconType? SnowflakeIcon { get; init; }
 
-    [ECMAScriptName("SonicIcon")]
     public TGlobalIconType? SonicIcon { get; init; }
 
-    [ECMAScriptName("SoundDownFilledIcon")]
     public TGlobalIconType? SoundDownFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundDownIcon")]
     public TGlobalIconType? SoundDownIcon { get; init; }
 
-    [ECMAScriptName("SoundFilledIcon")]
     public TGlobalIconType? SoundFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundHighFilledIcon")]
     public TGlobalIconType? SoundHighFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundHighIcon")]
     public TGlobalIconType? SoundHighIcon { get; init; }
 
-    [ECMAScriptName("SoundLowFilledIcon")]
     public TGlobalIconType? SoundLowFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundLowIcon")]
     public TGlobalIconType? SoundLowIcon { get; init; }
 
-    [ECMAScriptName("SoundMute1FilledIcon")]
     public TGlobalIconType? SoundMute1FilledIcon { get; init; }
 
-    [ECMAScriptName("SoundMute1Icon")]
     public TGlobalIconType? SoundMute1Icon { get; init; }
 
-    [ECMAScriptName("SoundMuteFilledIcon")]
     public TGlobalIconType? SoundMuteFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundMuteIcon")]
     public TGlobalIconType? SoundMuteIcon { get; init; }
 
-    [ECMAScriptName("SoundUpFilledIcon")]
     public TGlobalIconType? SoundUpFilledIcon { get; init; }
 
-    [ECMAScriptName("SoundUpIcon")]
     public TGlobalIconType? SoundUpIcon { get; init; }
 
-    [ECMAScriptName("SoundIcon")]
     public TGlobalIconType? SoundIcon { get; init; }
 
-    [ECMAScriptName("SpaceIcon")]
     public TGlobalIconType? SpaceIcon { get; init; }
 
-    [ECMAScriptName("Speechless1FilledIcon")]
     public TGlobalIconType? Speechless1FilledIcon { get; init; }
 
-    [ECMAScriptName("Speechless1Icon")]
     public TGlobalIconType? Speechless1Icon { get; init; }
 
-    [ECMAScriptName("SpeechlessFilledIcon")]
     public TGlobalIconType? SpeechlessFilledIcon { get; init; }
 
-    [ECMAScriptName("SpeechlessIcon")]
     public TGlobalIconType? SpeechlessIcon { get; init; }
 
-    [ECMAScriptName("Star1FilledIcon")]
     public TGlobalIconType? Star1FilledIcon { get; init; }
 
-    [ECMAScriptName("Star1Icon")]
     public TGlobalIconType? Star1Icon { get; init; }
 
-    [ECMAScriptName("StarFilledIcon")]
     public TGlobalIconType? StarFilledIcon { get; init; }
 
-    [ECMAScriptName("StarIcon")]
     public TGlobalIconType? StarIcon { get; init; }
 
-    [ECMAScriptName("StatueOfJesusFilledIcon")]
     public TGlobalIconType? StatueOfJesusFilledIcon { get; init; }
 
-    [ECMAScriptName("StatueOfJesusIcon")]
     public TGlobalIconType? StatueOfJesusIcon { get; init; }
 
-    [ECMAScriptName("StickyNoteFilledIcon")]
     public TGlobalIconType? StickyNoteFilledIcon { get; init; }
 
-    [ECMAScriptName("StickyNoteIcon")]
     public TGlobalIconType? StickyNoteIcon { get; init; }
 
-    [ECMAScriptName("StopCircleFilledIcon")]
     public TGlobalIconType? StopCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("StopCircleStrokeFilledIcon")]
     public TGlobalIconType? StopCircleStrokeFilledIcon { get; init; }
 
-    [ECMAScriptName("StopCircleStrokeIcon")]
     public TGlobalIconType? StopCircleStrokeIcon { get; init; }
 
-    [ECMAScriptName("StopCircleIcon")]
     public TGlobalIconType? StopCircleIcon { get; init; }
 
-    [ECMAScriptName("StopIcon")]
     public TGlobalIconType? StopIcon { get; init; }
 
-    [ECMAScriptName("StoreFilledIcon")]
     public TGlobalIconType? StoreFilledIcon { get; init; }
 
-    [ECMAScriptName("StoreIcon")]
     public TGlobalIconType? StoreIcon { get; init; }
 
-    [ECMAScriptName("StreetRoad1FilledIcon")]
     public TGlobalIconType? StreetRoad1FilledIcon { get; init; }
 
-    [ECMAScriptName("StreetRoad1Icon")]
     public TGlobalIconType? StreetRoad1Icon { get; init; }
 
-    [ECMAScriptName("StreetRoadFilledIcon")]
     public TGlobalIconType? StreetRoadFilledIcon { get; init; }
 
-    [ECMAScriptName("StreetRoadIcon")]
     public TGlobalIconType? StreetRoadIcon { get; init; }
 
-    [ECMAScriptName("SubscriptIcon")]
     public TGlobalIconType? SubscriptIcon { get; init; }
 
-    [ECMAScriptName("SubtitleFilledIcon")]
     public TGlobalIconType? SubtitleFilledIcon { get; init; }
 
-    [ECMAScriptName("SubtitleIcon")]
     public TGlobalIconType? SubtitleIcon { get; init; }
 
-    [ECMAScriptName("SubwayLineFilledIcon")]
     public TGlobalIconType? SubwayLineFilledIcon { get; init; }
 
-    [ECMAScriptName("SubwayLineIcon")]
     public TGlobalIconType? SubwayLineIcon { get; init; }
 
-    [ECMAScriptName("SumIcon")]
     public TGlobalIconType? SumIcon { get; init; }
 
-    [ECMAScriptName("SummaryIcon")]
     public TGlobalIconType? SummaryIcon { get; init; }
 
-    [ECMAScriptName("SunFallFilledIcon")]
     public TGlobalIconType? SunFallFilledIcon { get; init; }
 
-    [ECMAScriptName("SunFallIcon")]
     public TGlobalIconType? SunFallIcon { get; init; }
 
-    [ECMAScriptName("SunRisingFilledIcon")]
     public TGlobalIconType? SunRisingFilledIcon { get; init; }
 
-    [ECMAScriptName("SunRisingIcon")]
     public TGlobalIconType? SunRisingIcon { get; init; }
 
-    [ECMAScriptName("SunnyFilledIcon")]
     public TGlobalIconType? SunnyFilledIcon { get; init; }
 
-    [ECMAScriptName("SunnyIcon")]
     public TGlobalIconType? SunnyIcon { get; init; }
 
-    [ECMAScriptName("SuperscriptIcon")]
     public TGlobalIconType? SuperscriptIcon { get; init; }
 
-    [ECMAScriptName("SupportFilledIcon")]
     public TGlobalIconType? SupportFilledIcon { get; init; }
 
-    [ECMAScriptName("SupportIcon")]
     public TGlobalIconType? SupportIcon { get; init; }
 
-    [ECMAScriptName("Surprised1FilledIcon")]
     public TGlobalIconType? Surprised1FilledIcon { get; init; }
 
-    [ECMAScriptName("Surprised1Icon")]
     public TGlobalIconType? Surprised1Icon { get; init; }
 
-    [ECMAScriptName("SurprisedFilledIcon")]
     public TGlobalIconType? SurprisedFilledIcon { get; init; }
 
-    [ECMAScriptName("SurprisedIcon")]
     public TGlobalIconType? SurprisedIcon { get; init; }
 
-    [ECMAScriptName("SwapLeftIcon")]
     public TGlobalIconType? SwapLeftIcon { get; init; }
 
-    [ECMAScriptName("SwapRightIcon")]
     public TGlobalIconType? SwapRightIcon { get; init; }
 
-    [ECMAScriptName("SwapIcon")]
     public TGlobalIconType? SwapIcon { get; init; }
 
-    [ECMAScriptName("Swear1FilledIcon")]
     public TGlobalIconType? Swear1FilledIcon { get; init; }
 
-    [ECMAScriptName("Swear1Icon")]
     public TGlobalIconType? Swear1Icon { get; init; }
 
-    [ECMAScriptName("Swear2FilledIcon")]
     public TGlobalIconType? Swear2FilledIcon { get; init; }
 
-    [ECMAScriptName("Swear2Icon")]
     public TGlobalIconType? Swear2Icon { get; init; }
 
-    [ECMAScriptName("System2Icon")]
     public TGlobalIconType? System2Icon { get; init; }
 
-    [ECMAScriptName("System3FilledIcon")]
     public TGlobalIconType? System3FilledIcon { get; init; }
 
-    [ECMAScriptName("System3Icon")]
     public TGlobalIconType? System3Icon { get; init; }
 
-    [ECMAScriptName("SystemApplicationFilledIcon")]
     public TGlobalIconType? SystemApplicationFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemApplicationIcon")]
     public TGlobalIconType? SystemApplicationIcon { get; init; }
 
-    [ECMAScriptName("SystemBlockedFilledIcon")]
     public TGlobalIconType? SystemBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemBlockedIcon")]
     public TGlobalIconType? SystemBlockedIcon { get; init; }
 
-    [ECMAScriptName("SystemCodeFilledIcon")]
     public TGlobalIconType? SystemCodeFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemCodeIcon")]
     public TGlobalIconType? SystemCodeIcon { get; init; }
 
-    [ECMAScriptName("SystemComponentsFilledIcon")]
     public TGlobalIconType? SystemComponentsFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemComponentsIcon")]
     public TGlobalIconType? SystemComponentsIcon { get; init; }
 
-    [ECMAScriptName("SystemCoordinateFilledIcon")]
     public TGlobalIconType? SystemCoordinateFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemCoordinateIcon")]
     public TGlobalIconType? SystemCoordinateIcon { get; init; }
 
-    [ECMAScriptName("SystemDeviceFilledIcon")]
     public TGlobalIconType? SystemDeviceFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemDeviceIcon")]
     public TGlobalIconType? SystemDeviceIcon { get; init; }
 
-    [ECMAScriptName("SystemInterfaceFilledIcon")]
     public TGlobalIconType? SystemInterfaceFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemInterfaceIcon")]
     public TGlobalIconType? SystemInterfaceIcon { get; init; }
 
-    [ECMAScriptName("SystemLocationFilledIcon")]
     public TGlobalIconType? SystemLocationFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemLocationIcon")]
     public TGlobalIconType? SystemLocationIcon { get; init; }
 
-    [ECMAScriptName("SystemLockedFilledIcon")]
     public TGlobalIconType? SystemLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemLockedIcon")]
     public TGlobalIconType? SystemLockedIcon { get; init; }
 
-    [ECMAScriptName("SystemLogFilledIcon")]
     public TGlobalIconType? SystemLogFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemLogIcon")]
     public TGlobalIconType? SystemLogIcon { get; init; }
 
-    [ECMAScriptName("SystemMarkedFilledIcon")]
     public TGlobalIconType? SystemMarkedFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemMarkedIcon")]
     public TGlobalIconType? SystemMarkedIcon { get; init; }
 
-    [ECMAScriptName("SystemMessagesFilledIcon")]
     public TGlobalIconType? SystemMessagesFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemMessagesIcon")]
     public TGlobalIconType? SystemMessagesIcon { get; init; }
 
-    [ECMAScriptName("SystemRegulationFilledIcon")]
     public TGlobalIconType? SystemRegulationFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemRegulationIcon")]
     public TGlobalIconType? SystemRegulationIcon { get; init; }
 
-    [ECMAScriptName("SystemSearchFilledIcon")]
     public TGlobalIconType? SystemSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemSearchIcon")]
     public TGlobalIconType? SystemSearchIcon { get; init; }
 
-    [ECMAScriptName("SystemSettingFilledIcon")]
     public TGlobalIconType? SystemSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemSettingIcon")]
     public TGlobalIconType? SystemSettingIcon { get; init; }
 
-    [ECMAScriptName("SystemStorageFilledIcon")]
     public TGlobalIconType? SystemStorageFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemStorageIcon")]
     public TGlobalIconType? SystemStorageIcon { get; init; }
 
-    [ECMAScriptName("SystemSumIcon")]
     public TGlobalIconType? SystemSumIcon { get; init; }
 
-    [ECMAScriptName("SystemUnlockedFilledIcon")]
     public TGlobalIconType? SystemUnlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("SystemUnlockedIcon")]
     public TGlobalIconType? SystemUnlockedIcon { get; init; }
 
-    [ECMAScriptName("TabFilledIcon")]
     public TGlobalIconType? TabFilledIcon { get; init; }
 
-    [ECMAScriptName("TabIcon")]
     public TGlobalIconType? TabIcon { get; init; }
 
-    [ECMAScriptName("Table1FilledIcon")]
     public TGlobalIconType? Table1FilledIcon { get; init; }
 
-    [ECMAScriptName("Table1Icon")]
     public TGlobalIconType? Table1Icon { get; init; }
 
-    [ECMAScriptName("Table2FilledIcon")]
     public TGlobalIconType? Table2FilledIcon { get; init; }
 
-    [ECMAScriptName("Table2Icon")]
     public TGlobalIconType? Table2Icon { get; init; }
 
-    [ECMAScriptName("TableAddFilledIcon")]
     public TGlobalIconType? TableAddFilledIcon { get; init; }
 
-    [ECMAScriptName("TableAddIcon")]
     public TGlobalIconType? TableAddIcon { get; init; }
 
-    [ECMAScriptName("TableFilledIcon")]
     public TGlobalIconType? TableFilledIcon { get; init; }
 
-    [ECMAScriptName("TableSplitFilledIcon")]
     public TGlobalIconType? TableSplitFilledIcon { get; init; }
 
-    [ECMAScriptName("TableSplitIcon")]
     public TGlobalIconType? TableSplitIcon { get; init; }
 
-    [ECMAScriptName("TableIcon")]
     public TGlobalIconType? TableIcon { get; init; }
 
-    [ECMAScriptName("TagFilledIcon")]
     public TGlobalIconType? TagFilledIcon { get; init; }
 
-    [ECMAScriptName("TagStateFilledIcon")]
     public TGlobalIconType? TagStateFilledIcon { get; init; }
 
-    [ECMAScriptName("TagStateIcon")]
     public TGlobalIconType? TagStateIcon { get; init; }
 
-    [ECMAScriptName("TagIcon")]
     public TGlobalIconType? TagIcon { get; init; }
 
-    [ECMAScriptName("TangerinrFilledIcon")]
     public TGlobalIconType? TangerinrFilledIcon { get; init; }
 
-    [ECMAScriptName("TangerinrIcon")]
     public TGlobalIconType? TangerinrIcon { get; init; }
 
-    [ECMAScriptName("TapeFilledIcon")]
     public TGlobalIconType? TapeFilledIcon { get; init; }
 
-    [ECMAScriptName("TapeIcon")]
     public TGlobalIconType? TapeIcon { get; init; }
 
-    [ECMAScriptName("Task1FilledIcon")]
     public TGlobalIconType? Task1FilledIcon { get; init; }
 
-    [ECMAScriptName("Task1Icon")]
     public TGlobalIconType? Task1Icon { get; init; }
 
-    [ECMAScriptName("TaskAdd1Icon")]
     public TGlobalIconType? TaskAdd1Icon { get; init; }
 
-    [ECMAScriptName("TaskAddFilledIcon")]
     public TGlobalIconType? TaskAddFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskAddIcon")]
     public TGlobalIconType? TaskAddIcon { get; init; }
 
-    [ECMAScriptName("TaskChecked1Icon")]
     public TGlobalIconType? TaskChecked1Icon { get; init; }
 
-    [ECMAScriptName("TaskCheckedFilledIcon")]
     public TGlobalIconType? TaskCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskCheckedIcon")]
     public TGlobalIconType? TaskCheckedIcon { get; init; }
 
-    [ECMAScriptName("TaskDoubleFilledIcon")]
     public TGlobalIconType? TaskDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskDoubleIcon")]
     public TGlobalIconType? TaskDoubleIcon { get; init; }
 
-    [ECMAScriptName("TaskErrorFilledIcon")]
     public TGlobalIconType? TaskErrorFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskErrorIcon")]
     public TGlobalIconType? TaskErrorIcon { get; init; }
 
-    [ECMAScriptName("TaskFilledIcon")]
     public TGlobalIconType? TaskFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskLocationFilledIcon")]
     public TGlobalIconType? TaskLocationFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskLocationIcon")]
     public TGlobalIconType? TaskLocationIcon { get; init; }
 
-    [ECMAScriptName("TaskMarkedFilledIcon")]
     public TGlobalIconType? TaskMarkedFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskMarkedIcon")]
     public TGlobalIconType? TaskMarkedIcon { get; init; }
 
-    [ECMAScriptName("TaskSettingFilledIcon")]
     public TGlobalIconType? TaskSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskSettingIcon")]
     public TGlobalIconType? TaskSettingIcon { get; init; }
 
-    [ECMAScriptName("TaskTimeFilledIcon")]
     public TGlobalIconType? TaskTimeFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskTimeIcon")]
     public TGlobalIconType? TaskTimeIcon { get; init; }
 
-    [ECMAScriptName("TaskVisibleFilledIcon")]
     public TGlobalIconType? TaskVisibleFilledIcon { get; init; }
 
-    [ECMAScriptName("TaskVisibleIcon")]
     public TGlobalIconType? TaskVisibleIcon { get; init; }
 
-    [ECMAScriptName("TaskIcon")]
     public TGlobalIconType? TaskIcon { get; init; }
 
-    [ECMAScriptName("TeaFilledIcon")]
     public TGlobalIconType? TeaFilledIcon { get; init; }
 
-    [ECMAScriptName("TeaIcon")]
     public TGlobalIconType? TeaIcon { get; init; }
 
-    [ECMAScriptName("TeahouseFilledIcon")]
     public TGlobalIconType? TeahouseFilledIcon { get; init; }
 
-    [ECMAScriptName("TeahouseIcon")]
     public TGlobalIconType? TeahouseIcon { get; init; }
 
-    [ECMAScriptName("TemplateFilledIcon")]
     public TGlobalIconType? TemplateFilledIcon { get; init; }
 
-    [ECMAScriptName("TemplateIcon")]
     public TGlobalIconType? TemplateIcon { get; init; }
 
-    [ECMAScriptName("TempleFilledIcon")]
     public TGlobalIconType? TempleFilledIcon { get; init; }
 
-    [ECMAScriptName("TempleIcon")]
     public TGlobalIconType? TempleIcon { get; init; }
 
-    [ECMAScriptName("TerminalRectangle1FilledIcon")]
     public TGlobalIconType? TerminalRectangle1FilledIcon { get; init; }
 
-    [ECMAScriptName("TerminalRectangle1Icon")]
     public TGlobalIconType? TerminalRectangle1Icon { get; init; }
 
-    [ECMAScriptName("TerminalRectangleFilledIcon")]
     public TGlobalIconType? TerminalRectangleFilledIcon { get; init; }
 
-    [ECMAScriptName("TerminalRectangleIcon")]
     public TGlobalIconType? TerminalRectangleIcon { get; init; }
 
-    [ECMAScriptName("TerminalWindowFilledIcon")]
     public TGlobalIconType? TerminalWindowFilledIcon { get; init; }
 
-    [ECMAScriptName("TerminalWindowIcon")]
     public TGlobalIconType? TerminalWindowIcon { get; init; }
 
-    [ECMAScriptName("TerminalIcon")]
     public TGlobalIconType? TerminalIcon { get; init; }
 
-    [ECMAScriptName("TextDrawingFilledIcon")]
     public TGlobalIconType? TextDrawingFilledIcon { get; init; }
 
-    [ECMAScriptName("TextDrawingIcon")]
     public TGlobalIconType? TextDrawingIcon { get; init; }
 
-    [ECMAScriptName("TextStyleIcon")]
     public TGlobalIconType? TextStyleIcon { get; init; }
 
-    [ECMAScriptName("TextIcon")]
     public TGlobalIconType? TextIcon { get; init; }
 
-    [ECMAScriptName("TextboxFilledIcon")]
     public TGlobalIconType? TextboxFilledIcon { get; init; }
 
-    [ECMAScriptName("TextboxIcon")]
     public TGlobalIconType? TextboxIcon { get; init; }
 
-    [ECMAScriptName("TextformatBoldIcon")]
     public TGlobalIconType? TextformatBoldIcon { get; init; }
 
-    [ECMAScriptName("TextformatColorIcon")]
     public TGlobalIconType? TextformatColorIcon { get; init; }
 
-    [ECMAScriptName("TextformatItalicIcon")]
     public TGlobalIconType? TextformatItalicIcon { get; init; }
 
-    [ECMAScriptName("TextformatLongerIcon")]
     public TGlobalIconType? TextformatLongerIcon { get; init; }
 
-    [ECMAScriptName("TextformatShorterIcon")]
     public TGlobalIconType? TextformatShorterIcon { get; init; }
 
-    [ECMAScriptName("TextformatStrikethroughIcon")]
     public TGlobalIconType? TextformatStrikethroughIcon { get; init; }
 
-    [ECMAScriptName("TextformatUnderlineIcon")]
     public TGlobalIconType? TextformatUnderlineIcon { get; init; }
 
-    [ECMAScriptName("TextformatWrapIcon")]
     public TGlobalIconType? TextformatWrapIcon { get; init; }
 
-    [ECMAScriptName("TheatersFilledIcon")]
     public TGlobalIconType? TheatersFilledIcon { get; init; }
 
-    [ECMAScriptName("TheatersIcon")]
     public TGlobalIconType? TheatersIcon { get; init; }
 
-    [ECMAScriptName("ThumbDown1FilledIcon")]
     public TGlobalIconType? ThumbDown1FilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbDown1Icon")]
     public TGlobalIconType? ThumbDown1Icon { get; init; }
 
-    [ECMAScriptName("ThumbDown2FilledIcon")]
     public TGlobalIconType? ThumbDown2FilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbDown2Icon")]
     public TGlobalIconType? ThumbDown2Icon { get; init; }
 
-    [ECMAScriptName("ThumbDownFilledIcon")]
     public TGlobalIconType? ThumbDownFilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbDownIcon")]
     public TGlobalIconType? ThumbDownIcon { get; init; }
 
-    [ECMAScriptName("ThumbUp1FilledIcon")]
     public TGlobalIconType? ThumbUp1FilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbUp1Icon")]
     public TGlobalIconType? ThumbUp1Icon { get; init; }
 
-    [ECMAScriptName("ThumbUp2FilledIcon")]
     public TGlobalIconType? ThumbUp2FilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbUp2Icon")]
     public TGlobalIconType? ThumbUp2Icon { get; init; }
 
-    [ECMAScriptName("ThumbUpFilledIcon")]
     public TGlobalIconType? ThumbUpFilledIcon { get; init; }
 
-    [ECMAScriptName("ThumbUpIcon")]
     public TGlobalIconType? ThumbUpIcon { get; init; }
 
-    [ECMAScriptName("ThunderIcon")]
     public TGlobalIconType? ThunderIcon { get; init; }
 
-    [ECMAScriptName("ThunderstormNightFilledIcon")]
     public TGlobalIconType? ThunderstormNightFilledIcon { get; init; }
 
-    [ECMAScriptName("ThunderstormNightIcon")]
     public TGlobalIconType? ThunderstormNightIcon { get; init; }
 
-    [ECMAScriptName("ThunderstormSunnyFilledIcon")]
     public TGlobalIconType? ThunderstormSunnyFilledIcon { get; init; }
 
-    [ECMAScriptName("ThunderstormSunnyIcon")]
     public TGlobalIconType? ThunderstormSunnyIcon { get; init; }
 
-    [ECMAScriptName("ThunderstormIcon")]
     public TGlobalIconType? ThunderstormIcon { get; init; }
 
-    [ECMAScriptName("TicketFilledIcon")]
     public TGlobalIconType? TicketFilledIcon { get; init; }
 
-    [ECMAScriptName("TicketIcon")]
     public TGlobalIconType? TicketIcon { get; init; }
 
-    [ECMAScriptName("TimeFilledIcon")]
     public TGlobalIconType? TimeFilledIcon { get; init; }
 
-    [ECMAScriptName("TimeIcon")]
     public TGlobalIconType? TimeIcon { get; init; }
 
-    [ECMAScriptName("TipsDoubleFilledIcon")]
     public TGlobalIconType? TipsDoubleFilledIcon { get; init; }
 
-    [ECMAScriptName("TipsDoubleIcon")]
     public TGlobalIconType? TipsDoubleIcon { get; init; }
 
-    [ECMAScriptName("TipsFilledIcon")]
     public TGlobalIconType? TipsFilledIcon { get; init; }
 
-    [ECMAScriptName("TipsIcon")]
     public TGlobalIconType? TipsIcon { get; init; }
 
-    [ECMAScriptName("TomatoFilledIcon")]
     public TGlobalIconType? TomatoFilledIcon { get; init; }
 
-    [ECMAScriptName("TomatoIcon")]
     public TGlobalIconType? TomatoIcon { get; init; }
 
-    [ECMAScriptName("ToolsCircleFilledIcon")]
     public TGlobalIconType? ToolsCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("ToolsCircleIcon")]
     public TGlobalIconType? ToolsCircleIcon { get; init; }
 
-    [ECMAScriptName("ToolsFilledIcon")]
     public TGlobalIconType? ToolsFilledIcon { get; init; }
 
-    [ECMAScriptName("ToolsIcon")]
     public TGlobalIconType? ToolsIcon { get; init; }
 
-    [ECMAScriptName("TornadoIcon")]
     public TGlobalIconType? TornadoIcon { get; init; }
 
-    [ECMAScriptName("Tower1FilledIcon")]
     public TGlobalIconType? Tower1FilledIcon { get; init; }
 
-    [ECMAScriptName("Tower1Icon")]
     public TGlobalIconType? Tower1Icon { get; init; }
 
-    [ECMAScriptName("Tower2FilledIcon")]
     public TGlobalIconType? Tower2FilledIcon { get; init; }
 
-    [ECMAScriptName("Tower2Icon")]
     public TGlobalIconType? Tower2Icon { get; init; }
 
-    [ECMAScriptName("Tower3FilledIcon")]
     public TGlobalIconType? Tower3FilledIcon { get; init; }
 
-    [ECMAScriptName("Tower3Icon")]
     public TGlobalIconType? Tower3Icon { get; init; }
 
-    [ECMAScriptName("TowerClockFilledIcon")]
     public TGlobalIconType? TowerClockFilledIcon { get; init; }
 
-    [ECMAScriptName("TowerClockIcon")]
     public TGlobalIconType? TowerClockIcon { get; init; }
 
-    [ECMAScriptName("TowerFilledIcon")]
     public TGlobalIconType? TowerFilledIcon { get; init; }
 
-    [ECMAScriptName("TowerIcon")]
     public TGlobalIconType? TowerIcon { get; init; }
 
-    [ECMAScriptName("TownFilledIcon")]
     public TGlobalIconType? TownFilledIcon { get; init; }
 
-    [ECMAScriptName("TownIcon")]
     public TGlobalIconType? TownIcon { get; init; }
 
-    [ECMAScriptName("TrafficEventsFilledIcon")]
     public TGlobalIconType? TrafficEventsFilledIcon { get; init; }
 
-    [ECMAScriptName("TrafficEventsIcon")]
     public TGlobalIconType? TrafficEventsIcon { get; init; }
 
-    [ECMAScriptName("TrafficFilledIcon")]
     public TGlobalIconType? TrafficFilledIcon { get; init; }
 
-    [ECMAScriptName("TrafficIcon")]
     public TGlobalIconType? TrafficIcon { get; init; }
 
-    [ECMAScriptName("Transform1FilledIcon")]
     public TGlobalIconType? Transform1FilledIcon { get; init; }
 
-    [ECMAScriptName("Transform1Icon")]
     public TGlobalIconType? Transform1Icon { get; init; }
 
-    [ECMAScriptName("Transform2Icon")]
     public TGlobalIconType? Transform2Icon { get; init; }
 
-    [ECMAScriptName("Transform3Icon")]
     public TGlobalIconType? Transform3Icon { get; init; }
 
-    [ECMAScriptName("TransformFilledIcon")]
     public TGlobalIconType? TransformFilledIcon { get; init; }
 
-    [ECMAScriptName("TransformIcon")]
     public TGlobalIconType? TransformIcon { get; init; }
 
-    [ECMAScriptName("Translate1Icon")]
     public TGlobalIconType? Translate1Icon { get; init; }
 
-    [ECMAScriptName("TranslateIcon")]
     public TGlobalIconType? TranslateIcon { get; init; }
 
-    [ECMAScriptName("TreeCatalogFilledIcon")]
     public TGlobalIconType? TreeCatalogFilledIcon { get; init; }
 
-    [ECMAScriptName("TreeCatalogIcon")]
     public TGlobalIconType? TreeCatalogIcon { get; init; }
 
-    [ECMAScriptName("TreeListIcon")]
     public TGlobalIconType? TreeListIcon { get; init; }
 
-    [ECMAScriptName("TreeRoundDotFilledIcon")]
     public TGlobalIconType? TreeRoundDotFilledIcon { get; init; }
 
-    [ECMAScriptName("TreeRoundDotVerticalFilledIcon")]
     public TGlobalIconType? TreeRoundDotVerticalFilledIcon { get; init; }
 
-    [ECMAScriptName("TreeRoundDotVerticalIcon")]
     public TGlobalIconType? TreeRoundDotVerticalIcon { get; init; }
 
-    [ECMAScriptName("TreeRoundDotIcon")]
     public TGlobalIconType? TreeRoundDotIcon { get; init; }
 
-    [ECMAScriptName("TreeSquareDotFilledIcon")]
     public TGlobalIconType? TreeSquareDotFilledIcon { get; init; }
 
-    [ECMAScriptName("TreeSquareDotVerticalFilledIcon")]
     public TGlobalIconType? TreeSquareDotVerticalFilledIcon { get; init; }
 
-    [ECMAScriptName("TreeSquareDotVerticalIcon")]
     public TGlobalIconType? TreeSquareDotVerticalIcon { get; init; }
 
-    [ECMAScriptName("TreeSquareDotIcon")]
     public TGlobalIconType? TreeSquareDotIcon { get; init; }
 
-    [ECMAScriptName("TrendingDownIcon")]
     public TGlobalIconType? TrendingDownIcon { get; init; }
 
-    [ECMAScriptName("TrendingUpIcon")]
     public TGlobalIconType? TrendingUpIcon { get; init; }
 
-    [ECMAScriptName("Tv1FilledIcon")]
     public TGlobalIconType? Tv1FilledIcon { get; init; }
 
-    [ECMAScriptName("Tv1Icon")]
     public TGlobalIconType? Tv1Icon { get; init; }
 
-    [ECMAScriptName("Tv2FilledIcon")]
     public TGlobalIconType? Tv2FilledIcon { get; init; }
 
-    [ECMAScriptName("Tv2Icon")]
     public TGlobalIconType? Tv2Icon { get; init; }
 
-    [ECMAScriptName("TvFilledIcon")]
     public TGlobalIconType? TvFilledIcon { get; init; }
 
-    [ECMAScriptName("TvIcon")]
     public TGlobalIconType? TvIcon { get; init; }
 
-    [ECMAScriptName("TypographyFilledIcon")]
     public TGlobalIconType? TypographyFilledIcon { get; init; }
 
-    [ECMAScriptName("TypographyIcon")]
     public TGlobalIconType? TypographyIcon { get; init; }
 
-    [ECMAScriptName("Uncomfortable1FilledIcon")]
     public TGlobalIconType? Uncomfortable1FilledIcon { get; init; }
 
-    [ECMAScriptName("Uncomfortable1Icon")]
     public TGlobalIconType? Uncomfortable1Icon { get; init; }
 
-    [ECMAScriptName("Uncomfortable2FilledIcon")]
     public TGlobalIconType? Uncomfortable2FilledIcon { get; init; }
 
-    [ECMAScriptName("Uncomfortable2Icon")]
     public TGlobalIconType? Uncomfortable2Icon { get; init; }
 
-    [ECMAScriptName("UncomfortableFilledIcon")]
     public TGlobalIconType? UncomfortableFilledIcon { get; init; }
 
-    [ECMAScriptName("UncomfortableIcon")]
     public TGlobalIconType? UncomfortableIcon { get; init; }
 
-    [ECMAScriptName("UndertakeDeliveryFilledIcon")]
     public TGlobalIconType? UndertakeDeliveryFilledIcon { get; init; }
 
-    [ECMAScriptName("UndertakeDeliveryIcon")]
     public TGlobalIconType? UndertakeDeliveryIcon { get; init; }
 
-    [ECMAScriptName("UndertakeEnvironmentProtectionFilledIcon")]
     public TGlobalIconType? UndertakeEnvironmentProtectionFilledIcon { get; init; }
 
-    [ECMAScriptName("UndertakeEnvironmentProtectionIcon")]
     public TGlobalIconType? UndertakeEnvironmentProtectionIcon { get; init; }
 
-    [ECMAScriptName("UndertakeFilledIcon")]
     public TGlobalIconType? UndertakeFilledIcon { get; init; }
 
-    [ECMAScriptName("UndertakeHoldUpFilledIcon")]
     public TGlobalIconType? UndertakeHoldUpFilledIcon { get; init; }
 
-    [ECMAScriptName("UndertakeHoldUpIcon")]
     public TGlobalIconType? UndertakeHoldUpIcon { get; init; }
 
-    [ECMAScriptName("UndertakeTransactionFilledIcon")]
     public TGlobalIconType? UndertakeTransactionFilledIcon { get; init; }
 
-    [ECMAScriptName("UndertakeTransactionIcon")]
     public TGlobalIconType? UndertakeTransactionIcon { get; init; }
 
-    [ECMAScriptName("UndertakeIcon")]
     public TGlobalIconType? UndertakeIcon { get; init; }
 
-    [ECMAScriptName("UnfoldLessIcon")]
     public TGlobalIconType? UnfoldLessIcon { get; init; }
 
-    [ECMAScriptName("UnfoldMoreIcon")]
     public TGlobalIconType? UnfoldMoreIcon { get; init; }
 
-    [ECMAScriptName("Unhappy1FilledIcon")]
     public TGlobalIconType? Unhappy1FilledIcon { get; init; }
 
-    [ECMAScriptName("Unhappy1Icon")]
     public TGlobalIconType? Unhappy1Icon { get; init; }
 
-    [ECMAScriptName("UnhappyFilledIcon")]
     public TGlobalIconType? UnhappyFilledIcon { get; init; }
 
-    [ECMAScriptName("UnhappyIcon")]
     public TGlobalIconType? UnhappyIcon { get; init; }
 
-    [ECMAScriptName("UninstallFilledIcon")]
     public TGlobalIconType? UninstallFilledIcon { get; init; }
 
-    [ECMAScriptName("UninstallIcon")]
     public TGlobalIconType? UninstallIcon { get; init; }
 
-    [ECMAScriptName("Upload1Icon")]
     public TGlobalIconType? Upload1Icon { get; init; }
 
-    [ECMAScriptName("UploadIcon")]
     public TGlobalIconType? UploadIcon { get; init; }
 
-    [ECMAScriptName("UpscaleIcon")]
     public TGlobalIconType? UpscaleIcon { get; init; }
 
-    [ECMAScriptName("UsbFilledIcon")]
     public TGlobalIconType? UsbFilledIcon { get; init; }
 
-    [ECMAScriptName("UsbIcon")]
     public TGlobalIconType? UsbIcon { get; init; }
 
-    [ECMAScriptName("User1FilledIcon")]
     public TGlobalIconType? User1FilledIcon { get; init; }
 
-    [ECMAScriptName("User1Icon")]
     public TGlobalIconType? User1Icon { get; init; }
 
-    [ECMAScriptName("UserAddFilledIcon")]
     public TGlobalIconType? UserAddFilledIcon { get; init; }
 
-    [ECMAScriptName("UserAddIcon")]
     public TGlobalIconType? UserAddIcon { get; init; }
 
-    [ECMAScriptName("UserArrowDownFilledIcon")]
     public TGlobalIconType? UserArrowDownFilledIcon { get; init; }
 
-    [ECMAScriptName("UserArrowDownIcon")]
     public TGlobalIconType? UserArrowDownIcon { get; init; }
 
-    [ECMAScriptName("UserArrowLeftFilledIcon")]
     public TGlobalIconType? UserArrowLeftFilledIcon { get; init; }
 
-    [ECMAScriptName("UserArrowLeftIcon")]
     public TGlobalIconType? UserArrowLeftIcon { get; init; }
 
-    [ECMAScriptName("UserArrowRightFilledIcon")]
     public TGlobalIconType? UserArrowRightFilledIcon { get; init; }
 
-    [ECMAScriptName("UserArrowRightIcon")]
     public TGlobalIconType? UserArrowRightIcon { get; init; }
 
-    [ECMAScriptName("UserArrowUpFilledIcon")]
     public TGlobalIconType? UserArrowUpFilledIcon { get; init; }
 
-    [ECMAScriptName("UserArrowUpIcon")]
     public TGlobalIconType? UserArrowUpIcon { get; init; }
 
-    [ECMAScriptName("UserAvatarFilledIcon")]
     public TGlobalIconType? UserAvatarFilledIcon { get; init; }
 
-    [ECMAScriptName("UserAvatarIcon")]
     public TGlobalIconType? UserAvatarIcon { get; init; }
 
-    [ECMAScriptName("UserBlockedFilledIcon")]
     public TGlobalIconType? UserBlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("UserBlockedIcon")]
     public TGlobalIconType? UserBlockedIcon { get; init; }
 
-    [ECMAScriptName("UserBusinessFilledIcon")]
     public TGlobalIconType? UserBusinessFilledIcon { get; init; }
 
-    [ECMAScriptName("UserBusinessIcon")]
     public TGlobalIconType? UserBusinessIcon { get; init; }
 
-    [ECMAScriptName("UserChecked1FilledIcon")]
     public TGlobalIconType? UserChecked1FilledIcon { get; init; }
 
-    [ECMAScriptName("UserChecked1Icon")]
     public TGlobalIconType? UserChecked1Icon { get; init; }
 
-    [ECMAScriptName("UserCheckedFilledIcon")]
     public TGlobalIconType? UserCheckedFilledIcon { get; init; }
 
-    [ECMAScriptName("UserCheckedIcon")]
     public TGlobalIconType? UserCheckedIcon { get; init; }
 
-    [ECMAScriptName("UserCircleFilledIcon")]
     public TGlobalIconType? UserCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("UserCircleIcon")]
     public TGlobalIconType? UserCircleIcon { get; init; }
 
-    [ECMAScriptName("UserClearFilledIcon")]
     public TGlobalIconType? UserClearFilledIcon { get; init; }
 
-    [ECMAScriptName("UserClearIcon")]
     public TGlobalIconType? UserClearIcon { get; init; }
 
-    [ECMAScriptName("UserError1FilledIcon")]
     public TGlobalIconType? UserError1FilledIcon { get; init; }
 
-    [ECMAScriptName("UserError1Icon")]
     public TGlobalIconType? UserError1Icon { get; init; }
 
-    [ECMAScriptName("UserFilledIcon")]
     public TGlobalIconType? UserFilledIcon { get; init; }
 
-    [ECMAScriptName("UserInvisibleFilledIcon")]
     public TGlobalIconType? UserInvisibleFilledIcon { get; init; }
 
-    [ECMAScriptName("UserInvisibleIcon")]
     public TGlobalIconType? UserInvisibleIcon { get; init; }
 
-    [ECMAScriptName("UserListFilledIcon")]
     public TGlobalIconType? UserListFilledIcon { get; init; }
 
-    [ECMAScriptName("UserListIcon")]
     public TGlobalIconType? UserListIcon { get; init; }
 
-    [ECMAScriptName("UserLockedFilledIcon")]
     public TGlobalIconType? UserLockedFilledIcon { get; init; }
 
-    [ECMAScriptName("UserLockedIcon")]
     public TGlobalIconType? UserLockedIcon { get; init; }
 
-    [ECMAScriptName("UserMarkedFilledIcon")]
     public TGlobalIconType? UserMarkedFilledIcon { get; init; }
 
-    [ECMAScriptName("UserMarkedIcon")]
     public TGlobalIconType? UserMarkedIcon { get; init; }
 
-    [ECMAScriptName("UserPasswordFilledIcon")]
     public TGlobalIconType? UserPasswordFilledIcon { get; init; }
 
-    [ECMAScriptName("UserPasswordIcon")]
     public TGlobalIconType? UserPasswordIcon { get; init; }
 
-    [ECMAScriptName("UserSafetyFilledIcon")]
     public TGlobalIconType? UserSafetyFilledIcon { get; init; }
 
-    [ECMAScriptName("UserSafetyIcon")]
     public TGlobalIconType? UserSafetyIcon { get; init; }
 
-    [ECMAScriptName("UserSearchFilledIcon")]
     public TGlobalIconType? UserSearchFilledIcon { get; init; }
 
-    [ECMAScriptName("UserSearchIcon")]
     public TGlobalIconType? UserSearchIcon { get; init; }
 
-    [ECMAScriptName("UserSettingFilledIcon")]
     public TGlobalIconType? UserSettingFilledIcon { get; init; }
 
-    [ECMAScriptName("UserSettingIcon")]
     public TGlobalIconType? UserSettingIcon { get; init; }
 
-    [ECMAScriptName("UserTalk1FilledIcon")]
     public TGlobalIconType? UserTalk1FilledIcon { get; init; }
 
-    [ECMAScriptName("UserTalk1Icon")]
     public TGlobalIconType? UserTalk1Icon { get; init; }
 
-    [ECMAScriptName("UserTalkFilledIcon")]
     public TGlobalIconType? UserTalkFilledIcon { get; init; }
 
-    [ECMAScriptName("UserTalkOff1FilledIcon")]
     public TGlobalIconType? UserTalkOff1FilledIcon { get; init; }
 
-    [ECMAScriptName("UserTalkOff1Icon")]
     public TGlobalIconType? UserTalkOff1Icon { get; init; }
 
-    [ECMAScriptName("UserTalkIcon")]
     public TGlobalIconType? UserTalkIcon { get; init; }
 
-    [ECMAScriptName("UserTimeFilledIcon")]
     public TGlobalIconType? UserTimeFilledIcon { get; init; }
 
-    [ECMAScriptName("UserTimeIcon")]
     public TGlobalIconType? UserTimeIcon { get; init; }
 
-    [ECMAScriptName("UserTransmitFilledIcon")]
     public TGlobalIconType? UserTransmitFilledIcon { get; init; }
 
-    [ECMAScriptName("UserTransmitIcon")]
     public TGlobalIconType? UserTransmitIcon { get; init; }
 
-    [ECMAScriptName("UserUnknownFilledIcon")]
     public TGlobalIconType? UserUnknownFilledIcon { get; init; }
 
-    [ECMAScriptName("UserUnknownIcon")]
     public TGlobalIconType? UserUnknownIcon { get; init; }
 
-    [ECMAScriptName("UserUnlockedFilledIcon")]
     public TGlobalIconType? UserUnlockedFilledIcon { get; init; }
 
-    [ECMAScriptName("UserUnlockedIcon")]
     public TGlobalIconType? UserUnlockedIcon { get; init; }
 
-    [ECMAScriptName("UserVipFilledIcon")]
     public TGlobalIconType? UserVipFilledIcon { get; init; }
 
-    [ECMAScriptName("UserVipIcon")]
     public TGlobalIconType? UserVipIcon { get; init; }
 
-    [ECMAScriptName("UserVisibleFilledIcon")]
     public TGlobalIconType? UserVisibleFilledIcon { get; init; }
 
-    [ECMAScriptName("UserVisibleIcon")]
     public TGlobalIconType? UserVisibleIcon { get; init; }
 
-    [ECMAScriptName("UserIcon")]
     public TGlobalIconType? UserIcon { get; init; }
 
-    [ECMAScriptName("UsercaseFilledIcon")]
     public TGlobalIconType? UsercaseFilledIcon { get; init; }
 
-    [ECMAScriptName("UsercaseLinkFilledIcon")]
     public TGlobalIconType? UsercaseLinkFilledIcon { get; init; }
 
-    [ECMAScriptName("UsercaseLinkIcon")]
     public TGlobalIconType? UsercaseLinkIcon { get; init; }
 
-    [ECMAScriptName("UsercaseIcon")]
     public TGlobalIconType? UsercaseIcon { get; init; }
 
-    [ECMAScriptName("UsergroupAddFilledIcon")]
     public TGlobalIconType? UsergroupAddFilledIcon { get; init; }
 
-    [ECMAScriptName("UsergroupAddIcon")]
     public TGlobalIconType? UsergroupAddIcon { get; init; }
 
-    [ECMAScriptName("UsergroupCircleFilledIcon")]
     public TGlobalIconType? UsergroupCircleFilledIcon { get; init; }
 
-    [ECMAScriptName("UsergroupCircleIcon")]
     public TGlobalIconType? UsergroupCircleIcon { get; init; }
 
-    [ECMAScriptName("UsergroupClearFilledIcon")]
     public TGlobalIconType? UsergroupClearFilledIcon { get; init; }
 
-    [ECMAScriptName("UsergroupClearIcon")]
     public TGlobalIconType? UsergroupClearIcon { get; init; }
 
-    [ECMAScriptName("UsergroupFilledIcon")]
     public TGlobalIconType? UsergroupFilledIcon { get; init; }
 
-    [ECMAScriptName("UsergroupIcon")]
     public TGlobalIconType? UsergroupIcon { get; init; }
 
-    [ECMAScriptName("VehicleFilledIcon")]
     public TGlobalIconType? VehicleFilledIcon { get; init; }
 
-    [ECMAScriptName("VehicleIcon")]
     public TGlobalIconType? VehicleIcon { get; init; }
 
-    [ECMAScriptName("VerifiedFilledIcon")]
     public TGlobalIconType? VerifiedFilledIcon { get; init; }
 
-    [ECMAScriptName("VerifiedIcon")]
     public TGlobalIconType? VerifiedIcon { get; init; }
 
-    [ECMAScriptName("VerifyFilledIcon")]
     public TGlobalIconType? VerifyFilledIcon { get; init; }
 
-    [ECMAScriptName("VerifyIcon")]
     public TGlobalIconType? VerifyIcon { get; init; }
 
-    [ECMAScriptName("VerticalFilledIcon")]
     public TGlobalIconType? VerticalFilledIcon { get; init; }
 
-    [ECMAScriptName("VerticalIcon")]
     public TGlobalIconType? VerticalIcon { get; init; }
 
-    [ECMAScriptName("VideoCamera1FilledIcon")]
     public TGlobalIconType? VideoCamera1FilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCamera1Icon")]
     public TGlobalIconType? VideoCamera1Icon { get; init; }
 
-    [ECMAScriptName("VideoCamera2FilledIcon")]
     public TGlobalIconType? VideoCamera2FilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCamera2Icon")]
     public TGlobalIconType? VideoCamera2Icon { get; init; }
 
-    [ECMAScriptName("VideoCameraDollarFilledIcon")]
     public TGlobalIconType? VideoCameraDollarFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraDollarIcon")]
     public TGlobalIconType? VideoCameraDollarIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraFilledIcon")]
     public TGlobalIconType? VideoCameraFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraMinusFilledIcon")]
     public TGlobalIconType? VideoCameraMinusFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraMinusIcon")]
     public TGlobalIconType? VideoCameraMinusIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraMusicFilledIcon")]
     public TGlobalIconType? VideoCameraMusicFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraMusicIcon")]
     public TGlobalIconType? VideoCameraMusicIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraOffFilledIcon")]
     public TGlobalIconType? VideoCameraOffFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraOffIcon")]
     public TGlobalIconType? VideoCameraOffIcon { get; init; }
 
-    [ECMAScriptName("VideoCameraIcon")]
     public TGlobalIconType? VideoCameraIcon { get; init; }
 
-    [ECMAScriptName("VideoFilledIcon")]
     public TGlobalIconType? VideoFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoLibraryFilledIcon")]
     public TGlobalIconType? VideoLibraryFilledIcon { get; init; }
 
-    [ECMAScriptName("VideoLibraryIcon")]
     public TGlobalIconType? VideoLibraryIcon { get; init; }
 
-    [ECMAScriptName("VideoIcon")]
     public TGlobalIconType? VideoIcon { get; init; }
 
-    [ECMAScriptName("ViewAgendaFilledIcon")]
     public TGlobalIconType? ViewAgendaFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewAgendaIcon")]
     public TGlobalIconType? ViewAgendaIcon { get; init; }
 
-    [ECMAScriptName("ViewColumnIcon")]
     public TGlobalIconType? ViewColumnIcon { get; init; }
 
-    [ECMAScriptName("ViewGanttFilledIcon")]
     public TGlobalIconType? ViewGanttFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewGanttIcon")]
     public TGlobalIconType? ViewGanttIcon { get; init; }
 
-    [ECMAScriptName("ViewImageFilledIcon")]
     public TGlobalIconType? ViewImageFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewImageIcon")]
     public TGlobalIconType? ViewImageIcon { get; init; }
 
-    [ECMAScriptName("ViewInArFilledIcon")]
     public TGlobalIconType? ViewInArFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewInArIcon")]
     public TGlobalIconType? ViewInArIcon { get; init; }
 
-    [ECMAScriptName("ViewListIcon")]
     public TGlobalIconType? ViewListIcon { get; init; }
 
-    [ECMAScriptName("ViewModuleFilledIcon")]
     public TGlobalIconType? ViewModuleFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewModuleIcon")]
     public TGlobalIconType? ViewModuleIcon { get; init; }
 
-    [ECMAScriptName("ViewOrganizationFilledIcon")]
     public TGlobalIconType? ViewOrganizationFilledIcon { get; init; }
 
-    [ECMAScriptName("ViewOrganizationIcon")]
     public TGlobalIconType? ViewOrganizationIcon { get; init; }
 
-    [ECMAScriptName("VisualRecognitionFilledIcon")]
     public TGlobalIconType? VisualRecognitionFilledIcon { get; init; }
 
-    [ECMAScriptName("VisualRecognitionIcon")]
     public TGlobalIconType? VisualRecognitionIcon { get; init; }
 
-    [ECMAScriptName("VoiceWaveIcon")]
     public TGlobalIconType? VoiceWaveIcon { get; init; }
 
-    [ECMAScriptName("WalletFilledIcon")]
     public TGlobalIconType? WalletFilledIcon { get; init; }
 
-    [ECMAScriptName("WalletIcon")]
     public TGlobalIconType? WalletIcon { get; init; }
 
-    [ECMAScriptName("WatchFilledIcon")]
     public TGlobalIconType? WatchFilledIcon { get; init; }
 
-    [ECMAScriptName("WatchIcon")]
     public TGlobalIconType? WatchIcon { get; init; }
 
-    [ECMAScriptName("WatermelonFilledIcon")]
     public TGlobalIconType? WatermelonFilledIcon { get; init; }
 
-    [ECMAScriptName("WatermelonIcon")]
     public TGlobalIconType? WatermelonIcon { get; init; }
 
-    [ECMAScriptName("WaveByeFilledIcon")]
     public TGlobalIconType? WaveByeFilledIcon { get; init; }
 
-    [ECMAScriptName("WaveByeIcon")]
     public TGlobalIconType? WaveByeIcon { get; init; }
 
-    [ECMAScriptName("WaveLeftFilledIcon")]
     public TGlobalIconType? WaveLeftFilledIcon { get; init; }
 
-    [ECMAScriptName("WaveLeftIcon")]
     public TGlobalIconType? WaveLeftIcon { get; init; }
 
-    [ECMAScriptName("WaveRightFilledIcon")]
     public TGlobalIconType? WaveRightFilledIcon { get; init; }
 
-    [ECMAScriptName("WaveRightIcon")]
     public TGlobalIconType? WaveRightIcon { get; init; }
 
-    [ECMAScriptName("Wealth1FilledIcon")]
     public TGlobalIconType? Wealth1FilledIcon { get; init; }
 
-    [ECMAScriptName("Wealth1Icon")]
     public TGlobalIconType? Wealth1Icon { get; init; }
 
-    [ECMAScriptName("WealthFilledIcon")]
     public TGlobalIconType? WealthFilledIcon { get; init; }
 
-    [ECMAScriptName("WealthIcon")]
     public TGlobalIconType? WealthIcon { get; init; }
 
-    [ECMAScriptName("WebFilledIcon")]
     public TGlobalIconType? WebFilledIcon { get; init; }
 
-    [ECMAScriptName("WebIcon")]
     public TGlobalIconType? WebIcon { get; init; }
 
-    [ECMAScriptName("WidgetFilledIcon")]
     public TGlobalIconType? WidgetFilledIcon { get; init; }
 
-    [ECMAScriptName("WidgetIcon")]
     public TGlobalIconType? WidgetIcon { get; init; }
 
-    [ECMAScriptName("Wifi1FilledIcon")]
     public TGlobalIconType? Wifi1FilledIcon { get; init; }
 
-    [ECMAScriptName("Wifi1Icon")]
     public TGlobalIconType? Wifi1Icon { get; init; }
 
-    [ECMAScriptName("WifiNoFilledIcon")]
     public TGlobalIconType? WifiNoFilledIcon { get; init; }
 
-    [ECMAScriptName("WifiNoIcon")]
     public TGlobalIconType? WifiNoIcon { get; init; }
 
-    [ECMAScriptName("WifiOff1FilledIcon")]
     public TGlobalIconType? WifiOff1FilledIcon { get; init; }
 
-    [ECMAScriptName("WifiOff1Icon")]
     public TGlobalIconType? WifiOff1Icon { get; init; }
 
-    [ECMAScriptName("WifiOffIcon")]
     public TGlobalIconType? WifiOffIcon { get; init; }
 
-    [ECMAScriptName("WifiIcon")]
     public TGlobalIconType? WifiIcon { get; init; }
 
-    [ECMAScriptName("Window1FilledIcon")]
     public TGlobalIconType? Window1FilledIcon { get; init; }
 
-    [ECMAScriptName("Window1Icon")]
     public TGlobalIconType? Window1Icon { get; init; }
 
-    [ECMAScriptName("WindowFilledIcon")]
     public TGlobalIconType? WindowFilledIcon { get; init; }
 
-    [ECMAScriptName("WindowIcon")]
     public TGlobalIconType? WindowIcon { get; init; }
 
-    [ECMAScriptName("WindyRainIcon")]
     public TGlobalIconType? WindyRainIcon { get; init; }
 
-    [ECMAScriptName("WindyIcon")]
     public TGlobalIconType? WindyIcon { get; init; }
 
-    [ECMAScriptName("WinkFilledIcon")]
     public TGlobalIconType? WinkFilledIcon { get; init; }
 
-    [ECMAScriptName("WinkIcon")]
     public TGlobalIconType? WinkIcon { get; init; }
 
-    [ECMAScriptName("WorkFilledIcon")]
     public TGlobalIconType? WorkFilledIcon { get; init; }
 
-    [ECMAScriptName("WorkHistoryFilledIcon")]
     public TGlobalIconType? WorkHistoryFilledIcon { get; init; }
 
-    [ECMAScriptName("WorkHistoryIcon")]
     public TGlobalIconType? WorkHistoryIcon { get; init; }
 
-    [ECMAScriptName("WorkOffFilledIcon")]
     public TGlobalIconType? WorkOffFilledIcon { get; init; }
 
-    [ECMAScriptName("WorkOffIcon")]
     public TGlobalIconType? WorkOffIcon { get; init; }
 
-    [ECMAScriptName("WorkIcon")]
     public TGlobalIconType? WorkIcon { get; init; }
 
-    [ECMAScriptName("WrySmileFilledIcon")]
     public TGlobalIconType? WrySmileFilledIcon { get; init; }
 
-    [ECMAScriptName("WrySmileIcon")]
     public TGlobalIconType? WrySmileIcon { get; init; }
 
-    [ECMAScriptName("ZoomInFilledIcon")]
     public TGlobalIconType? ZoomInFilledIcon { get; init; }
 
-    [ECMAScriptName("ZoomInIcon")]
     public TGlobalIconType? ZoomInIcon { get; init; }
 
-    [ECMAScriptName("ZoomOutFilledIcon")]
     public TGlobalIconType? ZoomOutFilledIcon { get; init; }
 
-    [ECMAScriptName("ZoomOutIcon")]
     public TGlobalIconType? ZoomOutIcon { get; init; }
 }
 
@@ -11202,17 +9431,23 @@ public delegate RenderFragment TGlobalIconType();
 [ECMAScript]
 public record TGroupOptions : VueProps
 {
+    [ECMAScriptName("name")]
     [EditorRequired]
     public string Name { get; init; } = default!;
 
+    [ECMAScriptName("pull")]
     public TGroupOptionsPull? Pull { get; init; }
 
+    [ECMAScriptName("put")]
     public TGroupOptionsPut? Put { get; init; }
 
+    [ECMAScriptName("checkPull")]
     public TGroupOptionsCheckPullOption1? CheckPull { get; init; }
 
+    [ECMAScriptName("checkPut")]
     public TGroupOptionsCheckPutOption1? CheckPut { get; init; }
 
+    [ECMAScriptName("revertClone")]
     public bool? RevertClone { get; init; }
 }
 
@@ -11259,40 +9494,51 @@ public delegate TPutResult TGroupOptionsPutOption2(TSortable to, TSortable @from
 [ECMAScript]
 public record TGuideChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
 [ECMAScript]
 public record TGuideConfig : VueProps
 {
+    [ECMAScriptName("finishButtonProps")]
     public TdButtonProps? FinishButtonProps { get; init; }
 
+    [ECMAScriptName("nextButtonProps")]
     public TdButtonProps? NextButtonProps { get; init; }
 
+    [ECMAScriptName("prevButtonProps")]
     public TdButtonProps? PrevButtonProps { get; init; }
 
+    [ECMAScriptName("skipButtonProps")]
     public TdButtonProps? SkipButtonProps { get; init; }
 }
 
 [ECMAScript]
 public record TGuideCounterSlotContext : VueProps
 {
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
 [ECMAScript]
 public record TGuideFinishEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
@@ -11309,71 +9555,97 @@ public enum TGuideModeValue
 [ECMAScript]
 public record TGuideNextStepClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("next")]
     public Number Next { get; init; }
 
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
 [ECMAScript]
 public record TGuidePrevStepClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("prev")]
     public Number Prev { get; init; }
 
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
 [ECMAScript]
 public record TGuideSkipEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("total")]
     public Number Total { get; init; }
 }
 
 [ECMAScript]
 public record TGuideStep : VueProps
 {
+    [ECMAScriptName("body")]
     public TGuideStepBody? Body { get; init; }
 
+    [ECMAScriptName("content")]
     public RenderFragment? Content { get; init; }
 
+    [ECMAScriptName("element")]
     public TAttachNode Element { get; init; }
 
+    [ECMAScriptName("highlightContent")]
     public RenderFragment? HighlightContent { get; init; }
 
+    [ECMAScriptName("highlightPadding")]
     public Number? HighlightPadding { get; init; }
 
+    [ECMAScriptName("mode")]
     public TGuideStepMode? Mode { get; init; }
 
+    [ECMAScriptName("nextButtonProps")]
     public TdButtonProps? NextButtonProps { get; init; }
 
+    [ECMAScriptName("offset")]
     public TGuideStepOffsetItem[]? Offset { get; init; }
 
+    [ECMAScriptName("placement")]
     public TGuideStepPlacement? Placement { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("prevButtonProps")]
     public TdButtonProps? PrevButtonProps { get; init; }
 
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; init; }
 
+    [ECMAScriptName("skipButtonProps")]
     public TdButtonProps? SkipButtonProps { get; init; }
 
+    [ECMAScriptName("stepOverlayClass")]
     public string? StepOverlayClass { get; init; }
 
+    [ECMAScriptName("title")]
     public string? Title { get; init; }
 }
 
@@ -11405,16 +9677,22 @@ public readonly union TGuideStepPlacement(TStepPopupPlacement, TStepDialogPlacem
 [ECMAScript]
 public record TGutterObject : VueProps
 {
+    [ECMAScriptName("xs")]
     public Number? Xs { get; init; }
 
+    [ECMAScriptName("sm")]
     public Number? Sm { get; init; }
 
+    [ECMAScriptName("md")]
     public Number? Md { get; init; }
 
+    [ECMAScriptName("lg")]
     public Number? Lg { get; init; }
 
+    [ECMAScriptName("xl")]
     public Number? Xl { get; init; }
 
+    [ECMAScriptName("xxl")]
     public Number? Xxl { get; init; }
 }
 
@@ -11446,6 +9724,7 @@ public enum THeadMenuThemeValue
 [ECMAScript]
 public record TIconClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -11458,10 +9737,13 @@ public readonly union TIconUrlValue(string, string[])
 [ECMAScript]
 public record TImageConfig : VueProps
 {
+    [ECMAScriptName("errorText")]
     public string? ErrorText { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("replaceImageSrc")]
     public TImageConfigReplaceImageSrc? ReplaceImageSrc { get; init; }
 }
 
@@ -11471,6 +9753,7 @@ public delegate string TImageConfigReplaceImageSrc(TdImageProps @params);
 [ECMAScript]
 public record TImageErrorEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -11494,12 +9777,16 @@ public enum TImageFitValue
 [ECMAScript]
 public record TImageInfo : VueProps
 {
+    [ECMAScriptName("mainImage")]
     public TImageInfoMainImage MainImage { get; init; }
 
+    [ECMAScriptName("thumbnail")]
     public TImageInfoThumbnail? Thumbnail { get; init; }
 
+    [ECMAScriptName("download")]
     public bool? Download { get; init; }
 
+    [ECMAScriptName("isSvg")]
     public bool? IsSvg { get; init; }
 }
 
@@ -11516,6 +9803,7 @@ public readonly union TImageInfoThumbnail(string, File)
 [ECMAScript]
 public record TImageLoadEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -11555,12 +9843,16 @@ public enum TImageReferrerpolicyValue
 [ECMAScript]
 public record TImageScale : VueProps
 {
+    [ECMAScriptName("max")]
     public Number Max { get; init; }
 
+    [ECMAScriptName("min")]
     public Number Min { get; init; }
 
+    [ECMAScriptName("step")]
     public Number Step { get; init; }
 
+    [ECMAScriptName("defaultScale")]
     public Number DefaultScale { get; init; }
 }
 
@@ -11596,8 +9888,10 @@ public record TImageSrcset : VueProps
 [ECMAScript]
 public record TImageViewerCloseEventContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TImageViewerCloseEventContextTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TImageViewerCloseEventContextE E { get; init; }
 }
 
@@ -11621,14 +9915,19 @@ public enum TImageViewerCloseEventContextTrigger
 [ECMAScript]
 public record TImageViewerConfig : VueProps
 {
+    [ECMAScriptName("errorText")]
     public string? ErrorText { get; init; }
 
+    [ECMAScriptName("mirrorTipText")]
     public string? MirrorTipText { get; init; }
 
+    [ECMAScriptName("originalSizeTipText")]
     public string? OriginalSizeTipText { get; init; }
 
+    [ECMAScriptName("previewText")]
     public string? PreviewText { get; init; }
 
+    [ECMAScriptName("rotateTipText")]
     public string? RotateTipText { get; init; }
 }
 
@@ -11667,6 +9966,7 @@ public readonly union TImageViewerImagesValueItem(string, File, TImageInfo)
 [ECMAScript]
 public record TImageViewerIndexChangeEventContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TImageViewerIndexChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -11695,8 +9995,10 @@ public enum TImageViewerModeValue
 [ECMAScript]
 public record TImageViewerScale : VueProps
 {
+    [ECMAScriptName("minWidth")]
     public Number MinWidth { get; init; }
 
+    [ECMAScriptName("minHeight")]
     public Number MinHeight { get; init; }
 }
 
@@ -11715,6 +10017,7 @@ public enum TInputAlignValue
 [ECMAScript]
 public record TInputBlurEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -11722,8 +10025,10 @@ public record TInputBlurEventContext<T> : VueProps
 [ECMAScript]
 public record TInputChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public TInputChangeEventContextE<T>? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TInputChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -11747,6 +10052,7 @@ public enum TInputChangeEventContextTrigger
 [ECMAScript]
 public record TInputClearEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -11754,6 +10060,7 @@ public record TInputClearEventContext<T> : VueProps
 [ECMAScript]
 public record TInputClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -11761,6 +10068,7 @@ public record TInputClickEventContext<T> : VueProps
 [ECMAScript]
 public record TInputCompositionendEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 }
@@ -11768,6 +10076,7 @@ public record TInputCompositionendEventContext<T> : VueProps
 [ECMAScript]
 public record TInputCompositionstartEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 }
@@ -11775,14 +10084,17 @@ public record TInputCompositionstartEventContext<T> : VueProps
 [ECMAScript]
 public record TInputConfig : VueProps
 {
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 }
 
 [ECMAScript]
 public record TInputEnterEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11790,6 +10102,7 @@ public record TInputEnterEventContext<T> : VueProps
 [ECMAScript]
 public record TInputFocusEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -11800,6 +10113,7 @@ public delegate string TInputFormatType(string @value);
 [ECMAScript]
 public record TInputKeydownEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11807,6 +10121,7 @@ public record TInputKeydownEventContext<T> : VueProps
 [ECMAScript]
 public record TInputKeypressEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11814,6 +10129,7 @@ public record TInputKeypressEventContext<T> : VueProps
 [ECMAScript]
 public record TInputKeyupEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11826,6 +10142,7 @@ public readonly union TInputMaxlengthValue<T>(string, Number)
 [ECMAScript]
 public record TInputMouseenterEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -11833,6 +10150,7 @@ public record TInputMouseenterEventContext<T> : VueProps
 [ECMAScript]
 public record TInputMouseleaveEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -11852,6 +10170,7 @@ public enum TInputNumberAlignValue
 [ECMAScript]
 public record TInputNumberBlurEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -11864,14 +10183,17 @@ public readonly union TInputNumberDecimalPlaces(Number, TInputNumberDecimalPlace
 [ECMAScript]
 public record TInputNumberDecimalPlacesOption2 : VueProps
 {
+    [ECMAScriptName("enableRound")]
     public bool EnableRound { get; init; }
 
+    [ECMAScriptName("places")]
     public Number Places { get; init; }
 }
 
 [ECMAScript]
 public record TInputNumberEnterEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11879,6 +10201,7 @@ public record TInputNumberEnterEventContext<T> : VueProps
 [ECMAScript]
 public record TInputNumberFocusEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -11889,12 +10212,14 @@ public delegate TInputNumberValue TInputNumberFormatValue<T>(TInputNumberValue @
 [ECMAScript]
 public record TInputNumberFormatValueContext<T> : VueProps
 {
+    [ECMAScriptName("fixedNumber")]
     public TInputNumberValue? FixedNumber { get; init; }
 }
 
 [ECMAScript]
 public record TInputNumberKeydownEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11902,6 +10227,7 @@ public record TInputNumberKeydownEventContext<T> : VueProps
 [ECMAScript]
 public record TInputNumberKeypressEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11909,6 +10235,7 @@ public record TInputNumberKeypressEventContext<T> : VueProps
 [ECMAScript]
 public record TInputNumberKeyupEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -11954,6 +10281,7 @@ public enum TInputNumberThemeValue
 [ECMAScript]
 public record TInputNumberValidateEventContext<T> : VueProps
 {
+    [ECMAScriptName("error")]
     public TInputNumberValidateEventContextError? Error { get; init; }
 }
 
@@ -11975,9 +10303,11 @@ public readonly union TInputNumberValue(Number, string)
 [ECMAScript]
 public record TInputPasteEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -12021,6 +10351,7 @@ public enum TInputTypeValue
 [ECMAScript]
 public record TInputValidateEventContext<T> : VueProps
 {
+    [ECMAScriptName("error")]
     public TInputValidateEventContextError? Error { get; init; }
 }
 
@@ -12042,8 +10373,10 @@ public readonly union TInputValue(string, Number)
 [ECMAScript]
 public record TInputValueChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TInputValueChangeContextE? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TInputValueChangeContextTrigger Trigger { get; init; }
 }
 
@@ -12069,6 +10402,7 @@ public enum TInputValueChangeContextTrigger
 [ECMAScript]
 public record TInputWheelEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -12076,11 +10410,14 @@ public record TInputWheelEventContext<T> : VueProps
 [ECMAScript]
 public record TIsDateOptions : VueProps
 {
+    [ECMAScriptName("format")]
     [EditorRequired]
     public string Format { get; init; } = default!;
 
+    [ECMAScriptName("strictMode")]
     public bool StrictMode { get; init; }
 
+    [ECMAScriptName("delimiters")]
     [EditorRequired]
     public string[] Delimiters { get; init; } = default!;
 }
@@ -12119,6 +10456,7 @@ public record TIsEmailOptions : VueProps
 [ECMAScript]
 public record TIsURLOptions : VueProps
 {
+    [ECMAScriptName("protocols")]
     public string[]? Protocols { get; init; }
 
     [ECMAScriptName("require_tld")]
@@ -12187,20 +10525,26 @@ public readonly union TJsonValue(bool, Number, string, TJsonValue[], TJsonObject
 [ECMAScript]
 public record TJumperDisabledConfig : VueProps
 {
+    [ECMAScriptName("prev")]
     public bool? Prev { get; init; }
 
+    [ECMAScriptName("current")]
     public bool? Current { get; init; }
 
+    [ECMAScriptName("next")]
     public bool? Next { get; init; }
 }
 
 [ECMAScript]
 public record TJumperTipsConfig : VueProps
 {
+    [ECMAScriptName("prev")]
     public string? Prev { get; init; }
 
+    [ECMAScriptName("current")]
     public string? Current { get; init; }
 
+    [ECMAScriptName("next")]
     public string? Next { get; init; }
 }
 
@@ -12219,10 +10563,13 @@ public enum TJumperTrigger
 [ECMAScript]
 public record TKeysType : VueProps
 {
+    [ECMAScriptName("value")]
     public string? Value { get; init; }
 
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("disabled")]
     public string? Disabled { get; init; }
 }
 
@@ -12270,8 +10617,10 @@ public enum TLinkThemeValue
 [ECMAScript]
 public record TListConfig : VueProps
 {
+    [ECMAScriptName("loadingMoreText")]
     public string? LoadingMoreText { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 }
 
@@ -12288,6 +10637,7 @@ public enum TListLayoutValue
 [ECMAScript]
 public record TListLoadMoreEventOptions : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12295,10 +10645,13 @@ public record TListLoadMoreEventOptions : VueProps
 [ECMAScript]
 public record TListScrollEventOptions : VueProps
 {
+    [ECMAScriptName("e")]
     public TListScrollEventOptionsE E { get; init; }
 
+    [ECMAScriptName("scrollTop")]
     public Number ScrollTop { get; init; }
 
+    [ECMAScriptName("scrollBottom")]
     public Number ScrollBottom { get; init; }
 }
 
@@ -12359,30 +10712,43 @@ public enum TListSizeValue
 [ECMAScript]
 public record TLoadingConfig : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("content")]
     public TdLoadingPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdLoadingPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("delay")]
     public Number? Delay { get; init; }
 
+    [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; init; }
 
+    [ECMAScriptName("indicator")]
     public TdLoadingPropsIndicator? Indicator { get; init; }
 
+    [ECMAScriptName("inheritColor")]
     public bool? InheritColor { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; init; }
 
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; init; }
 
+    [ECMAScriptName("size")]
     public string? Size { get; init; }
 
+    [ECMAScriptName("text")]
     public TdLoadingPropsText? Text { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 }
 
@@ -12399,9 +10765,11 @@ public enum TMenuExpandTypeValue
 [ECMAScript]
 public record TMenuItemClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public TMenuValue Value { get; init; }
 }
 
@@ -12437,14 +10805,19 @@ public readonly union TMenuQueryDataIndex(string, string[])
 [ECMAScript]
 public record TMenuRoute : VueProps
 {
+    [ECMAScriptName("path")]
     public string? Path { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("hash")]
     public string? Hash { get; init; }
 
+    [ECMAScriptName("query")]
     public TMenuQueryData? Query { get; init; }
 
+    [ECMAScriptName("params")]
     public TMenuQueryData? Params { get; init; }
 }
 
@@ -12476,6 +10849,7 @@ public readonly union TMenuWidthValueOption3Item(string, Number)
 [ECMAScript]
 public record TMessageCloseBtnClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12488,8 +10862,10 @@ public readonly union TMessageCloseBtnValue(string, bool)
 [ECMAScript]
 public record TMessageCloseEventContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TMessageCloseEventContextTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -12506,32 +10882,46 @@ public enum TMessageCloseEventContextTrigger
 [ECMAScript]
 public record TMessageConfig : VueProps
 {
+    [ECMAScriptName("closeBtn")]
     public TMessageConfigCloseBtn? CloseBtn { get; init; }
 
+    [ECMAScriptName("content")]
     public TMessageConfigContent? Content { get; init; }
 
+    [ECMAScriptName("duration")]
     public Number? Duration { get; init; }
 
+    [ECMAScriptName("icon")]
     public TMessageConfigIcon? Icon { get; init; }
 
+    [ECMAScriptName("theme")]
     public TMessageThemeList? Theme { get; init; }
 
+    [ECMAScriptName("onClose")]
     public TMessageConfigOnClose? OnClose { get; init; }
 
+    [ECMAScriptName("onCloseBtnClick")]
     public TMessageConfigOnCloseBtnClick? OnCloseBtnClick { get; init; }
 
+    [ECMAScriptName("onDurationEnd")]
     public TMessageConfigOnDurationEnd? OnDurationEnd { get; init; }
 
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("className")]
     public string? ClassName { get; init; }
 
+    [ECMAScriptName("offset")]
     public TMessageConfigOffsetItem[]? Offset { get; init; }
 
+    [ECMAScriptName("placement")]
     public TMessagePlacementList? Placement { get; init; }
 
+    [ECMAScriptName("style")]
     public TJsonObject? Style { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 }
 
@@ -12564,6 +10954,7 @@ public delegate void TMessageConfigOnCloseBtnClick(TMessageConfigOnCloseBtnClick
 [ECMAScript]
 public record TMessageConfigOnCloseBtnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12571,8 +10962,10 @@ public record TMessageConfigOnCloseBtnClickContext : VueProps
 [ECMAScript]
 public record TMessageConfigOnCloseContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TMessageConfigOnCloseContextTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -12634,30 +11027,38 @@ public enum TMessageThemeList
 [ECMAScript]
 public record TMoveEvent : VueProps
 {
+    [ECMAScriptName("dragged")]
     [EditorRequired]
     public HTMLElement Dragged { get; init; } = default!;
 
+    [ECMAScriptName("draggedRect")]
     [EditorRequired]
     public TDOMRect DraggedRect { get; init; } = default!;
 
+    [ECMAScriptName("from")]
     [EditorRequired]
     public HTMLElement From { get; init; } = default!;
 
+    [ECMAScriptName("related")]
     [EditorRequired]
     public HTMLElement Related { get; init; } = default!;
 
+    [ECMAScriptName("relatedRect")]
     [EditorRequired]
     public TDOMRect RelatedRect { get; init; } = default!;
 
+    [ECMAScriptName("to")]
     [EditorRequired]
     public HTMLElement To { get; init; } = default!;
 
+    [ECMAScriptName("willInsertAfter")]
     public bool? WillInsertAfter { get; init; }
 }
 
 [ECMAScript]
 public record TNotificationCloseBtnClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12684,8 +11085,10 @@ public enum TNotificationThemeList
 [ECMAScript]
 public record TOptionData : VueProps
 {
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("value")]
     public TOptionDataValue? Value { get; init; }
 }
 
@@ -12702,31 +11105,40 @@ public readonly union TOptionValueValue(string, Number, bool, BigInt)
 [ECMAScript]
 public record TPageInfo : VueProps
 {
+    [ECMAScriptName("current")]
     public Number Current { get; init; }
 
+    [ECMAScriptName("previous")]
     public Number Previous { get; init; }
 
+    [ECMAScriptName("pageSize")]
     public Number PageSize { get; init; }
 }
 
 [ECMAScript]
 public record TPaginationConfig : VueProps
 {
+    [ECMAScriptName("itemsPerPage")]
     public string? ItemsPerPage { get; init; }
 
+    [ECMAScriptName("jumpTo")]
     public string? JumpTo { get; init; }
 
+    [ECMAScriptName("page")]
     public string? Page { get; init; }
 
+    [ECMAScriptName("total")]
     public string? Total { get; init; }
 }
 
 [ECMAScript]
 public record TPaginationMiniChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TJumperTrigger Trigger { get; init; }
 }
 
@@ -12778,9 +11190,11 @@ public readonly union TPaginationPageSizeOptionsValueItem(Number, TPaginationPag
 [ECMAScript]
 public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
 {
+    [ECMAScriptName("label")]
     [EditorRequired]
     public string Label { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public Number Value { get; init; }
 }
 
@@ -12812,9 +11226,11 @@ public readonly union TParagraphEllipsisValue(bool, TTypographyEllipsis)
 [ECMAScript]
 public record TPickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("partial")]
     public TDateRangePickerPartial Partial { get; init; }
 }
 
@@ -12826,6 +11242,7 @@ public readonly union TPopconfirmCancelBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TPopconfirmCancelEventOptions : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12833,10 +11250,13 @@ public record TPopconfirmCancelEventOptions : VueProps
 [ECMAScript]
 public record TPopconfirmConfig : VueProps
 {
+    [ECMAScriptName("cancel")]
     public TPopconfirmConfigCancel? Cancel { get; init; }
 
+    [ECMAScriptName("confirm")]
     public TPopconfirmConfigConfirm? Confirm { get; init; }
 
+    [ECMAScriptName("confirmBtnTheme")]
     public TPopconfirmConfigConfirmBtnTheme? ConfirmBtnTheme { get; init; }
 }
 
@@ -12853,12 +11273,15 @@ public readonly union TPopconfirmConfigConfirm(string, TdButtonProps)
 [ECMAScript]
 public record TPopconfirmConfigConfirmBtnTheme : VueProps
 {
+    [ECMAScriptName("default")]
     [EditorRequired]
     public string Default { get; init; } = default!;
 
+    [ECMAScriptName("warning")]
     [EditorRequired]
     public string Warning { get; init; } = default!;
 
+    [ECMAScriptName("danger")]
     [EditorRequired]
     public string Danger { get; init; } = default!;
 }
@@ -12871,6 +11294,7 @@ public readonly union TPopconfirmConfirmBtnValue(string, TdButtonProps)
 [ECMAScript]
 public record TPopconfirmConfirmEventOptions : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12920,8 +11344,10 @@ public enum TPopconfirmThemeValue
 [ECMAScript]
 public record TPopconfirmVisibleChangeContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TTriggerSource? Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -12933,6 +11359,7 @@ public readonly union TPopupDelayValue(Number, Number[])
 [ECMAScript]
 public record TPopupOverlayClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -12986,6 +11413,7 @@ public enum TPopupPlacement
 [ECMAScript]
 public record TPopupScrollEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -12993,6 +11421,7 @@ public record TPopupScrollEventContext : VueProps
 [ECMAScript]
 public record TPopupScrollToBottomEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -13045,8 +11474,10 @@ public enum TPopupTriggerValue
 [ECMAScript]
 public record TPopupVisibleChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TPopupTriggerEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TPopupTriggerSource? Trigger { get; init; }
 }
 
@@ -13122,6 +11553,7 @@ public enum TPrimaryTableActiveRowTypeValue
 [ECMAScript]
 public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("status")]
     public TPrimaryTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
@@ -13148,15 +11580,20 @@ public enum TPrimaryTableAsyncLoadingValue
 [ECMAScript]
 public record TPrimaryTableCellEventContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<TTableRowData> Col { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13164,103 +11601,148 @@ public record TPrimaryTableCellEventContext<T> : VueProps
 [ECMAScript]
 public record TPrimaryTableCellParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
 [ECMAScript]
 public record TPrimaryTableCol<T> : VueProps
 {
+    [ECMAScriptName("align")]
     public TBaseTableColAlign? Align { get; init; }
 
+    [ECMAScriptName("attrs")]
     public TBaseTableColumnAttributes<TTableRowData>? Attrs { get; init; }
 
+    [ECMAScriptName("className")]
     public TBaseTableColClassName<TTableRowData>? ClassName { get; init; }
 
+    [ECMAScriptName("colKey")]
     public string? ColKey { get; init; }
 
+    [ECMAScriptName("colspan")]
     public Number? Colspan { get; init; }
 
+    [ECMAScriptName("ellipsis")]
     public TBaseTableColEllipsis<TTableRowData>? Ellipsis { get; init; }
 
+    [ECMAScriptName("ellipsisTitle")]
     public TBaseTableColEllipsisTitle<TTableRowData>? EllipsisTitle { get; init; }
 
+    [ECMAScriptName("fixed")]
     public TBaseTableColFixed? Fixed { get; init; }
 
+    [ECMAScriptName("foot")]
     public TBaseTableColFoot<TTableRowData>? Foot { get; init; }
 
+    [ECMAScriptName("minWidth")]
     public TBaseTableColMinWidth<TTableRowData>? MinWidth { get; init; }
 
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; init; }
 
+    [ECMAScriptName("resize")]
     public TTableColumnResizeConfig? Resize { get; init; }
 
+    [ECMAScriptName("stopPropagation")]
     public bool? StopPropagation { get; init; }
 
+    [ECMAScriptName("thClassName")]
     public TBaseTableColThClassName<TTableRowData>? ThClassName { get; init; }
 
+    [ECMAScriptName("width")]
     public TBaseTableColWidth<TTableRowData>? Width { get; init; }
 
+    [ECMAScriptName("cell")]
     public TPrimaryTableColCell<T>? Cell { get; init; }
 
+    [ECMAScriptName("checkProps")]
     public TCheckProps<T>? CheckProps { get; init; }
 
+    [ECMAScriptName("children")]
     public TPrimaryTableCol<T>[]? Children { get; init; }
 
+    [ECMAScriptName("disabled")]
     public TPrimaryTableColDisabled<T>? Disabled { get; init; }
 
+    [ECMAScriptName("edit")]
     public TTableEditableCellConfig<T>? Edit { get; init; }
 
+    [ECMAScriptName("filter")]
     public TTableColumnFilter? Filter { get; init; }
 
+    [ECMAScriptName("render")]
     public RenderFragment<TPrimaryTableRenderParams<T>>? Render { get; init; }
 
+    [ECMAScriptName("sortType")]
     public TSortType? SortType { get; init; }
 
+    [ECMAScriptName("sorter")]
     public TPrimaryTableColSorter<T>? Sorter { get; init; }
 
+    [ECMAScriptName("title")]
     public TPrimaryTableColTitle<T>? Title { get; init; }
 
+    [ECMAScriptName("type")]
     public TPrimaryTableColType? Type { get; init; }
 }
 
 [ECMAScript]
 public sealed record TPrimaryTableColBase1<T> : VueProps
 {
+    [ECMAScriptName("align")]
     public TBaseTableColAlign? Align { get; init; }
 
+    [ECMAScriptName("attrs")]
     public TBaseTableColumnAttributes<TTableRowData>? Attrs { get; init; }
 
+    [ECMAScriptName("className")]
     public TBaseTableColClassName<TTableRowData>? ClassName { get; init; }
 
+    [ECMAScriptName("colKey")]
     public string? ColKey { get; init; }
 
+    [ECMAScriptName("colspan")]
     public Number? Colspan { get; init; }
 
+    [ECMAScriptName("ellipsis")]
     public TBaseTableColEllipsis<TTableRowData>? Ellipsis { get; init; }
 
+    [ECMAScriptName("ellipsisTitle")]
     public TBaseTableColEllipsisTitle<TTableRowData>? EllipsisTitle { get; init; }
 
+    [ECMAScriptName("fixed")]
     public TBaseTableColFixed? Fixed { get; init; }
 
+    [ECMAScriptName("foot")]
     public TBaseTableColFoot<TTableRowData>? Foot { get; init; }
 
+    [ECMAScriptName("minWidth")]
     public TBaseTableColMinWidth<TTableRowData>? MinWidth { get; init; }
 
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; init; }
 
+    [ECMAScriptName("resize")]
     public TTableColumnResizeConfig? Resize { get; init; }
 
+    [ECMAScriptName("stopPropagation")]
     public bool? StopPropagation { get; init; }
 
+    [ECMAScriptName("thClassName")]
     public TBaseTableColThClassName<TTableRowData>? ThClassName { get; init; }
 
+    [ECMAScriptName("width")]
     public TBaseTableColWidth<TTableRowData>? Width { get; init; }
 }
 
@@ -13275,8 +11757,10 @@ public delegate bool TPrimaryTableColDisabled<T>(TPrimaryTableColDisabledOptions
 [ECMAScript]
 public record TPrimaryTableColDisabledOptions<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 }
 
@@ -13293,9 +11777,11 @@ public readonly union TPrimaryTableColTitle<T>(string, RenderFragment<TPrimaryTa
 [ECMAScript]
 public record TPrimaryTableColTitleOption2Context<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<TTableRowData> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -13312,12 +11798,16 @@ public enum TPrimaryTableColType
 [ECMAScript]
 public record TPrimaryTableColumnChange<T> : VueProps
 {
+    [ECMAScriptName("columns")]
     public TCheckboxGroupValueItem[]? Columns { get; init; }
 
+    [ECMAScriptName("currentColumn")]
     public TPrimaryTableCol<T>? CurrentColumn { get; init; }
 
+    [ECMAScriptName("type")]
     public TPrimaryTableColumnChangeType? Type { get; init; }
 
+    [ECMAScriptName("e")]
     public Event? E { get; init; }
 }
 
@@ -13334,6 +11824,7 @@ public enum TPrimaryTableColumnChangeType
 [ECMAScript]
 public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TPrimaryTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -13352,6 +11843,7 @@ public enum TPrimaryTableColumnControllerVisibleChangeEventContextTrigger
 [ECMAScript]
 public record TPrimaryTableColumnResizeChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("columnsWidth")]
     [EditorRequired]
     public TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
@@ -13395,9 +11887,11 @@ public readonly union TPrimaryTableExpandedRowKeysValueItem<T>(string, Number)
 [ECMAScript]
 public record TPrimaryTableFilterIconSlotContext<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -13434,18 +11928,24 @@ public readonly union TPrimaryTableMaxHeightValue<T>(string, Number)
 [ECMAScript]
 public record TPrimaryTableOnEditedContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("trigger")]
     [EditorRequired]
     public string Trigger { get; init; } = default!;
 
+    [ECMAScriptName("newRowData")]
     public T NewRowData { get; init; } = default!;
 }
 
@@ -13457,15 +11957,20 @@ public readonly union TPrimaryTablePaginationAffixedBottomValue<T>(bool, TdAffix
 [ECMAScript]
 public record TPrimaryTableRenderParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("type")]
     public TRenderType Type { get; init; }
 }
 
@@ -13480,17 +11985,23 @@ public delegate TClassName TPrimaryTableRowClassNameValueOption2<T>(TRowClassNam
 [ECMAScript]
 public record TPrimaryTableRowEditContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("value")]
     public TJsonValue Value { get; init; }
 
+    [ECMAScriptName("editedRow")]
     public T EditedRow { get; init; } = default!;
 }
 
@@ -13507,15 +12018,18 @@ public enum TPrimaryTableRowSelectionTypeValue
 [ECMAScript]
 public record TPrimaryTableRowValidateContext<T> : VueProps
 {
+    [ECMAScriptName("result")]
     [EditorRequired]
     public TTableRowValidateResult<T>[] Result { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TTableValidateTrigger Trigger { get; init; }
 }
 
 [ECMAScript]
 public record TPrimaryTableScrollEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -13523,6 +12037,7 @@ public record TPrimaryTableScrollEventParams<T> : VueProps
 [ECMAScript]
 public record TPrimaryTableScrollXEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -13530,6 +12045,7 @@ public record TPrimaryTableScrollXEventParams<T> : VueProps
 [ECMAScript]
 public record TPrimaryTableScrollYEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -13557,6 +12073,7 @@ public enum TPrimaryTableTableLayoutValue
 [ECMAScript]
 public record TPrimaryTableValidateContext : VueProps
 {
+    [ECMAScriptName("result")]
     [EditorRequired]
     public TTableErrorListMap Result { get; init; } = default!;
 }
@@ -13581,18 +12098,22 @@ public readonly union TProgressColorValue(string, string[], VueDictionary<string
 [ECMAScript]
 public record TProgressContext : VueProps
 {
+    [ECMAScriptName("e")]
     public ProgressEvent? E { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadFile? File { get; init; }
 
+    [ECMAScriptName("currentFiles")]
     [EditorRequired]
     public TUploadFile[] CurrentFiles { get; init; } = default!;
 
+    [ECMAScriptName("percent")]
     public Number Percent { get; init; }
 
+    [ECMAScriptName("type")]
     public TUploadProgressType Type { get; init; }
 
-    [ECMAScriptName("XMLHttpRequest")]
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
@@ -13658,10 +12179,13 @@ public readonly union TPutResult(string[], bool)
 [ECMAScript]
 public record TQRCodeConfig : VueProps
 {
+    [ECMAScriptName("expiredText")]
     public string? ExpiredText { get; init; }
 
+    [ECMAScriptName("refreshText")]
     public string? RefreshText { get; init; }
 
+    [ECMAScriptName("scannedText")]
     public string? ScannedText { get; init; }
 }
 
@@ -13673,8 +12197,10 @@ public readonly union TQRCodeIconSizeValue(Number, TQRCodeIconSizeValueOption2)
 [ECMAScript]
 public record TQRCodeIconSizeValueOption2 : VueProps
 {
+    [ECMAScriptName("width")]
     public Number Width { get; init; }
 
+    [ECMAScriptName("height")]
     public Number Height { get; init; }
 }
 
@@ -13719,6 +12245,7 @@ public enum TQRStatus
 [ECMAScript]
 public record TRadioButtonChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -13726,6 +12253,7 @@ public record TRadioButtonChangeEventContext<T> : VueProps
 [ECMAScript]
 public record TRadioButtonClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13733,6 +12261,7 @@ public record TRadioButtonClickEventContext<T> : VueProps
 [ECMAScript]
 public record TRadioChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -13740,6 +12269,7 @@ public record TRadioChangeEventContext<T> : VueProps
 [ECMAScript]
 public record TRadioClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13747,9 +12277,11 @@ public record TRadioClickEventContext<T> : VueProps
 [ECMAScript]
 public record TRadioGroupChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 }
 
@@ -13783,10 +12315,13 @@ public readonly union TRadioOption(string, Number, TRadioOptionObj)
 [ECMAScript]
 public record TRadioOptionObj : VueProps
 {
+    [ECMAScriptName("label")]
     public TRadioOptionObjLabel? Label { get; init; }
 
+    [ECMAScriptName("value")]
     public TRadioOptionObjValue? Value { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 }
 
@@ -13808,18 +12343,23 @@ public readonly union TRadioValue(string, Number, bool)
 [ECMAScript]
 public record TRangeInputBlurEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
 [ECMAScript]
 public record TRangeInputChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TRangeInputChangeEventContextE? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TRangeInputChangeEventContextTrigger? Trigger { get; init; }
 }
 
@@ -13843,6 +12383,7 @@ public enum TRangeInputChangeEventContextTrigger
 [ECMAScript]
 public record TRangeInputClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13850,8 +12391,10 @@ public record TRangeInputClearEventContext : VueProps
 [ECMAScript]
 public record TRangeInputClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -13863,8 +12406,10 @@ public readonly union TRangeInputDisabledValue(bool, bool[])
 [ECMAScript]
 public record TRangeInputEnterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TRangeInputEnterEventContextE? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -13876,8 +12421,10 @@ public readonly union TRangeInputEnterEventContextE(InputEvent, MouseEvent)
 [ECMAScript]
 public record TRangeInputFocusEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -13894,6 +12441,7 @@ public readonly union TRangeInputInputPropsValue(TdInputProps<TInputValue>, TdIn
 [ECMAScript]
 public record TRangeInputMouseenterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13901,6 +12449,7 @@ public record TRangeInputMouseenterEventContext : VueProps
 [ECMAScript]
 public record TRangeInputMouseleaveEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -13970,10 +12519,13 @@ public enum TRangeInputStatusValue
 [ECMAScript]
 public record TRangeInputValueChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TRangeInputValueChangeContextE? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TRangeInputValueChangeContextTrigger? Trigger { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -14000,14 +12552,17 @@ public readonly union TRateColorValue(string, string[])
 [ECMAScript]
 public record TRateConfig : VueProps
 {
+    [ECMAScriptName("rateText")]
     public string[]? RateText { get; init; }
 }
 
 [ECMAScript]
 public record TRemoveContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TCascaderValue<T> Value { get; init; }
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -14015,10 +12570,13 @@ public record TRemoveContext<T> : VueProps
 [ECMAScript]
 public record TRemoveOptions<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TRemoveOptionsValue<T> Value { get; init; }
 
+    [ECMAScriptName("data")]
     public T Data { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -14040,10 +12598,13 @@ public enum TRenderType
 [ECMAScript]
 public record TRequestMethodResponse : VueProps
 {
+    [ECMAScriptName("status")]
     public TRequestMethodResponseStatus Status { get; init; }
 
+    [ECMAScriptName("error")]
     public string? Error { get; init; }
 
+    [ECMAScriptName("response")]
     [EditorRequired]
     public TRequestMethodResponseResponse Response { get; init; } = default!;
 }
@@ -14051,8 +12612,10 @@ public record TRequestMethodResponse : VueProps
 [ECMAScript]
 public record TRequestMethodResponseResponse : VueProps
 {
+    [ECMAScriptName("url")]
     public string? Url { get; init; }
 
+    [ECMAScriptName("files")]
     public TUploadFile[]? Files { get; init; }
 }
 
@@ -14069,12 +12632,16 @@ public enum TRequestMethodResponseStatus
 [ECMAScript]
 public record TResponseType : VueProps
 {
+    [ECMAScriptName("error")]
     public string? Error { get; init; }
 
+    [ECMAScriptName("url")]
     public string? Url { get; init; }
 
+    [ECMAScriptName("status")]
     public TResponseTypeStatus? Status { get; init; }
 
+    [ECMAScriptName("files")]
     public TUploadFile[]? Files { get; init; }
 }
 
@@ -14091,14 +12658,19 @@ public enum TResponseTypeStatus
 [ECMAScript]
 public record TRoute : VueProps
 {
+    [ECMAScriptName("path")]
     public string? Path { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("hash")]
     public string? Hash { get; init; }
 
+    [ECMAScriptName("query")]
     public TRouteData? Query { get; init; }
 
+    [ECMAScriptName("params")]
     public TRouteData? Params { get; init; }
 }
 
@@ -14137,12 +12709,16 @@ public enum TRowAlignValue
 [ECMAScript]
 public record TRowClassNameParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("rowKey")]
     public string? RowKey { get; init; }
 
+    [ECMAScriptName("type")]
     public TRowClassNameParamsType? Type { get; init; }
 }
 
@@ -14159,10 +12735,13 @@ public enum TRowClassNameParamsType
 [ECMAScript]
 public record TRowEventContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public TRowEventContextE<T> E { get; init; }
 }
 
@@ -14200,22 +12779,29 @@ public enum TRowJustifyValue
 [ECMAScript]
 public record TRowspanColspan : VueProps
 {
+    [ECMAScriptName("colspan")]
     public Number? Colspan { get; init; }
 
+    [ECMAScriptName("rowspan")]
     public Number? Rowspan { get; init; }
 }
 
 [ECMAScript]
 public record TScroll : VueProps
 {
+    [ECMAScriptName("bufferSize")]
     public Number? BufferSize { get; init; }
 
+    [ECMAScriptName("isFixedRowHeight")]
     public bool? IsFixedRowHeight { get; init; }
 
+    [ECMAScriptName("rowHeight")]
     public Number? RowHeight { get; init; }
 
+    [ECMAScriptName("threshold")]
     public Number? Threshold { get; init; }
 
+    [ECMAScriptName("type")]
     public TScrollType Type { get; init; }
 }
 
@@ -14245,13 +12831,17 @@ public enum TScrollType
 [ECMAScript]
 public record TSearchContext : VueProps
 {
+    [ECMAScriptName("query")]
     [EditorRequired]
     public string Query { get; init; } = default!;
 
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TSearchContextTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TSearchContextE E { get; init; }
 }
 
@@ -14278,8 +12868,10 @@ public readonly union TSearchOption(bool, TdInputProps<TInputValue>)
 [ECMAScript]
 public record TSelectBlurEventContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("e")]
     public TSelectBlurEventContextE<T> E { get; init; }
 }
 
@@ -14291,13 +12883,17 @@ public readonly union TSelectBlurEventContextE<T>(FocusEvent, KeyboardEvent)
 [ECMAScript]
 public record TSelectChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("option")]
     public T? Option { get; init; }
 
+    [ECMAScriptName("selectedOptions")]
     [EditorRequired]
     public T[] SelectedOptions { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TSelectValueChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TSelectChangeEventContextE<T>? E { get; init; }
 }
 
@@ -14309,6 +12905,7 @@ public readonly union TSelectChangeEventContextE<T>(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public record TSelectClearEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -14316,14 +12913,18 @@ public record TSelectClearEventContext<T> : VueProps
 [ECMAScript]
 public record TSelectCollapsedItemsSlotContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public T[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public T[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TSelectCollapsedItemsSlotContextOnClose<T> OnClose { get; init; } = default!;
 }
@@ -14334,22 +12935,29 @@ public delegate void TSelectCollapsedItemsSlotContextOnClose<T>(TSelectCollapsed
 [ECMAScript]
 public record TSelectCollapsedItemsSlotContextOnCloseContext<T> : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TSelectConfig : VueProps
 {
+    [ECMAScriptName("clearIcon")]
     public RenderFragment? ClearIcon { get; init; }
 
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 }
 
@@ -14361,12 +12969,15 @@ public readonly union TSelectCreateEventValue<T>(string, Number, bool, BigInt)
 [ECMAScript]
 public record TSelectEnterEventContext<T> : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 }
 
@@ -14381,8 +12992,10 @@ public readonly union TSelectFilterValueResult<T>(bool, IPromise<bool>)
 [ECMAScript]
 public record TSelectFocusEventContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("e")]
     public TSelectFocusEventContextE<T> E { get; init; }
 }
 
@@ -14394,19 +13007,24 @@ public readonly union TSelectFocusEventContextE<T>(FocusEvent, KeyboardEvent)
 [ECMAScript]
 public record TSelectInputBlurContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TPopupTriggerEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TPopupTriggerSource? Trigger { get; init; }
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
 [ECMAScript]
 public record TSelectInputClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -14414,12 +13032,16 @@ public record TSelectInputClearEventContext : VueProps
 [ECMAScript]
 public record TSelectInputCollapsedItemsSlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectInputValue Value { get; init; }
 
+    [ECMAScriptName("collapsedSelectedItems")]
     public TSelectInputValue CollapsedSelectedItems { get; init; }
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TSelectInputCollapsedItemsSlotContextOnClose OnClose { get; init; } = default!;
 }
@@ -14430,31 +13052,39 @@ public delegate void TSelectInputCollapsedItemsSlotContextOnClose(TSelectInputCo
 [ECMAScript]
 public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TSelectInputEnterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
 [ECMAScript]
 public record TSelectInputFocusContext : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -14462,16 +13092,20 @@ public record TSelectInputFocusContext : VueProps
 [ECMAScript]
 public record TSelectInputKeys : VueProps
 {
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("value")]
     public string? Value { get; init; }
 
+    [ECMAScriptName("children")]
     public string? Children { get; init; }
 }
 
 [ECMAScript]
 public record TSelectInputMouseenterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -14479,6 +13113,7 @@ public record TSelectInputMouseenterEventContext : VueProps
 [ECMAScript]
 public record TSelectInputMouseleaveEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -14486,9 +13121,11 @@ public record TSelectInputMouseleaveEventContext : VueProps
 [ECMAScript]
 public record TSelectInputPasteEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -14510,6 +13147,7 @@ public enum TSelectInputStatusValue
 [ECMAScript]
 public record TSelectInputTagSlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectInputTagSlotContextValue Value { get; init; }
 }
 
@@ -14526,8 +13164,10 @@ public readonly union TSelectInputValue(string, Number, bool, Date, TJsonObject,
 [ECMAScript]
 public record TSelectInputValueChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TSelectInputValueChangeContextE? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TSelectInputValueChangeContextTrigger Trigger { get; init; }
 }
 
@@ -14670,9 +13310,11 @@ public enum TSelectInputValueChangeContextTrigger
 [ECMAScript]
 public record TSelectInputValueDisplaySlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TSelectInputValueDisplaySlotContextOnClose OnClose { get; init; } = default!;
 }
@@ -14688,13 +13330,17 @@ public readonly union TSelectOption(TdOptionProps, TSelectOptionGroup, TJsonObje
 [ECMAScript]
 public record TSelectOptionGroup : VueProps
 {
+    [ECMAScriptName("divider")]
     public bool? Divider { get; init; }
 
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("group")]
     [EditorRequired]
     public string Group { get; init; } = default!;
 
+    [ECMAScriptName("children")]
     [EditorRequired]
     public TdOptionProps[] Children { get; init; } = default!;
 }
@@ -14702,13 +13348,17 @@ public record TSelectOptionGroup : VueProps
 [ECMAScript]
 public record TSelectOptions<T> : VueProps
 {
+    [ECMAScriptName("selectedRowData")]
     [EditorRequired]
     public T[] SelectedRowData { get; init; } = default!;
 
+    [ECMAScriptName("type")]
     public TSelectOptionsType Type { get; init; }
 
+    [ECMAScriptName("currentRowKey")]
     public string? CurrentRowKey { get; init; }
 
+    [ECMAScriptName("currentRowData")]
     public T? CurrentRowData { get; init; }
 }
 
@@ -14735,10 +13385,13 @@ public enum TSelectOptionsType
 [ECMAScript]
 public record TSelectRemoveContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectRemoveContextValue<T> Value { get; init; }
 
+    [ECMAScriptName("data")]
     public T Data { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public TSelectRemoveContextE<T> E { get; init; }
 }
 
@@ -14755,6 +13408,7 @@ public readonly union TSelectRemoveContextValue<T>(string, Number, BigInt)
 [ECMAScript]
 public record TSelectSearchEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -14799,11 +13453,14 @@ public enum TSelectValueChangeTrigger
 [ECMAScript]
 public record TSelectValueDisplaySlotContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TSelectValueDisplaySlotContextOnClose<T> OnClose { get; init; } = default!;
 
+    [ECMAScriptName("displayValue")]
     public TSelectValue<TSelectOption>? DisplayValue { get; init; }
 }
 
@@ -14838,8 +13495,10 @@ public enum TShapeEnum
 [ECMAScript]
 public record TSizeDragLimit : VueProps
 {
+    [ECMAScriptName("max")]
     public Number Max { get; init; }
 
+    [ECMAScriptName("min")]
     public Number Min { get; init; }
 }
 
@@ -14858,10 +13517,13 @@ public enum TSizeEnum
 [ECMAScript]
 public record TSizeLimitObj : VueProps
 {
+    [ECMAScriptName("size")]
     public Number Size { get; init; }
 
+    [ECMAScriptName("unit")]
     public TSizeUnit Unit { get; init; }
 
+    [ECMAScriptName("message")]
     public string? Message { get; init; }
 }
 
@@ -14899,20 +13561,28 @@ public readonly union TSkeletonRowColItem(Number, TSkeletonRowColObj, TSkeletonR
 [ECMAScript]
 public record TSkeletonRowColObj : VueProps
 {
+    [ECMAScriptName("width")]
     public string? Width { get; init; }
 
+    [ECMAScriptName("height")]
     public string? Height { get; init; }
 
+    [ECMAScriptName("size")]
     public string? Size { get; init; }
 
+    [ECMAScriptName("marginRight")]
     public string? MarginRight { get; init; }
 
+    [ECMAScriptName("marginLeft")]
     public string? MarginLeft { get; init; }
 
+    [ECMAScriptName("margin")]
     public string? Margin { get; init; }
 
+    [ECMAScriptName("content")]
     public TSkeletonRowColObjContent? Content { get; init; }
 
+    [ECMAScriptName("type")]
     public TSkeletonRowColObjType? Type { get; init; }
 }
 
@@ -14959,8 +13629,10 @@ public readonly union TSliderInputNumberPropsValue(bool, TdInputNumberProps<TInp
 [ECMAScript]
 public record TSliderLabelSlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TSliderValue Value { get; init; }
 
+    [ECMAScriptName("position")]
     public TSliderLabelSlotContextPosition? Position { get; init; }
 }
 
@@ -15002,6 +13674,7 @@ public readonly union TSliderMarksIndex(string, RenderFragment<TSliderMarksIndex
 [ECMAScript]
 public record TSliderMarksIndexOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     public Number Value { get; init; }
 }
 
@@ -15018,17 +13691,21 @@ public readonly union TSliderValue(Number, Number[])
 [ECMAScript]
 public record TSortInfo : VueProps
 {
+    [ECMAScriptName("sortBy")]
     [EditorRequired]
     public string SortBy { get; init; } = default!;
 
+    [ECMAScriptName("descending")]
     public bool Descending { get; init; }
 }
 
 [ECMAScript]
 public record TSortOptions<T> : VueProps
 {
+    [ECMAScriptName("currentDataSource")]
     public T[]? CurrentDataSource { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<TTableRowData> Col { get; init; } = default!;
 }
@@ -15057,55 +13734,72 @@ public record TSortableEvent : VueProps
     [EditorRequired]
     public HTMLElement CloneElement { get; init; } = default!;
 
+    [ECMAScriptName("from")]
     [EditorRequired]
     public HTMLElement From { get; init; } = default!;
 
+    [ECMAScriptName("item")]
     [EditorRequired]
     public HTMLElement Item { get; init; } = default!;
 
+    [ECMAScriptName("items")]
     [EditorRequired]
     public HTMLElement[] Items { get; init; } = default!;
 
+    [ECMAScriptName("newIndex")]
     public Number? NewIndex { get; init; }
 
+    [ECMAScriptName("oldIndex")]
     public Number? OldIndex { get; init; }
 
+    [ECMAScriptName("target")]
     [EditorRequired]
     public HTMLElement Target { get; init; } = default!;
 
+    [ECMAScriptName("to")]
     [EditorRequired]
     public HTMLElement To { get; init; } = default!;
 
+    [ECMAScriptName("oldDraggableIndex")]
     public Number? OldDraggableIndex { get; init; }
 
+    [ECMAScriptName("newDraggableIndex")]
     public Number? NewDraggableIndex { get; init; }
 
+    [ECMAScriptName("pullMode")]
     public TSortableEventPullMode? PullMode { get; init; }
 
+    [ECMAScriptName("oldIndicies")]
     [EditorRequired]
     public TSortableEventOldIndiciesItem[] OldIndicies { get; init; } = default!;
 
+    [ECMAScriptName("newIndicies")]
     [EditorRequired]
     public TSortableEventNewIndiciesItem[] NewIndicies { get; init; } = default!;
 
+    [ECMAScriptName("swapItem")]
     public HTMLElement? SwapItem { get; init; }
 }
 
 [ECMAScript]
 public record TSortableEventNewIndiciesItem : VueProps
 {
+    [ECMAScriptName("multiDragElement")]
     [EditorRequired]
     public HTMLElement MultiDragElement { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 }
 
 [ECMAScript]
 public record TSortableEventOldIndiciesItem : VueProps
 {
+    [ECMAScriptName("multiDragElement")]
     [EditorRequired]
     public HTMLElement MultiDragElement { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 }
 
@@ -15125,92 +13819,136 @@ public enum TSortableEventPullModeOption1
 [ECMAScript]
 public record TSortableOptions : VueProps
 {
+    [ECMAScriptName("animation")]
     public Number? Animation { get; init; }
 
+    [ECMAScriptName("chosenClass")]
     public string? ChosenClass { get; init; }
 
+    [ECMAScriptName("dataIdAttr")]
     public string? DataIdAttr { get; init; }
 
+    [ECMAScriptName("delay")]
     public Number? Delay { get; init; }
 
+    [ECMAScriptName("delayOnTouchOnly")]
     public bool? DelayOnTouchOnly { get; init; }
 
+    [ECMAScriptName("direction")]
     public TSortableOptionsDirection? Direction { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("dragClass")]
     public string? DragClass { get; init; }
 
+    [ECMAScriptName("draggable")]
     public string? Draggable { get; init; }
 
+    [ECMAScriptName("dragoverBubble")]
     public bool? DragoverBubble { get; init; }
 
+    [ECMAScriptName("dropBubble")]
     public bool? DropBubble { get; init; }
 
+    [ECMAScriptName("emptyInsertThreshold")]
     public Number? EmptyInsertThreshold { get; init; }
 
+    [ECMAScriptName("easing")]
     public string? Easing { get; init; }
 
+    [ECMAScriptName("fallbackClass")]
     public string? FallbackClass { get; init; }
 
+    [ECMAScriptName("fallbackOnBody")]
     public bool? FallbackOnBody { get; init; }
 
+    [ECMAScriptName("fallbackTolerance")]
     public Number? FallbackTolerance { get; init; }
 
+    [ECMAScriptName("fallbackOffset")]
     public TSortableOptionsFallbackOffsetOption1? FallbackOffset { get; init; }
 
+    [ECMAScriptName("filter")]
     public TSortableOptionsFilter? Filter { get; init; }
 
+    [ECMAScriptName("forceFallback")]
     public bool? ForceFallback { get; init; }
 
+    [ECMAScriptName("ghostClass")]
     public string? GhostClass { get; init; }
 
+    [ECMAScriptName("group")]
     public TSortableOptionsGroup? Group { get; init; }
 
+    [ECMAScriptName("handle")]
     public string? Handle { get; init; }
 
+    [ECMAScriptName("ignore")]
     public string? Ignore { get; init; }
 
+    [ECMAScriptName("invertSwap")]
     public bool? InvertSwap { get; init; }
 
+    [ECMAScriptName("invertedSwapThreshold")]
     public Number? InvertedSwapThreshold { get; init; }
 
+    [ECMAScriptName("preventOnFilter")]
     public bool? PreventOnFilter { get; init; }
 
+    [ECMAScriptName("removeCloneOnHide")]
     public bool? RemoveCloneOnHide { get; init; }
 
+    [ECMAScriptName("sort")]
     public bool? Sort { get; init; }
 
+    [ECMAScriptName("store")]
     public TSortableOptionsStoreOption1? Store { get; init; }
 
+    [ECMAScriptName("swapThreshold")]
     public Number? SwapThreshold { get; init; }
 
+    [ECMAScriptName("touchStartThreshold")]
     public Number? TouchStartThreshold { get; init; }
 
+    [ECMAScriptName("setData")]
     public TSortableOptionsSetDataOption1? SetData { get; init; }
 
+    [ECMAScriptName("onStart")]
     public TSortableOptionsOnStartOption1? OnStart { get; init; }
 
+    [ECMAScriptName("onEnd")]
     public TSortableOptionsOnEndOption1? OnEnd { get; init; }
 
+    [ECMAScriptName("onAdd")]
     public TSortableOptionsOnAddOption1? OnAdd { get; init; }
 
+    [ECMAScriptName("onClone")]
     public TSortableOptionsOnCloneOption1? OnClone { get; init; }
 
+    [ECMAScriptName("onChoose")]
     public TSortableOptionsOnChooseOption1? OnChoose { get; init; }
 
+    [ECMAScriptName("onUnchoose")]
     public TSortableOptionsOnUnchooseOption1? OnUnchoose { get; init; }
 
+    [ECMAScriptName("onUpdate")]
     public TSortableOptionsOnUpdateOption1? OnUpdate { get; init; }
 
+    [ECMAScriptName("onSort")]
     public TSortableOptionsOnSortOption1? OnSort { get; init; }
 
+    [ECMAScriptName("onRemove")]
     public TSortableOptionsOnRemoveOption1? OnRemove { get; init; }
 
+    [ECMAScriptName("onFilter")]
     public TSortableOptionsOnFilterOption1? OnFilter { get; init; }
 
+    [ECMAScriptName("onMove")]
     public TSortableOptionsOnMoveOption1? OnMove { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TSortableOptionsOnChangeOption1? OnChange { get; init; }
 }
 
@@ -15225,8 +13963,10 @@ public delegate TDirection TSortableOptionsDirectionOption1(TSortableEvent evt, 
 [ECMAScript]
 public record TSortableOptionsFallbackOffsetOption1 : VueProps
 {
+    [ECMAScriptName("x")]
     public Number X { get; init; }
 
+    [ECMAScriptName("y")]
     public Number Y { get; init; }
 }
 
@@ -15332,9 +14072,11 @@ public delegate void TSortableOptionsSetDataOption1(DataTransfer dataTransfer, H
 [ECMAScript]
 public record TSortableOptionsStoreOption1 : VueProps
 {
+    [ECMAScriptName("get")]
     [EditorRequired]
     public TSortableOptionsStoreOption1Get Get { get; init; } = default!;
 
+    [ECMAScriptName("set")]
     [EditorRequired]
     public TSortableOptionsStoreOption1Set Set { get; init; } = default!;
 }
@@ -15408,8 +14150,10 @@ public enum TStatisticTrendValue
 [ECMAScript]
 public record TStatusRenderInfo : VueProps
 {
+    [ECMAScriptName("status")]
     public TQRStatus Status { get; init; }
 
+    [ECMAScriptName("onRefresh")]
     public TStatusRenderInfoOnRefresh? OnRefresh { get; init; }
 }
 
@@ -15478,6 +14222,7 @@ public enum TStepStatus
 [ECMAScript]
 public record TStepsChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -15494,8 +14239,10 @@ public readonly union TStepsChangeEventPrevious(string, Number)
 [ECMAScript]
 public record TStepsConfig : VueProps
 {
+    [ECMAScriptName("checkIcon")]
     public RenderFragment? CheckIcon { get; init; }
 
+    [ECMAScriptName("errorIcon")]
     public RenderFragment? ErrorIcon { get; init; }
 }
 
@@ -15559,9 +14306,11 @@ public enum TStickyItemTriggerValue
 [ECMAScript]
 public record TStickyToolClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("item")]
     [EditorRequired]
     public TdStickyItemProps Item { get; init; } = default!;
 }
@@ -15569,9 +14318,11 @@ public record TStickyToolClickEventContext : VueProps
 [ECMAScript]
 public record TStickyToolHoverEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("item")]
     [EditorRequired]
     public TdStickyItemProps Item { get; init; } = default!;
 }
@@ -15637,31 +14388,40 @@ public readonly union TStylesIndex(string, Number)
 [ECMAScript]
 public record TSubmitContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public Event? E { get; init; }
 
+    [ECMAScriptName("validateResult")]
     public TFormValidateResult<T> ValidateResult { get; init; }
 
+    [ECMAScriptName("firstError")]
     public string? FirstError { get; init; }
 
+    [ECMAScriptName("fields")]
     public TJsonValue? Fields { get; init; }
 }
 
 [ECMAScript]
 public record TSuccessContext : VueProps
 {
+    [ECMAScriptName("e")]
     public ProgressEvent? E { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadFile? File { get; init; }
 
+    [ECMAScriptName("fileList")]
     public TUploadFile[]? FileList { get; init; }
 
+    [ECMAScriptName("currentFiles")]
     public TUploadFile[]? CurrentFiles { get; init; }
 
+    [ECMAScriptName("response")]
     public TJsonValue? Response { get; init; }
 
+    [ECMAScriptName("results")]
     public TSuccessContext[]? Results { get; init; }
 
-    [ECMAScriptName("XMLHttpRequest")]
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
@@ -15678,6 +14438,7 @@ public enum TSwiperAnimationValue
 [ECMAScript]
 public record TSwiperChangeEventContext : VueProps
 {
+    [ECMAScriptName("source")]
     public TSwiperChangeSource Source { get; init; }
 }
 
@@ -15716,6 +14477,7 @@ public enum TSwiperItemAnimationValue
 [ECMAScript]
 public record TSwiperItemChangeEventContext : VueProps
 {
+    [ECMAScriptName("source")]
     public TSwiperChangeSource Source { get; init; }
 }
 
@@ -15762,12 +14524,16 @@ public enum TSwiperItemTypeValue
 [ECMAScript]
 public record TSwiperNavigation : VueProps
 {
+    [ECMAScriptName("placement")]
     public TSwiperNavigationPlacement? Placement { get; init; }
 
+    [ECMAScriptName("showSlideBtn")]
     public TSwiperNavigationShowSlideBtn? ShowSlideBtn { get; init; }
 
+    [ECMAScriptName("size")]
     public TSwiperNavigationSize? Size { get; init; }
 
+    [ECMAScriptName("type")]
     public TSwiperNavigationType? Type { get; init; }
 }
 
@@ -15860,6 +14626,7 @@ public readonly union TSwitchBeforeChangeValueResult<T>(bool, IPromise<bool>)
 [ECMAScript]
 public record TSwitchChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -15867,6 +14634,7 @@ public record TSwitchChangeEventContext<T> : VueProps
 [ECMAScript]
 public record TSwitchLabelSlotContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSwitchValue Value { get; init; }
 }
 
@@ -15895,8 +14663,10 @@ public readonly union TSwitchValue(string, Number, bool)
 [ECMAScript]
 public record TTabPanelRemoveEventOptions : VueProps
 {
+    [ECMAScriptName("value")]
     public TTabValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -15909,8 +14679,10 @@ public readonly union TTabValue(string, Number)
 [ECMAScript]
 public record TTableAbnormalDragSortContext<T> : VueProps
 {
+    [ECMAScriptName("code")]
     public Number Code { get; init; }
 
+    [ECMAScriptName("reason")]
     [EditorRequired]
     public string Reason { get; init; } = default!;
 }
@@ -15938,6 +14710,7 @@ public enum TTableActiveRowTypeValue
 [ECMAScript]
 public record TTableAsyncLoadingClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("status")]
     public TTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
@@ -15964,18 +14737,23 @@ public enum TTableAsyncLoadingValue
 [ECMAScript]
 public record TTableChangeContext<T> : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TTableChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("currentData")]
     public T[]? CurrentData { get; init; }
 }
 
 [ECMAScript]
 public record TTableChangeData : VueProps
 {
+    [ECMAScriptName("sorter")]
     public TTableSort? Sorter { get; init; }
 
+    [ECMAScriptName("filter")]
     public TJsonObject? Filter { get; init; }
 
+    [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; init; }
 }
 
@@ -16002,24 +14780,34 @@ public delegate TClassName TTableColumnClassNameOption2<T>(TCellData<T> context)
 [ECMAScript]
 public record TTableColumnController : VueProps
 {
+    [ECMAScriptName("buttonProps")]
     public TdButtonProps? ButtonProps { get; init; }
 
+    [ECMAScriptName("checkboxProps")]
     public TdCheckboxGroupProps<TCheckboxGroupValueItem[]>? CheckboxProps { get; init; }
 
+    [ECMAScriptName("columnControllerBottomContent")]
     public RenderFragment? ColumnControllerBottomContent { get; init; }
 
+    [ECMAScriptName("columnControllerTopContent")]
     public RenderFragment? ColumnControllerTopContent { get; init; }
 
+    [ECMAScriptName("dialogProps")]
     public TdDialogProps? DialogProps { get; init; }
 
+    [ECMAScriptName("displayType")]
     public TTableColumnControllerDisplayType? DisplayType { get; init; }
 
+    [ECMAScriptName("fields")]
     public string[]? Fields { get; init; }
 
+    [ECMAScriptName("groupColumns")]
     public TTableColumnGroup[]? GroupColumns { get; init; }
 
+    [ECMAScriptName("hideTriggerButton")]
     public bool? HideTriggerButton { get; init; }
 
+    [ECMAScriptName("placement")]
     public TTableColumnControllerPlacement? Placement { get; init; }
 }
 
@@ -16050,6 +14838,7 @@ public enum TTableColumnControllerPlacement
 [ECMAScript]
 public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -16068,28 +14857,40 @@ public enum TTableColumnControllerVisibleChangeEventContextTrigger
 [ECMAScript]
 public record TTableColumnFilter : VueProps
 {
+    [ECMAScriptName("attrs")]
     public THTMLElementAttributes? Attrs { get; init; }
 
+    [ECMAScriptName("classNames")]
     public TClassName? ClassNames { get; init; }
 
+    [ECMAScriptName("component")]
     public IVueComponent? Component { get; init; }
 
+    [ECMAScriptName("confirmEvents")]
     public string[]? ConfirmEvents { get; init; }
 
+    [ECMAScriptName("label")]
     public TTableColumnFilterLabel? Label { get; init; }
 
+    [ECMAScriptName("list")]
     public TOptionData[]? List { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("props")]
     public TFilterProps? Props { get; init; }
 
+    [ECMAScriptName("resetValue")]
     public TJsonValue? ResetValue { get; init; }
 
+    [ECMAScriptName("showConfirmAndReset")]
     public bool? ShowConfirmAndReset { get; init; }
 
+    [ECMAScriptName("style")]
     public TStyles? Style { get; init; }
 
+    [ECMAScriptName("type")]
     public TFilterType? Type { get; init; }
 }
 
@@ -16101,11 +14902,14 @@ public readonly union TTableColumnFilterLabel(string, RenderFragment)
 [ECMAScript]
 public record TTableColumnGroup : VueProps
 {
+    [ECMAScriptName("label")]
     [EditorRequired]
     public string Label { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public TTableColumnGroupValue? Value { get; init; }
 
+    [ECMAScriptName("columns")]
     [EditorRequired]
     public string[] Columns { get; init; } = default!;
 }
@@ -16118,6 +14922,7 @@ public readonly union TTableColumnGroupValue(string, Number)
 [ECMAScript]
 public record TTableColumnResizeChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("columnsWidth")]
     [EditorRequired]
     public TTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
@@ -16130,54 +14935,77 @@ public record TTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionar
 [ECMAScript]
 public record TTableColumnResizeConfig : VueProps
 {
+    [ECMAScriptName("minWidth")]
     public Number MinWidth { get; init; }
 
+    [ECMAScriptName("maxWidth")]
     public Number MaxWidth { get; init; }
 }
 
 [ECMAScript]
 public record TTableConfig : VueProps
 {
+    [ECMAScriptName("cancelText")]
     public string? CancelText { get; init; }
 
+    [ECMAScriptName("clearFilterResultButtonText")]
     public string? ClearFilterResultButtonText { get; init; }
 
+    [ECMAScriptName("columnConfigButtonText")]
     public string? ColumnConfigButtonText { get; init; }
 
+    [ECMAScriptName("columnConfigDescriptionText")]
     public string? ColumnConfigDescriptionText { get; init; }
 
+    [ECMAScriptName("columnConfigTitleText")]
     public string? ColumnConfigTitleText { get; init; }
 
+    [ECMAScriptName("confirmText")]
     public string? ConfirmText { get; init; }
 
+    [ECMAScriptName("empty")]
     public TTableConfigEmpty? Empty { get; init; }
 
+    [ECMAScriptName("expandIcon")]
     public RenderFragment? ExpandIcon { get; init; }
 
+    [ECMAScriptName("filterIcon")]
     public RenderFragment? FilterIcon { get; init; }
 
+    [ECMAScriptName("hideSortTips")]
     public bool? HideSortTips { get; init; }
 
+    [ECMAScriptName("loadingMoreText")]
     public string? LoadingMoreText { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("resetText")]
     public string? ResetText { get; init; }
 
+    [ECMAScriptName("searchResultText")]
     public string? SearchResultText { get; init; }
 
+    [ECMAScriptName("selectAllText")]
     public string? SelectAllText { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("sortAscendingOperationText")]
     public string? SortAscendingOperationText { get; init; }
 
+    [ECMAScriptName("sortCancelOperationText")]
     public string? SortCancelOperationText { get; init; }
 
+    [ECMAScriptName("sortDescendingOperationText")]
     public string? SortDescendingOperationText { get; init; }
 
+    [ECMAScriptName("sortIcon")]
     public RenderFragment? SortIcon { get; init; }
 
+    [ECMAScriptName("treeExpandAndFoldIcon")]
     public RenderFragment<TTableConfigTreeExpandAndFoldIconContext>? TreeExpandAndFoldIcon { get; init; }
 }
 
@@ -16189,6 +15017,7 @@ public readonly union TTableConfigEmpty(string, RenderFragment)
 [ECMAScript]
 public record TTableConfigTreeExpandAndFoldIconContext : VueProps
 {
+    [ECMAScriptName("type")]
     public TTableConfigTreeExpandAndFoldIconContextType Type { get; init; }
 }
 
@@ -16205,6 +15034,7 @@ public enum TTableConfigTreeExpandAndFoldIconContextType
 [ECMAScript]
 public record TTableDataChangeContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TTableDataChangeContextTrigger Trigger { get; init; }
 }
 
@@ -16235,24 +15065,34 @@ public enum TTableDragSortValue
 [ECMAScript]
 public record TTableEditableCellConfig<T> : VueProps
 {
+    [ECMAScriptName("abortEditOnEvent")]
     public string[]? AbortEditOnEvent { get; init; }
 
+    [ECMAScriptName("component")]
     public IVueComponent? Component { get; init; }
 
+    [ECMAScriptName("defaultEditable")]
     public bool? DefaultEditable { get; init; }
 
+    [ECMAScriptName("keepEditMode")]
     public bool? KeepEditMode { get; init; }
 
+    [ECMAScriptName("on")]
     public TTableEditableCellConfigOn<T>? On { get; init; }
 
+    [ECMAScriptName("onEdited")]
     public TTableEditableCellConfigOnEdited<T>? OnEdited { get; init; }
 
+    [ECMAScriptName("props")]
     public TTableEditableCellProps<T>? Props { get; init; }
 
+    [ECMAScriptName("rules")]
     public TTableEditableCellRules<T>? Rules { get; init; }
 
+    [ECMAScriptName("showEditIcon")]
     public bool? ShowEditIcon { get; init; }
 
+    [ECMAScriptName("validateTrigger")]
     public TTableEditableCellConfigValidateTrigger? ValidateTrigger { get; init; }
 }
 
@@ -16288,17 +15128,23 @@ public delegate TJsonObject TTableEditableCellPropsOption2<T>(TTableEditableCell
 [ECMAScript]
 public record TTableEditableCellPropsParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("editedRow")]
     public T EditedRow { get; init; } = default!;
 
+    [ECMAScriptName("updateEditedCellValue")]
     [EditorRequired]
     public TTableEditableCellPropsParamsUpdateEditedCellValue<T> UpdateEditedCellValue { get; init; } = default!;
 }
@@ -16314,8 +15160,10 @@ public readonly union TTableEditableCellPropsParamsUpdateEditedCellValueVal<T>(T
 [ECMAScript]
 public record TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T> : VueProps
 {
+    [ECMAScriptName("rowValue")]
     public TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>? RowValue { get; init; }
 
+    [ECMAScriptName("isUpdateCurrentRow")]
     public bool? IsUpdateCurrentRow { get; init; }
 }
 
@@ -16355,10 +15203,13 @@ public readonly union TTableExpandedRowKeysValueItem<T>(string, Number)
 [ECMAScript]
 public record TTableExpandedRowParams<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("columns")]
     public TTableExpandedRowParamsColumns<T> Columns { get; init; }
 }
 
@@ -16370,8 +15221,10 @@ public readonly union TTableExpandedRowParamsColumns<T>(TPrimaryTableCol<T>[], T
 [ECMAScript]
 public record TTableFilterChangeContext<T> : VueProps
 {
+    [ECMAScriptName("col")]
     public TPrimaryTableCol<T>? Col { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTableFilterChangeContextTrigger Trigger { get; init; }
 }
 
@@ -16392,9 +15245,11 @@ public enum TTableFilterChangeContextTrigger
 [ECMAScript]
 public record TTableFilterIconSlotContext<T> : VueProps
 {
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 }
 
@@ -16444,10 +15299,13 @@ public delegate THTMLElementAttributes TTableRowAttributesOption2<T>(TTableRowAt
 [ECMAScript]
 public record TTableRowAttributesOption2Params<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("type")]
     public TTableRowAttributesOption2ParamsType Type { get; init; }
 }
 
@@ -16472,6 +15330,7 @@ public delegate TClassName TTableRowClassNameValueOption2<T>(TRowClassNameParams
 [ECMAScript]
 public record TTableRowData : VueProps
 {
+    [ECMAScriptName("children")]
     public TTableRowData[]? Children { get; init; }
 }
 
@@ -16488,22 +15347,31 @@ public enum TTableRowSelectionTypeValue
 [ECMAScript]
 public record TTableRowState<T> : VueProps
 {
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("expandChildrenLength")]
     public Number? ExpandChildrenLength { get; init; }
 
+    [ECMAScriptName("expanded")]
     public bool Expanded { get; init; }
 
+    [ECMAScriptName("id")]
     public TTableRowStateId<T> Id { get; init; }
 
+    [ECMAScriptName("level")]
     public Number? Level { get; init; }
 
+    [ECMAScriptName("parent")]
     public TTableRowState<T>? Parent { get; init; }
 
+    [ECMAScriptName("path")]
     public TTableRowState<T>[]? Path { get; init; }
 
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 }
 
@@ -16515,18 +15383,24 @@ public readonly union TTableRowStateId<T>(string, Number)
 [ECMAScript]
 public record TTableRowValidateResult<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("col")]
     [EditorRequired]
     public TPrimaryTableCol<T> Col { get; init; } = default!;
 
+    [ECMAScriptName("colIndex")]
     public Number ColIndex { get; init; }
 
+    [ECMAScriptName("errorList")]
     [EditorRequired]
     public TAllValidateResult[] ErrorList { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public TJsonValue Value { get; init; }
 }
 
@@ -16536,6 +15410,7 @@ public delegate TRowspanColspan TTableRowspanAndColspanFunc<T>(TBaseTableCellPar
 [ECMAScript]
 public record TTableScrollEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -16543,6 +15418,7 @@ public record TTableScrollEventParams<T> : VueProps
 [ECMAScript]
 public record TTableScrollXEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -16550,6 +15426,7 @@ public record TTableScrollXEventParams<T> : VueProps
 [ECMAScript]
 public record TTableScrollYEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -16582,29 +15459,39 @@ public enum TTableTableLayoutValue
 [ECMAScript]
 public record TTableTreeConfig : VueProps
 {
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; init; }
 
+    [ECMAScriptName("childrenKey")]
     public string? ChildrenKey { get; init; }
 
+    [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; init; }
 
+    [ECMAScriptName("expandTreeNodeOnClick")]
     public bool? ExpandTreeNodeOnClick { get; init; }
 
+    [ECMAScriptName("indent")]
     public Number? Indent { get; init; }
 
+    [ECMAScriptName("treeNodeColumnIndex")]
     public Number? TreeNodeColumnIndex { get; init; }
 }
 
 [ECMAScript]
 public record TTableTreeExpandChangeContext<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("rowState")]
     [EditorRequired]
     public TTableRowState<T> RowState { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TTableTreeExpandChangeContextTrigger? Trigger { get; init; }
 }
 
@@ -16621,15 +15508,20 @@ public enum TTableTreeExpandChangeContextTrigger
 [ECMAScript]
 public record TTableTreeNodeExpandOptions<T> : VueProps
 {
+    [ECMAScriptName("row")]
     public T Row { get; init; } = default!;
 
+    [ECMAScriptName("rowIndex")]
     public Number RowIndex { get; init; }
 
+    [ECMAScriptName("rowState")]
     [EditorRequired]
     public TTableRowState<T> RowState { get; init; } = default!;
 
+    [ECMAScriptName("type")]
     public TTableTreeNodeExpandOptionsType Type { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTableTreeNodeExpandOptionsTrigger? Trigger { get; init; }
 }
 
@@ -16684,6 +15576,7 @@ public enum TTableVerticalAlignValue
 [ECMAScript]
 public record TTabsAddEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16691,12 +15584,16 @@ public record TTabsAddEventContext : VueProps
 [ECMAScript]
 public record TTabsDragSortContext : VueProps
 {
+    [ECMAScriptName("currentIndex")]
     public Number CurrentIndex { get; init; }
 
+    [ECMAScriptName("current")]
     public TTabValue Current { get; init; }
 
+    [ECMAScriptName("targetIndex")]
     public Number TargetIndex { get; init; }
 
+    [ECMAScriptName("target")]
     public TTabValue Target { get; init; }
 }
 
@@ -16717,10 +15614,13 @@ public enum TTabsPlacementValue
 [ECMAScript]
 public record TTabsRemoveEventOptions : VueProps
 {
+    [ECMAScriptName("value")]
     public TTabValue Value { get; init; }
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16762,6 +15662,7 @@ public enum TTabsThemeValue
 [ECMAScript]
 public record TTagClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16769,6 +15670,7 @@ public record TTagClickEventContext : VueProps
 [ECMAScript]
 public record TTagCloseEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16776,15 +15678,18 @@ public record TTagCloseEventContext : VueProps
 [ECMAScript]
 public record TTagConfig : VueProps
 {
+    [ECMAScriptName("closeIcon")]
     public RenderFragment? CloseIcon { get; init; }
 }
 
 [ECMAScript]
 public record TTagInputBlurEventContext : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -16792,12 +15697,16 @@ public record TTagInputBlurEventContext : VueProps
 [ECMAScript]
 public record TTagInputChangeContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TTagInputTriggerSource Trigger { get; init; }
 
+    [ECMAScriptName("index")]
     public Number? Index { get; init; }
 
+    [ECMAScriptName("item")]
     public TTagInputChangeContextItem? Item { get; init; }
 
+    [ECMAScriptName("e")]
     public TTagInputChangeContextE? E { get; init; }
 }
 
@@ -16814,6 +15723,7 @@ public readonly union TTagInputChangeContextItem(string, Number)
 [ECMAScript]
 public record TTagInputClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16821,6 +15731,7 @@ public record TTagInputClearEventContext : VueProps
 [ECMAScript]
 public record TTagInputClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16828,14 +15739,18 @@ public record TTagInputClickEventContext : VueProps
 [ECMAScript]
 public record TTagInputCollapsedItemsSlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public TTagInputValueItem[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TTagInputCollapsedItemsSlotContextOnClose OnClose { get; init; } = default!;
 }
@@ -16846,23 +15761,30 @@ public delegate void TTagInputCollapsedItemsSlotContextOnClose(TTagInputCollapse
 [ECMAScript]
 public record TTagInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TTagInputDragSortContext : VueProps
 {
+    [ECMAScriptName("newTags")]
     [EditorRequired]
     public TTagInputValueItem[] NewTags { get; init; } = default!;
 
+    [ECMAScriptName("currentIndex")]
     public Number CurrentIndex { get; init; }
 
+    [ECMAScriptName("current")]
     public TTagInputDragSortContextCurrent Current { get; init; }
 
+    [ECMAScriptName("targetIndex")]
     public Number TargetIndex { get; init; }
 
+    [ECMAScriptName("target")]
     public TTagInputDragSortContextTarget Target { get; init; }
 }
 
@@ -16879,9 +15801,11 @@ public readonly union TTagInputDragSortContextTarget(string, Number)
 [ECMAScript]
 public record TTagInputEnterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 }
@@ -16899,9 +15823,11 @@ public enum TTagInputExcessTagsDisplayTypeValue
 [ECMAScript]
 public record TTagInputFocusEventContext : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -16909,6 +15835,7 @@ public record TTagInputFocusEventContext : VueProps
 [ECMAScript]
 public record TTagInputMouseenterEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16916,6 +15843,7 @@ public record TTagInputMouseenterEventContext : VueProps
 [ECMAScript]
 public record TTagInputMouseleaveEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -16923,9 +15851,11 @@ public record TTagInputMouseleaveEventContext : VueProps
 [ECMAScript]
 public record TTagInputPasteEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -16933,15 +15863,20 @@ public record TTagInputPasteEventContext : VueProps
 [ECMAScript]
 public record TTagInputRemoveContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("item")]
     public TTagInputRemoveContextItem Item { get; init; }
 
+    [ECMAScriptName("e")]
     public TTagInputRemoveContextE? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTagInputRemoveTrigger Trigger { get; init; }
 }
 
@@ -16982,6 +15917,7 @@ public enum TTagInputStatusValue
 [ECMAScript]
 public record TTagInputTagSlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TTagInputTagSlotContextValue Value { get; init; }
 }
 
@@ -17007,9 +15943,11 @@ public enum TTagInputTriggerSource
 [ECMAScript]
 public record TTagInputValueDisplaySlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TTagInputValueDisplaySlotContextOnClose OnClose { get; init; } = default!;
 }
@@ -17077,8 +16015,10 @@ public enum TTagVariantValue
 [ECMAScript]
 public record TTargetParams : VueProps
 {
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 
+    [ECMAScriptName("movedValue")]
     [EditorRequired]
     public TTransferValue[] MovedValue { get; init; } = default!;
 }
@@ -17122,14 +16062,17 @@ public readonly union TTextareaAutosizeValue(bool, TTextareaAutosizeValueOption2
 [ECMAScript]
 public record TTextareaAutosizeValueOption2 : VueProps
 {
+    [ECMAScriptName("minRows")]
     public Number? MinRows { get; init; }
 
+    [ECMAScriptName("maxRows")]
     public Number? MaxRows { get; init; }
 }
 
 [ECMAScript]
 public record TTextareaBlurEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -17137,12 +16080,14 @@ public record TTextareaBlurEventContext : VueProps
 [ECMAScript]
 public record TTextareaChangeEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public InputEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TTextareaFocusEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -17150,6 +16095,7 @@ public record TTextareaFocusEventContext : VueProps
 [ECMAScript]
 public record TTextareaKeydownEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -17157,6 +16103,7 @@ public record TTextareaKeydownEventContext : VueProps
 [ECMAScript]
 public record TTextareaKeypressEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -17164,6 +16111,7 @@ public record TTextareaKeypressEventContext : VueProps
 [ECMAScript]
 public record TTextareaKeyupEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -17190,6 +16138,7 @@ public enum TTextareaStatusValue
 [ECMAScript]
 public record TTextareaValidateEventContext : VueProps
 {
+    [ECMAScriptName("error")]
     public TTextareaValidateEventContextError? Error { get; init; }
 }
 
@@ -17211,15 +16160,20 @@ public readonly union TTextareaValue(string, Number)
 [ECMAScript]
 public record TTimePickerBlurEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TPopupTriggerEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TPopupTriggerSource? Trigger { get; init; }
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -17227,6 +16181,7 @@ public record TTimePickerBlurEventContext : VueProps
 [ECMAScript]
 public record TTimePickerClearEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17234,6 +16189,7 @@ public record TTimePickerClearEventContext : VueProps
 [ECMAScript]
 public record TTimePickerCloseEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17241,20 +16197,26 @@ public record TTimePickerCloseEventContext : VueProps
 [ECMAScript]
 public record TTimePickerConfig : VueProps
 {
+    [ECMAScriptName("anteMeridiem")]
     public string? AnteMeridiem { get; init; }
 
+    [ECMAScriptName("confirm")]
     public string? Confirm { get; init; }
 
+    [ECMAScriptName("now")]
     public string? Now { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("postMeridiem")]
     public string? PostMeridiem { get; init; }
 }
 
 [ECMAScript]
 public record TTimePickerConfirmEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17265,15 +16227,19 @@ public delegate TTimePickerDisableTimeValueResultPartial TTimePickerDisableTimeV
 [ECMAScript]
 public record TTimePickerDisableTimeValueResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 
+    [ECMAScriptName("millisecond")]
     [EditorRequired]
     public Number[] Millisecond { get; init; } = default!;
 }
@@ -17281,9 +16247,11 @@ public record TTimePickerDisableTimeValueResultPartial : VueProps
 [ECMAScript]
 public record TTimePickerFocusEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -17291,9 +16259,11 @@ public record TTimePickerFocusEventContext : VueProps
 [ECMAScript]
 public record TTimePickerInputEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public InputEvent E { get; init; } = default!;
 }
@@ -17301,6 +16271,7 @@ public record TTimePickerInputEventContext : VueProps
 [ECMAScript]
 public record TTimePickerOpenEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17308,6 +16279,7 @@ public record TTimePickerOpenEventContext : VueProps
 [ECMAScript]
 public record TTimePickerPickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17346,6 +16318,7 @@ public readonly union TTimePickerStepsValueItem(string, Number)
 [ECMAScript]
 public record TTimePickerValueDisplaySlotContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -17353,11 +16326,14 @@ public record TTimePickerValueDisplaySlotContext : VueProps
 [ECMAScript]
 public record TTimeRangePickerBlurEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string[] Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
@@ -17367,18 +16343,22 @@ public delegate TTimeRangePickerDisableTimeValueResultPartial TTimeRangePickerDi
 [ECMAScript]
 public record TTimeRangePickerDisableTimeValueContext : VueProps
 {
+    [ECMAScriptName("partial")]
     public TTimeRangePickerPartial Partial { get; init; }
 }
 
 [ECMAScript]
 public record TTimeRangePickerDisableTimeValueResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 }
@@ -17391,22 +16371,28 @@ public readonly union TTimeRangePickerDisabledValue(bool, bool[])
 [ECMAScript]
 public record TTimeRangePickerFocusEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string[] Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
 [ECMAScript]
 public record TTimeRangePickerInputEventContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string[] Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public InputEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
@@ -17423,9 +16409,11 @@ public enum TTimeRangePickerPartial
 [ECMAScript]
 public record TTimeRangePickerPickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("position")]
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
@@ -17468,9 +16456,11 @@ public readonly union TTimeRangePickerStepsValueItem(string, Number)
 [ECMAScript]
 public record TTimelineItemClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("item")]
     [EditorRequired]
     public TdTimelineItemProps Item { get; init; } = default!;
 }
@@ -17566,6 +16556,7 @@ public readonly union TTitleType(string, RenderFragment)
 [ECMAScript]
 public record TTooltipOverlayClickEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17602,6 +16593,7 @@ public enum TTooltipPlacementValueOption1
 [ECMAScript]
 public record TTooltipScrollEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -17609,6 +16601,7 @@ public record TTooltipScrollEventContext : VueProps
 [ECMAScript]
 public record TTooltipScrollToBottomEventContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -17650,10 +16643,13 @@ public enum TTooltipTriggerValue
 [ECMAScript]
 public record TTransferConfig : VueProps
 {
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("title")]
     public string? Title { get; init; }
 }
 
@@ -17682,6 +16678,7 @@ public readonly union TTransferEmptyValue<T>(TEmptyType, TEmptyType[])
 [ECMAScript]
 public record TTransferFooterSlotContext<T> : VueProps
 {
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -17693,10 +16690,13 @@ public readonly union TTransferFooterValueItem<T>(string, RenderFragment)
 [ECMAScript]
 public record TTransferItem<T> : VueProps
 {
+    [ECMAScriptName("data")]
     public T Data { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -17713,6 +16713,7 @@ public enum TTransferListType
 [ECMAScript]
 public record TTransferOperationSlotContext<T> : VueProps
 {
+    [ECMAScriptName("direction")]
     public TTransferOperationSlotContextDirection Direction { get; init; }
 }
 
@@ -17734,6 +16735,7 @@ public readonly union TTransferOperationValueItem<T>(string, RenderFragment)
 [ECMAScript]
 public record TTransferPageChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -17745,11 +16747,14 @@ public readonly union TTransferPaginationValue<T>(TdPaginationProps, TdPaginatio
 [ECMAScript]
 public record TTransferScrollEventOptions<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 
+    [ECMAScriptName("bottomDistance")]
     public Number BottomDistance { get; init; }
 
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -17778,6 +16783,7 @@ public enum TTransferTargetSortValue
 [ECMAScript]
 public record TTransferTitleSlotContext<T> : VueProps
 {
+    [ECMAScriptName("type")]
     public TTransferListType Type { get; init; }
 }
 
@@ -17792,11 +16798,14 @@ public readonly union TTransferValue(string, Number)
 [ECMAScript]
 public record TTreeActiveEventContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTreeActiveEventContextTrigger Trigger { get; init; }
 }
 
@@ -17816,26 +16825,33 @@ public delegate bool TTreeAllowDropValue<T>(TTreeAllowDropValueContext<T> contex
 [ECMAScript]
 public record TTreeAllowDropValueContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("dragNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DragNode { get; init; } = default!;
 
+    [ECMAScriptName("dropNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
+    [ECMAScriptName("dropPosition")]
     public Number DropPosition { get; init; }
 }
 
 [ECMAScript]
 public record TTreeChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public TJsonValue? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTreeChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -17852,9 +16868,11 @@ public enum TTreeChangeEventContextTrigger
 [ECMAScript]
 public record TTreeClickEventContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -17862,8 +16880,10 @@ public record TTreeClickEventContext<T> : VueProps
 [ECMAScript]
 public record TTreeConfig : VueProps
 {
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 
+    [ECMAScriptName("folderIcon")]
     public RenderFragment? FolderIcon { get; init; }
 }
 
@@ -17878,9 +16898,11 @@ public delegate bool TTreeDisableCheckValueOption2<T>(TTreeNodeModel<T> node);
 [ECMAScript]
 public record TTreeDragEndEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -17888,9 +16910,11 @@ public record TTreeDragEndEventContext<T> : VueProps
 [ECMAScript]
 public record TTreeDragLeaveEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -17898,9 +16922,11 @@ public record TTreeDragLeaveEventContext<T> : VueProps
 [ECMAScript]
 public record TTreeDragOverEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -17908,9 +16934,11 @@ public record TTreeDragOverEventContext<T> : VueProps
 [ECMAScript]
 public record TTreeDragStartEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -17918,26 +16946,33 @@ public record TTreeDragStartEventContext<T> : VueProps
 [ECMAScript]
 public record TTreeDropEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("dragNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DragNode { get; init; } = default!;
 
+    [ECMAScriptName("dropNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
+    [ECMAScriptName("dropPosition")]
     public Number DropPosition { get; init; }
 }
 
 [ECMAScript]
 public record TTreeExpandEventContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTreeExpandEventContextTrigger Trigger { get; init; }
 }
 
@@ -17964,12 +16999,16 @@ public readonly union TTreeHeightValue<T>(string, Number)
 [ECMAScript]
 public record TTreeKeysType : VueProps
 {
+    [ECMAScriptName("value")]
     public string? Value { get; init; }
 
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("disabled")]
     public string? Disabled { get; init; }
 
+    [ECMAScriptName("children")]
     public string? Children { get; init; }
 }
 
@@ -17981,6 +17020,7 @@ public readonly union TTreeLabelValue<T>(string, bool)
 [ECMAScript]
 public record TTreeLoadEventContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -17996,79 +17036,109 @@ public readonly union TTreeMaxHeightValue<T>(string, Number)
 [ECMAScript]
 public record TTreeNodeModel<T> : VueProps
 {
+    [ECMAScriptName("activable")]
     public bool? Activable { get; init; }
 
+    [ECMAScriptName("actived")]
     public bool Actived { get; init; }
 
+    [ECMAScriptName("checkable")]
     public bool? Checkable { get; init; }
 
+    [ECMAScriptName("checked")]
     public bool Checked { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; init; }
 
+    [ECMAScriptName("expanded")]
     public bool Expanded { get; init; }
 
+    [ECMAScriptName("indeterminate")]
     public bool Indeterminate { get; init; }
 
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool Loading { get; init; }
 
+    [ECMAScriptName("value")]
     public TTreeNodeModelValue<T>? Value { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("data")]
     public T Data { get; init; } = default!;
 
+    [ECMAScriptName("appendData")]
     [EditorRequired]
     public TTreeNodeModelAppendData<T> AppendData { get; init; } = default!;
 
+    [ECMAScriptName("getChildren")]
     [EditorRequired]
     public TTreeNodeModelGetChildren<T> GetChildren { get; init; } = default!;
 
+    [ECMAScriptName("getIndex")]
     [EditorRequired]
     public TTreeNodeModelGetIndex<T> GetIndex { get; init; } = default!;
 
+    [ECMAScriptName("getLevel")]
     [EditorRequired]
     public TTreeNodeModelGetLevel<T> GetLevel { get; init; } = default!;
 
+    [ECMAScriptName("getParent")]
     [EditorRequired]
     public TTreeNodeModelGetParent<T> GetParent { get; init; } = default!;
 
+    [ECMAScriptName("getParents")]
     [EditorRequired]
     public TTreeNodeModelGetParents<T> GetParents { get; init; } = default!;
 
+    [ECMAScriptName("getPath")]
     [EditorRequired]
     public TTreeNodeModelGetPath<T> GetPath { get; init; } = default!;
 
+    [ECMAScriptName("getRoot")]
     [EditorRequired]
     public TTreeNodeModelGetRoot<T> GetRoot { get; init; } = default!;
 
+    [ECMAScriptName("getSiblings")]
     [EditorRequired]
     public TTreeNodeModelGetSiblings<T> GetSiblings { get; init; } = default!;
 
+    [ECMAScriptName("insertAfter")]
     [EditorRequired]
     public TTreeNodeModelInsertAfter<T> InsertAfter { get; init; } = default!;
 
+    [ECMAScriptName("insertBefore")]
     [EditorRequired]
     public TTreeNodeModelInsertBefore<T> InsertBefore { get; init; } = default!;
 
+    [ECMAScriptName("isFirst")]
     [EditorRequired]
     public TTreeNodeModelIsFirst<T> IsFirst { get; init; } = default!;
 
+    [ECMAScriptName("isLast")]
     [EditorRequired]
     public TTreeNodeModelIsLast<T> IsLast { get; init; } = default!;
 
+    [ECMAScriptName("isLeaf")]
     [EditorRequired]
     public TTreeNodeModelIsLeaf<T> IsLeaf { get; init; } = default!;
 
+    [ECMAScriptName("remove")]
     [EditorRequired]
     public TTreeNodeModelRemove<T> Remove { get; init; } = default!;
 
+    [ECMAScriptName("setData")]
     [EditorRequired]
     public TTreeNodeModelSetData<T> SetData { get; init; } = default!;
 }
@@ -18144,14 +17214,19 @@ public readonly union TTreeNodeValue(string, Number)
 [ECMAScript]
 public record TTreeOptionData<T> : VueProps
 {
+    [ECMAScriptName("children")]
     public TTreeOptionDataChildren<T>? Children { get; init; }
 
+    [ECMAScriptName("label")]
     public TTreeOptionDataLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("text")]
     public string? Text { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("content")]
     public TTreeOptionDataContent<T>? Content { get; init; }
 }
 
@@ -18173,110 +17248,161 @@ public readonly union TTreeOptionDataLabel<T>(string, RenderFragment)
 [ECMAScript]
 public record TTreeProps<T> : VueProps
 {
+    [ECMAScriptName("activable")]
     public bool? Activable { get; init; }
 
+    [ECMAScriptName("activeMultiple")]
     public bool? ActiveMultiple { get; init; }
 
+    [ECMAScriptName("actived")]
     public TTreeNodeValue[]? Actived { get; init; }
 
+    [ECMAScriptName("defaultActived")]
     public TTreeNodeValue[]? DefaultActived { get; init; }
 
+    [ECMAScriptName("allowDrop")]
     public TdTreePropsAllowDrop<T>? AllowDrop { get; init; }
 
+    [ECMAScriptName("allowFoldNodeOnFilter")]
     public bool? AllowFoldNodeOnFilter { get; init; }
 
+    [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; init; }
 
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; init; }
 
+    [ECMAScriptName("checkable")]
     public bool? Checkable { get; init; }
 
+    [ECMAScriptName("data")]
     public T[]? Data { get; init; }
 
+    [ECMAScriptName("disableCheck")]
     public TdTreePropsDisableCheck<T>? DisableCheck { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("empty")]
     public TdTreePropsEmpty<T>? Empty { get; init; }
 
+    [ECMAScriptName("expandAll")]
     public bool? ExpandAll { get; init; }
 
+    [ECMAScriptName("expandLevel")]
     public Number? ExpandLevel { get; init; }
 
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; init; }
 
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; init; }
 
+    [ECMAScriptName("expandParent")]
     public bool? ExpandParent { get; init; }
 
+    [ECMAScriptName("expanded")]
     public TTreeNodeValue[]? Expanded { get; init; }
 
+    [ECMAScriptName("defaultExpanded")]
     public TTreeNodeValue[]? DefaultExpanded { get; init; }
 
+    [ECMAScriptName("filter")]
     public TdTreePropsFilter<T>? Filter { get; init; }
 
+    [ECMAScriptName("height")]
     public TdTreePropsHeight<T>? Height { get; init; }
 
+    [ECMAScriptName("hover")]
     public bool? Hover { get; init; }
 
+    [ECMAScriptName("icon")]
     public TdTreePropsIcon<T>? Icon { get; init; }
 
+    [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTreePropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; init; }
 
+    [ECMAScriptName("line")]
     public TdTreePropsLine<T>? Line { get; init; }
 
+    [ECMAScriptName("load")]
     public TdTreePropsLoad<T>? Load { get; init; }
 
+    [ECMAScriptName("maxHeight")]
     public TdTreePropsMaxHeight<T>? MaxHeight { get; init; }
 
+    [ECMAScriptName("operations")]
     public RenderFragment<TTreeNodeModel<T>>? Operations { get; init; }
 
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; init; }
 
+    [ECMAScriptName("transition")]
     public bool? Transition { get; init; }
 
+    [ECMAScriptName("value")]
     public TTreeNodeValue[]? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TTreeNodeValue[]? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TTreeNodeValue[]? ModelValue { get; init; }
 
+    [ECMAScriptName("valueMode")]
     public TdTreePropsValueMode? ValueMode { get; init; }
 
+    [ECMAScriptName("onActive")]
     public TdTreePropsOnActive<T>? OnActive { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdTreePropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdTreePropsOnClick<T>? OnClick { get; init; }
 
+    [ECMAScriptName("onDragEnd")]
     public TdTreePropsOnDragEnd<T>? OnDragEnd { get; init; }
 
+    [ECMAScriptName("onDragLeave")]
     public TdTreePropsOnDragLeave<T>? OnDragLeave { get; init; }
 
+    [ECMAScriptName("onDragOver")]
     public TdTreePropsOnDragOver<T>? OnDragOver { get; init; }
 
+    [ECMAScriptName("onDragStart")]
     public TdTreePropsOnDragStart<T>? OnDragStart { get; init; }
 
+    [ECMAScriptName("onDrop")]
     public TdTreePropsOnDrop<T>? OnDrop { get; init; }
 
+    [ECMAScriptName("onExpand")]
     public TdTreePropsOnExpand<T>? OnExpand { get; init; }
 
+    [ECMAScriptName("onLoad")]
     public TdTreePropsOnLoad<T>? OnLoad { get; init; }
 
+    [ECMAScriptName("onScroll")]
     public TdTreePropsOnScroll<T>? OnScroll { get; init; }
 
+    [ECMAScriptName("treeStore")]
     public TTreeStore? TreeStore { get; init; }
 }
 
 [ECMAScript]
 public record TTreeScrollEventParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -18284,8 +17410,10 @@ public record TTreeScrollEventParams<T> : VueProps
 [ECMAScript]
 public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("value")]
     public TTreeSelectValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -18293,14 +17421,19 @@ public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
 [ECMAScript]
 public record TTreeSelectChangeContext<DataOption> : VueProps
 {
+    [ECMAScriptName("node")]
     public TTreeNodeModel<DataOption>? Node { get; init; }
 
+    [ECMAScriptName("data")]
     public DataOption? Data { get; init; }
 
+    [ECMAScriptName("index")]
     public Number? Index { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TTreeSelectValueChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TTreeSelectChangeContextE<DataOption>? E { get; init; }
 }
 
@@ -18365,6 +17498,7 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 [ECMAScript]
 public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -18372,14 +17506,18 @@ public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 [ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public DataOption[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public DataOption[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TTreeSelectCollapsedItemsSlotContextOnClose<DataOption, TreeValueType> OnClose { get; init; } = default!;
 }
@@ -18390,18 +17528,23 @@ public delegate void TTreeSelectCollapsedItemsSlotContextOnClose<DataOption, Tre
 [ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
 [ECMAScript]
 public record TTreeSelectConfig : VueProps
 {
+    [ECMAScriptName("empty")]
     public string? Empty { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 }
 
@@ -18416,8 +17559,10 @@ public delegate bool TTreeSelectFilterValue<DataOption, TreeValueType>(string fi
 [ECMAScript]
 public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("value")]
     public TTreeSelectValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -18472,9 +17617,11 @@ public enum TTreeSelectValueChangeTrigger
 [ECMAScript]
 public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public DataOption[] Value { get; init; } = default!;
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TTreeSelectValueDisplaySlotContextOnClose<DataOption, TreeValueType> OnClose { get; init; } = default!;
 }
@@ -18517,11 +17664,14 @@ public enum TTreeValueModeValue
 [ECMAScript]
 public record TTriggerContext : VueProps
 {
+    [ECMAScriptName("dragActive")]
     public bool? DragActive { get; init; }
 
+    [ECMAScriptName("files")]
     [EditorRequired]
     public TUploadFile[] Files { get; init; } = default!;
 
+    [ECMAScriptName("triggerUpload")]
     public TTriggerContextTriggerUpload? TriggerUpload { get; init; }
 }
 
@@ -18550,22 +17700,29 @@ public readonly union TTypeTreeOptionDataTDefault(string, Number)
 [ECMAScript]
 public record TTypographyConfig : VueProps
 {
+    [ECMAScriptName("collapseText")]
     public string? CollapseText { get; init; }
 
+    [ECMAScriptName("copiedText")]
     public string? CopiedText { get; init; }
 
+    [ECMAScriptName("expandText")]
     public string? ExpandText { get; init; }
 }
 
 [ECMAScript]
 public record TTypographyCopyable : VueProps
 {
+    [ECMAScriptName("text")]
     public string? Text { get; init; }
 
+    [ECMAScriptName("suffix")]
     public RenderFragment<TTypographyCopyableSuffixContext>? Suffix { get; init; }
 
+    [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; init; }
 
+    [ECMAScriptName("onCopy")]
     public TTypographyCopyableOnCopy? OnCopy { get; init; }
 }
 
@@ -18575,22 +17732,29 @@ public delegate void TTypographyCopyableOnCopy();
 [ECMAScript]
 public record TTypographyCopyableSuffixContext : VueProps
 {
+    [ECMAScriptName("copied")]
     public bool Copied { get; init; }
 }
 
 [ECMAScript]
 public record TTypographyEllipsis : VueProps
 {
+    [ECMAScriptName("collapsible")]
     public bool? Collapsible { get; init; }
 
+    [ECMAScriptName("expandable")]
     public bool? Expandable { get; init; }
 
+    [ECMAScriptName("row")]
     public Number? Row { get; init; }
 
+    [ECMAScriptName("suffix")]
     public RenderFragment<TTypographyEllipsisSuffixContext>? Suffix { get; init; }
 
+    [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; init; }
 
+    [ECMAScriptName("onExpand")]
     public TTypographyEllipsisOnExpand? OnExpand { get; init; }
 }
 
@@ -18600,6 +17764,7 @@ public delegate void TTypographyEllipsisOnExpand(bool expanded);
 [ECMAScript]
 public record TTypographyEllipsisSuffixContext : VueProps
 {
+    [ECMAScriptName("expanded")]
     public bool Expanded { get; init; }
 }
 
@@ -18622,11 +17787,14 @@ public readonly union TUploadBeforeUploadValueResult<T>(bool, IPromise<bool>)
 [ECMAScript]
 public record TUploadCancelUploadButtonSlotContext<T> : VueProps
 {
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; init; }
 
+    [ECMAScriptName("cancelUploadText")]
     [EditorRequired]
     public string CancelUploadText { get; init; } = default!;
 
+    [ECMAScriptName("cancelUpload")]
     [EditorRequired]
     public TUploadCancelUploadButtonSlotContextCancelUpload<T> CancelUpload { get; init; } = default!;
 }
@@ -18637,6 +17805,7 @@ public delegate void TUploadCancelUploadButtonSlotContextCancelUpload<T>(TUpload
 [ECMAScript]
 public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -18644,16 +17813,22 @@ public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
 [ECMAScript]
 public record TUploadChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TUploadChangeContextE? E { get; init; }
 
+    [ECMAScriptName("response")]
     public TJsonValue? Response { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TUploadChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("index")]
     public Number? Index { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadFile? File { get; init; }
 
+    [ECMAScriptName("files")]
     public TUploadFile[]? Files { get; init; }
 }
 
@@ -18683,52 +17858,70 @@ public enum TUploadChangeTrigger
 [ECMAScript]
 public record TUploadConfig : VueProps
 {
+    [ECMAScriptName("cancelUploadText")]
     public string? CancelUploadText { get; init; }
 
+    [ECMAScriptName("dragger")]
     public TUploadConfigDragger? Dragger { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadConfigFileList? File { get; init; }
 
+    [ECMAScriptName("progress")]
     public TUploadConfigProgress? Progress { get; init; }
 
+    [ECMAScriptName("sizeLimitMessage")]
     public string? SizeLimitMessage { get; init; }
 
+    [ECMAScriptName("triggerUploadText")]
     public TUploadTriggerUploadText? TriggerUploadText { get; init; }
 }
 
 [ECMAScript]
 public record TUploadConfigDragger : VueProps
 {
+    [ECMAScriptName("clickAndDragText")]
     public string? ClickAndDragText { get; init; }
 
+    [ECMAScriptName("dragDropText")]
     public string? DragDropText { get; init; }
 
+    [ECMAScriptName("draggingText")]
     public string? DraggingText { get; init; }
 }
 
 [ECMAScript]
 public record TUploadConfigFileList : VueProps
 {
+    [ECMAScriptName("fileNameText")]
     public string? FileNameText { get; init; }
 
+    [ECMAScriptName("fileOperationDateText")]
     public string? FileOperationDateText { get; init; }
 
+    [ECMAScriptName("fileOperationText")]
     public string? FileOperationText { get; init; }
 
+    [ECMAScriptName("fileSizeText")]
     public string? FileSizeText { get; init; }
 
+    [ECMAScriptName("fileStatusText")]
     public string? FileStatusText { get; init; }
 }
 
 [ECMAScript]
 public record TUploadConfigProgress : VueProps
 {
+    [ECMAScriptName("failText")]
     public string? FailText { get; init; }
 
+    [ECMAScriptName("successText")]
     public string? SuccessText { get; init; }
 
+    [ECMAScriptName("uploadingText")]
     public string? UploadingText { get; init; }
 
+    [ECMAScriptName("waitingText")]
     public string? WaitingText { get; init; }
 }
 
@@ -18743,12 +17936,16 @@ public delegate VueDictionary<TJsonValue> TUploadDataValueOption2<T>(TUploadFile
 [ECMAScript]
 public record TUploadDisplayDragEvents : VueProps
 {
+    [ECMAScriptName("onDrop")]
     public TUploadDisplayDragEventsOnDrop? OnDrop { get; init; }
 
+    [ECMAScriptName("onDragenter")]
     public TUploadDisplayDragEventsOnDragenter? OnDragenter { get; init; }
 
+    [ECMAScriptName("onDragover")]
     public TUploadDisplayDragEventsOnDragover? OnDragover { get; init; }
 
+    [ECMAScriptName("onDragleave")]
     public TUploadDisplayDragEventsOnDragleave? OnDragleave { get; init; }
 }
 
@@ -18767,6 +17964,7 @@ public delegate void TUploadDisplayDragEventsOnDrop(DragEvent @event);
 [ECMAScript]
 public record TUploadDragenterEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 }
@@ -18774,6 +17972,7 @@ public record TUploadDragenterEventContext<T> : VueProps
 [ECMAScript]
 public record TUploadDragleaveEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 }
@@ -18781,6 +17980,7 @@ public record TUploadDragleaveEventContext<T> : VueProps
 [ECMAScript]
 public record TUploadDropEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 }
@@ -18788,53 +17988,69 @@ public record TUploadDropEventContext<T> : VueProps
 [ECMAScript]
 public record TUploadFailContext : VueProps
 {
+    [ECMAScriptName("e")]
     public ProgressEvent? E { get; init; }
 
+    [ECMAScriptName("failedFiles")]
     [EditorRequired]
     public TUploadFile[] FailedFiles { get; init; } = default!;
 
+    [ECMAScriptName("currentFiles")]
     [EditorRequired]
     public TUploadFile[] CurrentFiles { get; init; } = default!;
 
+    [ECMAScriptName("response")]
     public TJsonValue? Response { get; init; }
 
+    [ECMAScriptName("file")]
     [EditorRequired]
     public TUploadFile File { get; init; } = default!;
 
-    [ECMAScriptName("XMLHttpRequest")]
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
 [ECMAScript]
 public record TUploadFile : VueProps
 {
+    [ECMAScriptName("lastModified")]
     public Number? LastModified { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("percent")]
     public Number? Percent { get; init; }
 
+    [ECMAScriptName("raw")]
     public File? Raw { get; init; }
 
+    [ECMAScriptName("response")]
     public TJsonObject? Response { get; init; }
 
+    [ECMAScriptName("size")]
     public Number? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TUploadFileStatus? Status { get; init; }
 
+    [ECMAScriptName("type")]
     public string? Type { get; init; }
 
+    [ECMAScriptName("uploadTime")]
     public string? UploadTime { get; init; }
 
+    [ECMAScriptName("url")]
     public string? Url { get; init; }
 }
 
 [ECMAScript]
 public record TUploadFileListDisplaySlotContext<T> : VueProps
 {
+    [ECMAScriptName("files")]
     [EditorRequired]
     public TUploadFile[] Files { get; init; } = default!;
 
+    [ECMAScriptName("dragEvents")]
     public TUploadDisplayDragEvents? DragEvents { get; init; }
 }
 
@@ -18895,24 +18111,29 @@ public enum TUploadMethodValue
 [ECMAScript]
 public sealed record TUploadOneFileSuccessEventContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public ProgressEvent? E { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadFile? File { get; init; }
 
+    [ECMAScriptName("response")]
     public TJsonValue? Response { get; init; }
 
-    [ECMAScriptName("XMLHttpRequest")]
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
 [ECMAScript]
 public record TUploadPreviewEventOptions<T> : VueProps
 {
+    [ECMAScriptName("file")]
     [EditorRequired]
     public TUploadFile File { get; init; } = default!;
 
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -18930,10 +18151,13 @@ public enum TUploadProgressType
 [ECMAScript]
 public record TUploadRemoveContext : VueProps
 {
+    [ECMAScriptName("index")]
     public Number? Index { get; init; }
 
+    [ECMAScriptName("file")]
     public TUploadFile? File { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -18949,6 +18173,7 @@ public readonly union TUploadRequestMethodValueFiles<T>(TUploadFile, TUploadFile
 [ECMAScript]
 public record TUploadSelectChangeContext : VueProps
 {
+    [ECMAScriptName("currentSelectedFiles")]
     [EditorRequired]
     public TUploadFile[] CurrentSelectedFiles { get; init; } = default!;
 }
@@ -18993,29 +18218,39 @@ public enum TUploadThemeValue
 [ECMAScript]
 public record TUploadTriggerUploadText : VueProps
 {
+    [ECMAScriptName("image")]
     public string? Image { get; init; }
 
+    [ECMAScriptName("normal")]
     public string? Normal { get; init; }
 
+    [ECMAScriptName("fileInput")]
     public string? FileInput { get; init; }
 
+    [ECMAScriptName("reupload")]
     public string? Reupload { get; init; }
 
+    [ECMAScriptName("continueUpload")]
     public string? ContinueUpload { get; init; }
 
+    [ECMAScriptName("delete")]
     public string? Delete { get; init; }
 }
 
 [ECMAScript]
 public record TUploadUploadButtonSlotContext<T> : VueProps
 {
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; init; }
 
+    [ECMAScriptName("uploading")]
     public bool Uploading { get; init; }
 
+    [ECMAScriptName("uploadFiles")]
     [EditorRequired]
     public TUploadUploadButtonSlotContextUploadFiles<T> UploadFiles { get; init; } = default!;
 
+    [ECMAScriptName("uploadText")]
     [EditorRequired]
     public string UploadText { get; init; } = default!;
 }
@@ -19026,8 +18261,10 @@ public delegate void TUploadUploadButtonSlotContextUploadFiles<T>();
 [ECMAScript]
 public record TUploadValidateEventContext<T> : VueProps
 {
+    [ECMAScriptName("type")]
     public TUploadValidateType Type { get; init; }
 
+    [ECMAScriptName("files")]
     [EditorRequired]
     public TUploadFile[] Files { get; init; } = default!;
 }
@@ -19051,9 +18288,11 @@ public enum TUploadValidateType
 [ECMAScript]
 public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
 {
+    [ECMAScriptName("files")]
     [EditorRequired]
     public TUploadFile[] Files { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TUploadWaitingUploadFilesChangeEventContextTrigger Trigger { get; init; }
 }
 
@@ -19072,10 +18311,13 @@ public enum TUploadWaitingUploadFilesChangeEventContextTrigger
 [ECMAScript]
 public sealed record TValidateResultContext<T> : VueProps
 {
+    [ECMAScriptName("validateResult")]
     public TFormValidateResult<T> ValidateResult { get; init; } = default!;
 
+    [ECMAScriptName("firstError")]
     public string? FirstError { get; init; }
 
+    [ECMAScriptName("fields")]
     public TJsonValue? Fields { get; init; }
 }
 
@@ -19092,42 +18334,61 @@ public readonly union TValidateResultObjIndex<T>(bool, TAllValidateResult[])
 [ECMAScript]
 public record TValidateResultType : VueProps
 {
+    [ECMAScriptName("boolean")]
     public bool? Boolean { get; init; }
 
+    [ECMAScriptName("date")]
     public TValidateResultTypeDate? Date { get; init; }
 
+    [ECMAScriptName("email")]
     public TValidateResultTypeEmail? Email { get; init; }
 
+    [ECMAScriptName("enum")]
     public string[]? Enum { get; init; }
 
+    [ECMAScriptName("idcard")]
     public bool? Idcard { get; init; }
 
+    [ECMAScriptName("len")]
     public TValidateResultTypeLen? Len { get; init; }
 
+    [ECMAScriptName("max")]
     public TValidateResultTypeMax? Max { get; init; }
 
+    [ECMAScriptName("message")]
     public string? Message { get; init; }
 
+    [ECMAScriptName("min")]
     public TValidateResultTypeMin? Min { get; init; }
 
+    [ECMAScriptName("number")]
     public bool? Number { get; init; }
 
+    [ECMAScriptName("pattern")]
     public TValidateResultTypePattern? Pattern { get; init; }
 
+    [ECMAScriptName("required")]
     public bool? Required { get; init; }
 
+    [ECMAScriptName("telnumber")]
     public bool? Telnumber { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TValidateTriggerType? Trigger { get; init; }
 
+    [ECMAScriptName("type")]
     public TValidateResultTypeType? Type { get; init; }
 
+    [ECMAScriptName("url")]
     public TValidateResultTypeUrl? Url { get; init; }
 
+    [ECMAScriptName("validator")]
     public TCustomValidator? Validator { get; init; }
 
+    [ECMAScriptName("whitespace")]
     public bool? Whitespace { get; init; }
 
+    [ECMAScriptName("result")]
     public bool Result { get; init; }
 }
 
@@ -19193,22 +18454,29 @@ public enum TValidateTriggerType
 [ECMAScript]
 public record TWatermarkImage : VueProps
 {
+    [ECMAScriptName("isGrayscale")]
     public bool? IsGrayscale { get; init; }
 
+    [ECMAScriptName("url")]
     public string? Url { get; init; }
 }
 
 [ECMAScript]
 public record TWatermarkText : VueProps
 {
+    [ECMAScriptName("fontColor")]
     public string? FontColor { get; init; }
 
+    [ECMAScriptName("fontFamily")]
     public string? FontFamily { get; init; }
 
+    [ECMAScriptName("fontSize")]
     public Number? FontSize { get; init; }
 
+    [ECMAScriptName("fontWeight")]
     public TWatermarkTextFontWeight? FontWeight { get; init; }
 
+    [ECMAScriptName("text")]
     public string? Text { get; init; }
 }
 
@@ -19239,26 +18507,35 @@ public readonly union TWatermarkWatermarkContentValueOption3Item(TWatermarkText,
 [ECMAScript]
 public record Tanimation : VueProps
 {
+    [ECMAScriptName("duration")]
     public Number Duration { get; init; }
 
+    [ECMAScriptName("valueFrom")]
     public Number ValueFrom { get; init; }
 }
 
 [ECMAScript]
 public record TdAffixProps : VueProps
 {
+    [ECMAScriptName("container")]
     public TScrollContainer? Container { get; init; }
 
+    [ECMAScriptName("content")]
     public TdAffixPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdAffixPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("offsetBottom")]
     public Number? OffsetBottom { get; init; }
 
+    [ECMAScriptName("offsetTop")]
     public Number? OffsetTop { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onFixedChange")]
     public TdAffixPropsOnFixedChange? OnFixedChange { get; init; }
 }
 
@@ -19278,30 +18555,41 @@ public delegate void TdAffixPropsOnFixedChange(bool affixed, TdAffixPropsOnFixed
 [ECMAScript]
 public record TdAffixPropsOnFixedChangeContext : VueProps
 {
+    [ECMAScriptName("top")]
     public Number Top { get; init; }
 }
 
 [ECMAScript]
 public record TdAvatarProps : VueProps
 {
+    [ECMAScriptName("alt")]
     public string? Alt { get; init; }
 
+    [ECMAScriptName("content")]
     public TdAvatarPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdAvatarPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("hideOnLoadFailed")]
     public bool? HideOnLoadFailed { get; init; }
 
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; init; }
 
+    [ECMAScriptName("image")]
     public string? Image { get; init; }
 
+    [ECMAScriptName("imageProps")]
     public TdImageProps? ImageProps { get; init; }
 
+    [ECMAScriptName("shape")]
     public TShapeEnum? Shape { get; init; }
 
+    [ECMAScriptName("size")]
     public string? Size { get; init; }
 
+    [ECMAScriptName("onError")]
     public TdAvatarPropsOnError? OnError { get; init; }
 }
 
@@ -19321,6 +18609,7 @@ public delegate void TdAvatarPropsOnError(TdAvatarPropsOnErrorContext context);
 [ECMAScript]
 public record TdAvatarPropsOnErrorContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -19328,26 +18617,37 @@ public record TdAvatarPropsOnErrorContext : VueProps
 [ECMAScript]
 public record TdBreadcrumbItemProps : VueProps
 {
+    [ECMAScriptName("content")]
     public TdBreadcrumbItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdBreadcrumbItemPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("href")]
     public string? Href { get; init; }
 
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; init; }
 
+    [ECMAScriptName("maxWidth")]
     public string? MaxWidth { get; init; }
 
+    [ECMAScriptName("replace")]
     public bool? Replace { get; init; }
 
+    [ECMAScriptName("router")]
     public TJsonValue? Router { get; init; }
 
+    [ECMAScriptName("target")]
     public TdBreadcrumbItemPropsTarget? Target { get; init; }
 
+    [ECMAScriptName("to")]
     public TdBreadcrumbItemPropsTo? To { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdBreadcrumbItemPropsOnClick? OnClick { get; init; }
 }
 
@@ -19386,40 +18686,58 @@ public readonly union TdBreadcrumbItemPropsTo(string, TRoute)
 [ECMAScript]
 public record TdButtonProps : VueProps
 {
+    [ECMAScriptName("block")]
     public bool? Block { get; init; }
 
+    [ECMAScriptName("content")]
     public TdButtonPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdButtonPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("form")]
     public string? Form { get; init; }
 
+    [ECMAScriptName("ghost")]
     public bool? Ghost { get; init; }
 
+    [ECMAScriptName("href")]
     public string? Href { get; init; }
 
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; init; }
 
+    [ECMAScriptName("shape")]
     public TdButtonPropsShape? Shape { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; init; }
 
+    [ECMAScriptName("tag")]
     public TdButtonPropsTag? Tag { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdButtonPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("type")]
     public TdButtonPropsType? Type { get; init; }
 
+    [ECMAScriptName("variant")]
     public TdButtonPropsVariant? Variant { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdButtonPropsOnClick? OnClick { get; init; }
 }
 
@@ -19507,28 +18825,40 @@ public enum TdButtonPropsVariant
 [ECMAScript]
 public record TdCheckTagProps : VueProps
 {
+    [ECMAScriptName("checked")]
     public bool? Checked { get; init; }
 
+    [ECMAScriptName("defaultChecked")]
     public bool? DefaultChecked { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; init; }
 
+    [ECMAScriptName("content")]
     public TdCheckTagPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdCheckTagPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; init; }
 
+    [ECMAScriptName("value")]
     public TdCheckTagPropsValue? Value { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdCheckTagPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdCheckTagPropsOnClick? OnClick { get; init; }
 }
 
@@ -19551,6 +18881,7 @@ public delegate void TdCheckTagPropsOnClick(TdCheckTagPropsOnClickContext contex
 [ECMAScript]
 public record TdCheckTagPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -19563,24 +18894,34 @@ public readonly union TdCheckTagPropsValue(string, Number)
 [ECMAScript]
 public record TdCheckboxGroupProps<T> : VueProps
 {
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; init; }
 
+    [ECMAScriptName("max")]
     public Number? Max { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("options")]
     public TCheckboxOption[]? Options { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public T? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public T? ModelValue { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdCheckboxGroupPropsOnChange<T>? OnChange { get; init; }
 }
 
@@ -19590,32 +18931,46 @@ public delegate void TdCheckboxGroupPropsOnChange<T>(T @value, TCheckboxGroupCha
 [ECMAScript]
 public record TdCheckboxProps : VueProps
 {
+    [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; init; }
 
+    [ECMAScriptName("checked")]
     public bool? Checked { get; init; }
 
+    [ECMAScriptName("defaultChecked")]
     public bool? DefaultChecked { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("default")]
     public TdCheckboxPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; init; }
 
+    [ECMAScriptName("label")]
     public TdCheckboxPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("title")]
     public string? Title { get; init; }
 
+    [ECMAScriptName("value")]
     public TdCheckboxPropsValue? Value { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdCheckboxPropsOnChange? OnChange { get; init; }
 }
 
@@ -19635,6 +18990,7 @@ public delegate void TdCheckboxPropsOnChange(bool @checked, TdCheckboxPropsOnCha
 [ECMAScript]
 public record TdCheckboxPropsOnChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -19647,12 +19003,16 @@ public readonly union TdCheckboxPropsValue(string, Number, bool)
 [ECMAScript]
 public record TdDescriptionsItemProps : VueProps
 {
+    [ECMAScriptName("content")]
     public TdDescriptionsItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdDescriptionsItemPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("label")]
     public TdDescriptionsItemPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("span")]
     public Number? Span { get; init; }
 }
 
@@ -19674,78 +19034,115 @@ public readonly union TdDescriptionsItemPropsLabel(string, RenderFragment)
 [ECMAScript]
 public record TdDialogProps : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("body")]
     public TdDialogPropsBody? Body { get; init; }
 
+    [ECMAScriptName("cancelBtn")]
     public TdDialogPropsCancelBtn? CancelBtn { get; init; }
 
+    [ECMAScriptName("closeBtn")]
     public TdDialogPropsCloseBtn? CloseBtn { get; init; }
 
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; init; }
 
+    [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; init; }
 
+    [ECMAScriptName("confirmBtn")]
     public TdDialogPropsConfirmBtn? ConfirmBtn { get; init; }
 
+    [ECMAScriptName("confirmLoading")]
     public bool? ConfirmLoading { get; init; }
 
+    [ECMAScriptName("confirmOnEnter")]
     public bool? ConfirmOnEnter { get; init; }
 
+    [ECMAScriptName("default")]
     public TdDialogPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; init; }
 
+    [ECMAScriptName("dialogClassName")]
     public string? DialogClassName { get; init; }
 
+    [ECMAScriptName("dialogStyle")]
     public TStyles? DialogStyle { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("footer")]
     public TdDialogPropsFooter? Footer { get; init; }
 
+    [ECMAScriptName("header")]
     public TdDialogPropsHeader? Header { get; init; }
 
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; init; }
 
+    [ECMAScriptName("mode")]
     public TdDialogPropsMode? Mode { get; init; }
 
+    [ECMAScriptName("placement")]
     public TdDialogPropsPlacement? Placement { get; init; }
 
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; init; }
 
+    [ECMAScriptName("showInAttachedElement")]
     public bool? ShowInAttachedElement { get; init; }
 
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdDialogPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("top")]
     public TdDialogPropsTop? Top { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("width")]
     public TdDialogPropsWidth? Width { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onBeforeClose")]
     public TdDialogPropsOnBeforeClose? OnBeforeClose { get; init; }
 
+    [ECMAScriptName("onBeforeOpen")]
     public TdDialogPropsOnBeforeOpen? OnBeforeOpen { get; init; }
 
+    [ECMAScriptName("onCancel")]
     public TdDialogPropsOnCancel? OnCancel { get; init; }
 
+    [ECMAScriptName("onClose")]
     public TdDialogPropsOnClose? OnClose { get; init; }
 
+    [ECMAScriptName("onCloseBtnClick")]
     public TdDialogPropsOnCloseBtnClick? OnCloseBtnClick { get; init; }
 
+    [ECMAScriptName("onClosed")]
     public TdDialogPropsOnClosed? OnClosed { get; init; }
 
+    [ECMAScriptName("onConfirm")]
     public TdDialogPropsOnConfirm? OnConfirm { get; init; }
 
+    [ECMAScriptName("onEscKeydown")]
     public TdDialogPropsOnEscKeydown? OnEscKeydown { get; init; }
 
+    [ECMAScriptName("onOpened")]
     public TdDialogPropsOnOpened? OnOpened { get; init; }
 
+    [ECMAScriptName("onOverlayClick")]
     public TdDialogPropsOnOverlayClick? OnOverlayClick { get; init; }
 }
 
@@ -19810,6 +19207,7 @@ public delegate void TdDialogPropsOnCancel(TdDialogPropsOnCancelContext context)
 [ECMAScript]
 public record TdDialogPropsOnCancelContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -19823,6 +19221,7 @@ public delegate void TdDialogPropsOnCloseBtnClick(TdDialogPropsOnCloseBtnClickCo
 [ECMAScript]
 public record TdDialogPropsOnCloseBtnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -19836,6 +19235,7 @@ public delegate void TdDialogPropsOnConfirm(TdDialogPropsOnConfirmContext contex
 [ECMAScript]
 public record TdDialogPropsOnConfirmContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TdDialogPropsOnConfirmContextE E { get; init; }
 }
 
@@ -19850,6 +19250,7 @@ public delegate void TdDialogPropsOnEscKeydown(TdDialogPropsOnEscKeydownContext 
 [ECMAScript]
 public record TdDialogPropsOnEscKeydownContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -19863,6 +19264,7 @@ public delegate void TdDialogPropsOnOverlayClick(TdDialogPropsOnOverlayClickCont
 [ECMAScript]
 public record TdDialogPropsOnOverlayClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -19906,20 +19308,28 @@ public readonly union TdDialogPropsWidth(string, Number)
 [ECMAScript]
 public record TdDropdownItemProps : VueProps
 {
+    [ECMAScriptName("active")]
     public bool? Active { get; init; }
 
+    [ECMAScriptName("content")]
     public TdDropdownItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("divider")]
     public bool? Divider { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("theme")]
     public TDropdownItemTheme? Theme { get; init; }
 
+    [ECMAScriptName("value")]
     public TdDropdownItemPropsValue? Value { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdDropdownItemPropsOnClick? OnClick { get; init; }
 }
 
@@ -19934,6 +19344,7 @@ public delegate void TdDropdownItemPropsOnClick(TDropdownOption dropdownItem, Td
 [ECMAScript]
 public record TdDropdownItemPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -19946,30 +19357,43 @@ public readonly union TdDropdownItemPropsValue(string, Number, TJsonObject)
 [ECMAScript]
 public record TdFormItemProps : VueProps
 {
+    [ECMAScriptName("for")]
     public string? For { get; init; }
 
+    [ECMAScriptName("help")]
     public TdFormItemPropsHelp? Help { get; init; }
 
+    [ECMAScriptName("label")]
     public TdFormItemPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("labelAlign")]
     public TdFormItemPropsLabelAlign? LabelAlign { get; init; }
 
+    [ECMAScriptName("labelWidth")]
     public TdFormItemPropsLabelWidth? LabelWidth { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; init; }
 
+    [ECMAScriptName("rules")]
     public TFormRule[]? Rules { get; init; }
 
+    [ECMAScriptName("showErrorMessage")]
     public bool? ShowErrorMessage { get; init; }
 
+    [ECMAScriptName("status")]
     public TdFormItemPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("statusIcon")]
     public TdFormItemPropsStatusIcon? StatusIcon { get; init; }
 
+    [ECMAScriptName("successBorder")]
     public bool? SuccessBorder { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdFormItemPropsTips? Tips { get; init; }
 }
 
@@ -20025,38 +19449,55 @@ public readonly union TdFormItemPropsTips(string, RenderFragment)
 [ECMAScript]
 public record TdImageProps : VueProps
 {
+    [ECMAScriptName("alt")]
     public string? Alt { get; init; }
 
+    [ECMAScriptName("error")]
     public TdImagePropsError? Error { get; init; }
 
+    [ECMAScriptName("fallback")]
     public string? Fallback { get; init; }
 
+    [ECMAScriptName("fit")]
     public TdImagePropsFit? Fit { get; init; }
 
+    [ECMAScriptName("gallery")]
     public bool? Gallery { get; init; }
 
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; init; }
 
+    [ECMAScriptName("loading")]
     public TdImagePropsLoading? Loading { get; init; }
 
+    [ECMAScriptName("overlayContent")]
     public TdImagePropsOverlayContent? OverlayContent { get; init; }
 
+    [ECMAScriptName("overlayTrigger")]
     public TdImagePropsOverlayTrigger? OverlayTrigger { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public TdImagePropsPlaceholder? Placeholder { get; init; }
 
+    [ECMAScriptName("position")]
     public string? Position { get; init; }
 
+    [ECMAScriptName("referrerpolicy")]
     public TdImagePropsReferrerpolicy? Referrerpolicy { get; init; }
 
+    [ECMAScriptName("shape")]
     public TdImagePropsShape? Shape { get; init; }
 
+    [ECMAScriptName("src")]
     public TdImagePropsSrc? Src { get; init; }
 
+    [ECMAScriptName("srcset")]
     public TImageSrcset? Srcset { get; init; }
 
+    [ECMAScriptName("onError")]
     public TdImagePropsOnError? OnError { get; init; }
 
+    [ECMAScriptName("onLoad")]
     public TdImagePropsOnLoad? OnLoad { get; init; }
 }
 
@@ -20092,6 +19533,7 @@ public delegate void TdImagePropsOnError(TdImagePropsOnErrorContext context);
 [ECMAScript]
 public record TdImagePropsOnErrorContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -20102,6 +19544,7 @@ public delegate void TdImagePropsOnLoad(TdImagePropsOnLoadContext context);
 [ECMAScript]
 public record TdImagePropsOnLoadContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -20168,50 +19611,73 @@ public readonly union TdImagePropsSrc(string, File)
 [ECMAScript]
 public record TdImageViewerProps : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("closeBtn")]
     public TdImageViewerPropsCloseBtn? CloseBtn { get; init; }
 
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; init; }
 
+    [ECMAScriptName("closeOnOverlay")]
     public bool? CloseOnOverlay { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("imageReferrerpolicy")]
     public TdImageViewerPropsImageReferrerpolicy? ImageReferrerpolicy { get; init; }
 
+    [ECMAScriptName("imageScale")]
     public TImageScale? ImageScale { get; init; }
 
+    [ECMAScriptName("images")]
     public TdImageViewerPropsImagesItem[]? Images { get; init; }
 
+    [ECMAScriptName("index")]
     public Number? Index { get; init; }
 
+    [ECMAScriptName("defaultIndex")]
     public Number? DefaultIndex { get; init; }
 
+    [ECMAScriptName("mode")]
     public TdImageViewerPropsMode? Mode { get; init; }
 
+    [ECMAScriptName("navigationArrow")]
     public TdImageViewerPropsNavigationArrow? NavigationArrow { get; init; }
 
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; init; }
 
+    [ECMAScriptName("title")]
     public TdImageViewerPropsTitle? Title { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdImageViewerPropsTrigger? Trigger { get; init; }
 
+    [ECMAScriptName("viewerScale")]
     public TImageViewerScale? ViewerScale { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("defaultVisible")]
     public bool? DefaultVisible { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onClose")]
     public TdImageViewerPropsOnClose? OnClose { get; init; }
 
+    [ECMAScriptName("onDownload")]
     public TdImageViewerPropsOnDownload? OnDownload { get; init; }
 
+    [ECMAScriptName("onIndexChange")]
     public TdImageViewerPropsOnIndexChange? OnIndexChange { get; init; }
 }
 
@@ -20268,8 +19734,10 @@ public delegate void TdImageViewerPropsOnClose(TdImageViewerPropsOnCloseContext 
 [ECMAScript]
 public record TdImageViewerPropsOnCloseContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TdImageViewerPropsOnCloseContextTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TdImageViewerPropsOnCloseContextE E { get; init; }
 }
 
@@ -20304,6 +19772,7 @@ public delegate void TdImageViewerPropsOnIndexChange(Number index, TdImageViewer
 [ECMAScript]
 public record TdImageViewerPropsOnIndexChangeContext : VueProps
 {
+    [ECMAScriptName("trigger")]
     public TdImageViewerPropsOnIndexChangeContextTrigger Trigger { get; init; }
 }
 
@@ -20332,6 +19801,7 @@ public readonly union TdImageViewerPropsTrigger(RenderFragment, RenderFragment<T
 [ECMAScript]
 public record TdImageViewerPropsTriggerOption2Context : VueProps
 {
+    [ECMAScriptName("open")]
     [EditorRequired]
     public TdImageViewerPropsTriggerOption2ContextOpen Open { get; init; } = default!;
 }
@@ -20342,66 +19812,97 @@ public delegate void TdImageViewerPropsTriggerOption2ContextOpen(Number? index =
 [ECMAScript]
 public record TdInputNumberProps<T> : VueProps
 {
+    [ECMAScriptName("align")]
     public TdInputNumberPropsAlign? Align { get; init; }
 
+    [ECMAScriptName("allowInputOverLimit")]
     public bool? AllowInputOverLimit { get; init; }
 
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; init; }
 
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; init; }
 
+    [ECMAScriptName("decimalPlaces")]
     public TInputNumberDecimalPlaces? DecimalPlaces { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("format")]
     public TdInputNumberPropsFormat<T>? Format { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; init; }
 
+    [ECMAScriptName("label")]
     public TdInputNumberPropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("largeNumber")]
     public bool? LargeNumber { get; init; }
 
+    [ECMAScriptName("max")]
     public TInputNumberValue? Max { get; init; }
 
+    [ECMAScriptName("min")]
     public TInputNumberValue? Min { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("size")]
     public TdInputNumberPropsSize? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdInputNumberPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("step")]
     public TInputNumberValue? Step { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdInputNumberPropsSuffix<T>? Suffix { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdInputNumberPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdInputNumberPropsTips<T>? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public T? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public T? ModelValue { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdInputNumberPropsOnBlur<T>? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdInputNumberPropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdInputNumberPropsOnEnter<T>? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdInputNumberPropsOnFocus<T>? OnFocus { get; init; }
 
+    [ECMAScriptName("onKeydown")]
     public TdInputNumberPropsOnKeydown<T>? OnKeydown { get; init; }
 
+    [ECMAScriptName("onKeypress")]
     public TdInputNumberPropsOnKeypress<T>? OnKeypress { get; init; }
 
+    [ECMAScriptName("onKeyup")]
     public TdInputNumberPropsOnKeyup<T>? OnKeyup { get; init; }
 
+    [ECMAScriptName("onValidate")]
     public TdInputNumberPropsOnValidate<T>? OnValidate { get; init; }
 }
 
@@ -20423,6 +19924,7 @@ public delegate TInputNumberValue TdInputNumberPropsFormat<T>(TInputNumberValue 
 [ECMAScript]
 public record TdInputNumberPropsFormatContext<T> : VueProps
 {
+    [ECMAScriptName("fixedNumber")]
     public TInputNumberValue? FixedNumber { get; init; }
 }
 
@@ -20437,6 +19939,7 @@ public delegate void TdInputNumberPropsOnBlur<T>(TInputNumberValue @value, TdInp
 [ECMAScript]
 public record TdInputNumberPropsOnBlurContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -20450,6 +19953,7 @@ public delegate void TdInputNumberPropsOnEnter<T>(TInputNumberValue @value, TdIn
 [ECMAScript]
 public record TdInputNumberPropsOnEnterContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20460,6 +19964,7 @@ public delegate void TdInputNumberPropsOnFocus<T>(TInputNumberValue @value, TdIn
 [ECMAScript]
 public record TdInputNumberPropsOnFocusContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -20470,6 +19975,7 @@ public delegate void TdInputNumberPropsOnKeydown<T>(TInputNumberValue @value, Td
 [ECMAScript]
 public record TdInputNumberPropsOnKeydownContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20480,6 +19986,7 @@ public delegate void TdInputNumberPropsOnKeypress<T>(TInputNumberValue @value, T
 [ECMAScript]
 public record TdInputNumberPropsOnKeypressContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20490,6 +19997,7 @@ public delegate void TdInputNumberPropsOnKeyup<T>(TInputNumberValue @value, TdIn
 [ECMAScript]
 public record TdInputNumberPropsOnKeyupContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20500,6 +20008,7 @@ public delegate void TdInputNumberPropsOnValidate<T>(TdInputNumberPropsOnValidat
 [ECMAScript]
 public record TdInputNumberPropsOnValidateContext<T> : VueProps
 {
+    [ECMAScriptName("error")]
     public TdInputNumberPropsOnValidateContextError? Error { get; init; }
 }
 
@@ -20564,94 +20073,139 @@ public readonly union TdInputNumberPropsTips<T>(string, RenderFragment)
 [ECMAScript]
 public record TdInputProps<T> : VueProps
 {
+    [ECMAScriptName("align")]
     public TdInputPropsAlign? Align { get; init; }
 
+    [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; init; }
 
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; init; }
 
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; init; }
 
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("format")]
     public TInputFormatType? Format { get; init; }
 
+    [ECMAScriptName("inputClass")]
     public TClassName? InputClass { get; init; }
 
+    [ECMAScriptName("label")]
     public TdInputPropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; init; }
 
+    [ECMAScriptName("maxlength")]
     public TdInputPropsMaxlength<T>? Maxlength { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; init; }
 
+    [ECMAScriptName("showLimitNumber")]
     public bool? ShowLimitNumber { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("spellCheck")]
     public bool? SpellCheck { get; init; }
 
+    [ECMAScriptName("status")]
     public TdInputPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdInputPropsSuffix<T>? Suffix { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdInputPropsTips<T>? Tips { get; init; }
 
+    [ECMAScriptName("type")]
     public TdInputPropsType? Type { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public T? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public T? ModelValue { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdInputPropsOnBlur<T>? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdInputPropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdInputPropsOnClear<T>? OnClear { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdInputPropsOnClick<T>? OnClick { get; init; }
 
+    [ECMAScriptName("onCompositionend")]
     public TdInputPropsOnCompositionend<T>? OnCompositionend { get; init; }
 
+    [ECMAScriptName("onCompositionstart")]
     public TdInputPropsOnCompositionstart<T>? OnCompositionstart { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdInputPropsOnEnter<T>? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdInputPropsOnFocus<T>? OnFocus { get; init; }
 
+    [ECMAScriptName("onKeydown")]
     public TdInputPropsOnKeydown<T>? OnKeydown { get; init; }
 
+    [ECMAScriptName("onKeypress")]
     public TdInputPropsOnKeypress<T>? OnKeypress { get; init; }
 
+    [ECMAScriptName("onKeyup")]
     public TdInputPropsOnKeyup<T>? OnKeyup { get; init; }
 
+    [ECMAScriptName("onMouseenter")]
     public TdInputPropsOnMouseenter<T>? OnMouseenter { get; init; }
 
+    [ECMAScriptName("onMouseleave")]
     public TdInputPropsOnMouseleave<T>? OnMouseleave { get; init; }
 
+    [ECMAScriptName("onPaste")]
     public TdInputPropsOnPaste<T>? OnPaste { get; init; }
 
+    [ECMAScriptName("onValidate")]
     public TdInputPropsOnValidate<T>? OnValidate { get; init; }
 
+    [ECMAScriptName("onWheel")]
     public TdInputPropsOnWheel<T>? OnWheel { get; init; }
 }
 
@@ -20683,6 +20237,7 @@ public delegate void TdInputPropsOnBlur<T>(T @value, TdInputPropsOnBlurContext<T
 [ECMAScript]
 public record TdInputPropsOnBlurContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -20693,8 +20248,10 @@ public delegate void TdInputPropsOnChange<T>(T @value, TdInputPropsOnChangeConte
 [ECMAScript]
 public record TdInputPropsOnChangeContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     public TdInputPropsOnChangeContextE<T>? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdInputPropsOnChangeContextTrigger Trigger { get; init; }
 }
 
@@ -20721,6 +20278,7 @@ public delegate void TdInputPropsOnClear<T>(TdInputPropsOnClearContext<T> contex
 [ECMAScript]
 public record TdInputPropsOnClearContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -20731,6 +20289,7 @@ public delegate void TdInputPropsOnClick<T>(TdInputPropsOnClickContext<T> contex
 [ECMAScript]
 public record TdInputPropsOnClickContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -20741,6 +20300,7 @@ public delegate void TdInputPropsOnCompositionend<T>(string @value, TdInputProps
 [ECMAScript]
 public record TdInputPropsOnCompositionendContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 }
@@ -20751,6 +20311,7 @@ public delegate void TdInputPropsOnCompositionstart<T>(string @value, TdInputPro
 [ECMAScript]
 public record TdInputPropsOnCompositionstartContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public CompositionEvent E { get; init; } = default!;
 }
@@ -20761,6 +20322,7 @@ public delegate void TdInputPropsOnEnter<T>(T @value, TdInputPropsOnEnterContext
 [ECMAScript]
 public record TdInputPropsOnEnterContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20771,6 +20333,7 @@ public delegate void TdInputPropsOnFocus<T>(T @value, TdInputPropsOnFocusContext
 [ECMAScript]
 public record TdInputPropsOnFocusContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -20781,6 +20344,7 @@ public delegate void TdInputPropsOnKeydown<T>(T @value, TdInputPropsOnKeydownCon
 [ECMAScript]
 public record TdInputPropsOnKeydownContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20791,6 +20355,7 @@ public delegate void TdInputPropsOnKeypress<T>(T @value, TdInputPropsOnKeypressC
 [ECMAScript]
 public record TdInputPropsOnKeypressContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20801,6 +20366,7 @@ public delegate void TdInputPropsOnKeyup<T>(T @value, TdInputPropsOnKeyupContext
 [ECMAScript]
 public record TdInputPropsOnKeyupContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -20811,6 +20377,7 @@ public delegate void TdInputPropsOnMouseenter<T>(TdInputPropsOnMouseenterContext
 [ECMAScript]
 public record TdInputPropsOnMouseenterContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -20821,6 +20388,7 @@ public delegate void TdInputPropsOnMouseleave<T>(TdInputPropsOnMouseleaveContext
 [ECMAScript]
 public record TdInputPropsOnMouseleaveContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -20831,9 +20399,11 @@ public delegate void TdInputPropsOnPaste<T>(TdInputPropsOnPasteContext<T> contex
 [ECMAScript]
 public record TdInputPropsOnPasteContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -20844,6 +20414,7 @@ public delegate void TdInputPropsOnValidate<T>(TdInputPropsOnValidateContext<T> 
 [ECMAScript]
 public record TdInputPropsOnValidateContext<T> : VueProps
 {
+    [ECMAScriptName("error")]
     public TdInputPropsOnValidateContextError? Error { get; init; }
 }
 
@@ -20863,6 +20434,7 @@ public delegate void TdInputPropsOnWheel<T>(TdInputPropsOnWheelContext<T> contex
 [ECMAScript]
 public record TdInputPropsOnWheelContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -20916,30 +20488,43 @@ public enum TdInputPropsType
 [ECMAScript]
 public record TdLoadingProps : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("content")]
     public TdLoadingPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdLoadingPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("delay")]
     public Number? Delay { get; init; }
 
+    [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; init; }
 
+    [ECMAScriptName("indicator")]
     public TdLoadingPropsIndicator? Indicator { get; init; }
 
+    [ECMAScriptName("inheritColor")]
     public bool? InheritColor { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; init; }
 
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; init; }
 
+    [ECMAScriptName("size")]
     public string? Size { get; init; }
 
+    [ECMAScriptName("text")]
     public TdLoadingPropsText? Text { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 }
 
@@ -20966,18 +20551,25 @@ public readonly union TdLoadingPropsText(string, RenderFragment)
 [ECMAScript]
 public record TdOptionProps : VueProps
 {
+    [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; init; }
 
+    [ECMAScriptName("content")]
     public TdOptionPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdOptionPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("label")]
     public string? Label { get; init; }
 
+    [ECMAScriptName("title")]
     public string? Title { get; init; }
 
+    [ECMAScriptName("value")]
     public TdOptionPropsValue? Value { get; init; }
 }
 
@@ -20999,50 +20591,73 @@ public readonly union TdOptionPropsValue(string, Number, bool, BigInt)
 [ECMAScript]
 public record TdPaginationProps : VueProps
 {
+    [ECMAScriptName("current")]
     public Number? Current { get; init; }
 
+    [ECMAScriptName("defaultCurrent")]
     public Number? DefaultCurrent { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("foldedMaxPageBtn")]
     public Number? FoldedMaxPageBtn { get; init; }
 
+    [ECMAScriptName("maxPageBtn")]
     public Number? MaxPageBtn { get; init; }
 
+    [ECMAScriptName("pageEllipsisMode")]
     public TdPaginationPropsPageEllipsisMode? PageEllipsisMode { get; init; }
 
+    [ECMAScriptName("pageSize")]
     public Number? PageSize { get; init; }
 
+    [ECMAScriptName("defaultPageSize")]
     public Number? DefaultPageSize { get; init; }
 
+    [ECMAScriptName("pageSizeOptions")]
     public TdPaginationPropsPageSizeOptionsItem[]? PageSizeOptions { get; init; }
 
+    [ECMAScriptName("selectProps")]
     public TdSelectProps<TSelectOption>? SelectProps { get; init; }
 
+    [ECMAScriptName("showFirstAndLastPageBtn")]
     public bool? ShowFirstAndLastPageBtn { get; init; }
 
+    [ECMAScriptName("showJumper")]
     public bool? ShowJumper { get; init; }
 
+    [ECMAScriptName("showPageNumber")]
     public bool? ShowPageNumber { get; init; }
 
+    [ECMAScriptName("showPageSize")]
     public bool? ShowPageSize { get; init; }
 
+    [ECMAScriptName("showPreviousAndNextBtn")]
     public bool? ShowPreviousAndNextBtn { get; init; }
 
+    [ECMAScriptName("size")]
     public TdPaginationPropsSize? Size { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdPaginationPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("total")]
     public Number? Total { get; init; }
 
+    [ECMAScriptName("totalContent")]
     public TdPaginationPropsTotalContent? TotalContent { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdPaginationPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onCurrentChange")]
     public TdPaginationPropsOnCurrentChange? OnCurrentChange { get; init; }
 
+    [ECMAScriptName("onPageSizeChange")]
     public TdPaginationPropsOnPageSizeChange? OnPageSizeChange { get; init; }
 }
 
@@ -21073,9 +20688,11 @@ public readonly union TdPaginationPropsPageSizeOptionsItem(Number, TdPaginationP
 [ECMAScript]
 public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
 {
+    [ECMAScriptName("label")]
     [EditorRequired]
     public string Label { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public Number Value { get; init; }
 }
 
@@ -21107,52 +20724,76 @@ public readonly union TdPaginationPropsTotalContent(bool, RenderFragment)
 [ECMAScript]
 public record TdPopupProps : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("content")]
     public TdPopupPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdPopupPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("delay")]
     public TdPopupPropsDelay? Delay { get; init; }
 
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; init; }
 
+    [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerStyle")]
     public TdPopupPropsOverlayInnerStyle? OverlayInnerStyle { get; init; }
 
+    [ECMAScriptName("overlayStyle")]
     public TdPopupPropsOverlayStyle? OverlayStyle { get; init; }
 
+    [ECMAScriptName("placement")]
     public TPopupPlacement? Placement { get; init; }
 
+    [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; init; }
 
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdPopupPropsTrigger? Trigger { get; init; }
 
+    [ECMAScriptName("triggerElement")]
     public TdPopupPropsTriggerElement? TriggerElement { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("defaultVisible")]
     public bool? DefaultVisible { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onOverlayClick")]
     public TdPopupPropsOnOverlayClick? OnOverlayClick { get; init; }
 
+    [ECMAScriptName("onScroll")]
     public TdPopupPropsOnScroll? OnScroll { get; init; }
 
+    [ECMAScriptName("onScrollToBottom")]
     public TdPopupPropsOnScrollToBottom? OnScrollToBottom { get; init; }
 
+    [ECMAScriptName("onVisibleChange")]
     public TdPopupPropsOnVisibleChange? OnVisibleChange { get; init; }
 }
 
@@ -21177,6 +20818,7 @@ public delegate void TdPopupPropsOnOverlayClick(TdPopupPropsOnOverlayClickContex
 [ECMAScript]
 public record TdPopupPropsOnOverlayClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21187,6 +20829,7 @@ public delegate void TdPopupPropsOnScroll(TdPopupPropsOnScrollContext context);
 [ECMAScript]
 public record TdPopupPropsOnScrollContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -21197,6 +20840,7 @@ public delegate void TdPopupPropsOnScrollToBottom(TdPopupPropsOnScrollToBottomCo
 [ECMAScript]
 public record TdPopupPropsOnScrollToBottomContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -21244,30 +20888,43 @@ public readonly union TdPopupPropsTriggerElement(string, RenderFragment)
 [ECMAScript]
 public record TdRadioGroupProps<T> : VueProps
 {
+    [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; init; }
 
+    [ECMAScriptName("direction")]
     public TdRadioGroupPropsDirection? Direction { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("options")]
     public TRadioOption[]? Options { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdRadioGroupPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public T? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public T? ModelValue { get; init; }
 
+    [ECMAScriptName("variant")]
     public TdRadioGroupPropsVariant? Variant { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdRadioGroupPropsOnChange<T>? OnChange { get; init; }
 }
 
@@ -21287,9 +20944,11 @@ public delegate void TdRadioGroupPropsOnChange<T>(T @value, TdRadioGroupPropsOnC
 [ECMAScript]
 public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 }
 
@@ -21318,28 +20977,40 @@ public enum TdRadioGroupPropsVariant
 [ECMAScript]
 public record TdRadioProps<T> : VueProps
 {
+    [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; init; }
 
+    [ECMAScriptName("checked")]
     public bool? Checked { get; init; }
 
+    [ECMAScriptName("defaultChecked")]
     public bool? DefaultChecked { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("default")]
     public TdRadioPropsDefault<T>? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("label")]
     public TdRadioPropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("value")]
     public T? Value { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdRadioPropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdRadioPropsOnClick<T>? OnClick { get; init; }
 }
 
@@ -21359,6 +21030,7 @@ public delegate void TdRadioPropsOnChange<T>(bool @checked, TdRadioPropsOnChange
 [ECMAScript]
 public record TdRadioPropsOnChangeContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public Event E { get; init; } = default!;
 }
@@ -21369,6 +21041,7 @@ public delegate void TdRadioPropsOnClick<T>(TdRadioPropsOnClickContext<T> contex
 [ECMAScript]
 public record TdRadioPropsOnClickContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21376,60 +21049,88 @@ public record TdRadioPropsOnClickContext<T> : VueProps
 [ECMAScript]
 public record TdRangeInputProps : VueProps
 {
+    [ECMAScriptName("activeIndex")]
     public Number? ActiveIndex { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("disabled")]
     public TdRangeInputPropsDisabled? Disabled { get; init; }
 
+    [ECMAScriptName("format")]
     public TdRangeInputPropsFormat? Format { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdRangeInputPropsInputProps? InputProps { get; init; }
 
+    [ECMAScriptName("label")]
     public TdRangeInputPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public TdRangeInputPropsPlaceholder? Placeholder { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("separator")]
     public TdRangeInputPropsSeparator? Separator { get; init; }
 
+    [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; init; }
 
+    [ECMAScriptName("size")]
     public TdRangeInputPropsSize? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdRangeInputPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdRangeInputPropsSuffix? Suffix { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdRangeInputPropsTips? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public TInputValue[]? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TInputValue[]? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TInputValue[]? ModelValue { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdRangeInputPropsOnBlur? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdRangeInputPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdRangeInputPropsOnClear? OnClear { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdRangeInputPropsOnClick? OnClick { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdRangeInputPropsOnEnter? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdRangeInputPropsOnFocus? OnFocus { get; init; }
 
+    [ECMAScriptName("onMouseenter")]
     public TdRangeInputPropsOnMouseenter? OnMouseenter { get; init; }
 
+    [ECMAScriptName("onMouseleave")]
     public TdRangeInputPropsOnMouseleave? OnMouseleave { get; init; }
 }
 
@@ -21459,8 +21160,10 @@ public delegate void TdRangeInputPropsOnBlur(TInputValue[] @value, TdRangeInputP
 [ECMAScript]
 public record TdRangeInputPropsOnBlurContext : VueProps
 {
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -21470,10 +21173,13 @@ public delegate void TdRangeInputPropsOnChange(TInputValue[] @value, TdRangeInpu
 [ECMAScript]
 public record TdRangeInputPropsOnChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TdRangeInputPropsOnChangeContextE? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdRangeInputPropsOnChangeContextTrigger? Trigger { get; init; }
 }
 
@@ -21500,6 +21206,7 @@ public delegate void TdRangeInputPropsOnClear(TdRangeInputPropsOnClearContext co
 [ECMAScript]
 public record TdRangeInputPropsOnClearContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21510,8 +21217,10 @@ public delegate void TdRangeInputPropsOnClick(TdRangeInputPropsOnClickContext? c
 [ECMAScript]
 public record TdRangeInputPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -21521,8 +21230,10 @@ public delegate void TdRangeInputPropsOnEnter(TInputValue[] @value, TdRangeInput
 [ECMAScript]
 public record TdRangeInputPropsOnEnterContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TdRangeInputPropsOnEnterContextE? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -21537,8 +21248,10 @@ public delegate void TdRangeInputPropsOnFocus(TInputValue[] @value, TdRangeInput
 [ECMAScript]
 public record TdRangeInputPropsOnFocusContext : VueProps
 {
+    [ECMAScriptName("e")]
     public FocusEvent? E { get; init; }
 
+    [ECMAScriptName("position")]
     public TRangeInputPosition? Position { get; init; }
 }
 
@@ -21548,6 +21261,7 @@ public delegate void TdRangeInputPropsOnMouseenter(TdRangeInputPropsOnMouseenter
 [ECMAScript]
 public record TdRangeInputPropsOnMouseenterContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21558,6 +21272,7 @@ public delegate void TdRangeInputPropsOnMouseleave(TdRangeInputPropsOnMouseleave
 [ECMAScript]
 public record TdRangeInputPropsOnMouseleaveContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21611,102 +21326,149 @@ public readonly union TdRangeInputPropsTips(string, RenderFragment)
 [ECMAScript]
 public record TdSelectInputProps : VueProps
 {
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; init; }
 
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; init; }
 
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("collapsedItems")]
     public RenderFragment<TdSelectInputPropsCollapsedItemsContext>? CollapsedItems { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; init; }
 
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; init; }
 
+    [ECMAScriptName("defaultInputValue")]
     public string? DefaultInputValue { get; init; }
 
+    [ECMAScriptName("keys")]
     public TSelectInputKeys? Keys { get; init; }
 
+    [ECMAScriptName("label")]
     public TdSelectInputPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; init; }
 
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; init; }
 
+    [ECMAScriptName("panel")]
     public TdSelectInputPropsPanel? Panel { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; init; }
 
+    [ECMAScriptName("defaultPopupVisible")]
     public bool? DefaultPopupVisible { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdSelectInputPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdSelectInputPropsSuffix? Suffix { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tag")]
     public TdSelectInputPropsTag? Tag { get; init; }
 
+    [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; init; }
 
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdSelectInputPropsTips? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public TSelectInputValue? Value { get; init; }
 
+    [ECMAScriptName("valueDisplay")]
     public TdSelectInputPropsValueDisplay? ValueDisplay { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdSelectInputPropsOnBlur? OnBlur { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdSelectInputPropsOnClear? OnClear { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdSelectInputPropsOnEnter? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdSelectInputPropsOnFocus? OnFocus { get; init; }
 
+    [ECMAScriptName("onInputChange")]
     public TdSelectInputPropsOnInputChange? OnInputChange { get; init; }
 
+    [ECMAScriptName("onMouseenter")]
     public TdSelectInputPropsOnMouseenter? OnMouseenter { get; init; }
 
+    [ECMAScriptName("onMouseleave")]
     public TdSelectInputPropsOnMouseleave? OnMouseleave { get; init; }
 
+    [ECMAScriptName("onPaste")]
     public TdSelectInputPropsOnPaste? OnPaste { get; init; }
 
+    [ECMAScriptName("onPopupVisibleChange")]
     public TdSelectInputPropsOnPopupVisibleChange? OnPopupVisibleChange { get; init; }
 
+    [ECMAScriptName("onTagChange")]
     public TdSelectInputPropsOnTagChange? OnTagChange { get; init; }
 }
 
 [ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContext : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectInputValue Value { get; init; }
 
+    [ECMAScriptName("collapsedSelectedItems")]
     public TSelectInputValue CollapsedSelectedItems { get; init; }
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdSelectInputPropsCollapsedItemsContextOnClose OnClose { get; init; } = default!;
 }
@@ -21717,8 +21479,10 @@ public delegate void TdSelectInputPropsCollapsedItemsContextOnClose(TdSelectInpu
 [ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -21736,6 +21500,7 @@ public delegate void TdSelectInputPropsOnClear(TdSelectInputPropsOnClearContext 
 [ECMAScript]
 public record TdSelectInputPropsOnClearContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21746,12 +21511,15 @@ public delegate void TdSelectInputPropsOnEnter(TSelectInputValue @value, TdSelec
 [ECMAScript]
 public record TdSelectInputPropsOnEnterContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
@@ -21767,6 +21535,7 @@ public delegate void TdSelectInputPropsOnMouseenter(TdSelectInputPropsOnMouseent
 [ECMAScript]
 public record TdSelectInputPropsOnMouseenterContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21777,6 +21546,7 @@ public delegate void TdSelectInputPropsOnMouseleave(TdSelectInputPropsOnMouselea
 [ECMAScript]
 public record TdSelectInputPropsOnMouseleaveContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -21787,9 +21557,11 @@ public delegate void TdSelectInputPropsOnPaste(TdSelectInputPropsOnPasteContext 
 [ECMAScript]
 public record TdSelectInputPropsOnPasteContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -21832,6 +21604,7 @@ public readonly union TdSelectInputPropsTag(string, RenderFragment<TdSelectInput
 [ECMAScript]
 public record TdSelectInputPropsTagOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     public TdSelectInputPropsTagOption2ContextValue Value { get; init; }
 }
 
@@ -21853,9 +21626,11 @@ public readonly union TdSelectInputPropsValueDisplay(string, RenderFragment<TdSe
 [ECMAScript]
 public record TdSelectInputPropsValueDisplayOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdSelectInputPropsValueDisplayOption2ContextOnClose OnClose { get; init; } = default!;
 }
@@ -21866,128 +21641,187 @@ public delegate void TdSelectInputPropsValueDisplayOption2ContextOnClose(Number 
 [ECMAScript]
 public record TdSelectProps<T> : VueProps
 {
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; init; }
 
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("collapsedItems")]
     public RenderFragment<TdSelectPropsCollapsedItemsContext<T>>? CollapsedItems { get; init; }
 
+    [ECMAScriptName("creatable")]
     public bool? Creatable { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("empty")]
     public TdSelectPropsEmpty<T>? Empty { get; init; }
 
+    [ECMAScriptName("filter")]
     public TdSelectPropsFilter<T>? Filter { get; init; }
 
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; init; }
 
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; init; }
 
+    [ECMAScriptName("defaultInputValue")]
     public string? DefaultInputValue { get; init; }
 
+    [ECMAScriptName("keys")]
     public TKeysType? Keys { get; init; }
 
+    [ECMAScriptName("label")]
     public TdSelectPropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("loadingText")]
     public TdSelectPropsLoadingText<T>? LoadingText { get; init; }
 
+    [ECMAScriptName("max")]
     public Number? Max { get; init; }
 
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; init; }
 
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; init; }
 
+    [ECMAScriptName("options")]
     public T[]? Options { get; init; }
 
+    [ECMAScriptName("panelBottomContent")]
     public TdSelectPropsPanelBottomContent<T>? PanelBottomContent { get; init; }
 
+    [ECMAScriptName("panelTopContent")]
     public TdSelectPropsPanelTopContent<T>? PanelTopContent { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; init; }
 
+    [ECMAScriptName("defaultPopupVisible")]
     public bool? DefaultPopupVisible { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; init; }
 
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; init; }
 
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; init; }
 
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdSelectPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdSelectPropsSuffix<T>? Suffix { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; init; }
 
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdSelectPropsTips<T>? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption>? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TSelectValue<TSelectOption>? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TSelectValue<TSelectOption>? ModelValue { get; init; }
 
+    [ECMAScriptName("valueDisplay")]
     public TdSelectPropsValueDisplay<T>? ValueDisplay { get; init; }
 
+    [ECMAScriptName("valueType")]
     public TdSelectPropsValueType? ValueType { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdSelectPropsOnBlur<T>? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdSelectPropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdSelectPropsOnClear<T>? OnClear { get; init; }
 
+    [ECMAScriptName("onCreate")]
     public TdSelectPropsOnCreate<T>? OnCreate { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdSelectPropsOnEnter<T>? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdSelectPropsOnFocus<T>? OnFocus { get; init; }
 
+    [ECMAScriptName("onInputChange")]
     public TdSelectPropsOnInputChange<T>? OnInputChange { get; init; }
 
+    [ECMAScriptName("onPopupVisibleChange")]
     public TdSelectPropsOnPopupVisibleChange<T>? OnPopupVisibleChange { get; init; }
 
+    [ECMAScriptName("onRemove")]
     public TdSelectPropsOnRemove<T>? OnRemove { get; init; }
 
+    [ECMAScriptName("onSearch")]
     public TdSelectPropsOnSearch<T>? OnSearch { get; init; }
 }
 
 [ECMAScript]
 public record TdSelectPropsCollapsedItemsContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public T[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public T[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdSelectPropsCollapsedItemsContextOnClose<T> OnClose { get; init; } = default!;
 }
@@ -21998,8 +21832,10 @@ public delegate void TdSelectPropsCollapsedItemsContextOnClose<T>(TdSelectPropsC
 [ECMAScript]
 public record TdSelectPropsCollapsedItemsContextOnCloseContext<T> : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -22032,8 +21868,10 @@ public delegate void TdSelectPropsOnBlur<T>(TdSelectPropsOnBlurContext<T> contex
 [ECMAScript]
 public record TdSelectPropsOnBlurContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("e")]
     public TdSelectPropsOnBlurContextE<T> E { get; init; }
 }
 
@@ -22048,13 +21886,17 @@ public delegate void TdSelectPropsOnChange<T>(TSelectValue<TSelectOption> @value
 [ECMAScript]
 public record TdSelectPropsOnChangeContext<T> : VueProps
 {
+    [ECMAScriptName("option")]
     public T? Option { get; init; }
 
+    [ECMAScriptName("selectedOptions")]
     [EditorRequired]
     public T[] SelectedOptions { get; init; } = default!;
 
+    [ECMAScriptName("trigger")]
     public TSelectValueChangeTrigger Trigger { get; init; }
 
+    [ECMAScriptName("e")]
     public TdSelectPropsOnChangeContextE<T>? E { get; init; }
 }
 
@@ -22069,6 +21911,7 @@ public delegate void TdSelectPropsOnClear<T>(TdSelectPropsOnClearContext<T> cont
 [ECMAScript]
 public record TdSelectPropsOnClearContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22087,12 +21930,15 @@ public delegate void TdSelectPropsOnEnter<T>(TdSelectPropsOnEnterContext<T> cont
 [ECMAScript]
 public record TdSelectPropsOnEnterContext<T> : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 }
 
@@ -22102,8 +21948,10 @@ public delegate void TdSelectPropsOnFocus<T>(TdSelectPropsOnFocusContext<T> cont
 [ECMAScript]
 public record TdSelectPropsOnFocusContext<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("e")]
     public TdSelectPropsOnFocusContextE<T> E { get; init; }
 }
 
@@ -22127,6 +21975,7 @@ public delegate void TdSelectPropsOnSearch<T>(string filterWords, TdSelectPropsO
 [ECMAScript]
 public record TdSelectPropsOnSearchContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -22178,11 +22027,14 @@ public readonly union TdSelectPropsValueDisplayOption2Context<T>(TdSelectPropsVa
 [ECMAScript]
 public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
 {
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption> Value { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdSelectPropsValueDisplayOption2ContextOption1OnClose<T> OnClose { get; init; } = default!;
 
+    [ECMAScriptName("displayValue")]
     public TSelectValue<TSelectOption>? DisplayValue { get; init; }
 }
 
@@ -22202,18 +22054,25 @@ public enum TdSelectPropsValueType
 [ECMAScript]
 public record TdStepItemProps : VueProps
 {
+    [ECMAScriptName("content")]
     public TdStepItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdStepItemPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("extra")]
     public TdStepItemPropsExtra? Extra { get; init; }
 
+    [ECMAScriptName("icon")]
     public TdStepItemPropsIcon? Icon { get; init; }
 
+    [ECMAScriptName("status")]
     public TStepStatus? Status { get; init; }
 
+    [ECMAScriptName("title")]
     public TdStepItemPropsTitle? Title { get; init; }
 
+    [ECMAScriptName("value")]
     public TdStepItemPropsValue? Value { get; init; }
 }
 
@@ -22250,14 +22109,19 @@ public readonly union TdStepItemPropsValue(string, Number)
 [ECMAScript]
 public record TdStickyItemProps : VueProps
 {
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; init; }
 
+    [ECMAScriptName("label")]
     public TdStickyItemPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("popup")]
     public TdStickyItemPropsPopup? Popup { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdStickyItemPropsTrigger? Trigger { get; init; }
 }
 
@@ -22284,24 +22148,34 @@ public enum TdStickyItemPropsTrigger
 [ECMAScript]
 public record TdTabPanelProps : VueProps
 {
+    [ECMAScriptName("default")]
     public RenderFragment? Default { get; init; }
 
+    [ECMAScriptName("destroyOnHide")]
     public bool? DestroyOnHide { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTabPanelPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; init; }
 
+    [ECMAScriptName("panel")]
     public TdTabPanelPropsPanel? Panel { get; init; }
 
+    [ECMAScriptName("removable")]
     public bool? Removable { get; init; }
 
+    [ECMAScriptName("value")]
     public TTabValue? Value { get; init; }
 
+    [ECMAScriptName("onRemove")]
     public TdTabPanelPropsOnRemove? OnRemove { get; init; }
 }
 
@@ -22316,8 +22190,10 @@ public delegate void TdTabPanelPropsOnRemove(TdTabPanelPropsOnRemoveOptions opti
 [ECMAScript]
 public record TdTabPanelPropsOnRemoveOptions : VueProps
 {
+    [ECMAScriptName("value")]
     public TTabValue Value { get; init; }
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22330,96 +22206,139 @@ public readonly union TdTabPanelPropsPanel(string, RenderFragment)
 [ECMAScript]
 public record TdTagInputProps : VueProps
 {
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("collapsedItems")]
     public RenderFragment<TdTagInputPropsCollapsedItemsContext>? CollapsedItems { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("dragSort")]
     public bool? DragSort { get; init; }
 
+    [ECMAScriptName("excessTagsDisplayType")]
     public TdTagInputPropsExcessTagsDisplayType? ExcessTagsDisplayType { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; init; }
 
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; init; }
 
+    [ECMAScriptName("defaultInputValue")]
     public string? DefaultInputValue { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTagInputPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("max")]
     public Number? Max { get; init; }
 
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdTagInputPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("suffix")]
     public TdTagInputPropsSuffix? Suffix { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tag")]
     public TdTagInputPropsTag? Tag { get; init; }
 
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdTagInputPropsTips? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public TTagInputValueItem[]? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TTagInputValueItem[]? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TTagInputValueItem[]? ModelValue { get; init; }
 
+    [ECMAScriptName("valueDisplay")]
     public TdTagInputPropsValueDisplay? ValueDisplay { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdTagInputPropsOnBlur? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdTagInputPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdTagInputPropsOnClear? OnClear { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdTagInputPropsOnClick? OnClick { get; init; }
 
+    [ECMAScriptName("onDragSort")]
     public TdTagInputPropsOnDragSort? OnDragSort { get; init; }
 
+    [ECMAScriptName("onEnter")]
     public TdTagInputPropsOnEnter? OnEnter { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdTagInputPropsOnFocus? OnFocus { get; init; }
 
+    [ECMAScriptName("onInputChange")]
     public TdTagInputPropsOnInputChange? OnInputChange { get; init; }
 
+    [ECMAScriptName("onMouseenter")]
     public TdTagInputPropsOnMouseenter? OnMouseenter { get; init; }
 
+    [ECMAScriptName("onMouseleave")]
     public TdTagInputPropsOnMouseleave? OnMouseleave { get; init; }
 
+    [ECMAScriptName("onPaste")]
     public TdTagInputPropsOnPaste? OnPaste { get; init; }
 
+    [ECMAScriptName("onRemove")]
     public TdTagInputPropsOnRemove? OnRemove { get; init; }
 }
 
 [ECMAScript]
 public record TdTagInputPropsCollapsedItemsContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("collapsedSelectedItems")]
     [EditorRequired]
     public TTagInputValueItem[] CollapsedSelectedItems { get; init; } = default!;
 
+    [ECMAScriptName("count")]
     public Number Count { get; init; }
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdTagInputPropsCollapsedItemsContextOnClose OnClose { get; init; } = default!;
 }
@@ -22430,8 +22349,10 @@ public delegate void TdTagInputPropsCollapsedItemsContextOnClose(TdTagInputProps
 [ECMAScript]
 public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
+    [ECMAScriptName("index")]
     public Number Index { get; init; }
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 }
 
@@ -22456,9 +22377,11 @@ public delegate void TdTagInputPropsOnBlur(TTagInputValueItem[] @value, TdTagInp
 [ECMAScript]
 public record TdTagInputPropsOnBlurContext : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -22472,6 +22395,7 @@ public delegate void TdTagInputPropsOnClear(TdTagInputPropsOnClearContext contex
 [ECMAScript]
 public record TdTagInputPropsOnClearContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22482,6 +22406,7 @@ public delegate void TdTagInputPropsOnClick(TdTagInputPropsOnClickContext contex
 [ECMAScript]
 public record TdTagInputPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22495,9 +22420,11 @@ public delegate void TdTagInputPropsOnEnter(TTagInputValueItem[] @value, TdTagIn
 [ECMAScript]
 public record TdTagInputPropsOnEnterContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 }
@@ -22508,9 +22435,11 @@ public delegate void TdTagInputPropsOnFocus(TTagInputValueItem[] @value, TdTagIn
 [ECMAScript]
 public record TdTagInputPropsOnFocusContext : VueProps
 {
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -22524,6 +22453,7 @@ public delegate void TdTagInputPropsOnMouseenter(TdTagInputPropsOnMouseenterCont
 [ECMAScript]
 public record TdTagInputPropsOnMouseenterContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22534,6 +22464,7 @@ public delegate void TdTagInputPropsOnMouseleave(TdTagInputPropsOnMouseleaveCont
 [ECMAScript]
 public record TdTagInputPropsOnMouseleaveContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22544,9 +22475,11 @@ public delegate void TdTagInputPropsOnPaste(TdTagInputPropsOnPasteContext contex
 [ECMAScript]
 public record TdTagInputPropsOnPasteContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public ClipboardEvent E { get; init; } = default!;
 
+    [ECMAScriptName("pasteValue")]
     [EditorRequired]
     public string PasteValue { get; init; } = default!;
 }
@@ -22581,6 +22514,7 @@ public readonly union TdTagInputPropsTag(string, RenderFragment<TdTagInputPropsT
 [ECMAScript]
 public record TdTagInputPropsTagOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     public TdTagInputPropsTagOption2ContextValue Value { get; init; }
 }
 
@@ -22602,9 +22536,11 @@ public readonly union TdTagInputPropsValueDisplay(string, RenderFragment<TdTagIn
 [ECMAScript]
 public record TdTagInputPropsValueDisplayOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public TTagInputValueItem[] Value { get; init; } = default!;
 
+    [ECMAScriptName("onClose")]
     [EditorRequired]
     public TdTagInputPropsValueDisplayOption2ContextOnClose OnClose { get; init; } = default!;
 }
@@ -22615,32 +22551,46 @@ public delegate void TdTagInputPropsValueDisplayOption2ContextOnClose(Number ind
 [ECMAScript]
 public record TdTagProps : VueProps
 {
+    [ECMAScriptName("closable")]
     public bool? Closable { get; init; }
 
+    [ECMAScriptName("color")]
     public string? Color { get; init; }
 
+    [ECMAScriptName("content")]
     public TdTagPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdTagPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; init; }
 
+    [ECMAScriptName("maxWidth")]
     public TdTagPropsMaxWidth? MaxWidth { get; init; }
 
+    [ECMAScriptName("shape")]
     public TdTagPropsShape? Shape { get; init; }
 
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdTagPropsTheme? Theme { get; init; }
 
+    [ECMAScriptName("title")]
     public TdTagPropsTitle? Title { get; init; }
 
+    [ECMAScriptName("variant")]
     public TdTagPropsVariant? Variant { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdTagPropsOnClick? OnClick { get; init; }
 
+    [ECMAScriptName("onClose")]
     public TdTagPropsOnClose? OnClose { get; init; }
 }
 
@@ -22665,6 +22615,7 @@ public delegate void TdTagPropsOnClick(TdTagPropsOnClickContext context);
 [ECMAScript]
 public record TdTagPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22675,6 +22626,7 @@ public delegate void TdTagPropsOnClose(TdTagPropsOnCloseContext context);
 [ECMAScript]
 public record TdTagPropsOnCloseContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -22729,46 +22681,67 @@ public enum TdTagPropsVariant
 [ECMAScript]
 public record TdTextareaProps : VueProps
 {
+    [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; init; }
 
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; init; }
 
+    [ECMAScriptName("autosize")]
     public TdTextareaPropsAutosize? Autosize { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; init; }
 
+    [ECMAScriptName("maxlength")]
     public TdTextareaPropsMaxlength? Maxlength { get; init; }
 
+    [ECMAScriptName("name")]
     public string? Name { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("status")]
     public TdTextareaPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdTextareaPropsTips? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public TTextareaValue? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TTextareaValue? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TTextareaValue? ModelValue { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdTextareaPropsOnBlur? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdTextareaPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdTextareaPropsOnFocus? OnFocus { get; init; }
 
+    [ECMAScriptName("onKeydown")]
     public TdTextareaPropsOnKeydown? OnKeydown { get; init; }
 
+    [ECMAScriptName("onKeypress")]
     public TdTextareaPropsOnKeypress? OnKeypress { get; init; }
 
+    [ECMAScriptName("onKeyup")]
     public TdTextareaPropsOnKeyup? OnKeyup { get; init; }
 
+    [ECMAScriptName("onValidate")]
     public TdTextareaPropsOnValidate? OnValidate { get; init; }
 }
 
@@ -22780,8 +22753,10 @@ public readonly union TdTextareaPropsAutosize(bool, TdTextareaPropsAutosizeOptio
 [ECMAScript]
 public record TdTextareaPropsAutosizeOption2 : VueProps
 {
+    [ECMAScriptName("minRows")]
     public Number? MinRows { get; init; }
 
+    [ECMAScriptName("maxRows")]
     public Number? MaxRows { get; init; }
 }
 
@@ -22796,6 +22771,7 @@ public delegate void TdTextareaPropsOnBlur(TTextareaValue @value, TdTextareaProp
 [ECMAScript]
 public record TdTextareaPropsOnBlurContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -22806,6 +22782,7 @@ public delegate void TdTextareaPropsOnChange(TTextareaValue @value, TdTextareaPr
 [ECMAScript]
 public record TdTextareaPropsOnChangeContext : VueProps
 {
+    [ECMAScriptName("e")]
     public InputEvent? E { get; init; }
 }
 
@@ -22815,6 +22792,7 @@ public delegate void TdTextareaPropsOnFocus(TTextareaValue @value, TdTextareaPro
 [ECMAScript]
 public record TdTextareaPropsOnFocusContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -22825,6 +22803,7 @@ public delegate void TdTextareaPropsOnKeydown(TTextareaValue @value, TdTextareaP
 [ECMAScript]
 public record TdTextareaPropsOnKeydownContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -22835,6 +22814,7 @@ public delegate void TdTextareaPropsOnKeypress(TTextareaValue @value, TdTextarea
 [ECMAScript]
 public record TdTextareaPropsOnKeypressContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -22845,6 +22825,7 @@ public delegate void TdTextareaPropsOnKeyup(TTextareaValue @value, TdTextareaPro
 [ECMAScript]
 public record TdTextareaPropsOnKeyupContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public KeyboardEvent E { get; init; } = default!;
 }
@@ -22855,6 +22836,7 @@ public delegate void TdTextareaPropsOnValidate(TdTextareaPropsOnValidateContext 
 [ECMAScript]
 public record TdTextareaPropsOnValidateContext : VueProps
 {
+    [ECMAScriptName("error")]
     public TdTextareaPropsOnValidateContextError? Error { get; init; }
 }
 
@@ -22890,70 +22872,103 @@ public readonly union TdTextareaPropsTips(string, RenderFragment)
 [ECMAScript]
 public record TdTimePickerProps : VueProps
 {
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; init; }
 
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; init; }
 
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; init; }
 
+    [ECMAScriptName("disableTime")]
     public TdTimePickerPropsDisableTime? DisableTime { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("format")]
     public string? Format { get; init; }
 
+    [ECMAScriptName("hideDisabledTime")]
     public bool? HideDisabledTime { get; init; }
 
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTimePickerPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; init; }
 
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; init; }
 
+    [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIcon { get; init; }
 
+    [ECMAScriptName("presets")]
     public TPresetTime? Presets { get; init; }
 
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; init; }
 
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; init; }
 
+    [ECMAScriptName("size")]
     public TdTimePickerPropsSize? Size { get; init; }
 
+    [ECMAScriptName("status")]
     public TdTimePickerPropsStatus? Status { get; init; }
 
+    [ECMAScriptName("steps")]
     public TdTimePickerPropsStepsItem[]? Steps { get; init; }
 
+    [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIcon { get; init; }
 
+    [ECMAScriptName("tips")]
     public TdTimePickerPropsTips? Tips { get; init; }
 
+    [ECMAScriptName("value")]
     public string? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public string? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; init; }
 
+    [ECMAScriptName("valueDisplay")]
     public TdTimePickerPropsValueDisplay? ValueDisplay { get; init; }
 
+    [ECMAScriptName("onBlur")]
     public TdTimePickerPropsOnBlur? OnBlur { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdTimePickerPropsOnChange? OnChange { get; init; }
 
+    [ECMAScriptName("onClear")]
     public TdTimePickerPropsOnClear? OnClear { get; init; }
 
+    [ECMAScriptName("onClose")]
     public TdTimePickerPropsOnClose? OnClose { get; init; }
 
+    [ECMAScriptName("onConfirm")]
     public TdTimePickerPropsOnConfirm? OnConfirm { get; init; }
 
+    [ECMAScriptName("onFocus")]
     public TdTimePickerPropsOnFocus? OnFocus { get; init; }
 
+    [ECMAScriptName("onInput")]
     public TdTimePickerPropsOnInput? OnInput { get; init; }
 
+    [ECMAScriptName("onOpen")]
     public TdTimePickerPropsOnOpen? OnOpen { get; init; }
 
+    [ECMAScriptName("onPick")]
     public TdTimePickerPropsOnPick? OnPick { get; init; }
 }
 
@@ -22963,15 +22978,19 @@ public delegate TdTimePickerPropsDisableTimeResultPartial TdTimePickerPropsDisab
 [ECMAScript]
 public record TdTimePickerPropsDisableTimeResultPartial : VueProps
 {
+    [ECMAScriptName("hour")]
     [EditorRequired]
     public Number[] Hour { get; init; } = default!;
 
+    [ECMAScriptName("minute")]
     [EditorRequired]
     public Number[] Minute { get; init; } = default!;
 
+    [ECMAScriptName("second")]
     [EditorRequired]
     public Number[] Second { get; init; } = default!;
 
+    [ECMAScriptName("millisecond")]
     [EditorRequired]
     public Number[] Millisecond { get; init; } = default!;
 }
@@ -22987,15 +23006,20 @@ public delegate void TdTimePickerPropsOnBlur(TdTimePickerPropsOnBlurContext cont
 [ECMAScript]
 public record TdTimePickerPropsOnBlurContext : VueProps
 {
+    [ECMAScriptName("e")]
     public TPopupTriggerEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TPopupTriggerSource? Trigger { get; init; }
 
+    [ECMAScriptName("inputValue")]
     [EditorRequired]
     public string InputValue { get; init; } = default!;
 
+    [ECMAScriptName("tagInputValue")]
     public TTagInputValueItem[]? TagInputValue { get; init; }
 
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -23009,6 +23033,7 @@ public delegate void TdTimePickerPropsOnClear(TdTimePickerPropsOnClearContext co
 [ECMAScript]
 public record TdTimePickerPropsOnClearContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23019,6 +23044,7 @@ public delegate void TdTimePickerPropsOnClose(TdTimePickerPropsOnCloseContext co
 [ECMAScript]
 public record TdTimePickerPropsOnCloseContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23029,6 +23055,7 @@ public delegate void TdTimePickerPropsOnConfirm(TdTimePickerPropsOnConfirmContex
 [ECMAScript]
 public record TdTimePickerPropsOnConfirmContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23039,9 +23066,11 @@ public delegate void TdTimePickerPropsOnFocus(TdTimePickerPropsOnFocusContext co
 [ECMAScript]
 public record TdTimePickerPropsOnFocusContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public FocusEvent E { get; init; } = default!;
 }
@@ -23052,9 +23081,11 @@ public delegate void TdTimePickerPropsOnInput(TdTimePickerPropsOnInputContext co
 [ECMAScript]
 public record TdTimePickerPropsOnInputContext : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public InputEvent E { get; init; } = default!;
 }
@@ -23065,6 +23096,7 @@ public delegate void TdTimePickerPropsOnOpen(TdTimePickerPropsOnOpenContext cont
 [ECMAScript]
 public record TdTimePickerPropsOnOpenContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23075,6 +23107,7 @@ public delegate void TdTimePickerPropsOnPick(string @value, TdTimePickerPropsOnP
 [ECMAScript]
 public record TdTimePickerPropsOnPickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23123,6 +23156,7 @@ public readonly union TdTimePickerPropsValueDisplay(string, RenderFragment<TdTim
 [ECMAScript]
 public record TdTimePickerPropsValueDisplayOption2Context : VueProps
 {
+    [ECMAScriptName("value")]
     [EditorRequired]
     public string Value { get; init; } = default!;
 }
@@ -23130,18 +23164,25 @@ public record TdTimePickerPropsValueDisplayOption2Context : VueProps
 [ECMAScript]
 public record TdTimelineItemProps : VueProps
 {
+    [ECMAScriptName("content")]
     public TdTimelineItemPropsContent? Content { get; init; }
 
+    [ECMAScriptName("dot")]
     public RenderFragment? Dot { get; init; }
 
+    [ECMAScriptName("dotColor")]
     public string? DotColor { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTimelineItemPropsLabel? Label { get; init; }
 
+    [ECMAScriptName("labelAlign")]
     public TdTimelineItemPropsLabelAlign? LabelAlign { get; init; }
 
+    [ECMAScriptName("loading")]
     public bool? Loading { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdTimelineItemPropsOnClick? OnClick { get; init; }
 }
 
@@ -23175,9 +23216,11 @@ public delegate void TdTimelineItemPropsOnClick(TdTimelineItemPropsOnClickContex
 [ECMAScript]
 public record TdTimelineItemPropsOnClickContext : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 
+    [ECMAScriptName("item")]
     [EditorRequired]
     public TdTimelineItemProps Item { get; init; } = default!;
 }
@@ -23185,106 +23228,155 @@ public record TdTimelineItemPropsOnClickContext : VueProps
 [ECMAScript]
 public record TdTooltipProps : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("content")]
     public TdPopupPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdPopupPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("delay")]
     public Number? Delay { get; init; }
 
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; init; }
 
+    [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerStyle")]
     public TdPopupPropsOverlayInnerStyle? OverlayInnerStyle { get; init; }
 
+    [ECMAScriptName("overlayStyle")]
     public TdPopupPropsOverlayStyle? OverlayStyle { get; init; }
 
+    [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; init; }
 
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdPopupPropsTrigger? Trigger { get; init; }
 
+    [ECMAScriptName("triggerElement")]
     public TdPopupPropsTriggerElement? TriggerElement { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("defaultVisible")]
     public bool? DefaultVisible { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onOverlayClick")]
     public TdPopupPropsOnOverlayClick? OnOverlayClick { get; init; }
 
+    [ECMAScriptName("onScroll")]
     public TdPopupPropsOnScroll? OnScroll { get; init; }
 
+    [ECMAScriptName("onScrollToBottom")]
     public TdPopupPropsOnScrollToBottom? OnScrollToBottom { get; init; }
 
+    [ECMAScriptName("onVisibleChange")]
     public TdPopupPropsOnVisibleChange? OnVisibleChange { get; init; }
 
+    [ECMAScriptName("duration")]
     public Number? Duration { get; init; }
 
+    [ECMAScriptName("placement")]
     public TdTooltipPropsPlacement? Placement { get; init; }
 
+    [ECMAScriptName("theme")]
     public TdTooltipPropsTheme? Theme { get; init; }
 }
 
 [ECMAScript]
 public sealed record TdTooltipPropsBase1 : VueProps
 {
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; init; }
 
+    [ECMAScriptName("content")]
     public TdPopupPropsContent? Content { get; init; }
 
+    [ECMAScriptName("default")]
     public TdPopupPropsDefault? Default { get; init; }
 
+    [ECMAScriptName("delay")]
     public TdPopupPropsDelay? Delay { get; init; }
 
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; init; }
 
+    [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; init; }
 
+    [ECMAScriptName("overlayInnerStyle")]
     public TdPopupPropsOverlayInnerStyle? OverlayInnerStyle { get; init; }
 
+    [ECMAScriptName("overlayStyle")]
     public TdPopupPropsOverlayStyle? OverlayStyle { get; init; }
 
+    [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; init; }
 
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdPopupPropsTrigger? Trigger { get; init; }
 
+    [ECMAScriptName("triggerElement")]
     public TdPopupPropsTriggerElement? TriggerElement { get; init; }
 
+    [ECMAScriptName("visible")]
     public bool? Visible { get; init; }
 
+    [ECMAScriptName("defaultVisible")]
     public bool? DefaultVisible { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; init; }
 
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; init; }
 
+    [ECMAScriptName("onOverlayClick")]
     public TdPopupPropsOnOverlayClick? OnOverlayClick { get; init; }
 
+    [ECMAScriptName("onScroll")]
     public TdPopupPropsOnScroll? OnScroll { get; init; }
 
+    [ECMAScriptName("onScrollToBottom")]
     public TdPopupPropsOnScrollToBottom? OnScrollToBottom { get; init; }
 
+    [ECMAScriptName("onVisibleChange")]
     public TdPopupPropsOnVisibleChange? OnVisibleChange { get; init; }
 }
 
@@ -23322,102 +23414,151 @@ public enum TdTooltipPropsTheme
 [ECMAScript]
 public record TdTreeProps<T> : VueProps
 {
+    [ECMAScriptName("activable")]
     public bool? Activable { get; init; }
 
+    [ECMAScriptName("activeMultiple")]
     public bool? ActiveMultiple { get; init; }
 
+    [ECMAScriptName("actived")]
     public TTreeNodeValue[]? Actived { get; init; }
 
+    [ECMAScriptName("defaultActived")]
     public TTreeNodeValue[]? DefaultActived { get; init; }
 
+    [ECMAScriptName("allowDrop")]
     public TdTreePropsAllowDrop<T>? AllowDrop { get; init; }
 
+    [ECMAScriptName("allowFoldNodeOnFilter")]
     public bool? AllowFoldNodeOnFilter { get; init; }
 
+    [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; init; }
 
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; init; }
 
+    [ECMAScriptName("checkable")]
     public bool? Checkable { get; init; }
 
+    [ECMAScriptName("data")]
     public T[]? Data { get; init; }
 
+    [ECMAScriptName("disableCheck")]
     public TdTreePropsDisableCheck<T>? DisableCheck { get; init; }
 
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; init; }
 
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; init; }
 
+    [ECMAScriptName("empty")]
     public TdTreePropsEmpty<T>? Empty { get; init; }
 
+    [ECMAScriptName("expandAll")]
     public bool? ExpandAll { get; init; }
 
+    [ECMAScriptName("expandLevel")]
     public Number? ExpandLevel { get; init; }
 
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; init; }
 
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; init; }
 
+    [ECMAScriptName("expandParent")]
     public bool? ExpandParent { get; init; }
 
+    [ECMAScriptName("expanded")]
     public TTreeNodeValue[]? Expanded { get; init; }
 
+    [ECMAScriptName("defaultExpanded")]
     public TTreeNodeValue[]? DefaultExpanded { get; init; }
 
+    [ECMAScriptName("filter")]
     public TdTreePropsFilter<T>? Filter { get; init; }
 
+    [ECMAScriptName("height")]
     public TdTreePropsHeight<T>? Height { get; init; }
 
+    [ECMAScriptName("hover")]
     public bool? Hover { get; init; }
 
+    [ECMAScriptName("icon")]
     public TdTreePropsIcon<T>? Icon { get; init; }
 
+    [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; init; }
 
+    [ECMAScriptName("label")]
     public TdTreePropsLabel<T>? Label { get; init; }
 
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; init; }
 
+    [ECMAScriptName("line")]
     public TdTreePropsLine<T>? Line { get; init; }
 
+    [ECMAScriptName("load")]
     public TdTreePropsLoad<T>? Load { get; init; }
 
+    [ECMAScriptName("maxHeight")]
     public TdTreePropsMaxHeight<T>? MaxHeight { get; init; }
 
+    [ECMAScriptName("operations")]
     public RenderFragment<TTreeNodeModel<T>>? Operations { get; init; }
 
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; init; }
 
+    [ECMAScriptName("transition")]
     public bool? Transition { get; init; }
 
+    [ECMAScriptName("value")]
     public TTreeNodeValue[]? Value { get; init; }
 
+    [ECMAScriptName("defaultValue")]
     public TTreeNodeValue[]? DefaultValue { get; init; }
 
+    [ECMAScriptName("modelValue")]
     public TTreeNodeValue[]? ModelValue { get; init; }
 
+    [ECMAScriptName("valueMode")]
     public TdTreePropsValueMode? ValueMode { get; init; }
 
+    [ECMAScriptName("onActive")]
     public TdTreePropsOnActive<T>? OnActive { get; init; }
 
+    [ECMAScriptName("onChange")]
     public TdTreePropsOnChange<T>? OnChange { get; init; }
 
+    [ECMAScriptName("onClick")]
     public TdTreePropsOnClick<T>? OnClick { get; init; }
 
+    [ECMAScriptName("onDragEnd")]
     public TdTreePropsOnDragEnd<T>? OnDragEnd { get; init; }
 
+    [ECMAScriptName("onDragLeave")]
     public TdTreePropsOnDragLeave<T>? OnDragLeave { get; init; }
 
+    [ECMAScriptName("onDragOver")]
     public TdTreePropsOnDragOver<T>? OnDragOver { get; init; }
 
+    [ECMAScriptName("onDragStart")]
     public TdTreePropsOnDragStart<T>? OnDragStart { get; init; }
 
+    [ECMAScriptName("onDrop")]
     public TdTreePropsOnDrop<T>? OnDrop { get; init; }
 
+    [ECMAScriptName("onExpand")]
     public TdTreePropsOnExpand<T>? OnExpand { get; init; }
 
+    [ECMAScriptName("onLoad")]
     public TdTreePropsOnLoad<T>? OnLoad { get; init; }
 
+    [ECMAScriptName("onScroll")]
     public TdTreePropsOnScroll<T>? OnScroll { get; init; }
 }
 
@@ -23427,15 +23568,19 @@ public delegate bool TdTreePropsAllowDrop<T>(TdTreePropsAllowDropContext<T> cont
 [ECMAScript]
 public record TdTreePropsAllowDropContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("dragNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DragNode { get; init; } = default!;
 
+    [ECMAScriptName("dropNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
+    [ECMAScriptName("dropPosition")]
     public Number DropPosition { get; init; }
 }
 
@@ -23489,11 +23634,14 @@ public delegate void TdTreePropsOnActive<T>(TTreeNodeValue[] @value, TdTreeProps
 [ECMAScript]
 public record TdTreePropsOnActiveContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdTreePropsOnActiveContextTrigger Trigger { get; init; }
 }
 
@@ -23513,11 +23661,14 @@ public delegate void TdTreePropsOnChange<T>(TTreeNodeValue[] @value, TdTreeProps
 [ECMAScript]
 public record TdTreePropsOnChangeContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public TJsonValue? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdTreePropsOnChangeContextTrigger Trigger { get; init; }
 }
 
@@ -23537,9 +23688,11 @@ public delegate void TdTreePropsOnClick<T>(TdTreePropsOnClickContext<T> context)
 [ECMAScript]
 public record TdTreePropsOnClickContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
 }
@@ -23550,9 +23703,11 @@ public delegate void TdTreePropsOnDragEnd<T>(TdTreePropsOnDragEndContext<T> cont
 [ECMAScript]
 public record TdTreePropsOnDragEndContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -23563,9 +23718,11 @@ public delegate void TdTreePropsOnDragLeave<T>(TdTreePropsOnDragLeaveContext<T> 
 [ECMAScript]
 public record TdTreePropsOnDragLeaveContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -23576,9 +23733,11 @@ public delegate void TdTreePropsOnDragOver<T>(TdTreePropsOnDragOverContext<T> co
 [ECMAScript]
 public record TdTreePropsOnDragOverContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -23589,9 +23748,11 @@ public delegate void TdTreePropsOnDragStart<T>(TdTreePropsOnDragStartContext<T> 
 [ECMAScript]
 public record TdTreePropsOnDragStartContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -23602,15 +23763,19 @@ public delegate void TdTreePropsOnDrop<T>(TdTreePropsOnDropContext<T> context);
 [ECMAScript]
 public record TdTreePropsOnDropContext<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public DragEvent E { get; init; } = default!;
 
+    [ECMAScriptName("dragNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DragNode { get; init; } = default!;
 
+    [ECMAScriptName("dropNode")]
     [EditorRequired]
     public TTreeNodeModel<T> DropNode { get; init; } = default!;
 
+    [ECMAScriptName("dropPosition")]
     public Number DropPosition { get; init; }
 }
 
@@ -23620,11 +23785,14 @@ public delegate void TdTreePropsOnExpand<T>(TTreeNodeValue[] @value, TdTreeProps
 [ECMAScript]
 public record TdTreePropsOnExpandContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 
+    [ECMAScriptName("e")]
     public MouseEvent? E { get; init; }
 
+    [ECMAScriptName("trigger")]
     public TdTreePropsOnExpandContextTrigger Trigger { get; init; }
 }
 
@@ -23646,6 +23814,7 @@ public delegate void TdTreePropsOnLoad<T>(TdTreePropsOnLoadContext<T> context);
 [ECMAScript]
 public record TdTreePropsOnLoadContext<T> : VueProps
 {
+    [ECMAScriptName("node")]
     [EditorRequired]
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
@@ -23656,6 +23825,7 @@ public delegate void TdTreePropsOnScroll<T>(TdTreePropsOnScrollParams<T> @params
 [ECMAScript]
 public record TdTreePropsOnScrollParams<T> : VueProps
 {
+    [ECMAScriptName("e")]
     [EditorRequired]
     public WheelEvent E { get; init; } = default!;
 }
@@ -23676,6 +23846,7 @@ public enum TdTreePropsValueMode
 public sealed class TAffix : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
 
     [Parameter]
@@ -23683,12 +23854,15 @@ public sealed class TAffix : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offsetBottom")]
     public Number? OffsetBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offsetTop")]
     public Number? OffsetTop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -23696,6 +23870,7 @@ public sealed class TAffix : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFixedChange")]
     public EventCallback<bool> OnFixedChange { get; set; }
 }
 
@@ -23711,6 +23886,7 @@ public sealed class TAlert : TContentComponentBase
     public TAlertCloseBtnValue? CloseBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxLine")]
     public Number? MaxLine { get; set; }
 
     [Parameter]
@@ -23718,6 +23894,7 @@ public sealed class TAlert : TContentComponentBase
     public string? MessageValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TAlertThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -23749,9 +23926,11 @@ public sealed class TAlert : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TAlertCloseEventContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClosed")]
     public EventCallback<TAlertClosedEventContext> OnClosed { get; set; }
 }
 
@@ -23759,21 +23938,27 @@ public sealed class TAlert : TContentComponentBase
 public sealed class TAnchor : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("affixProps")]
     public TdAffixProps? AffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bounds")]
     public Number? Bounds { get; set; }
 
     [Parameter]
+    [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
 
     [Parameter]
+    [ECMAScriptName("getCurrentAnchor")]
     public TAnchorGetCurrentAnchorValue? GetCurrentAnchor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TAnchorSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("targetOffset")]
     public Number? TargetOffset { get; set; }
 
     [Parameter]
@@ -23781,9 +23966,11 @@ public sealed class TAnchor : TContentComponentBase
     public RenderFragment? CursorContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TAnchorClickEventLink> OnClick { get; set; }
 }
 
@@ -23791,13 +23978,16 @@ public sealed class TAnchor : TContentComponentBase
 public sealed class TAnchorItem : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("customScroll")]
     public bool? CustomScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     [EditorRequired]
     public string Href { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("target")]
     public TAnchorItemTargetValue? Target { get; set; }
 
     [Parameter]
@@ -23813,10 +24003,12 @@ public sealed class TAnchorItem : TContentComponentBase
 public sealed class TAnchorTarget : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("id")]
     [EditorRequired]
     public string Id { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 }
 
@@ -23824,6 +24016,7 @@ public sealed class TAnchorTarget : TContentComponentBase
 public sealed class TAside : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("width")]
     public string? Width { get; set; }
 }
 
@@ -23831,15 +24024,19 @@ public sealed class TAside : TContentComponentBase
 public class TAutoComplete<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -23847,18 +24044,23 @@ public class TAutoComplete<T> : TContentComponentBase
     public string? EmptyValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter")]
     public TAutoCompleteFilterValue<T>? Filter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightKeyword")]
     public bool? HighlightKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public T[]? Options { get; set; }
 
     [Parameter]
@@ -23870,21 +24072,27 @@ public class TAutoComplete<T> : TContentComponentBase
     public string? PanelTopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TAutoCompleteStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("textareaProps")]
     public TdTextareaProps? TextareaProps { get; set; }
 
     [Parameter]
@@ -23896,6 +24104,7 @@ public class TAutoComplete<T> : TContentComponentBase
     public string? TriggerElementValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     [Parameter]
@@ -23919,27 +24128,35 @@ public class TAutoComplete<T> : TContentComponentBase
     public RenderFragment? TriggerElementContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TAutoCompleteBlurEventContext<T>> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TAutoCompleteClearEventContext<T>> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionend")]
     public EventCallback<TAutoCompleteCompositionendEventContext<T>> OnCompositionend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionstart")]
     public EventCallback<TAutoCompleteCompositionstartEventContext<T>> OnCompositionstart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TAutoCompleteEnterEventContext<T>> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TAutoCompleteFocusEventContext<T>> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelect")]
     public EventCallback<string> OnSelect { get; set; }
 }
 
@@ -23952,6 +24169,7 @@ public sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 public sealed class TAvatar : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
     [Parameter]
@@ -23959,18 +24177,23 @@ public sealed class TAvatar : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideOnLoadFailed")]
     public bool? HideOnLoadFailed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageProps")]
     public TdImageProps? ImageProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TShapeEnum? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
@@ -23982,6 +24205,7 @@ public sealed class TAvatar : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback<TAvatarErrorEventContext> OnError { get; set; }
 }
 
@@ -23989,6 +24213,7 @@ public sealed class TAvatar : TContentComponentBase
 public sealed class TAvatarGroup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("cascading")]
     public TCascadingValue? Cascading { get; set; }
 
     [Parameter]
@@ -23996,15 +24221,19 @@ public sealed class TAvatarGroup : TContentComponentBase
     public string? CollapseAvatarValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TShapeEnum? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
@@ -24016,6 +24245,7 @@ public sealed class TAvatarGroup : TContentComponentBase
 public sealed class TBackTop : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("container")]
     public TAttachNode? Container { get; set; }
 
     [Parameter]
@@ -24023,24 +24253,31 @@ public sealed class TBackTop : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public TBackTopOffsetValueItem[]? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TBackTopShapeEnum? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TBackTopSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public TAttachNode? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TBackTopThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visibleHeight")]
     public TBackTopVisibleHeightValue? VisibleHeight { get; set; }
 
     [Parameter]
@@ -24048,6 +24285,7 @@ public sealed class TBackTop : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TBackTopClickEventContext> OnClick { get; set; }
 }
 
@@ -24055,6 +24293,7 @@ public sealed class TBackTop : TContentComponentBase
 public sealed class TBadge : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
@@ -24066,21 +24305,27 @@ public sealed class TBadge : TContentComponentBase
     public TBadgeCountValue? CountValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dot")]
     public bool? Dot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxCount")]
     public Number? MaxCount { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public TBadgeOffsetValueItem[]? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TBadgeShapeValue? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showZero")]
     public bool? ShowZero { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TBadgeSizeValue? Size { get; set; }
 
     [Parameter]
@@ -24096,18 +24341,23 @@ public sealed class TBadge : TContentComponentBase
 public sealed class TBaseTable : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("activeRowKeys")]
     public TBaseTableActiveRowKeysValueItem[]? ActiveRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeRowType")]
     public TBaseTableActiveRowTypeValue? ActiveRowType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
     [Parameter]
@@ -24119,15 +24369,19 @@ public sealed class TBaseTable : TContentComponentBase
     public string? CellEmptyContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columns")]
     public TBaseTableCol<TTableRowData>[]? Columns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public TTableRowData[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
     [Parameter]
@@ -24139,15 +24393,19 @@ public sealed class TBaseTable : TContentComponentBase
     public string? FirstFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footData")]
     public TTableRowData[]? FootData { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixedBottom")]
     public TBaseTableFooterAffixedBottomValue? FooterAffixedBottom { get; set; }
 
     [Parameter]
@@ -24155,21 +24413,27 @@ public sealed class TBaseTable : TContentComponentBase
     public string? FooterSummaryValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixedTop")]
     public TBaseTableHeaderAffixedTopValue? HeaderAffixedTop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public TBaseTableHeightValue? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TBaseTableHorizontalScrollAffixedBottomValue? HorizontalScrollAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
     [Parameter]
@@ -24177,6 +24441,7 @@ public sealed class TBaseTable : TContentComponentBase
     public string? LastFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
     [Parameter]
@@ -24184,55 +24449,72 @@ public sealed class TBaseTable : TContentComponentBase
     public bool? LoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public TBaseTableMaxHeightValue? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
     [Parameter]
+    [ECMAScriptName("paginationAffixedBottom")]
     public TBaseTablePaginationAffixedBottomValue? PaginationAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<TTableRowData>? RowAttributes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowClassName")]
     public TBaseTableRowClassNameValue? RowClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<TTableRowData>? RowspanAndColspan { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<TTableRowData>? RowspanAndColspanInFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableLayout")]
     public TBaseTableTableLayoutValue? TableLayout { get; set; }
 
     [Parameter]
@@ -24240,6 +24522,7 @@ public sealed class TBaseTable : TContentComponentBase
     public string? TopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("verticalAlign")]
     public TBaseTableVerticalAlignValue? VerticalAlign { get; set; }
 
     [Parameter]
@@ -24275,54 +24558,71 @@ public sealed class TBaseTable : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveChange")]
     public EventCallback<TBaseTableActiveChangeEventActiveRowKeysItem[]> OnActiveChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<TTableRowData>> OnActiveRowAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TBaseTableCellEventContext<TTableRowData>> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TBaseTableColumnResizeChangeEventContext> OnColumnResizeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLeafColumnsChange")]
     public EventCallback<TBaseTableCol<TTableRowData>[]> OnLeafColumnsChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMousedown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TBaseTableScrollEventParams> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollX")]
     public EventCallback<TBaseTableScrollXEventParams> OnScrollX { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollY")]
     public EventCallback<TBaseTableScrollYEventParams> OnScrollY { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onShowElementChange")]
     public EventCallback<bool> OnShowElementChange { get; set; }
 }
 
@@ -24334,18 +24634,23 @@ public sealed class TBreadcrumb : TContentComponentBase
     public string? EllipsisValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemsAfterCollapse")]
     public Number? ItemsAfterCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemsBeforeCollapse")]
     public Number? ItemsBeforeCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxItemWidth")]
     public string? MaxItemWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxItems")]
     public Number? MaxItems { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TdBreadcrumbItemProps[]? Options { get; set; }
 
     [Parameter]
@@ -24353,6 +24658,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     public string? SeparatorValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TBreadcrumbThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -24372,24 +24678,31 @@ public sealed class TBreadcrumbItem : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public string? MaxWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
 
     [Parameter]
+    [ECMAScriptName("router")]
     public TJsonValue? Router { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public TBreadcrumbItemTargetValue? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("to")]
     public TBreadcrumbItemToValue? To { get; set; }
 
     [Parameter]
@@ -24401,6 +24714,7 @@ public sealed class TBreadcrumbItem : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
@@ -24408,6 +24722,7 @@ public sealed class TBreadcrumbItem : TContentComponentBase
 public sealed class TButton : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("block")]
     public bool? Block { get; set; }
 
     [Parameter]
@@ -24415,39 +24730,51 @@ public sealed class TButton : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("form")]
     public string? Form { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ghost")]
     public bool? Ghost { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TButtonShapeValue? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public TButtonTagValue? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TButtonThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TButtonTypeValue? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("variant")]
     public TButtonVariantValue? Variant { get; set; }
 
     [Parameter]
@@ -24463,6 +24790,7 @@ public sealed class TButton : TContentComponentBase
     public RenderFragment? SuffixContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
@@ -24478,15 +24806,19 @@ public sealed class TCalendar : TContentComponentBase
     public string? CellAppendValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("controllerConfig")]
     public TCalendarControllerConfigValue? ControllerConfig { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fillWithZero")]
     public bool? FillWithZero { get; set; }
 
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
@@ -24494,27 +24826,35 @@ public sealed class TCalendar : TContentComponentBase
     public string? HeadValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("isShowWeekendDefault")]
     public bool? IsShowWeekendDefault { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TCalendarModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("month")]
     public TCalendarMonthValue? Month { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preventCellContextmenu")]
     public bool? PreventCellContextmenu { get; set; }
 
     [Parameter]
+    [ECMAScriptName("range")]
     public TCalendarValue[]? Range { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TCalendarThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCalendarValueValue? Value { get; set; }
 
     [Parameter]
@@ -24522,6 +24862,7 @@ public sealed class TCalendar : TContentComponentBase
     public string[]? WeekValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("year")]
     public TCalendarYearValue? Year { get; set; }
 
     [Parameter]
@@ -24541,18 +24882,23 @@ public sealed class TCalendar : TContentComponentBase
     public RenderFragment<TCalendarWeek>? WeekContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TCalendarCellClickEventOptions> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellDoubleClick")]
     public EventCallback<TCalendarCellDoubleClickEventOptions> OnCellDoubleClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellRightClick")]
     public EventCallback<TCalendarCellRightClickEventOptions> OnCellRightClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onControllerChange")]
     public EventCallback<TControllerOptions> OnControllerChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMonthChange")]
     public EventCallback<TCalendarMonthChangeEventOptions> OnMonthChange { get; set; }
 }
 
@@ -24568,6 +24914,7 @@ public sealed class TCard : TContentComponentBase
     public string? AvatarValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
     [Parameter]
@@ -24591,9 +24938,11 @@ public sealed class TCard : TContentComponentBase
     public string? HeaderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerBordered")]
     public bool? HeaderBordered { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hoverShadow")]
     public bool? HoverShadow { get; set; }
 
     [Parameter]
@@ -24601,15 +24950,19 @@ public sealed class TCard : TContentComponentBase
     public bool? LoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shadow")]
     public bool? Shadow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TCardSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public string? Status { get; set; }
 
     [Parameter]
@@ -24617,6 +24970,7 @@ public sealed class TCard : TContentComponentBase
     public string? SubtitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TCardThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -24668,21 +25022,27 @@ public sealed class TCard : TContentComponentBase
 public class TCascader<CascaderOption> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -24690,15 +25050,19 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? EmptyValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter")]
     public TCascaderFilterValue<CascaderOption>? Filter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
     [Parameter]
@@ -24706,12 +25070,15 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("load")]
     public TCascaderLoadValue<CascaderOption>? Load { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
@@ -24719,15 +25086,19 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? LoadingTextValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public CascaderOption[]? Options { get; set; }
 
     [Parameter]
@@ -24739,30 +25110,39 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? PanelTopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showAllLevels")]
     public bool? ShowAllLevels { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TCascaderStatusValue? Status { get; set; }
 
     [Parameter]
@@ -24770,9 +25150,11 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? SuffixValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
     [Parameter]
@@ -24780,9 +25162,11 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TCascaderTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption>? Value { get; set; }
 
     [Parameter]
@@ -24790,9 +25174,11 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public string? ValueDisplayValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueMode")]
     public TCascaderValueModeValue? ValueMode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueType")]
     public TCascaderValueTypeValue? ValueType { get; set; }
 
     [Parameter]
@@ -24844,18 +25230,23 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public RenderFragment<TCascaderValueDisplaySlotContext<CascaderOption>>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TCascaderBlurEventContext<CascaderOption>> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TCascaderValue<CascaderOption>> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TCascaderFocusEventContext<CascaderOption>> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TRemoveContext<CascaderOption>> OnRemove { get; set; }
 }
 
@@ -24868,9 +25259,11 @@ public sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOptio
 public sealed class TCheckTag : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; set; }
 
     [Parameter]
@@ -24878,15 +25271,19 @@ public sealed class TCheckTag : TContentComponentBase
     public TCheckTagContentValue? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCheckTagValueValue? Value { get; set; }
 
     [Parameter]
@@ -24894,9 +25291,11 @@ public sealed class TCheckTag : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TCheckTagClickEventContext> OnClick { get; set; }
 }
 
@@ -24904,21 +25303,27 @@ public sealed class TCheckTag : TContentComponentBase
 public sealed class TCheckTagGroup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TCheckTagGroupOption[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCheckTagGroupValueItem[]? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TCheckTagGroupValueItem[]> OnChange { get; set; }
 }
 
@@ -24926,15 +25331,19 @@ public sealed class TCheckTagGroup : TContentComponentBase
 public sealed class TCheckbox : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
     [Parameter]
@@ -24942,18 +25351,23 @@ public sealed class TCheckbox : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCheckboxValueValue? Value { get; set; }
 
     [Parameter]
@@ -24961,6 +25375,7 @@ public sealed class TCheckbox : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 }
 
@@ -24968,27 +25383,35 @@ public sealed class TCheckbox : TContentComponentBase
 public class TCheckboxGroup<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TCheckboxOption[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 }
 
@@ -25001,42 +25424,55 @@ public sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 public sealed class TCol : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("flex")]
     public TColFlexValue? Flex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lg")]
     public TColLgValue? Lg { get; set; }
 
     [Parameter]
+    [ECMAScriptName("md")]
     public TColMdValue? Md { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("order")]
     public Number? Order { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
 
     [Parameter]
+    [ECMAScriptName("push")]
     public Number? Push { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sm")]
     public TColSmValue? Sm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("xl")]
     public TColXlValue? Xl { get; set; }
 
     [Parameter]
+    [ECMAScriptName("xs")]
     public TColXsValue? Xs { get; set; }
 
     [Parameter]
+    [ECMAScriptName("xxl")]
     public TColXxlValue? Xxl { get; set; }
 }
 
@@ -25044,12 +25480,15 @@ public sealed class TCol : TContentComponentBase
 public sealed class TCollapse : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -25057,15 +25496,19 @@ public sealed class TCollapse : TContentComponentBase
     public bool? ExpandIconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandIconPlacement")]
     public TCollapseExpandIconPlacementValue? ExpandIconPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCollapseValueItem[]? Value { get; set; }
 
     [Parameter]
@@ -25073,6 +25516,7 @@ public sealed class TCollapse : TContentComponentBase
     public RenderFragment? ExpandIconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TCollapseValueItem[]> OnChange { get; set; }
 }
 
@@ -25084,9 +25528,11 @@ public sealed class TCollapsePanel : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnCollapse")]
     public bool? DestroyOnCollapse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -25102,6 +25548,7 @@ public sealed class TCollapsePanel : TContentComponentBase
     public string? HeaderRightContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TCollapsePanelValueValue? Value { get; set; }
 
     [Parameter]
@@ -25125,60 +25572,79 @@ public sealed class TCollapsePanel : TContentComponentBase
 public sealed class TColorPicker : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("colorModes")]
     public TColorPickerColorModesValueItem[]? ColorModes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableAlpha")]
     public bool? EnableAlpha { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableMultipleGradient")]
     public bool? EnableMultipleGradient { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TColorPickerFormatValue? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("recentColors")]
     public TColorPickerRecentColorsValue? RecentColors { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPrimaryColorPreview")]
     public bool? ShowPrimaryColorPreview { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("swatchColors")]
     public string[]? SwatchColors { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TColorPickerClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPaletteBarChange")]
     public EventCallback<TColorPickerPaletteBarChangeEventContext> OnPaletteBarChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRecentColorsChange")]
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
@@ -25186,42 +25652,55 @@ public sealed class TColorPicker : TContentComponentBase
 public sealed class TColorPickerPanel : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("colorModes")]
     public TColorPickerPanelColorModesValueItem[]? ColorModes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableAlpha")]
     public bool? EnableAlpha { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableMultipleGradient")]
     public bool? EnableMultipleGradient { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TColorPickerPanelFormatValue? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("recentColors")]
     public TColorPickerPanelRecentColorsValue? RecentColors { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPrimaryColorPreview")]
     public bool? ShowPrimaryColorPreview { get; set; }
 
     [Parameter]
+    [ECMAScriptName("swatchColors")]
     public string[]? SwatchColors { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TColorPickerPanelClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPaletteBarChange")]
     public EventCallback<TColorPickerPanelPaletteBarChangeEventContext> OnPaletteBarChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRecentColorsChange")]
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
@@ -25229,6 +25708,7 @@ public sealed class TColorPickerPanel : TContentComponentBase
 public sealed class TComment : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment[]? Actions { get; set; }
 
     [Parameter]
@@ -25284,6 +25764,7 @@ public sealed class TComment : TContentComponentBase
 public sealed class TConfigProvider : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("globalConfig")]
     public TGlobalConfigProvider? GlobalConfig { get; set; }
 }
 
@@ -25303,36 +25784,47 @@ public sealed class TContent : TContentComponentBase
 public sealed class TDatePicker : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public string? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTime")]
     public TDatePickerDisableTimeValue? DisableTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
@@ -25340,18 +25832,23 @@ public sealed class TDatePicker : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDatePickerModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
@@ -25359,21 +25856,27 @@ public sealed class TDatePicker : TContentComponentBase
     public TPresetDate? PresetsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presetsPlacement")]
     public TDatePickerPresetsPlacementValue? PresetsPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TDatePickerStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
     [Parameter]
@@ -25381,6 +25884,7 @@ public sealed class TDatePicker : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TDatePickerValueValue? Value { get; set; }
 
     [Parameter]
@@ -25388,6 +25892,7 @@ public sealed class TDatePicker : TContentComponentBase
     public string? ValueDisplayValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueType")]
     public TDatePickerValueType? ValueType { get; set; }
 
     [Parameter]
@@ -25415,30 +25920,39 @@ public sealed class TDatePicker : TContentComponentBase
     public RenderFragment<TDatePickerValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TDatePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TDatePickerChangeEventValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TDatePickerClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDatePickerConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TDatePickerFocusEventContext> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMonthChange")]
     public EventCallback<TDatePickerMonthChangeEventContext> OnMonthChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPresetClick")]
     public EventCallback<TDatePickerPresetClickEventContext> OnPresetClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onYearChange")]
     public EventCallback<TDatePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
@@ -25446,27 +25960,35 @@ public sealed class TDatePicker : TContentComponentBase
 public sealed class TDatePickerPanel : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public string? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTime")]
     public TDatePickerPanelDisableTimeValue? DisableTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDatePickerPanelModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
     [Parameter]
@@ -25474,12 +25996,15 @@ public sealed class TDatePickerPanel : TContentComponentBase
     public TPresetDate? PresetsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presetsPlacement")]
     public TDatePickerPanelPresetsPlacementValue? PresetsPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TDatePickerPanelValueValue? Value { get; set; }
 
     [Parameter]
@@ -25487,27 +26012,35 @@ public sealed class TDatePickerPanel : TContentComponentBase
     public RenderFragment? PresetsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TDatePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TDateValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDatePickerPanelConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMonthChange")]
     public EventCallback<TDatePickerPanelMonthChangeEventContext> OnMonthChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPanelClick")]
     public EventCallback<TDatePickerPanelPanelClickEventContext> OnPanelClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPresetClick")]
     public EventCallback<TDatePickerPanelPresetClickEventContext> OnPresetClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTimeChange")]
     public EventCallback<TDatePickerPanelTimeChangeEventContext> OnTimeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onYearChange")]
     public EventCallback<TDatePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
@@ -25515,36 +26048,47 @@ public sealed class TDatePickerPanel : TContentComponentBase
 public sealed class TDateRangePicker : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cancelRangeSelectLimit")]
     public bool? CancelRangeSelectLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public string[]? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTime")]
     public TDateRangePickerDisableTimeValue? DisableTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TDateRangePickerDisabledValue? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
@@ -25552,18 +26096,23 @@ public sealed class TDateRangePicker : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDateRangePickerModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("panelPreselection")]
     public bool? PanelPreselection { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public TDateRangePickerPlaceholderValue? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
@@ -25571,24 +26120,31 @@ public sealed class TDateRangePicker : TContentComponentBase
     public TPresetRange? PresetsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presetsPlacement")]
     public TDateRangePickerPresetsPlacementValue? PresetsPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TDateRangePickerStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
     [Parameter]
@@ -25596,9 +26152,11 @@ public sealed class TDateRangePicker : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TDateValue[]? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueType")]
     public TDateRangePickerValueTypeValue? ValueType { get; set; }
 
     [Parameter]
@@ -25622,30 +26180,39 @@ public sealed class TDateRangePicker : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TDateRangePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TDateValue[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDateRangePickerConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TDateRangePickerFocusEventContext> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback<TDateRangePickerInputEventContext> OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMonthChange")]
     public EventCallback<TDateRangePickerMonthChangeEventContext> OnMonthChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPresetClick")]
     public EventCallback<TDateRangePickerPresetClickEventContext> OnPresetClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onYearChange")]
     public EventCallback<TDateRangePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
@@ -25653,24 +26220,31 @@ public sealed class TDateRangePicker : TContentComponentBase
 public sealed class TDateRangePickerPanel : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("defaultTime")]
     public string[]? DefaultTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDateRangePickerPanelModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("panelPreselection")]
     public bool? PanelPreselection { get; set; }
 
     [Parameter]
@@ -25678,12 +26252,15 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     public TPresetRange? PresetsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presetsPlacement")]
     public TDateRangePickerPanelPresetsPlacementValue? PresetsPlacement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TDateValue[]? Value { get; set; }
 
     [Parameter]
@@ -25691,27 +26268,35 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     public RenderFragment? PresetsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TDateRangePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TDateValue[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDateRangePickerPanelConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMonthChange")]
     public EventCallback<TDateRangePickerPanelMonthChangeEventContext> OnMonthChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPanelClick")]
     public EventCallback<TDateRangePickerPanelPanelClickEventContext> OnPanelClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPresetClick")]
     public EventCallback<TDateRangePickerPanelPresetClickEventContext> OnPresetClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTimeChange")]
     public EventCallback<TDateRangePickerPanelTimeChangeEventContext> OnTimeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onYearChange")]
     public EventCallback<TDateRangePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
@@ -25719,33 +26304,43 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
 public sealed class TDescriptions : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
     [Parameter]
+    [ECMAScriptName("colon")]
     public bool? Colon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("column")]
     public Number? Column { get; set; }
 
     [Parameter]
+    [ECMAScriptName("contentStyle")]
     public TStyles? ContentStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("itemLayout")]
     public TDescriptionsItemLayoutValue? ItemLayout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("items")]
     public TdDescriptionsItemProps[]? Items { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelStyle")]
     public TStyles? LabelStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TDescriptionsLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableLayout")]
     public TDescriptionsTableLayoutValue? TableLayout { get; set; }
 
     [Parameter]
@@ -25769,6 +26364,7 @@ public sealed class TDescriptionsItem : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
     [Parameter]
@@ -25784,6 +26380,7 @@ public sealed class TDescriptionsItem : TContentComponentBase
 public sealed class TDialog : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -25799,9 +26396,11 @@ public sealed class TDialog : TContentComponentBase
     public TDialogCloseBtnValue? CloseBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; set; }
 
     [Parameter]
@@ -25809,21 +26408,27 @@ public sealed class TDialog : TContentComponentBase
     public TDialogConfirmBtnValue? ConfirmBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("confirmLoading")]
     public bool? ConfirmLoading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("confirmOnEnter")]
     public bool? ConfirmOnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dialogClassName")]
     public string? DialogClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dialogStyle")]
     public TStyles? DialogStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
@@ -25835,36 +26440,47 @@ public sealed class TDialog : TContentComponentBase
     public TDialogHeaderValue? HeaderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDialogModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TDialogPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showInAttachedElement")]
     public bool? ShowInAttachedElement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TDialogThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("top")]
     public TDialogTopValue? Top { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public TDialogWidthValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -25892,33 +26508,43 @@ public sealed class TDialog : TContentComponentBase
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeClose")]
     public EventCallback OnBeforeClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeOpen")]
     public EventCallback OnBeforeOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback<TDialogCancelEventContext> OnCancel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TDialogCloseContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDialogCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDialogConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEscKeydown")]
     public EventCallback<TDialogEscKeydownEventContext> OnEscKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOverlayClick")]
     public EventCallback<TDialogOverlayClickEventContext> OnOverlayClick { get; set; }
 }
 
@@ -25942,6 +26568,7 @@ public sealed class TDialogCard : TContentComponentBase
     public TDialogCardConfirmBtnValue? ConfirmBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("confirmLoading")]
     public bool? ConfirmLoading { get; set; }
 
     [Parameter]
@@ -25953,6 +26580,7 @@ public sealed class TDialogCard : TContentComponentBase
     public TDialogCardHeaderValue? HeaderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TDialogCardThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -25980,12 +26608,15 @@ public sealed class TDialogCard : TContentComponentBase
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback<TDialogCardCancelEventContext> OnCancel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDialogCardCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDialogCardConfirmEventContext> OnConfirm { get; set; }
 }
 
@@ -25993,6 +26624,7 @@ public sealed class TDialogCard : TContentComponentBase
 public sealed class TDivider : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("align")]
     public TDividerAlignValue? Align { get; set; }
 
     [Parameter]
@@ -26000,12 +26632,15 @@ public sealed class TDivider : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dashed")]
     public bool? Dashed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TDividerLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TDividerThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -26017,6 +26652,7 @@ public sealed class TDivider : TContentComponentBase
 public sealed class TDrawer : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -26032,9 +26668,11 @@ public sealed class TDrawer : TContentComponentBase
     public TDrawerCloseBtnValue? CloseBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; set; }
 
     [Parameter]
@@ -26042,9 +26680,11 @@ public sealed class TDrawer : TContentComponentBase
     public TFooterButton? ConfirmBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("drawerClassName")]
     public string? DrawerClassName { get; set; }
 
     [Parameter]
@@ -26056,33 +26696,43 @@ public sealed class TDrawer : TContentComponentBase
     public TDrawerHeaderValue? HeaderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TDrawerModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TDrawerPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showInAttachedElement")]
     public bool? ShowInAttachedElement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sizeDraggable")]
     public TDrawerSizeDraggableValue? SizeDraggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -26110,30 +26760,39 @@ public sealed class TDrawer : TContentComponentBase
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeClose")]
     public EventCallback OnBeforeClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBeforeOpen")]
     public EventCallback OnBeforeOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback<TDrawerCancelEventContext> OnCancel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TDrawerCloseContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDrawerCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TDrawerConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEscKeydown")]
     public EventCallback<TDrawerEscKeydownEventContext> OnEscKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOverlayClick")]
     public EventCallback<TDrawerOverlayClickEventContext> OnOverlayClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSizeDragEnd")]
     public EventCallback<TDrawerSizeDragEndEventContext> OnSizeDragEnd { get; set; }
 }
 
@@ -26141,24 +26800,31 @@ public sealed class TDrawer : TContentComponentBase
 public sealed class TDropdown : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("direction")]
     public TDropdownDirectionValue? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideAfterItemClick")]
     public bool? HideAfterItemClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxColumnWidth")]
     public TDropdownMaxColumnWidthValue? MaxColumnWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minColumnWidth")]
     public TDropdownMinColumnWidthValue? MinColumnWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TDropdownOption[]? Options { get; set; }
 
     [Parameter]
@@ -26170,12 +26836,15 @@ public sealed class TDropdown : TContentComponentBase
     public string? PanelTopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TDropdownPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TDropdownTriggerValue? Trigger { get; set; }
 
     [Parameter]
@@ -26187,6 +26856,7 @@ public sealed class TDropdown : TContentComponentBase
     public RenderFragment? PanelTopContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
@@ -26194,6 +26864,7 @@ public sealed class TDropdown : TContentComponentBase
 public sealed class TDropdownItem : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("active")]
     public bool? Active { get; set; }
 
     [Parameter]
@@ -26201,15 +26872,19 @@ public sealed class TDropdownItem : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("divider")]
     public bool? Divider { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TDropdownItemTheme? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TDropdownItemValueValue? Value { get; set; }
 
     [Parameter]
@@ -26221,6 +26896,7 @@ public sealed class TDropdownItem : TContentComponentBase
     public RenderFragment? PrefixIconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
@@ -26236,9 +26912,11 @@ public sealed class TEmpty : TContentComponentBase
     public TEmptyImageValue? ImageValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageStyle")]
     public TStyles? ImageStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
@@ -26246,6 +26924,7 @@ public sealed class TEmpty : TContentComponentBase
     public string? TitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TEmptyTypeValue? Type { get; set; }
 
     [Parameter]
@@ -26269,12 +26948,15 @@ public sealed class TEmpty : TContentComponentBase
 public class TEnhancedTable<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("beforeDragSort")]
     public TEnhancedTableBeforeDragSortValue<T>? BeforeDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandedTreeNodes")]
     public TEnhancedTableExpandedTreeNodesValueItem<T>[]? ExpandedTreeNodes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tree")]
     public TTableTreeConfig? Tree { get; set; }
 
     [Parameter]
@@ -26282,99 +26964,131 @@ public class TEnhancedTable<T> : TContentComponentBase
     public RenderFragment<TEnhancedTableTreeExpandAndFoldIconSlotContext<T>>? TreeExpandAndFoldIconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAbnormalDragSort")]
     public EventCallback<TTableAbnormalDragSortContext<T>> OnAbnormalDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveChange")]
     public EventCallback<TEnhancedTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAsyncLoadingClick")]
     public EventCallback<TEnhancedTableAsyncLoadingClickEventContext<T>> OnAsyncLoadingClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnChange")]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnControllerVisibleChange")]
     public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TEnhancedTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDataChange")]
     public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDisplayColumnsChange")]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragSort")]
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback<TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandedTreeNodesChange")]
     public EventCallback<TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>[]> OnExpandedTreeNodesChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFilterChange")]
     public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<T>> OnRowDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowEdit")]
     public EventCallback<TPrimaryTableRowEditContext<T>> OnRowEdit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<T>> OnRowMousedown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<T>> OnRowMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<T>> OnRowMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<T>> OnRowMouseover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<T>> OnRowMouseup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowValidate")]
     public EventCallback<TPrimaryTableRowValidateContext<T>> OnRowValidate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TEnhancedTableScrollEventParams<T>> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollX")]
     public EventCallback<TEnhancedTableScrollXEventParams<T>> OnScrollX { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollY")]
     public EventCallback<TEnhancedTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectChange")]
     public EventCallback<TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTreeExpandChange")]
     public EventCallback<TTableTreeExpandChangeContext<T>> OnTreeExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
@@ -26387,6 +27101,7 @@ public sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 public sealed class TFooter : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 }
 
@@ -26394,54 +27109,71 @@ public sealed class TFooter : TContentComponentBase
 public class TForm<FormData> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("colon")]
     public bool? Colon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public FormData? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("errorMessage")]
     public TFormErrorMessage? ErrorMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formControlledComponents")]
     public string[]? FormControlledComponents { get; set; }
 
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelAlign")]
     public TFormLabelAlignValue? LabelAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public TFormLabelWidthValue<FormData>? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TFormLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preventSubmitDefault")]
     public bool? PreventSubmitDefault { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; set; }
 
     [Parameter]
+    [ECMAScriptName("requiredMarkPosition")]
     public TFormRequiredMarkPositionValue? RequiredMarkPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resetType")]
     public TFormResetTypeValue? ResetType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rules")]
     public TFormRules<FormData>? Rules { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollToFirstError")]
     public TFormScrollToFirstErrorValue? ScrollToFirstError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showErrorMessage")]
     public bool? ShowErrorMessage { get; set; }
 
     [Parameter]
@@ -26449,6 +27181,7 @@ public class TForm<FormData> : TContentComponentBase
     public bool? StatusIconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("submitWithWarningMessage")]
     public bool? SubmitWithWarningMessage { get; set; }
 
     [Parameter]
@@ -26456,12 +27189,15 @@ public class TForm<FormData> : TContentComponentBase
     public RenderFragment<TdFormItemProps>? StatusIconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onReset")]
     public EventCallback<TFormResetEventContext<FormData>> OnReset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSubmit")]
     public EventCallback<TSubmitContext<FormData>> OnSubmit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TValidateResultContext<FormData>> OnValidate { get; set; }
 }
 
@@ -26474,6 +27210,7 @@ public sealed class TForm : TForm<TJsonObject>
 public sealed class TFormItem : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("for")]
     public string? For { get; set; }
 
     [Parameter]
@@ -26485,24 +27222,31 @@ public sealed class TFormItem : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelAlign")]
     public TFormItemLabelAlignValue? LabelAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelWidth")]
     public TFormItemLabelWidthValue? LabelWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rules")]
     public TFormRule[]? Rules { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showErrorMessage")]
     public bool? ShowErrorMessage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TFormItemStatusValue? Status { get; set; }
 
     [Parameter]
@@ -26510,6 +27254,7 @@ public sealed class TFormItem : TContentComponentBase
     public bool? StatusIconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("successBorder")]
     public bool? SuccessBorder { get; set; }
 
     [Parameter]
@@ -26537,42 +27282,55 @@ public sealed class TFormItem : TContentComponentBase
 public sealed class TGuide : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
     [Parameter]
+    [ECMAScriptName("finishButtonProps")]
     public TdButtonProps? FinishButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideCounter")]
     public bool? HideCounter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hidePrev")]
     public bool? HidePrev { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideSkip")]
     public bool? HideSkip { get; set; }
 
     [Parameter]
+    [ECMAScriptName("highlightPadding")]
     public Number? HighlightPadding { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TGuideModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("nextButtonProps")]
     public TdButtonProps? NextButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("prevButtonProps")]
     public TdButtonProps? PrevButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("skipButtonProps")]
     public TdButtonProps? SkipButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("steps")]
     public TGuideStep[]? Steps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -26580,18 +27338,23 @@ public sealed class TGuide : TContentComponentBase
     public RenderFragment<TGuideCounterSlotContext>? CounterContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFinish")]
     public EventCallback<TGuideFinishEventContext> OnFinish { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onNextStepClick")]
     public EventCallback<TGuideNextStepClickEventContext> OnNextStepClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPrevStepClick")]
     public EventCallback<TGuidePrevStepClickEventContext> OnPrevStepClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSkip")]
     public EventCallback<TGuideSkipEventContext> OnSkip { get; set; }
 }
 
@@ -26599,15 +27362,19 @@ public sealed class TGuide : TContentComponentBase
 public sealed class THeadMenu : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("expandType")]
     public THeadMenuExpandTypeValue? ExpandType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expanded")]
     public TMenuValue[]? Expanded { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public THeadMenuThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
     [Parameter]
@@ -26619,9 +27386,11 @@ public sealed class THeadMenu : TContentComponentBase
     public RenderFragment? OperationsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpand")]
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
@@ -26629,6 +27398,7 @@ public sealed class THeadMenu : TContentComponentBase
 public sealed class THeader : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("height")]
     public string? Height { get; set; }
 }
 
@@ -26636,22 +27406,28 @@ public sealed class THeader : TContentComponentBase
 public sealed class TIcon : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("loadDefaultIcons")]
     public bool? LoadDefaultIcons { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     [EditorRequired]
     public string Name { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     [Parameter]
+    [ECMAScriptName("url")]
     public TIconUrlValue? Url { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TIconClickEventContext> OnClick { get; set; }
 }
 
@@ -26659,6 +27435,7 @@ public sealed class TIcon : TContentComponentBase
 public sealed class TImage : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
     [Parameter]
@@ -26666,15 +27443,19 @@ public sealed class TImage : TContentComponentBase
     public string? ErrorValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fallback")]
     public string? Fallback { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fit")]
     public TImageFitValue? Fit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("gallery")]
     public bool? Gallery { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
@@ -26686,6 +27467,7 @@ public sealed class TImage : TContentComponentBase
     public string? OverlayContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayTrigger")]
     public TImageOverlayTriggerValue? OverlayTrigger { get; set; }
 
     [Parameter]
@@ -26693,18 +27475,23 @@ public sealed class TImage : TContentComponentBase
     public string? PlaceholderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("position")]
     public string? Position { get; set; }
 
     [Parameter]
+    [ECMAScriptName("referrerpolicy")]
     public TImageReferrerpolicyValue? Referrerpolicy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TImageShapeValue? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("src")]
     public TImageSrcValue? Src { get; set; }
 
     [Parameter]
+    [ECMAScriptName("srcset")]
     public TImageSrcset? Srcset { get; set; }
 
     [Parameter]
@@ -26724,9 +27511,11 @@ public sealed class TImage : TContentComponentBase
     public RenderFragment? PlaceholderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback<TImageErrorEventContext> OnError { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback<TImageLoadEventContext> OnLoad { get; set; }
 }
 
@@ -26734,6 +27523,7 @@ public sealed class TImage : TContentComponentBase
 public sealed class TImageViewer : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -26741,27 +27531,35 @@ public sealed class TImageViewer : TContentComponentBase
     public bool? CloseBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("closeOnOverlay")]
     public bool? CloseOnOverlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageReferrerpolicy")]
     public TImageViewerImageReferrerpolicyValue? ImageReferrerpolicy { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageScale")]
     public TImageScale? ImageScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("images")]
     public TImageViewerImagesValueItem[]? Images { get; set; }
 
     [Parameter]
+    [ECMAScriptName("index")]
     public Number? Index { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TImageViewerModeValue? Mode { get; set; }
 
     [Parameter]
@@ -26769,6 +27567,7 @@ public sealed class TImageViewer : TContentComponentBase
     public bool? NavigationArrowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
     [Parameter]
@@ -26776,12 +27575,15 @@ public sealed class TImageViewer : TContentComponentBase
     public string? TitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("viewerScale")]
     public TImageViewerScale? ViewerScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -26801,12 +27603,15 @@ public sealed class TImageViewer : TContentComponentBase
     public RenderFragment? TriggerContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TImageViewerCloseEventContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDownload")]
     public EventCallback<TImageViewerDownloadEventUrl> OnDownload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onIndexChange")]
     public EventCallback<Number> OnIndexChange { get; set; }
 }
 
@@ -26814,33 +27619,43 @@ public sealed class TImageViewer : TContentComponentBase
 public class TInput<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("align")]
     public TInputAlignValue? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TInputFormatType? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputClass")]
     public TClassName? InputClass { get; set; }
 
     [Parameter]
@@ -26848,33 +27663,43 @@ public class TInput<T> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxlength")]
     public TInputMaxlengthValue<T>? Maxlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showLimitNumber")]
     public bool? ShowLimitNumber { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("spellCheck")]
     public bool? SpellCheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TInputStatusValue? Status { get; set; }
 
     [Parameter]
@@ -26886,9 +27711,11 @@ public class TInput<T> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TInputTypeValue? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
@@ -26912,51 +27739,67 @@ public class TInput<T> : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<T> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TInputClearEventContext<T>> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TInputClickEventContext<T>> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionend")]
     public EventCallback<string> OnCompositionend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCompositionstart")]
     public EventCallback<string> OnCompositionstart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<T> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<T> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback<T> OnKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeypress")]
     public EventCallback<T> OnKeypress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeyup")]
     public EventCallback<T> OnKeyup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseenter")]
     public EventCallback<TInputMouseenterEventContext<T>> OnMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseleave")]
     public EventCallback<TInputMouseleaveEventContext<T>> OnMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPaste")]
     public EventCallback<TInputPasteEventContext<T>> OnPaste { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TInputValidateEventContext<T>> OnValidate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onWheel")]
     public EventCallback<TInputWheelEventContext<T>> OnWheel { get; set; }
 }
 
@@ -26989,6 +27832,7 @@ public sealed class TInputAdornment : TContentComponentBase
 public sealed class TInputGroup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("separate")]
     public bool? Separate { get; set; }
 }
 
@@ -26996,24 +27840,31 @@ public sealed class TInputGroup : TContentComponentBase
 public class TInputNumber<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("align")]
     public TInputNumberAlignValue? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowInputOverLimit")]
     public bool? AllowInputOverLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("decimalPlaces")]
     public TInputNumberDecimalPlaces? DecimalPlaces { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TInputNumberFormatValue<T>? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
@@ -27021,27 +27872,35 @@ public class TInputNumber<T> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("largeNumber")]
     public bool? LargeNumber { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public TInputNumberValue? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public TInputNumberValue? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TInputNumberSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TInputNumberStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public TInputNumberValue? Step { get; set; }
 
     [Parameter]
@@ -27049,6 +27908,7 @@ public class TInputNumber<T> : TContentComponentBase
     public string? SuffixValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TInputNumberThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -27056,6 +27916,7 @@ public class TInputNumber<T> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
@@ -27071,27 +27932,35 @@ public class TInputNumber<T> : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TInputNumberValue> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TInputNumberValue> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TInputNumberValue> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback<TInputNumberValue> OnKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeypress")]
     public EventCallback<TInputNumberValue> OnKeypress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeyup")]
     public EventCallback<TInputNumberValue> OnKeyup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TInputNumberValidateEventContext<T>> OnValidate { get; set; }
 }
 
@@ -27104,6 +27973,7 @@ public sealed class TInputNumber : TInputNumber<TInputNumberValue>
 public sealed class TLayout : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("direction")]
     public TLayoutDirectionValue? Direction { get; set; }
 }
 
@@ -27115,27 +27985,35 @@ public sealed class TLink : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("download")]
     public TLinkDownloadValue? Download { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hover")]
     public TLinkHoverValue? Hover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public string? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TLinkThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("underline")]
     public bool? Underline { get; set; }
 
     [Parameter]
@@ -27151,6 +28029,7 @@ public sealed class TLink : TContentComponentBase
     public RenderFragment? SuffixIconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
@@ -27170,18 +28049,23 @@ public sealed class TList : TContentComponentBase
     public string? HeaderValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TListLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TListSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("split")]
     public bool? Split { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
     [Parameter]
@@ -27197,9 +28081,11 @@ public sealed class TList : TContentComponentBase
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLoadMore")]
     public EventCallback<TListLoadMoreEventOptions> OnLoadMore { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TListScrollEventOptions> OnScroll { get; set; }
 }
 
@@ -27263,6 +28149,7 @@ public sealed class TListItemMeta : TContentComponentBase
 public sealed class TLoading : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -27270,9 +28157,11 @@ public sealed class TLoading : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; set; }
 
     [Parameter]
@@ -27280,18 +28169,23 @@ public sealed class TLoading : TContentComponentBase
     public bool? IndicatorValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inheritColor")]
     public bool? InheritColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
@@ -27299,6 +28193,7 @@ public sealed class TLoading : TContentComponentBase
     public string? TextValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -27318,24 +28213,31 @@ public sealed class TLoading : TContentComponentBase
 public sealed class TMenu : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("collapsed")]
     public bool? Collapsed { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandType")]
     public TMenuExpandTypeValue? ExpandType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expanded")]
     public TMenuValue[]? Expanded { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TMenuThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public TMenuWidthValue? Width { get; set; }
 
     [Parameter]
@@ -27347,9 +28249,11 @@ public sealed class TMenu : TContentComponentBase
     public RenderFragment? OperationsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpand")]
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
@@ -27373,30 +28277,39 @@ public sealed class TMenuItem : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
 
     [Parameter]
+    [ECMAScriptName("router")]
     public VueDictionary<TJsonValue>? Router { get; set; }
 
     [Parameter]
+    [ECMAScriptName("routerLink")]
     public bool? RouterLink { get; set; }
 
     [Parameter]
+    [ECMAScriptName("target")]
     public TMenuItemTargetValue? Target { get; set; }
 
     [Parameter]
+    [ECMAScriptName("to")]
     public TMenuItemToValue? To { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
     [Parameter]
@@ -27408,6 +28321,7 @@ public sealed class TMenuItem : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TMenuItemClickEventContext> OnClick { get; set; }
 }
 
@@ -27423,6 +28337,7 @@ public sealed class TMessage : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
@@ -27430,6 +28345,7 @@ public sealed class TMessage : TContentComponentBase
     public bool? IconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TMessageThemeList? Theme { get; set; }
 
     [Parameter]
@@ -27445,12 +28361,15 @@ public sealed class TMessage : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TMessageCloseEventContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TMessageCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDurationEnd")]
     public EventCallback OnDurationEnd { get; set; }
 }
 
@@ -27466,6 +28385,7 @@ public sealed class TNotification : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
@@ -27477,6 +28397,7 @@ public sealed class TNotification : TContentComponentBase
     public bool? IconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TNotificationThemeList? Theme { get; set; }
 
     [Parameter]
@@ -27504,12 +28425,15 @@ public sealed class TNotification : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TNotificationCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDurationEnd")]
     public EventCallback OnDurationEnd { get; set; }
 }
 
@@ -27517,6 +28441,7 @@ public sealed class TNotification : TContentComponentBase
 public sealed class TOption : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; set; }
 
     [Parameter]
@@ -27524,15 +28449,19 @@ public sealed class TOption : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TOptionValueValue? Value { get; set; }
 
     [Parameter]
@@ -27544,9 +28473,11 @@ public sealed class TOption : TContentComponentBase
 public sealed class TOptionGroup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("divider")]
     public bool? Divider { get; set; }
 
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 }
 
@@ -27554,51 +28485,67 @@ public sealed class TOptionGroup : TContentComponentBase
 public sealed class TPagination : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("foldedMaxPageBtn")]
     public Number? FoldedMaxPageBtn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxPageBtn")]
     public Number? MaxPageBtn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageEllipsisMode")]
     public TPaginationPageEllipsisModeValue? PageEllipsisMode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pageSizeOptions")]
     public TPaginationPageSizeOptionsValueItem[]? PageSizeOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectProps")]
     public TdSelectProps<TSelectOption>? SelectProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showFirstAndLastPageBtn")]
     public bool? ShowFirstAndLastPageBtn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showJumper")]
     public bool? ShowJumper { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPageNumber")]
     public bool? ShowPageNumber { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPageSize")]
     public bool? ShowPageSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showPreviousAndNextBtn")]
     public bool? ShowPreviousAndNextBtn { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TPaginationSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TPaginationThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("total")]
     public Number? Total { get; set; }
 
     [Parameter]
@@ -27610,12 +28557,15 @@ public sealed class TPagination : TContentComponentBase
     public RenderFragment? TotalContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TPageInfo> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCurrentChange")]
     public EventCallback<Number> OnCurrentChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageSizeChange")]
     public EventCallback<Number> OnPageSizeChange { get; set; }
 }
 
@@ -27623,24 +28573,31 @@ public sealed class TPagination : TContentComponentBase
 public sealed class TPaginationMini : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TPaginationMiniDisabledValue? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TPaginationMiniLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCurrent")]
     public bool? ShowCurrent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tips")]
     public TPaginationMiniTipsValue? Tips { get; set; }
 
     [Parameter]
+    [ECMAScriptName("variant")]
     public TPaginationMiniVariantValue? Variant { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TPaginationMiniChangeEventContext> OnChange { get; set; }
 }
 
@@ -27652,6 +28609,7 @@ public sealed class TParagraph : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ellipsis")]
     public TParagraphEllipsisValue? Ellipsis { get; set; }
 
     [Parameter]
@@ -27671,18 +28629,23 @@ public sealed class TPopconfirm : TContentComponentBase
     public TPopconfirmConfirmBtnValue? ConfirmBtnValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TPopconfirmPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TPopconfirmThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -27706,12 +28669,15 @@ public sealed class TPopconfirm : TContentComponentBase
     public RenderFragment? TriggerElementContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancel")]
     public EventCallback<TPopconfirmCancelEventOptions> OnCancel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TPopconfirmConfirmEventOptions> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
@@ -27719,6 +28685,7 @@ public sealed class TPopconfirm : TContentComponentBase
 public sealed class TPopup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -27726,39 +28693,51 @@ public sealed class TPopup : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delay")]
     public TPopupDelayValue? Delay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayInnerStyle")]
     public TPopupOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayStyle")]
     public TPopupOverlayStyleValue? OverlayStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TPopupPlacement? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TPopupTriggerValue? Trigger { get; set; }
 
     [Parameter]
@@ -27766,9 +28745,11 @@ public sealed class TPopup : TContentComponentBase
     public string? TriggerElementValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -27780,15 +28761,19 @@ public sealed class TPopup : TContentComponentBase
     public RenderFragment? TriggerElementContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOverlayClick")]
     public EventCallback<TPopupOverlayClickEventContext> OnOverlayClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TPopupScrollEventContext> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollToBottom")]
     public EventCallback<TPopupScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
@@ -27796,12 +28781,15 @@ public sealed class TPopup : TContentComponentBase
 public class TPrimaryTable<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("activeRowKeys")]
     public TPrimaryTableActiveRowKeysValueItem<T>[]? ActiveRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeRowType")]
     public TPrimaryTableActiveRowTypeValue? ActiveRowType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
     [Parameter]
@@ -27809,9 +28797,11 @@ public class TPrimaryTable<T> : TContentComponentBase
     public TPrimaryTableAsyncLoadingValue? AsyncLoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
     [Parameter]
@@ -27823,36 +28813,47 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? CellEmptyContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columnController")]
     public TTableColumnController? ColumnController { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columnControllerVisible")]
     public bool? ColumnControllerVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columns")]
     public TPrimaryTableCol<T>[]? Columns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("displayColumns")]
     public TCheckboxGroupValueItem[]? DisplayColumns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSort")]
     public TPrimaryTableDragSortValue? DragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSortOptions")]
     public TSortableOptions? DragSortOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editableCellState")]
     public TEditableCellType<T>? EditableCellState { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editableRowKeys")]
     public TPrimaryTableEditableRowKeysValueItem<T>[]? EditableRowKeys { get; set; }
 
     [Parameter]
@@ -27864,9 +28865,11 @@ public class TPrimaryTable<T> : TContentComponentBase
     public bool? ExpandIconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandedRowKeys")]
     public TPrimaryTableExpandedRowKeysValueItem<T>[]? ExpandedRowKeys { get; set; }
 
     [Parameter]
@@ -27874,6 +28877,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? FilterRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterValue")]
     public TJsonObject? FilterValue { get; set; }
 
     [Parameter]
@@ -27881,15 +28885,19 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? FirstFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footData")]
     public T[]? FootData { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixedBottom")]
     public TPrimaryTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
 
     [Parameter]
@@ -27897,27 +28905,35 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? FooterSummaryValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixedTop")]
     public TPrimaryTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public TPrimaryTableHeightValue<T>? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideSortTips")]
     public bool? HideSortTips { get; set; }
 
     [Parameter]
+    [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TPrimaryTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indeterminateSelectedRowKeys")]
     public TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>[]? IndeterminateSelectedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
     [Parameter]
@@ -27925,6 +28941,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? LastFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
     [Parameter]
@@ -27932,82 +28949,108 @@ public class TPrimaryTable<T> : TContentComponentBase
     public bool? LoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public TPrimaryTableMaxHeightValue<T>? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multipleSort")]
     public bool? MultipleSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
     [Parameter]
+    [ECMAScriptName("paginationAffixedBottom")]
     public TPrimaryTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveSelectedRowOnPaginate")]
     public bool? ReserveSelectedRowOnPaginate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowClassName")]
     public TPrimaryTableRowClassNameValue<T>? RowClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("rowSelectionAllowUncheck")]
     public bool? RowSelectionAllowUncheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowSelectionType")]
     public TPrimaryTableRowSelectionTypeValue? RowSelectionType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspan { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspanInFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectOnRowClick")]
     public bool? SelectOnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectedRowKeys")]
     public TPrimaryTableSelectedRowKeysValueItem<T>[]? SelectedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showSortColumnBgColor")]
     public bool? ShowSortColumnBgColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortOnRowDraggable")]
     public bool? SortOnRowDraggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableLayout")]
     public TPrimaryTableTableLayoutValue? TableLayout { get; set; }
 
     [Parameter]
@@ -28015,6 +29058,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     public string? TopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("verticalAlign")]
     public TPrimaryTableVerticalAlignValue? VerticalAlign { get; set; }
 
     [Parameter]
@@ -28074,90 +29118,119 @@ public class TPrimaryTable<T> : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveChange")]
     public EventCallback<TPrimaryTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAsyncLoadingClick")]
     public EventCallback<TPrimaryTableAsyncLoadingClickEventContext<T>> OnAsyncLoadingClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnChange")]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnControllerVisibleChange")]
     public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TPrimaryTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDataChange")]
     public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDisplayColumnsChange")]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragSort")]
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback<TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFilterChange")]
     public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<T>> OnRowDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowEdit")]
     public EventCallback<TPrimaryTableRowEditContext<T>> OnRowEdit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<T>> OnRowMousedown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<T>> OnRowMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<T>> OnRowMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<T>> OnRowMouseover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<T>> OnRowMouseup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowValidate")]
     public EventCallback<TPrimaryTableRowValidateContext<T>> OnRowValidate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TPrimaryTableScrollEventParams<T>> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollX")]
     public EventCallback<TPrimaryTableScrollXEventParams<T>> OnScrollX { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollY")]
     public EventCallback<TPrimaryTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectChange")]
     public EventCallback<TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
@@ -28170,6 +29243,7 @@ public sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 public sealed class TProgress : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("color")]
     public TProgressColorValue? Color { get; set; }
 
     [Parameter]
@@ -28177,21 +29251,27 @@ public sealed class TProgress : TContentComponentBase
     public TProgressLabelValue? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TProgressSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TProgressStatus? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("strokeWidth")]
     public TProgressStrokeWidthValue? StrokeWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TProgressTheme? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trackColor")]
     public string? TrackColor { get; set; }
 
     [Parameter]
@@ -28203,33 +29283,43 @@ public sealed class TProgress : TContentComponentBase
 public sealed class TQRCode : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("icon")]
     public string? Icon { get; set; }
 
     [Parameter]
+    [ECMAScriptName("iconSize")]
     public TQRCodeIconSizeValue? IconSize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("level")]
     public TQRCodeLevelValue? Level { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public Number? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TQRStatus? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TQRCodeTypeValue? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     [Parameter]
@@ -28237,6 +29327,7 @@ public sealed class TQRCode : TContentComponentBase
     public RenderFragment<TStatusRenderInfo>? StatusRenderContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRefresh")]
     public EventCallback OnRefresh { get; set; }
 }
 
@@ -28244,12 +29335,15 @@ public sealed class TQRCode : TContentComponentBase
 public class TRadio<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -28257,12 +29351,15 @@ public class TRadio<T> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
@@ -28270,9 +29367,11 @@ public class TRadio<T> : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TRadioClickEventContext<T>> OnClick { get; set; }
 }
 
@@ -28285,12 +29384,15 @@ public sealed class TRadio : TRadio<TRadioValue>
 public class TRadioButton<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -28298,12 +29400,15 @@ public class TRadioButton<T> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
@@ -28311,9 +29416,11 @@ public class TRadioButton<T> : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TRadioButtonClickEventContext<T>> OnClick { get; set; }
 }
 
@@ -28326,33 +29433,43 @@ public sealed class TRadioButton : TRadioButton<TRadioValue>
 public class TRadioGroup<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TRadioOption[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TRadioGroupThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("variant")]
     public TRadioGroupVariantValue? Variant { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 }
 
@@ -28365,21 +29482,27 @@ public sealed class TRadioGroup : TRadioGroup<TRadioValue>
 public sealed class TRangeInput : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("activeIndex")]
     public Number? ActiveIndex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TRangeInputDisabledValue? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TRangeInputFormatValue? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TRangeInputInputPropsValue? InputProps { get; set; }
 
     [Parameter]
@@ -28387,9 +29510,11 @@ public sealed class TRangeInput : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public TRangeInputPlaceholderValue? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
@@ -28397,12 +29522,15 @@ public sealed class TRangeInput : TContentComponentBase
     public string? SeparatorValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TRangeInputSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TRangeInputStatusValue? Status { get; set; }
 
     [Parameter]
@@ -28414,6 +29542,7 @@ public sealed class TRangeInput : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TInputValue[]? Value { get; set; }
 
     [Parameter]
@@ -28441,27 +29570,35 @@ public sealed class TRangeInput : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TInputValue[]> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TInputValue[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TRangeInputClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TRangeInputClickEventContext?> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TInputValue[]> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TInputValue[]> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseenter")]
     public EventCallback<TRangeInputMouseenterEventContext> OnMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseleave")]
     public EventCallback<TRangeInputMouseleaveEventContext> OnMouseleave { get; set; }
 }
 
@@ -28469,12 +29606,15 @@ public sealed class TRangeInput : TContentComponentBase
 public sealed class TRangeInputPopup : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TRangeInputPopupDisabledValue? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputValue")]
     public TInputValue[]? InputValue { get; set; }
 
     [Parameter]
@@ -28486,18 +29626,23 @@ public sealed class TRangeInputPopup : TContentComponentBase
     public string? PanelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TRangeInputPopupStatusValue? Status { get; set; }
 
     [Parameter]
@@ -28517,9 +29662,11 @@ public sealed class TRangeInputPopup : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInputChange")]
     public EventCallback<TInputValue[]> OnInputChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 }
 
@@ -28527,33 +29674,43 @@ public sealed class TRangeInputPopup : TContentComponentBase
 public sealed class TRate : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowHalf")]
     public bool? AllowHalf { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public TRateColorValue? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("count")]
     public Number? Count { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("gap")]
     public Number? Gap { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public string? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("texts")]
     public string[]? Texts { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public Number? Value { get; set; }
 
     [Parameter]
@@ -28561,6 +29718,7 @@ public sealed class TRate : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
@@ -28568,15 +29726,19 @@ public sealed class TRate : TContentComponentBase
 public sealed class TRow : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("align")]
     public TRowAlignValue? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("gutter")]
     public TRowGutterValue? Gutter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("justify")]
     public TRowJustifyValue? Justify { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 }
 
@@ -28584,21 +29746,27 @@ public sealed class TRow : TContentComponentBase
 public class TSelect<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("creatable")]
     public bool? Creatable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -28606,18 +29774,23 @@ public class TSelect<T> : TContentComponentBase
     public string? EmptyValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter")]
     public TSelectFilterValue<T>? Filter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TKeysType? Keys { get; set; }
 
     [Parameter]
@@ -28625,6 +29798,7 @@ public class TSelect<T> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
@@ -28632,18 +29806,23 @@ public class TSelect<T> : TContentComponentBase
     public string? LoadingTextValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public T[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("optionsLayout")]
     public TSelectOptionsLayoutValue? OptionsLayout { get; set; }
 
     [Parameter]
@@ -28655,33 +29834,43 @@ public class TSelect<T> : TContentComponentBase
     public string? PanelTopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TSelectStatusValue? Status { get; set; }
 
     [Parameter]
@@ -28689,9 +29878,11 @@ public class TSelect<T> : TContentComponentBase
     public string? SuffixValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
     [Parameter]
@@ -28699,6 +29890,7 @@ public class TSelect<T> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TSelectValue<TSelectOption>? Value { get; set; }
 
     [Parameter]
@@ -28706,6 +29898,7 @@ public class TSelect<T> : TContentComponentBase
     public TSelectValueDisplayValue<T>? ValueDisplayValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueType")]
     public TSelectValueTypeValue? ValueType { get; set; }
 
     [Parameter]
@@ -28753,33 +29946,43 @@ public class TSelect<T> : TContentComponentBase
     public RenderFragment<TSelectValueDisplaySlotContext<T>>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TSelectBlurEventContext<T>> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TSelectValue<TSelectOption>> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TSelectClearEventContext<T>> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCreate")]
     public EventCallback<TSelectCreateEventValue<T>> OnCreate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TSelectEnterEventContext<T>> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TSelectFocusEventContext<T>> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TSelectRemoveContext<T>> OnRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSearch")]
     public EventCallback<string> OnSearch { get; set; }
 }
 
@@ -28792,30 +29995,39 @@ public sealed class TSelect : TSelect<TSelectOption>
 public sealed class TSelectInput : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TSelectInputKeys? Keys { get; set; }
 
     [Parameter]
@@ -28823,12 +30035,15 @@ public sealed class TSelectInput : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
@@ -28836,24 +30051,31 @@ public sealed class TSelectInput : TContentComponentBase
     public string? PanelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TSelectInputStatusValue? Status { get; set; }
 
     [Parameter]
@@ -28865,9 +30087,11 @@ public sealed class TSelectInput : TContentComponentBase
     public string? TagValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
     [Parameter]
@@ -28875,6 +30099,7 @@ public sealed class TSelectInput : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TSelectInputValue? Value { get; set; }
 
     [Parameter]
@@ -28918,33 +30143,43 @@ public sealed class TSelectInput : TContentComponentBase
     public RenderFragment<TSelectInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TSelectInputValue> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TSelectInputClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TSelectInputValue> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TSelectInputValue> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseenter")]
     public EventCallback<TSelectInputMouseenterEventContext> OnMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseleave")]
     public EventCallback<TSelectInputMouseleaveEventContext> OnMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPaste")]
     public EventCallback<TSelectInputPasteEventContext> OnPaste { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onTagChange")]
     public EventCallback<TTagInputValueItem[]> OnTagChange { get; set; }
 }
 
@@ -28952,6 +30187,7 @@ public sealed class TSelectInput : TContentComponentBase
 public sealed class TSkeleton : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("animation")]
     public TSkeletonAnimationValue? Animation { get; set; }
 
     [Parameter]
@@ -28959,15 +30195,19 @@ public sealed class TSkeleton : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowCol")]
     public TSkeletonRowColItem[]? RowCol { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TSkeletonThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -28979,9 +30219,11 @@ public sealed class TSkeleton : TContentComponentBase
 public sealed class TSlider : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputNumberProps")]
     public TSliderInputNumberPropsValue? InputNumberProps { get; set; }
 
     [Parameter]
@@ -28989,30 +30231,39 @@ public sealed class TSlider : TContentComponentBase
     public TSliderLabelValue? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TSliderLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("marks")]
     public TSliderMarksValue? Marks { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     [Parameter]
+    [ECMAScriptName("range")]
     public bool? Range { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showStep")]
     public bool? ShowStep { get; set; }
 
     [Parameter]
+    [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TSliderValue? Value { get; set; }
 
     [Parameter]
@@ -29020,9 +30271,11 @@ public sealed class TSlider : TContentComponentBase
     public RenderFragment<TSliderLabelSlotContext>? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TSliderValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChangeEnd")]
     public EventCallback<TSliderValue> OnChangeEnd { get; set; }
 }
 
@@ -29030,12 +30283,15 @@ public sealed class TSlider : TContentComponentBase
 public sealed class TSpace : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("align")]
     public TSpaceAlignValue? Align { get; set; }
 
     [Parameter]
+    [ECMAScriptName("breakLine")]
     public bool? BreakLine { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public TSpaceDirectionValue? Direction { get; set; }
 
     [Parameter]
@@ -29043,6 +30299,7 @@ public sealed class TSpace : TContentComponentBase
     public string? SeparatorValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSpaceSizeValue? Size { get; set; }
 
     [Parameter]
@@ -29054,15 +30311,19 @@ public sealed class TSpace : TContentComponentBase
 public sealed class TStatistic : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("animation")]
     public Tanimation? Animation { get; set; }
 
     [Parameter]
+    [ECMAScriptName("animationStart")]
     public bool? AnimationStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
+    [ECMAScriptName("decimalPlaces")]
     public Number? DecimalPlaces { get; set; }
 
     [Parameter]
@@ -29070,9 +30331,11 @@ public sealed class TStatistic : TContentComponentBase
     public string? ExtraValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TStatisticFormatValue? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
@@ -29080,6 +30343,7 @@ public sealed class TStatistic : TContentComponentBase
     public string? PrefixValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
     [Parameter]
@@ -29091,9 +30355,11 @@ public sealed class TStatistic : TContentComponentBase
     public string? TitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trend")]
     public TStatisticTrendValue? Trend { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trendPlacement")]
     public TStatisticTrendPlacementValue? TrendPlacement { get; set; }
 
     [Parameter]
@@ -29101,6 +30367,7 @@ public sealed class TStatistic : TContentComponentBase
     public string? UnitValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public Number? Value { get; set; }
 
     [Parameter]
@@ -29140,6 +30407,7 @@ public sealed class TStepItem : TContentComponentBase
     public bool? IconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TStepStatus? Status { get; set; }
 
     [Parameter]
@@ -29147,6 +30415,7 @@ public sealed class TStepItem : TContentComponentBase
     public string? TitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TStepItemValueValue? Value { get; set; }
 
     [Parameter]
@@ -29170,27 +30439,35 @@ public sealed class TStepItem : TContentComponentBase
 public sealed class TSteps : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("current")]
     public TStepsCurrentValue? Current { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TStepsLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("options")]
     public TdStepItemProps[]? Options { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("separator")]
     public TStepsSeparatorValue? Separator { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sequence")]
     public TStepsSequenceValue? Sequence { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TStepsThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TStepsChangeEventCurrent> OnChange { get; set; }
 }
 
@@ -29206,9 +30483,11 @@ public sealed class TStickyItem : TContentComponentBase
     public string? PopupValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TStickyItemTriggerValue? Trigger { get; set; }
 
     [Parameter]
@@ -29228,30 +30507,39 @@ public sealed class TStickyItem : TContentComponentBase
 public sealed class TStickyTool : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("list")]
     public TdStickyItemProps[]? List { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public TStickyToolOffsetValueItem[]? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TStickyToolPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TStickyToolShapeValue? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TStickyToolTypeValue? Type { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public TStickyToolWidthValue? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TStickyToolClickEventContext> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onHover")]
     public EventCallback<TStickyToolHoverEventContext> OnHover { get; set; }
 }
 
@@ -29263,9 +30551,11 @@ public sealed class TSubmenu : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
@@ -29273,6 +30563,7 @@ public sealed class TSubmenu : TContentComponentBase
     public string? TitleValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
     [Parameter]
@@ -29292,30 +30583,39 @@ public sealed class TSubmenu : TContentComponentBase
 public sealed class TSwiper : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("animation")]
     public TSwiperAnimationValue? Animation { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public TSwiperDirectionValue? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
     [Parameter]
@@ -29323,15 +30623,19 @@ public sealed class TSwiper : TContentComponentBase
     public TSwiperNavigation? NavigationValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stopOnHover")]
     public bool? StopOnHover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TSwiperThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TSwiperTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TSwiperTypeValue? Type { get; set; }
 
     [Parameter]
@@ -29339,6 +30643,7 @@ public sealed class TSwiper : TContentComponentBase
     public RenderFragment? NavigationContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
@@ -29346,30 +30651,39 @@ public sealed class TSwiper : TContentComponentBase
 public sealed class TSwiperItem : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("animation")]
     public TSwiperItemAnimationValue? Animation { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public TSwiperItemDirectionValue? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
     [Parameter]
@@ -29377,15 +30691,19 @@ public sealed class TSwiperItem : TContentComponentBase
     public TSwiperNavigation? NavigationValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stopOnHover")]
     public bool? StopOnHover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TSwiperItemThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TSwiperItemTriggerValue? Trigger { get; set; }
 
     [Parameter]
+    [ECMAScriptName("type")]
     public TSwiperItemTypeValue? Type { get; set; }
 
     [Parameter]
@@ -29393,6 +30711,7 @@ public sealed class TSwiperItem : TContentComponentBase
     public RenderFragment? NavigationContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
@@ -29400,12 +30719,15 @@ public sealed class TSwiperItem : TContentComponentBase
 public class TSwitch<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("beforeChange")]
     public TSwitchBeforeChangeValue<T>? BeforeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("customValue")]
     public TSwitchValue[]? CustomValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -29413,12 +30735,15 @@ public class TSwitch<T> : TContentComponentBase
     public TSwitchLabelValueItem<T>[]? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSwitchSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T? Value { get; set; }
 
     [Parameter]
@@ -29426,6 +30751,7 @@ public class TSwitch<T> : TContentComponentBase
     public RenderFragment<TSwitchLabelSlotContext<T>>? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 }
 
@@ -29438,12 +30764,15 @@ public sealed class TSwitch : TSwitch<TSwitchValue>
 public sealed class TTabPanel : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("destroyOnHide")]
     public bool? DestroyOnHide { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
@@ -29451,6 +30780,7 @@ public sealed class TTabPanel : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
@@ -29458,9 +30788,11 @@ public sealed class TTabPanel : TContentComponentBase
     public string? PanelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("removable")]
     public bool? Removable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
 
     [Parameter]
@@ -29472,6 +30804,7 @@ public sealed class TTabPanel : TContentComponentBase
     public RenderFragment? PanelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TTabPanelRemoveEventOptions> OnRemove { get; set; }
 }
 
@@ -29479,12 +30812,15 @@ public sealed class TTabPanel : TContentComponentBase
 public class TTable<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("activeRowKeys")]
     public TTableActiveRowKeysValueItem<T>[]? ActiveRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeRowType")]
     public TTableActiveRowTypeValue? ActiveRowType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
     [Parameter]
@@ -29492,9 +30828,11 @@ public class TTable<T> : TContentComponentBase
     public TTableAsyncLoadingValue? AsyncLoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
+    [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
     [Parameter]
@@ -29506,36 +30844,47 @@ public class TTable<T> : TContentComponentBase
     public string? CellEmptyContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columnController")]
     public TTableColumnController? ColumnController { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columnControllerVisible")]
     public bool? ColumnControllerVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("columns")]
     public TPrimaryTableCol<T>[]? Columns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("displayColumns")]
     public TCheckboxGroupValueItem[]? DisplayColumns { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSort")]
     public TTableDragSortValue? DragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSortOptions")]
     public TSortableOptions? DragSortOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editableCellState")]
     public TEditableCellType<T>? EditableCellState { get; set; }
 
     [Parameter]
+    [ECMAScriptName("editableRowKeys")]
     public TTableEditableRowKeysValueItem<T>[]? EditableRowKeys { get; set; }
 
     [Parameter]
@@ -29547,9 +30896,11 @@ public class TTable<T> : TContentComponentBase
     public bool? ExpandIconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandedRowKeys")]
     public TTableExpandedRowKeysValueItem<T>[]? ExpandedRowKeys { get; set; }
 
     [Parameter]
@@ -29557,6 +30908,7 @@ public class TTable<T> : TContentComponentBase
     public string? FilterRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterValue")]
     public TJsonObject? FilterValue { get; set; }
 
     [Parameter]
@@ -29564,15 +30916,19 @@ public class TTable<T> : TContentComponentBase
     public string? FirstFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footData")]
     public T[]? FootData { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("footerAffixedBottom")]
     public TTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
 
     [Parameter]
@@ -29580,27 +30936,35 @@ public class TTable<T> : TContentComponentBase
     public string? FooterSummaryValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headerAffixedTop")]
     public TTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public TTableHeightValue<T>? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideSortTips")]
     public bool? HideSortTips { get; set; }
 
     [Parameter]
+    [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("indeterminateSelectedRowKeys")]
     public TTableIndeterminateSelectedRowKeysValueItem<T>[]? IndeterminateSelectedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
     [Parameter]
@@ -29608,6 +30972,7 @@ public class TTable<T> : TContentComponentBase
     public string? LastFullRowValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
     [Parameter]
@@ -29615,82 +30980,108 @@ public class TTable<T> : TContentComponentBase
     public bool? LoadingValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public TTableMaxHeightValue<T>? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multipleSort")]
     public bool? MultipleSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
     [Parameter]
+    [ECMAScriptName("paginationAffixedBottom")]
     public TTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveSelectedRowOnPaginate")]
     public bool? ReserveSelectedRowOnPaginate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowClassName")]
     public TTableRowClassNameValue<T>? RowClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
     [Parameter]
+    [ECMAScriptName("rowSelectionAllowUncheck")]
     public bool? RowSelectionAllowUncheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowSelectionType")]
     public TTableRowSelectionTypeValue? RowSelectionType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspan { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspanInFooter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectOnRowClick")]
     public bool? SelectOnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectedRowKeys")]
     public TTableSelectedRowKeysValueItem<T>[]? SelectedRowKeys { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showSortColumnBgColor")]
     public bool? ShowSortColumnBgColor { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sortOnRowDraggable")]
     public bool? SortOnRowDraggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tableLayout")]
     public TTableTableLayoutValue? TableLayout { get; set; }
 
     [Parameter]
@@ -29698,6 +31089,7 @@ public class TTable<T> : TContentComponentBase
     public string? TopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("verticalAlign")]
     public TTableVerticalAlignValue? VerticalAlign { get; set; }
 
     [Parameter]
@@ -29757,90 +31149,119 @@ public class TTable<T> : TContentComponentBase
     public RenderFragment? TopContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveChange")]
     public EventCallback<TTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAsyncLoadingClick")]
     public EventCallback<TTableAsyncLoadingClickEventContext<T>> OnAsyncLoadingClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCellClick")]
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTableChangeData> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnChange")]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnControllerVisibleChange")]
     public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDataChange")]
     public EventCallback<T[]> OnDataChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDisplayColumnsChange")]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragSort")]
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpandChange")]
     public EventCallback<TTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFilterChange")]
     public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<T>> OnRowDblclick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowEdit")]
     public EventCallback<TPrimaryTableRowEditContext<T>> OnRowEdit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<T>> OnRowMousedown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<T>> OnRowMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<T>> OnRowMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<T>> OnRowMouseover { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<T>> OnRowMouseup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRowValidate")]
     public EventCallback<TPrimaryTableRowValidateContext<T>> OnRowValidate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TTableScrollEventParams<T>> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollX")]
     public EventCallback<TTableScrollXEventParams<T>> OnScrollX { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollY")]
     public EventCallback<TTableScrollYEventParams<T>> OnScrollY { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectChange")]
     public EventCallback<TTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
@@ -29857,30 +31278,39 @@ public sealed class TTabs : TContentComponentBase
     public string? ActionValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("addable")]
     public bool? Addable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSort")]
     public bool? DragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("list")]
     public TdTabPanelProps[]? List { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TTabsPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scrollPosition")]
     public TTabsScrollPositionValue? ScrollPosition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TTabsSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TTabsThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
 
     [Parameter]
@@ -29888,15 +31318,19 @@ public sealed class TTabs : TContentComponentBase
     public RenderFragment? ActionContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onAdd")]
     public EventCallback<TTabsAddEventContext> OnAdd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTabValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragSort")]
     public EventCallback<TTabsDragSortContext> OnDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TTabsRemoveEventOptions> OnRemove { get; set; }
 }
 
@@ -29904,9 +31338,11 @@ public sealed class TTabs : TContentComponentBase
 public sealed class TTag : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     [Parameter]
@@ -29914,24 +31350,31 @@ public sealed class TTag : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public TTagMaxWidthValue? MaxWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("shape")]
     public TTagShapeValue? Shape { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TTagThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("title")]
     public TTagTitleValue? Title { get; set; }
 
     [Parameter]
+    [ECMAScriptName("variant")]
     public TTagVariantValue? Variant { get; set; }
 
     [Parameter]
@@ -29943,9 +31386,11 @@ public sealed class TTag : TContentComponentBase
     public RenderFragment? IconContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TTagClickEventContext> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TTagCloseEventContext> OnClose { get; set; }
 }
 
@@ -29953,27 +31398,35 @@ public sealed class TTag : TContentComponentBase
 public sealed class TTagInput : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dragSort")]
     public bool? DragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("excessTagsDisplayType")]
     public TTagInputExcessTagsDisplayTypeValue? ExcessTagsDisplayType { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
     [Parameter]
@@ -29981,21 +31434,27 @@ public sealed class TTagInput : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TTagInputStatusValue? Status { get; set; }
 
     [Parameter]
@@ -30007,6 +31466,7 @@ public sealed class TTagInput : TContentComponentBase
     public string? TagValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
     [Parameter]
@@ -30014,6 +31474,7 @@ public sealed class TTagInput : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTagInputValueItem[]? Value { get; set; }
 
     [Parameter]
@@ -30053,39 +31514,51 @@ public sealed class TTagInput : TContentComponentBase
     public RenderFragment<TTagInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TTagInputValueItem[]> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTagInputValueItem[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TTagInputClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TTagInputClickEventContext> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragSort")]
     public EventCallback<TTagInputDragSortContext> OnDragSort { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onEnter")]
     public EventCallback<TTagInputValueItem[]> OnEnter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TTagInputValueItem[]> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseenter")]
     public EventCallback<TTagInputMouseenterEventContext> OnMouseenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onMouseleave")]
     public EventCallback<TTagInputMouseleaveEventContext> OnMouseleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPaste")]
     public EventCallback<TTagInputPasteEventContext> OnPaste { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TTagInputRemoveContext> OnRemove { get; set; }
 }
 
@@ -30093,6 +31566,7 @@ public sealed class TTagInput : TContentComponentBase
 public sealed class TText : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("code")]
     public bool? Code { get; set; }
 
     [Parameter]
@@ -30100,33 +31574,43 @@ public sealed class TText : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("copyable")]
     public TTextCopyableValue? Copyable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delete")]
     public bool? Delete { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ellipsis")]
     public TTextEllipsisValue? Ellipsis { get; set; }
 
     [Parameter]
+    [ECMAScriptName("italic")]
     public bool? Italic { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keyboard")]
     public bool? Keyboard { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mark")]
     public TTextMarkValue? Mark { get; set; }
 
     [Parameter]
+    [ECMAScriptName("strong")]
     public bool? Strong { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TTextThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("underline")]
     public bool? Underline { get; set; }
 
     [Parameter]
@@ -30138,33 +31622,43 @@ public sealed class TText : TContentComponentBase
 public sealed class TTextarea : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autosize")]
     public TTextareaAutosizeValue? Autosize { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxlength")]
     public TTextareaMaxlengthValue? Maxlength { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TTextareaStatusValue? Status { get; set; }
 
     [Parameter]
@@ -30172,6 +31666,7 @@ public sealed class TTextarea : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTextareaValue? Value { get; set; }
 
     [Parameter]
@@ -30179,24 +31674,31 @@ public sealed class TTextarea : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TTextareaValue> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTextareaValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TTextareaValue> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback<TTextareaValue> OnKeydown { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeypress")]
     public EventCallback<TTextareaValue> OnKeypress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onKeyup")]
     public EventCallback<TTextareaValue> OnKeyup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TTextareaValidateEventContext> OnValidate { get; set; }
 }
 
@@ -30204,27 +31706,35 @@ public sealed class TTextarea : TContentComponentBase
 public sealed class TTimePicker : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTime")]
     public TTimePickerDisableTimeValue? DisableTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideDisabledTime")]
     public bool? HideDisabledTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
@@ -30232,27 +31742,35 @@ public sealed class TTimePicker : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presets")]
     public TPresetTime? Presets { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TTimePickerSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TTimePickerStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("steps")]
     public TTimePickerStepsValueItem[]? Steps { get; set; }
 
     [Parameter]
@@ -30260,6 +31778,7 @@ public sealed class TTimePicker : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     [Parameter]
@@ -30279,30 +31798,39 @@ public sealed class TTimePicker : TContentComponentBase
     public RenderFragment<TTimePickerValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TTimePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TTimePickerClearEventContext> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClose")]
     public EventCallback<TTimePickerCloseEventContext> OnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onConfirm")]
     public EventCallback<TTimePickerConfirmEventContext> OnConfirm { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TTimePickerFocusEventContext> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback<TTimePickerInputEventContext> OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOpen")]
     public EventCallback<TTimePickerOpenEventContext> OnOpen { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPick")]
     public EventCallback<string> OnPick { get; set; }
 }
 
@@ -30310,27 +31838,35 @@ public sealed class TTimePicker : TContentComponentBase
 public sealed class TTimeRangePicker : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoSwap")]
     public bool? AutoSwap { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableTime")]
     public TTimeRangePickerDisableTimeValue? DisableTime { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TTimeRangePickerDisabledValue? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public string? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideDisabledTime")]
     public bool? HideDisabledTime { get; set; }
 
     [Parameter]
@@ -30338,27 +31874,35 @@ public sealed class TTimeRangePicker : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public TTimeRangePickerPlaceholderValue? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("presets")]
     public TPresetTimeRange? Presets { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TTimeRangePickerSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TTimeRangePickerStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("steps")]
     public TTimeRangePickerStepsValueItem[]? Steps { get; set; }
 
     [Parameter]
@@ -30366,6 +31910,7 @@ public sealed class TTimeRangePicker : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public string[]? Value { get; set; }
 
     [Parameter]
@@ -30377,18 +31922,23 @@ public sealed class TTimeRangePicker : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TTimeRangePickerBlurEventContext> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<string[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TTimeRangePickerFocusEventContext?> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInput")]
     public EventCallback<TTimeRangePickerInputEventContext> OnInput { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPick")]
     public EventCallback<string[]> OnPick { get; set; }
 }
 
@@ -30396,18 +31946,23 @@ public sealed class TTimeRangePicker : TContentComponentBase
 public sealed class TTimeline : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("labelAlign")]
     public TTimelineLabelAlignValue? LabelAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("layout")]
     public TTimelineLayoutValue? Layout { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mode")]
     public TTimelineModeValue? Mode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool? Reverse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TTimelineThemeValue? Theme { get; set; }
 }
 
@@ -30419,6 +31974,7 @@ public sealed class TTimelineItem : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("dotColor")]
     public string? DotColor { get; set; }
 
     [Parameter]
@@ -30426,9 +31982,11 @@ public sealed class TTimelineItem : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("labelAlign")]
     public TTimelineItemLabelAlignValue? LabelAlign { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
@@ -30444,6 +32002,7 @@ public sealed class TTimelineItem : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TTimelineItemClickEventContext> OnClick { get; set; }
 }
 
@@ -30455,9 +32014,11 @@ public sealed class TTitle : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("ellipsis")]
     public TTitleEllipsisValue? Ellipsis { get; set; }
 
     [Parameter]
+    [ECMAScriptName("level")]
     public TTitleLevelValue? Level { get; set; }
 
     [Parameter]
@@ -30469,6 +32030,7 @@ public sealed class TTitle : TContentComponentBase
 public sealed class TTooltip : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
     [Parameter]
@@ -30476,45 +32038,59 @@ public sealed class TTooltip : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
     [Parameter]
+    [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayInnerStyle")]
     public TTooltipOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("overlayStyle")]
     public TTooltipOverlayStyleValue? OverlayStyle { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placement")]
     public TTooltipPlacementValue? Placement { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TTooltipThemeValue? Theme { get; set; }
 
     [Parameter]
+    [ECMAScriptName("trigger")]
     public TTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
@@ -30522,9 +32098,11 @@ public sealed class TTooltip : TContentComponentBase
     public string? TriggerElementValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]
@@ -30536,15 +32114,19 @@ public sealed class TTooltip : TContentComponentBase
     public RenderFragment? TriggerElementContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOverlayClick")]
     public EventCallback<TTooltipOverlayClickEventContext> OnOverlayClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TTooltipScrollEventContext> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScrollToBottom")]
     public EventCallback<TTooltipScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
@@ -30552,18 +32134,23 @@ public sealed class TTooltip : TContentComponentBase
 public class TTransfer<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("checkboxProps")]
     public TdCheckboxProps? CheckboxProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checked")]
     public TTransferValue[]? Checked { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("direction")]
     public TTransferDirectionValue? Direction { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public TTransferDisabledValue<T>? Disabled { get; set; }
 
     [Parameter]
@@ -30575,6 +32162,7 @@ public class TTransfer<T> : TContentComponentBase
     public TTransferFooterValueItem<T>[]? FooterValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TKeysType? Keys { get; set; }
 
     [Parameter]
@@ -30582,18 +32170,23 @@ public class TTransfer<T> : TContentComponentBase
     public TTransferOperationValueItem<T>[]? OperationValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("pagination")]
     public TTransferPaginationValue<T>? Pagination { get; set; }
 
     [Parameter]
+    [ECMAScriptName("search")]
     public TTransferSearchValue<T>? Search { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showCheckAll")]
     public TTransferShowCheckAllValue<T>? ShowCheckAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("targetDraggable")]
     public bool? TargetDraggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("targetSort")]
     public TTransferTargetSortValue? TargetSort { get; set; }
 
     [Parameter]
@@ -30605,6 +32198,7 @@ public class TTransfer<T> : TContentComponentBase
     public TTransferTreeValue<T>? TreeValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTransferValue[]? Value { get; set; }
 
     [Parameter]
@@ -30632,18 +32226,23 @@ public class TTransfer<T> : TContentComponentBase
     public RenderFragment? TreeContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTransferValue[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCheckedChange")]
     public EventCallback<TCheckedOptions> OnCheckedChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TTransferScrollEventOptions<T>> OnScroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSearch")]
     public EventCallback<TSearchContext> OnSearch { get; set; }
 }
 
@@ -30656,39 +32255,51 @@ public sealed class TTransfer : TTransfer<TDataOption>
 public class TTree<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("activable")]
     public bool? Activable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("activeMultiple")]
     public bool? ActiveMultiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("actived")]
     public TTreeNodeValue[]? Actived { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowDrop")]
     public TTreeAllowDropValue<T>? AllowDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowFoldNodeOnFilter")]
     public bool? AllowFoldNodeOnFilter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("checkable")]
     public bool? Checkable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disableCheck")]
     public TTreeDisableCheckValue<T>? DisableCheck { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
@@ -30696,30 +32307,39 @@ public class TTree<T> : TContentComponentBase
     public string? EmptyValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandAll")]
     public bool? ExpandAll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandLevel")]
     public Number? ExpandLevel { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expandParent")]
     public bool? ExpandParent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("expanded")]
     public TTreeNodeValue[]? Expanded { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter")]
     public TTreeFilterValue<T>? Filter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public TTreeHeightValue<T>? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
     [Parameter]
@@ -30727,6 +32347,7 @@ public class TTree<T> : TContentComponentBase
     public bool? IconValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
     [Parameter]
@@ -30734,6 +32355,7 @@ public class TTree<T> : TContentComponentBase
     public TTreeLabelValue<T>? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
     [Parameter]
@@ -30741,21 +32363,27 @@ public class TTree<T> : TContentComponentBase
     public bool? LineValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("load")]
     public TTreeLoadValue<T>? Load { get; set; }
 
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public TTreeMaxHeightValue<T>? MaxHeight { get; set; }
 
     [Parameter]
+    [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
     [Parameter]
+    [ECMAScriptName("transition")]
     public bool? Transition { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTreeNodeValue[]? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueMode")]
     public TTreeValueModeValue? ValueMode { get; set; }
 
     [Parameter]
@@ -30779,36 +32407,47 @@ public class TTree<T> : TContentComponentBase
     public RenderFragment<TTreeNodeModel<T>>? OperationsContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onActive")]
     public EventCallback<TTreeNodeValue[]> OnActive { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTreeNodeValue[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback<TTreeClickEventContext<T>> OnClick { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragEnd")]
     public EventCallback<TTreeDragEndEventContext<T>> OnDragEnd { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragLeave")]
     public EventCallback<TTreeDragLeaveEventContext<T>> OnDragLeave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragOver")]
     public EventCallback<TTreeDragOverEventContext<T>> OnDragOver { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragStart")]
     public EventCallback<TTreeDragStartEventContext<T>> OnDragStart { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDrop")]
     public EventCallback<TTreeDropEventContext<T>> OnDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onExpand")]
     public EventCallback<TTreeNodeValue[]> OnExpand { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback<TTreeLoadEventContext<T>> OnLoad { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onScroll")]
     public EventCallback<TTreeScrollEventParams<T>> OnScroll { get; set; }
 }
 
@@ -30821,21 +32460,27 @@ public sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public DataOption[]? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -30843,18 +32488,23 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? EmptyValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filter")]
     public TTreeSelectFilterValue<DataOption, TreeValueType>? Filter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
     [Parameter]
@@ -30862,6 +32512,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? LabelValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
     [Parameter]
@@ -30869,12 +32520,15 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? LoadingTextValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
@@ -30886,27 +32540,35 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? PanelTopContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
     [Parameter]
+    [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
     [Parameter]
+    [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("size")]
     public TTreeSelectSizeValue? Size { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TTreeSelectStatusValue? Status { get; set; }
 
     [Parameter]
@@ -30914,6 +32576,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? SuffixValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
     [Parameter]
@@ -30921,12 +32584,15 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("treeProps")]
     public TTreeProps<TTreeOptionData<TTypeTreeOptionDataTDefault>>? TreeProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public TTreeSelectValue? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("valueType")]
     public TTreeSelectValueTypeValue? ValueType { get; set; }
 
     [Parameter]
@@ -30974,27 +32640,35 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public RenderFragment<TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType>>? ValueDisplayContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onBlur")]
     public EventCallback<TTreeSelectBlurEventContext<DataOption, TreeValueType>> OnBlur { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<TTreeSelectValue> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onClear")]
     public EventCallback<TTreeSelectClearEventContext<DataOption, TreeValueType>> OnClear { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFocus")]
     public EventCallback<TTreeSelectFocusEventContext<DataOption, TreeValueType>> OnFocus { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TRemoveOptions<DataOption>> OnRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSearch")]
     public EventCallback<string> OnSearch { get; set; }
 }
 
@@ -31012,24 +32686,31 @@ public sealed class TTypography : TContentComponentBase
 public class TUpload<T> : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("abridgeName")]
     public Number[]? AbridgeName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("accept")]
     public string? Accept { get; set; }
 
     [Parameter]
+    [ECMAScriptName("action")]
     public string? Action { get; set; }
 
     [Parameter]
+    [ECMAScriptName("allowUploadDuplicateFile")]
     public bool? AllowUploadDuplicateFile { get; set; }
 
     [Parameter]
+    [ECMAScriptName("autoUpload")]
     public bool? AutoUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeAllFilesUpload")]
     public TUploadBeforeAllFilesUploadValue<T>? BeforeAllFilesUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("beforeUpload")]
     public TUploadBeforeUploadValue<T>? BeforeUpload { get; set; }
 
     [Parameter]
@@ -31037,81 +32718,107 @@ public class TUpload<T> : TContentComponentBase
     public TdButtonProps? CancelUploadButtonValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("data")]
     public TUploadDataValue<T>? Data { get; set; }
 
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("files")]
     public T[]? Files { get; set; }
 
     [Parameter]
+    [ECMAScriptName("format")]
     public TUploadFormatValue<T>? Format { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatRequest")]
     public TUploadFormatRequestValue<T>? FormatRequest { get; set; }
 
     [Parameter]
+    [ECMAScriptName("formatResponse")]
     public TUploadFormatResponseValue<T>? FormatResponse { get; set; }
 
     [Parameter]
+    [ECMAScriptName("headers")]
     public TUploadHeadersValue<T>? Headers { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageProps")]
     public TJsonObject? ImageProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("imageViewerProps")]
     public TdImageViewerProps? ImageViewerProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("inputAttributes")]
     public TJsonObject? InputAttributes { get; set; }
 
     [Parameter]
+    [ECMAScriptName("isBatchUpload")]
     public bool? IsBatchUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("locale")]
     public TUploadConfig? Locale { get; set; }
 
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     [Parameter]
+    [ECMAScriptName("method")]
     public TUploadMethodValue? Method { get; set; }
 
     [Parameter]
+    [ECMAScriptName("mockProgressDuration")]
     public Number? MockProgressDuration { get; set; }
 
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     [Parameter]
+    [ECMAScriptName("requestMethod")]
     public TUploadRequestMethodValue<T>? RequestMethod { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showImageFileName")]
     public bool? ShowImageFileName { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showThumbnail")]
     public bool? ShowThumbnail { get; set; }
 
     [Parameter]
+    [ECMAScriptName("showUploadProgress")]
     public bool? ShowUploadProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("sizeLimit")]
     public TUploadSizeLimitValue<T>? SizeLimit { get; set; }
 
     [Parameter]
+    [ECMAScriptName("status")]
     public TUploadStatusValue? Status { get; set; }
 
     [Parameter]
+    [ECMAScriptName("theme")]
     public TUploadThemeValue? Theme { get; set; }
 
     [Parameter]
@@ -31119,9 +32826,11 @@ public class TUpload<T> : TContentComponentBase
     public string? TipsValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("triggerButtonProps")]
     public TdButtonProps? TriggerButtonProps { get; set; }
 
     [Parameter]
+    [ECMAScriptName("uploadAllFilesInOneRequest")]
     public bool? UploadAllFilesInOneRequest { get; set; }
 
     [Parameter]
@@ -31129,15 +32838,19 @@ public class TUpload<T> : TContentComponentBase
     public TdButtonProps? UploadButtonValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("uploadPastedFiles")]
     public bool? UploadPastedFiles { get; set; }
 
     [Parameter]
+    [ECMAScriptName("useMockProgress")]
     public bool? UseMockProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("value")]
     public T[]? Value { get; set; }
 
     [Parameter]
+    [ECMAScriptName("withCredentials")]
     public bool? WithCredentials { get; set; }
 
     [Parameter]
@@ -31165,48 +32878,63 @@ public class TUpload<T> : TContentComponentBase
     public RenderFragment<TUploadUploadButtonSlotContext<T>>? UploadButtonContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onCancelUpload")]
     public EventCallback OnCancelUpload { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onChange")]
     public EventCallback<T[]> OnChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragenter")]
     public EventCallback<TUploadDragenterEventContext<T>> OnDragenter { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDragleave")]
     public EventCallback<TUploadDragleaveEventContext<T>> OnDragleave { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onDrop")]
     public EventCallback<TUploadDropEventContext<T>> OnDrop { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onFail")]
     public EventCallback<TUploadFailContext> OnFail { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOneFileFail")]
     public EventCallback<TUploadFailContext> OnOneFileFail { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onOneFileSuccess")]
     public EventCallback<TUploadOneFileSuccessEventContext<T>> OnOneFileSuccess { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onPreview")]
     public EventCallback<TUploadPreviewEventOptions<T>> OnPreview { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onProgress")]
     public EventCallback<TProgressContext> OnProgress { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onRemove")]
     public EventCallback<TUploadRemoveContext> OnRemove { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSelectChange")]
     public EventCallback<File[]> OnSelectChange { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onSuccess")]
     public EventCallback<TSuccessContext> OnSuccess { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onValidate")]
     public EventCallback<TUploadValidateEventContext<T>> OnValidate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("onWaitingUploadFilesChange")]
     public EventCallback<TUploadWaitingUploadFilesChangeEventContext<T>> OnWaitingUploadFilesChange { get; set; }
 }
 
@@ -31219,6 +32947,7 @@ public sealed class TUpload : TUpload<TUploadFile>
 public sealed class TWatermark : TContentComponentBase
 {
     [Parameter]
+    [ECMAScriptName("alpha")]
     public Number? Alpha { get; set; }
 
     [Parameter]
@@ -31226,42 +32955,55 @@ public sealed class TWatermark : TContentComponentBase
     public string? ContentValue { get; set; }
 
     [Parameter]
+    [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
     [Parameter]
+    [ECMAScriptName("isRepeat")]
     public bool? IsRepeat { get; set; }
 
     [Parameter]
+    [ECMAScriptName("lineSpace")]
     public Number? LineSpace { get; set; }
 
     [Parameter]
+    [ECMAScriptName("movable")]
     public bool? Movable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("moveInterval")]
     public Number? MoveInterval { get; set; }
 
     [Parameter]
+    [ECMAScriptName("offset")]
     public Number[]? Offset { get; set; }
 
     [Parameter]
+    [ECMAScriptName("removable")]
     public bool? Removable { get; set; }
 
     [Parameter]
+    [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
 
     [Parameter]
+    [ECMAScriptName("watermarkContent")]
     public TWatermarkWatermarkContentValue? WatermarkContent { get; set; }
 
     [Parameter]
+    [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
     [Parameter]
+    [ECMAScriptName("x")]
     public Number? X { get; set; }
 
     [Parameter]
+    [ECMAScriptName("y")]
     public Number? Y { get; set; }
 
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
     [Parameter]

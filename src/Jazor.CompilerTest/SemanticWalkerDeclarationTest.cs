@@ -131,7 +131,7 @@ public sealed class SemanticWalkerDeclarationTest
         => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
     private static void AssertJsNamingScriptEqual(string expected, string? actual)
-        => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+        => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
     /// <summary>
     /// 获取元组操作
@@ -1508,7 +1508,7 @@ public sealed class SemanticWalkerDeclarationTest
     console.log(""test"");
   } finally {
     if (disposable !== null)
-      disposable.dispose();
+      disposable.Dispose();
   }
 }", script);
     }
@@ -1544,11 +1544,11 @@ public sealed class SemanticWalkerDeclarationTest
       console.log(""body"");
     } finally {
       if (second !== null)
-        second.dispose();
+        second.Dispose();
     }
   } finally {
     if (first !== null)
-      first.dispose();
+      first.Dispose();
   }
 }", script);
     }
@@ -1586,11 +1586,11 @@ public sealed class SemanticWalkerDeclarationTest
       console.log(""body"");
     } finally {
       if (second !== null)
-        second.dispose();
+        second.Dispose();
     }
   } finally {
     if (first !== null)
-      first.dispose();
+      first.Dispose();
   }
 }", script);
     }
@@ -1694,7 +1694,7 @@ public sealed class SemanticWalkerDeclarationTest
     await Promise.resolve();
   } finally {
     if (disposable !== null)
-      await disposable.disposeAsync();
+      await disposable.DisposeAsync();
   }
 }", script);
     }
@@ -1730,11 +1730,11 @@ public sealed class SemanticWalkerDeclarationTest
       await Promise.resolve();
     } finally {
       if (second !== null)
-        await second.disposeAsync();
+        await second.DisposeAsync();
     }
   } finally {
     if (first !== null)
-      await first.disposeAsync();
+      await first.DisposeAsync();
   }
 }", script);
     }
@@ -1772,11 +1772,11 @@ public sealed class SemanticWalkerDeclarationTest
       await Promise.resolve();
     } finally {
       if (second !== null)
-        await second.disposeAsync();
+        await second.DisposeAsync();
     }
   } finally {
     if (first !== null)
-      await first.disposeAsync();
+      await first.DisposeAsync();
   }
 }", script);
     }

@@ -41,9 +41,9 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "SetReleaseNameAsync", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "setReleaseNameAsync(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.releaseName", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.savedReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "SetReleaseNameAsync(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-editor-runtime.mjs",
@@ -107,9 +107,9 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "SetReleaseName", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "setReleaseName(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.releaseName", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.savedReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "SetReleaseName(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-sync-editor-runtime.mjs",

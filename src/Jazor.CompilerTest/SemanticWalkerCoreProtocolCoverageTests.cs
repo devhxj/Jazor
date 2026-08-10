@@ -72,7 +72,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
         StringAssert.Contains(script, "let first = buffer[", StringComparison.Ordinal);
         StringAssert.Contains(script, "let last = buffer[", StringComparison.Ordinal);
         StringAssert.Contains(script, "let selected = buffer[", StringComparison.Ordinal);
-        StringAssert.Contains(script, "index, buffer.length", StringComparison.Ordinal);
+        StringAssert.Contains(script, "index, buffer.Length", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 
@@ -95,7 +95,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
             }
             """);
 
-        StringAssert.Contains(script, "TestClass.next()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "TestClass.Next()", StringComparison.Ordinal);
         StringAssert.Contains(script, "left =", StringComparison.Ordinal);
         StringAssert.Contains(script, "first =", StringComparison.Ordinal);
         StringAssert.Contains(script, "outer, innerFirst, innerSecond", StringComparison.Ordinal);

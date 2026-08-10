@@ -14,6 +14,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Theme name for the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Component height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Maximum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Maximum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Minimum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Minimum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Component width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Renders as plain HTML boilerplate without styles or interactivity.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("boilerplate")]
     public bool Boilerplate { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Component color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Whether the component is in loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool Loading { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Text displayed while loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Preset skeleton loader type.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public VuetifySkeletonLoaderTypeSetting? Type { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Additional unmatched HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -112,5 +126,6 @@ public sealed class VSkeletonLoader : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

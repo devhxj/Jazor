@@ -30,7 +30,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "requiredName = null", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "RequiredName = null", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("default", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);
     }
@@ -116,12 +116,12 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "function* moduleValues(start)", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "async function* asyncModuleValues(start)", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "function doesNotLeakNestedIterator()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "function* ModuleValues(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "async function* AsyncModuleValues(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "function DoesNotLeakNestedIterator()", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("function* doesNotLeakNestedIterator()", StringComparison.Ordinal), scenarioId);
-        StringAssert.Contains(script, "*values(start)", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "async *asyncValues(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "*Values(start)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "async *AsyncValues(start)", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -142,30 +142,30 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import {
                   Stream,
-                  asyncModuleValues,
-                  doesNotLeakNestedIterator,
-                  moduleValues
+                  AsyncModuleValues,
+                  DoesNotLeakNestedIterator,
+                  ModuleValues
                 } from "./iterators.mjs";
 
-                async function collectAsync(values) {
+                async function collectAsync(Values) {
                   const result = [];
-                  for await (const value of values)
+                  for await (const value of Values)
                     result.push(value);
                   return result;
                 }
 
                 Deno.test("generated iterator methods retain JavaScript generator protocols", async () => {
                   const stream = new Stream();
-                  const syncValues = Array.from(moduleValues(3));
-                  const memberValues = Array.from(stream.values(5));
-                  const asyncValues = await collectAsync(asyncModuleValues(7));
-                  const asyncMemberValues = await collectAsync(stream.asyncValues(9));
+                  const syncValues = Array.from(ModuleValues(3));
+                  const memberValues = Array.from(stream.Values(5));
+                  const AsyncValues = await collectAsync(AsyncModuleValues(7));
+                  const asyncMemberValues = await collectAsync(stream.AsyncValues(9));
 
                   if (syncValues.join(",") !== "3,4" || memberValues.join(",") !== "5,6")
                     throw new Error("synchronous iterator result did not preserve yield order");
-                  if (asyncValues.join(",") !== "7,8" || asyncMemberValues.join(",") !== "9,10")
+                  if (AsyncValues.join(",") !== "7,8" || asyncMemberValues.join(",") !== "9,10")
                     throw new Error("asynchronous iterator result did not preserve yield order");
-                  if (doesNotLeakNestedIterator() !== 7)
+                  if (DoesNotLeakNestedIterator() !== 7)
                     throw new Error("nested iterator incorrectly changed its containing method into a generator");
                 });
                 """,
@@ -208,8 +208,8 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var declaration = converter.ConvertRuntimeClass(fixture.GetType("Counter"));
         var script = declaration.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "get value()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "set value(value)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "get Value()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "set Value(value)", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "this.#", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseScript(script);
 
@@ -233,8 +233,8 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("field-backed accessor stores and reads its assigned value", () => {
                   const counter = new Counter();
-                  counter.value = 42;
-                  if (counter.value !== 42)
+                  counter.Value = 42;
+                  if (counter.Value !== 42)
                     throw new Error("field-backed property did not preserve the assigned value");
                 });
                 """,
@@ -394,8 +394,8 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("explicit base initializer selects the Roslyn-bound overload", () => {
                   const derived = new Derived(4);
-                  if (derived.value !== 15)
-                    throw new Error(`expected the int base constructor and derived body to produce 15, got ${derived.value}`);
+                  if (derived.Value !== 15)
+                    throw new Error(`expected the int base constructor and derived body to produce 15, got ${derived.Value}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -447,7 +447,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "getValues()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "GetValues()", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, ".length - 1", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
@@ -471,9 +471,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("compound from-end array mutation evaluates the receiver once", () => {
                   const measurement = new Measurement();
-                  const result = measurement.increaseLast(5);
-                  if (result !== 109 || measurement.reads !== 1 || measurement.values[1] !== 9)
-                    throw new Error(`expected one receiver call and [3, 9], got result=${result}, reads=${measurement.reads}, values=${measurement.values}`);
+                  const result = measurement.IncreaseLast(5);
+                  if (result !== 109 || measurement.Reads !== 1 || measurement.Values[1] !== 9)
+                    throw new Error(`expected one receiver call and [3, 9], got result=${result}, reads=${measurement.Reads}, values=${measurement.Values}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -569,9 +569,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("using declarations release resources in reverse acquisition order", () => {
                   const recorder = new Recorder();
-                  recorder.run();
-                  if (recorder.trace !== "body:second:first:")
-                    throw new Error(`expected body then reverse disposal, got ${recorder.trace}`);
+                  recorder.Run();
+                  if (recorder.Trace !== "body:second:first:")
+                    throw new Error(`expected body then reverse disposal, got ${recorder.Trace}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -646,8 +646,8 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "await second.disposeAsync()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "await first.disposeAsync()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "await second.DisposeAsync()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "await first.DisposeAsync()", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -670,13 +670,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("await using waits for reverse-order asynchronous disposal", async () => {
                   const recorder = new Recorder();
-                  const run = recorder.runAsync();
-                  if (recorder.trace !== "body:second:start:")
-                    throw new Error(`expected the second disposer to suspend RunAsync, got ${recorder.trace}`);
+                  const run = recorder.RunAsync();
+                  if (recorder.Trace !== "body:second:start:")
+                    throw new Error(`expected the second disposer to suspend RunAsync, got ${recorder.Trace}`);
 
                   await run;
-                  if (recorder.trace !== "body:second:start:second:done:first:start:first:done:")
-                    throw new Error(`expected awaited reverse disposal, got ${recorder.trace}`);
+                  if (recorder.Trace !== "body:second:start:second:done:first:start:first:done:")
+                    throw new Error(`expected awaited reverse disposal, got ${recorder.Trace}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -793,24 +793,24 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("using expression caches its resource and disposes it across control-flow exits", () => {
                   const returning = new Recorder();
-                  const returned = returning.returnThroughUsing();
+                  const returned = returning.ReturnThroughUsing();
                   if (returned !== "open:return|body:return|" ||
-                      returning.trace !== "open:return|body:return|dispose:return|" ||
-                      returning.factoryCalls !== 1) {
-                    throw new Error(`unexpected return trace: returned=${returned}, trace=${returning.trace}, calls=${returning.factoryCalls}`);
+                      returning.Trace !== "open:return|body:return|dispose:return|" ||
+                      returning.FactoryCalls !== 1) {
+                    throw new Error(`unexpected return trace: returned=${returned}, trace=${returning.Trace}, calls=${returning.FactoryCalls}`);
                   }
 
                   const throwing = new Recorder();
                   let observedFailure = false;
                   try {
-                    throwing.throwThroughUsing();
+                    throwing.ThrowThroughUsing();
                   } catch {
                     observedFailure = true;
                   }
                   if (!observedFailure ||
-                      throwing.trace !== "open:throw|body:throw|dispose:throw|" ||
-                      throwing.factoryCalls !== 1) {
-                    throw new Error(`unexpected throw trace: observed=${observedFailure}, trace=${throwing.trace}, calls=${throwing.factoryCalls}`);
+                      throwing.Trace !== "open:throw|body:throw|dispose:throw|" ||
+                      throwing.FactoryCalls !== 1) {
+                    throw new Error(`unexpected throw trace: observed=${observedFailure}, trace=${throwing.Trace}, calls=${throwing.FactoryCalls}`);
                   }
                 });
                 """,
@@ -895,13 +895,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("erased interface pattern keeps C# null semantics and evaluates its source once", () => {
                   const matcher = new Matcher();
-                  matcher.setNext(null);
-                  if (matcher.hasTag() || matcher.probes !== 1)
-                    throw new Error(`expected a null result after one probe, got result=${matcher.hasTag()}, probes=${matcher.probes}`);
+                  matcher.SetNext(null);
+                  if (matcher.HasTag() || matcher.Probes !== 1)
+                    throw new Error(`expected a null result after one probe, got result=${matcher.HasTag()}, probes=${matcher.Probes}`);
 
-                  matcher.setNext("tag");
-                  if (!matcher.hasTag() || matcher.probes !== 2)
-                    throw new Error(`expected a tagged result after two probes, got result=${matcher.hasTag()}, probes=${matcher.probes}`);
+                  matcher.SetNext("tag");
+                  if (!matcher.HasTag() || matcher.Probes !== 2)
+                    throw new Error(`expected a tagged result after two probes, got result=${matcher.HasTag()}, probes=${matcher.Probes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -996,14 +996,14 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   ];
 
                   for (const [value, expected] of cases) {
-                    matcher.setNext(value);
-                    const result = matcher.describe();
+                    matcher.SetNext(value);
+                    const result = matcher.Describe();
                     if (result !== expected)
                       throw new Error(`expected ${expected}, got ${result}`);
                   }
 
-                  if (matcher.probes !== cases.length)
-                    throw new Error(`expected ${cases.length} discriminant probes, got ${matcher.probes}`);
+                  if (matcher.Probes !== cases.length)
+                    throw new Error(`expected ${cases.length} discriminant probes, got ${matcher.Probes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -1104,7 +1104,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
         Assert.IsNotNull(script, scenarioId);
         StringAssert.Contains(script, ".length", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, ".slice(1, ", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, ".Slice(1, ", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, getterHelper + "(", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, setterHelper + "(", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("get this[]", StringComparison.Ordinal), script);
@@ -1139,17 +1139,17 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   ];
 
                   for (const [values, expected] of cases) {
-                    const actual = matcher.describe(new Segment(values));
+                    const actual = matcher.Describe(new Segment(values));
                     if (actual !== expected)
                       throw new Error(`expected ${expected}, got ${actual} for ${values}`);
                   }
 
                   const writable = new Segment([1, 2, 3]);
-                  const updated = matcher.mutate(writable);
+                  const updated = matcher.Mutate(writable);
                   if (updated !== 6)
                     throw new Error(`expected indexer mutation to return 6, got ${updated}`);
 
-                  const lastUpdated = matcher.mutateLast(writable);
+                  const lastUpdated = matcher.MutateLast(writable);
                   if (lastUpdated !== 105)
                     throw new Error(`expected one receiver read and a final value of 5, got result=${lastUpdated}`);
                 });
@@ -1253,7 +1253,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("overloaded C# indexers remain symbol-bound", () => {
                   const consumer = new Consumer();
-                  const actual = consumer.writeAndRead(new KeyedValues());
+                  const actual = consumer.WriteAndRead(new KeyedValues());
                   if (actual !== 18)
                     throw new Error(`expected 18, got ${actual}`);
                 });
@@ -1362,11 +1362,11 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("loop lowering retains C# continue, break, foreach, and do-while behavior", () => {
                   const processor = new BatchProcessor();
-                  if (processor.sumOddUntil(7) !== 9)
-                    throw new Error(`expected odd total 9, got ${processor.sumOddUntil(7)}`);
-                  if (processor.countDown(0) !== 1 || processor.countDown(3) !== 3)
+                  if (processor.SumOddUntil(7) !== 9)
+                    throw new Error(`expected odd total 9, got ${processor.SumOddUntil(7)}`);
+                  if (processor.CountDown(0) !== 1 || processor.CountDown(3) !== 3)
                     throw new Error("do-while did not execute exactly once for zero and once per positive input");
-                  if (processor.sumUntil([-1, 4, 7, 9], 10) !== 11)
+                  if (processor.SumUntil([-1, 4, 7, 9], 10) !== 11)
                     throw new Error("foreach did not skip negative values and stop after reaching the limit");
                 });
                 """,
@@ -1473,9 +1473,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("closures over a C# for control variable observe its final value", () => {
                   const reader = new CallbackReader();
-                  const lambda = reader.readCapturedValues();
-                  const localFunction = reader.readCapturedLocalFunctionValues();
-                  const multipleControls = reader.readCapturedMultipleControlValues();
+                  const lambda = reader.ReadCapturedValues();
+                  const localFunction = reader.ReadCapturedLocalFunctionValues();
+                  const multipleControls = reader.ReadCapturedMultipleControlValues();
                   if (lambda !== 22 || localFunction !== 22 || multipleControls !== 14)
                     throw new Error(`expected callbacks to observe final control values, got lambda=${lambda}, localFunction=${localFunction}, multipleControls=${multipleControls}`);
                 });
@@ -1537,7 +1537,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "item++, await this.tickAsync(item)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "item++, await this.TickAsync(item)", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "await Promise.resolve()", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
@@ -1561,14 +1561,14 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("for update increments before the awaited progress tick", async () => {
                   const recorder = new ProgressRecorder();
-                  const run = recorder.runAsync();
-                  if (recorder.trace !== "body:0:tick:1:start:")
-                    throw new Error(`expected body item 0 then suspended tick 1, got ${recorder.trace}`);
+                  const run = recorder.RunAsync();
+                  if (recorder.Trace !== "body:0:tick:1:start:")
+                    throw new Error(`expected body item 0 then suspended tick 1, got ${recorder.Trace}`);
 
                   await run;
                   const expected = "body:0:tick:1:start:tick:1:end:body:1:tick:2:start:tick:2:end:done:";
-                  if (recorder.trace !== expected)
-                    throw new Error(`expected increment/await update order ${expected}, got ${recorder.trace}`);
+                  if (recorder.Trace !== expected)
+                    throw new Error(`expected increment/await update order ${expected}, got ${recorder.Trace}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -1656,19 +1656,19 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("conditional array index and range access short-circuit and evaluate their receiver once", () => {
                   const reader = new SnapshotReader();
-                  reader.setCurrent(null);
-                  const missingLast = reader.readLast();
-                  const missingInterior = reader.readInterior();
+                  reader.SetCurrent(null);
+                  const missingLast = reader.ReadLast();
+                  const missingInterior = reader.ReadInterior();
                   if (missingLast != null || missingInterior != null)
                     throw new Error("conditional access did not preserve the nullable result");
 
-                  reader.setCurrent([3, 5, 8]);
-                  const last = reader.readLast();
-                  const interior = reader.readInterior();
+                  reader.SetCurrent([3, 5, 8]);
+                  const last = reader.ReadLast();
+                  const interior = reader.ReadInterior();
                   if (last !== 8 || interior.length !== 1 || interior[0] !== 5)
                     throw new Error(`expected last=8 and interior=[5], got last=${last}, interior=${interior}`);
-                  if (reader.probes !== 4)
-                    throw new Error(`expected four receiver probes, got ${reader.probes}`);
+                  if (reader.Probes !== 4)
+                    throw new Error(`expected four receiver probes, got ${reader.Probes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -1726,7 +1726,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "return this.probe() ?? 0;", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "return this.Probe() ?? 0;", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -1750,17 +1750,17 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 Deno.test("Nullable GetValueOrDefault preserves a single nullable receiver evaluation", () => {
                   const reader = new DefaultReader();
 
-                  reader.setNext(null);
-                  if (reader.read() !== 0 || reader.probes !== 1)
-                    throw new Error(`expected null to produce 0 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+                  reader.SetNext(null);
+                  if (reader.Read() !== 0 || reader.Probes !== 1)
+                    throw new Error(`expected null to produce 0 after one probe, got value=${reader.Read()} probes=${reader.Probes}`);
 
-                  reader.setNext(undefined);
-                  if (reader.read() !== 0 || reader.probes !== 2)
-                    throw new Error(`expected undefined to produce 0 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+                  reader.SetNext(undefined);
+                  if (reader.Read() !== 0 || reader.Probes !== 2)
+                    throw new Error(`expected undefined to produce 0 after one probe, got value=${reader.Read()} probes=${reader.Probes}`);
 
-                  reader.setNext(23);
-                  if (reader.read() !== 23 || reader.probes !== 3)
-                    throw new Error(`expected 23 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+                  reader.SetNext(23);
+                  if (reader.Read() !== 23 || reader.Probes !== 3)
+                    throw new Error(`expected 23 after one probe, got value=${reader.Read()} probes=${reader.Probes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -1828,7 +1828,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
         Assert.IsNotNull(script, scenarioId);
         StringAssert.Contains(script, "(nullable, defaultValue) => nullable ?? defaultValue", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "(this.probe(), this.fallback())", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "(this.Probe(), this.Fallback())", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -1852,17 +1852,17 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 Deno.test("Nullable GetValueOrDefault(defaultValue) evaluates receiver then fallback exactly once", () => {
                   const reader = new DefaultReader();
 
-                  reader.setNext(23);
-                  if (reader.read() !== 23 || reader.receiverProbes !== 1 || reader.defaultProbes !== 1)
-                    throw new Error(`expected populated carrier to keep 23 while eagerly probing fallback, got receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+                  reader.SetNext(23);
+                  if (reader.Read() !== 23 || reader.ReceiverProbes !== 1 || reader.DefaultProbes !== 1)
+                    throw new Error(`expected populated carrier to keep 23 while eagerly probing fallback, got receiver=${reader.ReceiverProbes} fallback=${reader.DefaultProbes}`);
 
-                  reader.setNext(null);
-                  if (reader.read() !== 202 || reader.receiverProbes !== 2 || reader.defaultProbes !== 2)
-                    throw new Error(`expected null carrier fallback 202 after receiver-first evaluation, got value=${reader.read()} receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+                  reader.SetNext(null);
+                  if (reader.Read() !== 202 || reader.ReceiverProbes !== 2 || reader.DefaultProbes !== 2)
+                    throw new Error(`expected null carrier fallback 202 after receiver-first evaluation, got value=${reader.Read()} receiver=${reader.ReceiverProbes} fallback=${reader.DefaultProbes}`);
 
-                  reader.setNext(undefined);
-                  if (reader.read() !== 303 || reader.receiverProbes !== 3 || reader.defaultProbes !== 3)
-                    throw new Error(`expected undefined carrier fallback 303 after receiver-first evaluation, got value=${reader.read()} receiver=${reader.receiverProbes} fallback=${reader.defaultProbes}`);
+                  reader.SetNext(undefined);
+                  if (reader.Read() !== 303 || reader.ReceiverProbes !== 3 || reader.DefaultProbes !== 3)
+                    throw new Error(`expected undefined carrier fallback 303 after receiver-first evaluation, got value=${reader.Read()} receiver=${reader.ReceiverProbes} fallback=${reader.DefaultProbes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -1920,7 +1920,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "return this.probe() ??", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "return this.Probe() ??", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(
             script,
             "InvalidOperationException: Nullable object must have a value.",
@@ -1950,29 +1950,29 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   const reader = new RequiredReader();
                   const expectedError = "InvalidOperationException: Nullable object must have a value.";
 
-                  reader.setNext(23);
-                  if (reader.read() !== 23 || reader.probes !== 1)
-                    throw new Error(`expected populated nullable to return 23 after one probe, got value=${reader.read()} probes=${reader.probes}`);
+                  reader.SetNext(23);
+                  if (reader.Read() !== 23 || reader.Probes !== 1)
+                    throw new Error(`expected populated nullable to return 23 after one probe, got value=${reader.Read()} probes=${reader.Probes}`);
 
-                  reader.setNext(null);
+                  reader.SetNext(null);
                   let nullMessage = "";
                   try {
-                    reader.read();
+                    reader.Read();
                   } catch (error) {
                     nullMessage = error.message;
                   }
-                  if (nullMessage !== expectedError || reader.probes !== 2)
-                    throw new Error(`expected null to fail after one probe, got message=${nullMessage} probes=${reader.probes}`);
+                  if (nullMessage !== expectedError || reader.Probes !== 2)
+                    throw new Error(`expected null to fail after one probe, got message=${nullMessage} probes=${reader.Probes}`);
 
-                  reader.setNext(undefined);
+                  reader.SetNext(undefined);
                   let undefinedMessage = "";
                   try {
-                    reader.read();
+                    reader.Read();
                   } catch (error) {
                     undefinedMessage = error.message;
                   }
-                  if (undefinedMessage !== expectedError || reader.probes !== 3)
-                    throw new Error(`expected undefined to fail after one probe, got message=${undefinedMessage} probes=${reader.probes}`);
+                  if (undefinedMessage !== expectedError || reader.Probes !== 3)
+                    throw new Error(`expected undefined to fail after one probe, got message=${undefinedMessage} probes=${reader.Probes}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -2081,11 +2081,11 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("instance-capturing local function remains bound after callback detaches", () => {
                   const counter = new Counter();
-                  const increment = counter.createIncrementer();
+                  const increment = counter.CreateIncrementer();
                   const first = increment();
                   const second = increment();
-                  if (first !== 1 || second !== 2 || counter.value !== 2)
-                    throw new Error(`expected detached callback results 1, 2 and counter value 2; got ${first}, ${second}, ${counter.value}`);
+                  if (first !== 1 || second !== 2 || counter.Value !== 2)
+                    throw new Error(`expected detached callback results 1, 2 and counter value 2; got ${first}, ${second}, ${counter.Value}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -2172,11 +2172,11 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("method-group receiver is evaluated once and remains bound after callback detaches", () => {
                   const factory = new CounterFactory();
-                  const increment = factory.createIncrementer();
-                  const first = increment();
-                  const second = increment();
-                  if (factory.reads !== 1 || first !== 1 || second !== 2 || factory.value !== 2)
-                    throw new Error(`expected one receiver read and detached results 1, 2; got reads=${factory.reads}, results=${first},${second}, value=${factory.value}`);
+                  const Increment = factory.CreateIncrementer();
+                  const first = Increment();
+                  const second = Increment();
+                  if (factory.Reads !== 1 || first !== 1 || second !== 2 || factory.Value !== 2)
+                    throw new Error(`expected one receiver read and detached results 1, 2; got reads=${factory.Reads}, results=${first},${second}, value=${factory.Value}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -2235,7 +2235,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "for (let { name: name, metric: {", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "for (let { Name: name, Metric: {", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -2258,7 +2258,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("nested record foreach binding retains the selected nested property", () => {
                   const queue = new ReleaseQueue();
-                  const total = queue.sumReadyPending();
+                  const total = queue.SumReadyPending();
                   if (total !== 5)
                     throw new Error(`expected ready pending total 5, got ${total}`);
                 });
@@ -2308,14 +2308,14 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "isReady = false", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "marker = \"\\0\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "fraction = 0", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "total = 0n", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "huge = 0n", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "label = null", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "retry = null", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "state = { count: 0, enabled: false }", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "IsReady = false", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Marker = \"\\0\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Fraction = 0", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Total = 0n", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Huge = 0n", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Label = null", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Retry = null", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "State = { Count: 0, Enabled: false }", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -2338,9 +2338,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("implicit member fields use C# defaults instead of undefined", () => {
                   const value = new Defaults();
-                  if (value.isReady !== false || value.marker !== "\0" || value.fraction !== 0 || value.total !== 0n || value.huge !== 0n || value.label !== null || value.retry !== null)
+                  if (value.IsReady !== false || value.Marker !== "\0" || value.Fraction !== 0 || value.Total !== 0n || value.Huge !== 0n || value.Label !== null || value.Retry !== null)
                     throw new Error("scalar C# member defaults were not preserved");
-                  if (value.state.count !== 0 || value.state.enabled !== false)
+                  if (value.State.Count !== 0 || value.State.Enabled !== false)
                     throw new Error("tuple C# member defaults were not preserved");
                 });
                 """,
@@ -2393,12 +2393,12 @@ public sealed class AstConverterRuntimeClassScenarioTests
         StringAssert.Contains(script, "from \"System/TimeOnlyModule.js\"", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "from \"System/TimeSpanModule.js\"", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "from \"System/GuidModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "createdAt = _bfa8ee5dd46e2005()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "publishedAt = _12b4f3f1dc14bea9()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "dueDate = _5f8053a9657a0844()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "startTime = _9f78f92d0753f4cf()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "duration = _5af0f6ad850e6702()", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "id = _0e58e51018e846d2()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "CreatedAt = _bfa8ee5dd46e2005()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "PublishedAt = _12b4f3f1dc14bea9()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "DueDate = _5f8053a9657a0844()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "StartTime = _9f78f92d0753f4cf()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Duration = _5af0f6ad850e6702()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Id = _0e58e51018e846d2()", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
     }
 
@@ -2428,7 +2428,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
         Assert.IsNotNull(script, scenarioId);
         StringAssert.Contains(script, "class Dashboard", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "currentSession = null", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "CurrentSession = null", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("import ", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);
     }
@@ -2457,7 +2457,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "route = null", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Route = null", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("RouteLocationRaw", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);
     }
@@ -2624,7 +2624,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var declaration = converter.ConvertRuntimeClass(fixture.GetType("Widget"));
         var script = declaration.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "constructor(value) {\n    this.value = value;\n  }", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "constructor(value) {\n    this.Value = value;\n  }", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseScript(script);
     }
 
@@ -2759,7 +2759,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
             await File.WriteAllTextAsync(
                 testPath,
                 """
-                import { Emitter, subscribe, unsubscribe } from "./events.mjs";
+                import { Emitter, Subscribe, Unsubscribe } from "./events.mjs";
 
                 function assert(condition, message) {
                   if (!condition)
@@ -2768,58 +2768,58 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("field-like events retain multicast and snapshot semantics", () => {
                   const empty = new Emitter();
-                  assert(!empty.hasHandlers(), "new event should compare equal to null");
-                  assert(empty.isEmptyByEquality(), "binary event null comparison did not preserve empty state");
-                  assert(!empty.isNonEmptyByInequality(), "binary event inequality did not preserve empty state");
-                  assert(empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not preserve empty state");
-                  assert(empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not preserve empty state");
-                  empty.raise(1);
-                  assert(empty.argumentReads === 0, "conditional raise evaluated arguments without subscribers");
+                  assert(!empty.HasHandlers(), "new event should compare equal to null");
+                  assert(empty.IsEmptyByEquality(), "binary event null comparison did not preserve empty state");
+                  assert(!empty.IsNonEmptyByInequality(), "binary event inequality did not preserve empty state");
+                  assert(empty.IsEmptyByReversedEquality(), "reversed binary event null comparison did not preserve empty state");
+                  assert(empty.IsEmptyByConvertedEquality(), "converted binary event null comparison did not preserve empty state");
+                  empty.Raise(1);
+                  assert(empty.ArgumentReads === 0, "conditional raise evaluated arguments without subscribers");
 
-                  assert(empty.readValue() == null, "empty value-returning event should preserve conditional missing value");
-                  empty.subscribeValue(() => 2);
-                  empty.subscribeValue(() => 7);
-                  assert(empty.readValue() === 7, "value-returning event did not return the final handler result");
+                  assert(empty.ReadValue() == null, "empty value-returning event should preserve conditional missing value");
+                  empty.SubscribeValue(() => 2);
+                  empty.SubscribeValue(() => 7);
+                  assert(empty.ReadValue() === 7, "value-returning event did not return the final handler result");
 
                   const receiverHandler = () => {};
-                  empty.subscribeThroughEventReceiver(receiverHandler);
-                  assert(empty.eventReceiverReads === 1, "event receiver was not evaluated exactly once during subscription");
-                  empty.unsubscribeThroughEventReceiver(receiverHandler);
-                  assert(empty.eventReceiverReads === 2, "event receiver was not evaluated exactly once during removal");
+                  empty.SubscribeThroughEventReceiver(receiverHandler);
+                  assert(empty.EventReceiverReads === 1, "event receiver was not evaluated exactly once during subscription");
+                  empty.UnsubscribeThroughEventReceiver(receiverHandler);
+                  assert(empty.EventReceiverReads === 2, "event receiver was not evaluated exactly once during removal");
 
-                  empty.subscribeOwn();
-                  empty.subscribeOwn();
-                  assert(empty.handlerReceiverReads === 2, "method-group receiver was not evaluated exactly once per subscription");
-                  assert(empty.hasHandlers(), "subscribed event should compare non-null");
-                  assert(!empty.isEmptyByEquality(), "binary event null comparison did not preserve non-empty state");
-                  assert(empty.isNonEmptyByInequality(), "binary event inequality did not preserve non-empty state");
-                  assert(!empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not preserve non-empty state");
-                  assert(!empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not preserve non-empty state");
-                  empty.raise(3);
-                  assert(empty.trace === "own:3;own:3;", "duplicate subscriptions did not retain order");
+                  empty.SubscribeOwn();
+                  empty.SubscribeOwn();
+                  assert(empty.HandlerReceiverReads === 2, "method-group receiver was not evaluated exactly once per subscription");
+                  assert(empty.HasHandlers(), "subscribed event should compare non-null");
+                  assert(!empty.IsEmptyByEquality(), "binary event null comparison did not preserve non-empty state");
+                  assert(empty.IsNonEmptyByInequality(), "binary event inequality did not preserve non-empty state");
+                  assert(!empty.IsEmptyByReversedEquality(), "reversed binary event null comparison did not preserve non-empty state");
+                  assert(!empty.IsEmptyByConvertedEquality(), "converted binary event null comparison did not preserve non-empty state");
+                  empty.Raise(3);
+                  assert(empty.Trace === "own:3;own:3;", "duplicate subscriptions did not retain order");
 
-                  empty.unsubscribeOwn();
-                  assert(empty.handlerReceiverReads === 3, "method-group receiver was not evaluated exactly once during removal");
-                  empty.raise(4);
-                  assert(empty.trace === "own:3;own:3;own:4;", "removal did not remove the last matching method group");
+                  empty.UnsubscribeOwn();
+                  assert(empty.HandlerReceiverReads === 3, "method-group receiver was not evaluated exactly once during removal");
+                  empty.Raise(4);
+                  assert(empty.Trace === "own:3;own:3;own:4;", "removal did not remove the last matching method group");
 
-                  empty.unsubscribeOwn();
-                  const readsBeforeEmptyRaise = empty.argumentReads;
-                  empty.raise(5);
-                  assert(empty.argumentReads === readsBeforeEmptyRaise, "last removal did not restore conditional argument short-circuiting");
-                  assert(!empty.hasHandlers(), "event should compare null after its final subscriber is removed");
-                  assert(empty.isEmptyByEquality(), "binary event null comparison did not restore empty state");
-                  assert(!empty.isNonEmptyByInequality(), "binary event inequality did not restore empty state");
-                  assert(empty.isEmptyByReversedEquality(), "reversed binary event null comparison did not restore empty state");
-                  assert(empty.isEmptyByConvertedEquality(), "converted binary event null comparison did not restore empty state");
+                  empty.UnsubscribeOwn();
+                  const readsBeforeEmptyRaise = empty.ArgumentReads;
+                  empty.Raise(5);
+                  assert(empty.ArgumentReads === readsBeforeEmptyRaise, "last removal did not restore conditional argument short-circuiting");
+                  assert(!empty.HasHandlers(), "event should compare null after its final subscriber is removed");
+                  assert(empty.IsEmptyByEquality(), "binary event null comparison did not restore empty state");
+                  assert(!empty.IsNonEmptyByInequality(), "binary event inequality did not restore empty state");
+                  assert(empty.IsEmptyByReversedEquality(), "reversed binary event null comparison did not restore empty state");
+                  assert(empty.IsEmptyByConvertedEquality(), "converted binary event null comparison did not restore empty state");
 
                   const duplicate = new Emitter();
                   const duplicateTrace = [];
                   const duplicateHandler = value => duplicateTrace.push(value);
-                  subscribe(duplicate, duplicateHandler);
-                  subscribe(duplicate, duplicateHandler);
-                  unsubscribe(duplicate, duplicateHandler);
-                  duplicate.raise(6);
+                  Subscribe(duplicate, duplicateHandler);
+                  Subscribe(duplicate, duplicateHandler);
+                  Unsubscribe(duplicate, duplicateHandler);
+                  duplicate.Raise(6);
                   assert(duplicateTrace.join(",") === "6", "delegate-variable removal did not remove only the last matching subscription");
 
                   const mutating = new Emitter();
@@ -2827,13 +2827,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   const second = value => order.push(`second:${value}`);
                   const first = value => {
                     order.push(`first:${value}`);
-                    unsubscribe(mutating, second);
+                    Unsubscribe(mutating, second);
                   };
-                  subscribe(mutating, first);
-                  subscribe(mutating, second);
-                  mutating.raise(8);
+                  Subscribe(mutating, first);
+                  Subscribe(mutating, second);
+                  mutating.Raise(8);
                   assert(order.join(",") === "first:8,second:8", "subscription mutation changed the active invocation snapshot");
-                  mutating.raise(9);
+                  mutating.Raise(9);
                   assert(order.join(",") === "first:8,second:8,first:9", "removal was not visible to the next invocation snapshot");
                 });
                 """,
@@ -3055,7 +3055,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "recordStatic", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "RecordStatic", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "RecordLocal", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);
@@ -3080,9 +3080,9 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("capturing local event handlers retain their receiver and removal identity", () => {
                   const emitter = new Emitter();
-                  emitter.exerciseCapturedLocal();
-                  if (emitter.trace !== "3;")
-                    throw new Error(`capturing local event handler trace was ${emitter.trace}`);
+                  emitter.ExerciseCapturedLocal();
+                  if (emitter.Trace !== "3;")
+                    throw new Error(`capturing local event handler trace was ${emitter.Trace}`);
                 });
                 """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -3136,7 +3136,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "super.record", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "super.Record", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -3159,13 +3159,13 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
                 Deno.test("base method groups preserve their original receiver", () => {
                   const emitter = new DerivedEmitter();
-                  emitter.subscribeBase();
-                  emitter.raise(7);
-                  if (emitter.trace !== "7;")
+                  emitter.SubscribeBase();
+                  emitter.Raise(7);
+                  if (emitter.Trace !== "7;")
                     throw new Error("base method group did not run against the derived instance");
-                  emitter.unsubscribeBase();
-                  emitter.raise(8);
-                  if (emitter.trace !== "7;")
+                  emitter.UnsubscribeBase();
+                  emitter.Raise(8);
+                  if (emitter.Trace !== "7;")
                     throw new Error("base method group removal did not use the same receiver identity");
                 });
                 """,
@@ -3293,7 +3293,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var declaration = converter.ConvertRuntimeClass(fixture.GetType("Widget"));
         var script = declaration.ToKnRECMAScript();
 
-        StringAssert.Contains(script, "keep()", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Keep()", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("skip()", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseScript(script);
     }
@@ -3385,8 +3385,8 @@ public sealed class AstConverterRuntimeClassScenarioTests
                     ["present", false, true]
                   ];
 
-                  for (const [value, missing, hasValue] of cases) {
-                    if (matcher.isMissing(value) !== missing || matcher.hasValue(value) !== hasValue)
+                  for (const [value, missing, HasValue] of cases) {
+                    if (matcher.IsMissing(value) !== missing || matcher.HasValue(value) !== HasValue)
                       throw new Error(`unexpected null-pattern result for ${String(value)}`);
                   }
                 });
@@ -3469,7 +3469,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                     ["deployed", 9],
                     ["paused", 0]
                   ]);
-                  const total = queue.sumDeployable(stages);
+                  const total = queue.SumDeployable(stages);
                   if (total !== 2)
                     throw new Error(`expected only the queued Map entry, got ${total}`);
                 });

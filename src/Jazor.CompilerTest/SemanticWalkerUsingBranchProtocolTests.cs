@@ -95,7 +95,7 @@ public sealed class SemanticWalkerUsingBranchProtocolTests
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "left = 1, right = 2;", StringComparison.Ordinal);
         StringAssert.Contains(script, "console.log(left + right);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "resource.dispose();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "resource.Dispose();", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 

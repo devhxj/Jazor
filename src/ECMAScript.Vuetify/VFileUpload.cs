@@ -14,6 +14,7 @@ public sealed class VFileUpload : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VFileUpload : ComponentBase
     /// HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VFileUpload : ComponentBase
     /// Border radius style of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VFileUpload : ComponentBase
     /// Position of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VFileUpload : ComponentBase
     /// Location alignment of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VFileUpload : ComponentBase
     /// Elevation shadow level of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VFileUpload : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VFileUpload : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VFileUpload : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VFileUpload : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VFileUpload : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VFileUpload : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VFileUpload : ComponentBase
     /// Border style of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VFileUpload : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VFileUpload : ComponentBase
     /// Length of the progress indicator or border.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VFileUpload : ComponentBase
     /// Opacity of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VFileUpload : ComponentBase
     /// Thickness of the border or divider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thickness")]
     public VueStringNumberValue? Thickness { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VFileUpload : ComponentBase
     /// Density of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VFileUpload : ComponentBase
     /// Close delay in milliseconds.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VFileUpload : ComponentBase
     /// Open delay in milliseconds.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VFileUpload : ComponentBase
     /// Text for the browse button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("browseText")]
     public string? BrowseText { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VFileUpload : ComponentBase
     /// Text for the divider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dividerText")]
     public string? DividerText { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VFileUpload : ComponentBase
     /// Title text of the upload area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VFileUpload : ComponentBase
     /// Subtitle text of the upload area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public string? Subtitle { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VFileUpload : ComponentBase
     /// Icon displayed in the upload area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VFileUpload : ComponentBase
     /// Bound value of the file upload.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyFileModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VFileUpload : ComponentBase
     /// Callback when the file upload value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<File[]?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether the upload is clearable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool Clearable { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether the file upload is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether to hide the browse button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideBrowse")]
     public bool HideBrowse { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether to allow selecting multiple files.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VFileUpload : ComponentBase
     /// Scrim style of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VFileUpload : ComponentBase
     /// Whether to show file sizes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showSize")]
     public bool ShowSize { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VFileUpload : ComponentBase
     /// Name attribute of the file input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VFileUpload : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for the browse button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("browse")]
     public RenderFragment<VFileUploadBrowseSlotContext>? Browse { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VFileUpload : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -280,6 +318,7 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for the icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
     /// <summary>
@@ -287,6 +326,7 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("input")]
     public RenderFragment<VFileUploadInputSlotContext>? InputContent { get; set; }
 
     /// <summary>
@@ -294,6 +334,7 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for each file item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment<VFileUploadItemSlotContext>? ItemContent { get; set; }
 
     /// <summary>
@@ -301,6 +342,7 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for the title.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -308,5 +350,6 @@ public sealed class VFileUpload : ComponentBase
     /// Slot content for the divider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divider")]
     public RenderFragment? DividerContent { get; set; }
 }

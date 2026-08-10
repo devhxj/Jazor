@@ -15,6 +15,7 @@ public sealed class VToolbarTitle : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class VToolbarTitle : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -45,6 +47,7 @@ public sealed class VToolbarTitle : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -52,6 +55,7 @@ public sealed class VToolbarTitle : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -59,5 +63,6 @@ public sealed class VToolbarTitle : ComponentBase
     /// Text content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 }

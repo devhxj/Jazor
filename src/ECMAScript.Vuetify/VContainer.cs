@@ -15,6 +15,7 @@ public sealed class VContainer : ComponentBase
     /// The HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VContainer : ComponentBase
     /// The height of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VContainer : ComponentBase
     /// The maximum height of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VContainer : ComponentBase
     /// The maximum width of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VContainer : ComponentBase
     /// The minimum height of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VContainer : ComponentBase
     /// The minimum width of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VContainer : ComponentBase
     /// The width of the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VContainer : ComponentBase
     /// Whether to extend to full width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fluid")]
     public bool Fluid { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VContainer : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -94,5 +103,6 @@ public sealed class VContainer : ComponentBase
     /// Slot for child content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

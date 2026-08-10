@@ -201,7 +201,7 @@ internal static class PatternProtocolCatalog
                         bool matches = buffer is [1, 2, 3, 4];
                 """,
             "buffer != null",
-            "buffer.length === 4",
+            "buffer.Length === 4",
             "buffer[0] === 1",
             "buffer[3] === 4"),
         Success(
@@ -212,7 +212,7 @@ internal static class PatternProtocolCatalog
                         bool matches = buffer is [1, 2, 3];
                 """,
             "buffer != null",
-            "buffer.count === 3",
+            "buffer.Count === 3",
             "buffer[0] === 1",
             "buffer[2] === 3"),
         Success(
@@ -233,12 +233,12 @@ internal static class PatternProtocolCatalog
                         var buffer = new CountBuffer();
                         bool matches = buffer is [1, .., 3];
                 """,
-            "v$0 = buffer.count",
+            "v$0 = buffer.Count",
             "v$0 >= 2",
             "buffer[0] === 1",
             "buffer[v$0 - 1] === 3") with
             {
-                SingleOccurrenceJavaScriptFragments = ["buffer.count"]
+                SingleOccurrenceJavaScriptFragments = ["buffer.Count"]
             },
         Success(
             "length.declaration-bindings",
@@ -251,7 +251,7 @@ internal static class PatternProtocolCatalog
                             Consume(third);
                         }
                 """,
-            "buffer.length === 4",
+            "buffer.Length === 4",
             "(first = buffer[0], true)",
             "buffer[1] === 2",
             "(third = buffer[2], true)",
@@ -262,8 +262,8 @@ internal static class PatternProtocolCatalog
             """
                         bool matches = GetLengthBuffer() is [1, 2, 3, 4];
                 """,
-            "v$0 = PatternProtocolScenarios.getLengthBuffer()",
-            "v$0.length === 4",
+            "v$0 = PatternProtocolScenarios.GetLengthBuffer()",
+            "v$0.Length === 4",
             "v$0[0] === 1",
             "v$0[3] === 4"),
         Success(
@@ -351,10 +351,10 @@ internal static class PatternProtocolCatalog
                         if (buffer is [1, .. var middle, 4])
                             Consume(middle.Length);
                 """,
-            "v$0 = buffer.length",
+            "v$0 = buffer.Length",
             "v$0 >= 2",
             "buffer[0] === 1",
-            "middle = buffer.slice(1, v$0 - 2)",
+            "middle = buffer.Slice(1, v$0 - 2)",
             "buffer[v$0 - 1] === 4"),
         Success(
             "slice.custom-whole-method",
@@ -364,8 +364,8 @@ internal static class PatternProtocolCatalog
                         if (buffer is [.. var all])
                             Consume(all.Length);
                 """,
-            "v$0 = buffer.length",
-            "all = buffer.slice(0, v$0)"),
+            "v$0 = buffer.Length",
+            "all = buffer.Slice(0, v$0)"),
         Success(
             "slice.array-recursive-subpattern",
             "carrier=int[];slice=intrinsic-array;subpattern=recursive-property;binding=none",
@@ -386,11 +386,11 @@ internal static class PatternProtocolCatalog
                         Consume(matches);
                         Consume(holder.Reads);
             """,
-            "v$0 = holder.value",
+            "v$0 = holder.Value",
             "v$0 > 0",
             "v$0 < 10") with
             {
-                SingleOccurrenceJavaScriptFragments = ["holder.value"]
+                SingleOccurrenceJavaScriptFragments = ["holder.Value"]
             },
         Success(
             "recursive.value-type-empty",
@@ -399,10 +399,10 @@ internal static class PatternProtocolCatalog
                         bool matches = GetNumber() is { };
                         Consume(matches);
             """,
-            "PatternProtocolScenarios.getNumber()",
+            "PatternProtocolScenarios.GetNumber()",
             "true") with
             {
-                SingleOccurrenceJavaScriptFragments = ["PatternProtocolScenarios.getNumber()"]
+                SingleOccurrenceJavaScriptFragments = ["PatternProtocolScenarios.GetNumber()"]
             },
         Success(
             "recursive.nullable-value-empty",

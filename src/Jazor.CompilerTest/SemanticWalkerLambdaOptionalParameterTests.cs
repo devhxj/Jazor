@@ -87,10 +87,10 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
             await File.WriteAllTextAsync(
                 testPath,
                 """
-                import { run } from "./optional-lambda.mjs";
+                import { Run } from "./optional-lambda.mjs";
 
                 Deno.test("optional lambda parameters preserve omitted and explicit C# calls", () => {
-                  const result = run();
+                  const result = Run();
                   if (result !== 35)
                     throw new Error(`expected 35, got ${result}`);
                 });

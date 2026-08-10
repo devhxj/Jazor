@@ -376,6 +376,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
 
     private const string SharedComponentSource = """
         #nullable enable
+        using System.ComponentModel;
         using ECMAScript;
         using ECMAScript.VueContract;
         using Microsoft.AspNetCore.Components;
@@ -387,7 +388,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         [ECMAScriptModule("./failure-matrix/child.mjs")]
         public sealed class FailureMatrixChild : ComponentBase, IVueComponent
         {
-            [Parameter] public RenderFragment? ChildContent { get; set; }
+            [Parameter, Description("@#default")] public RenderFragment? ChildContent { get; set; }
         }
 
         public sealed class FailureNoImportChild : ComponentBase, IVueComponent;

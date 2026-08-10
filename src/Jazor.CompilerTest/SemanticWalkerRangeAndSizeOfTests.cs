@@ -88,10 +88,10 @@ public sealed class SemanticWalkerRangeAndSizeOfTests
         StringAssert.Contains(script, "_1c7a1e658ed790ff(range, values.length)");
         Assert.AreEqual(1, CountOccurrences(script, "_1c7a1e658ed790ff(range, values.length)"));
         StringAssert.Contains(script, ".slice(");
-        StringAssert.Contains(script, ".offset");
-        StringAssert.Contains(script, ".length");
+        StringAssert.Contains(script, ".Offset");
+        StringAssert.Contains(script, ".Length");
         Assert.IsTrue(
-            System.Text.RegularExpressions.Regex.IsMatch(script, @"\.offset \+ [A-Za-z_$][A-Za-z0-9_$]*\.length"),
+            System.Text.RegularExpressions.Regex.IsMatch(script, @"\.Offset \+ [A-Za-z_$][A-Za-z0-9_$]*\.Length"),
             script);
         _ = new Parser().ParseScript(script);
     }

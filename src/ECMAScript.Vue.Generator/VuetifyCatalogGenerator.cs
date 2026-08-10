@@ -1,16 +1,21 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SystemFile = global::System.IO.File;
 
 namespace ECMAScript.Vue.Generator;
 
 /// <summary>
-/// 从现有组件契约生成 Vuetify 的导出和注册目录。
-/// Props 仍由每个组件源文件维护，避免把不完整的上游类型伪装为完整生成结果。
+/// Maintains the Vuetify projection from the pinned upstream metadata.
+/// 以固定的上游 metadata 维护 Vuetify projection，不让 RazorVue 推断 Vue ABI。
 /// </summary>
 internal static class VuetifyCatalogGenerator
 {
+    private const string Version = "4.1.8";
+    private const int ContractSchemaVersion = 1;
     private const string StableModule = "vuetify/components";
     private const string LabsModule = "vuetify/labs/components";
 
@@ -22,27 +27,86 @@ internal static class VuetifyCatalogGenerator
 
         var repositoryRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
         var projectRoot = Path.Combine(repositoryRoot, "src", "ECMAScript.Vuetify");
-        var outputPath = Path.Combine(projectRoot, "VuetifyCatalog.g.cs");
-        var components = ReadComponents(projectRoot);
-        var source = Render(components);
+        var upstreamRoot = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.Vue.Generator",
+            "upstream",
+            "vuetify",
+            Version);
+        var schema = ReadContractSchema(Path.Combine(upstreamRoot, "contracts.json"));
+        var components = ReadComponents(repositoryRoot, projectRoot);
+        var contractsByKey = ValidateInputs(repositoryRoot, projectRoot, upstreamRoot, schema, components);
+        var outputs = new List<GeneratedFile>();
+
+        foreach (var component in components)
+        {
+            var contract = contractsByKey[GetContractKey(component.SourceFile, component.TypeName)];
+            outputs.Add(new GeneratedFile(
+                component.SourcePath,
+                RenderComponentSource(component, contract)));
+        }
+
+        outputs.Add(new GeneratedFile(
+            Path.Combine(projectRoot, "VuetifyCatalog.g.cs"),
+            RenderCatalog(components)));
+        outputs.Add(new GeneratedFile(
+            Path.Combine(projectRoot, "dist", "components.mjs"),
+            RenderComponentShim(components, StableModule, "./vuetify.esm.js")));
+        outputs.Add(new GeneratedFile(
+            Path.Combine(projectRoot, "dist", "labs.mjs"),
+            RenderComponentShim(components, LabsModule, "./vuetify-labs.esm.js")));
+        outputs.Add(new GeneratedFile(
+            Path.Combine(projectRoot, "manifest.json"),
+            RenderManifest()));
 
         if (check)
         {
-            if (!global::System.IO.File.Exists(outputPath) || !string.Equals(global::System.IO.File.ReadAllText(outputPath), source, StringComparison.Ordinal))
+            var stale = outputs
+                .Where(static output =>
+                    !SystemFile.Exists(output.Path) ||
+                    !string.Equals(SystemFile.ReadAllText(output.Path), output.Content, StringComparison.Ordinal))
+                .Select(output => Path.GetRelativePath(repositoryRoot, output.Path).Replace('\\', '/'))
+                .OrderBy(static path => path, StringComparer.Ordinal)
+                .ToArray();
+            if (stale.Length > 0)
             {
                 throw new InvalidOperationException(
-                    "Vuetify export and registry catalogs are stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- vuetify`.");
+                    "Vuetify projection is stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- vuetify`.\n" +
+                    string.Join("\n", stale));
             }
 
-            Console.WriteLine($"Vuetify catalogs are current: {components.Count} components.");
+            Console.WriteLine($"Vuetify projection is current: {components.Count} components, version {Version}.");
             return;
         }
 
-        global::System.IO.File.WriteAllText(outputPath, source, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-        Console.WriteLine($"Generated Vuetify catalogs: {components.Count} components.");
+        foreach (var output in outputs)
+            WriteIfChanged(output);
+
+        Console.WriteLine($"Generated Vuetify projection: {components.Count} components, version {Version}.");
     }
 
-    private static IReadOnlyList<Component> ReadComponents(string projectRoot)
+    private static VuetifyContractSchema ReadContractSchema(string path)
+    {
+        if (!SystemFile.Exists(path))
+            throw new InvalidOperationException($"Missing Vuetify contract schema: {path}");
+
+        var schema = JsonSerializer.Deserialize<VuetifyContractSchema>(
+            SystemFile.ReadAllText(path),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (schema is null || schema.Components is null)
+            throw new InvalidOperationException($"Vuetify contract schema is invalid: {path}");
+        if (schema.Version != ContractSchemaVersion ||
+            !string.Equals(schema.UpstreamVersion, Version, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Vuetify contract schema must be v{ContractSchemaVersion} for upstream {Version}.");
+        }
+
+        return schema;
+    }
+
+    private static IReadOnlyList<Component> ReadComponents(string repositoryRoot, string projectRoot)
     {
         var components = new List<Component>();
         var seenExports = new HashSet<(string Module, string Export)>();
@@ -51,7 +115,7 @@ internal static class VuetifyCatalogGenerator
                      .Where(static path => !path.EndsWith(".g.cs", StringComparison.Ordinal))
                      .OrderBy(static path => path, StringComparer.Ordinal))
         {
-            var root = CSharpSyntaxTree.ParseText(global::System.IO.File.ReadAllText(path), path: path).GetRoot();
+            var root = CSharpSyntaxTree.ParseText(SystemFile.ReadAllText(path), path: path).GetRoot();
             foreach (var declaration in root.DescendantNodes().OfType<ClassDeclarationSyntax>())
             {
                 var attribute = declaration.AttributeLists
@@ -71,11 +135,15 @@ internal static class VuetifyCatalogGenerator
 
                 if (module is not StableModule and not LabsModule)
                     throw new InvalidOperationException($"Unsupported Vuetify component module '{module}' on {declaration.Identifier.ValueText}.");
-
                 if (!seenExports.Add((module, export)))
                     throw new InvalidOperationException($"Duplicate Vuetify component export '{module}:{export}'.");
 
-                components.Add(new Component(module, export, declaration.Identifier.ValueText));
+                components.Add(new Component(
+                    path,
+                    NormalizeRelativePath(repositoryRoot, path),
+                    module,
+                    export,
+                    declaration.Identifier.ValueText));
             }
         }
 
@@ -88,22 +156,199 @@ internal static class VuetifyCatalogGenerator
             .ToArray();
     }
 
-    private static bool IsVueLibraryComponent(AttributeSyntax attribute)
-        => attribute.Name.ToString() is "VueLibraryComponent" or "VueLibraryComponentAttribute";
-
-    private static bool TryReadString(AttributeArgumentSyntax argument, out string value)
+    private static IReadOnlyDictionary<string, VuetifyContract> ValidateInputs(
+        string repositoryRoot,
+        string projectRoot,
+        string upstreamRoot,
+        VuetifyContractSchema schema,
+        IReadOnlyList<Component> components)
     {
-        if (argument.Expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
+        ValidatePackageVersion(Path.Combine(upstreamRoot, "package.json"));
+        var contractsByKey = schema.Components.ToDictionary(
+            static contract => GetContractKey(contract.SourceFile, contract.AuthoringType),
+            StringComparer.Ordinal);
+        if (contractsByKey.Count != schema.Components.Count)
+            throw new InvalidOperationException("Vuetify contract schema contains duplicate component entries.");
+        if (contractsByKey.Count != components.Count)
         {
-            value = literal.Token.ValueText;
-            return true;
+            throw new InvalidOperationException(
+                $"Vuetify contract schema has {contractsByKey.Count} components, but the C# projection has {components.Count}.");
         }
 
-        value = string.Empty;
-        return false;
+        var webTypeTags = ReadWebTypeTags(Path.Combine(upstreamRoot, "web-types.json"));
+        var stableBundleExports = ReadBundleComponentExports(Path.Combine(projectRoot, "dist", "vuetify.esm.js"));
+        var labsBundleExports = ReadBundleComponentExports(Path.Combine(projectRoot, "dist", "vuetify-labs.esm.js"));
+        foreach (var component in components)
+        {
+            var key = GetContractKey(component.SourceFile, component.TypeName);
+            if (!contractsByKey.TryGetValue(key, out var contract))
+            {
+                throw new InvalidOperationException(
+                    $"Vuetify contract schema does not describe '{component.SourceFile}:{component.TypeName}'.");
+            }
+
+            if (!string.Equals(contract.Module, component.Module, StringComparison.Ordinal) ||
+                !string.Equals(contract.Export, component.Export, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Vuetify contract '{component.TypeName}' no longer matches its C# module/export declaration.");
+            }
+            if (!webTypeTags.Contains(component.Export))
+                throw new InvalidOperationException($"Vuetify web-types {Version} does not contain tag '{component.Export}'.");
+
+            var bundleExports = component.Module == StableModule ? stableBundleExports : labsBundleExports;
+            if (!bundleExports.Contains(component.Export))
+            {
+                throw new InvalidOperationException(
+                    $"Vuetify {Version} bundle '{component.Module}' does not export component '{component.Export}'.");
+            }
+
+            if (contract.Members is null || contract.Members.Count == 0)
+                throw new InvalidOperationException($"Vuetify contract '{component.TypeName}' has no parameter metadata.");
+            if (contract.Members.Select(static member => member.Name).Distinct(StringComparer.Ordinal).Count() != contract.Members.Count)
+                throw new InvalidOperationException($"Vuetify contract '{component.TypeName}' contains duplicate member names.");
+        }
+
+        return contractsByKey;
     }
 
-    private static string Render(IReadOnlyList<Component> components)
+    private static void ValidatePackageVersion(string path)
+    {
+        if (!SystemFile.Exists(path))
+            throw new InvalidOperationException($"Missing Vuetify package metadata: {path}");
+
+        using var document = JsonDocument.Parse(SystemFile.ReadAllText(path));
+        var version = document.RootElement.GetProperty("version").GetString();
+        if (!string.Equals(version, Version, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Vuetify package metadata must declare version {Version}, found '{version}'.");
+    }
+
+    private static HashSet<string> ReadWebTypeTags(string path)
+    {
+        if (!SystemFile.Exists(path))
+            throw new InvalidOperationException($"Missing Vuetify web-types metadata: {path}");
+
+        using var document = JsonDocument.Parse(SystemFile.ReadAllText(path));
+        var tags = document.RootElement
+            .GetProperty("contributions")
+            .GetProperty("html")
+            .GetProperty("tags");
+        return tags.EnumerateArray()
+            .Select(static tag => tag.GetProperty("name").GetString())
+            .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .Select(static name => name!)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    private static HashSet<string> ReadBundleComponentExports(string path)
+    {
+        if (!SystemFile.Exists(path))
+            throw new InvalidOperationException($"Missing Vuetify component bundle: {path}");
+
+        var source = SystemFile.ReadAllText(path);
+        const string marker = "var components = /*#__PURE__*/Object.freeze({";
+        var start = source.IndexOf(marker, StringComparison.Ordinal);
+        if (start < 0)
+            throw new InvalidOperationException($"Cannot locate the components export object in {path}.");
+
+        start += marker.Length;
+        var end = source.IndexOf("\n});", start, StringComparison.Ordinal);
+        if (end < 0)
+            throw new InvalidOperationException($"Cannot locate the end of the components export object in {path}.");
+
+        return Regex.Matches(source[start..end], @"(?m)^\s*(?<name>[$A-Za-z_][$\w]*)\s*:")
+            .Select(static match => match.Groups["name"].Value)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    private static string RenderComponentSource(Component component, VuetifyContract contract)
+    {
+        var source = SystemFile.ReadAllText(component.SourcePath);
+        var root = CSharpSyntaxTree.ParseText(source, path: component.SourcePath).GetRoot();
+        var declaration = root.DescendantNodes().OfType<ClassDeclarationSyntax>()
+            .SingleOrDefault(candidate =>
+                string.Equals(candidate.Identifier.ValueText, component.TypeName, StringComparison.Ordinal) &&
+                candidate.AttributeLists.SelectMany(static list => list.Attributes).Any(IsVueLibraryComponent));
+        if (declaration is null)
+            throw new InvalidOperationException($"Cannot locate Vuetify component declaration '{component.TypeName}'.");
+
+        var expectedMembers = contract.Members.ToDictionary(static member => member.Name, StringComparer.Ordinal);
+        var parameterProperties = declaration.Members.OfType<PropertyDeclarationSyntax>()
+            .Where(IsParameterProperty)
+            .ToDictionary(static property => property.Identifier.ValueText, StringComparer.Ordinal);
+        ValidateParameterProjection(component, expectedMembers, parameterProperties);
+
+        var edits = new List<TextEdit>();
+        var lineEnding = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+        foreach (var (memberName, property) in parameterProperties)
+        {
+            var expectedName = expectedMembers[memberName].RuntimeName;
+            if (string.IsNullOrWhiteSpace(expectedName))
+                throw new InvalidOperationException($"Vuetify contract '{component.TypeName}.{memberName}' has an empty runtime name.");
+
+            var configuredName = GetConfiguredName(property);
+            if (string.Equals(expectedName, property.Identifier.ValueText, StringComparison.Ordinal))
+            {
+                if (configuredName is not null && !string.Equals(configuredName, expectedName, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        $"Vuetify component '{component.TypeName}.{memberName}' conflicts with contract runtime name '{expectedName}'.");
+                }
+
+                continue;
+            }
+
+            if (string.Equals(configuredName, expectedName, StringComparison.Ordinal))
+                continue;
+
+            var ecmaNameAttribute = property.AttributeLists
+                .SelectMany(static list => list.Attributes)
+                .SingleOrDefault(IsECMAScriptName);
+            if (ecmaNameAttribute is not null)
+            {
+                edits.Add(new TextEdit(
+                    ecmaNameAttribute.Span.Start,
+                    ecmaNameAttribute.Span.Length,
+                    $"ECMAScriptName(\"{EscapeCSharpString(expectedName)}\")"));
+                continue;
+            }
+
+            if (configuredName is not null)
+            {
+                throw new InvalidOperationException(
+                    $"Vuetify component '{component.TypeName}.{memberName}' has a Description name '{configuredName}' that conflicts with contract runtime name '{expectedName}'.");
+            }
+
+            var lastAttributeList = property.AttributeLists.LastOrDefault();
+            if (lastAttributeList is null)
+                throw new InvalidOperationException($"Vuetify parameter '{component.TypeName}.{memberName}' has no attribute list.");
+
+            var indentation = GetLineIndentation(source, lastAttributeList.SpanStart);
+            edits.Add(new TextEdit(
+                lastAttributeList.Span.End,
+                0,
+                lineEnding + indentation + $"[ECMAScriptName(\"{EscapeCSharpString(expectedName)}\")]"));
+        }
+
+        return ApplyEdits(source, edits);
+    }
+
+    private static void ValidateParameterProjection(
+        Component component,
+        IReadOnlyDictionary<string, VuetifyContractMember> expectedMembers,
+        IReadOnlyDictionary<string, PropertyDeclarationSyntax> parameterProperties)
+    {
+        var missing = expectedMembers.Keys.Except(parameterProperties.Keys, StringComparer.Ordinal).OrderBy(static name => name, StringComparer.Ordinal).ToArray();
+        var unexpected = parameterProperties.Keys.Except(expectedMembers.Keys, StringComparer.Ordinal).OrderBy(static name => name, StringComparer.Ordinal).ToArray();
+        if (missing.Length == 0 && unexpected.Length == 0)
+            return;
+
+        throw new InvalidOperationException(
+            $"Vuetify parameter contract mismatch for '{component.TypeName}'. " +
+            $"Missing: {string.Join(", ", missing)}. Unexpected: {string.Join(", ", unexpected)}.");
+    }
+
+    private static string RenderCatalog(IReadOnlyList<Component> components)
     {
         var builder = new StringBuilder();
         builder.AppendLine("#nullable enable");
@@ -126,7 +371,7 @@ internal static class VuetifyCatalogGenerator
 
     private static void RenderExports(StringBuilder builder, IEnumerable<Component> components, string catalogName)
     {
-        var materialized = components.ToArray();
+        var materialized = components.OrderBy(static component => component.Export, StringComparer.Ordinal).ToArray();
         var module = materialized[0].Module;
         builder.AppendLine($"[ECMAScript(\"{module}\")]");
         builder.AppendLine($"public static class {catalogName}");
@@ -155,7 +400,7 @@ internal static class VuetifyCatalogGenerator
         builder.AppendLine($"[Description(\"@#{catalogName}\")]");
         builder.AppendLine($"public sealed record {catalogName} : VueComponentRegistry");
         builder.AppendLine("{");
-        foreach (var component in components)
+        foreach (var component in components.OrderBy(static component => component.Export, StringComparer.Ordinal))
         {
             builder.AppendLine($"    [Description(\"@#{component.Export}\")]");
             builder.AppendLine($"    public IVuetifyComponent? {component.Export} {{ get; init; }}");
@@ -166,16 +411,211 @@ internal static class VuetifyCatalogGenerator
         builder.AppendLine("}");
     }
 
+    private static string RenderComponentShim(
+        IEnumerable<Component> components,
+        string module,
+        string bundlePath)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine($"import {{ components }} from \"{bundlePath}\";");
+        builder.AppendLine();
+        foreach (var component in components
+                     .Where(component => component.Module == module)
+                     .OrderBy(static component => component.Export, StringComparer.Ordinal))
+        {
+            builder.AppendLine($"export const {component.Export} = components.{component.Export};");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string RenderManifest()
+        => $$"""
+        {
+          "schemaVersion": 1,
+          "libraryId": "vuetify",
+          "version": "{{Version}}",
+          "imports": {
+            "vuetify": {
+              "development": "dist/vuetify.esm.js",
+              "production": "dist/vuetify.esm.js"
+            },
+            "vuetify/components": {
+              "development": "dist/components.mjs",
+              "production": "dist/components.mjs"
+            },
+            "vuetify/labs/components": {
+              "development": "dist/labs.mjs",
+              "production": "dist/labs.mjs"
+            },
+            "vuetify/directives": {
+              "development": "dist/directives.mjs",
+              "production": "dist/directives.mjs"
+            }
+          },
+          "requires": {
+            "vue3": "^3.5.0"
+          },
+          "styles": [
+            "dist/vuetify.min.css"
+          ],
+          "files": [
+            "licenses/LICENSE.md"
+          ]
+        }
+        """ + Environment.NewLine;
+
+    private static bool IsParameterProperty(PropertyDeclarationSyntax property)
+        => property.AttributeLists.SelectMany(static list => list.Attributes).Any(IsParameter);
+
+    private static bool IsVueLibraryComponent(AttributeSyntax attribute)
+        => IsAttribute(attribute, "VueLibraryComponent");
+
+    private static bool IsECMAScriptName(AttributeSyntax attribute)
+        => IsAttribute(attribute, "ECMAScriptName");
+
+    private static bool IsParameter(AttributeSyntax attribute)
+        => IsAttribute(attribute, "Parameter");
+
+    private static bool IsAttribute(AttributeSyntax attribute, string expectedName)
+    {
+        var simpleName = attribute.Name.DescendantNodesAndSelf().OfType<SimpleNameSyntax>().LastOrDefault()?.Identifier.ValueText;
+        return string.Equals(simpleName, expectedName, StringComparison.Ordinal) ||
+               string.Equals(simpleName, expectedName + "Attribute", StringComparison.Ordinal);
+    }
+
+    private static string? GetConfiguredName(PropertyDeclarationSyntax property)
+    {
+        var ecmaName = property.AttributeLists
+            .SelectMany(static list => list.Attributes)
+            .SingleOrDefault(IsECMAScriptName);
+        var explicitName = TryReadString(ecmaName);
+        if (!string.IsNullOrWhiteSpace(explicitName))
+            return explicitName;
+
+        var description = property.AttributeLists
+            .SelectMany(static list => list.Attributes)
+            .SingleOrDefault(attribute => IsAttribute(attribute, "Description"));
+        var descriptionValue = TryReadString(description);
+        return descriptionValue is { Length: > 2 } && descriptionValue.StartsWith("@#", StringComparison.Ordinal)
+            ? descriptionValue[2..]
+            : null;
+    }
+
+    private static bool TryReadString(AttributeArgumentSyntax argument, out string value)
+        => TryReadString(argument.Expression, out value);
+
+    private static bool TryReadString(AttributeSyntax? attribute, out string value)
+    {
+        if (attribute?.ArgumentList?.Arguments.FirstOrDefault() is { } argument)
+            return TryReadString(argument, out value);
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static string? TryReadString(AttributeSyntax? attribute)
+        => TryReadString(attribute, out var value) ? value : null;
+
+    private static bool TryReadString(ExpressionSyntax expression, out string value)
+    {
+        if (expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression))
+        {
+            value = literal.Token.ValueText;
+            return true;
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static string ApplyEdits(string source, IReadOnlyList<TextEdit> edits)
+    {
+        var result = source;
+        var nextStart = int.MaxValue;
+        foreach (var edit in edits.OrderByDescending(static edit => edit.Start))
+        {
+            if (edit.Start < 0 || edit.Length < 0 || edit.Start + edit.Length > result.Length || edit.Start + edit.Length > nextStart)
+                throw new InvalidOperationException("Vuetify source rewrite contains overlapping edits.");
+
+            result = result.Remove(edit.Start, edit.Length).Insert(edit.Start, edit.Replacement);
+            nextStart = edit.Start;
+        }
+
+        return result;
+    }
+
+    private static string GetLineIndentation(string source, int position)
+    {
+        var lineStart = source.LastIndexOf('\n', Math.Max(0, position - 1)) + 1;
+        var indentationEnd = lineStart;
+        while (indentationEnd < source.Length &&
+               source[indentationEnd] is ' ' or '\t')
+        {
+            indentationEnd++;
+        }
+
+        return source[lineStart..indentationEnd];
+    }
+
+    private static void WriteIfChanged(GeneratedFile output)
+    {
+        if (SystemFile.Exists(output.Path) && string.Equals(SystemFile.ReadAllText(output.Path), output.Content, StringComparison.Ordinal))
+            return;
+
+        Directory.CreateDirectory(Path.GetDirectoryName(output.Path)!);
+        SystemFile.WriteAllText(output.Path, output.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    }
+
+    private static string NormalizeRelativePath(string repositoryRoot, string path)
+        => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+
+    private static string GetContractKey(string sourceFile, string typeName)
+        => sourceFile + "\u001F" + typeName;
+
+    private static string EscapeCSharpString(string value)
+        => value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\"", StringComparison.Ordinal);
+
     private static string FindRepositoryRoot(string startDirectory)
     {
         for (var directory = new DirectoryInfo(Path.GetFullPath(startDirectory)); directory is not null; directory = directory.Parent)
         {
-            if (global::System.IO.File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+            if (SystemFile.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
                 return directory.FullName;
         }
 
         throw new InvalidOperationException("Unable to locate Jazor.slnx.");
     }
 
-    private sealed record Component(string Module, string Export, string TypeName);
+    private sealed record Component(
+        string SourcePath,
+        string SourceFile,
+        string Module,
+        string Export,
+        string TypeName);
+
+    private sealed record GeneratedFile(string Path, string Content);
+
+    private sealed record TextEdit(int Start, int Length, string Replacement);
+
+    private sealed record VuetifyContractSchema(
+        int Version,
+        string UpstreamVersion,
+        IReadOnlyList<VuetifyContract> Components);
+
+    private sealed record VuetifyContract(
+        string SourceFile,
+        string AuthoringType,
+        string Module,
+        string Export,
+        IReadOnlyList<VuetifyContractMember> Members);
+
+    // RawEmitName is retained only in the upstream audit schema. The C# projection
+    // consumes RuntimeName and never emits a class-level event descriptor.
+    private sealed record VuetifyContractMember(
+        string Name,
+        string Kind,
+        string RuntimeName,
+        string? RawEmitName);
 }

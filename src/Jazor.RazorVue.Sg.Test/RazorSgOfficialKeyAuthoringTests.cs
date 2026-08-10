@@ -39,14 +39,14 @@ public sealed class RazorSgOfficialKeyAuthoringTests
         Assert.IsTrue(generatedSetKey < generatedKeyValue, observation.GeneratedCSharp);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "Array.from(props.items ?? [], item =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "key: item.id", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"data-id\": item.id", StringComparison.Ordinal);
-        StringAssert.Contains(script, "item.name", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Array.from(props.Items ?? [], item =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "key: item.Id", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"data-id\": item.Id", StringComparison.Ordinal);
+        StringAssert.Contains(script, "item.Name", StringComparison.Ordinal);
 
-        var dataId = script.IndexOf("\"data-id\": item.id", StringComparison.Ordinal);
-        var key = script.IndexOf("key: item.id", dataId, StringComparison.Ordinal);
-        var content = script.IndexOf("item.name", dataId, StringComparison.Ordinal);
+        var dataId = script.IndexOf("\"data-id\": item.Id", StringComparison.Ordinal);
+        var key = script.IndexOf("key: item.Id", dataId, StringComparison.Ordinal);
+        var content = script.IndexOf("item.Name", dataId, StringComparison.Ordinal);
         Assert.IsTrue(dataId < key, script);
         Assert.IsTrue(key < content, script);
 

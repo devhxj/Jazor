@@ -70,7 +70,7 @@ public sealed class SemanticWalkerTryCatchTest
     }
 
     private static void AssertScriptEqual(string expected, string? actual)
-        => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+        => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
     #region Try-Catch 基础测试
 
@@ -2913,7 +2913,7 @@ AssertScriptEqual(@"{
       let content = reader.ReadToEnd();
     } finally {
       if (reader !== null)
-        reader.dispose();
+        reader.Dispose();
     }
   } catch {
     console.log(""error"");

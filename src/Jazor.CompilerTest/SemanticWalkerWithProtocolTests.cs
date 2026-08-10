@@ -134,7 +134,7 @@ internal static class WithProtocolCatalog
                     => person with { Name = "Jane", Age = 31 };
             }
             """,
-            ["...person", "name: \"Jane\"", "age: 31"]),
+            ["...person", "Name: \"Jane\"", "Age: 31"]),
         Case(
             "record.configured-property-name",
             "carrier=record-class;target=property;name=description-alias;key=non-identifier",
@@ -167,7 +167,7 @@ internal static class WithProtocolCatalog
                     => counter with { Value = 2 };
             }
             """,
-            ["...counter", "value: 2"]),
+            ["...counter", "Value: 2"]),
         Case(
             "anonymous.property",
             "carrier=anonymous;target=property;name=default-mapping;scope=local",
@@ -182,7 +182,7 @@ internal static class WithProtocolCatalog
                 }
             }
             """,
-            ["...person", "displayName: \"Jane\""]),
+            ["...person", "DisplayName: \"Jane\""]),
         Case(
             "record.tuple-target-view",
             "carrier=record-class;target=tuple-property;source-labels=different;mapping=target-view",
@@ -195,7 +195,7 @@ internal static class WithProtocolCatalog
                     => person with { Info = (name: "Jane", age: 40) };
             }
             """,
-            ["...person", "info: { first: \"Jane\", years: 40 }"]),
+            ["...person", "Info: { first: \"Jane\", years: 40 }"]),
         Case(
             "record.side-effecting-operand",
             "carrier=record-class;operand=invocation;side-effect-count=once;target=property",
@@ -210,8 +210,8 @@ internal static class WithProtocolCatalog
                     => Next() with { Age = 31 };
             }
             """,
-            ["next()", "age: 31"],
-            "next()")
+            ["Next()", "Age: 31"],
+            "Next()")
     ];
 
     private static WithProtocolCase Case(

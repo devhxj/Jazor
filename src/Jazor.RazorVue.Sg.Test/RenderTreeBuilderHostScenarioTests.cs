@@ -173,7 +173,7 @@ public sealed class RenderTreeBuilderHostScenarioTests
             """;
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryEmitAttribute).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(MouseEventArgs).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location));
@@ -276,15 +276,16 @@ internal static class RenderTreeBuilderHostScenarioCatalog
     [
         Success(
             "inherited-descriptor-map",
-            "derived-component-inherits-prop-emit-and-slot-runtime-name-map",
+            "derived-component-inherits-prop-listener-and-slot-runtime-name-map",
             RenderTreeBuilderHostSuccessKind.InheritedDescriptorMap,
             """
-            [VueLibraryEmit(nameof(ValueChanged), Name = "value-change")]
             abstract class EditorBase : ComponentBase
             {
                 [ECMAScriptName("model-value")]
                 [Parameter] public string Value { get; set; } = "";
+                [ECMAScriptName("onValueChange")]
                 [Parameter] public EventCallback<string> ValueChanged { get; set; }
+                [ECMAScriptName("default")]
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
 
@@ -312,16 +313,17 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             [DefaultImport("./components/inherited-editor.mjs")]),
         Success(
             "combined-descriptor-map",
-            "prop-emit-default-slot-runtime-name-map",
+            "prop-listener-default-slot-runtime-name-map",
             RenderTreeBuilderHostSuccessKind.CombinedDescriptorMap,
             """
             [ECMAScriptModule("./components/editor")]
-            [VueLibraryEmit(nameof(ValueChanged), Name = "update:modelValue")]
             sealed class Editor : ComponentBase
             {
                 [ECMAScriptName("model-value")]
                 [Parameter] public string Value { get; set; } = "";
+                [ECMAScriptName("onUpdate:modelValue")]
                 [Parameter] public EventCallback<string> ValueChanged { get; set; }
+                [ECMAScriptName("default")]
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
 
@@ -344,13 +346,13 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             [DefaultImport("./components/editor.mjs")]),
         Success(
             "existing-listener-descriptor",
-            "emit-runtime-name-preserves-vue-listener-form",
+            "member-runtime-name-preserves-vue-listener-form",
             RenderTreeBuilderHostSuccessKind.ExistingListenerDescriptor,
             """
             [ECMAScriptModule("./components/button")]
-            [VueLibraryEmit(nameof(Clicked), Name = "onClick")]
             sealed class Button : ComponentBase
             {
+                [ECMAScriptName("onClick")]
                 [Parameter] public EventCallback Clicked { get; set; }
             }
 
@@ -507,10 +509,10 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             }
             """,
             [
-                "((__rtb, __arg0, __arg1) => __arg1?.(__rtb))(builder, this.nextSequence(), content);"
+                "((__rtb, __arg0, __arg1) => __arg1?.(__rtb))(builder, this.NextSequence(), content);"
             ],
             ["builder.addContent(content)"],
-            ["this.nextSequence()", "content"],
+            ["this.NextSequence()", "content"],
             []),
         Success(
             "render-fragment-receiver-evaluation",
@@ -530,10 +532,10 @@ internal static class RenderTreeBuilderHostScenarioCatalog
             }
             """,
             [
-                "((__rtb, __arg0, __arg1) => __arg1?.(__rtb))(this.nextBuilder(), this.nextSequence(), this.nextContent());"
+                "((__rtb, __arg0, __arg1) => __arg1?.(__rtb))(this.NextBuilder(), this.NextSequence(), this.NextContent());"
             ],
-            ["this.nextBuilder().addContent"],
-            ["this.nextBuilder()", "this.nextSequence()", "this.nextContent()"],
+            ["this.NextBuilder().addContent"],
+            ["this.NextBuilder()", "this.NextSequence()", "this.NextContent()"],
             [])
     ];
 

@@ -16,6 +16,7 @@ public sealed class VBtn : ComponentBase
     /// Active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VBtn : ComponentBase
     /// Color when active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VBtn : ComponentBase
     /// Read-only when active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeReadonly")]
     public bool ActiveReadonly { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VBtn : ComponentBase
     /// Base color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VBtn : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VBtn : ComponentBase
     /// Icon appended to front.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public string? PrependIcon { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VBtn : ComponentBase
     /// Icon appended to end.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public string? AppendIcon { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VBtn : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VBtn : ComponentBase
     /// Visual variant style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VBtn : ComponentBase
     /// Component size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VBtn : ComponentBase
     /// Loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VBtn : ComponentBase
     /// Fills available width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("block")]
     public bool Block { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VBtn : ComponentBase
     /// Border configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VBtn : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VBtn : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -121,6 +136,7 @@ public sealed class VBtn : ComponentBase
     /// Min height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -128,6 +144,7 @@ public sealed class VBtn : ComponentBase
     /// Min width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -135,6 +152,7 @@ public sealed class VBtn : ComponentBase
     /// Max height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -142,6 +160,7 @@ public sealed class VBtn : ComponentBase
     /// Max width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -149,6 +168,7 @@ public sealed class VBtn : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -156,6 +176,7 @@ public sealed class VBtn : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -163,6 +184,7 @@ public sealed class VBtn : ComponentBase
     /// Exact route match.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("exact")]
     public bool Exact { get; set; }
 
     /// <summary>
@@ -170,6 +192,7 @@ public sealed class VBtn : ComponentBase
     /// Link target URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -177,6 +200,7 @@ public sealed class VBtn : ComponentBase
     /// Link target attribute.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("target")]
     public string? Target { get; set; }
 
     /// <summary>
@@ -184,6 +208,7 @@ public sealed class VBtn : ComponentBase
     /// Router link destination.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -191,6 +216,7 @@ public sealed class VBtn : ComponentBase
     /// Uses replace instead of push.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool Replace { get; set; }
 
     /// <summary>
@@ -198,6 +224,7 @@ public sealed class VBtn : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -205,6 +232,7 @@ public sealed class VBtn : ComponentBase
     /// Removes box-shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -212,6 +240,7 @@ public sealed class VBtn : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -219,6 +248,7 @@ public sealed class VBtn : ComponentBase
     /// Reduced padding.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("slim")]
     public bool Slim { get; set; }
 
     /// <summary>
@@ -226,6 +256,7 @@ public sealed class VBtn : ComponentBase
     /// Stacks content vertically.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("stacked")]
     public bool Stacked { get; set; }
 
     /// <summary>
@@ -233,6 +264,7 @@ public sealed class VBtn : ComponentBase
     /// Symbol mode rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("symbol")]
     public bool Symbol { get; set; }
 
     /// <summary>
@@ -240,6 +272,7 @@ public sealed class VBtn : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -247,6 +280,7 @@ public sealed class VBtn : ComponentBase
     /// Position within container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -254,6 +288,7 @@ public sealed class VBtn : ComponentBase
     /// CSS position strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -261,6 +296,7 @@ public sealed class VBtn : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -268,6 +304,7 @@ public sealed class VBtn : ComponentBase
     /// Type attribute.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     /// <summary>
@@ -275,6 +312,7 @@ public sealed class VBtn : ComponentBase
     /// Component value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VueValue? Value { get; set; }
 
     /// <summary>
@@ -282,6 +320,7 @@ public sealed class VBtn : ComponentBase
     /// Ripple click effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -289,6 +328,7 @@ public sealed class VBtn : ComponentBase
     /// Click event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
     /// <summary>
@@ -296,6 +336,7 @@ public sealed class VBtn : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -303,6 +344,7 @@ public sealed class VBtn : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -310,6 +352,7 @@ public sealed class VBtn : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -317,6 +360,7 @@ public sealed class VBtn : ComponentBase
     /// Loader slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loader")]
     public RenderFragment? Loader { get; set; }
 
     /// <summary>
@@ -324,5 +368,6 @@ public sealed class VBtn : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

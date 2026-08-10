@@ -41,7 +41,7 @@ public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "Array.from(props.releases ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "Array.from(props.Releases ?? []", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "data-last", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -62,7 +62,7 @@ public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
             }
 
             test("official Razor loop locals do not shadow lowered component methods", async () => {
-                const render = component.setup({ releases: ["Accounts API", "Billing API"] }, { slots: {} });
+                const render = component.setup({ Releases: ["Accounts API", "Billing API"] }, { slots: {} });
                 const initial = render();
                 assert.equal(initial.name, "section");
                 assert.equal(initial.props["data-last"], "none");

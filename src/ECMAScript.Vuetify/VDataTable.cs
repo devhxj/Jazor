@@ -15,6 +15,7 @@ public sealed class VDataTable : ComponentBase
     /// Bound value for selected rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyDataTableSelectedValues? ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when selected rows change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyDataTableSelectedValues?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VDataTable : ComponentBase
     /// Column header definitions for the table.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headers")]
     public VuetifyDataTableHeaders? Headers { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VDataTable : ComponentBase
     /// Data rows for the table.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VuetifyDataTableItems? Items { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VDataTable : ComponentBase
     /// Property key used to identify row item values.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VDataTable : ComponentBase
     /// Property key used to determine if a row is selectable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemSelectable")]
     public VuetifySelectItemKey? ItemSelectable { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to return the full object instead of the key value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("returnObject")]
     public bool ReturnObject { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VDataTable : ComponentBase
     /// Current page number.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("page")]
     public int Page { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when page number changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:page")]
     public EventCallback<int> PageChanged { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VDataTable : ComponentBase
     /// Number of items displayed per page.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemsPerPage")]
     public int ItemsPerPage { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when items per page changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:itemsPerPage")]
     public EventCallback<int> ItemsPerPageChanged { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VDataTable : ComponentBase
     /// Options list for items per page selector.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemsPerPageOptions")]
     public VuetifyDataTableItemsPerPageOptions? ItemsPerPageOptions { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VDataTable : ComponentBase
     /// Current sort criteria.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sortBy")]
     public VuetifyDataTableSortItems? SortBy { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when sort criteria change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:sortBy")]
     public EventCallback<VuetifyDataTableSortItems?> SortByChanged { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VDataTable : ComponentBase
     /// Current group-by criteria.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("groupBy")]
     public VuetifyDataTableSortItems? GroupBy { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when group-by criteria change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:groupBy")]
     public EventCallback<VuetifyDataTableSortItems?> GroupByChanged { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VDataTable : ComponentBase
     /// Bound value for expanded rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expanded")]
     public VuetifyDataTableSelectedValues? Expanded { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when expanded rows change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:expanded")]
     public EventCallback<VuetifyDataTableSelectedValues?> ExpandedChanged { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when pagination or sort options change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("optionsChanged")]
     public EventCallback<VuetifyDataTableOptions?> OptionsChanged { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VDataTable : ComponentBase
     /// Callback when currently visible items change.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("currentItemsChanged")]
     public EventCallback<VuetifyDataTableItems?> CurrentItemsChanged { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VDataTable : ComponentBase
     /// Search filter keyword.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("search")]
     public string? Search { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to show row selection checkboxes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showSelect")]
     public bool ShowSelect { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VDataTable : ComponentBase
     /// Row selection strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectStrategy")]
     public VuetifyDataTableSelectStrategy? SelectStrategy { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to show row expand icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showExpand")]
     public bool ShowExpand { get; set; }
 
     /// <summary>
@@ -183,6 +207,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether clicking a row expands it.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expandOnClick")]
     public bool ExpandOnClick { get; set; }
 
     /// <summary>
@@ -190,6 +215,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to hide the default table body.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDefaultBody")]
     public bool HideDefaultBody { get; set; }
 
     /// <summary>
@@ -197,6 +223,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to hide the default footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDefaultFooter")]
     public bool HideDefaultFooter { get; set; }
 
     /// <summary>
@@ -204,6 +231,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to hide the default header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDefaultHeader")]
     public bool HideDefaultHeader { get; set; }
 
     /// <summary>
@@ -211,6 +239,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to hide the no-data message.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideNoData")]
     public bool HideNoData { get; set; }
 
     /// <summary>
@@ -218,6 +247,7 @@ public sealed class VDataTable : ComponentBase
     /// Text displayed when there is no data.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
     /// <summary>
@@ -225,6 +255,7 @@ public sealed class VDataTable : ComponentBase
     /// Loading state or loading text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -232,6 +263,7 @@ public sealed class VDataTable : ComponentBase
     /// Text displayed while loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
     /// <summary>
@@ -239,6 +271,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to disable sorting.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disableSort")]
     public bool DisableSort { get; set; }
 
     /// <summary>
@@ -246,6 +279,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to allow sorting by multiple columns.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiSort")]
     public bool MultiSort { get; set; }
 
     /// <summary>
@@ -253,6 +287,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether at least one column must always be sorted.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mustSort")]
     public bool MustSort { get; set; }
 
     /// <summary>
@@ -260,6 +295,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for ascending sort indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sortAscIcon")]
     public string? SortAscIcon { get; set; }
 
     /// <summary>
@@ -267,6 +303,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for descending sort indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sortDescIcon")]
     public string? SortDescIcon { get; set; }
 
     /// <summary>
@@ -274,6 +311,7 @@ public sealed class VDataTable : ComponentBase
     /// Component theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -281,6 +319,7 @@ public sealed class VDataTable : ComponentBase
     /// Component density mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -288,6 +327,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to use compact layout (deprecated, use Density instead).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dense")]
     public bool Dense { get; set; }
 
     /// <summary>
@@ -295,6 +335,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to fix the table header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fixedHeader")]
     public bool FixedHeader { get; set; }
 
     /// <summary>
@@ -302,6 +343,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to fix the table footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fixedFooter")]
     public bool FixedFooter { get; set; }
 
     /// <summary>
@@ -309,6 +351,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to highlight rows on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool Hover { get; set; }
 
     /// <summary>
@@ -316,6 +359,7 @@ public sealed class VDataTable : ComponentBase
     /// Table height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -323,6 +367,7 @@ public sealed class VDataTable : ComponentBase
     /// Table width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -330,6 +375,7 @@ public sealed class VDataTable : ComponentBase
     /// Unique identifier property for row items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemKey")]
     public string? ItemKey { get; set; }
 
     /// <summary>
@@ -337,6 +383,7 @@ public sealed class VDataTable : ComponentBase
     /// Props for the header component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headerProps")]
     public VueProps? HeaderProps { get; set; }
 
     /// <summary>
@@ -344,6 +391,7 @@ public sealed class VDataTable : ComponentBase
     /// Row props configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rowProps")]
     public VuetifyDataTableRowProps? RowProps { get; set; }
 
     /// <summary>
@@ -351,6 +399,7 @@ public sealed class VDataTable : ComponentBase
     /// Cell props configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("cellProps")]
     public VuetifyDataTableCellProps? CellProps { get; set; }
 
     /// <summary>
@@ -358,6 +407,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for previous page button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public string? PrevIcon { get; set; }
 
     /// <summary>
@@ -365,6 +415,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for next page button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public string? NextIcon { get; set; }
 
     /// <summary>
@@ -372,6 +423,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for first page button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("firstIcon")]
     public string? FirstIcon { get; set; }
 
     /// <summary>
@@ -379,6 +431,7 @@ public sealed class VDataTable : ComponentBase
     /// Icon for last page button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lastIcon")]
     public string? LastIcon { get; set; }
 
     /// <summary>
@@ -386,6 +439,7 @@ public sealed class VDataTable : ComponentBase
     /// Label text for the items-per-page selector.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemsPerPageText")]
     public string? ItemsPerPageText { get; set; }
 
     /// <summary>
@@ -393,6 +447,7 @@ public sealed class VDataTable : ComponentBase
     /// Pagination info display text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("pageText")]
     public string? PageText { get; set; }
 
     /// <summary>
@@ -400,6 +455,7 @@ public sealed class VDataTable : ComponentBase
     /// Whether to show the current page number.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showCurrentPage")]
     public bool ShowCurrentPage { get; set; }
 
     /// <summary>
@@ -407,6 +463,7 @@ public sealed class VDataTable : ComponentBase
     /// Additional HTML attributes attached to the component.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -414,6 +471,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the top of the table.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("top")]
     public RenderFragment<VDataTableSlotContext>? Top { get; set; }
 
     /// <summary>
@@ -421,6 +479,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the column group element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("colgroup")]
     public RenderFragment<VDataTableSlotContext>? Colgroup { get; set; }
 
     /// <summary>
@@ -428,6 +487,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the header rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headers")]
     public RenderFragment<VDataTableHeadersSlotContext>? HeadersContent { get; set; }
 
     /// <summary>
@@ -451,6 +511,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the table body.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("body")]
     public RenderFragment<VDataTableSlotContext>? BodyContent { get; set; }
 
     /// <summary>
@@ -474,6 +535,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for each data row.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment<VDataTableItemSlotContext>? ItemContent { get; set; }
 
     /// <summary>
@@ -481,6 +543,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for group headers.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("group-header")]
     public RenderFragment<VDataTableGroupHeaderSlotContext>? GroupHeader { get; set; }
 
     /// <summary>
@@ -488,6 +551,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for expanded rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expanded-row")]
     public RenderFragment<VDataTableItemSlotContext>? ExpandedRow { get; set; }
 
     /// <summary>
@@ -495,6 +559,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the tbody element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tbody")]
     public RenderFragment<VDataTableSlotContext>? Tbody { get; set; }
 
     /// <summary>
@@ -502,6 +567,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the thead element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thead")]
     public RenderFragment<VDataTableSlotContext>? Thead { get; set; }
 
     /// <summary>
@@ -509,6 +575,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the tfoot element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tfoot")]
     public RenderFragment<VDataTableSlotContext>? Tfoot { get; set; }
 
     /// <summary>
@@ -516,6 +583,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the bottom of the table.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bottom")]
     public RenderFragment<VDataTableSlotContext>? Bottom { get; set; }
 
     /// <summary>
@@ -531,6 +599,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content for the loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
     /// <summary>
@@ -538,6 +607,7 @@ public sealed class VDataTable : ComponentBase
     /// Slot content when there is no data.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("no-data")]
     public RenderFragment? NoData { get; set; }
 
     /// <summary>
@@ -545,5 +615,6 @@ public sealed class VDataTable : ComponentBase
     /// Default child content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

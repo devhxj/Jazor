@@ -50,7 +50,7 @@ internal static class ClrRuntimeIndexRangeScenarios
         Success("range.all", "static System.Range.All.get", RangeModulePath, [], Range(Index(0, false), Index(0, true))),
         Success("range.get-offset-and-length", "System.Range.GetOffsetAndLength(int)", RangeModulePath,
             [Invoke("System.Range.Range(System.Index, System.Index)", Invoke("static System.Index.FromStart(int)", Number(2)), Invoke("static System.Index.FromEnd(int)", Number(1))), Number(8)],
-            Record(("offset", Number(2)), ("length", Number(5)))),
+            Record(("Offset", Number(2)), ("Length", Number(5)))),
         Failure("range.get-offset-and-length.rejects-inverted-range", "System.Range.GetOffsetAndLength(int)", RangeModulePath,
             [Invoke("System.Range.Range(System.Index, System.Index)", Invoke("static System.Index.FromEnd(int)", Number(2)), Invoke("static System.Index.FromStart(int)", Number(1))), Number(4)],
             "ArgumentOutOfRangeException"),

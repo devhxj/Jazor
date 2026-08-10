@@ -15,6 +15,7 @@ public sealed class VList : ComponentBase
     /// Data source items to display in the list.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VuetifySelectItems? Items { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VList : ComponentBase
     /// Property name or key for displaying item titles.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemTitle")]
     public VuetifySelectItemKey? ItemTitle { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VList : ComponentBase
     /// Property name or key for identifying item values.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VList : ComponentBase
     /// Property name or key for nested child items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemChildren")]
     public VuetifySelectItemKey? ItemChildren { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VList : ComponentBase
     /// Property selector for passing extra props to items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemProps")]
     public VuetifySelectItemPropsSelector? ItemProps { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VList : ComponentBase
     /// Type identifier for items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemType")]
     public string? ItemType { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VList : ComponentBase
     /// Color when the component is in an inactive state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VList : ComponentBase
     /// Color when the component is in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VList : ComponentBase
     /// CSS class applied to active list items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeClass")]
     public string? ActiveClass { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VList : ComponentBase
     /// Background color of the list.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VList : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VList : ComponentBase
     /// Icon displayed when expanding sub-lists.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expandIcon")]
     public string? ExpandIcon { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VList : ComponentBase
     /// Icon displayed when collapsing sub-lists.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("collapseIcon")]
     public string? CollapseIcon { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VList : ComponentBase
     /// Line spacing style for list items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lines")]
     public VuetifyListLines? Lines { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VList : ComponentBase
     /// Whether to use a slim compact style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("slim")]
     public bool Slim { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VList : ComponentBase
     /// Component density style that adjusts vertical spacing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VList : ComponentBase
     /// Whether the list is in navigation mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nav")]
     public bool Nav { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VList : ComponentBase
     /// Whether to disable list interaction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VList : ComponentBase
     /// Visual variant style of the list.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VList : ComponentBase
     /// Border radius style of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VList : ComponentBase
     /// Elevation shadow level of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VList : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VList : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VList : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -183,6 +207,7 @@ public sealed class VList : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -190,6 +215,7 @@ public sealed class VList : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -197,6 +223,7 @@ public sealed class VList : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -204,6 +231,7 @@ public sealed class VList : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -211,5 +239,6 @@ public sealed class VList : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

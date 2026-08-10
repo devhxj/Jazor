@@ -317,7 +317,7 @@ internal static class CurrentComponentHostScenarioCatalog
             "custom-state-and-props-identifiers",
             CurrentComponentHostConfigurationKind.CustomSurfaceIdentifiers,
             ParameterAndFieldSource,
-            ["componentProps.label", "componentState.count"],
+            ["componentProps.Label", "componentState.count"],
             ["props.label", "state.count"]),
         Success(
             "hyphenated-parameter-name",
@@ -338,7 +338,7 @@ internal static class CurrentComponentHostScenarioCatalog
             "blank-parameter-runtime-name-fallback",
             CurrentComponentHostConfigurationKind.BlankParameterNameFallback,
             ParameterSource,
-            ["props.label"],
+            ["props.Label"],
             ["props[\" \"]"]),
         Success(
             "member-runtime-names",
@@ -352,8 +352,8 @@ internal static class CurrentComponentHostScenarioCatalog
             "non-parameter-auto-property-state-access",
             CurrentComponentHostConfigurationKind.AutoPropertyState,
             AutoPropertySource,
-            ["state.value"],
-            ["value()", "props.value"]),
+            ["state.Value"],
+            ["Value()", "props.Value"]),
         Success(
             "component-invoke-async",
             "component-declared-invoke-async-member-path",
@@ -366,7 +366,7 @@ internal static class CurrentComponentHostScenarioCatalog
             "other-component-instance-normal-dispatch",
             CurrentComponentHostConfigurationKind.ExternalInstanceReceiver,
             ExternalReceiverSource,
-            ["other.count", "other.increment()"],
+            ["other.count", "other.Increment()"],
             ["state.count"])
     ];
 

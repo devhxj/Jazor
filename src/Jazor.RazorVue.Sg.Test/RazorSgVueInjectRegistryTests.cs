@@ -109,6 +109,23 @@ public sealed class VueInjectRegistryTests
         var decoratedParameter = contract.GetMembers("AdditionalAttributes").OfType<IPropertySymbol>().Single();
 
         Assert.IsFalse((bool)InvokePrivate("CapturesUnmatchedValues", decoratedParameter)!);
+
+        var explicitCaptureCompilation = CreateCompilation(RegistrationSource(
+            contractParameter:
+            "[Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }"));
+        var explicitCaptureParameter = GetNamedType(explicitCaptureCompilation, "Demo.ContractShell")
+            .GetMembers("AdditionalAttributes")
+            .OfType<IPropertySymbol>()
+            .Single();
+        Assert.IsTrue((bool)InvokePrivate("CapturesUnmatchedValues", explicitCaptureParameter)!);
+
+        var implicitCaptureCompilation = CreateCompilation(RegistrationSource());
+        var implicitCaptureParameter = GetNamedType(implicitCaptureCompilation, "Demo.ContractShell")
+            .GetMembers("Title")
+            .OfType<IPropertySymbol>()
+            .Single();
+        Assert.IsFalse((bool)InvokePrivate("CapturesUnmatchedValues", implicitCaptureParameter)!);
+
         var readFailure = Assert.Throws<TargetInvocationException>(() =>
             InvokePrivate("ReadComponentType", registration, 2, "extra"));
         Assert.IsInstanceOfType<InvalidOperationException>(readFailure.InnerException);
@@ -163,6 +180,41 @@ public sealed class VueInjectRegistryTests
             "Demo.Contract",
             "Demo.Implementation",
             "must implement IVueContainerImplementation<Demo.Contract>");
+    }
+
+    [TestMethod]
+    public void PrivateRegistryHelpers_IgnoreUnrelatedOrNonBooleanCaptureMetadata()
+    {
+        var compilation = CreateMinimalCompilation(
+            "RazorVue.VueInject.CaptureMetadataShape",
+            """
+            using System;
+
+            namespace Microsoft.AspNetCore.Components
+            {
+                [AttributeUsage(AttributeTargets.Property)]
+                public sealed class ParameterAttribute : Attribute
+                {
+                    public string CaptureUnmatchedValues { get; set; } = string.Empty;
+                    public bool Synthetic { get; set; }
+                }
+            }
+
+            namespace Demo
+            {
+                public sealed class Component
+                {
+                    [Microsoft.AspNetCore.Components.Parameter(Synthetic = true, CaptureUnmatchedValues = "yes")]
+                    public string Value { get; set; } = string.Empty;
+                }
+            }
+            """);
+        var property = GetNamedType(compilation, "Demo.Component")
+            .GetMembers("Value")
+            .OfType<IPropertySymbol>()
+            .Single();
+
+        Assert.IsFalse((bool)InvokePrivate("CapturesUnmatchedValues", property)!);
     }
 
     private static CSharpCompilation CreateCompilation(string source)

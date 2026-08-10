@@ -88,7 +88,9 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 
 ### 2026-08-10
 
-- Jazor 0.7 raises the independent public Vue binding-contract audit gate to 90%. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router currently pass every audited contract unit and their test lanes.
+- Jazor 0.8.0 completes the explicit ECMAScript naming migration. Unmapped C# symbols now retain their authored names; JavaScript ABI differences are declared per member with `Description("@#...")` or `ECMAScriptName`, and RazorVue no longer infers prop, listener, or slot names from casing or Vue conventions.
+- Vuetify bindings are updated to 4.1.8. Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router each complete the public binding-contract audit at 100%, exceeding the 0.8 per-package 96% gate.
+- The current Compiler and RazorVue baselines verify 10,318 compiler scenarios at 98.91% line / 96.01% branch coverage and 4,684 official Razor SG scenarios at 97.57% line / 96.00% branch coverage.
 - Development reload now applies compiler-proven template-only module updates when the consumer registers `JazorHmr.accept(moduleId, handler)`. Missing handlers, failed imports, descriptor or logic changes, and every other unproven boundary use a full-page reload; this does not replace Vue instances or preserve component state automatically.
 - RazorVue G2 retains a repeatable external-package-consumer, generated-artifact, Node, and browser performance baseline. Threshold warnings and unavailable retired-line comparisons remain explicit rather than being presented as a completed performance claim.
 
@@ -97,7 +99,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.7.0
+dotnet add package Jazor --version 0.8.0
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -106,8 +108,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.7.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.7.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.8.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.8.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -115,11 +117,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.7.0" />
-  <PackageReference Include="ECMAScript.Style" Version="0.7.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.7.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.7.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.7.0" />
+  <PackageReference Include="Jazor" Version="0.8.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.8.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.8.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.0" />
 </ItemGroup>
 ```
 

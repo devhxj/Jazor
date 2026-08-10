@@ -197,7 +197,7 @@ internal static class StaticPropertyWriteTargetScenarioCatalog
             """,
             """
             {
-              RuntimeState.value = 1;
+              RuntimeState.Value = 1;
             }
             """),
         new(
@@ -224,7 +224,7 @@ internal static class StaticPropertyWriteTargetScenarioCatalog
             """,
             """
             {
-              RuntimeState.value = 2;
+              RuntimeState.Value = 2;
             }
             """),
         new(
@@ -247,7 +247,7 @@ internal static class StaticPropertyWriteTargetScenarioCatalog
             """,
             """
             {
-              RuntimeState.value = 3;
+              RuntimeState.Value = 3;
             }
             """),
         new(

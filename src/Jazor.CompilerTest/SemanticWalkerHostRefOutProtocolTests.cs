@@ -43,8 +43,8 @@ public sealed class SemanticWalkerHostRefOutProtocolTests
         }.Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "this.readAndCopy(hostRef, undefined)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "this.writeAndCopy(hostRef, undefined)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.ReadAndCopy(hostRef, undefined)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.WriteAndCopy(hostRef, undefined)", StringComparison.Ordinal);
         StringAssert.Contains(script, "hostRef = ", StringComparison.Ordinal);
         StringAssert.Contains(script, "hostOut = ", StringComparison.Ordinal);
         StringAssert.Contains(script, "hostFinalOut = ", StringComparison.Ordinal);

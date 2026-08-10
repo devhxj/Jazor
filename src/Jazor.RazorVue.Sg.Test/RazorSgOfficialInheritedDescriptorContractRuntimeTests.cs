@@ -21,11 +21,11 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
             namespace Demo.Components
             {
-                [VueLibraryEmit(nameof(TitleChanged), Name = "title-change")]
                 public abstract class InheritedReleasePanelBase : ComponentBase
                 {
                     [ECMAScriptName("heading")]
                     [Parameter] public string Title { get; set; } = string.Empty;
+                    [ECMAScriptName("onTitleChange")]
                     [Parameter] public EventCallback<string> TitleChanged { get; set; }
                 }
 
@@ -40,7 +40,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props: [\"heading\", \"onTitleChange\"]", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "emits: [\"title-change\"]", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("emits:", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.heading", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -86,12 +86,13 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
             namespace Demo.Components
             {
-                [VueLibraryEmit(nameof(TitleChanged), Name = "title-change")]
                 public abstract class InheritedReleasePanelBase : ComponentBase
                 {
                     [ECMAScriptName("heading")]
                     [Parameter] public string Title { get; set; } = string.Empty;
+                    [ECMAScriptName("onTitleChange")]
                     [Parameter] public EventCallback<string> TitleChanged { get; set; }
+                    [ECMAScriptName("header")]
                     [Parameter] public RenderFragment? Header { get; set; }
                 }
 
@@ -123,7 +124,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             componentMetadataName: "Demo.Pages.ReleaseEditor");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "heading: props.title", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "heading: props.Title", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onTitleChange", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
@@ -139,7 +140,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             import inheritedReleasePanel from "./components/inherited-release-panel-contract-runtime.mjs";
 
             test("official Razor inherited descriptors preserve the component contract", () => {
-                const render = component.setup({ title: "Draft release" }, { slots: {} });
+                const render = component.setup({ Title: "Draft release" }, { slots: {} });
                 const root = render();
                 assert.equal(root.name, "section");
                 assert.equal(root.props["data-page"], "release-editor");

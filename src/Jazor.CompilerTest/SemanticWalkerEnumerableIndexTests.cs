@@ -57,7 +57,7 @@ public sealed class SemanticWalkerEnumerableIndexTests
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEquivalent(new[] { "index" }, importNames);
         StringAssert.Contains(body, "index(releaseIds)", StringComparison.Ordinal);
-        StringAssert.Contains(body, "pair.index * 10 + pair.item", StringComparison.Ordinal);
+        StringAssert.Contains(body, "pair.Index * 10 + pair.Item", StringComparison.Ordinal);
 
         var moduleImports = "import { " + string.Join(", ", importNames) + " } from \"" + imports[0].Key + "\";";
         _ = new Parser().ParseModule(moduleImports + "\nfunction verify() " + body);

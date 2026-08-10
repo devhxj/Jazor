@@ -60,9 +60,8 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
         Assert.AreEqual(
             """
             import { defineComponent, h } from "vue";
-            let Child = defineComponent({ name: "ChildView" });
-            export { Child as child };
-            export function render(child) {
+            export let Child = defineComponent({ name: "ChildView" });
+            export function Render(child) {
               return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
             }
 

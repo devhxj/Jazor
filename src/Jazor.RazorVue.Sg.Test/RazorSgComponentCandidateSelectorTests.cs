@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Reflection;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -121,6 +122,79 @@ public sealed class ComponentSelectorTests
         Assert.IsTrue(handwritten.IsDefaultOrEmpty);
         Assert.AreEqual(1, tailOutput.Length);
         Assert.IsNull(ComponentSelector.FindHandwrittenBuildRenderTreeMethod(tailRequired[0]));
+    }
+
+    [TestMethod]
+    public void RazorSourceIdentity_RejectsPlainCSharpTypesAndMethods()
+    {
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public sealed class PlainComponent { public void Execute() { } }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Components/PlainComponent.cs");
+        var compilation = CreateCompilation("RazorSg.PlainSourceIdentity", sourceTree);
+        var component = compilation.GetTypeByMetadataName("Demo.PlainComponent");
+        Assert.IsNotNull(component);
+        var execute = component.GetMembers("Execute").OfType<IMethodSymbol>().Single();
+
+        Assert.IsFalse(InvokeHasRazorSourceIdentity(component!));
+        Assert.IsFalse(InvokeHasRazorSourceIdentity(execute));
+    }
+
+    [TestMethod]
+    public void RazorSourceIdentity_RejectsMetadataTypesAndMethods()
+    {
+        var compilation = CreateCompilation("RazorSg.MetadataSourceIdentity");
+        var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+        Assert.IsNotNull(componentBase);
+        var onInitialized = componentBase.GetMembers("OnInitialized").OfType<IMethodSymbol>().Single();
+
+        Assert.IsFalse(InvokeHasRazorSourceIdentity(componentBase));
+        Assert.IsFalse(InvokeHasRazorSourceIdentity(onInitialized));
+    }
+
+    [TestMethod]
+    public void ModuleAttributeRecognition_UsesMetadataNameFallbackAcrossCompilationSnapshots()
+    {
+        var candidateCompilation = CSharpCompilation.Create(
+            "RazorSg.ModuleAttributeCandidate",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+
+                [ECMAScriptModule]
+                public sealed class Candidate { }
+
+                [System.Obsolete]
+                public sealed class DecoratedPlain { }
+                """,
+                new CSharpParseOptions(LanguageVersion.Preview),
+                path: "Candidate.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var candidate = candidateCompilation.GetTypeByMetadataName("Candidate");
+        Assert.IsNotNull(candidate);
+
+        var fallbackAttributeCompilation = CSharpCompilation.Create(
+            "RazorSg.ModuleAttributeFallback",
+            [CSharpSyntaxTree.ParseText(
+                "namespace ECMAScript; public sealed class ECMAScriptModuleAttribute : System.Attribute { }",
+                new CSharpParseOptions(LanguageVersion.Preview),
+                path: "FallbackAttribute.cs")],
+            TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var fallbackAttribute = fallbackAttributeCompilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
+        var actualModuleAttribute = candidateCompilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
+        var decoratedPlain = candidateCompilation.GetTypeByMetadataName("DecoratedPlain");
+        Assert.IsNotNull(fallbackAttribute);
+        Assert.IsNotNull(actualModuleAttribute);
+        Assert.IsNotNull(decoratedPlain);
+
+        var method = typeof(ComponentSelector).GetMethod(
+            "HasECMAScriptModuleAttribute",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.IsNotNull(method);
+        Assert.IsTrue((bool)method.Invoke(null, [candidate!, fallbackAttribute!])!);
+        Assert.IsFalse((bool)method.Invoke(null, [decoratedPlain!, actualModuleAttribute!])!);
     }
 
     [TestMethod]
@@ -353,4 +427,22 @@ public sealed class ComponentSelectorTests
             syntaxTrees,
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    private static bool InvokeHasRazorSourceIdentity(INamedTypeSymbol symbol)
+        => InvokeHasRazorSourceIdentityCore(symbol, typeof(INamedTypeSymbol));
+
+    private static bool InvokeHasRazorSourceIdentity(IMethodSymbol symbol)
+        => InvokeHasRazorSourceIdentityCore(symbol, typeof(IMethodSymbol));
+
+    private static bool InvokeHasRazorSourceIdentityCore(ISymbol symbol, Type parameterType)
+    {
+        var method = typeof(ComponentSelector).GetMethod(
+            "HasRazorSourceIdentity",
+            BindingFlags.NonPublic | BindingFlags.Static,
+            binder: null,
+            types: [parameterType],
+            modifiers: null);
+        Assert.IsNotNull(method);
+        return (bool)method.Invoke(null, [symbol])!;
+    }
 }

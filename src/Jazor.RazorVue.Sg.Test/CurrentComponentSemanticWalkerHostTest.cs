@@ -140,9 +140,9 @@ public sealed class VueSemanticWalkerHostTest
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "builder.openElement(\"button\");", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", Increment);", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.addContent(state.count);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addContent(props.title);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addContent(props.Title);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains(".bind(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.increment", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.count", StringComparison.Ordinal), script);
@@ -179,7 +179,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addContent(displayTitle());", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addContent(DisplayTitle());", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -228,11 +228,11 @@ public sealed class VueSemanticWalkerHostTest
             });
         var script = string.Join("\n", imports.Concat([body!])).ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "builder.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
         StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "@jazor/vue-runtime/render-context.mjs", StringComparison.Ordinal);
         StringAssert.Contains(script, "let nested = createRenderContext(h);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "nested.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script, "nested.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("MarkupString", StringComparison.Ordinal), script);
@@ -290,7 +290,7 @@ public sealed class VueSemanticWalkerHostTest
         StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "let scope = new RenderScope;", StringComparison.Ordinal);
         StringAssert.Contains(script, "try {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.dispose();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "scope.Dispose();", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.addComponentParameter(\"Title\", \"queued\");", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
@@ -327,7 +327,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", Increment);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), script);
     }
@@ -360,7 +360,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", refresh);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", Refresh);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
     }
 
@@ -388,7 +388,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addAttribute(\"changed\", props.changed);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"changed\", props.Changed);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
     }
 
@@ -422,7 +422,7 @@ public sealed class VueSemanticWalkerHostTest
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", () => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "select(item);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Select(item);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
     }
 
@@ -509,7 +509,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addContent(count());", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addContent(Count());", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -536,7 +536,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addContent(props.title);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addContent(props.Title);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("TypeCheck", StringComparison.Ordinal), script);
     }
 
@@ -641,7 +641,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "invokeAsync(increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "invokeAsync(Increment);", StringComparison.Ordinal);
         StringAssert.Contains(script!, "invokeAsync(() => {", StringComparison.Ordinal);
         StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
@@ -682,7 +682,7 @@ public sealed class VueSemanticWalkerHostTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "invokeAsync(increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "invokeAsync(Increment);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("StateHasChanged", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
@@ -717,8 +717,8 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "props.onClick?.();", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "props.onValue?.(3);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "props.OnClick?.();", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "props.OnValue?.(3);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
     }
@@ -753,8 +753,8 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "action.click?.();", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "action.select?.(3);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "action.Click?.();", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "action.Select?.(3);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
     }
 
@@ -787,7 +787,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onsubmit\", state.usePrimary ? primary : secondary);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onsubmit\", state.usePrimary ? Primary : Secondary);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("EventCallback", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
     }

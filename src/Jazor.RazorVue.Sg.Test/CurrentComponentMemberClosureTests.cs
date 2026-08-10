@@ -145,9 +145,9 @@ public sealed class CurrentComponentMemberClosureTests
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "function buildRenderTree(builder)", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "function increment()", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "function seed()", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function BuildRenderTree(builder)", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function Increment()", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "function Seed()", StringComparison.Ordinal);
         StringAssert.Contains(script!, "builder.openElement(\"button\");", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("unusedSeed", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("_unused", StringComparison.Ordinal), script);

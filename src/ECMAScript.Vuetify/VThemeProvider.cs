@@ -14,6 +14,7 @@ public sealed class VThemeProvider : ComponentBase
     /// Shows background.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("withBackground")]
     public bool WithBackground { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VThemeProvider : ComponentBase
     /// Theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VThemeProvider : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VThemeProvider : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -42,5 +46,6 @@ public sealed class VThemeProvider : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -16,6 +16,7 @@ public sealed class VTextarea : VInputComponentBase
     /// Auto-grows the textarea height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoGrow")]
     public bool AutoGrow { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VTextarea : VInputComponentBase
     /// Number of visible rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rows")]
     public VueStringNumberValue? Rows { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VTextarea : VInputComponentBase
     /// Maximum number of visible rows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxRows")]
     public VueStringNumberValue? MaxRows { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VTextarea : VInputComponentBase
     /// Disables textarea resizing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noResize")]
     public bool NoResize { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VTextarea : VInputComponentBase
     /// Autofocuses the textarea.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool Autofocus { get; set; }
 
     /// <summary>
@@ -51,5 +56,6 @@ public sealed class VTextarea : VInputComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

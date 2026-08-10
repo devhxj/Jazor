@@ -16,6 +16,7 @@ public sealed class VCardSubtitle : ComponentBase
     /// Additional attributes applied to the component root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -23,5 +24,6 @@ public sealed class VCardSubtitle : ComponentBase
     /// Child content of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

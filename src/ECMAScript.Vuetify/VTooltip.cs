@@ -15,6 +15,7 @@ public sealed class VTooltip : ComponentBase
     /// Model value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VTooltip : ComponentBase
     /// Model value changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VTooltip : ComponentBase
     /// Element ID.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VTooltip : ComponentBase
     /// Makes the tooltip interactive.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("interactive")]
     public bool Interactive { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VTooltip : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VTooltip : ComponentBase
     /// Location of the tooltip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VTooltip : ComponentBase
     /// Origin point for the transition.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyLocation? Origin { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VTooltip : ComponentBase
     /// Offset from the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VueStringNumberValue? Offset { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VTooltip : ComponentBase
     /// Opens on click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool OpenOnClick { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VTooltip : ComponentBase
     /// Opens on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VTooltip : ComponentBase
     /// Opens on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool OpenOnFocus { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VTooltip : ComponentBase
     /// Open delay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VTooltip : ComponentBase
     /// Close delay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VTooltip : ComponentBase
     /// Disables the tooltip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VTooltip : ComponentBase
     /// Forces eager rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VTooltip : ComponentBase
     /// Minimum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VTooltip : ComponentBase
     /// Maximum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VTooltip : ComponentBase
     /// Width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VTooltip : ComponentBase
     /// Transition effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VTooltip : ComponentBase
     /// Activator element props.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VTooltip : ComponentBase
     /// Content element props.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VTooltip : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VTooltip : ComponentBase
     /// Activator slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VOverlayActivatorContext>? Activator { get; set; }
 
     /// <summary>
@@ -176,5 +199,6 @@ public sealed class VTooltip : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

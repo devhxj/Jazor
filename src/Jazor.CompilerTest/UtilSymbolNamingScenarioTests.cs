@@ -68,6 +68,14 @@ public sealed class UtilSymbolNamingScenarioTests
 
                 public void Build(int value) { }
             }
+
+            [ECMAScript]
+            public sealed class RuntimeOverloadSample
+            {
+                public void Build() { }
+
+                public void Build(int value) { }
+            }
             """);
         var boundaryHost = fixture.GetType("BoundaryHost");
         var descriptionNamedHost = fixture.GetType("DescriptionNamedHost");
@@ -77,6 +85,8 @@ public sealed class UtilSymbolNamingScenarioTests
         var nullDescriptionHost = fixture.GetType("NullDescriptionHost");
         var release = fixture.GetType("Release");
         var sample = fixture.GetType("NamingSample");
+
+        var runtimeOverloadSample = fixture.GetType("RuntimeOverloadSample");
         var indexer = sample.GetMembers().OfType<IPropertySymbol>()
             .Single(static property => property.IsIndexer);
         var overloads = sample.GetMembers("Build").OfType<IMethodSymbol>()
@@ -90,14 +100,162 @@ public sealed class UtilSymbolNamingScenarioTests
         Assert.IsNull(Util.GetSymbolConfigName(blankNamedHost));
         Assert.IsNull(Util.GetSymbolConfigName(nullExplicitNameHost));
         Assert.IsNull(Util.GetSymbolConfigName(nullDescriptionHost));
-        Assert.AreEqual("httpServer", Util.GetConfigOrSymbolName(sample.GetMembers("HTTPServer").Single()));
+        Assert.AreEqual("HTTPServer", Util.GetConfigOrSymbolName(sample.GetMembers("HTTPServer").Single()));
 
         var overloadNames = overloads.Select(Util.GetConfigOrSymbolName).ToArray();
         Assert.HasCount(2, overloadNames.Distinct(StringComparer.Ordinal));
-        Assert.IsTrue(overloadNames.All(static name => name.StartsWith("build_", StringComparison.Ordinal)));
+        Assert.IsTrue(overloadNames.All(static name => name.StartsWith("Build_", StringComparison.Ordinal)));
+
+        var runtimeOverloadNames = runtimeOverloadSample.GetMembers("Build")
+            .OfType<IMethodSymbol>()
+            .Select(Util.GetConfigOrSymbolName)
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "Build", "Build" }, runtimeOverloadNames);
+
         Assert.IsTrue(Util.IsECMAScriptRecordProxyMember(release.GetMembers("Id").OfType<IPropertySymbol>().Single()));
         StringAssert.StartsWith(Util.GetMemberIndexerAccessorHelperName(indexer.GetMethod!), "$get_", StringComparison.Ordinal);
         StringAssert.StartsWith(Util.GetMemberIndexerAccessorHelperName(indexer.SetMethod!), "$set_", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void SymbolNaming_IndexerAccessorHelperRejectsOrdinaryMethodsAndKeepsTupleRuntimeFields()
+    {
+        var fixture = Compile(
+            """
+            public sealed class NamingSample
+            {
+                public (int count, string label) Tuple;
+
+                public void Build()
+                {
+                }
+            }
+            """);
+        var sample = fixture.GetType("NamingSample");
+        var method = sample.GetMembers("Build").OfType<IMethodSymbol>().Single();
+        var tuple = sample.GetMembers("Tuple").OfType<IFieldSymbol>().Single().Type as INamedTypeSymbol;
+        Assert.IsNotNull(tuple);
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => Util.GetMemberIndexerAccessorHelperName(method));
+        Assert.AreEqual("symbol", exception.ParamName);
+        Assert.AreEqual("count", Util.GetConfigOrSymbolName(tuple.TupleElements[0]));
+        Assert.AreEqual("label", Util.GetConfigOrSymbolName(tuple.TupleElements[1]));
+    }
+
+    [TestMethod]
+    public void ClrImportNames_KeepMemberIdentitySeparateFromRuntimeExportName()
+    {
+        var fixture = Compile(
+            """
+            using System;
+
+            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+            public sealed class JazorAttribute : Attribute
+            {
+                public JazorAttribute()
+                {
+                }
+
+                public JazorAttribute(object? op, string? member, string? value = null)
+                {
+                }
+            }
+
+            [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+            public sealed class OtherAttribute : Attribute
+            {
+            }
+
+            public sealed class ImportNameHost
+            {
+                [Other]
+                public void Unrelated()
+                {
+                }
+
+                [Jazor]
+                public void MissingArguments()
+                {
+                }
+
+                [Jazor(null, "Ignored")]
+                public void NullOperation()
+                {
+                }
+
+                [Jazor(2, "AliasOnly")]
+                public void AliasOnly()
+                {
+                }
+
+                [Jazor(3, "")]
+                public void EmptyMember()
+                {
+                }
+
+                [Jazor(3, null)]
+                public void NullMember()
+                {
+                }
+
+                [Jazor(3, "Demo.NoRuntimeValue")]
+                public void NoRuntimeValue()
+                {
+                }
+
+                [Jazor(3, "Demo.EmptyRuntimeValue", "")]
+                public void EmptyRuntimeValue()
+                {
+                }
+
+                [Jazor(3, "Demo.RuntimeNamed", "runtimeNamed")]
+                public void RuntimeNamed()
+                {
+                }
+
+                [Jazor(3, "Demo.MappedProperty", "mappedProperty")]
+                public int MappedProperty { get; set; }
+            }
+            """);
+        var host = fixture.GetType("ImportNameHost");
+
+        AssertNoMapping(GetMethod("Unrelated"));
+        AssertNoMapping(GetMethod("MissingArguments"));
+        AssertNoMapping(GetMethod("NullOperation"));
+        AssertNoMapping(GetMethod("AliasOnly"));
+        AssertNoMapping(GetMethod("EmptyMember"));
+        AssertNoMapping(GetMethod("NullMember"));
+        AssertMapping(GetMethod("NoRuntimeValue"), "Demo.NoRuntimeValue", "", hasRuntimeName: false);
+        AssertMapping(GetMethod("EmptyRuntimeValue"), "Demo.EmptyRuntimeValue", "", hasRuntimeName: false);
+        AssertMapping(GetMethod("RuntimeNamed"), "Demo.RuntimeNamed", "runtimeNamed", hasRuntimeName: true);
+
+        var getter = host.GetMembers("MappedProperty")
+            .OfType<IPropertySymbol>()
+            .Single()
+            .GetMethod!;
+        AssertMapping(getter, "Demo.MappedProperty", "mappedProperty", hasRuntimeName: true);
+
+        IMethodSymbol GetMethod(string name)
+            => host.GetMembers(name).OfType<IMethodSymbol>().Single();
+
+        static void AssertNoMapping(ISymbol symbol)
+        {
+            Assert.IsFalse(Util.TryGetJazorImportMapping(symbol, out var memberName, out var runtimeName));
+            Assert.AreEqual("", memberName);
+            Assert.AreEqual("", runtimeName);
+            Assert.IsFalse(Util.TryGetJazorImportRuntimeName(symbol, out runtimeName));
+            Assert.AreEqual("", runtimeName);
+        }
+
+        static void AssertMapping(ISymbol symbol, string expectedMemberName, string expectedRuntimeName, bool hasRuntimeName)
+        {
+            Assert.IsTrue(Util.TryGetJazorImportMapping(symbol, out var memberName, out var runtimeName));
+            Assert.AreEqual(expectedMemberName, memberName);
+            Assert.AreEqual(expectedRuntimeName, runtimeName);
+            Assert.AreEqual(hasRuntimeName, Util.TryGetJazorImportRuntimeName(symbol, out runtimeName));
+            Assert.AreEqual(expectedRuntimeName, runtimeName);
+        }
     }
 
     private static SymbolFixture Compile(string source)

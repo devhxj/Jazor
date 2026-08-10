@@ -14,6 +14,7 @@ public sealed class VDatePicker : ComponentBase
     /// Bound value for the selected date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyDatePickerModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VDatePicker : ComponentBase
     /// Callback when the selected date changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyDatePickerModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to allow selecting multiple dates.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public VuetifyDatePickerMultipleValue? Multiple { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VDatePicker : ComponentBase
     /// Minimum selectable date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public VuetifyDatePickerModelValue? Min { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VDatePicker : ComponentBase
     /// Maximum selectable date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VuetifyDatePickerModelValue? Max { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VDatePicker : ComponentBase
     /// Currently displayed year.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("year")]
     public int? Year { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VDatePicker : ComponentBase
     /// Callback when the displayed year changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:year")]
     public EventCallback<int> YearChanged { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VDatePicker : ComponentBase
     /// Currently displayed month.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("month")]
     public VueStringNumberValue? Month { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VDatePicker : ComponentBase
     /// Callback when the displayed month changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:month")]
     public EventCallback<int> MonthChanged { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VDatePicker : ComponentBase
     /// View mode of the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("viewMode")]
     public VuetifyDatePickerViewMode? ViewMode { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VDatePicker : ComponentBase
     /// Callback when the view mode changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:viewMode")]
     public EventCallback<VuetifyDatePickerViewMode> ViewModeChanged { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VDatePicker : ComponentBase
     /// Currently active date.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public VuetifyDatePickerActiveValue? Active { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to disable the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to show dates from adjacent months.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showAdjacentMonths")]
     public bool ShowAdjacentMonths { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VDatePicker : ComponentBase
     /// Weekdays to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("weekdays")]
     public VuetifyCalendarWeekdays? Weekdays { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VDatePicker : ComponentBase
     /// Number of weeks displayed per month.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("weeksInMonth")]
     public VuetifyDatePickerWeeksInMonth? WeeksInMonth { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VDatePicker : ComponentBase
     /// First day of the week.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public VueStringNumberValue? FirstDayOfWeek { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VDatePicker : ComponentBase
     /// Function or array of allowed selectable dates.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("allowedDates")]
     public VuetifyDatePickerAllowedDatesValue? AllowedDates { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to hide the weekday row.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideWeekdays")]
     public bool HideWeekdays { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to show week numbers.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showWeek")]
     public bool ShowWeek { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VDatePicker : ComponentBase
     /// Transition animation when switching months.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public string? Transition { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VDatePicker : ComponentBase
     /// Reverse transition animation when switching months.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverseTransition")]
     public string? ReverseTransition { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VDatePicker : ComponentBase
     /// Height of the navigation controls.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("controlHeight")]
     public VueStringNumberValue? ControlHeight { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VDatePicker : ComponentBase
     /// Icon for next month navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public VuetifyIconValue? NextIcon { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VDatePicker : ComponentBase
     /// Icon for previous month navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public VuetifyIconValue? PrevIcon { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VDatePicker : ComponentBase
     /// Icon for switching view mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modeIcon")]
     public VuetifyIconValue? ModeIcon { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VDatePicker : ComponentBase
     /// Text content of the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -211,6 +238,7 @@ public sealed class VDatePicker : ComponentBase
     /// Header background color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headerColor")]
     public string? HeaderColor { get; set; }
 
     /// <summary>
@@ -218,6 +246,7 @@ public sealed class VDatePicker : ComponentBase
     /// Component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -225,6 +254,7 @@ public sealed class VDatePicker : ComponentBase
     /// Root element HTML tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -232,6 +262,7 @@ public sealed class VDatePicker : ComponentBase
     /// Border radius style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -239,6 +270,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -246,6 +278,7 @@ public sealed class VDatePicker : ComponentBase
     /// Positioning of the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -253,6 +286,7 @@ public sealed class VDatePicker : ComponentBase
     /// Popup location of the picker.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -260,6 +294,7 @@ public sealed class VDatePicker : ComponentBase
     /// Elevation level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -267,6 +302,7 @@ public sealed class VDatePicker : ComponentBase
     /// Component height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -274,6 +310,7 @@ public sealed class VDatePicker : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -281,6 +318,7 @@ public sealed class VDatePicker : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -288,6 +326,7 @@ public sealed class VDatePicker : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -295,6 +334,7 @@ public sealed class VDatePicker : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -302,6 +342,7 @@ public sealed class VDatePicker : ComponentBase
     /// Component width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -309,6 +350,7 @@ public sealed class VDatePicker : ComponentBase
     /// Border style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -316,6 +358,7 @@ public sealed class VDatePicker : ComponentBase
     /// Component theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -323,6 +366,7 @@ public sealed class VDatePicker : ComponentBase
     /// Component background color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -330,6 +374,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to show dividers.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divided")]
     public bool Divided { get; set; }
 
     /// <summary>
@@ -337,6 +382,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to use landscape layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("landscape")]
     public bool Landscape { get; set; }
 
     /// <summary>
@@ -344,6 +390,7 @@ public sealed class VDatePicker : ComponentBase
     /// Picker title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -351,6 +398,7 @@ public sealed class VDatePicker : ComponentBase
     /// Whether to hide the header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideHeader")]
     public bool HideHeader { get; set; }
 
     /// <summary>
@@ -358,6 +406,7 @@ public sealed class VDatePicker : ComponentBase
     /// Additional HTML attributes attached to the component.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -365,6 +414,7 @@ public sealed class VDatePicker : ComponentBase
     /// Default child content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -372,6 +422,7 @@ public sealed class VDatePicker : ComponentBase
     /// Slot content for the actions area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
     /// <summary>
@@ -379,6 +430,7 @@ public sealed class VDatePicker : ComponentBase
     /// Slot content for the header area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment<VDatePickerHeaderSlotContext>? HeaderContent { get; set; }
 
     /// <summary>
@@ -386,5 +438,6 @@ public sealed class VDatePicker : ComponentBase
     /// Slot content for the title area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }

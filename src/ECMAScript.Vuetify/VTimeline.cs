@@ -14,6 +14,7 @@ public sealed class VTimeline : ComponentBase
     /// Theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VTimeline : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VTimeline : ComponentBase
     /// Density.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VTimeline : ComponentBase
     /// Size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VTimeline : ComponentBase
     /// Icon color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconColor")]
     public string? IconColor { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VTimeline : ComponentBase
     /// Dot color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dotColor")]
     public string? DotColor { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VTimeline : ComponentBase
     /// Fills the dot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fillDot")]
     public bool FillDot { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VTimeline : ComponentBase
     /// Hides the opposite side content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideOpposite")]
     public bool? HideOpposite { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VTimeline : ComponentBase
     /// Line inset.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lineInset")]
     public VueStringNumberValue? LineInset { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VTimeline : ComponentBase
     /// Alignment.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("align")]
     public VuetifyTimelineAlign? Align { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VTimeline : ComponentBase
     /// Direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyTimelineDirection? Direction { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VTimeline : ComponentBase
     /// Justification.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justify")]
     public VuetifyTimelineJustify? Justify { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VTimeline : ComponentBase
     /// Side.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("side")]
     public VuetifyTimelineSide? Side { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VTimeline : ComponentBase
     /// Line thickness.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lineThickness")]
     public VueStringNumberValue? LineThickness { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VTimeline : ComponentBase
     /// Line color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lineColor")]
     public string? LineColor { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VTimeline : ComponentBase
     /// Truncates the line.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("truncateLine")]
     public VuetifyTimelineTruncateLine? TruncateLine { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VTimeline : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -133,5 +150,6 @@ public sealed class VTimeline : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

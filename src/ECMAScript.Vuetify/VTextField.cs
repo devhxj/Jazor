@@ -16,6 +16,7 @@ public sealed class VTextField : VInputComponentBase
     /// Input type attribute.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VTextField : VInputComponentBase
     /// Autofocuses the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool Autofocus { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VTextField : VInputComponentBase
     /// Reverses the input direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -37,5 +40,6 @@ public sealed class VTextField : VInputComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

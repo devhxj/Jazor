@@ -83,7 +83,7 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
 
         AssertScriptEqual(
 @"import { KeepAlive, Suspense, Teleport, Transition, h } from ""vue"";
-export function render() {
+export function Render() {
   let content = h(""main"", ""content"");
   let transitioned = ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Transition, {
     name: ""fade"",
@@ -96,14 +96,14 @@ export function render() {
     defer: true
   }, transitioned);
   let kept = ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(KeepAlive, { include: ""Panel"", max: 2 }, teleported);
-  return h(Suspense, { timeout: 1000, onFallback: onFallback }, { default: () => {
+  return h(Suspense, { timeout: 1000, onFallback: OnFallback }, { default: () => {
     return kept;
-  }, fallback: loading });
+  }, fallback: Loading });
 }
-function loading() {
+function Loading() {
   return h(""span"", ""loading"");
 }
-function onFallback() { }
+function OnFallback() { }
 ", script);
     }
 
@@ -112,15 +112,22 @@ function onFallback() { }
     public async Task Convert_ClassUsingVueHComponentSingleVNodeChild_GeneratesDefaultSlotSugar()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -152,9 +159,8 @@ function onFallback() { }
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -177,10 +183,16 @@ export function render(child) {
                     public string? Title { get; init; }
                 }
 
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -212,9 +224,8 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -237,14 +248,20 @@ export function render(child) {
                     public string? Title { get; init; }
                 }
 
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
                     public static IVNode Render()
                         => H(GetChild(), CreateProps(), RenderChild());
 
-                    private static IVueComponent<ChildProps> GetChild()
-                        => Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    private static IVueComponent<ChildProps, ChildSlots> GetChild()
+                        => Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                         {
                             Name = "ChildView"
                         });
@@ -282,16 +299,16 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export function render() {
-  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(getChild(), createProps(), renderChild());
+export function Render() {
+  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(GetChild(), CreateProps(), RenderChild());
 }
-function getChild() {
+function GetChild() {
   return defineComponent({ name: ""ChildView"" });
 }
-function createProps() {
+function CreateProps() {
   return { title: ""Welcome"" };
 }
-function renderChild() {
+function RenderChild() {
   return h(""span"", ""body"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -302,15 +319,22 @@ function renderChild() {
     public async Task Convert_ClassUsingVueHComponentTextChild_GeneratesDefaultSlotSugar()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -342,9 +366,8 @@ function renderChild() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -355,15 +378,22 @@ export function render(child) {
     public async Task Convert_ClassUsingVueHComponentLiteralTextChild_GeneratesDirectDefaultSlotObject()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -395,9 +425,9 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let child = defineComponent({ name: ""ChildView"" });
-export function render() {
-  return h(child, { default: () => ""body"" });
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render() {
+  return h(Child, { default: () => ""body"" });
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -407,15 +437,22 @@ export function render() {
     public async Task Convert_ClassUsingVueHComponentLiteralBoolChild_GeneratesDirectDefaultSlotObject()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -447,9 +484,9 @@ export function render() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let child = defineComponent({ name: ""ChildView"" });
-export function render() {
-  return h(child, { default: () => true });
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render() {
+  return h(Child, { default: () => true });
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -459,15 +496,22 @@ export function render() {
     public async Task Convert_ClassUsingVueHComponentBoolChild_GeneratesDefaultSlotSugar()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -499,9 +543,8 @@ export function render() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -512,15 +555,22 @@ export function render(child) {
     public async Task Convert_ClassUsingVueHComponentIntChild_GeneratesDefaultSlotSugar()
     {
         var code = """
+            using System.ComponentModel;
             using ECMAScript;
             using static ECMAScript.Vue3;
 
             namespace Demo
             {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -552,9 +602,8 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -577,10 +626,16 @@ export function render(child) {
                     public string? Title { get; init; }
                 }
 
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback Default { get; init; } = default!;
+                }
+
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -616,9 +671,9 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let child = defineComponent({ name: ""ChildView"" });
-export function render() {
-  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(child, { title: ""Welcome"" }, [h(""span"", ""a""), h(""span"", ""b"")]);
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render() {
+  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, [h(""span"", ""a""), h(""span"", ""b"")]);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -675,9 +730,8 @@ export function render() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -753,7 +807,7 @@ export function render(child) {
 
         AssertScriptEqual(
 @"import { h } from ""vue"";
-export function render(component, child) {
+export function Render(component, child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(component, child);
 }
 ", script);
@@ -843,7 +897,7 @@ export function render(component, child) {
 
         AssertScriptEqual(
 @"import { h } from ""vue"";
-export function render(component, child) {
+export function Render(component, child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(component, { title: ""Welcome"" }, child);
 }
 ", script);
@@ -919,7 +973,7 @@ export function render(component, child) {
 
         AssertScriptEqual(
 @"import { h } from ""vue"";
-export function render(component, child) {
+export function Render(component, child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(component, child);
 }
 ", script);
@@ -977,9 +1031,8 @@ export function render(component, child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -1043,9 +1096,8 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -1109,9 +1161,8 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-let Child = defineComponent({ name: ""ChildView"" });
-export { Child as child };
-export function render(child) {
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -1163,7 +1214,7 @@ export function render(child) {
 
         var converter = CreateChildrenToSlotConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
-        StringAssert.Contains(exception.Message, "does not declare a default slot");
+        StringAssert.Contains(exception.Message, "does not declare an explicit default slot");
         StringAssert.Contains(exception.Message, "Description(\"@#default\")");
     }
 
@@ -1232,6 +1283,7 @@ export function render(child) {
             {
                 public sealed record ChildSlots : VueSlots
                 {
+                    [Description("@#default")]
                     public VueSlotCallback Default { get; init; } = default!;
 
                     [Description("@#default")]
@@ -1269,8 +1321,8 @@ export function render(child) {
 
         var converter = CreateChildrenToSlotConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
-        StringAssert.Contains(exception.Message, "more than one default slot");
-        StringAssert.Contains(exception.Message, "Description(\"@#default\")");
+        StringAssert.Contains(exception.Message, "more than one explicit default slot");
+        StringAssert.Contains(exception.Message, "Only one property may map to 'default'");
     }
 
 
@@ -1384,9 +1436,9 @@ export function render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let child = defineComponent({ name: ""ChildView"" });
-export function render() {
-  return h(child, { title: ""Welcome"" }, { default: () => 1 });
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render() {
+  return h(Child, { title: ""Welcome"" }, { default: () => 1 });
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }

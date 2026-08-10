@@ -124,13 +124,19 @@ internal static class RazorSgDirectRenderMatrixTestHost
         {
             [ECMAScriptName("heading")]
             [Parameter] public string? Title { get; set; }
+            [ECMAScriptName("count")]
             [Parameter] public int Count { get; set; }
+            [ECMAScriptName("enabled")]
             [Parameter] public bool Enabled { get; set; }
             [ECMAScriptName("modelValue")]
             [Parameter] public string? Value { get; set; }
+            [ECMAScriptName("onClick")]
             [Parameter] public EventCallback OnClick { get; set; }
+            [ECMAScriptName("onUpdate:modelValue")]
             [Parameter] public EventCallback<string> ValueChanged { get; set; }
+            [ECMAScriptName("default")]
             [Parameter] public RenderFragment? ChildContent { get; set; }
+            [ECMAScriptName("header")]
             [Parameter] public RenderFragment? Header { get; set; }
             [ECMAScriptName("item")]
             [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
@@ -448,7 +454,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.AddComponentParameter(1, \"OnClick\", EventCallback.Factory.Create(this, HandleClick" + suffix + ")); " +
                 "builder.CloseComponent();",
                 "onClick",
-                "handleClick" + suffix,
+                "HandleClick" + suffix,
                 usesFragment: false,
                 usesStaticVNode: false,
                 group: DirectRenderCaseGroup.Component,
@@ -512,7 +518,7 @@ internal static partial class DirectRenderCaseCatalog
                 "control_conditional_content_" + suffix,
                 "if (Visible) { builder.AddContent(0, " + CSharpStringLiteral(visible) + "); } " +
                 "else { builder.AddContent(1, " + CSharpStringLiteral(hidden) + "); }",
-                "props.visible",
+                "props.Visible",
                 JavaScriptAstFactory.CreateStringLiteral(visible).ToKnRECMAScript(),
                 usesFragment: false,
                 usesStaticVNode: false,
@@ -539,7 +545,7 @@ internal static partial class DirectRenderCaseCatalog
                 "if (Visible) { builder.AddAttribute(1, " + CSharpStringLiteral(attributeName) + ", " + CSharpStringLiteral(whenTrue) + "); } " +
                 "else { builder.AddAttribute(2, " + CSharpStringLiteral(attributeName) + ", " + CSharpStringLiteral(whenFalse) + "); } " +
                 "builder.CloseElement();",
-                "props.visible",
+                "props.Visible",
                 FormatObjectPropertyKey(attributeName),
                 usesFragment: false,
                 usesStaticVNode: false,
@@ -559,7 +565,7 @@ internal static partial class DirectRenderCaseCatalog
             "if (Visible) builder.AddAttribute(1, \"data-state\", \"ready\"); " +
             "else builder.AddAttribute(2, \"data-state\", \"blocked\"); " +
             "builder.CloseElement();",
-            "props.visible",
+            "props.Visible",
             "data-state",
             usesFragment: false,
             usesStaticVNode: false,
@@ -579,7 +585,7 @@ internal static partial class DirectRenderCaseCatalog
                 cases,
                 "control_foreach_" + suffix,
                 body,
-                "Array.from(props.items ?? []",
+                "Array.from(props.Items ?? []",
                 JavaScriptAstFactory.CreateStringLiteral(prefix).ToKnRECMAScript(),
                 usesFragment: false,
                 usesStaticVNode: false,

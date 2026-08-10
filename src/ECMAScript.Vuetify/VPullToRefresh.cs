@@ -14,6 +14,7 @@ public sealed class VPullToRefresh : ComponentBase
     /// Whether the pull-to-refresh is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VPullToRefresh : ComponentBase
     /// The threshold distance to trigger a pull-to-refresh.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("pullDownThreshold")]
     public Number? PullDownThreshold { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VPullToRefresh : ComponentBase
     /// Callback invoked when a pull-to-refresh load is triggered.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback<VPullToRefreshLoadOptions> OnLoad { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VPullToRefresh : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VPullToRefresh : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -49,5 +54,6 @@ public sealed class VPullToRefresh : ComponentBase
     /// Custom content for the pull-down panel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("pull-down-panel")]
     public RenderFragment<VPullToRefreshPanelSlotContext>? PullDownPanel { get; set; }
 }

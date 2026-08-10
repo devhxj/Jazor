@@ -1,4 +1,4 @@
-# Jazor Compiler 主线状态（2026-08-05）
+# Jazor Compiler 主线状态（2026-08-10）
 
 > Status: 当前状态快照
 > Positioning: 仓库级编译器主线状态快照
@@ -9,12 +9,12 @@
 
 当前可复验基线：
 
-- `Jazor.CompilerTest`：10297 / 10297 通过
-- `Jazor.Compiler` 行覆盖：16369 / 16545（98.94%）
-- `Jazor.Compiler` 分支覆盖：6324 / 6587（96.01%）
+- `Jazor.CompilerTest`：10318 / 10318 通过
+- `Jazor.Compiler` 行覆盖：16397 / 16578（98.91%）
+- `Jazor.Compiler` 分支覆盖：6334 / 6597（96.01%）
 - 验收入口：`dotnet run --file scripts/csharp/verify-compiler-coverage.cs`
 
-coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 96% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-05 的 `v0.1.45` 正式门禁报告，是 96.01% 的已验证发布基线；当前 96% 分支门槛已经达成。
+coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobertura，并对 10,000 个通过测试、98% 行覆盖和 96% 分支覆盖执行非零退出码约束；`coverlet.runsettings` 本身不承担阈值判断。上方结果来自 2026-08-10 的 `v0.8.0` 正式门禁复验，是 96.01% 的已验证发布基线；当前 96% 分支门槛已经达成。
 
 更具体而言：
 
@@ -52,6 +52,7 @@ coverage gate 会直接运行完整 compiler suite、读取本次 TRX 与 Cobert
 - `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态；数组 receiver/index 与成员 receiver 会在调用前仅求值一次，`out` 只计算 storage location 而不读取旧值
 - 具名实参：按源码顺序求值，再按 Roslyn 已绑定的 `IArgumentOperation.Parameter` 槽位调用；调用和构造函数共用这条路径
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
+- ECMAScript 名称：未映射的 C# 符号保留源码名称；外部 JavaScript ABI 差异由成员级 `ECMAScriptName` 或 `Description("@#...")` 声明，普通 compiler 与 RazorVue 不再按 PascalCase、lowerCamelCase 或 Vue 协议推断名称
 - `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact；erased interface `is` 仅在 Roslyn 可证明时折叠，`T : IContract` 保留非空判断，`T : struct, IContract` 折叠为 `true`
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
 - iterator：module method、runtime member method 与 local function 都从实际 Roslyn operation tree 判定 generator；`yield return` / `yield break` 输出 `function*`，`async IAsyncEnumerable<T>` 输出 `async function*`。共享遍历会在 nested lambda/local function 处停止，避免子函数的 yield 错误改变外层函数形态

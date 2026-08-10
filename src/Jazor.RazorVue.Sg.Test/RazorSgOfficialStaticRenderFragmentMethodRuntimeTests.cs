@@ -23,7 +23,7 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
                 [ECMAScriptModule("./components/slot-host-static-render-fragment-runtime")]
                 public sealed class SlotHost : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Content { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#content")] public RenderFragment? Content { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {

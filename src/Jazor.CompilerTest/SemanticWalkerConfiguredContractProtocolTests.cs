@@ -202,7 +202,7 @@ internal static class ConfiguredContractProtocolCatalog
             "name: \"Counter\"",
             "props: [\"baseValue\", \"message\"]",
             "emits: [\"ready\", \"changed\"]",
-            "setup: ConfiguredContractScenarios.setup"),
+            "setup: ConfiguredContractScenarios.Setup"),
         Success(
             "method-group.expression-body-empty-emits",
             "props=generic-index-1;setup=method-group-expression-body;emit-context=present;emits=empty",
@@ -214,7 +214,7 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "props: [\"baseValue\", \"message\"]",
             "emits: []",
-            "setup: ConfiguredContractScenarios.expressionSetup"),
+            "setup: ConfiguredContractScenarios.ExpressionSetup"),
         Success(
             "method-group.no-emit-context-parameter",
             "props=generic-index-1;setup=contravariant-method-group;emit-context=absent;emits=empty",
@@ -226,7 +226,7 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "props: [\"baseValue\", \"message\"]",
             "emits: []",
-            "setup: ConfiguredContractScenarios.setupWithoutEmitContext"),
+            "setup: ConfiguredContractScenarios.SetupWithoutEmitContext"),
         Success(
             "method-group.converted-emit-context",
             "props=generic-index-1;setup=method-group;emit-context=explicit-conversion;emits=literal",
@@ -238,7 +238,7 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "props: [\"baseValue\", \"message\"]",
             "emits: [\"wrapped\"]",
-            "setup: ConfiguredContractScenarios.convertedContextSetup"),
+            "setup: ConfiguredContractScenarios.ConvertedContextSetup"),
         Success(
             "method-group.explicit-delegate-conversion",
             "props=generic-index-1;setup=method-group-explicit-cast;operation=delegate-creation;emits=deduplicated",
@@ -250,7 +250,7 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "props: [\"baseValue\", \"message\"]",
             "emits: [\"ready\", \"changed\"]",
-            "setup: ConfiguredContractScenarios.setup"),
+            "setup: ConfiguredContractScenarios.Setup"),
         Success(
             "inline-lambda.literal-emits",
             "props=generic-index-1;setup=anonymous-function;emits=literal-order",
@@ -362,7 +362,7 @@ internal static class ConfiguredContractProtocolCatalog
                 """,
             "emits: [\"ready\"]",
             "nested: { enabled: true }",
-            "let state = context.state")
+            "let state = context.State")
     ];
 
     public static IReadOnlyList<ConfiguredContractFailureCase> FailureCases { get; } =

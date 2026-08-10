@@ -18,7 +18,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         var script = VisitBlock(block);
 
         StringAssert.Contains(script, "new Holder");
-        StringAssert.Contains(script, ".nested.value = 1");
+        StringAssert.Contains(script, ".Nested.Value = 1");
         ParseScript(script);
     }
 
@@ -30,7 +30,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         var script = VisitBlock(block);
 
         StringAssert.Contains(script, "new Holder");
-        StringAssert.Contains(script, ".fieldNested.value = 2");
+        StringAssert.Contains(script, ".FieldNested.Value = 2");
         ParseScript(script);
     }
 
@@ -42,7 +42,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = new SemanticWalker(true).VisitMemberInitializer(operation, new SenseArgument())?.ToKnRECMAScript();
 
-        Assert.AreEqual("nested: (v$0.value = 3)", script);
+        Assert.AreEqual("Nested: (v$0.Value = 3)", script);
         _ = new Parser().ParseExpression($"({{{script}}})");
     }
 
@@ -54,7 +54,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = new SemanticWalker(true).VisitMemberInitializer(operation, new SenseArgument())?.ToKnRECMAScript();
 
-        Assert.AreEqual("fieldNested: (v$0.value = 4)", script);
+        Assert.AreEqual("FieldNested: (v$0.Value = 4)", script);
         _ = new Parser().ParseExpression($"({{{script}}})");
     }
 
@@ -65,9 +65,9 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        StringAssert.Contains(script, "v$1 = v$0[TestClass.nextIndex()]");
-        StringAssert.Contains(script, "v$1.value = 5");
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        StringAssert.Contains(script, "v$1 = v$0[TestClass.NextIndex()]");
+        StringAssert.Contains(script, "v$1.Value = 5");
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.NextIndex()"));
         ParseScript(script);
     }
 
@@ -83,9 +83,9 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             {
               let holder = (() => {
                 let v$0 = new IndexedHolder;
-                v$0[TestClass.nextIndex()] = (() => {
+                v$0[TestClass.NextIndex()] = (() => {
                   let v$1 = new Nested;
-                  v$1.value = 6;
+                  v$1.Value = 6;
                   return v$1;
                 })();
                 return v$0;
@@ -93,7 +93,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.NextIndex()"));
         ParseScript(script);
     }
 
@@ -114,9 +114,9 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             {
               let values = (() => {
                 let v$0 = createFromCollection([new Nested]);
-                _c16a7960302ea054(v$0, TestClass.nextIndex(), (() => {
+                _c16a7960302ea054(v$0, TestClass.NextIndex(), (() => {
                   let v$1 = new Nested;
-                  v$1.value = 9;
+                  v$1.Value = 9;
                   return v$1;
                 })());
                 return v$0;
@@ -124,7 +124,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"));
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.NextIndex()"));
         ParseScript(script);
     }
 
@@ -172,7 +172,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                 let v$0 = createDefault();
                 setItem(v$0, "primary", new Nested);
                 v$1 = _e73dbdff85c46ddc(v$0, "primary");
-                v$1.value = 8;
+                v$1.Value = 8;
                 return v$0;
               })();
             }
@@ -198,8 +198,8 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        var firstAdd = "_39d6e632c4c102f9(v$0.map, \"one\", 1)";
-        var secondAdd = "_39d6e632c4c102f9(v$0.map, \"two\", 2)";
+        var firstAdd = "_39d6e632c4c102f9(v$0.Map, \"one\", 1)";
+        var secondAdd = "_39d6e632c4c102f9(v$0.Map, \"two\", 2)";
         StringAssert.Contains(script, firstAdd);
         StringAssert.Contains(script, secondAdd);
         Assert.IsLessThan(script.IndexOf(secondAdd, StringComparison.Ordinal), script.IndexOf(firstAdd, StringComparison.Ordinal));
@@ -213,8 +213,8 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        var firstAdd = "v$0.add(1)";
-        var secondAdd = "v$0.add(2)";
+        var firstAdd = "v$0.Add(1)";
+        var secondAdd = "v$0.Add(2)";
         StringAssert.Contains(script, firstAdd);
         StringAssert.Contains(script, secondAdd);
         Assert.IsLessThan(script.IndexOf(secondAdd, StringComparison.Ordinal), script.IndexOf(firstAdd, StringComparison.Ordinal));
@@ -272,7 +272,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         Assert.AreEqual(
             """
             {
-              let payload = { child: { name: "John", age: 30 } };
+              let payload = { Child: { name: "John", age: 30 } };
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
@@ -290,7 +290,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         Assert.AreEqual(
             """
             {
-              let payload = { label: "ready" };
+              let payload = { Label: "ready" };
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
@@ -393,7 +393,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             {
               let rows = (() => {
                 let v$0 = createDefault();
-                add(v$0, { id: 1, name: "one" });
+                add(v$0, { Id: 1, Name: "one" });
                 return v$0;
               })();
               let ids = (() => {
@@ -404,12 +404,12 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
               })();
               let indexLookup = (() => {
                 let v$0 = createDefault();
-                setItem(v$0, "first", { count: 4, label: "four" });
+                setItem(v$0, "first", { Count: 4, Label: "four" });
                 return v$0;
               })();
               let addLookup = (() => {
                 let v$0 = createDefault();
-                _39d6e632c4c102f9(v$0, "second", { count: 5, label: "five" });
+                _39d6e632c4c102f9(v$0, "second", { Count: 5, Label: "five" });
                 return v$0;
               })();
             }
@@ -447,10 +447,10 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
         Assert.AreEqual(
             """
             {
-              let rows = [{ id: 1, label: "one" }, { id: 2, label: "two" }];
-              let ids = new Set([{ id: 3, label: "three" }]);
-              let lookup = new Map([["primary", { count: 4, label: "four" }]]);
-              let entries = new Map([["secondary", { count: 5, label: "five" }]]);
+              let rows = [{ Id: 1, Label: "one" }, { Id: 2, Label: "two" }];
+              let ids = new Set([{ Id: 3, Label: "three" }]);
+              let lookup = new Map([["primary", { Count: 4, Label: "four" }]]);
+              let entries = new Map([["secondary", { Count: 5, Label: "five" }]]);
             }
             """.ReplaceLineEndings(),
             script.ReplaceLineEndings());
@@ -486,7 +486,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        StringAssert.Contains(script, "buffer.length - 1");
+        StringAssert.Contains(script, "buffer.Length - 1");
         ParseScript(script);
     }
 
@@ -499,7 +499,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         StringAssert.Contains(
             script,
-            "v$0 = buffer.length - 1, v$1 = buffer[v$0] + 2, buffer[v$0] = v$1, v$1");
+            "v$0 = buffer.Length - 1, v$1 = buffer[v$0] + 2, buffer[v$0] = v$1, v$1");
         ParseScript(script);
     }
 

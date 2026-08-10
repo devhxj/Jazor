@@ -14,6 +14,7 @@ public sealed class VNumberInput : ComponentBase
     /// Label text of the number input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to display control buttons in an inset style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inset")]
     public bool Inset { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to reverse the order of control buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to hide the input field, showing only control buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideInput")]
     public bool HideInput { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VNumberInput : ComponentBase
     /// Visual variant style of the control buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("controlVariant")]
     public VuetifyNumberInputControlVariant? ControlVariant { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VNumberInput : ComponentBase
     /// Minimum allowed value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VNumberInput : ComponentBase
     /// Maximum allowed value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VNumberInput : ComponentBase
     /// Step increment/decrement value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VNumberInput : ComponentBase
     /// Decimal precision of the numeric value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("precision")]
     public Number? Precision { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to show a clear button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool Clearable { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to disable the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to make the input control read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VNumberInput : ComponentBase
     /// Component density style that adjusts vertical spacing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VNumberInput : ComponentBase
     /// Visual variant style of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyFieldVariant? Variant { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VNumberInput : ComponentBase
     /// Placeholder text of the input field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VNumberInput : ComponentBase
     /// Hint text for the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hint")]
     public string? Hint { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to persistently show the hint text when not focused.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistentHint")]
     public bool PersistentHint { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VNumberInput : ComponentBase
     /// Whether to hide the details area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VNumberInput : ComponentBase
     /// Messages displayed below the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VNumberInput : ComponentBase
     /// Two-way bound value of the number input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VNumberInput : ComponentBase
     /// Callback invoked when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -161,5 +182,6 @@ public sealed class VNumberInput : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

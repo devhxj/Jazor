@@ -15,6 +15,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -37,6 +39,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Event fired when selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifySelectModelValue?> SelectedValueChanged { get; set; }
 
     /// <summary>
@@ -44,6 +47,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Search text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("search")]
     public string? Search { get; set; }
 
     /// <summary>
@@ -51,6 +55,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Event fired when search text changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:search")]
     public EventCallback<string?> SearchChanged { get; set; }
 
     /// <summary>
@@ -58,6 +63,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Auto-selects the first matching item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoSelectFirst")]
     public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
 
     /// <summary>
@@ -65,6 +71,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Clears search on selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearOnSelect")]
     public bool ClearOnSelect { get; set; }
 
     /// <summary>
@@ -72,6 +79,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Custom filter function.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customFilter")]
     public VuetifyFilterFunction? CustomFilter { get; set; }
 
     /// <summary>
@@ -79,6 +87,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Custom key filter functions.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("customKeyFilter")]
     public VuetifyFilterKeyFunctions? CustomKeyFilter { get; set; }
 
     /// <summary>
@@ -86,6 +95,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Keys used for filtering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }
 
     /// <summary>
@@ -93,6 +103,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Filter mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterMode")]
     public VuetifyFilterMode? FilterMode { get; set; }
 
     /// <summary>
@@ -100,6 +111,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Disables filtering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noFilter")]
     public bool NoFilter { get; set; }
 
     /// <summary>
@@ -107,5 +119,6 @@ public sealed class VAutocomplete : VSelectLikeComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

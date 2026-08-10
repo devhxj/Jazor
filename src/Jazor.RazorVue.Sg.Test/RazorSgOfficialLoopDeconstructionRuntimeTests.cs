@@ -35,7 +35,7 @@ public sealed class RazorSgOfficialLoopDeconstructionRuntimeTests
             componentMetadataName: "Demo.Pages.ReleaseEnvironmentSummary");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "Array.from(state.releaseCounts ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "Array.from(state.ReleaseCounts ?? []", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-environment-summary-loop-runtime.mjs",

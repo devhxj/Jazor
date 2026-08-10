@@ -23,7 +23,7 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
                 [ECMAScriptModule("./components/slot-panel-constructor-descriptor-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {

@@ -190,8 +190,8 @@ internal static class InlineEvaluationProtocolCatalog
                 }
             }
             """,
-            ["__jz_arg0 + __jz_arg0", "nextNumber()"],
-            ["nextNumber()"],
+            ["__jz_arg0 + __jz_arg0", "NextNumber()"],
+            ["NextNumber()"],
             []),
         Case(
             "custom.unused-argument",
@@ -215,8 +215,8 @@ internal static class InlineEvaluationProtocolCatalog
                 }
             }
             """,
-            ["=> 42", "nextNumber()"],
-            ["nextNumber()"],
+            ["=> 42", "NextNumber()"],
+            ["NextNumber()"],
             []),
         Case(
             "custom.placeholder-text-literal",
@@ -240,8 +240,8 @@ internal static class InlineEvaluationProtocolCatalog
                 }
             }
             """,
-            ["=> \"__arg1\"", "nextNumber()"],
-            ["nextNumber()"],
+            ["=> \"__arg1\"", "NextNumber()"],
+            ["NextNumber()"],
             []),
         Case(
             "custom.placeholder-like-identifiers",
@@ -290,8 +290,8 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg1 - __jz_arg0"],
-            ["nextFirst()", "nextSecond()"],
-            ["nextFirst()", "nextSecond()"]),
+            ["NextFirst()", "NextSecond()"],
+            ["NextFirst()", "NextSecond()"]),
         Case(
             "custom.conditional-argument",
             "source=ECMAScriptInline;placeholder-path=conditional;arguments=invocations;evaluation=eager",
@@ -316,8 +316,8 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0 ? __jz_arg1 : 0"],
-            ["nextCondition()", "nextValue()"],
-            ["nextCondition()", "nextValue()"]),
+            ["NextCondition()", "NextValue()"],
+            ["NextCondition()", "NextValue()"]),
         Case(
             "custom.optional-call-argument",
             "source=ECMAScriptInline;placeholder-path=optional-call;argument=invocation;evaluation=eager",
@@ -342,7 +342,7 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0?.(__jz_arg1)"],
-            ["nextValue()"],
+            ["NextValue()"],
             []),
         Case(
             "custom.optional-computed-key",
@@ -367,7 +367,7 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0?.[__jz_arg1]"],
-            ["nextIndex()"],
+            ["NextIndex()"],
             []),
         Case(
             "string.to-char-array-range.variables",
@@ -401,8 +401,8 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0.substring(__jz_arg1, __jz_arg1 + __jz_arg2).split(\"\")"],
-            ["nextText()", "nextStart()", "nextLength()"],
-            ["nextText()", "nextStart()", "nextLength()"]),
+            ["NextText()", "NextStart()", "NextLength()"],
+            ["NextText()", "NextStart()", "NextLength()"]),
         Case(
             "string.remove-range.variables",
             "source=CLR-inline;member=Remove(start,count);arguments=locals;shape=direct",
@@ -435,8 +435,8 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0.slice(0, __jz_arg1) + __jz_arg0.slice(__jz_arg1 + __jz_arg2)"],
-            ["nextText()", "nextStart()", "nextCount()"],
-            ["nextText()", "nextStart()", "nextCount()"]),
+            ["NextText()", "NextStart()", "NextCount()"],
+            ["NextText()", "NextStart()", "NextCount()"]),
         Case(
             "string.insert.side-effects",
             "source=CLR-inline;member=Insert(index,value);arguments=invocations;order=receiver-index-value",
@@ -454,8 +454,8 @@ internal static class InlineEvaluationProtocolCatalog
             }
             """,
             ["__jz_arg0.slice(0, __jz_arg1) + __jz_arg2 + __jz_arg0.slice(__jz_arg1)"],
-            ["nextText()", "nextIndex()", "nextValue()"],
-            ["nextText()", "nextIndex()", "nextValue()"])
+            ["NextText()", "NextIndex()", "NextValue()"],
+            ["NextText()", "NextIndex()", "NextValue()"])
     ];
 
     public static IReadOnlyList<InlineEvaluationProtocolFailureCase> FailureCases { get; } =

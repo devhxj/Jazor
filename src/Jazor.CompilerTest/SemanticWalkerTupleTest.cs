@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -93,44 +92,8 @@ public sealed class SemanticWalkerTupleTest
 
     private static void AssertTupleScriptEqual(string expected, string? actual)
         => Assert.AreEqual(
-            ExpectedJsNaming.Normalize(expected).ReplaceLineEndings(),
+            expected.ReplaceLineEndings(),
             actual?.ReplaceLineEndings());
-
-    private static string NormalizeExpectedJsNaming(string expected)
-    {
-        expected = Regex.Replace(expected, @"\bItem([0-9]+)\b", "item$1");
-        expected = Regex.Replace(expected, @"([\{\[,]\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value);
-        expected = Regex.Replace(expected, @"(^\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value, RegexOptions.Multiline);
-        expected = Regex.Replace(expected, @"(\?*\.)([A-Z][A-Za-z0-9_]*)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value));
-        expected = Regex.Replace(expected, @"""([A-Z][A-Za-z0-9_]*)""(\s+in\b)", static m => "\"" + Camel(m.Groups[1].Value) + "\"" + m.Groups[2].Value);
-        expected = Regex.Replace(expected, @"\[""([A-Z][A-Za-z0-9_]*)""\]", static m => "[\"" + Camel(m.Groups[1].Value) + "\"]");
-        return expected;
-    }
-
-    private static string Camel(string name)
-    {
-        if (string.IsNullOrEmpty(name) || !char.IsUpper(name[0]))
-            return name;
-
-        if (name.Length == 1)
-            return char.ToLowerInvariant(name[0]).ToString();
-
-        var chars = name.ToCharArray();
-        chars[0] = char.ToLowerInvariant(chars[0]);
-        for (var index = 1; index < chars.Length; index++)
-        {
-            if (!char.IsUpper(chars[index]))
-                break;
-
-            var hasNext = index + 1 < chars.Length;
-            if (hasNext && !char.IsUpper(chars[index + 1]))
-                break;
-
-            chars[index] = char.ToLowerInvariant(chars[index]);
-        }
-
-        return new string(chars);
-    }
 
     [TestMethod]
     public void Visit_TupleBlockCode()
@@ -347,7 +310,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("{item1:1,Item2:2,Item3:3,Item4:4,Item5:5,Item6:6,Item7:7,Item8:8}", script);
+        AssertTupleScriptEqual("{Item1:1,Item2:2,Item3:3,Item4:4,Item5:5,Item6:6,Item7:7,Item8:8}", script);
     }
 
     [TestMethod]
@@ -615,7 +578,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("(tuple1.item1===tuple2.item1&&tuple1.item2===tuple2.item2)", script);
+        AssertTupleScriptEqual("(tuple1.Item1===tuple2.Item1&&tuple1.Item2===tuple2.Item2)", script);
     }
 
     [TestMethod]
@@ -641,7 +604,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("(tuple1.item1!==tuple2.item1||tuple1.item2!==tuple2.item2)", script);
+        AssertTupleScriptEqual("(tuple1.Item1!==tuple2.Item1||tuple1.Item2!==tuple2.Item2)", script);
     }
 
     [TestMethod]
@@ -789,7 +752,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("(tuple1.item1===tuple2.item1&&tuple1.item2===tuple2.item2&&tuple1.item3===tuple2.item3)", script);
+        AssertTupleScriptEqual("(tuple1.Item1===tuple2.Item1&&tuple1.Item2===tuple2.Item2&&tuple1.Item3===tuple2.Item3)", script);
     }
 
     [TestMethod]
@@ -815,7 +778,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertTupleScriptEqual(@"(tuple1.item1 === tuple2.item1 && tuple1.item2 === tuple2.item2 && (tuple1.item3.item1 === tuple2.item3.item1 && tuple1.item3.item2 === tuple2.item3.item2))", script);
+        AssertTupleScriptEqual(@"(tuple1.Item1 === tuple2.Item1 && tuple1.Item2 === tuple2.Item2 && (tuple1.Item3.Item1 === tuple2.Item3.Item1 && tuple1.Item3.Item2 === tuple2.Item3.Item2))", script);
     }
 
     [TestMethod]
@@ -840,7 +803,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(
-            @"(tuple1.item1.item1 === tuple2.item1.item1 && tuple1.item1.item2 === tuple2.item1.item2 && tuple1.item2 === tuple2.item2)",
+            @"(tuple1.Item1.Item1 === tuple2.Item1.Item1 && tuple1.Item1.Item2 === tuple2.Item1.Item2 && tuple1.Item2 === tuple2.Item2)",
             script);
     }
 
@@ -868,7 +831,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, arg);
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("(v$0=this.getTuple(),v$0.Item1===1&&v$0.Item2===2)", script);
+        AssertTupleScriptEqual("(v$0=this.GetTuple(),v$0.Item1===1&&v$0.Item2===2)", script);
         Assert.IsTrue(arg.HasVarDeclarator);
     }
 
@@ -925,11 +888,11 @@ public sealed class SemanticWalkerTupleTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let v$0;");
         StringAssert.Contains(script, "console.log(seed);");
-        StringAssert.Contains(script, "v$0 = this.getTuple(seed)");
-        Assert.IsFalse(script.Contains("let v$0 = this.getTuple(seed);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "v$0 = this.GetTuple(seed)");
+        Assert.IsFalse(script.Contains("let v$0 = this.GetTuple(seed);", StringComparison.Ordinal), script);
 
         var consoleIndex = script.IndexOf("console.log(seed);", StringComparison.Ordinal);
-        var assignmentIndex = script.IndexOf("v$0 = this.getTuple(seed)", StringComparison.Ordinal);
+        var assignmentIndex = script.IndexOf("v$0 = this.GetTuple(seed)", StringComparison.Ordinal);
         Assert.IsTrue(
             consoleIndex >= 0 && assignmentIndex > consoleIndex,
             $"Expected tuple cache assignment to remain at the comparison site, after prior statements.{Environment.NewLine}{script}");
@@ -983,7 +946,7 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let second;
   let tuple = {
-    item1: 1,
+    Item1: 1,
     Item2: 2,
     Item3: 3
   };
@@ -1013,7 +976,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitSimpleAssignment(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("this.someMethod()", script);
+        AssertTupleScriptEqual("this.SomeMethod()", script);
     }
 
     [TestMethod]
@@ -1086,8 +1049,8 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let x, y;
-  let point = { x: 1, y: 2 };
-  x = point.x, y = point.y;
+  let point = { X: 1, Y: 2 };
+  x = point.X, y = point.Y;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -1205,9 +1168,9 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let a, b;
-  let point = { x: 1, pair: { a: 2, b: 3 } };
+  let point = { X: 1, Pair: { A: 2, B: 3 } };
   let x;
-  x = point.x, a = point.pair.a, b = point.pair.b;
+  x = point.X, a = point.Pair.A, b = point.Pair.B;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -1392,7 +1355,7 @@ public sealed class SemanticWalkerTupleTest
   let left = 1;
   let right = 2;
   let id = 3;
-  v$0 = { item1: right, Item2: left }, v$1 = id, left = v$0.Item1, right = v$0.Item2, id = v$1;
+  v$0 = { Item1: right, Item2: left }, v$1 = id, left = v$0.Item1, right = v$0.Item2, id = v$1;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -1462,7 +1425,7 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let tuple = {
-    item1: 1,
+    Item1: 1,
     Item2: 2,
     Item3: 3
   };
@@ -1567,7 +1530,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let tuple = { item1: 1, Item2: 2 };
+  let tuple = { Item1: 1, Item2: 2 };
   this.PrintTuple(tuple);
 }", script);
     }
@@ -1595,7 +1558,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  this.printTuple({ item1: 1, Item2: 2 });
+  this.PrintTuple({ Item1: 1, Item2: 2 });
 }", script);
     }
 
@@ -1622,7 +1585,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  this.printPerson({ name: ""John"", age: 30 });
+  this.PrintPerson({ name: ""John"", age: 30 });
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -1678,7 +1641,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  return { item1: 1, Item2: 2 };
+  return { Item1: 1, Item2: 2 };
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -1708,9 +1671,9 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let point = this.getPoint();
-  let x = point.item1;
-  let y = point.item2;
+  let point = this.GetPoint();
+  let x = point.Item1;
+  let y = point.Item2;
 }", script);
     }
 
@@ -1740,7 +1703,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let person = this.getPerson();
+  let person = this.GetPerson();
   let name = person.name;
   let age = person.age;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1932,7 +1895,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let nested = { item1: 1, Item2: { Item1: 2, Item2: 3 } };
+  let nested = { Item1: 1, Item2: { Item1: 2, Item2: 3 } };
   let a = nested.Item1;
   let b = nested.Item2.Item1;
   let c = nested.Item2.Item2;
@@ -1965,7 +1928,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let deep = { item1: 1, Item2: { Item1: 2, Item2: { Item1: 3, Item2: 4 } } };
+  let deep = { Item1: 1, Item2: { Item1: 2, Item2: { Item1: 3, Item2: 4 } } };
   let d1 = deep.Item1;
   let d2 = deep.Item2.Item1;
   let d3 = deep.Item2.Item2.Item1;
@@ -2026,8 +1989,8 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let label, suffix;
-  let pair = { title: ""ready"", suffix: ""!"" };
-  label = pair.title, suffix = pair.suffix;
+  let pair = { Title: ""ready"", Suffix: ""!"" };
+  label = pair.Title, suffix = pair.Suffix;
   let result = label + suffix;
 }", script);
     }
@@ -2112,7 +2075,7 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let t1 = {
-    item1: 1,
+    Item1: 1,
     Item2: 2,
     Item3: 3,
     Item4: 4
@@ -2151,7 +2114,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let t1 = { item1: 1, Item2: 2 };
+  let t1 = { Item1: 1, Item2: 2 };
   let t2 = { Item1: 3, Item2: 4 };
   let notEqual = (t1.Item1 !== t2.Item1 || t1.Item2 !== t2.Item2);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2205,7 +2168,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  let pair = { item1: 1, Item2: 2 };
+  let pair = { Item1: 1, Item2: 2 };
   let sum = pair.Item1 + pair.Item2;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
@@ -2234,7 +2197,7 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let t = {
-    item1: 1,
+    Item1: 1,
     Item2: 2,
     Item3: 3,
     Item4: 4,
@@ -2267,7 +2230,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(@"{
   let t = {
-    item1: 1,
+    Item1: 1,
     Item2: 2,
     Item3: 3,
     Item4: 4,
@@ -2303,7 +2266,7 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let a = 10;
   let t = {
-    item1: a + 1,
+    Item1: a + 1,
     Item2: a * 2,
     Item3: a / 3
   };
@@ -2362,7 +2325,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  let nested = { item1: { item1: 1, Item2: 2 }, Item2: { Item1: 3, Item2: 4 } };
+  let nested = { Item1: { Item1: 1, Item2: 2 }, Item2: { Item1: 3, Item2: 4 } };
   let a = nested.Item1.Item1;
   let b = nested.Item2.Item2;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2419,7 +2382,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let t = { item1: ""hello"", Item2: ""world"" };
+  let t = { Item1: ""hello"", Item2: ""world"" };
   let greeting = t.Item1 + "" "" + t.Item2;
 }", script);
     }
@@ -2447,7 +2410,7 @@ public sealed class SemanticWalkerTupleTest
         AssertTupleScriptEqual(
 @"{
   let t = {
-    item1: 1,
+    Item1: 1,
     Item2: ""two"",
     Item3: 3,
     Item4: true
@@ -2508,8 +2471,8 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  let points = [{ item1: 1, Item2: 2 }, { Item1: 3, Item2: 4 }, { Item1: 5, Item2: 6 }];
-  for (let { item1: x, item2: y } of points) {
+  let points = [{ Item1: 1, Item2: 2 }, { Item1: 3, Item2: 4 }, { Item1: 5, Item2: 6 }];
+  for (let { Item1: x, Item2: y } of points) {
     console.log(x + "","" + y);
   }
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2545,7 +2508,7 @@ public sealed class SemanticWalkerTupleTest
         var script = node?.ToKnRECMAScript();
 
         AssertTupleScriptEqual(@"{
-  let point = { item1: 0, Item2: 0 };
+  let point = { Item1: 0, Item2: 0 };
   (() => {
     const v$0 = point;
     if (v$0.Item1 === 0 && v$0.Item2 === 0) {

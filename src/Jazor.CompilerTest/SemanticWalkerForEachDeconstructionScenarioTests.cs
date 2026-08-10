@@ -206,7 +206,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("sourceId", "key"), Property("label", "value"))),
+            Object(Property("SourceId", "key"), Property("Label", "value"))),
         Success(
             "unnamed-tuple",
             "default-tuple-slot-names",
@@ -219,7 +219,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("item1", "number"), Property("item2", "text"))),
+            Object(Property("Item1", "number"), Property("Item2", "text"))),
         Success(
             "tuple-discard",
             "discarded-object-slot-is-omitted",
@@ -232,7 +232,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("sourceId", "id"), Property("enabled", "active"))),
+            Object(Property("SourceId", "id"), Property("Enabled", "active"))),
         Success(
             "nested-tuple",
             "nested-source-shapes-remap-recursively",
@@ -246,8 +246,8 @@ internal static class ForEachDeconstructionScenarioCatalog
             }
             """,
             Object(
-                NestedProperty("coordinates", Object(Property("latitude", "lat"), Property("longitude", "lng"))),
-                Property("name", "label"))),
+                NestedProperty("Coordinates", Object(Property("Latitude", "lat"), Property("Longitude", "lng"))),
+                Property("Name", "label"))),
         Success(
             "nested-tuple-discards",
             "nested-discard-prunes-only-targeted-slots",
@@ -260,7 +260,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(NestedProperty("coordinates", Object(Property("latitude", "lat"))))),
+            Object(NestedProperty("Coordinates", Object(Property("Latitude", "lat"))))),
         Success(
             "explicit-target-types",
             "explicitly-typed-deconstruction-target",
@@ -273,7 +273,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("sourceId", "id"), Property("label", "text"))),
+            Object(Property("SourceId", "id"), Property("Label", "text"))),
         Success(
             "positional-record",
             "record-constructor-property-shape",
@@ -288,7 +288,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("sourceId", "id"), Property("label", "text"))),
+            Object(Property("SourceId", "id"), Property("Label", "text"))),
         Success(
             "record-with-nested-tuple",
             "record-property-and-nested-tuple-shapes",
@@ -304,8 +304,8 @@ internal static class ForEachDeconstructionScenarioCatalog
             }
             """,
             Object(
-                NestedProperty("position", Object(Property("x", "left"), Property("y", "top"))),
-                Property("label", "text"))),
+                NestedProperty("Position", Object(Property("X", "left"), Property("Y", "top"))),
+                Property("Label", "text"))),
         Success(
             "async-named-tuple",
             "await-foreach-preserves-source-shape",
@@ -319,7 +319,7 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            Object(Property("sourceId", "id"), Property("label", "text")),
+            Object(Property("SourceId", "id"), Property("Label", "text")),
             isAsynchronous: true),
         Success(
             "dictionary-entry",
@@ -361,7 +361,7 @@ internal static class ForEachDeconstructionScenarioCatalog
             """,
             Array(
                 Item("key"),
-                NestedItem(Object(Property("count", "count"), Property("enabled", "active"))))),
+                NestedItem(Object(Property("Count", "count"), Property("Enabled", "active"))))),
         Success(
             "tuple-with-nested-key-value-pair",
             "tuple-slot-with-map-entry-array-pattern",
@@ -376,8 +376,8 @@ internal static class ForEachDeconstructionScenarioCatalog
             }
             """,
             Object(
-                NestedProperty("pair", Array(Item("key"), Item("value"))),
-                Property("enabled", "active"))),
+                NestedProperty("Pair", Array(Item("key"), Item("value"))),
+                Property("Enabled", "active"))),
         Success(
             "record-with-nested-key-value-pair",
             "record-slot-with-map-entry-array-pattern",
@@ -395,8 +395,8 @@ internal static class ForEachDeconstructionScenarioCatalog
             }
             """,
             Object(
-                NestedProperty("pair", Array(Item("key"), Item("value"))),
-                Property("label", "text"))),
+                NestedProperty("Pair", Array(Item("key"), Item("value"))),
+                Property("Label", "text"))),
         Success(
             "deep-record-tuple-key-value-pair",
             "recursive-record-tuple-map-entry-shapes-with-discards",
@@ -415,15 +415,15 @@ internal static class ForEachDeconstructionScenarioCatalog
             """,
             Object(
                 NestedProperty(
-                    "data",
+                    "Data",
                     Object(
                         NestedProperty(
-                            "pair",
+                            "Pair",
                             Array(
                                 Item("key"),
-                                NestedItem(Object(Property("count", "count"))))),
-                        Property("revision", "revision"))),
-                Property("label", "text"))),
+                                NestedItem(Object(Property("Count", "count"))))),
+                        Property("Revision", "revision"))),
+                Property("Label", "text"))),
         Failure(
             "custom-class-deconstruct",
             "unproven-custom-runtime-shape-is-rejected",

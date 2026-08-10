@@ -15,6 +15,7 @@ public sealed class VTabs : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VTabs : ComponentBase
     /// Whether tabs grow to equal width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("grow")]
     public bool Grow { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VTabs : ComponentBase
     /// Currently selected tab value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VTabs : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VTabs : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -50,5 +55,6 @@ public sealed class VTabs : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

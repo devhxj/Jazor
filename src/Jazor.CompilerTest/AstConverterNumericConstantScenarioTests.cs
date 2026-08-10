@@ -59,7 +59,7 @@ public sealed class AstConverterNumericConstantScenarioTests
         Assert.IsTrue(property.Static, scenario.Id);
         Assert.IsFalse(property.Computed, scenario.Id);
         Assert.IsInstanceOfType<Identifier>(property.Key, scenario.Id);
-        Assert.AreEqual("value", ((Identifier)property.Key).Name, scenario.Id);
+        Assert.AreEqual("Value", ((Identifier)property.Key).Name, scenario.Id);
         Assert.IsNotNull(property.Value, scenario.Id);
         AssertNumericExpression(property.Value, scenario);
 

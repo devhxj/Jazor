@@ -67,7 +67,7 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
 
             test("official Razor component attribute bags normalize known props without rewriting foreign attributes", () => {
                 const panel = component.setup({
-                    panelAttributes: {
+                    PanelAttributes: {
                         Heading: "Release details",
                         "data-area": "summary"
                     }

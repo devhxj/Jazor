@@ -15,6 +15,7 @@ public sealed class VRow : ComponentBase
     /// The HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class VRow : ComponentBase
     /// Multi-row alignment on small screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContentSm")]
     public string? AlignContentSm { get; set; }
 
     /// <summary>
@@ -45,6 +47,7 @@ public sealed class VRow : ComponentBase
     /// Multi-row alignment on medium screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContentMd")]
     public string? AlignContentMd { get; set; }
 
     /// <summary>
@@ -52,6 +55,7 @@ public sealed class VRow : ComponentBase
     /// Multi-row alignment on large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContentLg")]
     public string? AlignContentLg { get; set; }
 
     /// <summary>
@@ -59,6 +63,7 @@ public sealed class VRow : ComponentBase
     /// Multi-row alignment on extra-large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContentXl")]
     public string? AlignContentXl { get; set; }
 
     /// <summary>
@@ -66,6 +71,7 @@ public sealed class VRow : ComponentBase
     /// Multi-row alignment on XXL screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContentXxl")]
     public string? AlignContentXxl { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VRow : ComponentBase
     /// The vertical alignment of multi-row content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignContent")]
     public string? AlignContent { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VRow : ComponentBase
     /// Horizontal justification on small screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justifySm")]
     public string? JustifySm { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VRow : ComponentBase
     /// Horizontal justification on medium screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justifyMd")]
     public string? JustifyMd { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VRow : ComponentBase
     /// Horizontal justification on large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justifyLg")]
     public string? JustifyLg { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VRow : ComponentBase
     /// Horizontal justification on extra-large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justifyXl")]
     public string? JustifyXl { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VRow : ComponentBase
     /// Horizontal justification on XXL screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justifyXxl")]
     public string? JustifyXxl { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VRow : ComponentBase
     /// The horizontal justification of columns.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justify")]
     public string? Justify { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VRow : ComponentBase
     /// Vertical alignment on small screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignSm")]
     public string? AlignSm { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VRow : ComponentBase
     /// Vertical alignment on medium screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignMd")]
     public string? AlignMd { get; set; }
 
     /// <summary>
@@ -136,6 +151,7 @@ public sealed class VRow : ComponentBase
     /// Vertical alignment on large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignLg")]
     public string? AlignLg { get; set; }
 
     /// <summary>
@@ -143,6 +159,7 @@ public sealed class VRow : ComponentBase
     /// Vertical alignment on extra-large screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignXl")]
     public string? AlignXl { get; set; }
 
     /// <summary>
@@ -150,6 +167,7 @@ public sealed class VRow : ComponentBase
     /// Vertical alignment on XXL screens.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alignXxl")]
     public string? AlignXxl { get; set; }
 
     /// <summary>
@@ -157,6 +175,7 @@ public sealed class VRow : ComponentBase
     /// Whether to reduce the spacing between columns.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dense")]
     public bool Dense { get; set; }
 
     /// <summary>
@@ -164,6 +183,7 @@ public sealed class VRow : ComponentBase
     /// Whether to remove the gutter spacing between columns.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noGutters")]
     public bool NoGutters { get; set; }
 
     /// <summary>
@@ -171,6 +191,7 @@ public sealed class VRow : ComponentBase
     /// The vertical alignment of columns.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("align")]
     public string? Align { get; set; }
 
     /// <summary>
@@ -178,6 +199,7 @@ public sealed class VRow : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -185,5 +207,6 @@ public sealed class VRow : ComponentBase
     /// The default slot for placing column components.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

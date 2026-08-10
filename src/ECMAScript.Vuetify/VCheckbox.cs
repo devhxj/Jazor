@@ -16,5 +16,6 @@ public sealed class VCheckbox : VSelectionControlComponentBase
     /// Additional attributes applied to the component root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

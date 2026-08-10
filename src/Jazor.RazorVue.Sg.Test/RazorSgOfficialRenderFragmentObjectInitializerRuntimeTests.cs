@@ -23,7 +23,7 @@ public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-object-initializer-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -82,7 +82,7 @@ public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
             import slotPanel from "./components/slot-panel-object-initializer-runtime.mjs";
 
             test("official Razor object-initialized descriptors project their local slot fragment", () => {
-                const panel = component.setup({ releaseName: "Gateway rollout" }, { slots: {} })();
+                const panel = component.setup({ ReleaseName: "Gateway rollout" }, { slots: {} })();
                 assert.equal(panel.name, slotPanel);
                 assert.equal(typeof panel.children.header, "function");
 

@@ -24,7 +24,7 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
                 [ECMAScriptModule("./components/tree-panel-recursive-template-runtime")]
                 public sealed class TreePanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Content { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#content")] public RenderFragment? Content { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -77,7 +77,7 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
             import treePanel from "./components/tree-panel-recursive-template-runtime.mjs";
 
             test("official Razor recursive RenderFragment factory preserves nested vnode order", () => {
-                const panel = component.setup({ label: "Deploy", depth: 2 }, { slots: {} })();
+                const panel = component.setup({ Label: "Deploy", Depth: 2 }, { slots: {} })();
                 assert.equal(panel.name, treePanel);
                 assert.equal(typeof panel.children.content, "function");
 

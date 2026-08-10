@@ -235,7 +235,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "function label()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function Label()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return state.count.toString();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("this.count", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);

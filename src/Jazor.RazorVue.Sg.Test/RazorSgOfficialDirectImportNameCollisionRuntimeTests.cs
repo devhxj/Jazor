@@ -45,8 +45,8 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
                 [VueLibraryComponent("demo-release-library", "queueRelease")]
                 public sealed class ReleasePanel : ComponentBase
                 {
-                    [Parameter] public string Status { get; set; } = string.Empty;
-                    [Parameter] public EventCallback OnClick { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#status")] public string Status { get; set; } = string.Empty;
+                    [Parameter, System.ComponentModel.Description("@#onClick")] public EventCallback OnClick { get; set; }
                 }
                 """
             });

@@ -290,7 +290,7 @@ public static partial class Vue3
 	/// component entering and leaving.
 	/// </summary>
 	[Description("@#Transition")]
-	public extern static IVueComponent<VueTransitionProps> Transition { get; }
+	public extern static IVueComponent<VueTransitionProps, VueDefaultSlots> Transition { get; }
 
 	/// <summary>
 	/// Vue 内置的 <c>TransitionGroup</c> 组件，用于动画化列表的插入、删除和移动。
@@ -298,7 +298,7 @@ public static partial class Vue3
 	/// removals, and moves.
 	/// </summary>
 	[Description("@#TransitionGroup")]
-	public extern static IVueComponent<VueTransitionGroupProps> TransitionGroup { get; }
+	public extern static IVueComponent<VueTransitionGroupProps, VueDefaultSlots> TransitionGroup { get; }
 
 	/// <summary>
 	/// Vue 内置的 <c>KeepAlive</c> 组件，用于缓存非活动的动态组件实例。
@@ -306,7 +306,7 @@ public static partial class Vue3
 	/// instances.
 	/// </summary>
 	[Description("@#KeepAlive")]
-	public extern static IVueComponent<VueKeepAliveProps> KeepAlive { get; }
+	public extern static IVueComponent<VueKeepAliveProps, VueDefaultSlots> KeepAlive { get; }
 
 	/// <summary>
 	/// Vue 内置的 <c>Teleport</c> 组件，用于将子内容渲染到另一个 DOM 容器中。
@@ -314,7 +314,7 @@ public static partial class Vue3
 	/// container.
 	/// </summary>
 	[Description("@#Teleport")]
-	public extern static IVueComponent<VueTeleportProps> Teleport { get; }
+	public extern static IVueComponent<VueTeleportProps, VueDefaultSlots> Teleport { get; }
 
 	/// <summary>
 	/// Vue 内置的 <c>Suspense</c> 组件，用于协调异步依赖，配合默认和后备插槽使用。

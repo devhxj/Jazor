@@ -14,6 +14,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Whether to use inset style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inset")]
     public bool Inset { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Removes box-shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Loader slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loader")]
     public RenderFragment<VuetifyLoaderSlotContext>? Loader { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Thumb slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thumb")]
     public RenderFragment<VSwitchSlotContext>? Thumb { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Track-true slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("track-true")]
     public RenderFragment<VSwitchSlotContext>? TrackTrue { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Track-false slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("track-false")]
     public RenderFragment<VSwitchSlotContext>? TrackFalse { get; set; }
 
     /// <summary>
@@ -63,5 +70,6 @@ public sealed class VSwitch : VSelectionControlComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

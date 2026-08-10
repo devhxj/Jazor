@@ -15,6 +15,7 @@ public sealed class VMenu : ComponentBase
     /// Whether the menu is visible.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VMenu : ComponentBase
     /// Callback invoked when the menu visibility changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to close the menu when its content is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnContentClick")]
     public bool CloseOnContentClick { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to close the menu on the back button press.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnBack")]
     public bool CloseOnBack { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to close the menu when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnClick")]
     public bool CloseOnClick { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to open the menu on activator click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool OpenOnClick { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to open the menu on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to open the menu on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool OpenOnFocus { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VMenu : ComponentBase
     /// Delay before opening the menu (in milliseconds).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VMenu : ComponentBase
     /// Delay before closing the menu (in milliseconds).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VMenu : ComponentBase
     /// Position of the menu relative to the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VMenu : ComponentBase
     /// Origin point for the menu animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyLocation? Origin { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VMenu : ComponentBase
     /// Offset distance between the menu and the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VueStringNumberValue? Offset { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VMenu : ComponentBase
     /// Scroll strategy for the menu when the page scrolls.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollStrategy")]
     public VuetifyScrollStrategy? ScrollStrategy { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VMenu : ComponentBase
     /// Whether the menu persists when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VMenu : ComponentBase
     /// Whether to disable the menu.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VMenu : ComponentBase
     /// Minimum width of the menu.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VMenu : ComponentBase
     /// Maximum width of the menu.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VMenu : ComponentBase
     /// Width of the menu.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VMenu : ComponentBase
     /// Transition animation when the menu opens or closes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VMenu : ComponentBase
     /// Additional props applied to the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VMenu : ComponentBase
     /// Additional props applied to the menu content element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VMenu : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VMenu : ComponentBase
     /// Activator slot content, providing overlay activator context.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VOverlayActivatorContext>? Activator { get; set; }
 
     /// <summary>
@@ -183,5 +207,6 @@ public sealed class VMenu : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

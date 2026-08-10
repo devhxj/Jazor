@@ -119,16 +119,16 @@ internal static class EcmascriptParamsProtocolCatalog
                 """
                         var values = ECMAScript.Array<int>.Of([First(), Second()]);
                 """,
-            ["let values = Array.of(EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second());"],
-            ["EcmascriptParamsProtocolScenarios.first()", "EcmascriptParamsProtocolScenarios.second()"]),
+            ["let values = Array.of(EcmascriptParamsProtocolScenarios.First(), EcmascriptParamsProtocolScenarios.Second());"],
+            ["EcmascriptParamsProtocolScenarios.First()", "EcmascriptParamsProtocolScenarios.Second()"]),
         Case(
             "array-creation",
             "call-form=normal;argument=array-creation;lowering=expanded-elements;evaluation=left-to-right",
                 """
                         var values = ECMAScript.Array<int>.Of(new[] { First(), Second() });
                 """,
-            ["let values = Array.of(EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second());"],
-            ["EcmascriptParamsProtocolScenarios.first()", "EcmascriptParamsProtocolScenarios.second()"]),
+            ["let values = Array.of(EcmascriptParamsProtocolScenarios.First(), EcmascriptParamsProtocolScenarios.Second());"],
+            ["EcmascriptParamsProtocolScenarios.First()", "EcmascriptParamsProtocolScenarios.Second()"]),
         Case(
             "collection-expression-spread",
             "call-form=normal;argument=collection-expression-spread;lowering=expanded-elements;evaluation=left-to-right",
@@ -137,7 +137,7 @@ internal static class EcmascriptParamsProtocolCatalog
                         var values = ECMAScript.Array<int>.Of([0, ..source, 3]);
                 """,
             [
-                "let source = [EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second()];",
+                "let source = [EcmascriptParamsProtocolScenarios.First(), EcmascriptParamsProtocolScenarios.Second()];",
                 "let values = Array.of(0, ...source, 3);"
             ],
             ["let source = [", "Array.of(0, ...source, 3)"]),
@@ -149,7 +149,7 @@ internal static class EcmascriptParamsProtocolCatalog
                         var values = ECMAScript.Array<int>.Of(source);
                 """,
             [
-                "let source = [EcmascriptParamsProtocolScenarios.first(), EcmascriptParamsProtocolScenarios.second()];",
+                "let source = [EcmascriptParamsProtocolScenarios.First(), EcmascriptParamsProtocolScenarios.Second()];",
                 "let values = Array.of(...source);"
             ],
             ["let source = [", "Array.of(...source)"])

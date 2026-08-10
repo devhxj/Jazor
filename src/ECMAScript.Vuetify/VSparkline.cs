@@ -14,6 +14,7 @@ public sealed class VSparkline : ComponentBase
     /// Whether to animate the drawing on mount.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoDraw")]
     public bool AutoDraw { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSparkline : ComponentBase
     /// Duration in milliseconds of the auto-draw animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoDrawDuration")]
     public VueStringNumberValue? AutoDrawDuration { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSparkline : ComponentBase
     /// Easing function name for the auto-draw animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoDrawEasing")]
     public string? AutoDrawEasing { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSparkline : ComponentBase
     /// Line color of the sparkline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSparkline : ComponentBase
     /// List of colors for the gradient.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("gradient")]
     public string[]? Gradient { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSparkline : ComponentBase
     /// Direction of the gradient.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("gradientDirection")]
     public VuetifySparklineGradientDirection? GradientDirection { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSparkline : ComponentBase
     /// Height of the sparkline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSparkline : ComponentBase
     /// List of label texts for the axis.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("labels")]
     public VuetifySparklineItems? Labels { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSparkline : ComponentBase
     /// Font size of the labels.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("labelSize")]
     public VueStringNumberValue? LabelSize { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSparkline : ComponentBase
     /// Width of the line stroke.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lineWidth")]
     public VueStringNumberValue? LineWidth { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSparkline : ComponentBase
     /// Unique identifier of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSparkline : ComponentBase
     /// Property name to extract value from each data item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemValue")]
     public string? ItemValue { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSparkline : ComponentBase
     /// Data array for the sparkline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifySparklineItems? ModelValue { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSparkline : ComponentBase
     /// Minimum value of the Y-axis.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSparkline : ComponentBase
     /// Maximum value of the Y-axis.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSparkline : ComponentBase
     /// Padding between the chart and edges.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("padding")]
     public VueStringNumberValue? Padding { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VSparkline : ComponentBase
     /// Whether to show axis labels.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showLabels")]
     public bool ShowLabels { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VSparkline : ComponentBase
     /// Smoothness of the line curve.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("smooth")]
     public VuetifySparklineSmoothValue? Smooth { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VSparkline : ComponentBase
     /// Width of the sparkline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VSparkline : ComponentBase
     /// Whether to fill the area under the line.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fill")]
     public bool Fill { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VSparkline : ComponentBase
     /// Whether to auto-calculate line width based on container width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autoLineWidth")]
     public bool AutoLineWidth { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VSparkline : ComponentBase
     /// Type of the sparkline (line or bar).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public VuetifySparklineType? Type { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VSparkline : ComponentBase
     /// Captures unmatched additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VSparkline : ComponentBase
     /// Default slot for custom sparkline content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -182,5 +206,6 @@ public sealed class VSparkline : ComponentBase
     /// Label slot for customizing each label rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment<VSparklineLabelSlotContext>? Label { get; set; }
 }

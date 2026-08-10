@@ -15,6 +15,7 @@ public sealed class VForm : ComponentBase
     /// Whether to disable all input controls within the form.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VForm : ComponentBase
     /// Whether to stop validation on the first failure.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fastFail")]
     public bool FastFail { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VForm : ComponentBase
     /// Whether to mark all input controls within the form as read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VForm : ComponentBase
     /// When to trigger form validation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("validateOn")]
     public VuetifyValidateOn? ValidateOn { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VForm : ComponentBase
     /// The validation state model value of the form.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VForm : ComponentBase
     /// Callback when the form validation state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VForm : ComponentBase
     /// Event callback fired when the form is submitted.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onSubmit")]
     public EventCallback<VFormSubmitEvent> OnSubmit { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VForm : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -87,5 +95,6 @@ public sealed class VForm : ComponentBase
     /// Default slot content of the form.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VFormDefaultSlotContext>? ChildContent { get; set; }
 }

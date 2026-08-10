@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "libraryId": "vuetify",
-  "version": "3.8.0",
+  "version": "4.1.8",
   "imports": {
     "vuetify": {
       "development": "dist/vuetify.esm.js",

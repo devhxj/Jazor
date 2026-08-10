@@ -15,6 +15,7 @@ public sealed class VDivider : ComponentBase
     /// Whether to use inset style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inset")]
     public bool Inset { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VDivider : ComponentBase
     /// Thickness of the divider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thickness")]
     public int? Thickness { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VDivider : ComponentBase
     /// Whether to display vertically.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("vertical")]
     public bool Vertical { get; set; }
 
     /// <summary>
@@ -36,5 +39,6 @@ public sealed class VDivider : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

@@ -14,6 +14,7 @@ public sealed class VRadio : ComponentBase
     /// The label text of the radio button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VRadio : ComponentBase
     /// The color when the radio button is selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VRadio : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VRadio : ComponentBase
     /// Whether the radio button is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VRadio : ComponentBase
     /// Whether the radio button is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VRadio : ComponentBase
     /// The icon displayed when unchecked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("falseIcon")]
     public string? FalseIcon { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VRadio : ComponentBase
     /// The icon displayed when checked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("trueIcon")]
     public string? TrueIcon { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VRadio : ComponentBase
     /// The value of the radio button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VRadio : ComponentBase
     /// The currently selected value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VRadio : ComponentBase
     /// Callback invoked when the selected value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -84,5 +94,6 @@ public sealed class VRadio : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

@@ -10,7 +10,7 @@
 
 ## 阅读路线
 
-**先建立整体图景：** [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) → [ArchitectureOverview.md](./ArchitectureOverview.md) → [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) → [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+**先建立整体图景：** [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) → [ArchitectureOverview.md](./ArchitectureOverview.md) → [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) → [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md) → [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 **准备动手改 compiler：** [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md) → [ArchitectureOverview.md](./ArchitectureOverview.md) → [WalkerExtensionSpec.md](./WalkerExtensionSpec.md) → [WhiteList.md](./WhiteList.md) → [OpCompileSpec.md](./OpCompileSpec.md)
 
@@ -24,6 +24,7 @@
 - [ArchitectureOverview.md](./ArchitectureOverview.md) - 完整架构总览、分层职责、扩展点和术语表
 - [Compiler.HardRules.md](./Compiler.HardRules.md) - 已收口 compiler 语义与输出边界的一页硬规则摘要
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) - 端到端转换链路与阶段职责
+- [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md) - C# 符号、显式 ECMAScript 名称与 RazorVue prop 的统一命名合同
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md) - 实现路线、失败策略、行为保真顺序与扩展决策原则
 
 ### 模块级与语义级转换

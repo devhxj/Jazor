@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLibraryComponent_InfersModelUpdateFromParameterPair()
+    public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitModelUpdateMetadata()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\TDesignSelectUsage.razor",
@@ -39,10 +39,10 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 [VueLibraryComponent("tdesign-vue-next", "Select")]
                 public sealed class TSelect : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("selected")]
                     public string Selected { get; set; } = string.Empty;
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onUpdate:selected")]
                     public EventCallback<string> SelectedChanged { get; set; }
                 }
                 """
@@ -53,16 +53,16 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
             observation.ModuleText,
             "import { Select } from \"tdesign-vue-next\";",
             StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "selected: state.selected", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "selected: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "\"onUpdate:selected\": __value => state.selected = __value",
+            "\"onUpdate:selected\": __value => state.Selected = __value",
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("selectedChanged", StringComparison.Ordinal), observation.ModuleText);
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLibraryComponent_InfersNamedSlotsFromRenderFragmentParameters()
+    public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitNamedSlotMetadata()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\TDesignPanelUsage.razor",
@@ -100,13 +100,13 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 [VueLibraryComponent("tdesign-vue-next", "Panel")]
                 public sealed class TPanel : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public RenderFragment? TitleContent { get; set; }
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("prepend-item")]
                     public RenderFragment? PrependItem { get; set; }
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("default")]
                     public RenderFragment? DefaultContent { get; set; }
                 }
                 """
@@ -158,10 +158,10 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 [VueLibraryComponent("tdesign-vue-next", "Submenu")]
                 public sealed class TSubmenu : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public string Title { get; set; } = string.Empty;
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("title")]
                     public RenderFragment? TitleContent { get; set; }
                 }
                 """
@@ -174,7 +174,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLibraryComponent_UsesOnPrefixForOrdinaryEvents()
+    public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitOrdinaryEventName()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\TDesignActionUsage.razor",
@@ -211,7 +211,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 [VueLibraryComponent("tdesign-vue-next", "Action")]
                 public sealed class TAction : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onSave")]
                     public EventCallback OnSave { get; set; }
                 }
                 """
@@ -262,17 +262,17 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                     [ECMAScriptName("modelValue")]
                     public string SelectedValue { get; set; } = string.Empty;
 
-                    [Parameter]
+                    [Parameter, ECMAScriptName("onUpdate:modelValue")]
                     public EventCallback<string> SelectedValueChanged { get; set; }
                 }
                 """
             });
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "modelValue: state.selected", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "modelValue: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "\"onUpdate:modelValue\": __value => state.selected = __value",
+            "\"onUpdate:modelValue\": __value => state.Selected = __value",
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("selectedValue", StringComparison.Ordinal), observation.ModuleText);
     }
@@ -314,7 +314,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
                 public sealed class TButton : ComponentBase
                 {
-                    [Parameter]
+                    [Parameter, ECMAScriptName("status")]
                     public string Status { get; set; } = string.Empty;
                 }
                 """
@@ -325,8 +325,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
             observation.ModuleText,
             "import { Button } from \"tdesign-vue-next\";",
             StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "status: props.status", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "h(Button, { status: props.status })", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "status: props.Status", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "h(Button, { status: props.Status })", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("createRenderContext", StringComparison.Ordinal), observation.ModuleText);
     }
 }

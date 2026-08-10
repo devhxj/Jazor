@@ -45,7 +45,7 @@ public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
             import component from "./components/release-collection-attributes.mjs";
 
             test("official Razor collection initializer attributes retain every dictionary entry", () => {
-                const button = component.setup({ release: "2026.08", label: "Deploy" }, { slots: {} })();
+                const button = component.setup({ Release: "2026.08", Label: "Deploy" }, { slots: {} })();
                 assert.equal(button.name, "button");
                 assert.equal(button.props["data-source"], "collection");
                 assert.equal(button.props["data-release"], "2026.08");

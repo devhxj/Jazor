@@ -15,6 +15,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether the navigation drawer is visible.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Callback invoked when the drawer visibility changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to show a compact rail drawer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rail")]
     public bool? Rail { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Callback invoked when the rail mode changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:rail")]
     public EventCallback<bool?> RailChanged { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to permanently show the drawer (unaffected by responsive conditions).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("permanent")]
     public bool Permanent { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether the drawer is temporary (only appears when triggered).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("temporary")]
     public bool Temporary { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether the drawer is persistent (can be closed via scrim on mobile).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to expand the drawer on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("expandOnHover")]
     public bool ExpandOnHover { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to display the drawer in floating mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("floating")]
     public bool Floating { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to stick the drawer in a visible position.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sticky")]
     public bool Sticky { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to disable touch swipe gestures.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("touchless")]
     public bool Touchless { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to disable the resize watcher.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disableResizeWatcher")]
     public bool DisableResizeWatcher { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Whether to disable the route watcher.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disableRouteWatcher")]
     public bool DisableRouteWatcher { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Width of the navigation drawer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Width of the drawer in rail mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("railWidth")]
     public VueStringNumberValue? RailWidth { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Scrim configuration when the drawer is open.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// URL of the drawer background image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Display position of the navigation drawer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyNavigationDrawerLocation? Location { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -155,5 +175,6 @@ public sealed class VNavigationDrawer : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

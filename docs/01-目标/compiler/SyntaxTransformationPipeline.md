@@ -41,7 +41,7 @@
 
 - `[ECMAScriptModule]`：模块入口。`ESGenerator` 只从该特性出发寻找待转换类。
 - `[ECMAScript]`：标记可在 ECMAScript 语义域中被 Analyzer 视为合法的类型。
-- `[ECMAScriptName]`：指定编译期名称，优先级高于 `Description("@#...")`。
+- `[ECMAScriptName]`：可直接指定 ECMAScript 名称；当 `Description` 已用于普通说明时提供专用映射。解析优先级高于 `Description("@#...")`。完整 authoring 约定见 [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md)。
 - `[ECMAScriptIgnore]`：语义上表示忽略成员，但当前编译器主链路未直接消费该特性。
 - `[ECMAScriptInline]`：语义上表示直接提供 JavaScript 方法体，但当前编译器主链路未直接消费该特性。
 
@@ -69,7 +69,7 @@
 |------|------|----------------|----------|
 | `[ECMAScriptModule]` | 模块入口 | `ESGenerator`、`Analyzer` | 已进入主链路 |
 | `[ECMAScript]` | 允许类型 | `Analyzer` | 已进入主链路 |
-| `[ECMAScriptName]` | 名称重写 | `Util.GetSymbolConfigName`、`AstConverter`、`SemanticWalker` | 已进入主链路 |
+| `[ECMAScriptName]` / `Description("@#...")` | 显式 ECMAScript 名称 | `Util.GetSymbolConfigName`、`AstConverter`、`SemanticWalker`、RazorVue | 已进入主链路；目标解析合同见 [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md) |
 | `[ECMAScriptIgnore]` | 成员忽略 | 预留给编译器/运行库约定 | 未统一接入 |
 | `[ECMAScriptInline]` | 用户自带 JS 代码 | 预留扩展点 | 未统一接入 |
 | `[Jazor(Op.Alias)]` | 宿主名映射 | `WhiteList`、`SemanticWalker` | 已进入主链路 |
@@ -344,13 +344,14 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 ## 9. 名称解析与符号稳定性
 
-符号到 JavaScript 名称的解析顺序由 `Util.GetConfigOrSymbolName` 决定：
+名称目标合同由 [ECMAScriptNamingPolicy.md](./ECMAScriptNamingPolicy.md) 定义。普通 C# 符号默认保留源名称；`ECMAScriptName` 与 `Description("@#name")` 只在运行时 ABI 确有不同名称时显式映射。自动 lower-camel fallback 已移除，任何新路径都不得重新引入它。
+
+除宿主白名单的 `Op.Alias` 外，普通符号的解析顺序是：
 
 1. `ECMAScriptNameAttribute`
 2. `Description("@#name")`
-3. 隐式 backing field 哈希名
-4. 重载方法哈希后缀
-5. 原始符号名
+3. 原始符号名
+4. 必要的隐式 backing field 哈希名或重载稳定区分
 
 这里要单独区分两类重载：
 

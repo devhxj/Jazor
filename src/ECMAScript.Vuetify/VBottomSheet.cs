@@ -16,6 +16,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Insets the sheet.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inset")]
     public bool Inset { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Prevents closing on outside click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Max width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Scroll strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollStrategy")]
     public VuetifyScrollStrategy? ScrollStrategy { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Transition animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Props for the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Props for the content container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Renders content eagerly.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Disables click animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noClickAnimation")]
     public bool NoClickAnimation { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Scrim overlay setting.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VBottomSheet : ComponentBase
     /// Activator slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VOverlayActivatorContext>? Activator { get; set; }
 
     /// <summary>
@@ -121,5 +136,6 @@ public sealed class VBottomSheet : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

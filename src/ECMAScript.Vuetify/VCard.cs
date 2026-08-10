@@ -15,6 +15,7 @@ public sealed class VCard : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VCard : ComponentBase
     /// Subtitle text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public VuetifyTextValue? Subtitle { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VCard : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VCard : ComponentBase
     /// Icon appended to front.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public string? PrependIcon { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VCard : ComponentBase
     /// Icon appended to end.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public string? AppendIcon { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VCard : ComponentBase
     /// Avatar appended to front.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependAvatar")]
     public string? PrependAvatar { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VCard : ComponentBase
     /// Avatar appended to end.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendAvatar")]
     public string? AppendAvatar { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VCard : ComponentBase
     /// Card image URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VCard : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VCard : ComponentBase
     /// Visual variant style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -85,6 +95,7 @@ public sealed class VCard : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -92,6 +103,7 @@ public sealed class VCard : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -99,6 +111,7 @@ public sealed class VCard : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -106,6 +119,7 @@ public sealed class VCard : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -113,6 +127,7 @@ public sealed class VCard : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -120,6 +135,7 @@ public sealed class VCard : ComponentBase
     /// Min height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -127,6 +143,7 @@ public sealed class VCard : ComponentBase
     /// Min width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -134,6 +151,7 @@ public sealed class VCard : ComponentBase
     /// Max height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -141,6 +159,7 @@ public sealed class VCard : ComponentBase
     /// Max width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -148,6 +167,7 @@ public sealed class VCard : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -155,6 +175,7 @@ public sealed class VCard : ComponentBase
     /// Removes box-shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -162,6 +183,7 @@ public sealed class VCard : ComponentBase
     /// Shows elevation on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hover")]
     public bool Hover { get; set; }
 
     /// <summary>
@@ -169,6 +191,7 @@ public sealed class VCard : ComponentBase
     /// Renders as a link.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("link")]
     public bool Link { get; set; }
 
     /// <summary>
@@ -176,6 +199,7 @@ public sealed class VCard : ComponentBase
     /// Link target URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -183,6 +207,7 @@ public sealed class VCard : ComponentBase
     /// Router link destination.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -190,6 +215,7 @@ public sealed class VCard : ComponentBase
     /// Uses replace instead of push.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool Replace { get; set; }
 
     /// <summary>
@@ -197,6 +223,7 @@ public sealed class VCard : ComponentBase
     /// Exact route match.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("exact")]
     public bool Exact { get; set; }
 
     /// <summary>
@@ -204,6 +231,7 @@ public sealed class VCard : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -211,6 +239,7 @@ public sealed class VCard : ComponentBase
     /// Text slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 
     /// <summary>
@@ -218,6 +247,7 @@ public sealed class VCard : ComponentBase
     /// Title slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -225,6 +255,7 @@ public sealed class VCard : ComponentBase
     /// Subtitle slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public RenderFragment? SubtitleContent { get; set; }
 
     /// <summary>
@@ -232,6 +263,7 @@ public sealed class VCard : ComponentBase
     /// Image slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public RenderFragment? ImageContent { get; set; }
 
     /// <summary>
@@ -239,6 +271,7 @@ public sealed class VCard : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -246,6 +279,7 @@ public sealed class VCard : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -253,6 +287,7 @@ public sealed class VCard : ComponentBase
     /// Actions slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
     /// <summary>
@@ -260,6 +295,7 @@ public sealed class VCard : ComponentBase
     /// Item slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment? Item { get; set; }
 
     /// <summary>
@@ -267,5 +303,6 @@ public sealed class VCard : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

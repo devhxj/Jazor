@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]
-[VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
 public sealed class VDialog : ComponentBase
 {
     /// <summary>
@@ -15,6 +14,7 @@ public sealed class VDialog : ComponentBase
     /// Whether the dialog is visible.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VDialog : ComponentBase
     /// Callback when visibility changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VDialog : ComponentBase
     /// Target element to attach the dialog to.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("attach")]
     public VuetifyAttachTarget? Attach { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to contain the dialog within its parent.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contained")]
     public bool Contained { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to disable the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to render content eagerly instead of lazily.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to display fullscreen.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fullscreen")]
     public bool Fullscreen { get; set; }
 
     /// <summary>
@@ -71,6 +78,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to disable the click animation effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noClickAnimation")]
     public bool NoClickAnimation { get; set; }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to remain open when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -85,6 +94,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to retain focus within the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("retainFocus")]
     public bool RetainFocus { get; set; } = true;
 
     /// <summary>
@@ -92,6 +102,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to allow content scrolling.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollable")]
     public bool Scrollable { get; set; }
 
     /// <summary>
@@ -99,6 +110,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to close on browser back navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnBack")]
     public bool CloseOnBack { get; set; } = true;
 
     /// <summary>
@@ -106,6 +118,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to close when clicking the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnContentClick")]
     public bool CloseOnContentClick { get; set; }
 
     /// <summary>
@@ -113,6 +126,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to open when clicking the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool? OpenOnClick { get; set; }
 
     /// <summary>
@@ -120,6 +134,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to open on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool? OpenOnFocus { get; set; }
 
     /// <summary>
@@ -127,6 +142,7 @@ public sealed class VDialog : ComponentBase
     /// Whether to open on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -134,6 +150,7 @@ public sealed class VDialog : ComponentBase
     /// Delay before opening (in milliseconds).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -141,6 +158,7 @@ public sealed class VDialog : ComponentBase
     /// Delay before closing (in milliseconds).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -148,6 +166,7 @@ public sealed class VDialog : ComponentBase
     /// Props for the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -155,6 +174,7 @@ public sealed class VDialog : ComponentBase
     /// Props for the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -162,6 +182,7 @@ public sealed class VDialog : ComponentBase
     /// CSS class for the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentClass")]
     public VueClassValue? ContentClass { get; set; }
 
     /// <summary>
@@ -169,6 +190,7 @@ public sealed class VDialog : ComponentBase
     /// Popup location of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -176,6 +198,7 @@ public sealed class VDialog : ComponentBase
     /// Transform origin of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyOriginValue? Origin { get; set; }
 
     /// <summary>
@@ -183,6 +206,7 @@ public sealed class VDialog : ComponentBase
     /// Offset of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VuetifyOverlayOffsetValue? Offset { get; set; }
 
     /// <summary>
@@ -190,6 +214,7 @@ public sealed class VDialog : ComponentBase
     /// Location strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("locationStrategy")]
     public VuetifyLocationStrategy? LocationStrategy { get; set; }
 
     /// <summary>
@@ -197,6 +222,7 @@ public sealed class VDialog : ComponentBase
     /// Scroll strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollStrategy")]
     public VuetifyScrollStrategy? ScrollStrategy { get; set; }
 
     /// <summary>
@@ -204,6 +230,7 @@ public sealed class VDialog : ComponentBase
     /// Scrim overlay style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -211,6 +238,7 @@ public sealed class VDialog : ComponentBase
     /// Component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -218,6 +246,7 @@ public sealed class VDialog : ComponentBase
     /// Transition animation name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -225,6 +254,7 @@ public sealed class VDialog : ComponentBase
     /// Z-index stacking order.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
     /// <summary>
@@ -248,6 +278,7 @@ public sealed class VDialog : ComponentBase
     /// Dialog height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -255,6 +286,7 @@ public sealed class VDialog : ComponentBase
     /// Maximum width of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -262,6 +294,7 @@ public sealed class VDialog : ComponentBase
     /// Dialog width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -269,6 +302,7 @@ public sealed class VDialog : ComponentBase
     /// Maximum height of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -276,6 +310,7 @@ public sealed class VDialog : ComponentBase
     /// Minimum height of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -283,6 +318,7 @@ public sealed class VDialog : ComponentBase
     /// Minimum width of the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -290,6 +326,7 @@ public sealed class VDialog : ComponentBase
     /// Overlay opacity.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -297,6 +334,7 @@ public sealed class VDialog : ComponentBase
     /// Target element for positioning the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("target")]
     public VuetifyDialogTarget? Target { get; set; }
 
     /// <summary>
@@ -312,6 +350,7 @@ public sealed class VDialog : ComponentBase
     /// Event callback fired after enter transition completes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onAfterEnter")]
     public EventCallback OnAfterEnter { get; set; }
 
     /// <summary>
@@ -319,6 +358,7 @@ public sealed class VDialog : ComponentBase
     /// Event callback fired after leave transition completes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onAfterLeave")]
     public EventCallback OnAfterLeave { get; set; }
 
     /// <summary>
@@ -326,6 +366,7 @@ public sealed class VDialog : ComponentBase
     /// Event callback fired when clicking outside the dialog.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:outside")]
     public EventCallback<MouseEvent> OnClickOutside { get; set; }
 
     /// <summary>
@@ -333,6 +374,7 @@ public sealed class VDialog : ComponentBase
     /// Event callback fired on keydown.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback<KeyboardEvent> OnKeydown { get; set; }
 
     /// <summary>
@@ -340,6 +382,7 @@ public sealed class VDialog : ComponentBase
     /// Slot content for the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
 
     /// <summary>
@@ -347,6 +390,7 @@ public sealed class VDialog : ComponentBase
     /// Additional HTML attributes attached to the component.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -354,5 +398,6 @@ public sealed class VDialog : ComponentBase
     /// Default child content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

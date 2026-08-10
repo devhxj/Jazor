@@ -16,6 +16,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; } = true;
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Event fired when active state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:active")]
     public EventCallback<bool> ActiveChanged { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Uses absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Border configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Base color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Background color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Grows children to fill space.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("grow")]
     public bool Grow { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Requires at least one item to be selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
     /// <summary>
@@ -121,6 +136,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Maximum number of selectable items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     /// <summary>
@@ -128,6 +144,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Bottom navigation mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mode")]
     public VuetifyBottomNavigationMode? Mode { get; set; }
 
     /// <summary>
@@ -135,6 +152,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Allows multiple selections.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -142,6 +160,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Component name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -149,6 +168,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Element order.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
 
     /// <summary>
@@ -156,6 +176,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -163,6 +184,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// CSS class applied to selected items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -186,6 +208,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -193,6 +216,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -200,6 +224,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -207,6 +232,7 @@ public sealed class VBottomNavigation : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -214,5 +240,6 @@ public sealed class VBottomNavigation : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

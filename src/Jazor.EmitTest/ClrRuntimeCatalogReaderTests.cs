@@ -82,7 +82,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsTrue(itemsGetter.Success, queueClass);
         StringAssert.Contains(
             queueClass,
-            "this." + itemsGetter.Groups["field"].Value + " = materializeArray(collection, ");
+            "this." + itemsGetter.Groups["field"].Value + " = MaterializeArray(collection, ");
         StringAssert.Contains(runtimeModule.Content, "return new JQueue(\"$ctor_");
 
         var byteModule = modules.Single(module => string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));
@@ -91,8 +91,8 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var comparerModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ComparerT1Module.js", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(comparerModule.Content.Contains("export const ComparerT1Module = {", StringComparison.Ordinal), comparerModule.Content);
-        StringAssert.Contains(comparerModule.Content, "export function ensureComparerInstance");
-        StringAssert.Contains(comparerModule.Content, "export function compareCore");
+        StringAssert.Contains(comparerModule.Content, "export function EnsureComparerInstance");
+        StringAssert.Contains(comparerModule.Content, "export function CompareCore");
     }
 
     [TestMethod]
@@ -176,8 +176,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         var arrayModule = modules.Single(module => string.Equals(module.RelativePath, "System/ArrayModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(arrayModule.Content, "let newArray = new Array(newSize);");
         StringAssert.Contains(arrayModule.Content, "from \"System/Collections/Generic/ComparerT1Module.js\";");
-        StringAssert.Contains(arrayModule.Content, "compareCore");
-        StringAssert.Contains(arrayModule.Content, "compareObjectsCore");
+        StringAssert.Contains(arrayModule.Content, "CompareCore");
+        StringAssert.Contains(arrayModule.Content, "CompareObjectsCore");
         Assert.IsFalse(arrayModule.Content.Contains(".toString()", StringComparison.Ordinal), arrayModule.Content);
         Assert.IsFalse(arrayModule.Content.Contains("let newArray = [newSize];", StringComparison.Ordinal), arrayModule.Content);
         Assert.IsFalse(arrayModule.Content.Contains("array.sort();", StringComparison.Ordinal), arrayModule.Content);
@@ -202,8 +202,8 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var int64Module = modules.Single(module => string.Equals(module.RelativePath, "System/Int64Module.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(int64Module.Content, "from \"System/Numerics/BigIntIntegerRuntime.js\";");
-        StringAssert.Contains(int64Module.Content, "return rotateLeft(value, rotateAmount, 64,");
-        StringAssert.Contains(int64Module.Content, "return rotateRight(value, rotateAmount, 64,");
+        StringAssert.Contains(int64Module.Content, "return RotateLeft(value, rotateAmount, 64,");
+        StringAssert.Contains(int64Module.Content, "return RotateRight(value, rotateAmount, 64,");
         Assert.IsFalse(int64Module.Content.Contains("function normalizeRotateBits(value)", StringComparison.Ordinal), int64Module.Content);
         Assert.IsFalse(int64Module.Content.Contains("function normalizeSignedRotateResult(value)", StringComparison.Ordinal), int64Module.Content);
         Assert.IsFalse(int64Module.Content.Contains("return value << amount | value >> BigInt(64) - amount;", StringComparison.Ordinal), int64Module.Content);
@@ -215,8 +215,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(stringModule.Content.Contains("export const StringModule = {", StringComparison.Ordinal), stringModule.Content);
 
         var decimalModule = modules.Single(module => string.Equals(module.RelativePath, "System/DecimalModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(decimalModule.Content, "function getNumberStylesValue(style) {");
-        StringAssert.Contains(decimalModule.Content, "function getMidpointRoundingValue(mode) {");
+        StringAssert.Contains(decimalModule.Content, "function GetNumberStylesValue(style) {");
+        StringAssert.Contains(decimalModule.Content, "function GetMidpointRoundingValue(mode) {");
         Assert.IsFalse(decimalModule.Content.Contains("enumStyle = style", StringComparison.Ordinal), decimalModule.Content);
         Assert.IsFalse(decimalModule.Content.Contains("enumMode = mode", StringComparison.Ordinal), decimalModule.Content);
 
@@ -240,7 +240,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         var timeSpanModule = modules.Single(module => string.Equals(module.RelativePath, "System/TimeSpanModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(timeSpanModule.Content, "from \"System/RuntimeModule.js\";");
         StringAssert.Contains(timeSpanModule.Content, "JTimeSpan");
-        StringAssert.Contains(timeSpanModule.Content, "getInt64HashCode");
+        StringAssert.Contains(timeSpanModule.Content, "GetInt64HashCode");
         Assert.IsFalse(timeSpanModule.Content.Contains("import { RuntimeModule } from \"System/RuntimeModule.js\";", StringComparison.Ordinal), timeSpanModule.Content);
         Assert.IsFalse(timeSpanModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), timeSpanModule.Content);
     }
@@ -257,8 +257,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         var charModule = modules.Single(module => string.Equals(module.RelativePath, "System/CharModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(charModule.Content, "typeof value !== \"string\"");
         StringAssert.Contains(charModule.Content, "return [false, \"\\0\"];");
-        StringAssert.Contains(charModule.Content, "let code = getCodeUnit(c);");
-        StringAssert.Contains(charModule.Content, "return isWhiteSpaceCode(getCodeUnit(c));");
+        StringAssert.Contains(charModule.Content, "let code = GetCodeUnit(c);");
+        StringAssert.Contains(charModule.Content, "return IsWhiteSpaceCode(GetCodeUnit(c));");
         StringAssert.Contains(charModule.Content, "code === 5760");
         StringAssert.Contains(charModule.Content, "code >= 8192 && code <= 8202");
         StringAssert.Contains(charModule.Content, "code === 8232");
@@ -266,10 +266,10 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(charModule.Content, "code === 8239");
         StringAssert.Contains(charModule.Content, "code === 8287");
         StringAssert.Contains(charModule.Content, "code === 12288");
-        StringAssert.Contains(charModule.Content, "return isControlCode(c);");
-        StringAssert.Contains(charModule.Content, "function getCodeUnit(value) {\n  return value.charCodeAt(0);\n}");
-        StringAssert.Contains(charModule.Content, "function getCodeUnitFromChar(value) {\n  return value.charCodeAt(0);\n}");
-        StringAssert.Contains(charModule.Content, "getCodeUnitFromChar(_5ad63706a889c294(s, index))");
+        StringAssert.Contains(charModule.Content, "return IsControlCode(c);");
+        StringAssert.Contains(charModule.Content, "function GetCodeUnit(value) {\n  return value.charCodeAt(0);\n}");
+        StringAssert.Contains(charModule.Content, "function GetCodeUnitFromChar(value) {\n  return value.charCodeAt(0);\n}");
+        StringAssert.Contains(charModule.Content, "GetCodeUnitFromChar(_5ad63706a889c294(s, index))");
         Assert.IsFalse(charModule.Content.Contains("typeof value !== \"number\"", StringComparison.Ordinal), charModule.Content);
         Assert.IsFalse(charModule.Content.Contains("return [false, 0];", StringComparison.Ordinal), charModule.Content);
         Assert.IsFalse(charModule.Content.Contains("return c < 32 || c === 127;", StringComparison.Ordinal), charModule.Content);
@@ -286,7 +286,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsNotNull(modules);
 
         var bigIntegerModule = modules.Single(module => string.Equals(module.RelativePath, "System/Numerics/BigIntegerModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(bigIntegerModule.Content, "function computePositiveLog(value, baseValue)");
+        StringAssert.Contains(bigIntegerModule.Content, "function ComputePositiveLog(value, baseValue)");
         StringAssert.Contains(bigIntegerModule.Content, "if (value < 0n || baseValue === 1)");
         StringAssert.Contains(bigIntegerModule.Content, "if (baseValue === Number.POSITIVE_INFINITY)");
         StringAssert.Contains(bigIntegerModule.Content, "return Math.log(0) / Math.log(baseValue);");
@@ -308,49 +308,49 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsNotNull(modules);
 
         var dictionaryModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/IDictionaryT2Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(dictionaryModule.Content, "import { isReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(dictionaryModule.Content, "import { IsReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(dictionaryModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), dictionaryModule.Content);
 
         var genericCollectionModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ICollectionT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(genericCollectionModule.Content, "import { isMutableListCarrier, requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(genericCollectionModule.Content, "import { IsMutableListCarrier, RequireMutableListCarrier } from \"System/RuntimeModule.js\";");
 
         var genericListModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/IListT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(genericListModule.Content, "import { requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(genericListModule.Content, "import { RequireMutableListCarrier } from \"System/RuntimeModule.js\";");
 
         var listInterfaceModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/IListModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(listInterfaceModule.Content, "import { isMutableListCarrier, requireMutableListCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(listInterfaceModule.Content, "import { IsMutableListCarrier, RequireMutableListCarrier } from \"System/RuntimeModule.js\";");
 
         var listModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ListT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(listModule.Content, "import { createReadOnlyArrayView, markAsMutableListCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(listModule.Content, "import { CreateReadOnlyArrayView, MarkAsMutableListCarrier } from \"System/RuntimeModule.js\";");
 
         var readOnlyDictionaryModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(readOnlyDictionaryModule.Content, "import { markAsReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(readOnlyDictionaryModule.Content, "import { MarkAsReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(readOnlyDictionaryModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), readOnlyDictionaryModule.Content);
 
         var setModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/Generic/ISetT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(setModule.Content, "import { isReadOnlySetCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(setModule.Content, "import { IsReadOnlySetCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(setModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), setModule.Content);
 
         var readOnlySetModule = modules.Single(module => string.Equals(module.RelativePath, "System/Collections/ObjectModel/ReadOnlySetT1Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(readOnlySetModule.Content, "import { markAsReadOnlySetCarrier } from \"System/RuntimeModule.js\";");
+        StringAssert.Contains(readOnlySetModule.Content, "import { MarkAsReadOnlySetCarrier } from \"System/RuntimeModule.js\";");
         Assert.IsFalse(readOnlySetModule.Content.Contains("RuntimeModule,", StringComparison.Ordinal), readOnlySetModule.Content);
 
         Assert.IsFalse(modules.Any(module => string.Equals(module.RelativePath, "System/Collections/Generic/DictionaryCarrierRuntime.js", StringComparison.OrdinalIgnoreCase)));
         Assert.IsFalse(modules.Any(module => string.Equals(module.RelativePath, "System/Collections/Generic/SetCarrierRuntime.js", StringComparison.OrdinalIgnoreCase)));
 
         var runtimeModule = modules.Single(module => string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(runtimeModule.Content, "export function isReadOnlySetCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlySetCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function isReadOnlyDictionaryCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function markAsReadOnlyDictionaryCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function markAsMutableListCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function isMutableListCarrier");
-        StringAssert.Contains(runtimeModule.Content, "export function requireMutableListCarrier");
-        StringAssert.Contains(runtimeModule.Content, "let readOnlyCarriers = new WeakSet;");
-        StringAssert.Contains(runtimeModule.Content, "let mutableListCarriers = new WeakSet;");
-        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.has(instance)");
-        StringAssert.Contains(runtimeModule.Content, "readOnlyCarriers.add(view)");
-        StringAssert.Contains(runtimeModule.Content, "mutableListCarriers.add(instance)");
+        StringAssert.Contains(runtimeModule.Content, "export function IsReadOnlySetCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function MarkAsReadOnlySetCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function IsReadOnlyDictionaryCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function MarkAsReadOnlyDictionaryCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function MarkAsMutableListCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function IsMutableListCarrier");
+        StringAssert.Contains(runtimeModule.Content, "export function RequireMutableListCarrier");
+        StringAssert.Contains(runtimeModule.Content, "let ReadOnlyCarriers = new WeakSet;");
+        StringAssert.Contains(runtimeModule.Content, "let MutableListCarriers = new WeakSet;");
+        StringAssert.Contains(runtimeModule.Content, "ReadOnlyCarriers.has(instance)");
+        StringAssert.Contains(runtimeModule.Content, "ReadOnlyCarriers.add(view)");
+        StringAssert.Contains(runtimeModule.Content, "MutableListCarriers.add(instance)");
         Assert.IsFalse(runtimeModule.Content.Contains("__jazor$readonly", StringComparison.Ordinal), runtimeModule.Content);
     }
 
@@ -364,31 +364,31 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsNotNull(modules);
 
         var timeSpanModule = modules.Single(module => string.Equals(module.RelativePath, "System/TimeSpanModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(timeSpanModule.Content, "function roundToEven(value)");
-        StringAssert.Contains(timeSpanModule.Content, "function createFromTruncatedTicks(value)");
-        StringAssert.Contains(timeSpanModule.Content, "function getFiniteDoubleRatio(value)");
-        StringAssert.Contains(timeSpanModule.Content, "function createFromRoundedRationalTicks(numerator, denominator)");
-        StringAssert.Contains(timeSpanModule.Content, "return createFromTruncatedTicks(value * 864000000000);");
-        StringAssert.Contains(timeSpanModule.Content, "let ratio = getFiniteDoubleRatio(factor);");
-        StringAssert.Contains(timeSpanModule.Content, "return createFromRoundedRationalTicks(instance.ticks * ratio[0], ratio[1]);");
-        StringAssert.Contains(timeSpanModule.Content, "let ratio = getFiniteDoubleRatio(divisor);");
-        StringAssert.Contains(timeSpanModule.Content, "return createFromRoundedRationalTicks(numerator, denominator);");
+        StringAssert.Contains(timeSpanModule.Content, "function RoundToEven(value)");
+        StringAssert.Contains(timeSpanModule.Content, "function CreateFromTruncatedTicks(value)");
+        StringAssert.Contains(timeSpanModule.Content, "function GetFiniteDoubleRatio(value)");
+        StringAssert.Contains(timeSpanModule.Content, "function CreateFromRoundedRationalTicks(numerator, denominator)");
+        StringAssert.Contains(timeSpanModule.Content, "return CreateFromTruncatedTicks(value * 864000000000);");
+        StringAssert.Contains(timeSpanModule.Content, "let ratio = GetFiniteDoubleRatio(factor);");
+        StringAssert.Contains(timeSpanModule.Content, "return CreateFromRoundedRationalTicks(instance.ticks * ratio[0], ratio[1]);");
+        StringAssert.Contains(timeSpanModule.Content, "let ratio = GetFiniteDoubleRatio(divisor);");
+        StringAssert.Contains(timeSpanModule.Content, "return CreateFromRoundedRationalTicks(numerator, denominator);");
         Assert.IsFalse(timeSpanModule.Content.Contains("let rounded = Math.round(value);", StringComparison.Ordinal), timeSpanModule.Content);
 
         var timeOnlyModule = modules.Single(module => string.Equals(module.RelativePath, "System/TimeOnlyModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(timeOnlyModule.Content, "function createTruncatedTicksFromDouble(value)");
+        StringAssert.Contains(timeOnlyModule.Content, "function CreateTruncatedTicksFromDouble(value)");
         StringAssert.Contains(timeOnlyModule.Content, "return BigInt(Math.trunc(value));");
         Assert.IsFalse(timeOnlyModule.Content.Contains("function createRoundedTicksFromDouble(value)", StringComparison.Ordinal), timeOnlyModule.Content);
 
         var dateTimeModule = modules.Single(module => string.Equals(module.RelativePath, "System/DateTimeModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(dateTimeModule.Content, "function createAddUnitTicks(value, ticksPerUnit)");
+        StringAssert.Contains(dateTimeModule.Content, "function CreateAddUnitTicks(value, ticksPerUnit)");
         StringAssert.Contains(dateTimeModule.Content, "let integralPart = Math.trunc(value);");
         StringAssert.Contains(dateTimeModule.Content, "let fractionalPart = value - integralPart;");
         StringAssert.Contains(dateTimeModule.Content, "BigInt(Math.trunc(fractionalPart * Number(ticksPerUnit)))");
         Assert.IsFalse(dateTimeModule.Content.Contains("createRoundedTicksFromDouble(value * 864000000000)", StringComparison.Ordinal), dateTimeModule.Content);
 
         var dateTimeOffsetModule = modules.Single(module => string.Equals(module.RelativePath, "System/DateTimeOffsetModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(dateTimeOffsetModule.Content, "function createAddUnitTicks(value, ticksPerUnit)");
+        StringAssert.Contains(dateTimeOffsetModule.Content, "function CreateAddUnitTicks(value, ticksPerUnit)");
         StringAssert.Contains(dateTimeOffsetModule.Content, "let integralPart = Math.trunc(value);");
         StringAssert.Contains(dateTimeOffsetModule.Content, "let fractionalPart = value - integralPart;");
         StringAssert.Contains(dateTimeOffsetModule.Content, "BigInt(Math.trunc(fractionalPart * Number(ticksPerUnit)))");

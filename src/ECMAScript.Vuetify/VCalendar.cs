@@ -14,6 +14,7 @@ public sealed class VCalendar : ComponentBase
     /// Current date value of the calendar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyCalendarDateValues? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VCalendar : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyCalendarDateValues?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VCalendar : ComponentBase
     /// Next page icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public VuetifyIconValue? NextIcon { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VCalendar : ComponentBase
     /// Previous page icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public VuetifyIconValue? PrevIcon { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VCalendar : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VCalendar : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VCalendar : ComponentBase
     /// Calendar view mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("viewMode")]
     public VuetifyCalendarViewMode? ViewMode { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VCalendar : ComponentBase
     /// Day information object.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("day")]
     public VuetifyCalendarDay? Day { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VCalendar : ComponentBase
     /// Day index.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dayIndex")]
     public Number? DayIndex { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VCalendar : ComponentBase
     /// Events list.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("events")]
     public VuetifyCalendarEvents? Events { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VCalendar : ComponentBase
     /// Number of divisions per interval.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervalDivisions")]
     public Number? IntervalDivisions { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VCalendar : ComponentBase
     /// Interval duration in minutes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervalDuration")]
     public Number? IntervalDuration { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VCalendar : ComponentBase
     /// Interval height in pixels.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervalHeight")]
     public Number? IntervalHeight { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VCalendar : ComponentBase
     /// Interval format.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervalFormat")]
     public VuetifyCalendarIntervalFormatValue? IntervalFormat { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VCalendar : ComponentBase
     /// Interval start index for the day.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervalStart")]
     public Number? IntervalStart { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VCalendar : ComponentBase
     /// Hides day header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDayHeader")]
     public bool HideDayHeader { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VCalendar : ComponentBase
     /// Number of intervals per day.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("intervals")]
     public Number? Intervals { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VCalendar : ComponentBase
     /// Allowed dates for selection.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("allowedDates")]
     public VuetifyCalendarAllowedDatesValue? AllowedDates { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VCalendar : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VCalendar : ComponentBase
     /// Currently displayed date value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("displayValue")]
     public VuetifyCalendarDateValue? DisplayValue { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VCalendar : ComponentBase
     /// Month to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("month")]
     public VueStringNumberValue? Month { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VCalendar : ComponentBase
     /// Maximum date value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VuetifyCalendarDateValue? Max { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VCalendar : ComponentBase
     /// Minimum date value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public VuetifyCalendarDateValue? Min { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VCalendar : ComponentBase
     /// Shows adjacent month dates.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showAdjacentMonths")]
     public bool ShowAdjacentMonths { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VCalendar : ComponentBase
     /// Year to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("year")]
     public VueStringNumberValue? Year { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VCalendar : ComponentBase
     /// Weekdays to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("weekdays")]
     public VuetifyCalendarWeekdays? Weekdays { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VCalendar : ComponentBase
     /// Weeks in month calculation mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("weeksInMonth")]
     public VuetifyCalendarWeeksInMonth? WeeksInMonth { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VCalendar : ComponentBase
     /// First day of the week.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("firstDayOfWeek")]
     public VueStringNumberValue? FirstDayOfWeek { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VCalendar : ComponentBase
     /// Hides the header.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideHeader")]
     public bool HideHeader { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VCalendar : ComponentBase
     /// Hides week numbers.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideWeekNumber")]
     public bool HideWeekNumber { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VCalendar : ComponentBase
     /// Next page event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onNext")]
     public EventCallback OnNext { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VCalendar : ComponentBase
     /// Previous page event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onPrev")]
     public EventCallback OnPrev { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VCalendar : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VCalendar : ComponentBase
     /// Header slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment<VCalendarHeaderSlotContext>? Header { get; set; }
 
     /// <summary>
@@ -252,5 +286,6 @@ public sealed class VCalendar : ComponentBase
     /// Event slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("event")]
     public RenderFragment<VCalendarEventSlotContext>? EventContent { get; set; }
 }

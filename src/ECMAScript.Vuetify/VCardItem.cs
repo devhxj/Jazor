@@ -16,6 +16,7 @@ public sealed class VCardItem : ComponentBase
     /// URL for the append avatar image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendAvatar")]
     public string? AppendAvatar { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VCardItem : ComponentBase
     /// Append icon name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public string? AppendIcon { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VCardItem : ComponentBase
     /// URL for the prepend avatar image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependAvatar")]
     public string? PrependAvatar { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VCardItem : ComponentBase
     /// Prepend icon name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public string? PrependIcon { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VCardItem : ComponentBase
     /// Subtitle text of the card item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public VuetifyTextValue? Subtitle { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VCardItem : ComponentBase
     /// Title text of the card item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VCardItem : ComponentBase
     /// Additional attributes applied to the component root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VCardItem : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VCardItem : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VCardItem : ComponentBase
     /// Title slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VCardItem : ComponentBase
     /// Subtitle slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public RenderFragment? SubtitleContent { get; set; }
 
     /// <summary>
@@ -93,5 +104,6 @@ public sealed class VCardItem : ComponentBase
     /// Child content of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

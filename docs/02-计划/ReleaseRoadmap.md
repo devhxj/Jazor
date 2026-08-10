@@ -30,10 +30,12 @@
 
 ## 当前定位
 
-当前已验证的 Compiler 基线为 `98.94%` 行覆盖率和 `96.01%` 分支覆盖率，不再作为后续发布版本的独立门槛。RazorVue `0.5` 门禁已于 2026-08-10 验证：`4675/4675` 个官方 Razor SG 场景通过，行覆盖率为 `97.71%`，分支覆盖率为 `96.01%`。
+当前已验证的 Compiler 基线为 `10318/10318` 个场景通过、`98.91%` 行覆盖率和 `96.01%` 分支覆盖率，不再作为后续发布版本的独立门槛。RazorVue `0.5` 门禁已于 2026-08-10 重新验证：`4684/4684` 个官方 Razor SG 场景通过，行覆盖率为 `97.57%`，分支覆盖率为 `96.00%`。
 
 `0.6` 门禁也已于 2026-08-10 重新验证：`verify-vue-binding-coverage.cs` 中的 Compiler、Pinia、Pinia Testing 和 Vue Router test lane 分别为 `10318/10318`、`68/68`、`39/39`、`102/102` 通过；Vue3 `1304/1304`、Vuetify `5076/5076`、Element Plus `3611/3611`、TDesign `13251/13251`、Pinia `314/314`、Pinia Testing `65/65`、Vue Router `766/766` 个公开绑定契约单位均完成审计。精确发布提交还在 clean worktree 中以 `publish-nuget.cs -- --skip-push --package-version 0.6.0` 成功打包十个默认公开包。`.mjs` 文件变更现可向声明 `module-update` capability 的开发客户端发送可取消事件，其他客户端和其他变更仍使用完整刷新。RazorVue G2 首份可复现报告已记录官方 Razor SG 外部包消费者、生成物、Node 和浏览器数据；其中性能阈值警告和旧线同协议缺失仍是后续阶段工作，不构成“性能已经完成”的声明。
 
 `0.7` 门禁已于 2026-08-10 重新验证：上述同一组 test lane 全部通过，且 Vue3 `1304/1304`、Vuetify `5076/5076`、Element Plus `3611/3611`、TDesign `13251/13251`、Pinia `314/314`、Pinia Testing `65/65`、Vue Router `766/766` 个公开绑定契约单位均为 `100%`，高于逐项 `90%` 门槛。开发宿主会比较相邻 manifest：仅当 `ComponentId`/`ModuleId`、描述符和逻辑哈希保持不变且模板哈希变化时，才发送 `module-update`；浏览器必须通过 `JazorHmr.accept(moduleId, handler)` 显式接管动态导入后的模块，未注册处理器、导入失败或所有其他变更均完整刷新。`verify-development-hmr.cs` 已在真实浏览器中验证该流程；它不自动替换 Vue 实例，也不声明状态保留。G2 的发布报告仍为 `baseline-recorded-with-warnings`，生成物 gzip 比率、Node 比率和旧线同协议缺失保持为后续性能工作。主线下一门槛为 `0.8` 的逐项 `96%` Vue 封装契约审计覆盖率。
+
+`0.8` 门禁已于 2026-08-10 重新验证：`verify-vue-binding-coverage.cs` 的 Compiler、Pinia、Pinia Testing 和 Vue Router test lane 分别为 `10318/10318`、`68/68`、`39/39`、`102/102` 通过；Vue3 `1307/1307`、Vuetify `5076/5076`、Element Plus `3611/3611`、TDesign `13251/13251`、Pinia `314/314`、Pinia Testing `65/65`、Vue Router `766/766` 个公开绑定契约单位均为 `100%`，高于逐项 `96%` 门槛。完整 `test-dotnet.cs` 还验证了 CLR、Style、Pinia、Pinia Testing、Vue Router、RazorVue、Emit 与 render-context lane 均无失败；`publish-nuget.cs --skip-push --package-version 0.8.0` 成功打包十个默认公开包。`0.8` 由此达到既定的独立 Vue binding 契约门槛；HMR、调试与性能的已知后续工作仍按路线图继续收口。
 
 达到任一版本门槛前，必须重新运行对应的当前测试、覆盖率报告、包消费验证和必要的浏览器验证；历史状态文档中的通过记录不能替代本次证据。

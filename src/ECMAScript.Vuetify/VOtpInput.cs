@@ -14,6 +14,7 @@ public sealed class VOtpInput : ComponentBase
     /// Number of OTP input fields.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VOtpInput : ComponentBase
     /// Whether to automatically focus the first input field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("autofocus")]
     public bool Autofocus { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VOtpInput : ComponentBase
     /// Divider between input fields.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divider")]
     public string? Divider { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VOtpInput : ComponentBase
     /// Whether to focus all input fields simultaneously.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("focusAll")]
     public bool FocusAll { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VOtpInput : ComponentBase
     /// Whether to show a loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VOtpInput : ComponentBase
     /// Visual variant style of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyFieldVariant? Variant { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VOtpInput : ComponentBase
     /// Component density style that adjusts vertical spacing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VOtpInput : ComponentBase
     /// Whether to disable the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VOtpInput : ComponentBase
     /// Whether to put the input control in an error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public bool Error { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VOtpInput : ComponentBase
     /// HTML input type of the input fields.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public VuetifyInputType? Type { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VOtpInput : ComponentBase
     /// Two-way bound value of the OTP input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VOtpInput : ComponentBase
     /// Callback invoked when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -98,5 +110,6 @@ public sealed class VOtpInput : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

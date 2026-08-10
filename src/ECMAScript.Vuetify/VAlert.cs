@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 [VueLibraryComponent("vuetify/components", "VAlert")]
-[VueLibraryEmit(nameof(OnClickClose), Name = "click:close")]
 /// <summary>
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.
@@ -15,6 +14,7 @@ public sealed class VAlert : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; } = true;
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VAlert : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VAlert : ComponentBase
     /// Alert type (e.g. success, info, warning, error).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public VuetifyAlertType? Type { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VAlert : ComponentBase
     /// Visual variant style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VAlert : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VAlert : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VAlert : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VAlert : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -71,6 +78,7 @@ public sealed class VAlert : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class VAlert : ComponentBase
     /// CSS position strategy.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -85,6 +94,7 @@ public sealed class VAlert : ComponentBase
     /// Position within container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -92,6 +102,7 @@ public sealed class VAlert : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -99,6 +110,7 @@ public sealed class VAlert : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -106,6 +118,7 @@ public sealed class VAlert : ComponentBase
     /// Max height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -113,6 +126,7 @@ public sealed class VAlert : ComponentBase
     /// Max width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -120,6 +134,7 @@ public sealed class VAlert : ComponentBase
     /// Min height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -127,6 +142,7 @@ public sealed class VAlert : ComponentBase
     /// Min width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -134,6 +150,7 @@ public sealed class VAlert : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -141,6 +158,7 @@ public sealed class VAlert : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -164,6 +182,7 @@ public sealed class VAlert : ComponentBase
     /// Border configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyAlertBorderValue? Border { get; set; }
 
     /// <summary>
@@ -171,6 +190,7 @@ public sealed class VAlert : ComponentBase
     /// Border color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("borderColor")]
     public string? BorderColor { get; set; }
 
     /// <summary>
@@ -178,6 +198,7 @@ public sealed class VAlert : ComponentBase
     /// Shows close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool Closable { get; set; }
 
     /// <summary>
@@ -185,6 +206,7 @@ public sealed class VAlert : ComponentBase
     /// Close button icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeIcon")]
     public VuetifyIconValue? CloseIcon { get; set; }
 
     /// <summary>
@@ -192,6 +214,7 @@ public sealed class VAlert : ComponentBase
     /// Accessibility label for close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeLabel")]
     public string? CloseLabel { get; set; }
 
     /// <summary>
@@ -199,6 +222,7 @@ public sealed class VAlert : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyAlertIconValue? Icon { get; set; }
 
     /// <summary>
@@ -206,6 +230,7 @@ public sealed class VAlert : ComponentBase
     /// Prominent display mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prominent")]
     public bool Prominent { get; set; }
 
     /// <summary>
@@ -213,6 +238,7 @@ public sealed class VAlert : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -220,6 +246,7 @@ public sealed class VAlert : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -227,6 +254,7 @@ public sealed class VAlert : ComponentBase
     /// Event fired when close button is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:close")]
     public EventCallback<MouseEvent> OnClickClose { get; set; }
 
     /// <summary>
@@ -234,6 +262,7 @@ public sealed class VAlert : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -241,6 +270,7 @@ public sealed class VAlert : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -248,6 +278,7 @@ public sealed class VAlert : ComponentBase
     /// Title slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -255,6 +286,7 @@ public sealed class VAlert : ComponentBase
     /// Text slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 
     /// <summary>
@@ -262,6 +294,7 @@ public sealed class VAlert : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -269,6 +302,7 @@ public sealed class VAlert : ComponentBase
     /// Close slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("close")]
     public RenderFragment<VAlertCloseSlotContext>? Close { get; set; }
 
     /// <summary>
@@ -276,5 +310,6 @@ public sealed class VAlert : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

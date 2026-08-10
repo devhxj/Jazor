@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -82,43 +81,7 @@ public sealed class SemanticWalkerCreationTest
     // 统一脚本断言，既锁定完整 JS 输出风格，也屏蔽平台行尾差异。
     private static void AssertScriptEqual(string expected, string? actual)
     {
-        Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings(), actual?.ReplaceLineEndings());
-    }
-
-    private static string NormalizeExpectedJsNaming(string expected)
-    {
-        expected = Regex.Replace(expected, @"\bItem([0-9]+)\b", "item$1");
-        expected = Regex.Replace(expected, @"([\{\[,]\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value);
-        expected = Regex.Replace(expected, @"(^\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value, RegexOptions.Multiline);
-        expected = Regex.Replace(expected, @"(\?*\.)([A-Z][A-Za-z0-9_]*)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value));
-        expected = Regex.Replace(expected, @"""([A-Z][A-Za-z0-9_]*)""(\s+in\b)", static m => "\"" + Camel(m.Groups[1].Value) + "\"" + m.Groups[2].Value);
-        expected = Regex.Replace(expected, @"\[""([A-Z][A-Za-z0-9_]*)""\]", static m => "[\"" + Camel(m.Groups[1].Value) + "\"]");
-        return expected;
-    }
-
-    private static string Camel(string name)
-    {
-        if (string.IsNullOrEmpty(name) || !char.IsUpper(name[0]))
-            return name;
-
-        if (name.Length == 1)
-            return char.ToLowerInvariant(name[0]).ToString();
-
-        var chars = name.ToCharArray();
-        chars[0] = char.ToLowerInvariant(chars[0]);
-        for (var index = 1; index < chars.Length; index++)
-        {
-            if (!char.IsUpper(chars[index]))
-                break;
-
-            var hasNext = index + 1 < chars.Length;
-            if (hasNext && !char.IsUpper(chars[index + 1]))
-                break;
-
-            chars[index] = char.ToLowerInvariant(chars[index]);
-        }
-
-        return new string(chars);
+        Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
     }
 
     /// <summary>
@@ -732,6 +695,47 @@ public sealed class SemanticWalkerCreationTest
               let v$0 = new QueueState;
               v$0["model-value"] = 1;
               v$0["status-code"] = 202;
+              return v$0;
+            })()
+            """, script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectInitializer_ClrImportValueUsesTheRuntimeKey()
+    {
+        var block = GetBlockOperation("""
+            using System;
+
+            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+            sealed class JazorAttribute : Attribute
+            {
+                public JazorAttribute(int op, string member, string? value = null)
+                {
+                }
+            }
+
+            class TestClass
+            {
+                sealed class QueueState
+                {
+                    [Jazor(3, "Demo.QueueState.Value.set", "runtimeValue")]
+                    public int Value { get; set; }
+                }
+
+                void TestMethod()
+                {
+                    var state = new QueueState { Value = 1 };
+                }
+            }
+            """);
+        var operation = GetObjectCreationOperationAt(block);
+        var script = new SemanticWalker(true).VisitObjectCreation(operation, new())?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+            """
+            (() => {
+              let v$0 = new QueueState;
+              v$0.runtimeValue = 1;
               return v$0;
             })()
             """, script);
@@ -1378,7 +1382,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(@"{ name: ""Ada"", age: 37 }", script);
+        AssertScriptEqual(@"{ Name: ""Ada"", Age: 37 }", script);
     }
 
     [TestMethod]
@@ -3020,7 +3024,7 @@ public sealed class SemanticWalkerCreationTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let obj = (() => {", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("let obj = (async () => {", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "v$0.callback = async () => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.Callback = async () => {", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -3791,7 +3795,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let point = { x: 10, y: 20 };
+  let point = { X: 10, Y: 20 };
 }", script);
     }
 
@@ -4494,7 +4498,7 @@ public sealed class SemanticWalkerCreationTest
         StringAssert.Contains(script, "let obj = (() => {");
         StringAssert.Contains(script, "let v$1;");
         StringAssert.Contains(script, "let v$0 = new Box;");
-        StringAssert.Contains(script, "v$1 = this.getTuple()");
+        StringAssert.Contains(script, "v$1 = this.GetTuple()");
         Assert.IsFalse(
             script.Contains("{\r\n  let v$1;\r\n  let obj = (() => {", StringComparison.Ordinal)
             || script.Contains("{\n  let v$1;\n  let obj = (() => {", StringComparison.Ordinal),

@@ -37,7 +37,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             """);
 
         StringAssert.Contains(script, "async () =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "readRevisionAsync", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "ReadRevisionAsync", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("async function verify() " + script);
     }
 
@@ -79,8 +79,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "readChannel", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "retries", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "ReadChannel", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "Retries", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -203,7 +203,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readProjector()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadProjector()"), script);
         StringAssert.Contains(script, ".bind(v$", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -229,7 +229,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readValues()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadValues()"), script);
         StringAssert.Contains(script, "contains(2)", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -314,7 +314,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readReleases()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadReleases()"), script);
         StringAssert.Contains(script, "ReleaseSetExtensions.contains", StringComparison.Ordinal);
         Assert.DoesNotContain("v$0$1", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
@@ -359,7 +359,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
 
         Assert.IsNotNull(script);
         Assert.AreEqual(1, host.RewriteCount);
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readReleases()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadReleases()"), script);
         StringAssert.Contains(script, "hostContains", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -399,8 +399,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readRelease()"), script);
-        StringAssert.Contains(script, "ReleaseExtensions.matches", StringComparison.Ordinal);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadRelease()"), script);
+        StringAssert.Contains(script, "ReleaseExtensions.Matches", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -437,8 +437,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "ReleaseExtensions.matches", StringComparison.Ordinal);
-        Assert.DoesNotContain("TestClass.readRelease", script, StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseExtensions.Matches", StringComparison.Ordinal);
+        Assert.DoesNotContain("TestClass.ReadRelease", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(release) " + script);
     }
 
@@ -465,8 +465,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "ReleaseState.current", StringComparison.Ordinal);
-        StringAssert.Contains(script, "ReleaseState.previous", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseState.Current", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseState.Previous", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -621,7 +621,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "BrowserTelemetry.report(messages)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "BrowserTelemetry.Report(messages)", StringComparison.Ordinal);
         Assert.DoesNotContain("...messages", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(messages) " + script);
     }
@@ -733,8 +733,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "release.revision", StringComparison.Ordinal);
-        StringAssert.Contains(script, "ReleaseRuntime.current", StringComparison.Ordinal);
+        StringAssert.Contains(script, "release.Revision", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseRuntime.Current", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"stable\"", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(release) " + script);
     }
@@ -804,9 +804,9 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "state.revision", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Revision", StringComparison.Ordinal);
         StringAssert.Contains(script, "revision =", StringComparison.Ordinal);
-        Assert.DoesNotContain("state.revision = revision, revision = state.revision", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("state.Revision = revision, revision = state.Revision", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(state, revision) " + script);
     }
 
@@ -840,7 +840,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.nextIndex()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.NextIndex()"), script);
         StringAssert.Contains(script, "counters[index]", StringComparison.Ordinal);
         StringAssert.Contains(script, "counters[0]", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(counters, index) " + script);
@@ -936,8 +936,8 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, ".count", StringComparison.Ordinal);
-        StringAssert.Contains(script, ".slice(", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".Count", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".Slice(", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(releases) " + script);
     }
 
@@ -996,7 +996,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
 
         StringAssert.Contains(script, "== null", StringComparison.Ordinal);
         StringAssert.Contains(script, "undefined", StringComparison.Ordinal);
-        StringAssert.Contains(script, "readRevision", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "ReadRevision", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("function verify(release) " + script);
     }
 

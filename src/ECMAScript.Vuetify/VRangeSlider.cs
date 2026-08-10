@@ -14,6 +14,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The label text of the range slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The fill color of the slider track.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The background color of the slider track.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("trackColor")]
     public string? TrackColor { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The color of the slider thumb.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thumbColor")]
     public string? ThumbColor { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Whether the slider is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Whether the slider is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Whether to show a value label above the thumb.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thumbLabel")]
     public VuetifyBooleanAlwaysValue? ThumbLabel { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Whether to show tick marks on the track.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showTicks")]
     public VuetifyBooleanAlwaysValue? ShowTicks { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The minimum value of the slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The maximum value of the slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The step increment of the slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Whether to enable strict mode, preventing thumb overlap.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("strict")]
     public bool Strict { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The direction of the slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifySliderDirection? Direction { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VRangeSlider : ComponentBase
     /// The current value of the range slider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyRangeSliderModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VRangeSlider : ComponentBase
     /// Callback invoked when the range value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyRangeSliderModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -126,5 +142,6 @@ public sealed class VRangeSlider : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

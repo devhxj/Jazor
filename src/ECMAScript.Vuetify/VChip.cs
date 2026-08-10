@@ -8,8 +8,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
-[VueLibraryEmit(nameof(OnClickClose), Name = "click:close")]
-[VueLibraryEmit(nameof(OnGroupSelected), Name = "group:selected")]
 public sealed class VChip : ComponentBase
 {
     /// <summary>
@@ -17,6 +15,7 @@ public sealed class VChip : ComponentBase
     /// The bound selected state of the chip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; } = true;
 
     /// <summary>
@@ -24,6 +23,7 @@ public sealed class VChip : ComponentBase
     /// Callback invoked when the selected state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -31,6 +31,7 @@ public sealed class VChip : ComponentBase
     /// The theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -38,6 +39,7 @@ public sealed class VChip : ComponentBase
     /// The visual variant style of the chip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -45,6 +47,7 @@ public sealed class VChip : ComponentBase
     /// The component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -52,6 +55,7 @@ public sealed class VChip : ComponentBase
     /// The HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -59,6 +63,7 @@ public sealed class VChip : ComponentBase
     /// The size of the chip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -66,6 +71,7 @@ public sealed class VChip : ComponentBase
     /// The target URL for the link.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VChip : ComponentBase
     /// Whether to replace the current history entry.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool Replace { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VChip : ComponentBase
     /// The target route path for the link.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VChip : ComponentBase
     /// Whether to require an exact route match.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("exact")]
     public bool Exact { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VChip : ComponentBase
     /// The border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VChip : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VChip : ComponentBase
     /// The value of the chip within a chip group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VuetifyGroupModelValue? Value { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VChip : ComponentBase
     /// Whether to disable interaction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VChip : ComponentBase
     /// The CSS class applied when selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VChip : ComponentBase
     /// The elevation shadow height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -136,6 +151,7 @@ public sealed class VChip : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -159,6 +175,7 @@ public sealed class VChip : ComponentBase
     /// The border style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -166,6 +183,7 @@ public sealed class VChip : ComponentBase
     /// The CSS class applied when active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeClass")]
     public string? ActiveClass { get; set; }
 
     /// <summary>
@@ -173,6 +191,7 @@ public sealed class VChip : ComponentBase
     /// The URL of the append avatar image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendAvatar")]
     public string? AppendAvatar { get; set; }
 
     /// <summary>
@@ -180,6 +199,7 @@ public sealed class VChip : ComponentBase
     /// The append icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public VuetifyIconValue? AppendIcon { get; set; }
 
     /// <summary>
@@ -187,6 +207,7 @@ public sealed class VChip : ComponentBase
     /// The base color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -194,6 +215,7 @@ public sealed class VChip : ComponentBase
     /// Whether to show the close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closable")]
     public bool Closable { get; set; }
 
     /// <summary>
@@ -201,6 +223,7 @@ public sealed class VChip : ComponentBase
     /// The icon for the close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeIcon")]
     public VuetifyIconValue? CloseIcon { get; set; }
 
     /// <summary>
@@ -208,6 +231,7 @@ public sealed class VChip : ComponentBase
     /// The accessibility label for the close button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeLabel")]
     public string? CloseLabel { get; set; }
 
     /// <summary>
@@ -215,6 +239,7 @@ public sealed class VChip : ComponentBase
     /// Whether the chip is draggable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("draggable")]
     public bool Draggable { get; set; }
 
     /// <summary>
@@ -222,6 +247,7 @@ public sealed class VChip : ComponentBase
     /// Whether to show the filter icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filter")]
     public bool Filter { get; set; }
 
     /// <summary>
@@ -229,6 +255,7 @@ public sealed class VChip : ComponentBase
     /// The filter icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filterIcon")]
     public VuetifyIconValue? FilterIcon { get; set; }
 
     /// <summary>
@@ -236,6 +263,7 @@ public sealed class VChip : ComponentBase
     /// Whether to display in label style (no border radius).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public bool Label { get; set; }
 
     /// <summary>
@@ -243,6 +271,7 @@ public sealed class VChip : ComponentBase
     /// Whether to render as a link style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("link")]
     public bool? Link { get; set; }
 
     /// <summary>
@@ -250,6 +279,7 @@ public sealed class VChip : ComponentBase
     /// Whether to display in pill shape.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("pill")]
     public bool Pill { get; set; }
 
     /// <summary>
@@ -257,6 +287,7 @@ public sealed class VChip : ComponentBase
     /// The URL of the prepend avatar image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependAvatar")]
     public string? PrependAvatar { get; set; }
 
     /// <summary>
@@ -264,6 +295,7 @@ public sealed class VChip : ComponentBase
     /// The prepend icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public VuetifyIconValue? PrependIcon { get; set; }
 
     /// <summary>
@@ -271,6 +303,7 @@ public sealed class VChip : ComponentBase
     /// The ripple effect configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -278,6 +311,7 @@ public sealed class VChip : ComponentBase
     /// The text content of the chip.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
 
     /// <summary>
@@ -285,6 +319,7 @@ public sealed class VChip : ComponentBase
     /// Callback invoked when the chip is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
     /// <summary>
@@ -292,6 +327,7 @@ public sealed class VChip : ComponentBase
     /// Callback invoked when the close button is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:close")]
     public EventCallback<MouseEvent> OnClickClose { get; set; }
 
     /// <summary>
@@ -299,6 +335,7 @@ public sealed class VChip : ComponentBase
     /// Callback invoked when the chip is selected in a group.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onGroup:selected")]
     public EventCallback<VuetifyGroupSelectedEvent> OnGroupSelected { get; set; }
 
     /// <summary>
@@ -306,6 +343,7 @@ public sealed class VChip : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -313,6 +351,7 @@ public sealed class VChip : ComponentBase
     /// Default content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VChipDefaultSlotContext>? DefaultContent { get; set; }
 
     /// <summary>
@@ -320,6 +359,7 @@ public sealed class VChip : ComponentBase
     /// Slot for the label content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
     /// <summary>
@@ -327,6 +367,7 @@ public sealed class VChip : ComponentBase
     /// Slot for the prepend content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -334,6 +375,7 @@ public sealed class VChip : ComponentBase
     /// Slot for the append content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -341,6 +383,7 @@ public sealed class VChip : ComponentBase
     /// Slot for the close button content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("close")]
     public RenderFragment? Close { get; set; }
 
     /// <summary>
@@ -348,6 +391,7 @@ public sealed class VChip : ComponentBase
     /// Slot for the filter icon content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("filter")]
     public RenderFragment? FilterContent { get; set; }
 
     /// <summary>
@@ -355,5 +399,6 @@ public sealed class VChip : ComponentBase
     /// Slot for child content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

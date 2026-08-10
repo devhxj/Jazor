@@ -15,6 +15,7 @@ public sealed class VTab : ComponentBase
     /// Text content of the tab.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VTab : ComponentBase
     /// Value of the tab.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public string? Value { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VTab : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -36,5 +39,6 @@ public sealed class VTab : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

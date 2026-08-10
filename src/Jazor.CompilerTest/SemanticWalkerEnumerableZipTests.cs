@@ -70,9 +70,9 @@ public sealed class SemanticWalkerEnumerableZipTests
         StringAssert.Contains(body, "__enumerableZipThirdIterator.return", StringComparison.Ordinal);
         StringAssert.Contains(body, "__enumerableZipSecondIterator.return", StringComparison.Ordinal);
         StringAssert.Contains(body, "__enumerableZipFirstIterator.return", StringComparison.Ordinal);
-        StringAssert.Contains(body, "first: __enumerableZipFirstStep.value", StringComparison.Ordinal);
-        StringAssert.Contains(body, "second: __enumerableZipSecondStep.value", StringComparison.Ordinal);
-        StringAssert.Contains(body, "third: __enumerableZipThirdStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "First: __enumerableZipFirstStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "Second: __enumerableZipSecondStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "Third: __enumerableZipThirdStep.value", StringComparison.Ordinal);
 
         StringAssert.Contains(body, "zipper = (v$0$0, v$0$1, v$0$2) =>", StringComparison.Ordinal);
 
@@ -134,7 +134,7 @@ public sealed class SemanticWalkerEnumerableZipTests
 				    tracked("third", [true], trace),
 				    false);
 				  const expected = [
-				    { first: 2, second: "ab", third: true }
+				    { First: 2, Second: "ab", Third: true }
 				  ];
 				  if (JSON.stringify(triples) !== JSON.stringify(expected))
 				    throw new Error(`three-source Zip result was ${JSON.stringify(triples)}`);
@@ -234,8 +234,8 @@ public sealed class SemanticWalkerEnumerableZipTests
         StringAssert.Contains(body, "__enumerableZipFirstIterator.return", StringComparison.Ordinal);
         StringAssert.Contains(body, "try {", StringComparison.Ordinal);
         StringAssert.Contains(body, "finally", StringComparison.Ordinal);
-        StringAssert.Contains(body, "first: __enumerableZipFirstStep.value", StringComparison.Ordinal);
-        StringAssert.Contains(body, "second: __enumerableZipSecondStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "First: __enumerableZipFirstStep.value", StringComparison.Ordinal);
+        StringAssert.Contains(body, "Second: __enumerableZipSecondStep.value", StringComparison.Ordinal);
         StringAssert.Contains(body, "__enumerableZipSelector(__enumerableZipFirstStep.value, __enumerableZipSecondStep.value)", StringComparison.Ordinal);
         StringAssert.Contains(body, "zipper = (v$0$0, v$0$1) =>", StringComparison.Ordinal);
 

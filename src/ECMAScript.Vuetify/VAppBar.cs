@@ -15,6 +15,7 @@ public sealed class VAppBar : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; } = true;
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VAppBar : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VAppBar : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VAppBar : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VAppBar : ComponentBase
     /// Removes box-shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VAppBar : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VAppBar : ComponentBase
     /// Position of the app bar within container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyAppBarLocation? Location { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VAppBar : ComponentBase
     /// Scroll behavior mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollBehavior")]
     public string? ScrollBehavior { get; set; }
 
     /// <summary>
@@ -71,6 +79,7 @@ public sealed class VAppBar : ComponentBase
     /// Background image URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -78,6 +87,7 @@ public sealed class VAppBar : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -85,5 +95,6 @@ public sealed class VAppBar : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -7,9 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VField")]
-[VueLibraryEmit(nameof(OnClearClick), Name = "click:clear")]
-[VueLibraryEmit(nameof(OnAppendInnerClick), Name = "click:appendInner")]
-[VueLibraryEmit(nameof(OnPrependInnerClick), Name = "click:prependInner")]
 public sealed class VField : ComponentBase
 {
     /// <summary>
@@ -17,6 +14,7 @@ public sealed class VField : ComponentBase
     /// HTML id attribute of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -24,6 +22,7 @@ public sealed class VField : ComponentBase
     /// Theme name applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -31,6 +30,7 @@ public sealed class VField : ComponentBase
     /// Border radius style of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -38,6 +38,7 @@ public sealed class VField : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -45,6 +46,7 @@ public sealed class VField : ComponentBase
     /// Whether to show a loading indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -52,6 +54,7 @@ public sealed class VField : ComponentBase
     /// Icon appended to the inner right side of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendInnerIcon")]
     public VuetifyIconValue? AppendInnerIcon { get; set; }
 
     /// <summary>
@@ -59,6 +62,7 @@ public sealed class VField : ComponentBase
     /// Background color of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -66,6 +70,7 @@ public sealed class VField : ComponentBase
     /// Whether to show a clear button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool Clearable { get; set; }
 
     /// <summary>
@@ -73,6 +78,7 @@ public sealed class VField : ComponentBase
     /// Icon used for the clear button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearIcon")]
     public VuetifyIconValue? ClearIcon { get; set; }
 
     /// <summary>
@@ -80,6 +86,7 @@ public sealed class VField : ComponentBase
     /// Whether the field is in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; }
 
     /// <summary>
@@ -87,6 +94,7 @@ public sealed class VField : ComponentBase
     /// Whether to vertically center affix icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("centerAffix")]
     public bool? CenterAffix { get; set; }
 
     /// <summary>
@@ -94,6 +102,7 @@ public sealed class VField : ComponentBase
     /// Theme color of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -101,6 +110,7 @@ public sealed class VField : ComponentBase
     /// Base color of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -108,6 +118,7 @@ public sealed class VField : ComponentBase
     /// Whether the field value has been modified.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("dirty")]
     public bool Dirty { get; set; }
 
     /// <summary>
@@ -115,6 +126,7 @@ public sealed class VField : ComponentBase
     /// Whether to disable the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
     /// <summary>
@@ -122,6 +134,7 @@ public sealed class VField : ComponentBase
     /// Whether to show a glow effect on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("glow")]
     public bool Glow { get; set; }
 
     /// <summary>
@@ -129,6 +142,7 @@ public sealed class VField : ComponentBase
     /// Whether to put the field in an error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public bool Error { get; set; }
 
     /// <summary>
@@ -136,6 +150,7 @@ public sealed class VField : ComponentBase
     /// Whether to remove the field shadow border.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -143,6 +158,7 @@ public sealed class VField : ComponentBase
     /// Color applied to icons within the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconColor")]
     public VuetifyIconColorValue? IconColor { get; set; }
 
     /// <summary>
@@ -150,6 +166,7 @@ public sealed class VField : ComponentBase
     /// Label text of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -157,6 +174,7 @@ public sealed class VField : ComponentBase
     /// Whether to always show the clear button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistentClear")]
     public bool PersistentClear { get; set; }
 
     /// <summary>
@@ -164,6 +182,7 @@ public sealed class VField : ComponentBase
     /// Icon prepended to the inner left side of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependInnerIcon")]
     public VuetifyIconValue? PrependInnerIcon { get; set; }
 
     /// <summary>
@@ -171,6 +190,7 @@ public sealed class VField : ComponentBase
     /// Whether to reverse the field input direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -178,6 +198,7 @@ public sealed class VField : ComponentBase
     /// Whether to use single-line mode where the label does not float.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("singleLine")]
     public bool SingleLine { get; set; }
 
     /// <summary>
@@ -185,6 +206,7 @@ public sealed class VField : ComponentBase
     /// Visual variant style of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyFieldVariant? Variant { get; set; }
 
     /// <summary>
@@ -192,6 +214,7 @@ public sealed class VField : ComponentBase
     /// Whether the field is focused.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("focused")]
     public bool Focused { get; set; }
 
     /// <summary>
@@ -199,6 +222,7 @@ public sealed class VField : ComponentBase
     /// Event callback fired when the Focused state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:focused")]
     public EventCallback<bool> FocusedChanged { get; set; }
 
     /// <summary>
@@ -206,6 +230,7 @@ public sealed class VField : ComponentBase
     /// Bound model value of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueValue? ModelValue { get; set; }
 
     /// <summary>
@@ -213,6 +238,7 @@ public sealed class VField : ComponentBase
     /// Event callback fired when ModelValue changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -220,6 +246,7 @@ public sealed class VField : ComponentBase
     /// Event callback fired when the clear icon is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:clear")]
     public EventCallback<MouseEvent> OnClearClick { get; set; }
 
     /// <summary>
@@ -227,6 +254,7 @@ public sealed class VField : ComponentBase
     /// Event callback fired when the append-inner icon is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:appendInner")]
     public EventCallback<MouseEvent> OnAppendInnerClick { get; set; }
 
     /// <summary>
@@ -234,6 +262,7 @@ public sealed class VField : ComponentBase
     /// Event callback fired when the prepend-inner icon is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:prependInner")]
     public EventCallback<MouseEvent> OnPrependInnerClick { get; set; }
 
     /// <summary>
@@ -241,6 +270,7 @@ public sealed class VField : ComponentBase
     /// Additional custom attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -248,6 +278,7 @@ public sealed class VField : ComponentBase
     /// Default child content slot of the field.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VFieldSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -255,6 +286,7 @@ public sealed class VField : ComponentBase
     /// Custom slot for content prepended to the inner left side.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend-inner")]
     public RenderFragment<VFieldSlotContext>? PrependInner { get; set; }
 
     /// <summary>
@@ -262,6 +294,7 @@ public sealed class VField : ComponentBase
     /// Custom slot for content appended to the inner right side.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append-inner")]
     public RenderFragment<VFieldSlotContext>? AppendInner { get; set; }
 
     /// <summary>
@@ -269,6 +302,7 @@ public sealed class VField : ComponentBase
     /// Custom content slot for the clear button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clear")]
     public RenderFragment<VFieldSlotContext>? Clear { get; set; }
 
     /// <summary>
@@ -276,6 +310,7 @@ public sealed class VField : ComponentBase
     /// Custom content slot for the field label.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment<VFieldLabelSlotContext>? LabelContent { get; set; }
 
     /// <summary>
@@ -283,5 +318,6 @@ public sealed class VField : ComponentBase
     /// Custom content slot for the loader indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loader")]
     public RenderFragment<VuetifyLoaderSlotContext>? Loader { get; set; }
 }

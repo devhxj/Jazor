@@ -25,51 +25,51 @@ internal static partial class DirectRenderCaseCatalog
                 {
                     case 0:
                         body = "foreach (var item in Items) { if (item.Length > " + hostIndex.ToString(CultureInfo.InvariantCulture) + ") { builder.AddContent(0, " + CSharpStringLiteral(marker + ":") + " + item); } else { builder.AddContent(1, " + CSharpStringLiteral(marker + "-short:") + " + item); } }";
-                        additional = "Array.from(props.items ?? []";
+                        additional = "Array.from(props.Items ?? []";
                         tertiary = "item.length";
                         members = "[Parameter] public string[] Items { get; set; } = [];";
                         break;
                     case 1:
                         body = "if (Visible) { foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddContent(1, " + CSharpStringLiteral(marker + ":") + " + item); builder.CloseElement(); } } else { builder.AddContent(2, " + CSharpStringLiteral(marker + "-empty") + "); }";
-                        additional = "props.visible";
-                        tertiary = "Array.from(props.items ?? []";
+                        additional = "props.Visible";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public string[] Items { get; set; } = [];";
                         break;
                     case 2:
                         body = "foreach (var item in Items) { foreach (var other in OtherItems) { builder.AddContent(0, " + CSharpStringLiteral(marker + ":") + " + item + other); } }";
-                        additional = "Array.from(props.items ?? []";
-                        tertiary = "Array.from(props.otherItems ?? []";
+                        additional = "Array.from(props.Items ?? []";
+                        tertiary = "Array.from(props.OtherItems ?? []";
                         members = "[Parameter] public string[] Items { get; set; } = []; [Parameter] public string[] OtherItems { get; set; } = [];";
                         break;
                     case 3:
                         body = "if (Visible) { if (Enabled) { builder.AddContent(0, " + CSharpStringLiteral(marker + "-enabled") + "); } else { builder.AddContent(1, " + CSharpStringLiteral(marker + "-disabled") + "); } } else { builder.AddContent(2, " + CSharpStringLiteral(marker + "-hidden") + "); }";
-                        additional = "props.visible";
-                        tertiary = "props.enabled";
+                        additional = "props.Visible";
+                        tertiary = "props.Enabled";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public bool Enabled { get; set; }";
                         break;
                     case 4:
                         body = "foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); if (Visible) { builder.AddContent(1, " + CSharpStringLiteral(marker + ":") + " + item); } else { builder.AddContent(2, " + CSharpStringLiteral(marker + "-hidden:") + " + item); } builder.CloseElement(); }";
-                        additional = "Array.from(props.items ?? []";
-                        tertiary = "props.visible";
+                        additional = "Array.from(props.Items ?? []";
+                        tertiary = "props.Visible";
                         members = "[Parameter] public string[] Items { get; set; } = []; [Parameter] public bool Visible { get; set; }";
                         break;
                     case 5:
                         body = "if (Visible) { foreach (var item in Items) { builder.AddContent(0, " + CSharpStringLiteral(marker + "-primary:") + " + item); } } else { foreach (var item in OtherItems) { builder.AddContent(1, " + CSharpStringLiteral(marker + "-secondary:") + " + item); } }";
-                        additional = "props.visible";
-                        tertiary = "Array.from(props.items ?? []";
+                        additional = "props.Visible";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public string[] Items { get; set; } = []; [Parameter] public string[] OtherItems { get; set; } = [];";
                         break;
                     case 6:
                         body = "foreach (var item in Items) { builder.OpenComponent<MatrixChild>(0); if (Visible) { builder.AddComponentParameter(1, \"Title\", " + CSharpStringLiteral(marker + ":") + " + item); } else { builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker + "-hidden:") + " + item); } builder.CloseComponent(); }";
-                        additional = "Array.from(props.items ?? []";
+                        additional = "Array.from(props.Items ?? []";
                         tertiary = "heading";
                         members = "[Parameter] public string[] Items { get; set; } = []; [Parameter] public bool Visible { get; set; }";
                         importCount = 2;
                         break;
                     default:
                         body = "builder.OpenRegion(0); if (Visible) { foreach (var item in Items) { builder.OpenElement(1, " + CSharpStringLiteral(tag) + "); builder.AddContent(2, " + CSharpStringLiteral(marker + ":") + " + item); builder.CloseElement(); } } else { builder.AddContent(3, " + CSharpStringLiteral(marker + "-empty") + "); } builder.CloseRegion();";
-                        additional = "props.visible";
-                        tertiary = "Array.from(props.items ?? []";
+                        additional = "props.Visible";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public string[] Items { get; set; } = [];";
                         break;
                 }
@@ -129,7 +129,7 @@ internal static partial class DirectRenderCaseCatalog
                     case 3:
                         body = "builder.OpenElement(0, \"div\"); builder.AddAttribute(1, \"data-marker\", " + CSharpStringLiteral(marker) + "); builder.AddMultipleAttributes(2, AdditionalAttributes); builder.CloseElement();";
                         additional = "mergeProps";
-                        tertiary = "props.additionalAttributes";
+                        tertiary = "props.AdditionalAttributes";
                         members = "[Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }";
                         usesProps = true;
                         importCount = 1;
@@ -137,7 +137,7 @@ internal static partial class DirectRenderCaseCatalog
                     case 4:
                         body = "builder.OpenElement(0, \"section\"); builder.AddMultipleAttributes(1, AdditionalAttributes); builder.AddAttribute(2, " + CSharpStringLiteral(attribute) + ", " + CSharpStringLiteral(marker) + "); builder.CloseElement();";
                         additional = "mergeProps";
-                        tertiary = "props.additionalAttributes";
+                        tertiary = "props.AdditionalAttributes";
                         members = "[Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }";
                         usesProps = true;
                         importCount = 1;
@@ -145,7 +145,7 @@ internal static partial class DirectRenderCaseCatalog
                     case 5:
                         body = "builder.OpenElement(0, \"article\"); builder.AddAttribute(1, \"data-before\", " + CSharpStringLiteral(marker + "-before") + "); builder.AddMultipleAttributes(2, AdditionalAttributes); builder.AddAttribute(3, " + CSharpStringLiteral(attribute) + ", " + CSharpStringLiteral(marker + "-after") + "); builder.CloseElement();";
                         additional = "mergeProps";
-                        tertiary = "props.additionalAttributes";
+                        tertiary = "props.AdditionalAttributes";
                         members = "[Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }";
                         usesProps = true;
                         importCount = 1;
@@ -159,7 +159,7 @@ internal static partial class DirectRenderCaseCatalog
                     default:
                         body = "builder.OpenComponent<MatrixChild>(0); builder.AddComponentParameter(1, \"Title\", " + CSharpStringLiteral(marker) + "); builder.AddMultipleAttributes(2, AdditionalAttributes); builder.CloseComponent();";
                         additional = "mergeProps";
-                        tertiary = "props.additionalAttributes";
+                        tertiary = "props.AdditionalAttributes";
                         members = "[Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }";
                         usesProps = true;
                         importCount = 2;
@@ -196,7 +196,7 @@ internal static partial class DirectRenderCaseCatalog
                 var shapeId = shape.ToString("D2", CultureInfo.InvariantCulture);
                 var marker = "event-metadata-" + host + "-" + shapeId;
                 var handler = "HandleMetadata" + host + shapeId;
-                var runtimeHandler = char.ToLowerInvariant(handler[0]) + handler[1..];
+                var runtimeHandler = handler;
                 string body;
                 string additional;
                 string? tertiary = null;
@@ -329,14 +329,14 @@ internal static partial class DirectRenderCaseCatalog
                     case 6:
                         body = "RenderFragment " + first + " = child => { if (Visible) { child.AddContent(0, " + CSharpStringLiteral(marker + "-yes") + "); } else { child.AddContent(1, " + CSharpStringLiteral(marker + "-no") + "); } }; builder.OpenComponent<MatrixChild>(2); builder.AddComponentParameter(3, \"ChildContent\", " + first + "); builder.CloseComponent();";
                         additional = "default";
-                        tertiary = "props.visible";
+                        tertiary = "props.Visible";
                         members = "[Parameter] public bool Visible { get; set; }";
                         usesProps = true;
                         break;
                     default:
                         body = "RenderFragment " + first + " = child => { foreach (var item in Items) { child.OpenElement(0, " + CSharpStringLiteral(tag) + "); child.AddContent(1, " + CSharpStringLiteral(marker + ":") + " + item); child.CloseElement(); } }; builder.OpenComponent<MatrixChild>(2); builder.AddComponentParameter(3, \"Header\", " + first + "); builder.CloseComponent();";
                         additional = "header";
-                        tertiary = "Array.from(props.items ?? []";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public string[] Items { get; set; } = [];";
                         usesProps = true;
                         break;
@@ -378,49 +378,49 @@ internal static partial class DirectRenderCaseCatalog
                     case 0:
                         parameters = "builder.AddComponentParameter(1, \"Title\", Text + " + CSharpStringLiteral("-" + marker) + ");";
                         expected = "heading";
-                        additional = "props.text";
+                        additional = "props.Text";
                         members = "[Parameter] public string Text { get; set; } = \"\";";
                         break;
                     case 1:
                         parameters = "builder.AddComponentParameter(1, \"Count\", Count * 2 + " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + ");";
                         expected = "count";
-                        additional = "props.count * 2";
+                        additional = "props.Count * 2";
                         members = "[Parameter] public int Count { get; set; }";
                         break;
                     case 2:
                         parameters = "builder.AddComponentParameter(1, \"Enabled\", Visible && Count > " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + ");";
                         expected = "enabled";
-                        additional = "props.visible";
+                        additional = "props.Visible";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public int Count { get; set; }";
                         break;
                     case 3:
                         parameters = "builder.AddComponentParameter(1, \"Value\", Text ?? " + CSharpStringLiteral(marker) + ");";
                         expected = "modelValue";
-                        additional = "props.text";
+                        additional = "props.Text";
                         members = "[Parameter] public string? Text { get; set; }";
                         break;
                     case 4:
                         parameters = "builder.AddComponentParameter(1, \"Title\", Visible ? " + CSharpStringLiteral(marker + "-yes") + " : " + CSharpStringLiteral(marker + "-no") + ");";
                         expected = "heading";
-                        additional = "props.visible";
+                        additional = "props.Visible";
                         members = "[Parameter] public bool Visible { get; set; }";
                         break;
                     case 5:
                         parameters = "builder.AddComponentParameter(1, \"Count\", Items.Length + " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + ");";
                         expected = "count";
-                        additional = "props.items.length";
+                        additional = "props.Items.length";
                         members = "[Parameter] public string[] Items { get; set; } = [];";
                         break;
                     case 6:
                         parameters = "builder.AddComponentParameter(1, \"Title\", Items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "] ?? " + CSharpStringLiteral(marker) + ");";
                         expected = "heading";
-                        additional = "props.items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "]";
+                        additional = "props.Items[" + hostIndex.ToString(CultureInfo.InvariantCulture) + "]";
                         members = "[Parameter] public string?[] Items { get; set; } = new string?[8];";
                         break;
                     default:
                         parameters = "builder.AddComponentParameter(1, \"Title\", $\"" + marker + ":{Count}\");";
                         expected = "heading";
-                        additional = "props.count";
+                        additional = "props.Count";
                         members = "[Parameter] public int Count { get; set; }";
                         break;
                 }
@@ -466,14 +466,14 @@ internal static partial class DirectRenderCaseCatalog
                     case 0:
                         body = "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddMarkupContent(1, " + CSharpStringLiteral("<b>" + marker + "</b>") + "); builder.AddContent(2, Text); builder.CloseElement();";
                         additional = "createStaticVNode";
-                        tertiary = "props.text";
+                        tertiary = "props.Text";
                         members = "[Parameter] public string Text { get; set; } = \"\";";
                         usesProps = true;
                         break;
                     case 1:
                         body = "builder.AddMarkupContent(0, " + CSharpStringLiteral("<i>" + marker + "</i>") + "); builder.OpenElement(1, " + CSharpStringLiteral(tag) + "); builder.AddContent(2, Text); builder.CloseElement();";
                         additional = "createStaticVNode";
-                        tertiary = "props.text";
+                        tertiary = "props.Text";
                         members = "[Parameter] public string Text { get; set; } = \"\";";
                         usesFragment = true;
                         usesProps = true;
@@ -491,21 +491,21 @@ internal static partial class DirectRenderCaseCatalog
                     case 3:
                         body = "if (Visible) { builder.AddMarkupContent(0, " + CSharpStringLiteral("<b>" + marker + "</b>") + "); } else { builder.AddContent(1, " + CSharpStringLiteral(marker + "-text") + "); }";
                         additional = "createStaticVNode";
-                        tertiary = "props.visible";
+                        tertiary = "props.Visible";
                         members = "[Parameter] public bool Visible { get; set; }";
                         usesProps = true;
                         break;
                     case 4:
                         body = "foreach (var item in Items) { builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddMarkupContent(1, " + CSharpStringLiteral("<i>" + marker + "</i>") + "); builder.AddContent(2, item); builder.CloseElement(); }";
                         additional = "createStaticVNode";
-                        tertiary = "Array.from(props.items ?? []";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public string[] Items { get; set; } = [];";
                         usesProps = true;
                         break;
                     case 5:
                         body = "builder.OpenRegion(0); builder.AddMarkupContent(1, " + CSharpStringLiteral("<b>" + marker + "</b>") + "); builder.OpenElement(2, " + CSharpStringLiteral(tag) + "); builder.AddContent(3, Text); builder.CloseElement(); builder.CloseRegion();";
                         additional = "createStaticVNode";
-                        tertiary = "props.text";
+                        tertiary = "props.Text";
                         members = "[Parameter] public string Text { get; set; } = \"\";";
                         usesFragment = true;
                         usesProps = true;
@@ -522,7 +522,7 @@ internal static partial class DirectRenderCaseCatalog
                     default:
                         body = "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddAttribute(1, \"class\", " + CSharpStringLiteral(marker) + "); builder.AddMarkupContent(2, " + CSharpStringLiteral("<i>static</i>") + "); builder.AddContent(3, Text); builder.CloseElement();";
                         additional = "createStaticVNode";
-                        tertiary = "props.text";
+                        tertiary = "props.Text";
                         members = "[Parameter] public string Text { get; set; } = \"\";";
                         usesProps = true;
                         break;
@@ -576,7 +576,7 @@ internal static partial class DirectRenderCaseCatalog
                         break;
                     case 2:
                         body = "if (!Visible) { return; } if (!Enabled) { return; } builder.AddContent(0, " + CSharpStringLiteral(marker) + ");";
-                        tertiary = "props.enabled";
+                        tertiary = "props.Enabled";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public bool Enabled { get; set; }";
                         break;
                     case 3:
@@ -592,7 +592,7 @@ internal static partial class DirectRenderCaseCatalog
                         break;
                     case 5:
                         body = "if (!Visible) { return; } foreach (var item in Items) { builder.AddContent(0, " + CSharpStringLiteral(marker + ":") + " + item); }";
-                        tertiary = "Array.from(props.items ?? []";
+                        tertiary = "Array.from(props.Items ?? []";
                         members = "[Parameter] public bool Visible { get; set; } [Parameter] public string[] Items { get; set; } = [];";
                         break;
                     case 6:
@@ -612,7 +612,7 @@ internal static partial class DirectRenderCaseCatalog
                     "advanced_return_guard_" + host + "_" + shapeId,
                     body,
                     marker,
-                    usesProps ? "props.visible" : CSharpStringLiteral(marker),
+                    usesProps ? "props.Visible" : CSharpStringLiteral(marker),
                     usesFragment: false,
                     usesStaticVNode: false,
                     group: DirectRenderCaseGroup.Advanced,
@@ -688,7 +688,7 @@ internal static partial class DirectRenderCaseCatalog
                         break;
                     case 6:
                         var handler = "HandleMutation" + host + shapeId;
-                        var runtimeHandler = char.ToLowerInvariant(handler[0]) + handler[1..];
+                        var runtimeHandler = handler;
                         body = "builder.OpenElement(0, \"button\"); builder.AddAttribute(1, " + CSharpStringLiteral(eventName) + ", EventCallback.Factory.Create(this, " + handler + ")); builder.AddNamedEvent(" + CSharpStringLiteral(eventName) + ", " + CSharpStringLiteral(marker) + "); builder.CloseElement();";
                         expected = runtimeName;
                         additional = runtimeHandler;

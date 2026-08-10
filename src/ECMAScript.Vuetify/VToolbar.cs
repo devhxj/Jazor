@@ -15,6 +15,7 @@ public sealed class VToolbar : ComponentBase
     /// Theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VToolbar : ComponentBase
     /// Root element tag.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VToolbar : ComponentBase
     /// Border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VToolbar : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VToolbar : ComponentBase
     /// Elevation shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -66,6 +71,7 @@ public sealed class VToolbar : ComponentBase
     /// Border.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VToolbar : ComponentBase
     /// Applies absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VToolbar : ComponentBase
     /// Collapses the toolbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("collapse")]
     public bool Collapse { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VToolbar : ComponentBase
     /// Theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VToolbar : ComponentBase
     /// Toolbar density.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyToolbarDensityValue? Density { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VToolbar : ComponentBase
     /// Extends the toolbar with an extension slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("extended")]
     public bool Extended { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VToolbar : ComponentBase
     /// Extension height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("extensionHeight")]
     public VueStringNumberValue? ExtensionHeight { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VToolbar : ComponentBase
     /// Removes shadow.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VToolbar : ComponentBase
     /// Floating toolbar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("floating")]
     public bool Floating { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VToolbar : ComponentBase
     /// Height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -136,6 +151,7 @@ public sealed class VToolbar : ComponentBase
     /// Background image URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -143,6 +159,7 @@ public sealed class VToolbar : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -150,6 +167,7 @@ public sealed class VToolbar : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -157,6 +175,7 @@ public sealed class VToolbar : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -164,6 +183,7 @@ public sealed class VToolbar : ComponentBase
     /// Image slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public RenderFragment? ImageContent { get; set; }
 
     /// <summary>
@@ -171,6 +191,7 @@ public sealed class VToolbar : ComponentBase
     /// Prepend slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
     /// <summary>
@@ -178,6 +199,7 @@ public sealed class VToolbar : ComponentBase
     /// Append slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
     /// <summary>
@@ -185,6 +207,7 @@ public sealed class VToolbar : ComponentBase
     /// Title content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -192,5 +215,6 @@ public sealed class VToolbar : ComponentBase
     /// Extension slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("extension")]
     public RenderFragment? Extension { get; set; }
 }

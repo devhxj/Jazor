@@ -15,6 +15,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The size of the circular progress indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -52,6 +55,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The color of the progress indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -59,6 +63,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The background color of the progress indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -66,6 +71,7 @@ public sealed class VProgressCircular : ComponentBase
     /// Whether to display an indeterminate animation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("indeterminate")]
     public VuetifyProgressCircularIndeterminateValue? Indeterminate { get; set; }
 
     /// <summary>
@@ -73,6 +79,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The current progress percentage value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The rotation angle of the progress indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rotate")]
     public VueStringNumberValue? Rotate { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The stroke width of the progress arc.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VProgressCircular : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VProgressCircularDefaultSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -101,5 +111,6 @@ public sealed class VProgressCircular : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

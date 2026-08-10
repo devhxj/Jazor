@@ -47,9 +47,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, ".child.value = 1", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "[0].value = 2", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, ".field.value = 3", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, ".Child.Value = 1", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "[0].Value = 2", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, ".Field.Value = 3", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -118,9 +118,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.readPair()"), script);
-        StringAssert.Contains(script, "first:", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "second:", StringComparison.OrdinalIgnoreCase);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.ReadPair()"), script);
+        StringAssert.Contains(script, "First:", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "Second:", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -140,9 +140,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "first:", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "second:", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "last:", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "First:", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "Second:", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "Last:", StringComparison.OrdinalIgnoreCase);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -229,7 +229,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "return matrix.rank;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return matrix.Rank;", StringComparison.Ordinal);
         Assert.DoesNotContain("return 1;", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -256,7 +256,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "return Matrix.rank;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Matrix.Rank;", StringComparison.Ordinal);
         Assert.DoesNotContain("return 1;", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -519,7 +519,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
 
         var expression = new SemanticWalker(true).VisitFieldReference(field, new SenseArgument());
 
-        Assert.AreEqual("value", expression?.ToKnRECMAScript());
+        Assert.AreEqual("Value", expression?.ToKnRECMAScript());
     }
 
     [TestMethod]
@@ -607,8 +607,8 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "readKey()"), script);
-        Assert.AreEqual(1, CountOccurrences(script, "readValue()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "ReadKey()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "ReadValue()"), script);
         StringAssert.Contains(script, "let ", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -775,7 +775,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "pair.deconstruct(current, next)", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "pair.Deconstruct(current, next)", StringComparison.OrdinalIgnoreCase);
         StringAssert.Contains(script, "current = v$0[0]", StringComparison.Ordinal);
         StringAssert.Contains(script, "next = v$0[1]", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(pair) " + script);
@@ -864,9 +864,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "pair.deconstruct", StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(script, "major =", StringComparison.Ordinal);
-        StringAssert.Contains(script, "minor =", StringComparison.Ordinal);
+        StringAssert.Contains(script, "pair.Deconstruct", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "major = v$0.Major", StringComparison.Ordinal);
+        StringAssert.Contains(script, "minor = v$0.Minor", StringComparison.Ordinal);
         StringAssert.Contains(script, "build =", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(pair) " + script);
     }
@@ -889,7 +889,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        StringAssert.Contains(script, "TestClass.revision = 1", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, "TestClass.Revision = 1", StringComparison.OrdinalIgnoreCase);
         StringAssert.Contains(script, "build = 2", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -924,9 +924,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getSlots()"), script);
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getIndex()"), script);
-        Assert.AreEqual(1, CountOccurrences(script, "TestClass.getDelta()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.GetSlots()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.GetIndex()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "TestClass.GetDelta()"), script);
         StringAssert.Contains(script, "|", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
@@ -957,7 +957,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
 
         Assert.IsNotNull(script);
         CollectionAssert.Contains(host.TypeNames, "SourceHost");
-        StringAssert.Contains(script, "SourceHost.touch()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "SourceHost.Touch()", StringComparison.Ordinal);
     }
 
     private static string VisitBlock(string source)

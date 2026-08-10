@@ -86,6 +86,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 {
                     [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
+                    [ECMAScriptName("onUpdate:modelValue")]
                     [Parameter] public EventCallback<string> ValueChanged { get; set; }
                     [Parameter] public string LastObserved { get; set; } = "";
 
@@ -131,14 +132,14 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
                 assert.equal(initial.props.modelValue, "initial");
-                assert.equal(initial.props.lastObserved, "none");
+                assert.equal(initial.props.LastObserved, "none");
                 assert.equal(typeof initial.props["onUpdate:modelValue"], "function");
 
                 await Promise.resolve(initial.props["onUpdate:modelValue"]("updated"));
 
                 const updated = render();
                 assert.equal(updated.props.modelValue, "updated");
-                assert.equal(updated.props.lastObserved, "updated");
+                assert.equal(updated.props.LastObserved, "updated");
             });
             """,
             new Dictionary<string, string>
@@ -199,7 +200,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/event-modifiers-runtime.mjs";
 
             test("official Razor event modifiers execute before the handler", async () => {
-                const render = component.setup({ preventDefault: true }, { slots: {} });
+                const render = component.setup({ PreventDefault: true }, { slots: {} });
                 const initial = render();
                 assert.equal(initial.name, "button");
                 assert.equal(initial.props["data-count"], 0);
@@ -260,7 +261,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             test("official Razor attributes preserve explicit precedence", () => {
                 const render = component.setup({
-                    inputAttributes: {
+                    InputAttributes: {
                         class: "external-class",
                         "data-role": "external-role",
                         "aria-label": "Account name"
@@ -321,9 +322,9 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             test("official Razor keyed loop assigns each item its stable VNode key", () => {
                 const render = component.setup({
-                    items: [
-                        { id: 7, name: "Audit" },
-                        { id: 9, name: "Deploy" }
+                    Items: [
+                        { Id: 7, Name: "Audit" },
+                        { Id: 9, Name: "Deploy" }
                     ]
                 }, { slots: {} });
                 const nodes = render();
@@ -380,9 +381,9 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             test("official Razor named tuple loop preserves entry bindings", () => {
                 const render = component.setup({
-                    entries: [
-                        { id: 7, label: "Audit" },
-                        { id: 9, label: "Deploy" }
+                    Entries: [
+                        { Id: 7, Label: "Audit" },
+                        { Id: 9, Label: "Deploy" }
                     ]
                 }, { slots: {} });
                 const nodes = render();
@@ -438,7 +439,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             test("official Razor dictionary loop preserves map entry bindings", () => {
                 const render = component.setup({
-                    counts: new Map([
+                    Counts: new Map([
                         ["Queued", 2],
                         ["Complete", 4]
                     ])
@@ -523,11 +524,11 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const panel = render();
 
                 assert.equal(panel.name, slotPanel);
-                assert.equal(panel.props.heading, "Account");
-                assert.equal(typeof panel.children.header, "function");
-                assert.equal(typeof panel.children.default, "function");
+                assert.equal(panel.props.Heading, "Account");
+                assert.equal(typeof panel.children.Header, "function");
+                assert.equal(typeof panel.children.ChildContent, "function");
 
-                const header = panel.children.header();
+                const header = panel.children.Header();
                 assert.equal(Array.isArray(header), true);
                 assert.equal(header.length, 1);
                 const [headerNode] = header;
@@ -535,7 +536,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 assert.equal(headerNode.props["data-slot"], "header");
                 assert.deepEqual(headerNode.children, ["Account"]);
 
-                const content = panel.children.default();
+                const content = panel.children.ChildContent();
                 assert.equal(Array.isArray(content), true);
                 assert.equal(content.length, 1);
                 const [contentNode] = content;
@@ -619,15 +620,15 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             test("official Razor generic item template preserves props and typed slot content", () => {
                 const render = component.setup({
-                    entries: [{ id: 7, label: "Audit" }]
+                    Entries: [{ Id: 7, Label: "Audit" }]
                 }, { slots: {} });
                 const list = render();
 
                 assert.equal(list.name, templateList);
-                assert.deepEqual(list.props.entries, [{ id: 7, label: "Audit" }]);
+                assert.deepEqual(list.props.Entries, [{ Id: 7, Label: "Audit" }]);
                 assert.equal(typeof list.children.item, "function");
 
-                const nodes = list.children.item({ id: 9, label: "Deploy" });
+                const nodes = list.children.item({ Id: 9, Label: "Deploy" });
                 assert.equal(Array.isArray(nodes), true);
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "li");
@@ -734,12 +735,12 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             };
 
             test("official Razor generic item template composes context, conditional content, and looped rows", () => {
-                const entries = [{ id: 7, label: "Audit", isUrgent: true, tags: ["release", "production"] }];
-                const render = component.setup({ entries }, { slots: {} });
+                const entries = [{ Id: 7, Label: "Audit", IsUrgent: true, Tags: ["release", "production"] }];
+                const render = component.setup({ Entries: entries }, { slots: {} });
                 const list = render();
 
                 assert.equal(list.name, templateList);
-                assert.deepEqual(list.props.entries, entries);
+                assert.deepEqual(list.props.Entries, entries);
                 assert.equal(typeof list.children.item, "function");
 
                 const urgentNodes = collectNodes(list.children.item(entries[0]));
@@ -752,7 +753,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                     urgentNodes.filter(node => node.name === "li").map(node => [node.props["data-tag"], node.children]),
                     [["release", ["release"]], ["production", ["production"]]]);
 
-                const standardNodes = collectNodes(list.children.item({ id: 9, label: "Deploy", isUrgent: false, tags: [] }));
+                const standardNodes = collectNodes(list.children.item({ Id: 9, Label: "Deploy", IsUrgent: false, Tags: [] }));
                 assert.equal(standardNodes.filter(node => node.name === "__static" && node.props?.html === "<strong data-status=\"urgent\">Urgent</strong>").length, 0);
                 assert.equal(standardNodes.filter(node => node.name === "__static" && node.props?.html === "<span data-status=\"standard\">Standard</span>").length, 1);
                 assert.equal(standardNodes.filter(node => node.name === "li").length, 0);
@@ -833,21 +834,21 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             const renderHeader = props => {
                 const panel = component.setup(props, { slots: {} })();
                 assert.equal(panel.name, panelComponent);
-                assert.equal(typeof panel.children.header, "function");
-                const nodes = panel.children.header();
+                assert.equal(typeof panel.children.Header, "function");
+                const nodes = panel.children.Header();
                 assert.equal(Array.isArray(nodes), true);
                 assert.equal(nodes.length, 1);
                 return nodes[0];
             };
 
             test("official Razor RenderFragment method group captures current component state", () => {
-                const urgentHeader = renderHeader({ title: "Deploy now", isUrgent: true });
+                const urgentHeader = renderHeader({ Title: "Deploy now", IsUrgent: true });
                 assert.equal(urgentHeader.name, "header");
                 assert.equal(urgentHeader.props["data-status"], "urgent");
                 assert.equal(urgentHeader.children[0].name, "h2");
                 assert.deepEqual(urgentHeader.children[0].children, ["Deploy now"]);
 
-                const standardHeader = renderHeader({ title: "Scheduled", isUrgent: false });
+                const standardHeader = renderHeader({ Title: "Scheduled", IsUrgent: false });
                 assert.equal(standardHeader.props["data-status"], "standard");
                 assert.deepEqual(standardHeader.children[0].children, ["Scheduled"]);
             });
@@ -908,7 +909,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"./generic-value-runtime.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "value: props.value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Value: props.Value", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("TItem", StringComparison.Ordinal), script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -921,12 +922,12 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             Deno.test("official Razor generic component erases its type parameter but preserves the prop value", () => {
                 const value = { id: 9, label: "Deploy" };
-                const render = component.setup({ value }, { slots: {} });
+                const render = component.setup({ Value: value }, { slots: {} });
                 const node = render();
 
                 if (node.name !== genericValue)
                     throw new Error("generic component import was not retained");
-                if (node.props.value !== value)
+                if (node.props.Value !== value)
                     throw new Error("generic component prop value was not retained");
             });
             """,
@@ -958,10 +959,10 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             namespace Demo.Components
             {
                 [ECMAScriptModule("./components/generic-selectable-runtime")]
-                [VueLibraryEmit(nameof(Selected), Name = "select")]
                 public sealed class GenericSelectable<TItem> : ComponentBase, IVueComponent
                 {
                     [Parameter] public TItem Entry { get; set; }
+                    [ECMAScriptName("onSelect")]
                     [Parameter] public EventCallback<TItem> Selected { get; set; }
                     [Parameter] public bool WasSelected { get; set; }
 
@@ -1002,8 +1003,8 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
         var script = observation.ModuleText;
         StringAssert.Contains(script, "from \"./generic-selectable-runtime.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "entry: props.value", StringComparison.Ordinal);
-        StringAssert.Contains(script, "wasSelected: state.wasSelected", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Entry: props.Value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "WasSelected: state.WasSelected", StringComparison.Ordinal);
         StringAssert.Contains(script, "onSelect:", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("TItem", StringComparison.Ordinal), script);
 
@@ -1017,21 +1018,21 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             Deno.test("official Razor generic callbacks retain the listener and update parent state", () => {
                 const value = { id: 9, label: "Deploy" };
-                const render = component.setup({ value }, { slots: {} });
+                const render = component.setup({ Value: value }, { slots: {} });
                 const initial = render();
 
                 if (initial.name !== genericSelectable)
                     throw new Error("generic child component import was not retained");
-                if (initial.props.entry !== value)
+                if (initial.props.Entry !== value)
                     throw new Error("generic component prop value was not retained");
-                if (initial.props.wasSelected !== false)
+                if (initial.props.WasSelected !== false)
                     throw new Error("parent selection state did not start false");
                 if (typeof initial.props.onSelect !== "function")
                     throw new Error("generic EventCallback<TItem> was not emitted as a Vue listener");
 
                 initial.props.onSelect(value);
 
-                if (render().props.wasSelected !== true)
+                if (render().props.WasSelected !== true)
                     throw new Error("generic Vue listener did not update parent state");
             });
             """,
@@ -1113,12 +1114,12 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const panel = component.setup({}, { slots: {} })();
                 if (panel.name !== slotPanel)
                     throw new Error("slot panel import was not retained");
-                if (panel.props.heading !== "Account")
+                if (panel.props.Heading !== "Account")
                     throw new Error("component prop was not retained");
-                if (typeof panel.children.header !== "function")
+                if (typeof panel.children.Header !== "function")
                     throw new Error("descriptor header was not emitted as a Vue slot");
 
-                const nodes = panel.children.header();
+                const nodes = panel.children.Header();
                 if (!Array.isArray(nodes) || nodes.length !== 1)
                     throw new Error("method-group slot did not return one node");
                 const [header] = nodes;
@@ -1164,8 +1165,8 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             componentMetadataName: "Demo.Pages.DirectRenderReachabilityRuntime");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "function formatTitle", StringComparison.Ordinal);
-        Assert.IsFalse(observation.ModuleText.Contains("neverRendered", StringComparison.Ordinal), observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "function FormatTitle", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("NeverRendered", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/direct-render-reachability-runtime.mjs",
@@ -1178,7 +1179,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/direct-render-reachability-runtime.mjs";
 
             test("official Razor direct render keeps helpers reachable from the generated render expression", () => {
-                const section = component.setup({ title: "Deploy" }, { slots: {} })();
+                const section = component.setup({ Title: "Deploy" }, { slots: {} })();
                 assert.equal(section.name, "section");
                 assert.equal(section.props["data-title"], "Deploy ready");
                 assert.deepEqual(section.children, ["Deploy ready"]);
@@ -1253,7 +1254,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/lifecycle-runtime.mjs";
 
             test("official Razor lifecycle hooks observe props and dispose after unmount", () => {
-                const props = { title: "one" };
+                const props = { Title: "one" };
                 const render = component.setup(props, { slots: {} });
 
                 assert.equal(render().props["data-title"], "one");
@@ -1262,7 +1263,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 __runMounted();
                 assert.deepEqual(render().children, ["init|params:one|after:first|"]);
 
-                props.title = "two";
+                props.Title = "two";
                 __runWatchers();
                 __runUpdated();
                 assert.equal(render().props["data-title"], "two");
@@ -1331,13 +1332,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             test("official Razor component ref changes state observed by the next render", () => {
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
-                assert.equal(initial.props.hasReference, false);
+                assert.equal(initial.props.HasReference, false);
                 assert.equal(typeof initial.props.ref, "function");
 
                 initial.props.ref({ name: "child-instance" });
 
                 const updated = render();
-                assert.equal(updated.props.hasReference, true);
+                assert.equal(updated.props.HasReference, true);
             });
             """,
             new Dictionary<string, string>
@@ -1402,7 +1403,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 let releaseListener;
                 const calls = [];
                 const render = component.setup({
-                    onCommit: async value => {
+                    OnCommit: async value => {
                         calls.push(`started:${value}`);
                         await new Promise(resolve => { releaseListener = resolve; });
                         calls.push(`completed:${value}`);

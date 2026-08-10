@@ -27,7 +27,7 @@ public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
             componentMetadataName: "Demo.Pages.ReleaseDeployButton");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.isDeploying", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-deploy-button.mjs",
@@ -40,12 +40,12 @@ public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
             import component from "./components/release-deploy-button.mjs";
 
             test("Razor boolean attributes follow the deployment parameter", () => {
-                const idle = component.setup({ isDeploying: false }, { slots: {} })();
+                const idle = component.setup({ IsDeploying: false }, { slots: {} })();
                 assert.equal(idle.name, "button");
                 assert.equal(idle.props["data-action"], "deploy");
                 assert.equal(Boolean(idle.props.disabled), false);
 
-                const deploying = component.setup({ isDeploying: true }, { slots: {} })();
+                const deploying = component.setup({ IsDeploying: true }, { slots: {} })();
                 assert.equal(deploying.props.disabled, true);
                 assert.deepEqual(deploying.children, ["Deploy"]);
             });

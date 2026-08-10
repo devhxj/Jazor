@@ -174,7 +174,7 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   private static void AssertScriptEqual(string expected, string? actual)
-    => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+    => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
   /// <summary>
   /// 获取指定索引的操作
@@ -285,7 +285,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.IsNotNull(script);
     StringAssert.Contains(script, "let value, v$0;");
-    StringAssert.Contains(script, "this.value =");
+    StringAssert.Contains(script, "this.Value =");
   }
 
   /// <summary>
@@ -2737,7 +2737,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
   AssertScriptEqual(@"{
-  let person = { info: { first: ""John"", years: 30 } };
+  let person = { Info: { first: ""John"", years: 30 } };
   let newPerson = { ...person, Info: { first: ""Jane"", years: 40 } };
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }

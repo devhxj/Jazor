@@ -233,6 +233,20 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// 接受单个默认插槽的 Vue 内置组件使用的插槽契约。
+	/// Slots accepted by Vue built-ins whose child content is the default slot.
+	/// </summary>
+	/// <remarks>
+	/// <c>default</c> 是 Vue runtime ABI，不由 RazorVue 根据成员名或组件类型推断。
+	/// This explicit metadata keeps direct <c>h(..., child)</c> lowering deterministic.
+	/// </remarks>
+	public record VueDefaultSlots : VueSlots
+	{
+		[Description("@#default")]
+		public VueSlotCallback? Default { get; init; }
+	}
+
+	/// <summary>
 	/// Vue 内置 <c>Suspense</c> 组件接受的插槽。
 	/// Slots accepted by Vue's built-in <c>Suspense</c> component.
 	/// </summary>

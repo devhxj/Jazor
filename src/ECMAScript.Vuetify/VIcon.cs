@@ -14,6 +14,7 @@ public sealed class VIcon : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VIcon : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VIcon : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VIcon : ComponentBase
     /// Whether to display as a start/prepend icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("start")]
     public bool Start { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VIcon : ComponentBase
     /// Whether to display as an end/append icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("end")]
     public bool End { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VIcon : ComponentBase
     /// Opacity of the icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -72,6 +78,7 @@ public sealed class VIcon : ComponentBase
     /// Component size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -79,6 +86,7 @@ public sealed class VIcon : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -86,6 +94,7 @@ public sealed class VIcon : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -93,6 +102,7 @@ public sealed class VIcon : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -100,5 +110,6 @@ public sealed class VIcon : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

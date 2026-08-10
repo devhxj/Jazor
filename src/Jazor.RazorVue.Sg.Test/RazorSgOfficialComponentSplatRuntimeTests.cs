@@ -29,7 +29,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
                 {
                     [ECMAScriptName("modelValue")]
                     [Parameter] public string Value { get; set; } = "";
-                    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#onUpdate:modelValue")] public EventCallback<string> ValueChanged { get; set; }
 
                     [Parameter(CaptureUnmatchedValues = true)]
                     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -73,7 +73,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
             test("official Razor component splats map C# names before explicit bind precedence", async () => {
                 let splatUpdates = 0;
                 const render = component.setup({
-                    childAttributes: {
+                    ChildAttributes: {
                         Value: "from-splat",
                         ValueChanged(value) {
                             splatUpdates++;
@@ -110,7 +110,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
                     "bound-update");
 
                 const mapRender = component.setup({
-                    childAttributes: new Map([
+                    ChildAttributes: new Map([
                         ["Value", "from-map"],
                         ["ValueChanged", value => assert.equal(value, "map-update")],
                         ["aria-label", "Map carrier"]
@@ -124,7 +124,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
                 await Promise.resolve(mapChild.props["onUpdate:modelValue"]("map-update"));
 
                 const pairRender = component.setup({
-                    childAttributes: [
+                    ChildAttributes: [
                         { Key: "Value", Value: "from-pairs" },
                         { Key: "ValueChanged", Value: value => assert.equal(value, "pair-update") },
                         { Key: "data-source", Value: "key-value-pairs" }

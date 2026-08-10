@@ -24,7 +24,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
                 [ECMAScriptModule("./components/expression-bodied-release-header-panel-runtime")]
                 public sealed class ReleaseHeaderPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -153,7 +153,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
                 assert.equal(panel.name, releaseTemplatePanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ name: "Release 2026.08", pending: 3 });
+                const nodes = panel.children.item({ Name: "Release 2026.08", Pending: 3 });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "li");
                 assert.equal(nodes[0].props["data-release"], "Release 2026.08");

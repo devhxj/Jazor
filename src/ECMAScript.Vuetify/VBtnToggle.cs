@@ -16,6 +16,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Base color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Border configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Adds dividers between buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("divided")]
     public bool Divided { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Elevation shadow level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Max height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Max width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Min height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Min width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Visual variant style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -121,6 +136,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Model value of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -128,6 +144,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Event fired when model value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -135,6 +152,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Requires at least one item to be selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
     /// <summary>
@@ -142,6 +160,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Maximum number of selectable items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
     /// <summary>
@@ -149,6 +168,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Allows multiple selections.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -156,6 +176,7 @@ public sealed class VBtnToggle : ComponentBase
     /// CSS class applied to selected items.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -163,6 +184,7 @@ public sealed class VBtnToggle : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -170,5 +192,6 @@ public sealed class VBtnToggle : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

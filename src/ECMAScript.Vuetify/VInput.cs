@@ -7,8 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify input authoring proxy for composing validation, messages, and control slots.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInput")]
-[VueLibraryEmit(nameof(OnPrependClick), Name = "click:prepend")]
-[VueLibraryEmit(nameof(OnAppendClick), Name = "click:append")]
 public sealed class VInput : ComponentBase
 {
     /// <summary>
@@ -16,6 +14,7 @@ public sealed class VInput : ComponentBase
     /// Unique identifier for the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -23,6 +22,7 @@ public sealed class VInput : ComponentBase
     /// Name attribute of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -30,6 +30,7 @@ public sealed class VInput : ComponentBase
     /// Label text of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -37,6 +38,7 @@ public sealed class VInput : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -44,6 +46,7 @@ public sealed class VInput : ComponentBase
     /// Component density style that adjusts vertical spacing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -51,6 +54,7 @@ public sealed class VInput : ComponentBase
     /// Text direction of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyInputDirection? Direction { get; set; }
 
     /// <summary>
@@ -58,6 +62,7 @@ public sealed class VInput : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -65,6 +70,7 @@ public sealed class VInput : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -72,6 +78,7 @@ public sealed class VInput : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -79,6 +86,7 @@ public sealed class VInput : ComponentBase
     /// Prepend icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public VuetifyIconValue? PrependIcon { get; set; }
 
     /// <summary>
@@ -86,6 +94,7 @@ public sealed class VInput : ComponentBase
     /// Append icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public VuetifyIconValue? AppendIcon { get; set; }
 
     /// <summary>
@@ -93,6 +102,7 @@ public sealed class VInput : ComponentBase
     /// Color when the component is in an inactive state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -100,6 +110,7 @@ public sealed class VInput : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -107,6 +118,7 @@ public sealed class VInput : ComponentBase
     /// Color of the icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconColor")]
     public VuetifyIconColorValue? IconColor { get; set; }
 
     /// <summary>
@@ -114,6 +126,7 @@ public sealed class VInput : ComponentBase
     /// Whether to center align prepend/append icons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("centerAffix")]
     public bool CenterAffix { get; set; }
 
     /// <summary>
@@ -121,6 +134,7 @@ public sealed class VInput : ComponentBase
     /// Whether to show a glow effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("glow")]
     public bool Glow { get; set; }
 
     /// <summary>
@@ -128,6 +142,7 @@ public sealed class VInput : ComponentBase
     /// Whether to hide the spin buttons of number inputs.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideSpinButtons")]
     public bool HideSpinButtons { get; set; }
 
     /// <summary>
@@ -135,6 +150,7 @@ public sealed class VInput : ComponentBase
     /// Hint text for the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hint")]
     public string? Hint { get; set; }
 
     /// <summary>
@@ -142,6 +158,7 @@ public sealed class VInput : ComponentBase
     /// Whether to persistently show the hint text when not focused.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistentHint")]
     public bool PersistentHint { get; set; }
 
     /// <summary>
@@ -149,6 +166,7 @@ public sealed class VInput : ComponentBase
     /// Messages displayed below the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
 
     /// <summary>
@@ -156,6 +174,7 @@ public sealed class VInput : ComponentBase
     /// Whether to hide the details area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
     /// <summary>
@@ -163,6 +182,7 @@ public sealed class VInput : ComponentBase
     /// Focused state of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("focused")]
     public bool Focused { get; set; }
 
     /// <summary>
@@ -170,6 +190,7 @@ public sealed class VInput : ComponentBase
     /// Callback invoked when the focused state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:focused")]
     public EventCallback<bool> FocusedChanged { get; set; }
 
     /// <summary>
@@ -177,6 +198,7 @@ public sealed class VInput : ComponentBase
     /// Whether to disable the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
 
     /// <summary>
@@ -184,6 +206,7 @@ public sealed class VInput : ComponentBase
     /// Whether to make the input control read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }
 
     /// <summary>
@@ -191,6 +214,7 @@ public sealed class VInput : ComponentBase
     /// Whether to put the input control in an error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public bool Error { get; set; }
 
     /// <summary>
@@ -198,6 +222,7 @@ public sealed class VInput : ComponentBase
     /// Messages displayed when in an error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("errorMessages")]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
 
     /// <summary>
@@ -205,6 +230,7 @@ public sealed class VInput : ComponentBase
     /// Maximum number of errors to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxErrors")]
     public VueStringNumberValue? MaxErrors { get; set; }
 
     /// <summary>
@@ -212,6 +238,7 @@ public sealed class VInput : ComponentBase
     /// Array of validation rules for the input value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rules")]
     public VuetifyValidationRule[]? Rules { get; set; }
 
     /// <summary>
@@ -219,6 +246,7 @@ public sealed class VInput : ComponentBase
     /// When to trigger validation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("validateOn")]
     public VuetifyValidateOn? ValidateOn { get; set; }
 
     /// <summary>
@@ -226,6 +254,7 @@ public sealed class VInput : ComponentBase
     /// Value used for validation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("validationValue")]
     public VueValue? ValidationValue { get; set; }
 
     /// <summary>
@@ -233,6 +262,7 @@ public sealed class VInput : ComponentBase
     /// Two-way bound value of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueValue? ModelValue { get; set; }
 
     /// <summary>
@@ -240,6 +270,7 @@ public sealed class VInput : ComponentBase
     /// Callback invoked when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -247,6 +278,7 @@ public sealed class VInput : ComponentBase
     /// Callback invoked when the prepend icon is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:prepend")]
     public EventCallback<MouseEvent> OnPrependClick { get; set; }
 
     /// <summary>
@@ -254,6 +286,7 @@ public sealed class VInput : ComponentBase
     /// Callback invoked when the append icon is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:append")]
     public EventCallback<MouseEvent> OnAppendClick { get; set; }
 
     /// <summary>
@@ -261,6 +294,7 @@ public sealed class VInput : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -268,6 +302,7 @@ public sealed class VInput : ComponentBase
     /// Default slot content, providing input slot context.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VInputSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -275,6 +310,7 @@ public sealed class VInput : ComponentBase
     /// Prepend slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prepend")]
     public RenderFragment<VInputSlotContext>? Prepend { get; set; }
 
     /// <summary>
@@ -282,6 +318,7 @@ public sealed class VInput : ComponentBase
     /// Append slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("append")]
     public RenderFragment<VInputSlotContext>? Append { get; set; }
 
     /// <summary>
@@ -289,6 +326,7 @@ public sealed class VInput : ComponentBase
     /// Details slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("details")]
     public RenderFragment<VInputDetailsSlotContext>? Details { get; set; }
 
     /// <summary>
@@ -296,5 +334,6 @@ public sealed class VInput : ComponentBase
     /// Individual message slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("message")]
     public RenderFragment<VMessagesMessageSlotContext>? Message { get; set; }
 }

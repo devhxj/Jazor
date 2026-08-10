@@ -91,12 +91,12 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createPinia, defineStore } from \"pinia\";");
-		StringAssert.Contains(script, "export function createStore()");
-		StringAssert.Contains(script, "return defineStore(\"counter\", { state: createState });");
-		StringAssert.Contains(script, "export function createRoot()");
+        StringAssert.Contains(script, "export function CreateStore()");
+        StringAssert.Contains(script, "return defineStore(\"counter\", { state: CreateState });");
+        StringAssert.Contains(script, "export function CreateRoot()");
 		StringAssert.Contains(script, "return createPinia();");
-		StringAssert.Contains(script, "function createState()");
-		StringAssert.Contains(script, "return { count: 0 };");
+        StringAssert.Contains(script, "function CreateState()");
+        StringAssert.Contains(script, "return { Count: 0 };");
 	}
 
 	[TestMethod]
@@ -140,7 +140,7 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { defineStore } from \"pinia\";");
-		StringAssert.Contains(script, "let useCounterStore = defineStore(\"counter\", { state: createState });");
+        StringAssert.Contains(script, "let useCounterStore = defineStore(\"counter\", { state: CreateState });");
 		StringAssert.Contains(script, "return useCounterStore(pinia);");
 	}
 
@@ -211,7 +211,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "import { defineStore, mapState } from \"pinia\";");
 		StringAssert.Contains(script, "return mapState(useCounterStore, {");
 		StringAssert.Contains(script, "doubleCount: \"double\"");
-		StringAssert.Contains(script, "tripleCount: readTriple");
+        StringAssert.Contains(script, "tripleCount: ReadTriple");
 	}
 
 	[TestMethod]
@@ -282,7 +282,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "return mapState(useCounterStore, {");
 		StringAssert.Contains(script, "count: \"count\"");
 		StringAssert.Contains(script, "doubleCount: \"double\"");
-		StringAssert.Contains(script, "tripleCount: readTriple");
+        StringAssert.Contains(script, "tripleCount: ReadTriple");
 	}
 
 	[TestMethod]
@@ -570,7 +570,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "return mapGetters(useCounterStore, {");
 		StringAssert.Contains(script, "count: \"count\"");
 		StringAssert.Contains(script, "doubleCount: \"double\"");
-		StringAssert.Contains(script, "tripleCount: readTriple");
+        StringAssert.Contains(script, "tripleCount: ReadTriple");
 	}
 
 	[TestMethod]
@@ -691,9 +691,9 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterSetupModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return defineStore(\"counter\", setup);");
-		StringAssert.Contains(script, "function setup(helpers)");
-		StringAssert.Contains(script, "increment: helpers.action(increment, \"increment\")");
+        StringAssert.Contains(script, "return defineStore(\"counter\", Setup);");
+        StringAssert.Contains(script, "function Setup(helpers)");
+        StringAssert.Contains(script, "Increment: helpers.action(Increment, \"increment\")");
 	}
 
 	[TestMethod]
@@ -742,9 +742,9 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterSetupModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return defineStore(\"counter\", setup);");
-		StringAssert.Contains(script, "report: helpers.action(report, \"report\")");
-		StringAssert.Contains(script, "sum: helpers.action(sum, \"sum\")");
+        StringAssert.Contains(script, "return defineStore(\"counter\", Setup);");
+        StringAssert.Contains(script, "Report: helpers.action(Report, \"report\")");
+        StringAssert.Contains(script, "Sum: helpers.action(Sum, \"sum\")");
 	}
 
 	[TestMethod]
@@ -803,8 +803,8 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterSetupModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return defineStore(\"counter\", setup, {");
-		StringAssert.Contains(script, "actions: { increment: increment }");
+        StringAssert.Contains(script, "return defineStore(\"counter\", Setup, {");
+        StringAssert.Contains(script, "actions: { Increment: Increment }");
 	}
 
 	[TestMethod]
@@ -852,9 +852,9 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$onAction(handleAction, true);");
-		StringAssert.Contains(script, "context.after(afterAction);");
-		StringAssert.Contains(script, "context.onError(handleError);");
+        StringAssert.Contains(script, "return store.$onAction(HandleAction, true);");
+        StringAssert.Contains(script, "context.after(AfterAction);");
+        StringAssert.Contains(script, "context.onError(HandleError);");
 	}
 
 	[TestMethod]
@@ -897,8 +897,8 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$onAction(handleAction);");
-		StringAssert.Contains(script, "context.after(afterCount);");
+        StringAssert.Contains(script, "return store.$onAction(HandleAction);");
+        StringAssert.Contains(script, "context.after(AfterCount);");
 	}
 
 	[TestMethod]
@@ -941,8 +941,8 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$onAction(handleAction);");
-		StringAssert.Contains(script, "context.onError(handleAnyError);");
+        StringAssert.Contains(script, "return store.$onAction(HandleAction);");
+        StringAssert.Contains(script, "context.onError(HandleAnyError);");
 	}
 
 	[TestMethod]
@@ -985,8 +985,8 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$onAction(handleAction);");
-		StringAssert.Contains(script, "context.onError(handleMessage);");
+        StringAssert.Contains(script, "return store.$onAction(HandleAction);");
+        StringAssert.Contains(script, "context.onError(HandleMessage);");
 	}
 
 	[TestMethod]
@@ -1031,11 +1031,11 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterStoreModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$onAction(handleAction);");
+        StringAssert.Contains(script, "return store.$onAction(HandleAction);");
 		StringAssert.Contains(script, "let rename = context;");
 		StringAssert.Contains(script, "let summary = rename.name + \":\" + rename.args[0] + \":\" + rename.args[1];");
 		StringAssert.Contains(script, "rename.after(result => {");
-		StringAssert.Contains(script, "capture(summary + \"|\" + result);");
+        StringAssert.Contains(script, "Capture(summary + \"|\" + result);");
 	}
 
 	[TestMethod]
@@ -1196,7 +1196,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "let rename = context.name === \"rename\" ? context : null;");
 		StringAssert.Contains(script, "if (rename === null)");
 		StringAssert.Contains(script, "return;");
-		StringAssert.Contains(script, "capture(rename.args[0] + \":\" + rename.args[1] + \":\" + rename.name);");
+        StringAssert.Contains(script, "Capture(rename.args[0] + \":\" + rename.args[1] + \":\" + rename.name);");
 	}
 
 	[TestMethod]
@@ -1246,8 +1246,8 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createPinia } from \"pinia\";");
-		StringAssert.Contains(script, "return createPinia().use(install);");
-		StringAssert.Contains(script, "auditTag: context.options.persist === true ? context.store.$id : \"volatile\"");
+        StringAssert.Contains(script, "return createPinia().use(Install);");
+        StringAssert.Contains(script, "AuditTag: context.options.Persist === true ? context.store.$id : \"volatile\"");
 	}
 
 	[TestMethod]
@@ -1311,8 +1311,8 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { createPinia } from \"pinia\";");
-		StringAssert.Contains(script, "return createPinia().use(install);");
-		StringAssert.Contains(script, "mirrorTag: context.store.$id + \":\" + context.store.auditTag + \":\" + context.store.$state.persistedAt");
+        StringAssert.Contains(script, "return createPinia().use(Install);");
+        StringAssert.Contains(script, "MirrorTag: context.store.$id + \":\" + context.store.AuditTag + \":\" + context.store.$state.PersistedAt");
 	}
 
 	[TestMethod]
@@ -1374,7 +1374,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "let projectedUseCounterStore = useCounterStore;");
 		StringAssert.Contains(script, "let baseStore = projectedUseCounterStore(pinia);");
 		StringAssert.Contains(script, "let projectedStore = projectedUseCounterStore(pinia);");
-		StringAssert.Contains(script, "return baseStore.$id + projectedStore.auditTag + projectedStore.$state.persistedAt;");
+        StringAssert.Contains(script, "return baseStore.$id + projectedStore.AuditTag + projectedStore.$state.PersistedAt;");
 		Assert.IsFalse(script.Contains("projectStoreDefinition", StringComparison.Ordinal));
 	}
 
@@ -1435,7 +1435,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "import { defineStore } from \"pinia\";");
 		StringAssert.Contains(script, "let store = useCounterStore(pinia);");
 		StringAssert.Contains(script, "let projectedStore = store;");
-		StringAssert.Contains(script, "return store.$id + projectedStore.auditTag + projectedStore.$state.persistedAt;");
+        StringAssert.Contains(script, "return store.$id + projectedStore.AuditTag + projectedStore.$state.PersistedAt;");
 		Assert.IsFalse(script.Contains("projectStore", StringComparison.Ordinal));
 	}
 
@@ -1537,7 +1537,7 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { defineStore } from \"pinia\";");
-		StringAssert.Contains(script, "let useCounterStore = defineStore(\"counter\", { state: createState });");
+        StringAssert.Contains(script, "let useCounterStore = defineStore(\"counter\", { state: CreateState });");
 		StringAssert.Contains(script, "return useCounterStore(pinia, hot);");
 	}
 
@@ -1618,12 +1618,12 @@ public sealed class EcmaScriptPiniaImportTests
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { acceptHMRUpdate, createPinia, defineStore } from \"pinia\";");
-		StringAssert.Contains(script, "pinia.use(install);");
+        StringAssert.Contains(script, "pinia.use(Install);");
 		StringAssert.Contains(script, "return pinia;");
 		StringAssert.Contains(script, "let projectedUseCounterStore = useCounterStore;");
 		StringAssert.Contains(script, "return acceptHMRUpdate(projectedUseCounterStore, hot);");
 		StringAssert.Contains(script, "return projectedUseCounterStore(pinia, hot);");
-		StringAssert.Contains(script, "auditTag: context.store.$id + \":audited\"");
+        StringAssert.Contains(script, "AuditTag: context.store.$id + \":audited\"");
 	}
 
 	[TestMethod]
@@ -1789,7 +1789,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "let refs = storeToRefs(projectedStore);");
 		StringAssert.Contains(script, "let computed = mapState(projectedUseCounterStore, [\"auditTag\"]);");
 		StringAssert.Contains(script, "let methods = mapActions(projectedUseCounterStore, [\"increment\"]);");
-		StringAssert.Contains(script, "return projectedStore.auditTag + projectedStore.$state.persistedAt + refs[\"status\"].value + computed.auditTag + methods.increment;");
+        StringAssert.Contains(script, "return projectedStore.AuditTag + projectedStore.$state.PersistedAt + refs[\"status\"].value + computed.AuditTag + methods.Increment;");
 	}
 
 	[TestMethod]
@@ -1920,7 +1920,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "return mapStores(useCounterStore, useActivityStore);");
 		StringAssert.Contains(script, "mounted: (__cb => function() {");
 		StringAssert.Contains(script, "let summary = computed(() => {");
-		StringAssert.Contains(script, "return counter.status + \" | \" + activity.summary;");
+        StringAssert.Contains(script, "return counter.Status + \" | \" + activity.Summary;");
 		StringAssert.Contains(script, "return h(\"section\", summary.value);");
 	}
 
@@ -2030,14 +2030,14 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "function HandleMutation(mutation, state) {");
 		Assert.IsFalse(script.Contains("HandleMutation.bind", StringComparison.Ordinal), script);
 		Assert.IsFalse(script.Contains("this.HandleMutation", StringComparison.Ordinal), script);
-		StringAssert.Contains(script, "store.count += 1;");
-		StringAssert.Contains(script, "store.$patch({ count: 5, status: \"patched\" });");
+        StringAssert.Contains(script, "store.Count += 1;");
+        StringAssert.Contains(script, "store.$patch({ Count: 5, Status: \"patched\" });");
 		StringAssert.Contains(script, "store.$patch(state => {");
 		StringAssert.Contains(script, "=== \"patch object\"");
 		StringAssert.Contains(script, "=== \"patch function\"");
 		StringAssert.Contains(script, "let patchMutation = mutation;");
 		StringAssert.Contains(script, "let payload = patchMutation.payload;");
-		StringAssert.Contains(script, "return payload.status ?? \"missing\";");
+        StringAssert.Contains(script, "return payload.Status ?? \"missing\";");
 		StringAssert.Contains(script, "return events === null ? \"none\" : \"reported\";");
 	}
 
@@ -2093,14 +2093,14 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "SubscriptionWatchOptionsModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "return store.$subscribe(handleMutation, {");
+        StringAssert.Contains(script, "return store.$subscribe(HandleMutation, {");
 		StringAssert.Contains(script, "detached: true");
 		StringAssert.Contains(script, "flush: \"sync\"");
 		StringAssert.Contains(script, "immediate: true");
 		StringAssert.Contains(script, "deep: 2");
 		StringAssert.Contains(script, "once: true");
-		StringAssert.Contains(script, "onTrack: handleTrack");
-		StringAssert.Contains(script, "onTrigger: handleTrigger");
+        StringAssert.Contains(script, "onTrack: HandleTrack");
+        StringAssert.Contains(script, "onTrigger: HandleTrigger");
 	}
 
 	[TestMethod]
@@ -2205,7 +2205,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var script = await ConvertModuleAsync(code, "CounterPatchModule");
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "store.$patch({ count: 7, status: \"patched\" });");
+        StringAssert.Contains(script, "store.$patch({ Count: 7, Status: \"patched\" });");
 	}
 
 	[TestMethod]
@@ -2310,10 +2310,10 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "import { ref } from \"vue\";");
 		StringAssert.Contains(script, "import { defineStore, shouldHydrate, skipHydrate } from \"pinia\";");
 		StringAssert.Contains(script, "return defineStore(\"counter\", {");
-		StringAssert.Contains(script, "hydrate: hydrateState");
+        StringAssert.Contains(script, "hydrate: HydrateState");
 		StringAssert.Contains(script, "let clientOnlyNote = skipHydrate(ref(\"client\"));");
-		StringAssert.Contains(script, "return shouldHydrate(state.clientOnlyNote);");
-		StringAssert.Contains(script, "storeState.clientOnlyNote = skipHydrate(ref(initialState.status + \" hydrated\"));");
+        StringAssert.Contains(script, "return shouldHydrate(state.ClientOnlyNote);");
+        StringAssert.Contains(script, "storeState.ClientOnlyNote = skipHydrate(ref(initialState.Status + \" hydrated\"));");
 	}
 
 	[TestMethod]
@@ -2351,7 +2351,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "let pinia = createPinia();");
 		StringAssert.Contains(script, "setActivePinia(pinia);");
 		StringAssert.Contains(script, "return getActivePinia();");
-		StringAssert.Contains(script, "export function releaseRoot()");
+        StringAssert.Contains(script, "export function ReleaseRoot()");
 		StringAssert.Contains(script, "return setActivePinia(undefined);");
 		StringAssert.Contains(script, "disposePinia(pinia);");
 	}
@@ -2486,7 +2486,7 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "let rightStore = useCounterStore(rightPinia);");
 		StringAssert.Contains(script, "let leftProjected = projectedUseCounterStore(leftPinia);");
 		StringAssert.Contains(script, "let rightProjected = projectedUseCounterStore(rightPinia);");
-		StringAssert.Contains(script, "leftStore.increment();");
-		StringAssert.Contains(script, "return leftStore.count + \"|\" + rightStore.count + \"|\" + leftProjected.auditTag + \"|\" + rightProjected.$state.persistedAt;");
+        StringAssert.Contains(script, "leftStore.Increment();");
+        StringAssert.Contains(script, "return leftStore.Count + \"|\" + rightStore.Count + \"|\" + leftProjected.AuditTag + \"|\" + rightProjected.$state.PersistedAt;");
 	}
 }

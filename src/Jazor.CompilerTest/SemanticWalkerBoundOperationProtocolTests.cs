@@ -158,7 +158,7 @@ public sealed class SemanticWalkerBoundOperationProtocolTests
         var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.AreEqual(1, CountOccurrences(script, "BoundScenarios.nextValue()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "BoundScenarios.NextValue()"), script);
         StringAssert.Contains(script, "typeof", StringComparison.Ordinal);
         StringAssert.Contains(script, "?", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);

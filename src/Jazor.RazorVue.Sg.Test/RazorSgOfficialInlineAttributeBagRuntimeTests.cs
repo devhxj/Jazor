@@ -50,10 +50,10 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
 
             test("official Razor inline attribute bags expand known entries before explicit Razor attributes", () => {
                 const idle = component.setup({
-                    isDeploying: false,
-                    phase: "ready",
-                    action: "deploy",
-                    label: "Deploy"
+                    IsDeploying: false,
+                    Phase: "ready",
+                    Action: "deploy",
+                    Label: "Deploy"
                 }, { slots: {} })();
                 assert.equal(idle.name, "button");
                 assert.equal(idle.props["data-source"], "inline");
@@ -63,10 +63,10 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
                 assert.deepEqual(idle.children, ["Deploy"]);
 
                 const deploying = component.setup({
-                    isDeploying: true,
-                    phase: "deploying",
-                    action: "cancel",
-                    label: "Cancel"
+                    IsDeploying: true,
+                    Phase: "deploying",
+                    Action: "cancel",
+                    Label: "Cancel"
                 }, { slots: {} })();
                 assert.equal(deploying.props["aria-busy"], true);
                 assert.equal(deploying.props["data-phase"], "deploying");

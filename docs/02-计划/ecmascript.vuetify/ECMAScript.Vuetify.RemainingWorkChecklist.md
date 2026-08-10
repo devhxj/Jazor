@@ -1,13 +1,15 @@
 # ECMAScript.Vuetify 剩余完善清单
 
-> Status: 初始可用后的活跃清单  
+> Status: 历史评审清单（当前 projection 已升级至 Vuetify `4.1.8`）
 > Updated: 2026-05-09  
 > Positioning: 基于 `src/ECMAScript.Vuetify/` 当前真实代码、`src/Jazor.CompilerTest/` / `src/Jazor.EmitTest/` / `src/Jazor.RazorVue.Sg.Test/` 现有守护，以及当前 RazorVue 目标入口整理的下一阶段执行清单。
 > Scope: 当前关注点不是“是否存在 Vuetify 代理”，而是“作为 `ECMAScript.Vue3` 环境下的 Vuetify 代理层，代理是否足够完整、authoring 是否足够易用、自定义参数与 CSS 路径是否足够清晰可生产使用”。
 
-## 0. 2026-07-29 评审记录
+## 0. 2026-07-29 历史评审记录
 
-> Status: 待处理。以下结论以当前 `ECMAScript.Vuetify` 源码、仓库根目录的 Vuetify `3.8.0` 类型定义，以及现有测试项目为准。
+> Status: 历史快照。以下结论以当时的 `ECMAScript.Vuetify` 源码、Vuetify `3.8.0` 类型定义，以及当时测试项目为准。
+>
+> 2026-08-10：当前 binding projection 已固定到 Vuetify `4.1.8`，并由受版本控制的 contract schema、browser artifact 与 `vuetify --check` 守护；本清单不再作为当前版本事实来源。
 
 ### RVT-001 P1: `VDataTable` 缺少高价值 scoped slot 合同
 
@@ -35,7 +37,7 @@
 
 ### RVT-003 P2: 缺少 authoring metadata 的 lowering 回归矩阵
 
-现有 `EcmaScriptVueProxyTests` 主要断言公开 C# 类型，浏览器 smoke 只验证直接导入 `VBtn`。Razor SG 测试工程目前没有直接引用 `ECMAScript.Vuetify`，因此 `VueLibraryComponent`、`[Parameter]`/`[ECMAScriptName]`、`VueLibraryEmit` 和 `RenderFragment` 的实际降级行为缺少组件库级回归守护。
+现有 `EcmaScriptVueProxyTests` 主要断言公开 C# 类型，浏览器 smoke 只验证直接导入 `VBtn`。Razor SG 测试工程目前没有直接引用 `ECMAScript.Vuetify`，因此 `VueLibraryComponent`、`[Parameter]`/`[ECMAScriptName]`、`EventCallback` listener 与 `RenderFragment` 的实际降级行为缺少组件库级回归守护。
 
 处理要求：
 

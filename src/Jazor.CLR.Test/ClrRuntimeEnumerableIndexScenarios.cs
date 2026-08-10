@@ -11,9 +11,9 @@ internal static class ClrRuntimeEnumerableIndexScenarios
             "enumerable.index.materializes-named-tuples-in-source-order",
             [Array(Number(7), Number(3), Number(9))],
             Array(
-                Record(("index", Number(0)), ("item", Number(7))),
-                Record(("index", Number(1)), ("item", Number(3))),
-                Record(("index", Number(2)), ("item", Number(9))))),
+                Record(("Index", Number(0)), ("Item", Number(7))),
+                Record(("Index", Number(1)), ("Item", Number(3))),
+                Record(("Index", Number(2)), ("Item", Number(9))))),
         Success("enumerable.index.empty-source", [Array()], Array()),
         Failure("enumerable.index.rejects-null-source", [Null()], "ArgumentNullException")
     ];

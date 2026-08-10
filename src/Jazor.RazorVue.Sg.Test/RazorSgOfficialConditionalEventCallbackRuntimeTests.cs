@@ -41,7 +41,7 @@ public sealed class RazorSgOfficialConditionalEventCallbackRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "EventCallback.Factory.Create", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.isDeploying", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-action-control.mjs",
@@ -54,13 +54,13 @@ public sealed class RazorSgOfficialConditionalEventCallbackRuntimeTests
             import component from "./components/release-action-control.mjs";
 
             test("official Razor conditional callbacks dispatch the selected release action", async () => {
-                const deployRender = component.setup({ isDeploying: false }, { slots: {} });
+                const deployRender = component.setup({ IsDeploying: false }, { slots: {} });
                 const deploy = deployRender();
                 assert.equal(deploy.props["data-action"], "idle");
                 await Promise.resolve(deploy.props.onClick());
                 assert.equal(deployRender().props["data-action"], "deploy");
 
-                const rollbackRender = component.setup({ isDeploying: true }, { slots: {} });
+                const rollbackRender = component.setup({ IsDeploying: true }, { slots: {} });
                 const rollback = rollbackRender();
                 assert.equal(rollback.props["data-action"], "idle");
                 await Promise.resolve(rollback.props.onClick());

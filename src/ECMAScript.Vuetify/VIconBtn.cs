@@ -14,6 +14,7 @@ public sealed class VIconBtn : ComponentBase
     /// Theme color of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VIconBtn : ComponentBase
     /// Visual variant of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VIconBtn : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VIconBtn : ComponentBase
     /// HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VIconBtn : ComponentBase
     /// Border radius style of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VIconBtn : ComponentBase
     /// Elevation shadow level of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VIconBtn : ComponentBase
     /// Border style of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether the button is in the active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VIconBtn : ComponentBase
     /// Callback when the button active state changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:active")]
     public EventCallback<bool> ActiveChanged { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VIconBtn : ComponentBase
     /// Theme color when the button is active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VIconBtn : ComponentBase
     /// Icon displayed when the button is active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeIcon")]
     public VuetifyIconValue? ActiveIcon { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VIconBtn : ComponentBase
     /// Visual variant when the button is active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeVariant")]
     public VuetifyVariant? ActiveVariant { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VIconBtn : ComponentBase
     /// Visual variant when the button is inactive.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseVariant")]
     public VuetifyVariant? BaseVariant { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether the button is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VIconBtn : ComponentBase
     /// Height of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VIconBtn : ComponentBase
     /// Width of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether to hide the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideOverlay")]
     public bool HideOverlay { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VIconBtn : ComponentBase
     /// Icon displayed on the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VIconBtn : ComponentBase
     /// Theme color of the icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconColor")]
     public string? IconColor { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VIconBtn : ComponentBase
     /// Size of the icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconSize")]
     public VueStringNumberValue? IconSize { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VIconBtn : ComponentBase
     /// Icon size mapping for different sizes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("iconSizes")]
     public VIconBtnSizeMap? IconSizes { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether to show the loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public bool Loading { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VIconBtn : ComponentBase
     /// Opacity of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VIconBtn : ComponentBase
     /// Whether the button is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VIconBtn : ComponentBase
     /// Rotation angle of the icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rotate")]
     public VueStringNumberValue? Rotate { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VIconBtn : ComponentBase
     /// Size of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VIconBtn : ComponentBase
     /// Button size mapping for different sizes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sizes")]
     public VIconBtnSizeMap? Sizes { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VIconBtn : ComponentBase
     /// Text content of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VIconBtnTextValue? Text { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VIconBtn : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VIconBtn : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -231,5 +262,6 @@ public sealed class VIconBtn : ComponentBase
     /// Slot content for the loading state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loader")]
     public RenderFragment? Loader { get; set; }
 }

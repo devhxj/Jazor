@@ -15,6 +15,7 @@ public sealed class VAvatar : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VAvatar : ComponentBase
     /// Visual variant style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -29,6 +31,7 @@ public sealed class VAvatar : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -36,6 +39,7 @@ public sealed class VAvatar : ComponentBase
     /// Root HTML element tag name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public sealed class VAvatar : ComponentBase
     /// Component size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -50,6 +55,7 @@ public sealed class VAvatar : ComponentBase
     /// Border radius size.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -57,6 +63,7 @@ public sealed class VAvatar : ComponentBase
     /// Removes border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -64,6 +71,7 @@ public sealed class VAvatar : ComponentBase
     /// Component density level.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -87,6 +95,7 @@ public sealed class VAvatar : ComponentBase
     /// Border configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -94,6 +103,7 @@ public sealed class VAvatar : ComponentBase
     /// Positions at the start.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("start")]
     public bool Start { get; set; }
 
     /// <summary>
@@ -101,6 +111,7 @@ public sealed class VAvatar : ComponentBase
     /// Positions at the end.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("end")]
     public bool End { get; set; }
 
     /// <summary>
@@ -108,6 +119,7 @@ public sealed class VAvatar : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -115,6 +127,7 @@ public sealed class VAvatar : ComponentBase
     /// Avatar image URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -122,6 +135,7 @@ public sealed class VAvatar : ComponentBase
     /// Text content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -129,6 +143,7 @@ public sealed class VAvatar : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -136,5 +151,6 @@ public sealed class VAvatar : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -75,7 +75,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
         StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-runtime.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
-        Assert.IsFalse(observation.ModuleText.Contains("ItemTemplate", StringComparison.Ordinal), observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/template-state-helper-runtime.mjs",
@@ -89,11 +89,11 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
             import templatePanel from "./components/template-panel-render-state-runtime.mjs";
 
             test("official Razor render-state helper expands the constructed generic template", () => {
-                const panel = component.setup({ prefix: "Queue" }, { slots: {} })();
+                const panel = component.setup({ Prefix: "Queue" }, { slots: {} })();
                 assert.equal(panel.name, templatePanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ id: 42, label: "Deploy API" });
+                const nodes = panel.children.item({ Id: 42, Label: "Deploy API" });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-release-id"], 42);
@@ -172,7 +172,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
         StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-initializer-runtime.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
-        Assert.IsFalse(observation.ModuleText.Contains("ItemTemplate", StringComparison.Ordinal), observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/template-state-initializer-runtime.mjs",
@@ -190,7 +190,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
                 assert.equal(panel.name, templatePanel);
                 assert.equal(typeof panel.children.item, "function");
 
-                const nodes = panel.children.item({ id: "release-17", label: "Review CLI" });
+                const nodes = panel.children.item({ Id: "release-17", Label: "Review CLI" });
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "span");
                 assert.equal(nodes[0].props["data-release"], "release-17");

@@ -34,7 +34,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
                 [ECMAScriptModule("./components/release-panel-conditional-slot-runtime")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? ChildContent { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#default")] public RenderFragment? ChildContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -58,7 +58,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "default:", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "props.showHistory", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.ShowHistory", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-panel-page-conditional-slot-runtime.mjs",
@@ -74,8 +74,8 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
 
             test("official Razor conditional ChildContent keeps the active slot shape", () => {
                 const historyPanel = component.setup({
-                    releaseName: "Orders API",
-                    showHistory: true
+                    ReleaseName: "Orders API",
+                    ShowHistory: true
                 }, { slots: {} })();
                 assert.equal(historyPanel.name, releasePanel);
                 assert.equal(typeof historyPanel.children.default, "function");
@@ -93,8 +93,8 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
                 assert.deepEqual(status.children, ["Orders API", " history available"]);
 
                 const hiddenPanel = component.setup({
-                    releaseName: "Orders API",
-                    showHistory: false
+                    ReleaseName: "Orders API",
+                    ShowHistory: false
                 }, { slots: {} })();
                 const hidden = hiddenPanel.children.default();
                 assert.equal(hidden.length, 1);

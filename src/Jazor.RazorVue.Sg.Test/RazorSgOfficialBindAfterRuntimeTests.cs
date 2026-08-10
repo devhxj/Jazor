@@ -40,9 +40,9 @@ public sealed class RazorSgOfficialBindAfterRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "PersistReleaseNameAsync", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "persistReleaseNameAsync", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.releaseName", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.persistedReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "PersistReleaseNameAsync", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "state.PersistedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-persistence-runtime.mjs",

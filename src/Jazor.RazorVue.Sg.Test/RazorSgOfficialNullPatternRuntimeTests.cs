@@ -36,7 +36,7 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
             componentMetadataName: "Demo.Pages.OptionalLabelRuntime");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "label == null", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.Label == null", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/optional-label-runtime.mjs",
@@ -53,7 +53,7 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
                 assert.equal(missing.name, "__static");
                 assert.match(missing.props.html, /data-state="missing"/);
 
-                const present = component.setup({ label: "release" }, { slots: {} })();
+                const present = component.setup({ Label: "release" }, { slots: {} })();
                 assert.equal(present.name, "span");
                 assert.equal(present.props["data-state"], "present");
                 assert.deepEqual(present.children, ["release"]);

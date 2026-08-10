@@ -14,6 +14,7 @@ public sealed class VFab : ComponentBase
     /// Bound value controlling the expanded/collapsed state of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; } = true;
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VFab : ComponentBase
     /// Event callback fired when ModelValue changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VFab : ComponentBase
     /// Whether to register the button as an application layout element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("app")]
     public bool App { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VFab : ComponentBase
     /// Whether the button is visible on initial render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appear")]
     public bool Appear { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VFab : ComponentBase
     /// Whether to display the button in extended mode with a text label.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("extended")]
     public bool Extended { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VFab : ComponentBase
     /// Whether the button participates in layout calculation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("layout")]
     public bool Layout { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VFab : ComponentBase
     /// Whether to apply layout offset.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public bool Offset { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VFab : ComponentBase
     /// Transition animation used when the button appears or disappears.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VFab : ComponentBase
     /// Position of the button on the screen.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VFab : ComponentBase
     /// Component name used for layout positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VFab : ComponentBase
     /// Ordering priority of the component in layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VFab : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VFab : ComponentBase
     /// Whether the button is in an active state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("active")]
     public bool Active { get; set; } = true;
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VFab : ComponentBase
     /// Color applied when the button is active.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VFab : ComponentBase
     /// Base color of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VFab : ComponentBase
     /// Text content of the button in extended mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VFab : ComponentBase
     /// Icon prepended before the button text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prependIcon")]
     public string? PrependIcon { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VFab : ComponentBase
     /// Icon appended after the button text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("appendIcon")]
     public string? AppendIcon { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VFab : ComponentBase
     /// Theme color of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VFab : ComponentBase
     /// Visual variant style of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyVariant? Variant { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VFab : ComponentBase
     /// Theme name applied to the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VFab : ComponentBase
     /// Size of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VFab : ComponentBase
     /// Whether to show a loading indicator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VFab : ComponentBase
     /// Whether to display the button as a block-level element spanning full width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("block")]
     public bool Block { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VFab : ComponentBase
     /// Border style of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VFab : ComponentBase
     /// Height of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VFab : ComponentBase
     /// Width of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VFab : ComponentBase
     /// Minimum height of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VFab : ComponentBase
     /// Minimum width of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VFab : ComponentBase
     /// Maximum height of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VFab : ComponentBase
     /// Maximum width of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VFab : ComponentBase
     /// Border radius style of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VFab : ComponentBase
     /// Elevation shadow level of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VFab : ComponentBase
     /// Whether the router link requires an exact match.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("exact")]
     public bool Exact { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VFab : ComponentBase
     /// URL href for the button link.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VFab : ComponentBase
     /// Router link destination path.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VFab : ComponentBase
     /// Whether to replace the current history entry on navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("replace")]
     public bool Replace { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VFab : ComponentBase
     /// Whether to disable the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -280,6 +318,7 @@ public sealed class VFab : ComponentBase
     /// Whether to remove the button shadow (flat mode).
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -287,6 +326,7 @@ public sealed class VFab : ComponentBase
     /// Icon displayed on the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -294,6 +334,7 @@ public sealed class VFab : ComponentBase
     /// Whether the button is in read-only state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -301,6 +342,7 @@ public sealed class VFab : ComponentBase
     /// Whether to reduce padding for a more compact appearance.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("slim")]
     public bool Slim { get; set; }
 
     /// <summary>
@@ -308,6 +350,7 @@ public sealed class VFab : ComponentBase
     /// Whether to stack icon and text vertically.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("stacked")]
     public bool Stacked { get; set; }
 
     /// <summary>
@@ -315,6 +358,7 @@ public sealed class VFab : ComponentBase
     /// Whether to remove border radius from the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -322,6 +366,7 @@ public sealed class VFab : ComponentBase
     /// CSS class applied when the button is selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -329,6 +374,7 @@ public sealed class VFab : ComponentBase
     /// Density controlling the compactness of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -336,6 +382,7 @@ public sealed class VFab : ComponentBase
     /// Positioning mode of the floating button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -343,6 +390,7 @@ public sealed class VFab : ComponentBase
     /// HTML tag used to render the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -350,6 +398,7 @@ public sealed class VFab : ComponentBase
     /// Bound value of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VueValue? Value { get; set; }
 
     /// <summary>
@@ -357,6 +406,7 @@ public sealed class VFab : ComponentBase
     /// Ripple click effect configuration of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -364,6 +414,7 @@ public sealed class VFab : ComponentBase
     /// Additional custom attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -371,5 +422,6 @@ public sealed class VFab : ComponentBase
     /// Default child content slot of the button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

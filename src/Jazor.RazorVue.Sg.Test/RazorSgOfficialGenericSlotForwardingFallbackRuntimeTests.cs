@@ -65,7 +65,7 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
             componentMetadataName: "Demo.Pages.ReleaseTemplateForwarder");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "useIncomingTemplate", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "UseIncomingTemplate", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Fallback: ", StringComparison.Ordinal);
 
@@ -82,21 +82,21 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
 
             test("official Razor generic slot forwarding preserves incoming and fallback contexts", () => {
                 const incoming = component.setup(
-                    { useIncomingTemplate: true },
+                    { UseIncomingTemplate: true },
                     {
                         slots: {
                             item: release => [
                                 {
                                     name: "strong",
-                                    props: { "data-release-id": release.id },
-                                    children: ["Incoming: " + release.label]
+                                    props: { "data-release-id": release.Id },
+                                    children: ["Incoming: " + release.Label]
                                 }
                             ]
                         }
                     })();
                 assert.equal(incoming.name, releaseList);
                 assert.equal(typeof incoming.children.item, "function");
-                assert.deepEqual(incoming.children.item({ id: 11, label: "Staging" }), [
+                assert.deepEqual(incoming.children.item({ Id: 11, Label: "Staging" }), [
                     {
                         name: "strong",
                         props: { "data-release-id": 11 },
@@ -105,10 +105,10 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
                 ]);
 
                 const fallback = component.setup(
-                    { useIncomingTemplate: false },
+                    { UseIncomingTemplate: false },
                     { slots: {} })();
                 assert.equal(fallback.name, releaseList);
-                const fallbackNodes = fallback.children.item({ id: 12, label: "Production" });
+                const fallbackNodes = fallback.children.item({ Id: 12, Label: "Production" });
                 assert.equal(fallbackNodes.length, 1);
                 assert.equal(fallbackNodes[0].name, "span");
                 assert.equal(fallbackNodes[0].props["data-release-id"], 12);

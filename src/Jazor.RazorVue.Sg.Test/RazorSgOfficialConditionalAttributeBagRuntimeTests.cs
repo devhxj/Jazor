@@ -36,7 +36,7 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddMultipleAttributes", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "mergeProps", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "props.isDeploying", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-deploy-action.mjs",
@@ -50,15 +50,15 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
 
             test("official Razor conditional attribute bags retain the active value set", () => {
                 const deploying = component.setup({
-                    isDeploying: true,
-                    phase: "deploying",
-                    deployingAttributes: {
+                    IsDeploying: true,
+                    Phase: "deploying",
+                    DeployingAttributes: {
                         disabled: true,
                         "aria-busy": true,
                         "data-mode": "deploying",
                         "data-phase": "from-deploying-bag"
                     },
-                    readyAttributes: {
+                    ReadyAttributes: {
                         disabled: false,
                         "aria-busy": false,
                         "data-mode": "ready"
@@ -73,14 +73,14 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
                 assert.deepEqual(deploying.children, ["Deploy"]);
 
                 const ready = component.setup({
-                    isDeploying: false,
-                    phase: "ready",
-                    deployingAttributes: {
+                    IsDeploying: false,
+                    Phase: "ready",
+                    DeployingAttributes: {
                         disabled: true,
                         "aria-busy": true,
                         "data-mode": "deploying"
                     },
-                    readyAttributes: {
+                    ReadyAttributes: {
                         disabled: false,
                         "aria-busy": false,
                         "data-mode": "ready",

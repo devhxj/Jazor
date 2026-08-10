@@ -40,7 +40,7 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
             componentMetadataName: "Demo.Components.TypedTemplateBridgeRuntime");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "slots.item(state.current)", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "slots.item(state.Current)", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("componentProps", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("syncSlotParameters", StringComparison.Ordinal), observation.ModuleText);
 
@@ -62,8 +62,8 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
                   slots: {
                     item: release => [{
                       name: "strong",
-                      props: { "data-release-id": release.id },
-                      children: [release.label]
+                      props: { "data-release-id": release.Id },
+                      children: [release.Label]
                     }]
                   }
                 });

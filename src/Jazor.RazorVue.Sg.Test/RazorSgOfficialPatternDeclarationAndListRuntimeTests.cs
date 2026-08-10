@@ -37,8 +37,8 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
             componentMetadataName: "Demo.Pages.ReleaseQueueSummary");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "props.queueTitle", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "props.releaseIds", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.QueueTitle", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "props.ReleaseIds", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-queue-summary.mjs",
@@ -57,8 +57,8 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
                 assert.deepEqual(empty.children, [null, null]);
 
                 const queue = component.setup({
-                  queueTitle: "Release Queue",
-                  releaseIds: [42, 84]
+                  QueueTitle: "Release Queue",
+                  ReleaseIds: [42, 84]
                 }, { slots: {} })();
                 const nodes = queue.children.filter(node => node != null);
 

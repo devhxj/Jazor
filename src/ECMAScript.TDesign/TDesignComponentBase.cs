@@ -19,5 +19,6 @@ public abstract class TComponentBase : ComponentBase
 public abstract class TContentComponentBase : TComponentBase
 {
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

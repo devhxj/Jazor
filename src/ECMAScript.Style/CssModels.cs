@@ -27,10 +27,13 @@ public sealed record CssRule : CssDeclarations
 /// </summary>
 public interface ICssDeclaration
 {
+    [Description("@#name")]
     string Name { get; }
 
+    [Description("@#value")]
     CssValue Value { get; }
 
+    [Description("@#priority")]
     CssDeclarationPriority Priority { get; }
 }
 
@@ -45,9 +48,9 @@ public enum CssDeclarationPriority
 }
 
 public sealed record CssDeclaration(
-    string Name,
-    CssValue Value,
-    CssDeclarationPriority Priority = CssDeclarationPriority.Normal) : ICssDeclaration;
+    [property: Description("@#name")] string Name,
+    [property: Description("@#value")] CssValue Value,
+    [property: Description("@#priority")] CssDeclarationPriority Priority = CssDeclarationPriority.Normal) : ICssDeclaration;
 
 /// <summary>
 /// Describes one structural CSS shadow. Optional parts are omitted instead of
@@ -55,12 +58,12 @@ public sealed record CssDeclaration(
 /// 描述一个结构化 CSS 阴影。可选部分会被省略而非填充默认值，使 C# 写法与 CSS 语法一致。
 /// </summary>
 public sealed record CssShadow(
-    CssShadowLength OffsetX,
-    CssShadowLength OffsetY,
-    CssShadowLength? Blur = null,
-    CssShadowLength? Spread = null,
-    CssShadowColor? Color = null,
-    bool Inset = false);
+    [property: Description("@#offsetX")] CssShadowLength OffsetX,
+    [property: Description("@#offsetY")] CssShadowLength OffsetY,
+    [property: Description("@#blur")] CssShadowLength? Blur = null,
+    [property: Description("@#spread")] CssShadowLength? Spread = null,
+    [property: Description("@#color")] CssShadowColor? Color = null,
+    [property: Description("@#inset")] bool Inset = false);
 
 /// <summary>
 /// Describes one gradient color stop. <see cref="From"/> and <see cref="To"/> model the optional
@@ -68,9 +71,9 @@ public sealed record CssShadow(
 /// 描述一个渐变色标；From/To 精确表达可选的单位置或双位置形式。
 /// </summary>
 public sealed record CssGradientStop(
-    CssColorValue Color,
-    CssLengthPercentageValue? From = null,
-    CssLengthPercentageValue? To = null);
+    [property: Description("@#color")] CssColorValue Color,
+    [property: Description("@#from")] CssLengthPercentageValue? From = null,
+    [property: Description("@#to")] CssLengthPercentageValue? To = null);
 
 [String]
 public enum CssChildKind
@@ -100,44 +103,48 @@ public enum CssChildKind
 [ECMAScript]
 [Description("@#")]
 public sealed record CssChild(
-    CssChildKind Kind,
-    string? Prelude,
-    CssRule Rule);
+    [property: Description("@#kind")] CssChildKind Kind,
+    [property: Description("@#prelude")] string? Prelude,
+    [property: Description("@#rule")] CssRule Rule);
 
 [ECMAScript]
 [Description("@#")]
 public sealed record CssFrame(
-    string Selector,
-    CssDeclarations Declarations);
+    [property: Description("@#selector")] string Selector,
+    [property: Description("@#declarations")] CssDeclarations Declarations);
 
 [ECMAScript]
 [Description("@#")]
 public sealed record CssAtRule(
-    string Name,
-    CssDeclarations Declarations,
-    string? Prelude = null,
-    CssAtRule[]? Children = null);
+    [property: Description("@#name")] string Name,
+    [property: Description("@#declarations")] CssDeclarations Declarations,
+    [property: Description("@#prelude")] string? Prelude = null,
+    [property: Description("@#children")] CssAtRule[]? Children = null);
 
 [ECMAScript]
 [Description("@#")]
 public sealed record CssOptions
 {
+    [Description("@#styleId")]
     public string? StyleId { get; init; }
 
+    [Description("@#nonce")]
     public string? Nonce { get; init; }
 
+    [Description("@#target")]
     public DocumentFragment? Target { get; init; }
 
+    [Description("@#detached")]
     public bool Detached { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
 public sealed record CssSnapshot(
-    string StyleId,
-    string? Nonce,
-    string CssText,
-    string HydrationText);
+    [property: Description("@#styleId")] string StyleId,
+    [property: Description("@#nonce")] string? Nonce,
+    [property: Description("@#cssText")] string CssText,
+    [property: Description("@#hydrationText")] string HydrationText);
 
 [ECMAScript]
 [Description("@#")]

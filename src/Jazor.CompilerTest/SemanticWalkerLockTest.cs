@@ -64,7 +64,7 @@ public sealed class SemanticWalkerLockTest
     }
 
     private static void AssertScriptEqual(string expected, string? actual)
-        => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+        => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
     [TestMethod]
     public void VisitLock_Basic()

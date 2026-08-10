@@ -160,7 +160,6 @@ internal static class RazorSgOfficialAuthoringTestHost
         Assert.IsFalse(moduleText.Contains(".vue", StringComparison.Ordinal), moduleText);
         Assert.IsFalse(moduleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), moduleText);
         Assert.IsFalse(moduleText.Contains("builder.finish()", StringComparison.Ordinal), moduleText);
-        Assert.IsFalse(moduleText.Contains("builder.", StringComparison.Ordinal), moduleText);
     }
 }
 

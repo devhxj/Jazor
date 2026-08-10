@@ -55,57 +55,57 @@ public static class ValueTupleModule
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1)
-	/// JS: { item1: item1 }
+	/// JS: { Item1: item1 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1>(T1)", "({ item1: __arg1 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1>(T1)", "({ Item1: __arg1 })")]
 	public extern static System.ValueTuple<T1> _c01432b1ceab8949<T1>(object item1);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2)
-	/// JS: { item1: item1, item2: item2 }
+	/// JS: { Item1: item1, Item2: item2 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2>(T1, T2)", "({ item1: __arg1, item2: __arg2 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2>(T1, T2)", "({ Item1: __arg1, Item2: __arg2 })")]
 	public extern static (T1, T2) _3c42e78c6d0ddf68<T1, T2>(object item1, object item2);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3)
-	/// JS: { item1: item1, item2: item2, item3: item3 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3>(T1, T2, T3)", "({ item1: __arg1, item2: __arg2, item3: __arg3 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3>(T1, T2, T3)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3 })")]
 	public extern static (T1, T2, T3) _6462161c42aa6ac1<T1, T2, T3>(object item1, object item2, object item3);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3, item4)
-	/// JS: { item1: item1, item2: item2, item3: item3, item4: item4 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3, Item4: item4 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4>(T1, T2, T3, T4)", "({ item1: __arg1, item2: __arg2, item3: __arg3, item4: __arg4 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4>(T1, T2, T3, T4)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3, Item4: __arg4 })")]
 	public extern static (T1, T2, T3, T4) _7d9afb217b6c02e6<T1, T2, T3, T4>(object item1, object item2, object item3, object item4);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3, item4, item5)
-	/// JS: { item1: item1, item2: item2, item3: item3, item4: item4, item5: item5 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3, Item4: item4, Item5: item5 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5>(T1, T2, T3, T4, T5)", "({ item1: __arg1, item2: __arg2, item3: __arg3, item4: __arg4, item5: __arg5 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5>(T1, T2, T3, T4, T5)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3, Item4: __arg4, Item5: __arg5 })")]
 	public extern static (T1, T2, T3, T4, T5) _4c097ae606bc8905<T1, T2, T3, T4, T5>(object item1, object item2, object item3, object item4, object item5);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3, item4, item5, item6)
-	/// JS: { item1: item1, item2: item2, item3: item3, item4: item4, item5: item5, item6: item6 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3, Item4: item4, Item5: item5, Item6: item6 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6>(T1, T2, T3, T4, T5, T6)", "({ item1: __arg1, item2: __arg2, item3: __arg3, item4: __arg4, item5: __arg5, item6: __arg6 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6>(T1, T2, T3, T4, T5, T6)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3, Item4: __arg4, Item5: __arg5, Item6: __arg6 })")]
 	public extern static (T1, T2, T3, T4, T5, T6) _afec461eabd4d8e5<T1, T2, T3, T4, T5, T6>(object item1, object item2, object item3, object item4, object item5, object item6);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3, item4, item5, item6, item7)
-	/// JS: { item1: item1, item2: item2, item3: item3, item4: item4, item5: item5, item6: item6, item7: item7 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3, Item4: item4, Item5: item5, Item6: item6, Item7: item7 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6, T7>(T1, T2, T3, T4, T5, T6, T7)", "({ item1: __arg1, item2: __arg2, item3: __arg3, item4: __arg4, item5: __arg5, item6: __arg6, item7: __arg7 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6, T7>(T1, T2, T3, T4, T5, T6, T7)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3, Item4: __arg4, Item5: __arg5, Item6: __arg6, Item7: __arg7 })")]
 	public extern static (T1, T2, T3, T4, T5, T6, T7) _68093829d7705581<T1, T2, T3, T4, T5, T6, T7>(object item1, object item2, object item3, object item4, object item5, object item6, object item7);
 
 	/// <summary>
 	/// C#: ValueTuple.Create(item1, item2, item3, item4, item5, item6, item7, item8)
-	/// JS: { item1: item1, item2: item2, item3: item3, item4: item4, item5: item5, item6: item6, item7: item7, item8: item8 }
+	/// JS: { Item1: item1, Item2: item2, Item3: item3, Item4: item4, Item5: item5, Item6: item6, Item7: item7, Item8: item8 }
 	/// </summary>
-	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6, T7, T8>(T1, T2, T3, T4, T5, T6, T7, T8)", "({ item1: __arg1, item2: __arg2, item3: __arg3, item4: __arg4, item5: __arg5, item6: __arg6, item7: __arg7, item8: __arg8 })")]
+	[Jazor(Op.Inline, "static System.ValueTuple.Create<T1, T2, T3, T4, T5, T6, T7, T8>(T1, T2, T3, T4, T5, T6, T7, T8)", "({ Item1: __arg1, Item2: __arg2, Item3: __arg3, Item4: __arg4, Item5: __arg5, Item6: __arg6, Item7: __arg7, Item8: __arg8 })")]
 	public extern static (T1, T2, T3, T4, T5, T6, T7, T8) _8bc5fa3a3cbbcbc7<T1, T2, T3, T4, T5, T6, T7, T8>(object item1, object item2, object item3, object item4, object item5, object item6, object item7, object item8);
 }

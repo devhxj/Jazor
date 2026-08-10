@@ -87,17 +87,17 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
             import navigationPanel from "./components/navigation-panel-recursive-scoped-slot-runtime.mjs";
 
             test("official Razor recursive scoped slot keeps the current node context", () => {
-                const panel = component.setup({ maxDepth: 2 }, { slots: {} })();
+                const panel = component.setup({ MaxDepth: 2 }, { slots: {} })();
                 assert.equal(panel.name, navigationPanel);
                 assert.equal(typeof panel.children.item, "function");
 
                 const roots = panel.children.item({
-                    title: "Workspace",
-                    child: {
-                        title: "Releases",
-                        child: {
-                            title: "Deployment",
-                            child: null
+                    Title: "Workspace",
+                    Child: {
+                        Title: "Releases",
+                        Child: {
+                            Title: "Deployment",
+                            Child: null
                         }
                     }
                 });

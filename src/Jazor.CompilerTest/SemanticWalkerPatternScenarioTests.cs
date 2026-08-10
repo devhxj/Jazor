@@ -217,7 +217,7 @@ internal static class PatternLoweringScenarioCatalog
                             break;
                     }
                     """,
-                ["=== 1 ||", "> 1", "PatternScenarios.consume(value)"]),
+                ["=== 1 ||", "> 1", "PatternScenarios.Consume(value)"]),
             new PatternLoweringScenario(
                 "pattern-lowering.switch.type-only-case",
                 "family=pattern-switch;pattern=type-only;capture=none",
@@ -232,7 +232,7 @@ internal static class PatternLoweringScenarioCatalog
                             break;
                     }
                     """,
-                ["typeof v$0 === \"string\"", "PatternScenarios.consume(value)"]),
+                ["typeof v$0 === \"string\"", "PatternScenarios.Consume(value)"]),
             new PatternLoweringScenario(
                 "pattern-lowering.switch.case-local-guard",
                 "family=pattern-switch;pattern=type-capture;guard=property;body=local-declaration;default=statement",
@@ -253,8 +253,8 @@ internal static class PatternLoweringScenarioCatalog
                     "typeof v$0 === \"string\"",
                     "text.length > 3",
                     "let normalized = text.toUpperCase();",
-                    "PatternScenarios.consume(normalized);",
-                    "PatternScenarios.consume(\"other\");"
+                    "PatternScenarios.Consume(normalized);",
+                    "PatternScenarios.Consume(\"other\");"
                 ])
         ]);
     }

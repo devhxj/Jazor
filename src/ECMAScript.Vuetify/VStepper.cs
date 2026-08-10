@@ -14,6 +14,7 @@ public sealed class VStepper : ComponentBase
     /// Currently selected step value of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VStepper : ComponentBase
     /// Callback invoked when the selected step changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to use an alternative label layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("altLabels")]
     public bool AltLabels { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VStepper : ComponentBase
     /// Background color of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VStepper : ComponentBase
     /// Icon displayed for completed steps.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("completeIcon")]
     public VuetifyIconValue? CompleteIcon { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VStepper : ComponentBase
     /// Icon displayed for editable steps.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("editIcon")]
     public VuetifyIconValue? EditIcon { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to allow editing of completed steps.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("editable")]
     public bool Editable { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VStepper : ComponentBase
     /// Icon displayed for steps with errors.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("errorIcon")]
     public VuetifyIconValue? ErrorIcon { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to hide the stepper action buttons.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideActions")]
     public bool HideActions { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VStepper : ComponentBase
     /// Data items for the stepper steps.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VuetifyStepperItems? Items { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VStepper : ComponentBase
     /// Property name to extract the title from each data item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemTitle")]
     public string? ItemTitle { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VStepper : ComponentBase
     /// Property name to extract the value from each data item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemValue")]
     public string? ItemValue { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to allow non-linear step navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nonLinear")]
     public bool NonLinear { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to use a flat style.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("flat")]
     public bool Flat { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VStepper : ComponentBase
     /// Mobile layout configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobile")]
     public VuetifyMobileValue? Mobile { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VStepper : ComponentBase
     /// Display breakpoint that triggers mobile layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mobileBreakpoint")]
     public VuetifyDisplayBreakpoint? MobileBreakpoint { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to allow multiple steps to be open simultaneously.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to force at least one step to be selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; } = VuetifyMandatoryMode.Force;
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VStepper : ComponentBase
     /// Maximum number of steps that can be selected simultaneously.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public int? Max { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VStepper : ComponentBase
     /// CSS class name applied to the selected step.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VStepper : ComponentBase
     /// Whether the stepper is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VStepper : ComponentBase
     /// Text for the previous step button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevText")]
     public string? PrevText { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VStepper : ComponentBase
     /// Text for the next step button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextText")]
     public string? NextText { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VStepper : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VStepper : ComponentBase
     /// HTML tag name for the component root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VStepper : ComponentBase
     /// Border radius of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VStepper : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -203,6 +230,7 @@ public sealed class VStepper : ComponentBase
     /// Positioning strategy of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public VuetifyPosition? Position { get; set; }
 
     /// <summary>
@@ -210,6 +238,7 @@ public sealed class VStepper : ComponentBase
     /// Position where the stepper appears.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -217,6 +246,7 @@ public sealed class VStepper : ComponentBase
     /// Elevation shadow of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -224,6 +254,7 @@ public sealed class VStepper : ComponentBase
     /// Height of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -231,6 +262,7 @@ public sealed class VStepper : ComponentBase
     /// Maximum height of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -238,6 +270,7 @@ public sealed class VStepper : ComponentBase
     /// Maximum width of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -245,6 +278,7 @@ public sealed class VStepper : ComponentBase
     /// Minimum height of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -252,6 +286,7 @@ public sealed class VStepper : ComponentBase
     /// Minimum width of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -259,6 +294,7 @@ public sealed class VStepper : ComponentBase
     /// Width of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -266,6 +302,7 @@ public sealed class VStepper : ComponentBase
     /// Border configuration of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -273,6 +310,7 @@ public sealed class VStepper : ComponentBase
     /// Color of the stepper.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -280,6 +318,7 @@ public sealed class VStepper : ComponentBase
     /// Captures unmatched additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -287,6 +326,7 @@ public sealed class VStepper : ComponentBase
     /// Default slot for the stepper body content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VStepperNavigationSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -294,6 +334,7 @@ public sealed class VStepper : ComponentBase
     /// Actions slot for the stepper action buttons area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment<VStepperNavigationSlotContext>? Actions { get; set; }
 
     /// <summary>
@@ -301,6 +342,7 @@ public sealed class VStepper : ComponentBase
     /// Header slot for the stepper header area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header")]
     public RenderFragment<VStepperItemSlotContext>? Header { get; set; }
 
     /// <summary>
@@ -308,6 +350,7 @@ public sealed class VStepper : ComponentBase
     /// Header-item slot for customizing a single step header rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("header-item")]
     public RenderFragment<VStepperItemSlotContext>? HeaderItem { get; set; }
 
     /// <summary>
@@ -315,6 +358,7 @@ public sealed class VStepper : ComponentBase
     /// Icon slot for customizing step icon rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public RenderFragment<VStepperItemSlotContext>? Icon { get; set; }
 
     /// <summary>
@@ -322,6 +366,7 @@ public sealed class VStepper : ComponentBase
     /// Title slot for customizing step title rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment<VStepperItemSlotContext>? TitleContent { get; set; }
 
     /// <summary>
@@ -329,6 +374,7 @@ public sealed class VStepper : ComponentBase
     /// Subtitle slot for customizing step subtitle rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("subtitle")]
     public RenderFragment<VStepperItemSlotContext>? SubtitleContent { get; set; }
 
     /// <summary>
@@ -336,6 +382,7 @@ public sealed class VStepper : ComponentBase
     /// Item slot for customizing step content rendering.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment<VStepperContentItemSlotContext>? Item { get; set; }
 
     /// <summary>
@@ -343,6 +390,7 @@ public sealed class VStepper : ComponentBase
     /// Previous step button slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prev")]
     public RenderFragment<VStepperActionButtonSlotContext>? Prev { get; set; }
 
     /// <summary>
@@ -350,5 +398,6 @@ public sealed class VStepper : ComponentBase
     /// Next step button slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("next")]
     public RenderFragment<VStepperActionButtonSlotContext>? Next { get; set; }
 }

@@ -727,8 +727,9 @@ internal static class RenderEmitter
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = BindComponentImport(componentType);
                     var parameterNameMap = BuildComponentParameterNameMap(runtimeComponentType);
+                    var slotNameMap = BuildComponentSlotParameterNameMap(runtimeComponentType);
                     state.StartChildren();
-                    state.Stack.Push(new ComponentFrame(componentExpression, parameterNameMap));
+                    state.Stack.Push(new ComponentFrame(componentExpression, parameterNameMap, slotNameMap));
                     return true;
 
                 case "CloseComponent":
@@ -1001,18 +1002,25 @@ internal static class RenderEmitter
             EmitContext context,
             RenderState state)
         {
+            var isDeclaredSlot = frame.TryGetDeclaredSlotName(name, out var slotName);
             if (TryResolveRenderFragmentContentExpression(valueOperation, context, out var forwardedSlotExpression))
             {
                 frame.Slots.Add(new DirectSlot(
-                    frame.NormalizeSlotName(name),
+                    isDeclaredSlot ? slotName : frame.NormalizeSlotName(name),
                     forwardedSlotExpression));
                 state.UsesFragment = state.UsesFragment || forwardedSlotExpression.UsesFragment;
                 state.UsesStaticVNode = state.UsesStaticVNode || forwardedSlotExpression.UsesStaticVNode;
                 return true;
             }
 
-            if (string.Equals(name, "ChildContent", StringComparison.Ordinal))
-                throw Unsupported(valueOperation, "ChildContent component parameter must be a RenderFragment for direct render lowering.");
+            // Slot identity comes from the target component's declared parameter metadata.
+            // Do not infer the protocol from a conventional C# name such as ChildContent.
+            if (isDeclaredSlot &&
+                !IsRenderFragmentOperationValue(valueOperation) &&
+                !IsGenericRenderFragmentOperationValue(valueOperation))
+            {
+                throw Unsupported(valueOperation, name + " component parameter must be a RenderFragment for direct render lowering.");
+            }
 
             if (IsRenderFragmentOperationValue(valueOperation) || IsGenericRenderFragmentOperationValue(valueOperation))
                 throw Unsupported(valueOperation, "RenderFragment component parameters require a resolvable inline, local, helper, or component-slot source.");
@@ -3104,6 +3112,18 @@ internal static class RenderEmitter
     private static ImmutableDictionary<string, string> BuildComponentParameterNameMap(INamedTypeSymbol componentType)
         => LibraryComponentConventions.BuildParameterRuntimeNameMap(componentType);
 
+    private static ImmutableDictionary<string, string> BuildComponentSlotParameterNameMap(INamedTypeSymbol componentType)
+    {
+        var names = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
+        foreach (var property in LibraryComponentConventions.GetEffectiveParameterProperties(componentType))
+        {
+            if (IsAnyRenderFragmentType(property.Type))
+                names.Add(property.Name, LibraryComponentConventions.GetSlotRuntimeName(componentType, property));
+        }
+
+        return names.ToImmutable();
+    }
+
     private static ImmutableDictionary<IPropertySymbol, string> BuildComponentSlotNameMap(INamedTypeSymbol componentType)
     {
         var names = ImmutableDictionary.CreateBuilder<IPropertySymbol, string>(SymbolComparer);
@@ -3201,23 +3221,10 @@ internal static class RenderEmitter
                 new MemberExpression(entry, new Identifier("value"), computed: false, optional: false),
                 new MemberExpression(entry, new Identifier("Value"), computed: false, optional: false)));
 
-        var camelCaseName = new NonLogicalBinaryExpression(
-            Operator.Addition,
-            Call(
-                new MemberExpression(
-                    Call(
-                        new MemberExpression(name, new Identifier("charAt"), computed: false, optional: false),
-                        new NumericLiteral(0, "0")),
-                    new Identifier("toLowerCase"),
-                    computed: false,
-                    optional: false)),
-            Call(
-                new MemberExpression(name, new Identifier("slice"), computed: false, optional: false),
-                new NumericLiteral(1, "1")));
         var runtimeName = new LogicalExpression(
             Operator.NullishCoalescing,
             new MemberExpression(parameterNames, name, computed: true, optional: false),
-            camelCaseName);
+            name);
 
         var hasNoAttributes = new LogicalExpression(
             Operator.LogicalOr,
@@ -3853,13 +3860,23 @@ internal static class RenderEmitter
     {
         private readonly Expression _componentExpression;
         private readonly ImmutableDictionary<string, string> _parameterNameMap;
+        private readonly ImmutableDictionary<string, string> _slotNameMap;
 
         public ComponentFrame(
             Expression componentExpression,
             ImmutableDictionary<string, string> parameterNameMap)
+            : this(componentExpression, parameterNameMap, ImmutableDictionary<string, string>.Empty)
+        {
+        }
+
+        public ComponentFrame(
+            Expression componentExpression,
+            ImmutableDictionary<string, string> parameterNameMap,
+            ImmutableDictionary<string, string> slotNameMap)
         {
             _componentExpression = componentExpression;
             _parameterNameMap = parameterNameMap;
+            _slotNameMap = slotNameMap;
         }
 
         public List<DirectSlot> Slots { get; } = new();
@@ -3867,7 +3884,7 @@ internal static class RenderEmitter
         public override string NormalizeAttributeName(string name)
             => _parameterNameMap.TryGetValue(name, out var mapped)
                 ? mapped
-                : NormalizeDirectComponentParameterName(name);
+                : name;
 
         public Expression CreateParameterNameMapExpression()
             => new ObjectExpression(NodeList.From<Node>(_parameterNameMap
@@ -3875,14 +3892,12 @@ internal static class RenderEmitter
                 .Select(static pair => (Node)CreateObjectProperty(pair.Key, StringLiteral(pair.Value)))));
 
         public string NormalizeSlotName(string name)
-        {
-            if (_parameterNameMap.TryGetValue(name, out var mapped))
-                return mapped;
+            => _parameterNameMap.TryGetValue(name, out var mapped)
+                ? mapped
+                : name;
 
-            return string.Equals(name, "ChildContent", StringComparison.Ordinal)
-                ? "default"
-                : NormalizeDirectComponentParameterName(name);
-        }
+        public bool TryGetDeclaredSlotName(string parameterName, out string runtimeName)
+            => _slotNameMap.TryGetValue(parameterName, out runtimeName!);
 
         public override Expression ToRenderExpression()
         {
@@ -4178,11 +4193,6 @@ internal static class RenderEmitter
 
         return name;
     }
-
-    private static string NormalizeDirectComponentParameterName(string name)
-        => string.IsNullOrEmpty(name)
-            ? name
-            : char.ToLowerInvariant(name[0]) + name.Substring(1);
 
 }
 

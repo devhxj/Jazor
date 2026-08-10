@@ -14,6 +14,7 @@ public sealed class VValidation : ComponentBase
     /// Focused state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("focused")]
     public bool Focused { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VValidation : ComponentBase
     /// Focused changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:focused")]
     public EventCallback<bool> FocusedChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VValidation : ComponentBase
     /// Disables validation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VValidation : ComponentBase
     /// Error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public bool Error { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VValidation : ComponentBase
     /// Error messages.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("errorMessages")]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VValidation : ComponentBase
     /// Maximum number of errors to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxErrors")]
     public VueStringNumberValue? MaxErrors { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VValidation : ComponentBase
     /// Name attribute.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VValidation : ComponentBase
     /// Label text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VValidation : ComponentBase
     /// Readonly state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VValidation : ComponentBase
     /// Validation rules.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rules")]
     public VuetifyValidationRule[]? Rules { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VValidation : ComponentBase
     /// Model value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VueValue? ModelValue { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VValidation : ComponentBase
     /// Model value changed event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VValidation : ComponentBase
     /// Validation trigger timing.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("validateOn")]
     public VuetifyValidateOn? ValidateOn { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VValidation : ComponentBase
     /// Validation value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("validationValue")]
     public VueValue? ValidationValue { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VValidation : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -119,5 +134,6 @@ public sealed class VValidation : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VValidationSlotContext>? ChildContent { get; set; }
 }

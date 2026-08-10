@@ -14,6 +14,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The unique identifier for the input element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The name attribute for the form element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The type of the input control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("type")]
     public string? Type { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The label text of the control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The target property name for the defaults provider.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("defaultsTarget")]
     public string? DefaultsTarget { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The color of the control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The base color of the control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("baseColor")]
     public string? BaseColor { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The density/compactness of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether the control is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether the control is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether the control is in an error state.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public bool Error { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether to display controls inline horizontally.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool Inline { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether to support multiple selections.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public VuetifyNullableBoolean? Multiple { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The icon displayed when unchecked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("falseIcon")]
     public VuetifyIconValue? FalseIcon { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The icon displayed when checked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("trueIcon")]
     public VuetifyIconValue? TrueIcon { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Whether to enable the ripple effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The custom comparator used for value comparison.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("valueComparator")]
     public VuetifyValueComparator? ValueComparator { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The current bound value of the control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Callback invoked when the bound value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The submission value of the control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VuetifyGroupModelValue? Value { get; set; }
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The value when the control is checked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("trueValue")]
     public VuetifyGroupModelValue? TrueValue { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The value when the control is unchecked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("falseValue")]
     public VuetifyGroupModelValue? FalseValue { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VSelectionControl : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VSelectionControlDefaultSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VSelectionControl : ComponentBase
     /// Custom content for the label slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public RenderFragment<VSelectionControlLabelSlotContext>? LabelContent { get; set; }
 
     /// <summary>
@@ -196,5 +222,6 @@ public sealed class VSelectionControl : ComponentBase
     /// Custom content for the input element slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("input")]
     public RenderFragment<VSelectionControlInputSlotContext>? Input { get; set; }
 }

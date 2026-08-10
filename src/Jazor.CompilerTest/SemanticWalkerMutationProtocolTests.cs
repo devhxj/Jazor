@@ -46,11 +46,11 @@ public sealed class SemanticWalkerMutationProtocolTests
         var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        AssertSingleCall(script, "MutationProtocolScenarios.nextPropertyDelta()");
-        AssertSingleCall(script, "MutationProtocolScenarios.nextArrayIndex()");
-        AssertSingleCall(script, "MutationProtocolScenarios.nextArrayDelta()");
-        AssertSingleCall(script, "MutationProtocolScenarios.nextNullableIndex()");
-        AssertSingleCall(script, "MutationProtocolScenarios.nextFallback()");
+        AssertSingleCall(script, "MutationProtocolScenarios.NextPropertyDelta()");
+        AssertSingleCall(script, "MutationProtocolScenarios.NextArrayIndex()");
+        AssertSingleCall(script, "MutationProtocolScenarios.NextArrayDelta()");
+        AssertSingleCall(script, "MutationProtocolScenarios.NextNullableIndex()");
+        AssertSingleCall(script, "MutationProtocolScenarios.NextFallback()");
         StringAssert.Contains(script, "counter", StringComparison.Ordinal);
         StringAssert.Contains(script, "values", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);

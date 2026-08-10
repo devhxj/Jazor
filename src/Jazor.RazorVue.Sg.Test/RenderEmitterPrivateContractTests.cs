@@ -140,12 +140,16 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual(" ./components/module ", Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "LibraryComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
+        Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NullModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
         AssertComponentImport(GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
         AssertComponentImport(GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
         var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoArgumentModuleComponent")));
         StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
+        var nullModuleImport = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NullModuleComponent")));
+        StringAssert.Contains(nullModuleImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoImportComponent")));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -237,8 +241,6 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual("onClick", Invoke<string>("NormalizeDirectElementAttributeName", "onClick"));
         Assert.AreEqual("on", Invoke<string>("NormalizeDirectElementAttributeName", "on"));
         Assert.AreEqual("data-value", Invoke<string>("NormalizeDirectElementAttributeName", "data-value"));
-        Assert.AreEqual(string.Empty, Invoke<string>("NormalizeDirectComponentParameterName", string.Empty));
-        Assert.AreEqual("title", Invoke<string>("NormalizeDirectComponentParameterName", "Title"));
 
         var noConditions = Invoke<Expression>("LogicalAnd", new object?[] { Array.Empty<Expression>() });
         Assert.IsInstanceOfType<BooleanLiteral>(noConditions);
@@ -567,9 +569,26 @@ public sealed class RenderEmitterPrivateContractTests
             context);
         Assert.IsTrue(GetRecordProperty<bool>(markupFunction, "UsesStaticVNode"));
 
+        var trailingMethod = GetMethodSymbol(fixture, "EmitterHost", "ExpressionFactory");
+        var trailingBody = new object?[] { trailingMethod, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", trailingBody));
+        var trailingFunction = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            trailingMethod,
+            trailingBody[1],
+            context);
+        Assert.IsFalse(GetRecordProperty<bool>(trailingFunction, "UsesStaticVNode"));
+
         var genericContentMethod = GetMethod(fixture, "EmitterHost", "GenericContentInvocation");
         var genericContentSymbol = GetMethodSymbol(fixture, "EmitterHost", "GenericContentInvocation");
         var genericContentState = CreateRenderState();
+        InvokeEmitterInstance<object?>(
+            emitter,
+            "EmitAddContent",
+            GetInvocation(fixture, genericContentMethod, "AddContent"),
+            CreateEmitContext(genericContentSymbol.Parameters[0]),
+            genericContentState);
         InvokeEmitterInstance<object?>(
             emitter,
             "EmitAddContent",
@@ -791,7 +810,7 @@ public sealed class RenderEmitterPrivateContractTests
         var slotConversion = GetVariableInitializer(fixture, GetMethod(fixture, "EmitterHost", "ComponentSlotReferences"), "boxedHeader");
         var slotArguments = new object?[] { slotConversion, null, null };
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryResolveComponentSlot", slotArguments));
-        Assert.AreEqual("header", slotArguments[1]);
+        Assert.AreEqual("Header", slotArguments[1]);
         Assert.IsFalse((bool)slotArguments[2]!);
 
         var dynamicParameter = GetInvocation(fixture, GetMethod(fixture, "EmitterHost", "DynamicComponentParameter"), "AddComponentParameter");
@@ -930,8 +949,9 @@ public sealed class RenderEmitterPrivateContractTests
             .Add("TitleContent", "title");
         var componentFrame = CreateComponentFrame(parameterNames);
         Assert.AreEqual("title", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "TitleContent"));
-        Assert.AreEqual("default", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "ChildContent"));
-        Assert.AreEqual("footerContent", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "FooterContent"));
+        Assert.AreEqual("ChildContent", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "ChildContent"));
+        Assert.AreEqual("FooterContent", InvokeNestedInstance<string>(componentFrame, "NormalizeSlotName", "FooterContent"));
+        Assert.AreEqual("Title", InvokeNestedInstance<string>(componentFrame, "NormalizeAttributeName", "Title"));
         StringAssert.Contains(
             InvokeNestedInstance<Expression>(componentFrame, "ToRenderExpression").ToKnRECMAScript(),
             "h(component, null)",
@@ -1586,6 +1606,9 @@ public sealed class RenderEmitterPrivateContractTests
 
             [ECMAScriptModule]
             public sealed class NoArgumentModuleComponent;
+
+            [ECMAScriptModule(null)]
+            public sealed class NullModuleComponent;
 
             [Obsolete]
             public sealed class NoImportComponent;

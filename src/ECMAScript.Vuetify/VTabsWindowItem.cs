@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs-window-item authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindowItem")]
-[VueLibraryEmit(nameof(OnGroupSelected), Name = "group:selected")]
 public sealed class VTabsWindowItem : ComponentBase
 {
     /// <summary>
@@ -15,6 +14,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// The value used to identify this item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("value")]
     public VuetifyGroupModelValue? Value { get; set; }
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Disables the item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// CSS class applied when selected.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Forces the component to be eager-loaded.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Transition effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyBooleanStringValue? Transition { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Reverse transition effect.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverseTransition")]
     public VuetifyBooleanStringValue? ReverseTransition { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Group selected event.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onGroup:selected")]
     public EventCallback<VuetifyGroupSelectedEvent> OnGroupSelected { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -71,5 +78,6 @@ public sealed class VTabsWindowItem : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

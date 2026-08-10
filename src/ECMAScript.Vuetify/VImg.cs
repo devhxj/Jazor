@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
-[VueLibraryEmit(nameof(OnLoadStart), Name = "loadstart")]
 public sealed class VImg : ComponentBase
 {
     /// <summary>
@@ -15,6 +14,7 @@ public sealed class VImg : ComponentBase
     /// Image source URL or source object.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("src")]
     public VImgSource? Src { get; set; }
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VImg : ComponentBase
     /// Alt text for the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VImg : ComponentBase
     /// Lazy-load placeholder image URL shown before the main image loads.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("lazySrc")]
     public string? LazySrc { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VImg : ComponentBase
     /// Srcset attribute for responsive images.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("srcset")]
     public string? Srcset { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VImg : ComponentBase
     /// Sizes attribute for responsive images.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sizes")]
     public string? Sizes { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VImg : ComponentBase
     /// Height of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VImg : ComponentBase
     /// Width of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VImg : ComponentBase
     /// Maximum height of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -71,6 +78,7 @@ public sealed class VImg : ComponentBase
     /// Maximum width of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class VImg : ComponentBase
     /// Minimum height of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -85,6 +94,7 @@ public sealed class VImg : ComponentBase
     /// Minimum width of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -92,6 +102,7 @@ public sealed class VImg : ComponentBase
     /// Aspect ratio of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("aspectRatio")]
     public VueStringNumberValue? AspectRatio { get; set; }
 
     /// <summary>
@@ -99,6 +110,7 @@ public sealed class VImg : ComponentBase
     /// Transition animation when the image loads.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -106,6 +118,7 @@ public sealed class VImg : ComponentBase
     /// Whether to crop the image to fill the container.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("cover")]
     public bool Cover { get; set; }
 
     /// <summary>
@@ -113,6 +126,7 @@ public sealed class VImg : ComponentBase
     /// Whether to load the image eagerly on initial render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -120,6 +134,7 @@ public sealed class VImg : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -127,6 +142,7 @@ public sealed class VImg : ComponentBase
     /// Whether to display the image inline.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("inline")]
     public bool Inline { get; set; }
 
     /// <summary>
@@ -134,6 +150,7 @@ public sealed class VImg : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -141,6 +158,7 @@ public sealed class VImg : ComponentBase
     /// Border radius style of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -164,6 +182,7 @@ public sealed class VImg : ComponentBase
     /// CSS classes applied to the image content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentClass")]
     public VueClassValue? ContentClass { get; set; }
 
     /// <summary>
@@ -171,6 +190,7 @@ public sealed class VImg : ComponentBase
     /// Theme color of the placeholder area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -178,6 +198,7 @@ public sealed class VImg : ComponentBase
     /// Gradient effect applied to the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("gradient")]
     public string? Gradient { get; set; }
 
     /// <summary>
@@ -185,6 +206,7 @@ public sealed class VImg : ComponentBase
     /// IntersectionObserver options for lazy loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("options")]
     public VuetifyIntersectionObserverOptions? Options { get; set; }
 
     /// <summary>
@@ -192,6 +214,7 @@ public sealed class VImg : ComponentBase
     /// Position of the image.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("position")]
     public string? Position { get; set; }
 
     /// <summary>
@@ -199,6 +222,7 @@ public sealed class VImg : ComponentBase
     /// Whether the image is draggable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("draggable")]
     public VImgDraggableValue? Draggable { get; set; }
 
     /// <summary>
@@ -222,6 +246,7 @@ public sealed class VImg : ComponentBase
     /// Event callback fired when the image starts loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onLoadstart")]
     public EventCallback<string?> OnLoadStart { get; set; }
 
     /// <summary>
@@ -229,6 +254,7 @@ public sealed class VImg : ComponentBase
     /// Event callback fired when the image has loaded.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback<string?> OnLoad { get; set; }
 
     /// <summary>
@@ -236,6 +262,7 @@ public sealed class VImg : ComponentBase
     /// Event callback fired when the image fails to load.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onError")]
     public EventCallback<string?> OnError { get; set; }
 
     /// <summary>
@@ -243,6 +270,7 @@ public sealed class VImg : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -250,6 +278,7 @@ public sealed class VImg : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -257,6 +286,7 @@ public sealed class VImg : ComponentBase
     /// Slot content shown while the image is loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public RenderFragment? Placeholder { get; set; }
 
     /// <summary>
@@ -264,6 +294,7 @@ public sealed class VImg : ComponentBase
     /// Slot content shown when the image fails to load.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public RenderFragment? ErrorContent { get; set; }
 
     /// <summary>
@@ -271,5 +302,6 @@ public sealed class VImg : ComponentBase
     /// Slot content for additional image sources.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sources")]
     public RenderFragment? Sources { get; set; }
 }

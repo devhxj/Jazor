@@ -16,6 +16,7 @@ public sealed class VFooter : ComponentBase
     /// Whether to include as part of the application layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("app")]
     public bool App { get; set; }
 
     /// <summary>
@@ -23,6 +24,7 @@ public sealed class VFooter : ComponentBase
     /// Border style of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
 
     /// <summary>
@@ -30,6 +32,7 @@ public sealed class VFooter : ComponentBase
     /// Theme color of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -37,6 +40,7 @@ public sealed class VFooter : ComponentBase
     /// Elevation shadow level of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -44,6 +48,7 @@ public sealed class VFooter : ComponentBase
     /// Height of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -51,6 +56,7 @@ public sealed class VFooter : ComponentBase
     /// Maximum height of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -58,6 +64,7 @@ public sealed class VFooter : ComponentBase
     /// Maximum width of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -65,6 +72,7 @@ public sealed class VFooter : ComponentBase
     /// Minimum height of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -72,6 +80,7 @@ public sealed class VFooter : ComponentBase
     /// Minimum width of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -79,6 +88,7 @@ public sealed class VFooter : ComponentBase
     /// Border radius style of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -86,6 +96,7 @@ public sealed class VFooter : ComponentBase
     /// HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -93,6 +104,7 @@ public sealed class VFooter : ComponentBase
     /// Name of the component for layout positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -100,6 +112,7 @@ public sealed class VFooter : ComponentBase
     /// Order of the component in the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
 
     /// <summary>
@@ -107,6 +120,7 @@ public sealed class VFooter : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -114,6 +128,7 @@ public sealed class VFooter : ComponentBase
     /// Whether to use fixed positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fixed")]
     public bool Fixed { get; set; }
 
     /// <summary>
@@ -121,6 +136,7 @@ public sealed class VFooter : ComponentBase
     /// Width of the footer.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -128,6 +144,7 @@ public sealed class VFooter : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -135,6 +152,7 @@ public sealed class VFooter : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -142,5 +160,6 @@ public sealed class VFooter : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

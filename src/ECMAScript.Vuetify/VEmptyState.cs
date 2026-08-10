@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VEmptyState")]
-[VueLibraryEmit(nameof(OnActionClick), Name = "click:action")]
 public sealed class VEmptyState : ComponentBase
 {
     /// <summary>
@@ -15,6 +14,7 @@ public sealed class VEmptyState : ComponentBase
     /// Component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VEmptyState : ComponentBase
     /// Size of the icon or media.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VEmptyState : ComponentBase
     /// Component height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VEmptyState : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VEmptyState : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VEmptyState : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VEmptyState : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VEmptyState : ComponentBase
     /// Component width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -71,6 +78,7 @@ public sealed class VEmptyState : ComponentBase
     /// Text for the action button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actionText")]
     public string? ActionText { get; set; }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class VEmptyState : ComponentBase
     /// Component background color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
     /// <summary>
@@ -85,6 +94,7 @@ public sealed class VEmptyState : ComponentBase
     /// Component theme color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -92,6 +102,7 @@ public sealed class VEmptyState : ComponentBase
     /// Icon to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
 
     /// <summary>
@@ -99,6 +110,7 @@ public sealed class VEmptyState : ComponentBase
     /// Image URL to display.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("image")]
     public string? Image { get; set; }
 
     /// <summary>
@@ -106,6 +118,7 @@ public sealed class VEmptyState : ComponentBase
     /// Content justification alignment.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("justify")]
     public VuetifyJustify? Justify { get; set; }
 
     /// <summary>
@@ -113,6 +126,7 @@ public sealed class VEmptyState : ComponentBase
     /// Headline text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headline")]
     public string? Headline { get; set; }
 
     /// <summary>
@@ -120,6 +134,7 @@ public sealed class VEmptyState : ComponentBase
     /// Title text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -127,6 +142,7 @@ public sealed class VEmptyState : ComponentBase
     /// Description text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public string? Text { get; set; }
 
     /// <summary>
@@ -134,6 +150,7 @@ public sealed class VEmptyState : ComponentBase
     /// Width of the text area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("textWidth")]
     public VueStringNumberValue? TextWidth { get; set; }
 
     /// <summary>
@@ -141,6 +158,7 @@ public sealed class VEmptyState : ComponentBase
     /// Link navigation URL.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("href")]
     public string? Href { get; set; }
 
     /// <summary>
@@ -148,6 +166,7 @@ public sealed class VEmptyState : ComponentBase
     /// Router navigation target.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("to")]
     public string? To { get; set; }
 
     /// <summary>
@@ -155,6 +174,7 @@ public sealed class VEmptyState : ComponentBase
     /// Event callback fired when the action button is clicked.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:action")]
     public EventCallback<Event> OnActionClick { get; set; }
 
     /// <summary>
@@ -162,6 +182,7 @@ public sealed class VEmptyState : ComponentBase
     /// Additional HTML attributes attached to the component.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -169,6 +190,7 @@ public sealed class VEmptyState : ComponentBase
     /// Default child content slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -176,6 +198,7 @@ public sealed class VEmptyState : ComponentBase
     /// Slot content for the actions area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("actions")]
     public RenderFragment<VEmptyStateActionsSlotContext>? Actions { get; set; }
 
     /// <summary>
@@ -183,6 +206,7 @@ public sealed class VEmptyState : ComponentBase
     /// Slot content for the headline area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("headline")]
     public RenderFragment? HeadlineContent { get; set; }
 
     /// <summary>
@@ -190,6 +214,7 @@ public sealed class VEmptyState : ComponentBase
     /// Slot content for the title area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
     /// <summary>
@@ -197,6 +222,7 @@ public sealed class VEmptyState : ComponentBase
     /// Slot content for the media area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("media")]
     public RenderFragment? Media { get; set; }
 
     /// <summary>
@@ -204,5 +230,6 @@ public sealed class VEmptyState : ComponentBase
     /// Slot content for the text area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 }

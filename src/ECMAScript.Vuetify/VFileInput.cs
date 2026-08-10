@@ -14,6 +14,7 @@ public sealed class VFileInput : ComponentBase
     /// Label text of the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VFileInput : ComponentBase
     /// Accepted file types for the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("accept")]
     public string? Accept { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether to display selected files as chips.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("chips")]
     public bool Chips { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether to show the count of selected files.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("counter")]
     public bool Counter { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether and how to show file sizes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showSize")]
     public VuetifyFileShowSizeValue? ShowSize { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether to allow selecting multiple files.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("multiple")]
     public bool Multiple { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether the input is clearable.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("clearable")]
     public bool Clearable { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether the file input is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether the file input is read-only.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VFileInput : ComponentBase
     /// Density of the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VFileInput : ComponentBase
     /// Visual variant of the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("variant")]
     public VuetifyFieldVariant? Variant { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VFileInput : ComponentBase
     /// Placeholder text when empty.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VFileInput : ComponentBase
     /// Hint text for the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hint")]
     public string? Hint { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether to always show the hint text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistentHint")]
     public bool PersistentHint { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VFileInput : ComponentBase
     /// Whether and how to hide validation details.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VFileInput : ComponentBase
     /// Messages displayed below the input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VFileInput : ComponentBase
     /// Bound value of the file input.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyFileModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VFileInput : ComponentBase
     /// Callback when the file input value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyFileModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -140,5 +158,6 @@ public sealed class VFileInput : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

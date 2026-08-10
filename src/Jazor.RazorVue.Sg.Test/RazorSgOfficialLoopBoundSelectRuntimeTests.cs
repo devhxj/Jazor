@@ -67,7 +67,7 @@ public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "setEnvironment", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "SetEnvironment", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Array.from(state.releases ?? [], release =>", StringComparison.Ordinal);
         Assert.IsTrue(
             observation.ModuleText.IndexOf("class ReleaseTarget", StringComparison.Ordinal) <

@@ -34,8 +34,8 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "slots.left", StringComparison.Ordinal);
-        StringAssert.Contains(script, "slots.right", StringComparison.Ordinal);
+        StringAssert.Contains(script, "slots.Left", StringComparison.Ordinal);
+        StringAssert.Contains(script, "slots.Right", StringComparison.Ordinal);
         Assert.DoesNotContain("slots.left = slots.right, slots.right = slots.left", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(slots) " + script);
     }
@@ -65,7 +65,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
 
         StringAssert.Contains(
             script,
-            "v$0 = slots.right, v$1 = slots.left, slots.left = v$0, slots.right = v$1",
+            "v$0 = slots.Right, v$1 = slots.Left, slots.Left = v$0, slots.Right = v$1",
             StringComparison.Ordinal);
         Assert.DoesNotContain("slots.left = slots.right, slots.right = slots.left", script, StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(slots) " + script);
@@ -96,7 +96,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "toString(\"X\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ToString(\"X\"", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(version) " + script);
     }
 
@@ -183,7 +183,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             """);
 
         StringAssert.Contains(script, "number", StringComparison.Ordinal);
-        StringAssert.Contains(script, "tryRead", StringComparison.Ordinal);
+        StringAssert.Contains(script, "TryRead", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(value) " + script);
     }
 
@@ -366,7 +366,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "for (let { left: left, pair: { first: first, second: second } } of values)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "for (let { Left: left, Pair: { First: first, Second: second } } of values)", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(values) " + script);
     }
 
@@ -419,8 +419,8 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "ReleaseTotals.published", StringComparison.Ordinal);
-        StringAssert.Contains(script, "ReleaseTotals.queued", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseTotals.Published", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ReleaseTotals.Queued", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -455,8 +455,8 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             """);
 
         StringAssert.Contains(script, "new ReleaseLabels", StringComparison.Ordinal);
-        StringAssert.Contains(script, ".add(\"canary\")", StringComparison.Ordinal);
-        StringAssert.Contains(script, ".add(\"stable\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".Add(\"canary\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".Add(\"stable\")", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 
@@ -606,7 +606,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, ".slice(1,", StringComparison.Ordinal);
+        StringAssert.Contains(script, ".Slice(1,", StringComparison.Ordinal);
         StringAssert.Contains(script, "v$0 - 1", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(values) " + script);
     }
@@ -700,7 +700,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
             }
             """);
 
-        StringAssert.Contains(script, "published", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Published", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }
 

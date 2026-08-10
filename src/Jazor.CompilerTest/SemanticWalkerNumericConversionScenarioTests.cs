@@ -91,11 +91,11 @@ internal static class NumericConversionScenarioCatalog
         new("block-lambda", static (expression, targetType) =>
             ($"Func<{targetType}> convert = () => {{ return {expression}; }};", $"return {Lower(expression)};")),
         new("argument", static (expression, _) =>
-            ($"Consume({expression});", $"NumericConversionScenarios.consume({Lower(expression)})")),
+            ($"Consume({expression});", $"NumericConversionScenarios.Consume({Lower(expression)})")),
         new("array-element", static (expression, targetType) =>
             ($"{targetType}[] results = [{expression}];", $"[{Lower(expression)}]")),
         new("anonymous-property", static (expression, _) =>
-            ($"var result = new {{ Value = {expression} }};", $"value: {Lower(expression)}")),
+            ($"var result = new {{ Value = {expression} }};", $"Value: {Lower(expression)}")),
         new("conditional-arm", static (expression, _) =>
             ($"var result = true ? {expression} : {expression};", $"true ? {Lower(expression)} : {Lower(expression)}"))
     ];

@@ -16,6 +16,7 @@ public sealed class RazorSgDirectRenderSlotParameterTests
             """,
             codeBehindSource:
             """
+            using System.ComponentModel;
             using ECMAScript.VueContract;
 
             namespace Demo.Components
@@ -24,6 +25,7 @@ public sealed class RazorSgDirectRenderSlotParameterTests
                 public partial class ChildContentBridgeRuntime : ComponentBase, IVueComponent
                 {
                     [Parameter]
+                    [Description("@#default")]
                     public RenderFragment? ChildContent { get; set; }
                 }
             }

@@ -73,7 +73,7 @@ public sealed class AstConverterExternalModuleRuntimeClassScenarioTests
 
         const string expected = """
             import { Dialog } from "./dialogs.mjs";
-            export function create(title) {
+            export function Create(title) {
               return new Dialog(title);
             }
             """;

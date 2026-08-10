@@ -14,6 +14,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Maximum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Maximum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Minimum height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Minimum width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Width.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Item height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemHeight")]
     public VueStringNumberValue? ItemHeight { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Item key.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("itemKey")]
     public VuetifySelectItemKey? ItemKey { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Data items list.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("items")]
     public VueValue[]? Items { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Renderless mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("renderless")]
     public bool Renderless { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VVirtualScroll : ComponentBase
     /// Additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -91,5 +102,6 @@ public sealed class VVirtualScroll : ComponentBase
     /// Default slot.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VVirtualScrollSlotContext>? ChildContent { get; set; }
 }

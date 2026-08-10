@@ -4,6 +4,8 @@ using Jazor.ComplierTest;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace Jazor.CompilerTest;
 
@@ -15,10 +17,6 @@ public sealed class UtilBoundaryScenarioTests
     public static IEnumerable<TestDataRow<UtilLineEndingScenario>> LineEndingCases
         => UtilBoundaryScenarioCatalog.LineEndings.Select(static scenario =>
             new TestDataRow<UtilLineEndingScenario>(scenario) { DisplayName = scenario.Id });
-
-    public static IEnumerable<TestDataRow<UtilIdentifierScenario>> IdentifierCases
-        => UtilBoundaryScenarioCatalog.Identifiers.Select(static scenario =>
-            new TestDataRow<UtilIdentifierScenario>(scenario) { DisplayName = scenario.Id });
 
     public static IEnumerable<TestDataRow<UtilSymbolNameScenario>> SymbolNameCases
         => UtilBoundaryScenarioCatalog.SymbolNames.Select(static scenario =>
@@ -36,13 +34,11 @@ public sealed class UtilBoundaryScenarioTests
     public void ScenarioCatalogs_HaveUniqueIdsDimensionsKindsAndInputs()
     {
         var allIds = UtilBoundaryScenarioCatalog.LineEndings.Select(static scenario => scenario.Id)
-            .Concat(UtilBoundaryScenarioCatalog.Identifiers.Select(static scenario => scenario.Id))
             .Concat(UtilBoundaryScenarioCatalog.SymbolNames.Select(static scenario => scenario.Id))
             .Concat(UtilBoundaryScenarioCatalog.Booleans.Select(static scenario => scenario.Id))
             .Concat(UtilBoundaryScenarioCatalog.ModulePaths.Select(static scenario => scenario.Id))
             .ToArray();
         var allInputs = UtilBoundaryScenarioCatalog.LineEndings.Select(static scenario => scenario.InputIdentity)
-            .Concat(UtilBoundaryScenarioCatalog.Identifiers.Select(static scenario => scenario.InputIdentity))
             .Concat(UtilBoundaryScenarioCatalog.SymbolNames.Select(static scenario => scenario.InputIdentity))
             .Concat(UtilBoundaryScenarioCatalog.Booleans.Select(static scenario => scenario.InputIdentity))
             .Concat(UtilBoundaryScenarioCatalog.ModulePaths.Select(static scenario => scenario.InputIdentity))
@@ -53,7 +49,6 @@ public sealed class UtilBoundaryScenarioTests
         Assert.HasCount(allInputs.Length, allInputs.Distinct(StringComparer.Ordinal));
         Assert.IsTrue(allIds.All(static id => id.StartsWith("util-boundary.", StringComparison.Ordinal)));
         Assert.IsTrue(UtilBoundaryScenarioCatalog.LineEndings.All(static scenario => !string.IsNullOrWhiteSpace(scenario.Dimension)));
-        Assert.IsTrue(UtilBoundaryScenarioCatalog.Identifiers.All(static scenario => !string.IsNullOrWhiteSpace(scenario.Dimension)));
         Assert.IsTrue(UtilBoundaryScenarioCatalog.SymbolNames.All(static scenario => !string.IsNullOrWhiteSpace(scenario.Dimension)));
         Assert.IsTrue(UtilBoundaryScenarioCatalog.Booleans.All(static scenario => !string.IsNullOrWhiteSpace(scenario.Dimension)));
         Assert.IsTrue(UtilBoundaryScenarioCatalog.ModulePaths.All(static scenario => !string.IsNullOrWhiteSpace(scenario.Dimension)));
@@ -76,15 +71,6 @@ public sealed class UtilBoundaryScenarioTests
 
         Assert.AreEqual(scenario.Expected, actual, scenario.Id);
         Assert.IsFalse(actual.Contains('\r'), scenario.Id);
-    }
-
-    [TestMethod]
-    [DynamicData(nameof(IdentifierCases))]
-    public void ConvertPascalCaseIdentifierToJsNaming_PreservesIdentifierWordBoundary(UtilIdentifierScenario scenario)
-    {
-        var actual = Util.ConvertPascalCaseIdentifierToJsNaming(scenario.Input!);
-
-        Assert.AreEqual(scenario.Expected, actual, scenario.Id);
     }
 
     [TestMethod]
@@ -116,7 +102,7 @@ public sealed class UtilBoundaryScenarioTests
                     fixture.GetMethod("NamingHost", "BlankExplicitNameSuppressesDescription"),
                     expectedConfigName: null,
                     hasBoundary: false,
-                    "blankExplicitNameSuppressesDescription",
+                    "BlankExplicitNameSuppressesDescription",
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.DescriptionBoundary:
@@ -124,7 +110,7 @@ public sealed class UtilBoundaryScenarioTests
                     fixture.GetMethod("NamingHost", "DescriptionBoundary"),
                     expectedConfigName: null,
                     hasBoundary: true,
-                    "descriptionBoundary",
+                    "DescriptionBoundary",
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.PlainDescriptionIgnored:
@@ -132,12 +118,12 @@ public sealed class UtilBoundaryScenarioTests
                     fixture.GetMethod("NamingHost", "PlainDescriptionIgnored"),
                     expectedConfigName: null,
                     hasBoundary: false,
-                    "plainDescriptionIgnored",
+                    "PlainDescriptionIgnored",
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.UnconfiguredMethod:
                 Assert.AreEqual(
-                    "execute",
+                    "Execute",
                     Util.GetConfigOrSymbolName(fixture.GetMethod("NamingHost", "Execute")),
                     scenario.Id);
                 break;
@@ -149,20 +135,28 @@ public sealed class UtilBoundaryScenarioTests
                 break;
             case UtilSymbolNameKind.PropertyFallback:
                 Assert.AreEqual(
-                    "count",
+                    "Count",
                     Util.GetConfigOrSymbolName(fixture.GetProperty("NamingHost", "Count")),
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.FieldFallback:
                 Assert.AreEqual(
-                    "total",
+                    "Total",
                     Util.GetConfigOrSymbolName(fixture.GetField("NamingHost", "Total")),
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.EventFallback:
                 Assert.AreEqual(
-                    "valueChanged",
+                    "ValueChanged",
                     Util.GetConfigOrSymbolName(fixture.GetEvent("NamingHost", "ValueChanged")),
+                    scenario.Id);
+                break;
+            case UtilSymbolNameKind.ExplicitEventName:
+                AssertSymbolName(
+                    fixture.GetEvent("NamingHost", "ExplicitlyNamedEvent"),
+                    "renamedEvent",
+                    hasBoundary: false,
+                    "renamedEvent",
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.LocalFunctionPreservesSourceName:
@@ -173,7 +167,7 @@ public sealed class UtilBoundaryScenarioTests
                 break;
             case UtilSymbolNameKind.TupleElementUsesCanonicalField:
                 Assert.AreEqual(
-                    "alias",
+                    "Alias",
                     Util.GetConfigOrSymbolName(fixture.TupleElement),
                     scenario.Id);
                 break;
@@ -191,6 +185,19 @@ public sealed class UtilBoundaryScenarioTests
                 Assert.Fail($"{scenario.Id}: unsupported symbol-name kind '{scenario.Kind}'.");
                 break;
         }
+    }
+
+    [TestMethod]
+    public void ECMAScriptNameAttribute_AllowsEveryAttributeTarget()
+    {
+        var usage = typeof(ECMAScriptNameAttribute)
+            .GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
+            .Cast<AttributeUsageAttribute>()
+            .Single();
+
+        Assert.AreEqual(AttributeTargets.All, usage.ValidOn);
+        Assert.IsFalse(usage.Inherited);
+        Assert.IsNull(typeof(ECMAScriptNameAttribute).GetCustomAttribute<SupportedOSPlatformAttribute>());
     }
 
     [TestMethod]
@@ -239,7 +246,7 @@ public sealed class UtilBoundaryScenarioTests
 
         Assert.HasCount(2, names, scenarioId);
         Assert.HasCount(2, names.Distinct(StringComparer.Ordinal), scenarioId);
-        Assert.IsTrue(names.All(static name => name.StartsWith("run_", StringComparison.Ordinal)), scenarioId);
+        Assert.IsTrue(names.All(static name => name.StartsWith("Run_", StringComparison.Ordinal)), scenarioId);
     }
 
     private static void AssertRuntimeOverloadNames(UtilSymbolFixture fixture, string scenarioId)
@@ -249,7 +256,7 @@ public sealed class UtilBoundaryScenarioTests
             .ToArray();
 
         Assert.HasCount(2, names, scenarioId);
-        Assert.IsTrue(names.All(static name => string.Equals(name, "run", StringComparison.Ordinal)), scenarioId);
+        Assert.IsTrue(names.All(static name => string.Equals(name, "Run", StringComparison.Ordinal)), scenarioId);
     }
 
     private static void AssertConstructorHelpers(UtilSymbolFixture fixture, string scenarioId)
@@ -390,6 +397,7 @@ public enum UtilSymbolNameKind
     PropertyFallback,
     FieldFallback,
     EventFallback,
+    ExplicitEventName,
     LocalFunctionPreservesSourceName,
     TupleElementUsesCanonicalField,
     BackingFieldUsesPropertyHash,
@@ -470,15 +478,6 @@ public sealed record UtilLineEndingScenario(
     public string InputIdentity => $"line-ending|{Input?.Replace("\r", "<cr>").Replace("\n", "<lf>") ?? "<null>"}";
 }
 
-public sealed record UtilIdentifierScenario(
-    string Id,
-    string Dimension,
-    string? Input,
-    string? Expected)
-{
-    public string InputIdentity => $"identifier|{Input ?? "<null>"}";
-}
-
 public sealed record UtilSymbolNameScenario(
     string Id,
     string Dimension,
@@ -555,19 +554,6 @@ internal static class UtilBoundaryScenarioCatalog
         LineEnding("lf-only", "existing-lf-content-preserved", "alpha\nbeta", "alpha\nbeta"),
         LineEnding("crlf", "windows-crlf-normalizes-to-lf", "alpha\r\nbeta", "alpha\nbeta"),
         LineEnding("mixed", "mixed-crlf-and-cr-normalize-to-lf", "alpha\r\nbeta\rgamma", "alpha\nbeta\ngamma")
-    ];
-
-    public static IReadOnlyList<UtilIdentifierScenario> Identifiers { get; } =
-    [
-        Identifier("null", "null-passthrough", null, null),
-        Identifier("empty", "empty-passthrough", "", ""),
-        Identifier("camel", "existing-camel-case-preserved", "camelCase", "camelCase"),
-        Identifier("underscore", "nonletter-prefix-preserved", "_Name", "_Name"),
-        Identifier("single", "single-uppercase-lowercased", "X", "x"),
-        Identifier("pascal", "pascal-leading-letter-lowercased", "PascalCase", "pascalCase"),
-        Identifier("acronym", "leading-acronym-folded-to-word-boundary", "URLValue", "urlValue"),
-        Identifier("all-caps", "all-uppercase-name-lowercased", "HTTP", "http"),
-        Identifier("letter-digit", "uppercase-before-digit-lowercased", "A1", "a1")
     ];
 
     public static IReadOnlyList<UtilSymbolNameScenario> SymbolNames { get; } =
@@ -710,6 +696,9 @@ internal static class UtilBoundaryScenarioCatalog
             public int Total;
 
             public event Action? ValueChanged;
+
+            [ECMAScriptName("renamedEvent")]
+            public event Action? ExplicitlyNamedEvent;
 
             public void DeclareLocal()
             {
@@ -855,9 +844,6 @@ internal static class UtilBoundaryScenarioCatalog
 
     private static UtilLineEndingScenario LineEnding(string id, string dimension, string? input, string expected)
         => new($"util-boundary.line-ending.{id}", dimension, input, expected);
-
-    private static UtilIdentifierScenario Identifier(string id, string dimension, string? input, string? expected)
-        => new($"util-boundary.identifier.{id}", dimension, input, expected);
 
     private static UtilModulePathScenario ModulePath(
         string id,

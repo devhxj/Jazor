@@ -110,6 +110,9 @@ public partial class SemanticWalker
 			entry.Op == Op.Alias)
 			return entry.Value!;
 
+		if (Util.TryGetJazorImportRuntimeName(property.SetMethod!, out var runtimeName))
+			return runtimeName;
+
 		return Util.GetConfigOrSymbolName(property);
 	}
 
@@ -122,6 +125,9 @@ public partial class SemanticWalker
         if (TryGetWhiteListValue(WhiteList.Members, method, out _, out var entry) &&
             entry.Op == Op.Alias)
 			return entry.Value!;
+
+		if (Util.TryGetJazorImportRuntimeName(method, out var runtimeName))
+			return runtimeName;
 
 		// 2. 再检查特性配置
 		return Util.GetConfigOrSymbolName(method);
@@ -137,11 +143,17 @@ public partial class SemanticWalker
 	}
 
 	private string GetCurrentModuleDeclaredOrConfigName(ISymbol symbol)
-		=> symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction }
-			? GetJavaScriptBindingName(symbol)
-			: TryGetCurrentModuleDeclaredName(symbol, out var declaredName)
-			? declaredName
+	{
+		if (symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction })
+			return GetJavaScriptBindingName(symbol);
+
+		if (TryGetCurrentModuleDeclaredName(symbol, out var declaredName))
+			return declaredName;
+
+		return Util.TryGetJazorImportRuntimeName(symbol, out var runtimeName)
+			? runtimeName
 			: Util.GetConfigOrSymbolName(symbol);
+	}
 
 	private static string? GetTypeConfigOrWhiteListName(ITypeSymbol symbol)
 	{

@@ -14,6 +14,7 @@ public sealed class VParallax : ComponentBase
     /// The parallax scroll scale factor.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scale")]
     public VueStringNumberValue? Scale { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VParallax : ComponentBase
     /// Additional attributes applied to the root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VParallax : ComponentBase
     /// The default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VParallax : ComponentBase
     /// Content displayed while the image is loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("placeholder")]
     public RenderFragment? Placeholder { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VParallax : ComponentBase
     /// Content displayed when the image fails to load.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public RenderFragment? Error { get; set; }
 
     /// <summary>
@@ -49,5 +54,6 @@ public sealed class VParallax : ComponentBase
     /// Slot for customizing image sources.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("sources")]
     public RenderFragment? Sources { get; set; }
 }

@@ -77,7 +77,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(result.UsesSlots);
         StringAssert.Contains(
             result.RenderExpression.ToKnRECMAScript(),
-            "slots.default",
+            "slots.ChildContent",
             StringComparison.Ordinal);
     }
 
@@ -128,7 +128,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(result.UsesFragment);
         StringAssert.Contains(
             result.RenderExpression.ToKnRECMAScript(),
-            "Array.from(props.items ?? []",
+            "Array.from(props.Items ?? []",
             StringComparison.Ordinal);
     }
 
@@ -180,7 +180,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(result.UsesStaticVNode);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "createStaticVNode", StringComparison.Ordinal);
-        StringAssert.Contains(output, "Array.from(props.items ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(output, "Array.from(props.Items ?? []", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -412,7 +412,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "converted-generic:", StringComparison.Ordinal);
-        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Text", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -510,8 +510,8 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(result.UsesSlots);
         Assert.IsTrue(result.UsesStaticVNode);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "slots.itemTemplate", StringComparison.Ordinal);
-        StringAssert.Contains(output, "props.markup", StringComparison.Ordinal);
+        StringAssert.Contains(output, "slots.ItemTemplate", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Markup", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -591,7 +591,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "object-helper:", StringComparison.Ordinal);
-        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Text", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -634,7 +634,7 @@ public sealed class RenderEmitterContractTests
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "factory-fragment:", StringComparison.Ordinal);
         StringAssert.Contains(output, "factory-template-local:", StringComparison.Ordinal);
-        StringAssert.Contains(output, "props.text", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Text", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -779,7 +779,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "props.enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
         StringAssert.Contains(output, "data-state", StringComparison.Ordinal);
         StringAssert.Contains(output, "conditional-attributes", StringComparison.Ordinal);
     }
@@ -812,7 +812,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "guarded-direct-render", StringComparison.Ordinal);
-        StringAssert.Contains(output, "props.enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -843,7 +843,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "Array.from(props.items ?? []", StringComparison.Ordinal);
+        StringAssert.Contains(output, "Array.from(props.Items ?? []", StringComparison.Ordinal);
         StringAssert.Contains(output, "data-key", StringComparison.Ordinal);
     }
 
@@ -950,7 +950,7 @@ public sealed class RenderEmitterContractTests
             Environment.NewLine,
             result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
         StringAssert.Contains(prelude, "normalizeComponentAttributes", StringComparison.Ordinal);
-        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "props.attributes", StringComparison.Ordinal);
+        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "props.Attributes", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -1111,7 +1111,7 @@ public sealed class RenderEmitterContractTests
         var prelude = string.Join(
             Environment.NewLine,
             result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
-        StringAssert.Contains(prelude, "createValue()", StringComparison.Ordinal);
+        StringAssert.Contains(prelude, "CreateValue()", StringComparison.Ordinal);
 
         AssertDirectRenderFailure(
             """

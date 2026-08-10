@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -69,43 +68,7 @@ public sealed class SemanticWalkerBoundaryTest
 	}
 
 	private static void AssertScriptEqual(string expected, string? actual)
-		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
-
-	private static string NormalizeExpectedJsNaming(string expected)
-	{
-		expected = Regex.Replace(expected, @"\bItem([0-9]+)\b", "item$1");
-		expected = Regex.Replace(expected, @"([\{\[,]\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value);
-		expected = Regex.Replace(expected, @"(^\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value, RegexOptions.Multiline);
-		expected = Regex.Replace(expected, @"(\?*\.)([A-Z][A-Za-z0-9_]*)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value));
-		expected = Regex.Replace(expected, @"""([A-Z][A-Za-z0-9_]*)""(\s+in\b)", static m => "\"" + Camel(m.Groups[1].Value) + "\"" + m.Groups[2].Value);
-		expected = Regex.Replace(expected, @"\[""([A-Z][A-Za-z0-9_]*)""\]", static m => "[\"" + Camel(m.Groups[1].Value) + "\"]");
-		return expected;
-	}
-
-	private static string Camel(string name)
-	{
-		if (string.IsNullOrEmpty(name) || !char.IsUpper(name[0]))
-			return name;
-
-		if (name.Length == 1)
-			return char.ToLowerInvariant(name[0]).ToString();
-
-		var chars = name.ToCharArray();
-		chars[0] = char.ToLowerInvariant(chars[0]);
-		for (var index = 1; index < chars.Length; index++)
-		{
-			if (!char.IsUpper(chars[index]))
-				break;
-
-			var hasNext = index + 1 < chars.Length;
-			if (hasNext && !char.IsUpper(chars[index + 1]))
-				break;
-
-			chars[index] = char.ToLowerInvariant(chars[index]);
-		}
-
-		return new string(chars);
-	}
+		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
 	#region 位运算符边界测试
 

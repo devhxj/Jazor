@@ -14,6 +14,7 @@ public sealed class VCarousel : ComponentBase
     /// The bound value of the currently active carousel item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VCarousel : ComponentBase
     /// Callback invoked when the active item changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VCarousel : ComponentBase
     /// The theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to enable automatic carousel cycling.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("cycle")]
     public bool Cycle { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VCarousel : ComponentBase
     /// The delimiter icon.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("delimiterIcon")]
     public VuetifyIconValue? DelimiterIcon { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VCarousel : ComponentBase
     /// The height of the carousel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to hide the delimiters.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDelimiters")]
     public bool HideDelimiters { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to hide the delimiter background.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("hideDelimiterBackground")]
     public bool HideDelimiterBackground { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VCarousel : ComponentBase
     /// The interval for automatic carousel cycling.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("interval")]
     public VueStringNumberValue? Interval { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VCarousel : ComponentBase
     /// The progress indicator display mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("progress")]
     public VuetifyBooleanStringValue? Progress { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VCarousel : ComponentBase
     /// The position of vertical delimiters.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("verticalDelimiters")]
     public VuetifyCarouselVerticalDelimiters? VerticalDelimiters { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to loop back to the start after the last item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("continuous")]
     public bool Continuous { get; set; } = true;
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VCarousel : ComponentBase
     /// The icon for the next control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("nextIcon")]
     public VuetifyIconValue? NextIcon { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VCarousel : ComponentBase
     /// The icon for the previous control.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prevIcon")]
     public VuetifyIconValue? PrevIcon { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to reverse the carousel direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("reverse")]
     public bool Reverse { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to show navigation arrows.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showArrows")]
     public VuetifyWindowShowArrowsValue? ShowArrows { get; set; } = true;
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VCarousel : ComponentBase
     /// The touch interaction configuration.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("touch")]
     public VuetifyTouchValue? Touch { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VCarousel : ComponentBase
     /// The transition direction of the carousel.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyInputDirection? Direction { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether to disable carousel interaction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VCarousel : ComponentBase
     /// The CSS class applied to the selected item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("selectedClass")]
     public string? SelectedClass { get; set; }
 
     /// <summary>
@@ -154,6 +174,7 @@ public sealed class VCarousel : ComponentBase
     /// Whether selection is mandatory.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; } = VuetifyMandatoryMode.Force;
 
     /// <summary>
@@ -161,6 +182,7 @@ public sealed class VCarousel : ComponentBase
     /// The HTML tag name to render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -168,6 +190,7 @@ public sealed class VCarousel : ComponentBase
     /// The component theme name.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -175,6 +198,7 @@ public sealed class VCarousel : ComponentBase
     /// Additional custom attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -182,6 +206,7 @@ public sealed class VCarousel : ComponentBase
     /// Default slot for carousel item content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment<VWindowSlotContext>? ChildContent { get; set; }
 
     /// <summary>
@@ -189,6 +214,7 @@ public sealed class VCarousel : ComponentBase
     /// Slot for the previous control button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("prev")]
     public RenderFragment<VWindowControlSlotContext>? Prev { get; set; }
 
     /// <summary>
@@ -196,6 +222,7 @@ public sealed class VCarousel : ComponentBase
     /// Slot for the next control button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("next")]
     public RenderFragment<VWindowControlSlotContext>? Next { get; set; }
 
     /// <summary>
@@ -203,5 +230,6 @@ public sealed class VCarousel : ComponentBase
     /// Slot for each carousel item.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("item")]
     public RenderFragment<VCarouselItemSlotContext>? Item { get; set; }
 }

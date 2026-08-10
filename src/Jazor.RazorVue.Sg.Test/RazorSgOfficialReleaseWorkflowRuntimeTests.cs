@@ -48,8 +48,8 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 {
                     [ECMAScriptName("modelValue")]
                     [Parameter] public int SelectedId { get; set; }
-                    [Parameter] public EventCallback<int> SelectedIdChanged { get; set; }
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#onUpdate:modelValue")] public EventCallback<int> SelectedIdChanged { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
                     [ECMAScriptName("item")]
                     [Parameter] public RenderFragment<ReleaseEntry>? ItemTemplate { get; set; }
 
@@ -96,7 +96,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "SetKey", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "from \"./release-panel-workflow.mjs\"", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "modelValue: state.selectedId", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "modelValue: state.SelectedId", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onInput", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
@@ -146,7 +146,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 assert.equal(header[0].props["data-environment"], "production");
                 assert.deepEqual(header[0].children, ["ready"]);
 
-                const ready = panel.children.item({ id: 7, name: "Deploy API", isReady: true });
+                const ready = panel.children.item({ Id: 7, Name: "Deploy API", IsReady: true });
                 assert.equal(ready[0].name, "button");
                 assert.equal(ready[0].props.key, 7);
                 await Promise.resolve(ready[0].props.onClick());
@@ -154,7 +154,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 assert.equal(findQueuedOutput(form).props["data-queued-release"], 7);
                 assert.deepEqual(findQueuedOutput(form).children, [7]);
 
-                const pending = panel.children.item({ id: 8, name: "Audit Worker", isReady: false });
+                const pending = panel.children.item({ Id: 8, Name: "Audit Worker", IsReady: false });
                 assert.equal(pending[0].name, "span");
                 assert.equal(pending[0].props["data-state"], "pending");
                 assert.deepEqual(pending[0].children, ["Audit Worker"]);

@@ -85,7 +85,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
 
             test("direct nullable markup component children preserve the RenderTreeBuilder empty-content contract", () => {
                 const populated = component.setup(
-                    { summary: "<strong>Release ready</strong>" },
+                    { Summary: "<strong>Release ready</strong>" },
                     { slots: {} })();
                 assert.equal(populated.name, child);
                 assert.equal(Array.isArray(populated.children), true);
@@ -93,7 +93,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
                 assert.equal(populated.children[0].name, "__static");
                 assert.equal(populated.children[0].props.html, "<strong>Release ready</strong>");
 
-                const empty = component.setup({ summary: null }, { slots: {} })();
+                const empty = component.setup({ Summary: null }, { slots: {} })();
                 assert.equal(empty.name, child);
                 assert.deepEqual(empty.children, []);
             });

@@ -14,6 +14,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// HTML tag used for the root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Maximum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Maximum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Minimum height of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Minimum width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Width of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Theme color of the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Direction of infinite scroll loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifyInputDirection? Direction { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Side of the scroll that triggers loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("side")]
     public VuetifyInfiniteScrollSide? Side { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Loading mode of the infinite scroll.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("mode")]
     public VuetifyInfiniteScrollMode? Mode { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Margin distance that triggers loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("margin")]
     public VueStringNumberValue? Margin { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Text for the load-more button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loadMoreText")]
     public string? LoadMoreText { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Text shown when there is no more data.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Event callback fired when more data needs to be loaded.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onLoad")]
     public EventCallback<VInfiniteScrollLoadOptions> OnLoad { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -126,6 +142,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -133,6 +150,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Slot content shown during loading.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("loading")]
     public RenderFragment<VInfiniteScrollSlotContext>? Loading { get; set; }
 
     /// <summary>
@@ -140,6 +158,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Slot content shown on load error.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("error")]
     public RenderFragment<VInfiniteScrollSlotContext>? Error { get; set; }
 
     /// <summary>
@@ -147,6 +166,7 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Slot content shown when data is empty.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("empty")]
     public RenderFragment<VInfiniteScrollSlotContext>? Empty { get; set; }
 
     /// <summary>
@@ -154,5 +174,6 @@ public sealed class VInfiniteScroll : ComponentBase
     /// Slot content for the load-more button.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("load-more")]
     public RenderFragment<VInfiniteScrollSlotContext>? LoadMore { get; set; }
 }

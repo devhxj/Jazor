@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify overlay component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VOverlay")]
-[VueLibraryEmit(nameof(OnClickOutside), Name = "click:outside")]
 public sealed class VOverlay : ComponentBase
 {
     /// <summary>
@@ -15,6 +14,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether the overlay is visible.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public bool ModelValue { get; set; }
 
     /// <summary>
@@ -22,6 +22,7 @@ public sealed class VOverlay : ComponentBase
     /// Callback when the overlay visibility changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -29,6 +30,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -36,6 +38,7 @@ public sealed class VOverlay : ComponentBase
     /// Target element to attach the overlay to.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("attach")]
     public VuetifyAttachTarget? Attach { get; set; }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to contain the overlay within its parent.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contained")]
     public bool Contained { get; set; }
 
     /// <summary>
@@ -50,6 +54,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether the overlay is disabled.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -57,6 +62,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to eagerly load content on initial render.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("eager")]
     public bool Eager { get; set; }
 
     /// <summary>
@@ -64,6 +70,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to disable the click animation on the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("noClickAnimation")]
     public bool NoClickAnimation { get; set; }
 
     /// <summary>
@@ -71,6 +78,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to persist the overlay when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("persistent")]
     public bool Persistent { get; set; }
 
     /// <summary>
@@ -78,6 +86,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to close the overlay on browser back navigation.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnBack")]
     public bool CloseOnBack { get; set; }
 
     /// <summary>
@@ -85,6 +94,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to close the overlay when clicking the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnContentClick")]
     public bool CloseOnContentClick { get; set; }
 
     /// <summary>
@@ -92,6 +102,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to close the overlay when clicking outside.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeOnClick")]
     public bool CloseOnClick { get; set; }
 
     /// <summary>
@@ -99,6 +110,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to open the overlay on click.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnClick")]
     public bool OpenOnClick { get; set; }
 
     /// <summary>
@@ -106,6 +118,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to open the overlay on focus.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnFocus")]
     public bool OpenOnFocus { get; set; }
 
     /// <summary>
@@ -113,6 +126,7 @@ public sealed class VOverlay : ComponentBase
     /// Whether to open the overlay on hover.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openOnHover")]
     public bool OpenOnHover { get; set; }
 
     /// <summary>
@@ -120,6 +134,7 @@ public sealed class VOverlay : ComponentBase
     /// Open delay in milliseconds.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
 
     /// <summary>
@@ -127,6 +142,7 @@ public sealed class VOverlay : ComponentBase
     /// Close delay in milliseconds.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
 
     /// <summary>
@@ -134,6 +150,7 @@ public sealed class VOverlay : ComponentBase
     /// Props applied to the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activatorProps")]
     public VueProps? ActivatorProps { get; set; }
 
     /// <summary>
@@ -141,6 +158,7 @@ public sealed class VOverlay : ComponentBase
     /// Props applied to the content area.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("contentProps")]
     public VueProps? ContentProps { get; set; }
 
     /// <summary>
@@ -148,6 +166,7 @@ public sealed class VOverlay : ComponentBase
     /// Unique identifier of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("id")]
     public string? Id { get; set; }
 
     /// <summary>
@@ -155,6 +174,7 @@ public sealed class VOverlay : ComponentBase
     /// Location of the overlay content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("location")]
     public VuetifyLocation? Location { get; set; }
 
     /// <summary>
@@ -162,6 +182,7 @@ public sealed class VOverlay : ComponentBase
     /// Origin point of the overlay transition.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("origin")]
     public VuetifyLocation? Origin { get; set; }
 
     /// <summary>
@@ -169,6 +190,7 @@ public sealed class VOverlay : ComponentBase
     /// Offset distance from the activator.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("offset")]
     public VueStringNumberValue? Offset { get; set; }
 
     /// <summary>
@@ -176,6 +198,7 @@ public sealed class VOverlay : ComponentBase
     /// Location strategy of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("locationStrategy")]
     public VuetifyLocationStrategy? LocationStrategy { get; set; }
 
     /// <summary>
@@ -183,6 +206,7 @@ public sealed class VOverlay : ComponentBase
     /// Scroll strategy of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrollStrategy")]
     public VuetifyScrollStrategy? ScrollStrategy { get; set; }
 
     /// <summary>
@@ -190,6 +214,7 @@ public sealed class VOverlay : ComponentBase
     /// Scrim style of the overlay background.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
 
     /// <summary>
@@ -197,6 +222,7 @@ public sealed class VOverlay : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -204,6 +230,7 @@ public sealed class VOverlay : ComponentBase
     /// Transition animation of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
 
     /// <summary>
@@ -211,6 +238,7 @@ public sealed class VOverlay : ComponentBase
     /// Z-index level of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
     /// <summary>
@@ -218,6 +246,7 @@ public sealed class VOverlay : ComponentBase
     /// Height of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -225,6 +254,7 @@ public sealed class VOverlay : ComponentBase
     /// Maximum height of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
     /// <summary>
@@ -232,6 +262,7 @@ public sealed class VOverlay : ComponentBase
     /// Maximum width of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
 
     /// <summary>
@@ -239,6 +270,7 @@ public sealed class VOverlay : ComponentBase
     /// Minimum height of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
 
     /// <summary>
@@ -246,6 +278,7 @@ public sealed class VOverlay : ComponentBase
     /// Minimum width of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
     /// <summary>
@@ -253,6 +286,7 @@ public sealed class VOverlay : ComponentBase
     /// Width of the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
     /// <summary>
@@ -260,6 +294,7 @@ public sealed class VOverlay : ComponentBase
     /// Event callback fired after the overlay enters.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onAfterEnter")]
     public EventCallback OnAfterEnter { get; set; }
 
     /// <summary>
@@ -267,6 +302,7 @@ public sealed class VOverlay : ComponentBase
     /// Event callback fired after the overlay leaves.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onAfterLeave")]
     public EventCallback OnAfterLeave { get; set; }
 
     /// <summary>
@@ -274,6 +310,7 @@ public sealed class VOverlay : ComponentBase
     /// Event callback fired when clicking outside the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onClick:outside")]
     public EventCallback<MouseEvent> OnClickOutside { get; set; }
 
     /// <summary>
@@ -281,6 +318,7 @@ public sealed class VOverlay : ComponentBase
     /// Event callback fired on keydown within the overlay.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onKeydown")]
     public EventCallback<KeyboardEvent> OnKeydown { get; set; }
 
     /// <summary>
@@ -288,6 +326,7 @@ public sealed class VOverlay : ComponentBase
     /// Captures unmatched additional HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -295,6 +334,7 @@ public sealed class VOverlay : ComponentBase
     /// Slot content for the activator element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("activator")]
     public RenderFragment<VOverlayActivatorContext>? Activator { get; set; }
 
     /// <summary>
@@ -302,5 +342,6 @@ public sealed class VOverlay : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -27,7 +27,7 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
                 [ECMAScriptModule("./components/slot-panel-local-descriptor-runtime")]
                 public sealed class SlotPanel : ComponentBase, IVueComponent
                 {
-                    [Parameter] public RenderFragment? Header { get; set; }
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -93,7 +93,7 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
 
             test("official Razor local template descriptors retain their fragment provenance", () => {
                 const rendered = component.setup(
-                    { releaseName: "Gateway rollout" },
+                    { ReleaseName: "Gateway rollout" },
                     { slots: {} })();
                 assert.equal(rendered.name, panel);
                 assert.equal(typeof rendered.children.header, "function");

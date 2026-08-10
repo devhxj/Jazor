@@ -205,8 +205,8 @@ public sealed class SemanticWalkerLoopTest
     var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let stages = [{ name: ""Queued"", pending: 2 }, { name: ""Validating"", pending: 1 }];
-  for (let { name: name, pending: pending } of stages) {
+  let stages = [{ Name: ""Queued"", Pending: 2 }, { Name: ""Validating"", Pending: 1 }];
+  for (let { Name: name, Pending: pending } of stages) {
     console.log(name + "":"" + pending);
   }
 }", script);
@@ -1787,7 +1787,7 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let v$0;
-  for (let i = 0; i < 3; v$0 = TestClass.next(i), i = v$0[0]) { }
+  for (let i = 0; i < 3; v$0 = TestClass.Next(i), i = v$0[0]) { }
 }", script);
   }
 
@@ -1815,7 +1815,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 2; await TestClass.tickAsync()) {
+  for (let i = 0; i < 2; await TestClass.TickAsync()) {
     i++;
   }
 }", script);

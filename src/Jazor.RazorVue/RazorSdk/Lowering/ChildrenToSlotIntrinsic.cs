@@ -19,8 +19,6 @@ namespace Jazor.RazorVue.RazorSdk;
 /// </remarks>
 internal static class ChildrenToSlotIntrinsic
 {
-	private const string DefaultSlotKey = "default";
-
 	private const string DefaultSlotComponentParameterName = "__component";
 
 	private const string DefaultSlotPropsParameterName = "__props";
@@ -61,8 +59,12 @@ internal static class ChildrenToSlotIntrinsic
 		if (arguments.Count != method.Parameters.Length)
 			return false;
 
-		if (defaultSlotKind is DefaultSlotInvocationKind.TypedNoProps or DefaultSlotInvocationKind.TypedWithProps)
-			ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, context);
+
+		var defaultSlotName = defaultSlotKind is DefaultSlotInvocationKind.TypedNoProps or DefaultSlotInvocationKind.TypedWithProps
+			? ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, context)
+			: throw context.CreateException(
+				operation,
+				"Implicit component child content has no explicit slot contract. Use H(component, slots) / H(component, props, slots) and declare the slot key in the supplied slots object.");
 
 		if (!context.TryBuildImportedModuleMember(containingType, Util.GetConfigOrSymbolName(method), out var importedRenderFactory) ||
 			importedRenderFactory is not Expression renderFactory)
@@ -75,9 +77,9 @@ internal static class ChildrenToSlotIntrinsic
 		expression = defaultSlotKind switch
 		{
 			DefaultSlotInvocationKind.UntypedNoProps or DefaultSlotInvocationKind.TypedNoProps
-				=> BuildDefaultSlotComponentCall(renderFactory, arguments[0], null, arguments[1]),
+				=> BuildDefaultSlotComponentCall(renderFactory, arguments[0], null, arguments[1], defaultSlotName),
 			DefaultSlotInvocationKind.UntypedWithProps or DefaultSlotInvocationKind.TypedWithProps
-				=> BuildDefaultSlotComponentCall(renderFactory, arguments[0], arguments[1], arguments[2]),
+				=> BuildDefaultSlotComponentCall(renderFactory, arguments[0], arguments[1], arguments[2], defaultSlotName),
 			_ => null
 		};
 		return expression is not null;
@@ -272,13 +274,14 @@ internal static class ChildrenToSlotIntrinsic
 		Expression renderFactory,
 		Expression component,
 		Expression? props,
-		Expression childContent)
+		Expression childContent,
+		string slotName)
 	{
 		if (IsDirectDefaultSlotChildSafe(childContent))
 		{
 			var arguments = props is null
-				? NodeList.From<Expression>(component, BuildDefaultSlotObject(childContent))
-				: NodeList.From<Expression>(component, props, BuildDefaultSlotObject(childContent));
+				? NodeList.From<Expression>(component, BuildDefaultSlotObject(childContent, slotName))
+				: NodeList.From<Expression>(component, props, BuildDefaultSlotObject(childContent, slotName));
 			return new CallExpression(renderFactory, arguments, optional: false);
 		}
 
@@ -291,7 +294,7 @@ internal static class ChildrenToSlotIntrinsic
 				],
 				parameters => new CallExpression(
 					renderFactory,
-					NodeList.From<Expression>(parameters[0], BuildDefaultSlotObject(parameters[1])),
+					NodeList.From<Expression>(parameters[0], BuildDefaultSlotObject(parameters[1], slotName)),
 					optional: false));
 		}
 
@@ -303,35 +306,37 @@ internal static class ChildrenToSlotIntrinsic
 			],
 			parameters => new CallExpression(
 				renderFactory,
-				NodeList.From<Expression>(parameters[0], parameters[1], BuildDefaultSlotObject(parameters[2])),
+				NodeList.From<Expression>(parameters[0], parameters[1], BuildDefaultSlotObject(parameters[2], slotName)),
 				optional: false));
 	}
 
 	private static bool IsDirectDefaultSlotChildSafe(Expression childContent)
 		=> childContent is StringLiteral or BooleanLiteral or NumericLiteral or BigIntLiteral or NullLiteral;
 
-	private static void ValidateTypedDefaultSlotAuthoring(
+	private static string ValidateTypedDefaultSlotAuthoring(
 		IMethodSymbol method,
 		HostContracts hostContracts,
 		IOperation originOperation,
 		IContext context)
 	{
 		if (!TryGetTypedSlotContractType(method, hostContracts, out var slotType))
-			return;
+			throw context.CreateException(
+				originOperation,
+				"Implicit component child content requires a typed slot contract. Use H(component, slots) / H(component, props, slots) instead.");
 
 		var defaultSlots = CollectTypedDefaultSlotMembers(slotType, context);
 		if (defaultSlots.Count == 0)
 		{
 			throw context.CreateException(
 				originOperation,
-				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' does not declare a default slot. Use H(component, slots) / H(component, props, slots) with an explicit slot object, or declare one slot property as 'Default' / Description(\"@#default\").");
+				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' does not declare an explicit default slot. Use H(component, slots) / H(component, props, slots) with an explicit slot object, or map one slot property with Description(\"@#default\") / ECMAScriptName(\"default\").");
 		}
 
 		if (defaultSlots.Count > 1)
 		{
 			throw context.CreateException(
 				originOperation,
-				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' declares more than one default slot. Only one property may map to 'default' via the Default naming convention or Description(\"@#default\").");
+				$"Typed slot contract '{slotType.ToDisplayString(Format.NameFormat)}' declares more than one explicit default slot. Only one property may map to 'default'.");
 		}
 
 		var defaultSlot = defaultSlots[0];
@@ -348,6 +353,8 @@ internal static class ChildrenToSlotIntrinsic
 				originOperation,
 				$"Default slot member '{defaultSlot.ToDisplayString(Format.NameFormat)}' expects slot scope. Implicit child content cannot satisfy a typed default slot context. Use H(component, slots) / H(component, props, slots) and provide an explicit slot callback.");
 		}
+
+		return Util.GetSymbolConfigName(defaultSlot)!;
 	}
 
 	private static bool TryGetTypedSlotContractType(
@@ -397,7 +404,7 @@ internal static class ChildrenToSlotIntrinsic
 					continue;
 				}
 
-				if (string.Equals(Util.GetConfigOrSymbolName(property), DefaultSlotKey, StringComparison.Ordinal))
+				if (string.Equals(Util.GetSymbolConfigName(property), "default", StringComparison.Ordinal))
 					defaults.Add(property);
 			}
 		}
@@ -420,7 +427,7 @@ internal static class ChildrenToSlotIntrinsic
 		return true;
 	}
 
-	private static ObjectExpression BuildDefaultSlotObject(Expression child)
+	private static ObjectExpression BuildDefaultSlotObject(Expression child, string slotName)
 	{
 		var slotCallback = new ArrowFunctionExpression(
 			NodeList.Empty<Node>(),
@@ -429,7 +436,9 @@ internal static class ChildrenToSlotIntrinsic
 			async: false);
 		var slotProperty = new ObjectProperty(
 			PropertyKind.Init,
-			key: new Identifier(DefaultSlotKey),
+			key: JavaScriptAstFactory.IsJavaScriptIdentifierName(slotName)
+				? new Identifier(slotName)
+				: JavaScriptAstFactory.CreateStringLiteral(slotName),
 			value: slotCallback,
 			computed: false,
 			shorthand: false,

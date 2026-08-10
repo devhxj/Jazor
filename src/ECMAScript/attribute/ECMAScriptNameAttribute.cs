@@ -1,21 +1,11 @@
 using System;
-using System.Runtime.Versioning;
 
 namespace ECMAScript;
 
 /// <summary>
-/// 用于指定 ECMAScript 类型或成员的运行时名称。
+/// 用于指定 ECMAScript 符号的运行时名称。
 /// </summary>
-[AttributeUsage(
-    AttributeTargets.Class |
-    AttributeTargets.Struct |
-    AttributeTargets.Enum |
-    AttributeTargets.Interface |
-    AttributeTargets.Field |
-    AttributeTargets.Property |
-    AttributeTargets.Method,
-    Inherited = false)]
-[SupportedOSPlatform("browser")]
+[AttributeUsage(AttributeTargets.All, Inherited = false)]
 public sealed class ECMAScriptNameAttribute : Attribute
 {
     public ECMAScriptNameAttribute(string name)

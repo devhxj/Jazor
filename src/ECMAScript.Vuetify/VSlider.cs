@@ -14,6 +14,7 @@ public sealed class VSlider : ComponentBase
     /// Slider label text.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("label")]
     public string? Label { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSlider : ComponentBase
     /// Component color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSlider : ComponentBase
     /// Track color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("trackColor")]
     public string? TrackColor { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSlider : ComponentBase
     /// Thumb color.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thumbColor")]
     public string? ThumbColor { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSlider : ComponentBase
     /// Component density/compactness.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("density")]
     public VuetifyDensity? Density { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSlider : ComponentBase
     /// Disables the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("disabled")]
     public bool Disabled { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSlider : ComponentBase
     /// Puts the component in read-only mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("readonly")]
     public bool Readonly { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSlider : ComponentBase
     /// Whether to show the thumb label.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("thumbLabel")]
     public VuetifyBooleanAlwaysValue? ThumbLabel { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSlider : ComponentBase
     /// Whether to show tick marks.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("showTicks")]
     public VuetifyBooleanAlwaysValue? ShowTicks { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSlider : ComponentBase
     /// Minimum value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSlider : ComponentBase
     /// Maximum value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSlider : ComponentBase
     /// Step increment value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
     /// <summary>
@@ -98,6 +110,7 @@ public sealed class VSlider : ComponentBase
     /// Uses strict step mode.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("strict")]
     public bool Strict { get; set; }
 
     /// <summary>
@@ -105,6 +118,7 @@ public sealed class VSlider : ComponentBase
     /// Slider direction.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("direction")]
     public VuetifySliderDirection? Direction { get; set; }
 
     /// <summary>
@@ -112,6 +126,7 @@ public sealed class VSlider : ComponentBase
     /// Current slider value.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
     /// <summary>
@@ -119,6 +134,7 @@ public sealed class VSlider : ComponentBase
     /// Callback when the slider value changes.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
 
     /// <summary>
@@ -126,5 +142,6 @@ public sealed class VSlider : ComponentBase
     /// Additional unmatched HTML attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

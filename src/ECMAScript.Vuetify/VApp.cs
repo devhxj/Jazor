@@ -15,6 +15,7 @@ public sealed class VApp : ComponentBase
     /// Full height.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("fullHeight")]
     public bool FullHeight { get; set; }
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class VApp : ComponentBase
     /// Additional HTML attributes passed to root element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -29,5 +31,6 @@ public sealed class VApp : ComponentBase
     /// Default slot content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }

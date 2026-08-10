@@ -32,18 +32,18 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "SetUpdatesAttributeName(\"value\")", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "value: state.text", StringComparison.Ordinal);
+        StringAssert.Contains(script, "value: state.Text", StringComparison.Ordinal);
         StringAssert.Contains(script, "onInput", StringComparison.Ordinal);
         StringAssert.Contains(script, "eventOrValue", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return (__value => state.text = __value)(value, ...args);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return (__value => state.Text = __value)(value, ...args);", StringComparison.Ordinal);
 
-        var valueRead = script.IndexOf("value: state.text", StringComparison.Ordinal);
+        var valueRead = script.IndexOf("value: state.Text", StringComparison.Ordinal);
         var handler = script.IndexOf("onInput", valueRead, StringComparison.Ordinal);
-        var assignment = script.IndexOf("state.text = __value", handler, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Text = __value", handler, StringComparison.Ordinal);
         Assert.IsTrue(valueRead < handler, script);
         Assert.IsTrue(handler < assignment, script);
 
-        Assert.IsFalse(script.Contains("function text(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("function Text(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("function set_Text(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("BindConverter", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("CreateBinder", StringComparison.Ordinal), script);
@@ -83,11 +83,11 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "InvokeAsynchronousDelegate", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "state.text = __value", StringComparison.Ordinal);
-        StringAssert.Contains(script, "afterTextChangedAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Text = __value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "AfterTextChangedAsync()", StringComparison.Ordinal);
 
-        var assignment = script.IndexOf("state.text = __value", StringComparison.Ordinal);
-        var callback = script.IndexOf("afterTextChangedAsync()", assignment, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Text = __value", StringComparison.Ordinal);
+        var callback = script.IndexOf("AfterTextChangedAsync()", assignment, StringComparison.Ordinal);
         Assert.IsTrue(assignment < callback, script);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
@@ -129,12 +129,12 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "InvokeAsynchronousDelegate", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "state.text = __value", StringComparison.Ordinal);
-        StringAssert.Contains(script, "recordTextChanged()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.lastText = state.text", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Text = __value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "RecordTextChanged()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.LastText = state.Text", StringComparison.Ordinal);
 
-        var assignment = script.IndexOf("state.text = __value", StringComparison.Ordinal);
-        var callback = script.IndexOf("recordTextChanged()", assignment, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Text = __value", StringComparison.Ordinal);
+        var callback = script.IndexOf("RecordTextChanged()", assignment, StringComparison.Ordinal);
         Assert.IsTrue(assignment < callback, script);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
@@ -174,13 +174,13 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "InvokeAsynchronousDelegate", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "state.text = __value", StringComparison.Ordinal);
-        StringAssert.Contains(script, "persistTextAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Text = __value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "PersistTextAsync()", StringComparison.Ordinal);
 
-        var assignment = script.IndexOf("state.text = __value", StringComparison.Ordinal);
-        var callback = script.IndexOf("persistTextAsync()", assignment, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Text = __value", StringComparison.Ordinal);
+        var callback = script.IndexOf("PersistTextAsync()", assignment, StringComparison.Ordinal);
         Assert.IsTrue(assignment < callback, script);
-        Assert.AreEqual(1, CountOccurrences(script, "await persistTextAsync()"), script);
+        Assert.AreEqual(1, CountOccurrences(script, "await PersistTextAsync()"), script);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("InvokeAsynchronousDelegate", StringComparison.Ordinal), script);
@@ -222,12 +222,12 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "value: state.text", StringComparison.Ordinal);
-        StringAssert.Contains(script, "setTextAsync(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.text = value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "value: state.Text", StringComparison.Ordinal);
+        StringAssert.Contains(script, "SetTextAsync(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Text = value", StringComparison.Ordinal);
 
         var handler = script.IndexOf("onInput", StringComparison.Ordinal);
-        var setter = script.IndexOf("setTextAsync(__value)", handler, StringComparison.Ordinal);
+        var setter = script.IndexOf("SetTextAsync(__value)", handler, StringComparison.Ordinal);
         Assert.IsTrue(handler < setter, script);
 
         Assert.IsFalse(script.Contains("CreateInferredBindSetter", StringComparison.Ordinal), script);
@@ -267,12 +267,12 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateInferredBindSetter", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "value: state.text", StringComparison.Ordinal);
-        StringAssert.Contains(script, "setText(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.text = value", StringComparison.Ordinal);
+        StringAssert.Contains(script, "value: state.Text", StringComparison.Ordinal);
+        StringAssert.Contains(script, "SetText(__value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "state.Text = value", StringComparison.Ordinal);
 
         var handler = script.IndexOf("onInput", StringComparison.Ordinal);
-        var setter = script.IndexOf("setText(__value)", handler, StringComparison.Ordinal);
+        var setter = script.IndexOf("SetText(__value)", handler, StringComparison.Ordinal);
         Assert.IsTrue(handler < setter, script);
 
         Assert.IsFalse(script.Contains("CreateBinder", StringComparison.Ordinal), script);

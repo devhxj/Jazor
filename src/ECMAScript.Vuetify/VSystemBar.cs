@@ -14,6 +14,7 @@ public sealed class VSystemBar : ComponentBase
     /// Color of the system bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("color")]
     public string? Color { get; set; }
 
     /// <summary>
@@ -21,6 +22,7 @@ public sealed class VSystemBar : ComponentBase
     /// Height of the system bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
     /// <summary>
@@ -28,6 +30,7 @@ public sealed class VSystemBar : ComponentBase
     /// Whether to use window mode styling.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("window")]
     public bool Window { get; set; }
 
     /// <summary>
@@ -35,6 +38,7 @@ public sealed class VSystemBar : ComponentBase
     /// Theme name used by the component.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("theme")]
     public string? Theme { get; set; }
 
     /// <summary>
@@ -42,6 +46,7 @@ public sealed class VSystemBar : ComponentBase
     /// HTML tag name for the component root element.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
     /// <summary>
@@ -49,6 +54,7 @@ public sealed class VSystemBar : ComponentBase
     /// Border radius of the system bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
 
     /// <summary>
@@ -56,6 +62,7 @@ public sealed class VSystemBar : ComponentBase
     /// Whether to remove border radius.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("tile")]
     public bool Tile { get; set; }
 
     /// <summary>
@@ -63,6 +70,7 @@ public sealed class VSystemBar : ComponentBase
     /// Name of the system bar within the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("name")]
     public string? Name { get; set; }
 
     /// <summary>
@@ -70,6 +78,7 @@ public sealed class VSystemBar : ComponentBase
     /// Order of the system bar within the layout.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
 
     /// <summary>
@@ -77,6 +86,7 @@ public sealed class VSystemBar : ComponentBase
     /// Whether to use absolute positioning.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("absolute")]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -84,6 +94,7 @@ public sealed class VSystemBar : ComponentBase
     /// Elevation shadow of the system bar.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
 
     /// <summary>
@@ -91,6 +102,7 @@ public sealed class VSystemBar : ComponentBase
     /// Captures unmatched additional attributes.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
+    [ECMAScriptName("additionalAttributes")]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
@@ -98,5 +110,6 @@ public sealed class VSystemBar : ComponentBase
     /// Default slot for the system bar content.
     /// </summary>
     [Parameter]
+    [ECMAScriptName("default")]
     public RenderFragment? ChildContent { get; set; }
 }
