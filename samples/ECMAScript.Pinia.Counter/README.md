@@ -1,17 +1,18 @@
 # ECMAScript.Pinia.Counter
 
-> Purpose: Pinia binding, generated module, Deno Bundle, runtime, and DOM verification sample.
+> Purpose: Pinia binding, generated modules, Netpack browser bundle, and DenoHost runtime/DOM verification sample.
 
-This sample demonstrates the current `ECMAScript.Pinia` consumption path with a Deno-based frontend:
+This sample demonstrates the current `ECMAScript.Pinia` consumption path with a fixed build/runtime boundary:
 
 - author a Pinia option store in C#
-- emit raw `.mjs` modules from a Jazor host project
-- consume the generated modules from Deno with Vue + Pinia resolved through an import map
+- emit raw debug `.mjs` modules from a Jazor host project
+- build the production browser artifact through `JazorMode=release` and Netpack
+- execute generated-module runtime and DOM coverage through the DenoHost-provided Deno runtime
 
 The sample is split into:
 
 - `Pinia.Counter.Host`: Jazor host that emits the generated modules to `wwwroot/jazor/`
-- `pinia-consumer`: Deno consumer that resolves the generated host modules through an import map and runs build/runtime smoke tests without Vite
+- `pinia-consumer`: Deno runtime consumer that resolves debug modules through an import map and materializes the already-built Netpack browser artifact
 
 ## Build from this repository
 
@@ -54,14 +55,16 @@ This validates the production-oriented consumer path:
 - keep `NuGet.Config` on stable sources only while `build-local.cs` / `verify-smoke.cs` inject the transient local package source explicitly, so `dotnet run --file` can restore before the sample creates `.tmp/nupkg-sample`
 - emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
 - assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
-- run the Deno bundle build
-- run the Deno runtime/DOM suites
+- build and assert the Netpack release bundle
+- run the DenoHost runtime/DOM suites
 
 ## Run the frontend consumer
 
-After `build-local.cs` succeeds:
+Build the production artifact and then materialize it through the Deno runtime consumer:
 
 ```powershell
+dotnet run --file .\samples\ECMAScript.Pinia.Counter\build-local.cs -- --bundle-out-dir .\.tmp\pinia-counter-bundle
+$env:JAZOR_BUNDLE_ROOT = (Resolve-Path .\.tmp\pinia-counter-bundle)
 cd .\pinia-consumer
 deno task build
 deno task test
@@ -116,6 +119,6 @@ The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate
 
 ## Notes
 
-- The host uses `JazorMode=debug` rather than `JazorMode=release`. This keeps the sample aligned with the current `ECMAScript.Pinia` contract where Pinia itself stays a normal external library import.
+- The host's default `JazorMode=debug` keeps raw modules available for import-map runtime checks. Supplying `--bundle-out-dir` performs a second `JazorMode=release` build that uses Netpack for the browser artifact.
 - The testing root module is emitted as a normal generated artifact so consumers can inspect `@pinia/testing` lowering without mixing testing-only APIs back into `ECMAScript.Pinia` main package code.
 - `pinia-consumer` intentionally stays small and explicit so the module-resolution boundary is visible: Vue comes from npm, Pinia comes from npm, `@pinia/testing` comes from npm, and the generated C# modules are imported from the host output.

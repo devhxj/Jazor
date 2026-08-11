@@ -20,17 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="NetPack.Core" Version="$(NetPackVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
   </ItemGroup>
 </Project>

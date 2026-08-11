@@ -41,7 +41,6 @@ Jazor draws on these projects and the work of their maintainers:
 - [Esprima .NET](https://github.com/sebastienros/esprima-dotnet) - ECMAScript parser for .NET
 - [Acornima](https://github.com/adams85/acornima) - ECMAScript parser and ESTree library for .NET
 - [Netpack](https://github.com/FlorianRappl/netpack) - JavaScript module bundling support
-- [Jint](https://github.com/sebastienros/jint) - JavaScript interpreter for .NET
 - [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
 - [WebRef](https://github.com/w3c/webref) - Web specification references
 - [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit) - prior C# to JavaScript compilers
@@ -117,7 +116,7 @@ flowchart LR
 - **ECMAScript module output**: `[ECMAScriptModule]` classes emit named-export `.mjs` modules with stable import collection, source-origin tracking, and source-map carriers.
 - **RazorVue artifact generation**: Razor component semantics flow from official Razor SG generated C# through Roslyn binding and compiler-owned `IOperation` lowering.
 - **Typed Vue authoring**: `ECMAScript.Vue3` provides typed bindings for Vue 3 `defineComponent`, `h`, refs/reactivity, lifecycle hooks, props, slots, and component contracts.
-- **Host-facing build support**: MSBuild selects one output mode for ECMAScript/RazorVue artifacts: no output, debug modules and manifest, or a production bundle through the Deno or Netpack lane.
+- **Host-facing build support**: MSBuild selects one output mode for ECMAScript/RazorVue artifacts: no output, debug modules and manifest, or a Netpack production bundle.
 
 ## Latest Updates
 
@@ -125,15 +124,16 @@ flowchart LR
 
 - Generated RazorVue components now register with Vue's development HMR runtime. Compiler-proven template-only changes reload the component in place while preserving parent state; unsafe or unavailable update paths continue to fall back to a full-page reload.
 - RazorVue debug output now links each generated `.mjs` module to an external source map containing the authored Razor text, so browser DevTools can trace render-function code back to `.razor` source without a separate source-file route.
-- ASP.NET Core applications can now opt into Vue SSR with local server rendering and browser hydration. SSR artifacts carry their Vue runtime resources without application `node_modules`, a CDN, or remote imports; the current explicit Deno renderer is transitional to Jint over a Netpack SSR bundle.
+- ASP.NET Core applications can now opt into Vue SSR with local server rendering and browser hydration. SSR artifacts carry their Vue runtime resources without application `node_modules`, a CDN, or remote imports; DenoHost executes SSR while Netpack owns browser bundling.
 - Pinia sample applications now preserve authored C# member names and explicitly declare Pinia's lowercase protocol keys where required, keeping generated browser modules and their test workflow aligned with the naming contract.
+- Current Pinia and Vue Router samples now verify Netpack release bundles separately from DenoHost-backed runtime smoke coverage. Retired generated-SFC/Deno-bundle sample fixtures are no longer part of the active tree.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
 ```bash
-dotnet add package Jazor --version 0.8.2
+dotnet add package Jazor --version 0.8.3
 ```
 
 The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
@@ -142,8 +142,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.8.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.8.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -151,11 +151,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Style" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.2" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Style" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.3" />
 </ItemGroup>
 ```
 
@@ -284,7 +284,6 @@ For production delivery, configure a release bundle as follows:
 <PropertyGroup>
   <JazorMode>release</JazorMode>
   <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
-  <JazorTool>Deno</JazorTool>
 </PropertyGroup>
 ```
 
@@ -294,7 +293,6 @@ For production delivery, configure a release bundle as follows:
 |----------|---------|-------------|
 | `JazorMode` | `none` | `none` writes nothing; `debug` writes modules and a manifest; `release` writes a production bundle. |
 | `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | Output root for debug modules or the release bundle. |
-| `JazorTool` | `Deno` | Selects the release tool lane, currently `Deno` or `Netpack`. |
 
 See [src/Jazor/README.md](src/Jazor/README.md) and [src/Jazor.Emit/README.md](src/Jazor.Emit/README.md) for package and emit details.
 
@@ -320,7 +318,7 @@ Jazor/
 │   ├── Jazor.MultiProject/          # Baseline multi-project module emission
 │   ├── JazorAdmin/                  # Formal administration product and package-consumer smoke
 │   ├── ECMAScript.Pinia.Counter/    # Vue 3 + Pinia sample
-│   └── RazorVue.TodoList/           # Legacy sample pending transformation
+│   └── ECMAScript.VueRoute.MemorySmoke/ # Vue Router module and browser-runtime sample
 ├── docs/                            # Goals, plans, status snapshots, supplements, retired material
 └── scripts/csharp/                  # Repository automation scripts
 ```

@@ -1,12 +1,5 @@
 namespace Jazor.Emit;
 
-/// <summary>Selects the local JavaScript bundling engine.</summary>
-internal enum ToolchainKind
-{
-    Deno,
-    Netpack
-}
-
 /// <summary>Chooses development or production library entries.</summary>
 internal enum BuildMode
 {
@@ -14,7 +7,7 @@ internal enum BuildMode
     Development
 }
 
-/// <summary>Declares behavior a selected toolchain must support.</summary>
+/// <summary>Declares behavior the Netpack build boundary must support.</summary>
 internal enum ToolchainCapability
 {
     ProductionBuild,
@@ -24,14 +17,13 @@ internal enum ToolchainCapability
     Minify
 }
 
-/// <summary>Stable error code and message returned by the toolchain boundary.</summary>
+/// <summary>Stable error code and message returned by the build boundary.</summary>
 internal sealed record ToolchainDiagnostic(
     string Code,
     string Message);
 
-/// <summary>Normalized inputs shared by the Deno and Netpack lanes.</summary>
+/// <summary>Normalized inputs for the fixed Netpack build lane.</summary>
 internal sealed record ToolchainRequest(
-    ToolchainKind Toolchain,
     string ManifestPath,
     string ArtifactRoot,
     string SourceRoot,
@@ -49,7 +41,6 @@ internal sealed record ToolchainRequest(
     public string BundleOutputPath => Path.Combine(OutputRoot, DefaultBundleFileName);
 
     public static ToolchainRequest Create(
-        ToolchainKind toolchain,
         string manifestPath,
         string artifactRoot,
         string sourceRoot,
@@ -63,7 +54,6 @@ internal sealed record ToolchainRequest(
         IReadOnlyList<string>? libraryManifests = null)
     {
         return new ToolchainRequest(
-            toolchain,
             Path.GetFullPath(RequirePath(manifestPath, nameof(manifestPath))),
             Path.GetFullPath(RequirePath(artifactRoot, nameof(artifactRoot))),
             Path.GetFullPath(RequirePath(sourceRoot, nameof(sourceRoot))),
@@ -103,7 +93,7 @@ internal sealed record ToolchainRequest(
                 .ToArray();
 }
 
-/// <summary>Parses the toolchain CLI contract into a normalized request.</summary>
+/// <summary>Parses the Netpack build CLI contract into a normalized request.</summary>
 internal sealed record ToolchainCommand(
     BuildMode Mode,
     ToolchainRequest Request)
@@ -133,7 +123,6 @@ internal sealed record ToolchainCommand(
                 return false;
         }
 
-        var toolchainText = string.Empty;
         var manifestPath = string.Empty;
         var artifactRoot = string.Empty;
         var sourceRoot = string.Empty;
@@ -154,9 +143,6 @@ internal sealed record ToolchainCommand(
             var value = args[++i];
             switch (arg)
             {
-                case "--toolchain":
-                    toolchainText = value;
-                    break;
                 case "--manifest":
                     manifestPath = value;
                     break;
@@ -194,14 +180,6 @@ internal sealed record ToolchainCommand(
             }
         }
 
-        if (!Enum.TryParse<ToolchainKind>(toolchainText, ignoreCase: true, out var toolchain))
-        {
-            error = string.IsNullOrWhiteSpace(toolchainText)
-                ? "Missing required argument --toolchain."
-                : $"Unknown toolchain '{toolchainText}'.";
-            return false;
-        }
-
         if (!TryRequireArgument(manifestPath, "--manifest", out error) ||
             !TryRequireArgument(artifactRoot, "--artifacts", out error) ||
             !TryRequireArgument(sourceRoot, "--source-root", out error) ||
@@ -229,7 +207,6 @@ internal sealed record ToolchainCommand(
         command = new ToolchainCommand(
             mode,
             ToolchainRequest.Create(
-                toolchain,
                 manifestPath,
                 artifactRoot,
                 sourceRoot,
@@ -255,23 +232,22 @@ internal sealed record ToolchainCommand(
     }
 }
 
-/// <summary>Reports a toolchain build without leaking engine-specific result types.</summary>
+/// <summary>Reports a Netpack build without leaking engine-specific result types.</summary>
 internal sealed record ToolchainResult(
     bool IsSuccess,
-    ToolchainKind Toolchain,
     int ExitCode,
     ToolchainDiagnostic? Diagnostic,
     string? OutputPath,
     int ModuleCount)
 {
-    public static ToolchainResult Success(ToolchainKind toolchain, string outputPath, int moduleCount)
-        => new(true, toolchain, 0, null, outputPath, moduleCount);
+    public static ToolchainResult Success(string outputPath, int moduleCount)
+        => new(true, 0, null, outputPath, moduleCount);
 
-    public static ToolchainResult Fail(ToolchainKind toolchain, int exitCode, string code, string message)
-        => new(false, toolchain, exitCode, new ToolchainDiagnostic(code, message), null, 0);
+    public static ToolchainResult Fail(int exitCode, string code, string message)
+        => new(false, exitCode, new ToolchainDiagnostic(code, message), null, 0);
 }
 
-/// <summary>Validates a request and dispatches it to the selected local bundler.</summary>
+/// <summary>Validates a request and builds it through the fixed Netpack lane.</summary>
 internal sealed class Toolchain
 {
     private const int ContractFailureExitCode = 10;
@@ -283,12 +259,7 @@ internal sealed class Toolchain
         if (contractFailure is not null)
             return contractFailure;
 
-        return request.Toolchain switch
-        {
-            ToolchainKind.Deno => await BuildDenoAsync(request),
-            ToolchainKind.Netpack => await BuildNetpackAsync(request),
-            _ => Unsupported(request, "JAZOR_TOOLCHAIN_UNKNOWN", $"Unsupported toolchain '{request.Toolchain}'.")
-        };
+        return await BuildNetpackAsync(request);
     }
 
     private static ToolchainResult? ValidateRequest(ToolchainRequest request)
@@ -296,7 +267,6 @@ internal sealed class Toolchain
         if (!File.Exists(request.ManifestPath))
         {
             return ToolchainResult.Fail(
-                request.Toolchain,
                 ContractFailureExitCode,
                 "JAZOR_TOOLCHAIN_MANIFEST_NOT_FOUND",
                 $"Manifest was not found: '{request.ManifestPath}'.");
@@ -305,7 +275,6 @@ internal sealed class Toolchain
         if (!Directory.Exists(request.ArtifactRoot))
         {
             return ToolchainResult.Fail(
-                request.Toolchain,
                 ContractFailureExitCode,
                 "JAZOR_TOOLCHAIN_ARTIFACT_ROOT_NOT_FOUND",
                 $"Artifact root was not found: '{request.ArtifactRoot}'.");
@@ -314,7 +283,6 @@ internal sealed class Toolchain
         if (!Directory.Exists(request.SourceRoot))
         {
             return ToolchainResult.Fail(
-                request.Toolchain,
                 ContractFailureExitCode,
                 "JAZOR_TOOLCHAIN_SOURCE_ROOT_NOT_FOUND",
                 $"Source root was not found: '{request.SourceRoot}'.");
@@ -325,7 +293,6 @@ internal sealed class Toolchain
             if (!File.Exists(libraryManifest))
             {
                 return ToolchainResult.Fail(
-                    request.Toolchain,
                     ContractFailureExitCode,
                     "JAZOR_TOOLCHAIN_LIBRARY_MANIFEST_NOT_FOUND",
                     $"Library manifest was not found: '{libraryManifest}'.");
@@ -335,58 +302,25 @@ internal sealed class Toolchain
         return null;
     }
 
-    private static ToolchainResult Unsupported(ToolchainRequest request, string code, string message)
-        => ToolchainResult.Fail(request.Toolchain, UnsupportedExitCode, code, message);
+    private static ToolchainResult Unsupported(string code, string message)
+        => ToolchainResult.Fail(UnsupportedExitCode, code, message);
 
-    private static ToolchainResult UnsupportedCapability(ToolchainRequest request, ToolchainCapability capability)
+    private static ToolchainResult UnsupportedCapability(ToolchainCapability capability)
         => Unsupported(
-            request,
             "JAZOR_TOOLCHAIN_CAPABILITY_UNSUPPORTED",
-            $"{request.Toolchain} does not support required capability '{capability}'.");
-
-    private static async Task<ToolchainResult> BuildDenoAsync(ToolchainRequest request)
-    {
-        if (request.Mode != BuildMode.Production)
-            return Unsupported(request, "JAZOR_TOOLCHAIN_MODE_UNSUPPORTED", "Deno development mode is not implemented yet.");
-
-        foreach (var capability in request.RequiredCapabilities)
-        {
-            if (capability is ToolchainCapability.ProductionBuild or ToolchainCapability.SourceMaps)
-                continue;
-
-            return UnsupportedCapability(request, capability);
-        }
-
-        Directory.CreateDirectory(request.OutputRoot);
-
-        var bundler = new DenoBundler();
-        var bundleResult = await bundler.BundleAsync(new BundleOptions(
-            request.ArtifactRoot,
-            request.ManifestPath,
-            request.BundleOutputPath,
-            request.SourceRoot,
-            request.LibraryManifests));
-
-        return bundleResult.IsSuccess
-            ? ToolchainResult.Success(request.Toolchain, bundleResult.OutputPath!, bundleResult.ModuleCount)
-            : ToolchainResult.Fail(
-                request.Toolchain,
-                bundleResult.ExitCode,
-                "JAZOR_TOOLCHAIN_DENO_FAILED",
-                bundleResult.Error ?? "Deno build failed.");
-    }
+            $"Netpack does not support required capability '{capability}'.");
 
     private static async Task<ToolchainResult> BuildNetpackAsync(ToolchainRequest request)
     {
         if (request.Mode != BuildMode.Production)
-            return Unsupported(request, "JAZOR_TOOLCHAIN_MODE_UNSUPPORTED", "Netpack development mode is not implemented yet.");
+            return Unsupported("JAZOR_TOOLCHAIN_MODE_UNSUPPORTED", "Netpack development mode is not implemented yet.");
 
         foreach (var capability in request.RequiredCapabilities)
         {
             if (capability is ToolchainCapability.ProductionBuild or ToolchainCapability.SourceMaps)
                 continue;
 
-            return UnsupportedCapability(request, capability);
+            return UnsupportedCapability(capability);
         }
 
         Directory.CreateDirectory(request.OutputRoot);
@@ -400,9 +334,8 @@ internal sealed class Toolchain
             request.LibraryManifests));
 
         return bundleResult.IsSuccess
-            ? ToolchainResult.Success(request.Toolchain, bundleResult.OutputPath!, bundleResult.ModuleCount)
+            ? ToolchainResult.Success(bundleResult.OutputPath!, bundleResult.ModuleCount)
             : ToolchainResult.Fail(
-                request.Toolchain,
                 bundleResult.ExitCode,
                 "JAZOR_TOOLCHAIN_NETPACK_FAILED",
                 bundleResult.Error ?? "Netpack build failed.");

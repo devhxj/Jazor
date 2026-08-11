@@ -52,7 +52,7 @@ Razor 组件最终生成 Vue render-function `.mjs` 模块，并由 `Jazor.Emit`
 | `debug` | 模块、源映射和 manifest |
 | `release` | 生产 bundle 和源映射 |
 
-默认输出目录为 `$(MSBuildProjectDirectory)\wwwroot\jazor\`；`JazorTool` 仅在 `release` 模式下生效。
+默认输出目录为 `$(MSBuildProjectDirectory)\wwwroot\jazor\`；`release` 固定通过 Netpack 生成生产包。
 
 ## 实现落点
 

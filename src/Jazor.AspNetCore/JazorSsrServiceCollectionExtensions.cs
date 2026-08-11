@@ -5,7 +5,7 @@ namespace Jazor.AspNetCore;
 
 public static class JazorSsrServiceCollectionExtensions
 {
-    /// <summary>Adds SSR services with the explicit local Deno transition backend.</summary>
+    /// <summary>Adds SSR services backed by the packaged DenoHost runtime.</summary>
     public static IServiceCollection AddJazorSsr(
         this IServiceCollection services,
         Action<JazorSsrOptions>? configure = null)

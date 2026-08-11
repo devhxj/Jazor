@@ -1,6 +1,6 @@
 namespace Jazor.AspNetCore;
 
-/// <summary>Configures Jazor SSR artifacts and its explicit temporary Deno backend.</summary>
+/// <summary>Configures Jazor SSR artifacts.</summary>
 public sealed class JazorSsrOptions
 {
     /// <summary>
@@ -18,9 +18,4 @@ public sealed class JazorSsrOptions
     /// <summary>Identifies the element that receives both the server HTML and client hydration.</summary>
     public string MountElementId { get; set; } = "app";
 
-    /// <summary>
-    /// Supplies the local executable for the temporary Deno-backed renderer. This is explicit
-    /// so applications do not acquire Deno as an implicit ASP.NET Core runtime dependency.
-    /// </summary>
-    public string? DenoExecutablePath { get; set; }
 }

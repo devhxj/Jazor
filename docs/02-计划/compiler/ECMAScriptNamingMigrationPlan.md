@@ -303,7 +303,7 @@ P4 是名称语义的原子切换点：不得留下 “先尝试显式，再按 
 | G1 | compiler 命名单元测试；显式特殊 key AST 测试 | `Jazor.CompilerTest`: 10318/10318 passed。 |
 | G2 | Element Plus、TDesign、Vuetify generator 重新生成与 --check；Vuetify schema/metadata 一致性审计 | Element Plus 111 components/2 directives、TDesign 120 documented bindings/118 basic components、Vuetify 114 components (4.1.8) 均 `--check` 通过。 |
 | G3 | RazorVue convention、descriptor、direct render、slot、official Razor SG focused suites | `Jazor.RazorVue.Sg.Test`: 4684/4684 passed。 |
-| G4 | 外部 binding runtime smoke：model、emit、default/named slot、特殊 key | `verify-vue-binding-coverage.cs` passed；`Jazor.EmitTest`: 142/142 passed、0 skipped，含无前端 `node_modules` 的 Deno/Netpack package consumer smoke。 |
+| G4 | 外部 binding runtime smoke：model、emit、default/named slot、特殊 key | `verify-vue-binding-coverage.cs` passed；`Jazor.EmitTest`: 142/142 passed、0 skipped，含无前端 `node_modules` 的 DenoHost runtime 与 Netpack package consumer smoke。 |
 | G5 | 全仓库 test-dotnet 通过，generated artifact diff 已审阅 | `test-dotnet.cs` passed：Compiler 10318、CLR 4744、Style 28、Pinia 68、Pinia Testing 39、VueRoute 102、Razor SG 4684、Emit 142。 |
 
 建议命令顺序：

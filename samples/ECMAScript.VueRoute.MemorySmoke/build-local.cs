@@ -56,7 +56,7 @@ var buildArguments = new List<string>
     "-t:Rebuild",
     "/m:1",
     "/p:BuildInParallel=false",
-    $"-p:RestoreSources={packageOutput}",
+    $"-p:RestoreAdditionalProjectSources={packageOutput}",
     $"-p:RestorePackagesPath={restorePackagesPath}",
     "-p:RestoreForce=true",
     $"-p:JazorPackageVersion={packageInfo.Version}",
@@ -72,11 +72,41 @@ if (!string.IsNullOrWhiteSpace(options.JazorDir))
 
 await ScriptHelpers.RunDotNetAsync(buildArguments, repoRoot, dotnetCliHome);
 
+if (!string.IsNullOrWhiteSpace(options.BundleOutputRoot))
+{
+    var bundleOutputRoot = ScriptHelpers.ResolvePath(repoRoot, options.BundleOutputRoot);
+    ScriptHelpers.CleanDirectoryWithinRepo(bundleOutputRoot, repoRoot);
+
+    // Preserve debug modules for DenoHost runtime checks, then build the browser artifact through Netpack.
+    var releaseBuildArguments = new List<string>
+    {
+        "build",
+        hostProject,
+        "-c",
+        options.Configuration,
+        "-t:Rebuild",
+        "/m:1",
+        "/p:BuildInParallel=false",
+        $"-p:RestoreAdditionalProjectSources={packageOutput}",
+        $"-p:RestorePackagesPath={restorePackagesPath}",
+        "-p:RestoreForce=true",
+        $"-p:JazorPackageVersion={packageInfo.Version}",
+        "-p:JazorMode=release",
+        "-p:JazorDir=" + bundleOutputRoot,
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    };
+    releaseBuildArguments.AddRange(isolationArguments);
+
+    await ScriptHelpers.RunDotNetAsync(releaseBuildArguments, repoRoot, dotnetCliHome);
+}
+
 internal sealed record SampleBuildOptions(
     string Configuration,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
-    string? JazorDir)
+    string? JazorDir,
+    string? BundleOutputRoot)
 {
     public static SampleBuildOptions Parse(IReadOnlyList<string> arguments)
     {
@@ -84,6 +114,7 @@ internal sealed record SampleBuildOptions(
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
         string? jazorDir = null;
+        string? bundleOutputRoot = null;
 
         for (var index = 0; index < arguments.Count; index++)
         {
@@ -107,6 +138,9 @@ internal sealed record SampleBuildOptions(
                 case "-JazorDir":
                     jazorDir = RequireValue(arguments, ref index, argument);
                     break;
+                case "--bundle-out-dir":
+                    bundleOutputRoot = RequireValue(arguments, ref index, argument);
+                    break;
                 case "--help":
                 case "-h":
                     WriteUsage();
@@ -117,7 +151,7 @@ internal sealed record SampleBuildOptions(
             }
         }
 
-        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorDir);
+        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorDir, bundleOutputRoot);
     }
 
     static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
@@ -140,6 +174,7 @@ internal sealed record SampleBuildOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --jazor-dir <path>");
+        Console.WriteLine("  --bundle-out-dir <path>");
     }
 }
 

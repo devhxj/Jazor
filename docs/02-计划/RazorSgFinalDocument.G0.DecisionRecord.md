@@ -102,4 +102,3 @@ carrier、toolchain 或旧线路清理已经完成。
 ## 相关文档
 
 - [Jazor 架构转型开发计划](./Jazor%20架构转型开发计划.md)
-- [旧 IR 注入决策记录](./jolt/razorvue-implementation/RazorVue.RazorSg.MainlineIrInjection.DecisionRecord.md)

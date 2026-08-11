@@ -310,7 +310,7 @@
 
 ### 4.3 建立 sample 分层
 
-当前 `RazorVue.TodoList` 能证明最小链路，但对 `ECMAScript.Vuetify` 还不够。
+当前 Netpack package-consumer 与真实浏览器 smoke 能证明最小链路，但对 `ECMAScript.Vuetify` 还不够。
 
 后续建议增加：
 

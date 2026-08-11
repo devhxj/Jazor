@@ -106,7 +106,6 @@ var className = style(new CssRule
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 物化模块；`release` 生成 Bundle |
 | `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 与 release 的统一输出根目录 |
-| `JazorTool` | `Deno` | 仅在 `release` 下选择 Deno 或 Netpack |
 
 debug 入口固定为 `style.mjs`；release 将该运行时与消费模块纳入 `bundle.js`。模块不生成独立 `.css`，也不执行 PostCSS、autoprefixer 或 CSS Modules 转换。
 

@@ -1,17 +1,15 @@
-using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DenoHost.Core;
 using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore;
 
 /// <summary>
-/// Runs one generated Vue root inside a fresh local Deno process.
-/// Deno is an explicit transition backend; the public renderer contract is kept independent
-/// so a Jint executor can later consume a Netpack-produced SSR bundle.
+/// Runs one generated Vue root inside a fresh DenoHost-managed Deno process.
 /// </summary>
 internal sealed class JazorSsrRenderer : IJazorSsrRenderer
 {
@@ -50,8 +48,23 @@ internal sealed class JazorSsrRenderer : IJazorSsrRenderer
             new SsrExecutionRequest(modulePath, propsDocument.RootElement),
             JsonOptions);
         var runnerPath = EnsureRunner(artifacts.RootPath);
-        var output = await ExecuteAsync(artifacts, runnerPath, executionPayload, cancellationToken)
-            .ConfigureAwait(false);
+        var requestPath = Path.Combine(
+            Path.GetDirectoryName(runnerPath)!,
+            "ssr-request-" + Guid.NewGuid().ToString("N") + ".json");
+
+        string output;
+        try
+        {
+            await File.WriteAllTextAsync(requestPath, executionPayload, Utf8WithoutBom, cancellationToken)
+                .ConfigureAwait(false);
+            output = await ExecuteAsync(artifacts, runnerPath, requestPath, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            if (File.Exists(requestPath))
+                File.Delete(requestPath);
+        }
 
         using var response = JsonDocument.Parse(output);
         if (!response.RootElement.TryGetProperty("html", out var htmlElement) ||
@@ -67,54 +80,48 @@ internal sealed class JazorSsrRenderer : IJazorSsrRenderer
     private async Task<string> ExecuteAsync(
         JazorSsrArtifacts artifacts,
         string runnerPath,
-        string executionPayload,
+        string requestPath,
         CancellationToken cancellationToken)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = ResolveDenoExecutable(),
-            WorkingDirectory = artifacts.RootPath,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false
-        };
-        startInfo.ArgumentList.Add("run");
-        startInfo.ArgumentList.Add("--no-config");
-        startInfo.ArgumentList.Add("--no-npm");
-        startInfo.ArgumentList.Add("--no-remote");
-        startInfo.ArgumentList.Add("--no-prompt");
-        startInfo.ArgumentList.Add("--allow-read=" + artifacts.RootPath);
-        startInfo.ArgumentList.Add("--import-map");
-        startInfo.ArgumentList.Add(artifacts.SsrImportMapPath);
-        startInfo.ArgumentList.Add(runnerPath);
-        startInfo.Environment["DENO_NO_UPDATE_CHECK"] = "1";
+        var standardOutput = new StringBuilder();
+        var standardError = new StringBuilder();
+        using var process = new DenoProcess(
+            new DenoExecuteBaseOptions
+            {
+                WorkingDirectory = artifacts.RootPath
+            },
+            [
+                "run",
+                "--no-config",
+                "--no-npm",
+                "--no-remote",
+                "--no-prompt",
+                "--allow-read=" + artifacts.RootPath,
+                "--import-map",
+                artifacts.SsrImportMapPath,
+                runnerPath,
+                requestPath
+            ]);
+        process.OutputDataReceived += (_, eventArgs) => AppendLine(standardOutput, eventArgs.Data);
+        process.ErrorDataReceived += (_, eventArgs) => AppendLine(standardError, eventArgs.Data);
 
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Jazor SSR failed to start the configured Deno executable.");
-        var standardOutput = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var standardError = process.StandardError.ReadToEndAsync(cancellationToken);
         try
         {
-            await process.StandardInput.WriteAsync(executionPayload.AsMemory(), cancellationToken).ConfigureAwait(false);
-            process.StandardInput.Close();
-            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            await process.StartAsync(cancellationToken).ConfigureAwait(false);
+            var exitCode = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            if (exitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    "Jazor SSR DenoHost execution failed for '" + runnerPath + "'." + Environment.NewLine + standardError);
+            }
         }
         catch (OperationCanceledException)
         {
-            TryStop(process);
+            await StopAsync(process).ConfigureAwait(false);
             throw;
         }
 
-        var output = await standardOutput.ConfigureAwait(false);
-        var error = await standardError.ConfigureAwait(false);
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException(
-                "Jazor SSR Deno execution failed for '" + runnerPath + "'." + Environment.NewLine + error);
-        }
-
-        return output;
+        return standardOutput.ToString();
     }
 
     private string EnsureRunner(string artifactRoot)
@@ -149,33 +156,22 @@ internal sealed class JazorSsrRenderer : IJazorSsrRenderer
         return reader.ReadToEnd().ReplaceLineEndings("\n");
     }
 
-    private string ResolveDenoExecutable()
+    private static void AppendLine(StringBuilder output, string? line)
     {
-        if (!string.IsNullOrWhiteSpace(_options.DenoExecutablePath))
-        {
-            var configuredPath = Path.GetFullPath(_options.DenoExecutablePath);
-            if (File.Exists(configuredPath))
-                return configuredPath;
-
-            throw new FileNotFoundException(
-                "The configured Jazor SSR Deno executable was not found.",
-                configuredPath);
-        }
-
-        throw new InvalidOperationException(
-            "The temporary Jazor Deno SSR renderer requires JazorSsrOptions.DenoExecutablePath. " +
-            "Deno is not distributed as an implicit ASP.NET Core host runtime.");
+        if (line is not null)
+            output.AppendLine(line);
     }
 
-    private static void TryStop(Process process)
+    private static async Task StopAsync(DenoProcess process)
     {
         try
         {
-            if (!process.HasExited)
-                process.Kill(entireProcessTree: true);
+            if (process.IsRunning)
+                await process.StopAsync(null, CancellationToken.None).ConfigureAwait(false);
         }
-        catch
+        catch (InvalidOperationException)
         {
+            // The process can exit between IsRunning and StopAsync during cancellation cleanup.
         }
     }
 

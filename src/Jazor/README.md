@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
 </ItemGroup>
 ```
 
@@ -41,12 +41,12 @@ Library projects keep the default `JazorMode=none`.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.8.2" />
-  <PackageReference Include="ECMAScript.Style" Version="0.8.2" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Style" Version="0.8.3" />
 </ItemGroup>
 ```
 
@@ -60,24 +60,23 @@ The final executable or web host project selects one output mode:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.2" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
 </ItemGroup>
 
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
   <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
-  <JazorTool>Deno</JazorTool> <!-- Used only by JazorMode=release -->
 </PropertyGroup>
 ```
 
 - `JazorMode=none` is the default and writes no artifacts.
 - `JazorMode=debug` scans the host output and referenced assemblies, then writes debug modules and `jazor-manifest.json`.
-- `JazorMode=release` performs its internal materialization in an intermediate directory, then writes the production browser bundle and source map through `JazorTool`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
+- `JazorMode=release` performs its internal materialization in an intermediate directory, then writes the production browser bundle and source map through the packaged Netpack lane.
 - `JazorSsrEnabled=true` additionally preserves a materialized raw module graph at `wwwroot/jazor/ssr/` for server rendering. This graph is separate from the optimized browser bundle.
 
 ### SSR
 
-ASP.NET Core owns the SSR request pipeline, routing, response document, and static assets. The current renderer executes the generated Vue module in an explicitly configured local Deno process; Deno is not copied into the application output or acquired implicitly by the host.
+ASP.NET Core owns the SSR request pipeline, routing, response document, and static assets. DenoHost executes the generated Vue module through its packaged local runtime, so the application does not need a globally installed Deno executable.
 
 ```xml
 <PropertyGroup>
@@ -87,10 +86,7 @@ ASP.NET Core owns the SSR request pipeline, routing, response document, and stat
 ```
 
 ```csharp
-builder.Services.AddJazorSsr(options =>
-{
-    options.DenoExecutablePath = @"C:\tools\deno\deno.exe";
-});
+builder.Services.AddJazorSsr();
 
 var app = builder.Build();
 app.UseStaticFiles();
@@ -99,7 +95,7 @@ app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 
 `UseJazorSsr` uses the existing SPA fallback rules, so static files and mapped endpoints continue to win. It renders with `@vue/server-renderer`, emits the same JSON props for client hydration, and retains the browser import map and styles in the response.
 
-The Deno backend is transitional. Its stable boundary is `IJazorSsrRenderer`; the planned replacement is a Jint renderer that executes a Netpack-produced SSR bundle. Netpack prepares executable server code, while Jint executes it. Neither role requires application `node_modules`, a CDN, or remote imports. Vue server-prefetch state is not automatically transferred to the browser; applications must explicitly include any shared state in their props or another application-owned payload.
+`IJazorSsrRenderer` is the stable SSR boundary. DenoHost is the runtime executor, while Netpack remains the browser build-time bundler. Neither role requires application `node_modules`, a CDN, or remote imports. Vue server-prefetch state is not automatically transferred to the browser; applications must explicitly include any shared state in their props or another application-owned payload.
 
 ### Razor-to-Vue integration
 
@@ -112,8 +108,8 @@ Add `Jazor.Vue` to a Razor SDK project to opt into the official Razor Source Gen
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.8.2" />
-    <PackageReference Include="Jazor.Vue" Version="0.8.2" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.8.3" />
+    <PackageReference Include="Jazor.Vue" Version="0.8.3" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -129,4 +125,4 @@ The existing emit targets continue to handle declared ECMAScript modules indepen
 - `JazorMode` defaults to `none`; `debug` and `release` are mutually exclusive build outputs.
 - `JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
 - `debug` writes modules plus `jazor-manifest.json`; `release` clears `JazorDir`, materializes internally, and writes browser bundle assets. With `JazorSsrEnabled=true`, it also writes the raw SSR graph under `JazorDir\ssr\`.
-- `JazorTool` defaults to `Deno` and is used only by `release`; bundle builds pass the intermediate manifest, artifact root, source root, and output root to the selected `Deno` or `Netpack` lane.
+- `release` passes the intermediate manifest, artifact root, source root, and output root to the fixed Netpack bundle lane.

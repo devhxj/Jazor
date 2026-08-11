@@ -14,7 +14,12 @@ function normalizeModulePath(value) {
   return segments.join("/");
 }
 
-const requestText = await new Response(Deno.stdin.readable).text();
+const requestPath = Deno.args[0];
+if (typeof requestPath !== "string" || requestPath.length === 0 || Deno.args.length !== 1) {
+  throw new Error("Jazor SSR runner requires one request payload path.");
+}
+
+const requestText = await Deno.readTextFile(requestPath);
 const request = JSON.parse(requestText);
 const modulePath = normalizeModulePath(request.modulePath);
 const artifactRootUrl = new URL("../", import.meta.url);
@@ -30,4 +35,4 @@ if (!("default" in module)) {
 
 const app = createSSRApp(module.default, request.props);
 const html = await renderToString(app);
-await Deno.stdout.write(new TextEncoder().encode(JSON.stringify({ html })));
+console.log(JSON.stringify({ html }));

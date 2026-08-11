@@ -28,7 +28,6 @@ on:
       - 'samples/JazorAdmin/**'
       - 'samples/JazorAdmin.Test/**'
       - 'samples/Sample.slnx'
-      - 'samples/RazorVue.TodoList/**'
       - 'Jazor.slnx'
       - 'global.json'
       - 'Directory.Build.props'
@@ -54,7 +53,6 @@ on:
       - 'samples/JazorAdmin/**'
       - 'samples/JazorAdmin.Test/**'
       - 'samples/Sample.slnx'
-      - 'samples/RazorVue.TodoList/**'
       - 'Jazor.slnx'
       - 'global.json'
       - 'Directory.Build.props'
@@ -90,11 +88,8 @@ jobs:
         run: dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-build -v minimal
 
   emit-and-browser-smoke:
-    # Jazor.EmitTest contains the SDK integration / pack / payload-guard tests AND
-    # the end-to-end browser-smoke + pure-Deno consumer E2E
-    # (Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace,
-    # Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace).
-    # Running the suite is what wires the browser smoke into CI.
+    # Jazor.EmitTest contains SDK integration, package-payload guards, and
+    # end-to-end browser smoke coverage for the current RazorVue artifact contract.
     name: Emit + SDK integration + browser smoke E2E
     runs-on: windows-latest
     steps:

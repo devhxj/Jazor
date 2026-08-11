@@ -28,10 +28,17 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void BundleOptions_RejectLegacyRazorVueUpdatePlanArgument()
+    public void ToolchainCommand_RejectsLegacyRazorVueUpdatePlanArgument()
     {
-        var parsed = BundleOptions.TryParse(
-            ["--in", "input", "--manifest", "manifest.json", "--out", "bundle.mjs", "--write-razorvue-update-plan", "plan.json"],
+        var parsed = ToolchainCommand.TryParse(
+            [
+                "build",
+                "--manifest", "manifest.json",
+                "--artifacts", "artifacts",
+                "--source-root", "src",
+                "--out-root", "dist",
+                "--write-razorvue-update-plan", "plan.json"
+            ],
             out _,
             out var error);
 
@@ -60,7 +67,7 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_InvokeExplicitToolchainContractForBundles()
+    public void SdkTargets_InvokeFixedNetpackContractForBundles()
     {
         var repositoryRoot = FindRepositoryRoot();
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
@@ -68,8 +75,9 @@ public sealed class LegacyRazorVueContractRetirementTests
 
         StringAssert.Contains(props, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
         StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\wwwroot\\jazor\\</JazorDir>", StringComparison.Ordinal);
-        StringAssert.Contains(props, "<JazorTool Condition=\"'$(JazorTool)' == ''\">Deno</JazorTool>", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "toolchain build --toolchain", StringComparison.Ordinal);
+        Assert.IsFalse(props.Contains("JazorTool", StringComparison.Ordinal), props);
+        StringAssert.Contains(targets, "toolchain build --manifest", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains("--toolchain", StringComparison.Ordinal), targets);
         StringAssert.Contains(targets, "--manifest", StringComparison.Ordinal);
         StringAssert.Contains(targets, "--artifacts", StringComparison.Ordinal);
         StringAssert.Contains(targets, "--source-root", StringComparison.Ordinal);

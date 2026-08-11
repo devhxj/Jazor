@@ -11,7 +11,7 @@
 - Collect generated ECMAScript module catalogs, `Jazor.Generated.VueRenderCatalog`, the repository-owned CLR runtime catalog, and embedded RazorVue render-context runtime assets.
 - Write `.mjs`, optional `.map`, and the shared schema-v1 `jazor-manifest.json`.
 - Remove stale module and source-map files when clean output is requested.
-- Bundle application modules through Deno or Netpack while preserving local packaged library ESM and chained source maps.
+- Bundle application modules through Netpack while preserving local packaged library ESM and chained source maps.
 
 `Jazor.Emit` 不负责 Razor Hook、官方 Razor Source Generator 的运行、Compiler lowering 或开发服务器协议。它只消费上游已完成的 catalog，并将模块图物化为调试文件或生产 Bundle。
 
@@ -23,7 +23,7 @@
 - `ModuleWriter.cs`: writes modules, source maps, and the manifest.
 - `LibraryMaterializer.cs`: validates package manifests and copies local library resources.
 - `Toolchain.cs`: parses and validates the local bundling contract.
-- `DenoBundler.cs` / `NetpackBundler.cs`: bundle application modules and preserve vendor ESM.
+- `NetpackBundler.cs`: bundles application modules and preserves vendor ESM.
 - `ManifestModel.cs`: defines the canonical schema-v1 module manifest contract; legacy `rootAssemblyPath` / `generatedAtUtc` manifests remain readable, but new manifest writes use `rootAssemblyName` and omit wall-clock or machine-absolute state.
 
 ## CLI
@@ -37,7 +37,7 @@ dotnet run --project src/Jazor.Emit -- --root <root.dll> --assembly <ref.dll> --
 Bundle modules:
 
 ```powershell
-dotnet run --project src/Jazor.Emit -- bundle --in <dir> --manifest <manifest.json> --out <bundle.mjs>
+dotnet run --project src/Jazor.Emit -- toolchain build --manifest <manifest.json> --artifacts <dir> --source-root <source-root> --out-root <output-root>
 ```
 
 ## Verification

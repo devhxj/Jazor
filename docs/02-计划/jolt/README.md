@@ -14,8 +14,4 @@
 - [Phase 6 Advanced LSP](phase6-advanced-lsp.md)
 - [Phase 7 Extension System](phase7-extension-system.md)
 
-## 历史交叉材料
-
-- [RazorVue implementation](razorvue-implementation/)
-
 当前转型 gate 与实现顺序以 [Jazor 架构转型开发计划](../Jazor%20架构转型开发计划.md) 为准。

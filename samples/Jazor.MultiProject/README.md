@@ -44,7 +44,7 @@ Generated output includes modules from all referenced projects that declare `[EC
 
 ## Production Bundle
 
-`JazorMode=release` uses `DenoHost`, so the sample does not depend on a globally installed `deno`.
+`JazorMode=release` uses the packaged Netpack lane for browser bundling. DenoHost is reserved for runtime execution, including SSR and smoke coverage.
 
 Use the same script with `-Bundle`:
 

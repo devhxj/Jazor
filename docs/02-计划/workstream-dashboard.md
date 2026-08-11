@@ -26,8 +26,8 @@ official Razor SG generated C#
 | [代码优先 WBS](./razorvue-transition/02-代码优先WBS.md) | 当前功能实现顺序 |
 | [路线与边界](./razorvue-transition/01-路线与边界.md) | 输入/输出/禁止事项 |
 | [Gate 与验收](./razorvue-transition/03-Gate与验收.md) | 功能 Gate、性能 Gate、测试入口 |
-| [工具链](./razorvue-transition/04-工具链.md) | Deno / Netpack 显式 lane |
-| [前端库资源自包含](./razorvue-transition/06-前端封装库资源自包含方案.md) | NuGet-owned browser assets 与双 lane 本地资源图 |
+| [工具链](./razorvue-transition/04-工具链.md) | Netpack 构建与 DenoHost 运行时边界 |
+| [前端库资源自包含](./razorvue-transition/06-前端封装库资源自包含方案.md) | NuGet-owned browser assets 与本地资源图 |
 | [状态快照](./razorvue-transition/05-状态快照.md) | 已完成、缺口、推迟项 |
 | [ECMAScript.Vue3 / Vuetify](../01-目标/ecmascript.vue3/README.md) | Vue3 与 Vuetify authoring 目标入口 |
 
@@ -36,7 +36,7 @@ official Razor SG generated C#
 1. 推进 direct VNode emitter P0：线性 element/content/attribute lowering 直接生成 setup-scoped `h(...)`。
 2. 用 G2 benchmark 对比 direct emitter 的 runtime/browser/generated artifact/release performance report。
 3. 根据报告拆分 component、slot、markup、bulk attrs、patch flags / block-level optimization。
-4. 保持 Deno/Netpack production toolchain 主线稳定。
+4. 保持 Netpack production toolchain 主线稳定。
 5. Dev/HMR 与阈值优化在 baseline 后单独排期。
 
 ## 工作流状态
@@ -47,7 +47,7 @@ official Razor SG generated C#
 | Compiler | 已接 RenderTreeBuilder host 与 current-component host | 继续让 C# expression/member semantics 走 SemanticWalker |
 | RazorVue | 已接 generated C# binder、component module framing、direct P0 emitter、runtime assets | 对比 direct 与 oracle 行为/性能 |
 | Emit | 已接 VueRenderCatalog、manifest、runtime materialization | 保持 artifact contract 稳定 |
-| Toolchain | Deno/Netpack 都保留为显式 lane | 保持共同 request/result contract |
+| Toolchain | Netpack 固定为 production bundle lane | 保持 request/result contract |
 | Vuetify | 当前选择传统 Vue 的核心理由 | 保持 package import smoke，暂不扩生态面 |
 
 ## 路线规则
@@ -56,7 +56,7 @@ official Razor SG generated C#
 - 不消费 Razor DR/IR，不回读 `.razor` 原文。
 - 只输出传统 Vue render-function/VNode `.mjs`。
 - runtime、lowering 和 toolchain 都只执行显式主线。
-- 用户显式选择 `Deno` 或 `Netpack`。
+- release 固定使用 Netpack；DenoHost 只执行 materialized runtime graph。
 - unsupported shape 必须 diagnostic 或进入未实现清单。
 
 ## Gate 摘要
@@ -67,8 +67,8 @@ official Razor SG generated C#
 | G1 | 通过：真实 Counter browser 首切片 |
 | G2-F | 通过：功能 surface、component contract、lifecycle、production toolchain smoke |
 | G2-P | 当前：执行性能采样和阈值判定 |
-| G3 | 已并入 production toolchain smoke：Deno Bundle 与 render-function module |
-| G4 | 部分通过：Netpack production 已过；Deno dev/HMR 待单独排期 |
+| G3 | 已并入 production toolchain smoke：Netpack Bundle 与 render-function module |
+| G4 | 部分通过：Netpack production 已过；dev/HMR 待单独排期 |
 | G5 | 部分通过：package consumer 已过；platform matrix 待单独排期 |
 
 ## 维护规则

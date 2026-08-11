@@ -27,4 +27,4 @@ No Razor host-output property is required. The integration does not use `EnableR
 | `debug` | Modules, source maps, and manifest. |
 | `release` | Production bundle and source map. |
 
-`JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`. `JazorTool` is used only when `JazorMode=release`.
+`JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`. `JazorMode=release` always uses Netpack for browser bundling.

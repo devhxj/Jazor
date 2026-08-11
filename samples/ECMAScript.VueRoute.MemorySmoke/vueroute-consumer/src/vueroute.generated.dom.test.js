@@ -3,7 +3,7 @@ import { installDomEnvironment } from "./test-dom.js";
 
 const disposeDomEnvironment = installDomEnvironment();
 const { nextTick } = await import("vue");
-const { createConfiguredApp } = await import("host/app.mjs");
+const { CreateConfiguredApp } = await import("host/app.mjs");
 
 addEventListener("unload", () => {
   disposeDomEnvironment();
@@ -50,7 +50,7 @@ async function withMountedApps(callback) {
 Deno.test("generated vue route app DOM mounts the generated router root with RouterLink and RouterView", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
-    const app = createConfiguredApp();
+    const app = CreateConfiguredApp();
     mountedApps.push(app);
 
     app.mount(host);
@@ -68,7 +68,7 @@ Deno.test("generated vue route app DOM mounts the generated router root with Rou
 Deno.test("generated vue route app DOM reacts through generated route navigation and component guards", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
-    const app = createConfiguredApp();
+    const app = CreateConfiguredApp();
     mountedApps.push(app);
 
     app.mount(host);

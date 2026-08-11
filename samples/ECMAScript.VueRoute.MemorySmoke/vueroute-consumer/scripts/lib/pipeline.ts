@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 export type PreparedWorkspace = {
   consumerRoot: string;
   generatedRoot: string;
+  bundleRoot: string;
   buildRoot: string;
   distRoot: string;
   assetsDirectory: string;
@@ -18,11 +19,13 @@ type PrepareWorkspaceOptions = {
 const consumerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const sampleRoot = resolve(consumerRoot, "..");
 const defaultGeneratedRoot = resolve(sampleRoot, "VueRoute.MemorySmoke.Host", "wwwroot", "jazor");
+const defaultBundleRoot = resolve(sampleRoot, "VueRoute.MemorySmoke.Host", "wwwroot", "jazor-release");
 const defaultBuildRoot = resolve(consumerRoot, ".deno-build");
 const defaultDistRoot = resolve(consumerRoot, "dist");
 
 export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): Promise<PreparedWorkspace> {
   const generatedRoot = resolvePathFromEnvironment("JAZOR_GENERATED_ROOT", defaultGeneratedRoot);
+  const bundleRoot = resolvePathFromEnvironment("JAZOR_BUNDLE_ROOT", defaultBundleRoot);
   const buildRoot = resolvePathFromEnvironment("VUEROUTE_DENO_BUILD_ROOT", defaultBuildRoot);
   const distRoot = resolvePathFromEnvironment("VUEROUTE_DENO_DIST_ROOT", defaultDistRoot);
   const assetsDirectory = join(distRoot, "assets");
@@ -45,9 +48,9 @@ export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): P
     clientEntryPath,
     [
       'import "./../src/style.css";',
-      'import { boot } from "host/app.mjs";',
+      'import { Boot } from "host/app.mjs";',
       "",
-      'boot("#app");',
+      'Boot("#app");',
       ""
     ].join("\n")
   );
@@ -55,6 +58,7 @@ export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): P
   return {
     consumerRoot,
     generatedRoot,
+    bundleRoot,
     buildRoot,
     distRoot,
     assetsDirectory,
@@ -75,6 +79,26 @@ export async function emptyDirectory(path: string): Promise<void> {
 
 export async function ensureDirectory(path: string): Promise<void> {
   await Deno.mkdir(path, { recursive: true });
+}
+
+export async function copyDirectoryContents(sourceRoot: string, targetRoot: string): Promise<void> {
+  await ensureDirectory(targetRoot);
+  for await (const entry of Deno.readDir(sourceRoot)) {
+    // Netpack's generated entry is an implementation detail, not a deployed asset.
+    if (entry.name.startsWith("__jazor_netpack_")) {
+      continue;
+    }
+
+    const sourcePath = join(sourceRoot, entry.name);
+    const targetPath = join(targetRoot, entry.name);
+    if (entry.isDirectory) {
+      await copyDirectoryContents(sourcePath, targetPath);
+      continue;
+    }
+
+    await ensureDirectory(dirname(targetPath));
+    await Deno.copyFile(sourcePath, targetPath);
+  }
 }
 
 export async function fileExists(path: string): Promise<boolean> {

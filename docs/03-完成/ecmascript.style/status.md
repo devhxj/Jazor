@@ -69,7 +69,6 @@ min max clamp
 <PropertyGroup>
   <JazorMode>none</JazorMode> <!-- none | debug | release -->
   <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
-  <JazorTool>Deno</JazorTool> <!-- 仅 release 生效 -->
 </PropertyGroup>
 ```
 

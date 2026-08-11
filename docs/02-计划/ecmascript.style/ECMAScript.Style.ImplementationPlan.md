@@ -91,7 +91,7 @@ typed values + CssRule / CssAtRule
 | 模块目录 | `style.mjs` 与 source map catalog | 路径、hash、map file 一致 |
 | RazorVue | 普通模块导入与 string 类名 | class prop 无适配层 |
 | debug | 根目录物化模块与 manifest | `style.mjs` 可直接导入 |
-| release | Deno/Netpack Bundle | 无未解析 Style runtime import |
+| release | Netpack Bundle | 无未解析 Style runtime import |
 | NuGet | 独立包与精确 Jazor 依赖 | 外部临时项目可 debug/release 构建 |
 
 ## 4. 测试矩阵

@@ -35,7 +35,7 @@ render-context v1 现在定位为 oracle/过渡层：覆盖尚未 direct lowerin
 - RazorVue lowering 只输出传统 Vue render-function `.mjs`、`.mjs.map` 和 manifest。
 - supported RenderTreeBuilder 调用优先走 direct VNode lowering；render-context 只保留为 oracle/过渡覆盖。
 - 无法表达的 generated-code shape 必须 diagnostic 或进入明确未实现清单。
-- 工具链选择必须显式；用户选择 `Deno` 或 `Netpack` 后只执行该实现。
+- production bundle 固定使用 Netpack；DenoHost 仅承担显式运行时执行。
 - 不引入第二执行模型、手写 DOM diff、template/SFC 反推、wrapper marker transport。
 
 ## 分片索引
@@ -45,7 +45,7 @@ render-context v1 现在定位为 oracle/过渡层：覆盖尚未 direct lowerin
 | [01-路线与边界.md](./razorvue-transition/01-路线与边界.md) | 架构路线、输入输出合同、禁止事项 |
 | [02-代码优先WBS.md](./razorvue-transition/02-代码优先WBS.md) | 当前功能落地顺序 |
 | [03-Gate与验收.md](./razorvue-transition/03-Gate与验收.md) | Gate、完成定义、测试入口 |
-| [04-工具链.md](./razorvue-transition/04-工具链.md) | Deno / Netpack 显式 lane |
+| [04-工具链.md](./razorvue-transition/04-工具链.md) | Netpack 构建与 DenoHost 运行时边界 |
 | [05-状态快照.md](./razorvue-transition/05-状态快照.md) | 已完成、进行中、推迟项 |
 
 ## 当前最高优先级
@@ -53,7 +53,7 @@ render-context v1 现在定位为 oracle/过渡层：覆盖尚未 direct lowerin
 1. 推进 direct VNode emitter P0：线性 `OpenElement` / `AddAttribute` / `AddContent` / `CloseElement` 不再 replay runtime frame stack。
 2. 继续维护 `scripts/csharp/benchmark-razorvue-g2.cs`，用 baseline 对比 direct emitter 的 runtime、browser、generated artifact 和 release performance report。
 3. 根据 direct P0 report 拆分 component、slot、markup、bulk attrs、patch flags / block-level optimization。
-4. 保持 Deno / Netpack production 主线稳定，性能采样不得引入第二 artifact contract。
+4. 保持 Netpack production 主线稳定，性能采样不得引入第二 artifact contract。
 5. Dev/HMR、跨平台旧线复跑和性能阈值优化在 baseline report 后单独排期。
 
 ## 维护规则

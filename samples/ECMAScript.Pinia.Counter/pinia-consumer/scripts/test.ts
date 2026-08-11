@@ -23,7 +23,7 @@ export async function runTests(): Promise<void> {
     ]);
   }
 
-  console.log("ECMAScript.Pinia Deno consumer build and test pipeline passed.");
+  console.log("ECMAScript.Pinia Netpack bundle and Deno runtime test pipeline passed.");
 }
 
 if (import.meta.main) {

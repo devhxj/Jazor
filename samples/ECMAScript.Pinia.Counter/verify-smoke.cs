@@ -14,6 +14,9 @@ string? restorePackagesPath = null;
 var generatedOutputRoot = string.IsNullOrWhiteSpace(options.GeneratedOutputRoot)
     ? Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "jazor")
     : ResolvePath(options.GeneratedOutputRoot, repoRoot);
+var bundleOutputRoot = string.IsNullOrWhiteSpace(options.BundleOutputRoot)
+    ? Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "bundle")
+    : ResolvePath(options.BundleOutputRoot, repoRoot);
 
 SetCommonEnvironment(repoRoot);
 var isolationArguments = GetIsolationArguments(options);
@@ -62,15 +65,40 @@ if (!options.FrontendOnly || options.BuildLocal)
         "-p:UseSharedCompilation=false"
     });
     RunDotNet(repoRoot, buildArguments);
+
+    var releaseBuildArguments = new List<string>
+    {
+        "build",
+        hostProject,
+        "-c", options.Configuration,
+        "-t:Rebuild",
+        "/m:1",
+        "/p:BuildInParallel=false",
+        $"-p:RestoreAdditionalProjectSources={packageOutput}",
+        $"-p:RestorePackagesPath={restorePackagesPath}",
+        "-p:RestoreForce=true",
+        $"-p:JazorPackageVersion={resolvedPackageInfo.Value.Version}",
+        "-p:JazorMode=release",
+        $"-p:JazorDir={bundleOutputRoot}"
+    };
+    releaseBuildArguments.AddRange(isolationArguments.BuildArguments);
+    releaseBuildArguments.AddRange(new[]
+    {
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    });
+    RunDotNet(repoRoot, releaseBuildArguments);
 }
 
 AssertPathExists(ResolveHostAssemblyPath(hostRoot, options), "sample host assembly for requested configuration");
 AssertGeneratedHostArtifacts(generatedOutputRoot);
+AssertNetpackBundleArtifacts(bundleOutputRoot);
 
-var denoExePath = ResolveDenoExecutable(repoRoot, options, restorePackagesPath, resolvedPackageInfo);
+var denoExePath = ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo);
 var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 {
-    ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot
+    ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot,
+    ["JAZOR_BUNDLE_ROOT"] = bundleOutputRoot
 };
 
 RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "task", "build" });
@@ -79,7 +107,7 @@ RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--fro
 RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--frozen", "--import-map", Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"), "src/pinia.generated.dom.test.js" });
 
 Console.WriteLine("ECMAScript.Pinia sample smoke verification passed.");
-Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, Deno bundle build, and Deno runtime/DOM coverage.");
+Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, Netpack release bundle, and DenoHost runtime/DOM coverage.");
 
 static string FindRepositoryRoot(string startDirectory)
 {
@@ -178,71 +206,25 @@ static string ResolveHostAssemblyPath(string hostRoot, SmokeOptions options)
     return Path.Combine(isolatedOutputRoot, "Pinia.Counter.Host", "bin", options.Configuration, "net11.0", "Pinia.Counter.Host.dll");
 }
 
-static string ResolveDenoExecutable(string repoRoot, SmokeOptions options, string? restorePackagesPath, PackageInfo? packageInfo)
+static string ResolveDenoHostRuntime(string repoRoot, string? restorePackagesPath, PackageInfo? packageInfo)
 {
-    var explicitDenoExePath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE");
-    if (!string.IsNullOrWhiteSpace(explicitDenoExePath))
-    {
-        var fullPath = Path.GetFullPath(explicitDenoExePath);
-        if (!File.Exists(fullPath))
-        {
-            throw new FileNotFoundException($"Explicit JAZOR_DENO_EXE path does not exist: {fullPath}");
-        }
-
-        return fullPath;
-    }
-
     var candidatePaths = new List<string>();
-    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
+
+    if (!string.IsNullOrWhiteSpace(restorePackagesPath) && Directory.Exists(restorePackagesPath))
     {
-        var isolatedOutputRoot = GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null);
-        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(isolatedOutputRoot, "Jazor.Emit", "bin", options.Configuration, "net11.0"));
-    }
-
-    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0"));
-    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Release", "net11.0"));
-
-    if (packageInfo is not null)
-    {
-        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "jazor", packageInfo.Value.Version, "tools", "net11.0"));
-    }
-
-    if (!string.IsNullOrWhiteSpace(restorePackagesPath))
-    {
-        if (packageInfo is not null)
-        {
-            AddDenoRuntimeCandidates(candidatePaths, Path.Combine(restorePackagesPath, "jazor", packageInfo.Value.Version, "tools", "net11.0"));
-        }
-
-        if (Directory.Exists(restorePackagesPath))
-        {
-            var restoredPackageDeno = Directory
-                .EnumerateFiles(restorePackagesPath, "deno.exe", SearchOption.AllDirectories)
-                .FirstOrDefault();
-            if (restoredPackageDeno is not null)
-            {
-                candidatePaths.Add(restoredPackageDeno);
-            }
-        }
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(restorePackagesPath, "denohost.runtime.win-x64"));
     }
 
     var denoHostPackageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "denohost.runtime.win-x64");
-    if (Directory.Exists(denoHostPackageRoot))
-    {
-        var cachedDenoRuntime = Directory
-            .EnumerateFiles(denoHostPackageRoot, "deno.exe", SearchOption.AllDirectories)
-            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-        if (cachedDenoRuntime is not null)
-        {
-            candidatePaths.Add(cachedDenoRuntime);
-        }
-    }
+    AddDenoRuntimeCandidates(candidatePaths, denoHostPackageRoot);
 
     var denoExePath = candidatePaths.FirstOrDefault(File.Exists);
     if (denoExePath is null)
     {
-        throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jazor.Emit first so DenoHost runtime assets exist, or rerun the smoke path after the local Jazor package restore completes.");
+        var packageLabel = packageInfo is { } package
+            ? $"local Jazor {package.Version} package restore"
+            : "local Jazor package restore";
+        throw new FileNotFoundException($"DenoHost runtime was not found after the {packageLabel}.");
     }
 
     return denoExePath;
@@ -250,8 +232,23 @@ static string ResolveDenoExecutable(string repoRoot, SmokeOptions options, strin
 
 static void AddDenoRuntimeCandidates(ICollection<string> candidates, string baseDirectory)
 {
-    candidates.Add(Path.Combine(baseDirectory, "runtimes", "win-x64", "native", "deno.exe"));
-    candidates.Add(Path.Combine(baseDirectory, "publish", "runtimes", "win-x64", "native", "deno.exe"));
+    if (!Directory.Exists(baseDirectory))
+    {
+        return;
+    }
+
+    foreach (var candidate in Directory
+        .EnumerateFiles(baseDirectory, "deno.exe", SearchOption.AllDirectories)
+        .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
+    {
+        candidates.Add(candidate);
+    }
+}
+
+static void AssertNetpackBundleArtifacts(string bundleOutputRoot)
+{
+    AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js"), "Netpack browser bundle");
+    AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js.map"), "Netpack browser bundle source map");
 }
 
 static void AssertGeneratedHostArtifacts(string generatedOutputRoot)
@@ -421,7 +418,8 @@ sealed record SmokeOptions(
     bool FrontendOnly,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
-    string? GeneratedOutputRoot)
+    string? GeneratedOutputRoot,
+    string? BundleOutputRoot)
 {
     public static SmokeOptions Parse(IReadOnlyList<string> arguments)
     {
@@ -431,6 +429,7 @@ sealed record SmokeOptions(
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
         string? generatedOutputRoot = null;
+        string? bundleOutputRoot = null;
 
         for (var index = 0; index < arguments.Count; index++)
         {
@@ -461,6 +460,9 @@ sealed record SmokeOptions(
                 case "-GeneratedOutputRoot":
                     generatedOutputRoot = RequireValue(arguments, ref index, argument);
                     break;
+                case "--bundle-output-root":
+                    bundleOutputRoot = RequireValue(arguments, ref index, argument);
+                    break;
                 default:
                     throw new InvalidOperationException($"Unsupported argument: {argument}");
             }
@@ -472,7 +474,8 @@ sealed record SmokeOptions(
             frontendOnly,
             baseOutputPath,
             baseIntermediateOutputPath,
-            generatedOutputRoot);
+            generatedOutputRoot,
+            bundleOutputRoot);
     }
 
     static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)

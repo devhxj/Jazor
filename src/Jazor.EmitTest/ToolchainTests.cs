@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -7,12 +8,11 @@ namespace Jazor.EmitTest;
 public sealed class ToolchainTests
 {
     [TestMethod]
-    public void TryParse_BuildCommand_CreatesExplicitDenoProductionRequest()
+    public void TryParse_BuildCommand_CreatesNetpackProductionRequest()
     {
         var parsed = ToolchainCommand.TryParse(
             [
                 "build",
-                "--toolchain", "Deno",
                 "--manifest", "manifest.json",
                 "--artifacts", "artifacts",
                 "--source-root", "src",
@@ -24,7 +24,6 @@ public sealed class ToolchainTests
         Assert.IsTrue(parsed, error);
         Assert.IsNotNull(command);
         Assert.AreEqual(BuildMode.Production, command.Mode);
-        Assert.AreEqual(ToolchainKind.Deno, command.Request.Toolchain);
         Assert.IsTrue(command.Request.RequiredCapabilities.Contains(ToolchainCapability.ProductionBuild));
         Assert.IsTrue(command.Request.RequiredCapabilities.Contains(ToolchainCapability.SourceMaps));
         Assert.IsFalse(command.Request.RequiredCapabilities.Contains(ToolchainCapability.Hmr));
@@ -36,7 +35,6 @@ public sealed class ToolchainTests
         var parsed = ToolchainCommand.TryParse(
             [
                 "serve",
-                "--toolchain", "Netpack",
                 "--manifest", "manifest.json",
                 "--artifacts", "artifacts",
                 "--source-root", "src",
@@ -48,9 +46,27 @@ public sealed class ToolchainTests
         Assert.IsTrue(parsed, error);
         Assert.IsNotNull(command);
         Assert.AreEqual(BuildMode.Development, command.Mode);
-        Assert.AreEqual(ToolchainKind.Netpack, command.Request.Toolchain);
         Assert.IsTrue(command.Request.RequiredCapabilities.Contains(ToolchainCapability.DevelopmentServer));
         Assert.IsTrue(command.Request.RequiredCapabilities.Contains(ToolchainCapability.Hmr));
+    }
+
+    [TestMethod]
+    public void TryParse_RejectsRemovedToolchainSelector()
+    {
+        var parsed = ToolchainCommand.TryParse(
+            [
+                "build",
+                "--toolchain", "Deno",
+                "--manifest", "manifest.json",
+                "--artifacts", "artifacts",
+                "--source-root", "src",
+                "--out-root", "dist"
+            ],
+            out _,
+            out var error);
+
+        Assert.IsFalse(parsed);
+        Assert.AreEqual("Unknown argument '--toolchain'.", error);
     }
 
     [TestMethod]
@@ -59,7 +75,6 @@ public sealed class ToolchainTests
         var parsed = ToolchainCommand.TryParse(
             [
                 "build",
-                "--toolchain", "Deno",
                 "--manifest", "manifest.json",
                 "--source-root", "src",
                 "--out-root", "dist"
@@ -72,12 +87,11 @@ public sealed class ToolchainTests
     }
 
     [TestMethod]
-    public void Create_NormalizesExplicitToolchainContractPaths()
+    public void Create_NormalizesNetpackBuildContractPaths()
     {
         using var workspace = new TestWorkspace();
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Deno,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -103,140 +117,6 @@ public sealed class ToolchainTests
     }
 
     [TestMethod]
-    public async Task BuildAsync_DenoProduction_ConsumesUnifiedRequestAndWritesBundle()
-    {
-        using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
-            """
-            export function Boot() {
-              return "ready";
-            }
-            """);
-        WriteManifest(workspace, "host/app.mjs");
-
-        var request = ToolchainRequest.Create(
-            ToolchainKind.Deno,
-            workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
-            requiredCapabilities: new HashSet<ToolchainCapability>
-            {
-                ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps
-            });
-
-        var result = await new Toolchain().BuildAsync(request);
-
-        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
-        Assert.AreEqual(ToolchainKind.Deno, result.Toolchain);
-        Assert.AreEqual(request.BundleOutputPath, result.OutputPath);
-        Assert.AreEqual(1, result.ModuleCount);
-        Assert.IsTrue(File.Exists(request.BundleOutputPath));
-
-        var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("function Boot()", script);
-        Assert.Contains("export {", script);
-    }
-
-    [TestMethod]
-    public async Task BuildAsync_DenoProduction_UsesExplicitSourceRootForRegisteredVueSfcAsset()
-    {
-        using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
-            """
-            import LocalCard from "./LocalCard.vue";
-
-            export const ComponentName = LocalCard.name;
-            export default LocalCard;
-            """);
-        WriteModule(workspace.SourceRoot, "components/LocalCard.vue",
-            """
-            <template>
-              <section>Toolchain SFC</section>
-            </template>
-
-            <script>
-            export default {
-              name: "ToolchainLocalCard"
-            };
-            </script>
-            """);
-        WriteManifest(
-            workspace,
-            "host/app.mjs",
-            [
-                new AssetEntry(
-                    "components/LocalCard.vue",
-                    "host/LocalCard.vue",
-                    AssetEntry.KindVueSfc,
-                    "hash-asset-1")
-            ],
-            ["vue"]);
-
-        var request = ToolchainRequest.Create(
-            ToolchainKind.Deno,
-            workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
-            requiredCapabilities: new HashSet<ToolchainCapability>
-            {
-                ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps
-            },
-            libraryManifests: [FindLibraryManifest("ECMAScript.Vue3")]);
-
-        var result = await new Toolchain().BuildAsync(request);
-
-        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
-
-        var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("ToolchainLocalCard", script);
-        Assert.Contains("Toolchain SFC", script);
-        Assert.DoesNotContain("./LocalCard.vue", script);
-    }
-
-    [TestMethod]
-    public async Task BuildAsync_DenoProduction_BundlesVuetifyFromLocalManifest()
-    {
-        using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
-            """
-            import { VBtn } from "vuetify/components";
-
-            export const ComponentName = VBtn.name;
-            """);
-        WriteManifest(workspace, "host/app.mjs", packageImports: ["vuetify/components"]);
-
-        var request = ToolchainRequest.Create(
-            ToolchainKind.Deno,
-            workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
-            requiredCapabilities: new HashSet<ToolchainCapability>
-            {
-                ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps
-            },
-            libraryManifests:
-            [
-                FindLibraryManifest("ECMAScript.Vue3"),
-                FindLibraryManifest("ECMAScript.Vuetify")
-            ]);
-
-        var result = await new Toolchain().BuildAsync(request);
-
-        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
-        var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("ComponentName", script);
-        Assert.Contains("VBtn", script);
-        Assert.DoesNotContain("vuetify/components", script);
-        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.SourceRoot, "node_modules")));
-    }
-
-    [TestMethod]
     public async Task BuildAsync_NetpackProduction_ConsumesUnifiedRequestAndWritesBundle()
     {
         using var workspace = new TestWorkspace();
@@ -249,7 +129,6 @@ public sealed class ToolchainTests
         WriteManifest(workspace, "host/app.mjs");
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Netpack,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -262,7 +141,6 @@ public sealed class ToolchainTests
         var result = await new Toolchain().BuildAsync(request);
 
         Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
-        Assert.AreEqual(ToolchainKind.Netpack, result.Toolchain);
         Assert.AreEqual(request.BundleOutputPath, result.OutputPath);
         Assert.AreEqual(1, result.ModuleCount);
         Assert.IsTrue(File.Exists(request.BundleOutputPath));
@@ -272,6 +150,10 @@ public sealed class ToolchainTests
         Assert.Contains("netpack-ready", script);
         Assert.Contains("Boot", script);
         Assert.Contains("sourceMappingURL=bundle.js.map", script);
+
+        using var sourceMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(request.BundleOutputPath + ".map", TestContext.CancellationTokenSource.Token));
+        Assert.AreEqual("bundle.js", sourceMap.RootElement.GetProperty("file").GetString());
     }
 
     [TestMethod]
@@ -311,7 +193,6 @@ public sealed class ToolchainTests
             ["vue"]);
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Netpack,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -326,7 +207,6 @@ public sealed class ToolchainTests
         var result = await new Toolchain().BuildAsync(request);
 
         Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
-        Assert.AreEqual(ToolchainKind.Netpack, result.Toolchain);
         Assert.IsTrue(File.Exists(request.BundleOutputPath));
         Assert.IsTrue(File.Exists(request.BundleOutputPath + ".map"));
 
@@ -361,7 +241,6 @@ public sealed class ToolchainTests
             ]);
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Netpack,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -443,7 +322,6 @@ public sealed class ToolchainTests
             ["vue"]);
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Netpack,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -510,7 +388,6 @@ public sealed class ToolchainTests
         WriteManifest(workspace, "host/app.mjs", packageImports: ["vuetify/components"]);
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Netpack,
             workspace.ManifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -557,7 +434,6 @@ public sealed class ToolchainTests
         Directory.Delete(workspace.ArtifactRoot, recursive: true);
 
         var request = ToolchainRequest.Create(
-            ToolchainKind.Deno,
             manifestPath,
             workspace.ArtifactRoot,
             workspace.SourceRoot,
@@ -566,7 +442,6 @@ public sealed class ToolchainTests
         var result = await new Toolchain().BuildAsync(request);
 
         Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(ToolchainKind.Deno, result.Toolchain);
         Assert.AreEqual("JAZOR_TOOLCHAIN_ARTIFACT_ROOT_NOT_FOUND", result.Diagnostic?.Code);
         Assert.Contains(workspace.ArtifactRoot, result.Diagnostic?.Message ?? string.Empty);
     }

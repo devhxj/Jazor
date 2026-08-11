@@ -41,7 +41,6 @@ Jazor 的实现建立在以下项目及其维护者的工作之上：
 - [Esprima .NET](https://github.com/sebastienros/esprima-dotnet) - .NET 的 ECMAScript 解析器
 - [Acornima](https://github.com/adams85/acornima) - .NET 的 ECMAScript 解析器和 ESTree 库
 - [Netpack](https://github.com/FlorianRappl/netpack) - JavaScript 模块打包工具
-- [Jint](https://github.com/sebastienros/jint) - .NET 的 JavaScript 解释器
 - [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时宿主
 - [WebRef](https://github.com/w3c/webref) - Web 规范引用
 - [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) - 早期 C# 到 JavaScript 编译器
@@ -117,24 +116,24 @@ flowchart LR
 - **ECMAScript 模块输出**：`[ECMAScriptModule]` 类生成具名导出的 `.mjs` 模块，并提供稳定的导入收集、源位置跟踪和源映射载体。
 - **Razor-to-Vue 产物生成**：Razor 组件语义从官方 Razor SG 生成的 C# 出发，经 Roslyn 绑定和编译器持有的 `IOperation` 降低。
 - **类型化 Vue 编写**：`ECMAScript.Vue3` 提供 Vue 3 `defineComponent`、`h`、响应式引用、生命周期、props、slots 和组件契约绑定。
-- **面向宿主的构建支持**：MSBuild 为 ECMAScript 与 RazorVue 产物选择一种输出模式：不输出、`debug` 模块与清单，或通过 Deno / Netpack 工具链生成 `release` 生产包。
+- **面向宿主的构建支持**：MSBuild 为 ECMAScript 与 RazorVue 产物选择一种输出模式：不输出、`debug` 模块与清单，或通过 Netpack 生成 `release` 生产包。
 
 ## 最新更新
 
-### 2026-08-09
+### 2026-08-11
 
-- Jazor 0.4 已达到 RazorVue 90% 分支覆盖率发布门槛：4,613 个官方 Razor SG 场景覆盖 90.01% 分支。嵌入式 DenoHost 已升级至 2.9.5，并通过本地 NuGet Deno 与浏览器 smoke 验证。
-- JazorAdmin 现已直接复刻 TDesign Starter 管理端外壳，使用腾讯云圆滑主题、紧凑内容间距、中尺寸路由页签，并提供仅管理员可用、固定在底部中间的全局外观配置器。
-- IconBar 保留为一级导航；当前一级模块标题固定在对齐 Header 的 64px 二级栏顶部，仅二级菜单滚动。折叠后二级栏宽度归零，Logo、折叠按钮、内容边距和移动端布局保持对齐。
-- 呼吸触发按钮会沿 90 度圆弧展开四个方形操作，间隔为 22.5 度；登录页背景图与表单区域也完成连续融合。
-- `ECMAScript.Style` 新增 Starter 布局所需的类型化 CSS 值，并让 `important(value)` 保留原值域；TDesign 多参数事件会把第一个 Vue 运行时参数作为生成的 `EventCallback<T>` 载荷。
+- 生成的 RazorVue 组件现在会注册到 Vue 开发期 HMR runtime。经编译器证明仅模板变更的更新可在保留父组件状态的前提下原地刷新；不安全或不可用的更新路径仍回退为整页刷新。
+- RazorVue debug 产物会为每个生成的 `.mjs` 模块关联包含 Razor 源文本的外部 source map，浏览器 DevTools 无需额外源文件路由即可回溯到 `.razor` 源码。
+- ASP.NET Core 应用现在可选择本地 Vue SSR 和浏览器 hydration。SSR 产物携带本地 Vue runtime 资源，不依赖应用 `node_modules`、CDN 或远程 import；DenoHost 执行 SSR，Netpack 负责浏览器打包。
+- Pinia 样例保留作者声明的 C# 成员名，并在 runtime 需要时显式声明 Pinia 小写协议键，使生成的浏览器模块与测试流程保持一致。
+- 当前 Pinia 与 Vue Router 样例会独立验证 Netpack release bundle 和 DenoHost 支撑的 runtime smoke；已退役的 generated-SFC / Deno bundle 样例不再保留在活动产品树中。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
 ## 安装
 
 ```bash
-dotnet add package Jazor --version 0.3.4
+dotnet add package Jazor --version 0.8.3
 ```
 
 `Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
@@ -143,8 +142,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.46" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.46" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.8.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -152,11 +151,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Style" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.46" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.46" />
+  <PackageReference Include="Jazor" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Style" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.3" />
 </ItemGroup>
 ```
 
@@ -283,7 +282,6 @@ var actionClass = style(new CssRule
 <PropertyGroup>
   <JazorMode>release</JazorMode>
   <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
-  <JazorTool>Deno</JazorTool>
 </PropertyGroup>
 ```
 
@@ -293,7 +291,6 @@ var actionClass = style(new CssRule
 |------|--------|------|
 | `JazorMode` | `none` | `none` 不输出；`debug` 写出模块和清单；`release` 写出生产包。 |
 | `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 模块或 release 生产包的输出根目录。 |
-| `JazorTool` | `Deno` | 选择 release 工具链，目前支持 `Deno` 或 `Netpack`。 |
 
 包和 emit 细节见 [src/Jazor/README.md](src/Jazor/README.md) 与 [src/Jazor.Emit/README.md](src/Jazor.Emit/README.md)。
 
@@ -319,7 +316,7 @@ Jazor/
 ├── samples/
 │   ├── Jazor.MultiProject/          # 多项目模块发射基线示例
 │   ├── ECMAScript.Pinia.Counter/    # Vue 3 + Pinia 示例
-│   └── RazorVue.TodoList/           # 待转型的旧示例
+│   └── ECMAScript.VueRoute.MemorySmoke/ # Vue Router 模块与浏览器 runtime 示例
 ├── docs/                            # 目标、计划、状态快照、补充规则、遗弃材料
 └── scripts/csharp/                  # 仓库自动化脚本
 ```

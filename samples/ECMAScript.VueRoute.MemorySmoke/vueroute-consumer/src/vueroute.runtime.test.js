@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { createConfiguredApp } from "host/app.mjs";
-import { createRouterRuntime, navigateScenario } from "router/memory-router.mjs";
+import { CreateConfiguredApp } from "host/app.mjs";
+import { CreateRouterRuntime, NavigateScenario } from "router/memory-router.mjs";
 
 Deno.test("vue route runtime integration seams expose a configured app with router installation", () => {
-  const app = createConfiguredApp();
+  const app = CreateConfiguredApp();
 
   assert.ok(app);
   assert.strictEqual(typeof app.mount, "function");
@@ -11,8 +11,8 @@ Deno.test("vue route runtime integration seams expose a configured app with rout
 });
 
 Deno.test("vue route runtime integration seams execute the generated router scenario directly", async () => {
-  const router = createRouterRuntime();
-  const snapshot = await navigateScenario(router);
+  const router = CreateRouterRuntime();
+  const snapshot = await NavigateScenario(router);
 
   assert.strictEqual(snapshot.currentPath, "/query");
   assert.match(snapshot.globalGuard, /beforeResolve:/);

@@ -2,6 +2,8 @@
   <PropertyGroup>
     <AcornimaVersion>1.7.0</AcornimaVersion>
     <DenoHostVersion>2.9.5</DenoHostVersion>
+    <!-- DenoHost 2.9.5 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <NetPackVersion>0.8.0</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
     <CodeAnalysisVersion>5.9.0-1.26359.118</CodeAnalysisVersion>

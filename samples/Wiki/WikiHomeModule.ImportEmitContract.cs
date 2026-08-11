@@ -50,7 +50,6 @@ src/Jazor.Compiler/AstConverter.cs
 src/Jazor.Compiler/ESGenerator.cs
 src/Jazor.Emit/ModuleCollector.cs
 src/Jazor.Emit/ModuleWriter.cs
-src/Jazor.Emit/DenoBundler.cs
 src/Jazor.Emit/NetpackBundler.cs
 """),
                 H("ul",

@@ -123,12 +123,12 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 1. **完成 layering 实现**
    - 收口 phase-one 边界
    - 验证两层级联 helper composition
-   - 后续执行参考已并入：[RazorVue.ImplementationSkeleton.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationSkeleton.md)
+   - 该执行路线已退役，不再作为后续实现参考。
 
 2. **完成 lifecycle safe subset 实现**
    - 补齐边界案例
    - 确保生命周期语义在 Vue 侧有安全映射
-   - 后续执行参考已并入：[RazorVue.ImplementationChecklist.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+   - 该执行路线已退役，不再作为后续实现参考。
 
 **验证标准**：
 - Phase-one 核心场景全部有测试覆盖
@@ -172,7 +172,6 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 - [RazorVue.Design.md](../../01-目标/razorvue/design/RazorVue.Design.md)
 - [RazorVue.ComponentDescriptorSpec.md](../../01-目标/razorvue/design/RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.DenoHostContract.md](../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
-- [RazorVue.ImplementationChecklist.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 ## 6. 当前风险
 

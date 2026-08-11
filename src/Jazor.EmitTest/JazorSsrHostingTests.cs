@@ -78,7 +78,7 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
-    public async Task JazorSsrRenderer_RequiresExplicitTemporaryDenoExecutable()
+    public async Task JazorSsrRenderer_UsesPackagedDenoHostRuntime()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -93,10 +93,12 @@ public sealed class JazorSsrHostingTests
         await using var app = builder.Build();
         var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
 
-        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-            () => renderer.RenderAsync(new JazorSsrRequest("components/counter.mjs")));
+        var result = await renderer.RenderAsync(new JazorSsrRequest(
+            "components/counter.mjs",
+            new { Title = "DenoHost" }));
 
-        StringAssert.Contains(exception.Message, "DenoExecutablePath");
+        Assert.AreEqual("components/counter.mjs", result.ModulePath);
+        Assert.AreEqual("<main id=\"ssr-output\">DenoHost|prefetched</main>", result.Html);
     }
 
     [TestMethod]
@@ -157,7 +159,6 @@ public sealed class JazorSsrHostingTests
         {
             options.ArtifactRootPath = artifactRoot;
             options.AssetPath = "/jazor";
-            options.DenoExecutablePath = ResolveDenoExecutable();
         });
 
         var app = builder.Build();
@@ -182,35 +183,12 @@ public sealed class JazorSsrHostingTests
         {
             options.ArtifactRootPath = artifactRoot;
             options.AssetPath = "/jazor";
-            options.DenoExecutablePath = ResolveDenoExecutable();
         });
 
         var app = builder.Build();
         configure(app);
         await app.StartAsync();
         return app;
-    }
-
-    private static string ResolveDenoExecutable()
-    {
-        var root = FindRepositoryRoot();
-        var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-        var candidates = Directory.EnumerateFiles(
-                Path.Combine(root, "src", "Jazor.Emit", "bin"),
-                executableName,
-                SearchOption.AllDirectories)
-            .Where(path => path.Contains(
-                Path.DirectorySeparatorChar + "runtimes" + Path.DirectorySeparatorChar,
-                StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(path => path.Contains(
-                Path.DirectorySeparatorChar + "net11.0" + Path.DirectorySeparatorChar,
-                StringComparison.OrdinalIgnoreCase))
-            .ThenByDescending(File.GetLastWriteTimeUtc)
-            .ToArray();
-        return candidates.FirstOrDefault()
-            ?? throw new FileNotFoundException(
-                "Jazor SSR test requires the Deno runtime copied by Jazor.Emit.",
-                Path.Combine(root, "src", "Jazor.Emit", "bin"));
     }
 
     private static string FindRepositoryRoot()

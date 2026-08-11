@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using NetPack;
 using NetPack.Graph;
@@ -418,7 +419,10 @@ internal sealed class NetpackBundler
         File.WriteAllBytes(outputPath, bundleBytes);
 
         if (outputs.TryGetValue(bundleOutput.Key + ".map", out var mapBytes))
-            File.WriteAllBytes(outputPath + ".map", mapBytes);
+        {
+            var materializedMap = RewriteSourceMapFile(mapBytes, Path.GetFileName(outputPath));
+            File.WriteAllBytes(outputPath + ".map", materializedMap);
+        }
 
         return true;
     }
@@ -435,6 +439,15 @@ internal sealed class NetpackBundler
             return bytes;
 
         return Utf8WithoutBom.GetBytes(text.Replace(originalMapName, materializedMapName, StringComparison.Ordinal));
+    }
+
+    private static byte[] RewriteSourceMapFile(byte[] bytes, string materializedBundleName)
+    {
+        var sourceMap = JsonNode.Parse(bytes) as JsonObject
+            ?? throw new InvalidDataException("Netpack emitted an invalid source map.");
+
+        sourceMap["file"] = materializedBundleName;
+        return Utf8WithoutBom.GetBytes(sourceMap.ToJsonString());
     }
 
     private static string GetRootAssemblyName(ManifestModel manifest)
@@ -466,4 +479,19 @@ internal sealed class NetpackBundler
     private sealed record StaticAsset(
         string SourcePath,
         string OutputRelativePath);
+}
+
+/// <summary>Common success or failure result returned by the Netpack bundler.</summary>
+internal sealed record BundleResult(
+    bool IsSuccess,
+    int ExitCode,
+    string? Error,
+    string? OutputPath,
+    int ModuleCount)
+{
+    public static BundleResult Success(string outputPath, int moduleCount)
+        => new(true, 0, null, outputPath, moduleCount);
+
+    public static BundleResult Fail(int exitCode, string error)
+        => new(false, exitCode, error, null, 0);
 }

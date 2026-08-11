@@ -24,7 +24,7 @@
 | `debug` | 输出模块、源映射和 manifest |
 | `release` | 内部物化后生成生产 bundle 和源映射 |
 
-默认目录为 `$(MSBuildProjectDirectory)\wwwroot\jazor\`。`JazorTool` 仅在 `release` 模式下选择 `Deno` 或 `Netpack` 工具链。
+默认目录为 `$(MSBuildProjectDirectory)\wwwroot\jazor\`。`release` 固定使用 Netpack 打包；DenoHost 只承担显式运行时执行。
 
 ## 构建边界
 

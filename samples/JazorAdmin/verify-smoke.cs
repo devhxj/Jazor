@@ -345,7 +345,7 @@ static async Task VerifyBrowserSmokeAsync(
         return;
     }
 
-    var denoPath = ResolveDenoExecutable(repoRoot);
+    var denoPath = ResolveDenoHostRuntime(repoRoot);
 
     var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "dist", "vue.runtime.esm-browser.prod.js");
     var vueRouterRuntime = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "dist", "vue-router.esm-browser.prod.js");
@@ -2037,21 +2037,10 @@ static void CopyInjectBrowserArtifacts(string sourceRoot, string targetRoot)
     CopyDirectory(source, target);
 }
 
-static string ResolveDenoExecutable(string repoRoot)
+static string ResolveDenoHostRuntime(string repoRoot)
 {
-    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE")?.Trim();
-    if (!string.IsNullOrWhiteSpace(explicitPath))
-    {
-        var fullPath = Path.GetFullPath(explicitPath);
-        if (!File.Exists(fullPath))
-            throw new FileNotFoundException("Explicit JAZOR_DENO_EXE path does not exist: " + fullPath);
-
-        return fullPath;
-    }
-
     var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
     var candidates = new List<string>();
-    AddDenoRuntimeCandidates(candidates, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin"), executableName);
 
     var packageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages");
     if (Directory.Exists(packageRoot))
@@ -2060,9 +2049,9 @@ static string ResolveDenoExecutable(string repoRoot)
             AddDenoRuntimeCandidates(candidates, runtimePackage, executableName);
     }
 
-    var denoPath = candidates.FirstOrDefault(File.Exists) ?? TryResolveExecutable("deno");
+    var denoPath = candidates.FirstOrDefault(File.Exists);
     return denoPath ?? throw new FileNotFoundException(
-        "Bundled Deno runtime was not found. Build Jazor.Emit so DenoHost runtime assets are restored, or set JAZOR_DENO_EXE.");
+        "DenoHost runtime was not restored with the local Jazor package.");
 }
 
 static void AddDenoRuntimeCandidates(ICollection<string> candidates, string root, string executableName)

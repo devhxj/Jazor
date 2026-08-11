@@ -50,6 +50,30 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task CreateLocalPackage_DeclaresDenoHostSsrRuntime()
+    {
+        var package = await LocalPackage.Value;
+        var nuspec = ReadPackageEntryText(package.PackagePath, "Jazor.nuspec");
+        var props = ReadPackageEntryText(package.PackagePath, "buildTransitive/Jazor.props");
+        using var archive = ZipFile.OpenRead(package.PackagePath);
+        var entryNames = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+
+        StringAssert.Contains(nuspec, "id=\"DenoHost.Core\"", StringComparison.Ordinal);
+        StringAssert.Contains(nuspec, "id=\"DenoHost.Runtime.win-x64\"", StringComparison.Ordinal);
+        StringAssert.Contains(
+            props,
+            "<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>",
+            StringComparison.Ordinal);
+        Assert.IsFalse(
+            entryNames.Any(static path =>
+                path.StartsWith("tools/net11.0/DenoHost", StringComparison.OrdinalIgnoreCase) ||
+                path.StartsWith("tools/net11.0/runtimes/", StringComparison.OrdinalIgnoreCase)),
+            "Jazor.Emit must remain a Netpack-only build tool and cannot carry DenoHost runtime assets.");
+    }
+
+    [TestMethod]
     public async Task CreateLocalPackage_IncludesVuetifyAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -391,7 +415,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "function Prefix()");
         StringAssert.Contains(bundle, "function Greet(name)");
         StringAssert.Contains(bundle, "function Boot()");
-        StringAssert.Contains(bundle, "export {");
+        StringAssert.Contains(bundle, "export default");
         StringAssert.Contains(bundle, "Boot");
     }
 
@@ -825,7 +849,7 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
     }
 
     [TestMethod]
@@ -1227,7 +1251,7 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
     }
 
     [TestMethod]
@@ -1623,7 +1647,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughBundledDeno_AndResolvesVuePackages()
+    public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughNetpack_AndResolvesVuePackages()
     {
         var package = await LocalPackage.Value;
 
@@ -2266,7 +2290,7 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoExePath, testFile, outputRoot);
+        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
         Assert.IsFalse(
             Directory.Exists(Path.Combine(outputRoot, "node_modules")),
             "The materialized RazorVue consumer test must resolve Vue without frontend node_modules.");
@@ -2296,7 +2320,6 @@ public sealed class SdkIntegrationTests
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release",
-                "-p:JazorTool=Netpack",
                 $"-p:JazorDir={bundleRoot}"
             ]);
 
@@ -2712,7 +2735,7 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", packageVersion),
-            GetBundledDenoPath(emitPublishDirectory));
+            GetDenoHostRuntimePath());
     }
 
     private static void AssertPackageEntries(string packagePath, params string[] expectedPaths)
@@ -2950,11 +2973,11 @@ public sealed class SdkIntegrationTests
         return packagePath;
     }
 
-    private static string GetBundledDenoPath(string emitPublishDirectory)
+    private static string GetDenoHostRuntimePath()
     {
-        var denoPath = Path.Combine(emitPublishDirectory, "runtimes", "win-x64", "native", "deno.exe");
+        var denoPath = Path.Combine(AppContext.BaseDirectory, "runtimes", "win-x64", "native", "deno.exe");
         if (!File.Exists(denoPath))
-            throw new FileNotFoundException($"Bundled Deno runtime was not found under '{emitPublishDirectory}'.", denoPath);
+            throw new FileNotFoundException($"DenoHost runtime was not found under '{AppContext.BaseDirectory}'.", denoPath);
 
         return denoPath;
     }
@@ -3136,7 +3159,7 @@ public sealed class SdkIntegrationTests
         Directory.CreateDirectory(denoCacheRoot);
 
         return await RunProcessAsync(
-            package.DenoExePath,
+            package.DenoHostRuntimePath,
             workingDirectory,
             arguments,
             timeout,
@@ -3706,7 +3729,7 @@ public sealed class SdkIntegrationTests
         string PiniaTestingPackagePath,
         string TDesignPackagePath,
         string ElementPlusPackagePath,
-        string DenoExePath);
+        string DenoHostRuntimePath);
 
     private sealed record LocalStylePackageFixture(
         string RepoRoot,

@@ -1,4 +1,4 @@
 import "./style.css";
-import { boot } from "host/app.mjs";
+import { Boot } from "host/app.mjs";
 
-boot("#app");
+Boot("#app");

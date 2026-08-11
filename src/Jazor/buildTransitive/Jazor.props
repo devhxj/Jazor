@@ -2,9 +2,10 @@
   <PropertyGroup>
     <JazorMode Condition="'$(JazorMode)' == ''">none</JazorMode>
     <JazorDir Condition="'$(JazorDir)' == ''">$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
-    <JazorTool Condition="'$(JazorTool)' == ''">Deno</JazorTool>
     <!-- Release keeps only the browser bundle unless SSR explicitly needs the raw module graph. -->
     <JazorSsrEnabled Condition="'$(JazorSsrEnabled)' == ''">false</JazorSsrEnabled>
+    <!-- DenoHost validates its packaged runtime metadata through System.Text.Json reflection. -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <PropertyGroup>

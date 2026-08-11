@@ -494,7 +494,7 @@ internal sealed record GeneratedJavaScriptArtifact(
 
 - import rewrite
 - bundle 入口组装
-- Deno bundle
+- Netpack bundle
 
 如果第一阶段再引入 bundle map chaining，会把复杂度一下抬高。
 

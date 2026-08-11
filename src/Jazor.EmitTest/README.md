@@ -40,4 +40,4 @@ dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project emit
 ## Notes
 
 - The tests use temporary workspaces and clean them up after execution.
-- `Jazor.Emit` depends on `DenoHost`; if restore prints `NU1900` warnings for vulnerability feeds, that does not block the tests as long as package restore succeeds.
+- SSR and runtime smoke coverage use the packaged `DenoHost` runtime; if restore prints `NU1900` warnings for vulnerability feeds, that does not block the tests as long as package restore succeeds.

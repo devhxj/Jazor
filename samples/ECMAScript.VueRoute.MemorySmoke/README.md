@@ -1,17 +1,18 @@
 # ECMAScript.VueRoute.MemorySmoke
 
-> Purpose: external Vue Router binding, generated module, Deno Bundle, and browser-runtime smoke sample.
+> Purpose: external Vue Router binding, generated modules, Netpack browser bundle, and DenoHost runtime smoke sample.
 
-This sample demonstrates the current `ECMAScript.VueRoute` consumer path with a Deno-based frontend:
+This sample demonstrates the current `ECMAScript.VueRoute` consumer path with a fixed build/runtime boundary:
 
 - author Vue Router 4 route tables, guards, links, and router-view composition in C#
-- emit raw `.mjs` modules from a Jazor host project
-- consume those generated modules from Deno with Vue + Vue Router resolved through an import map
+- emit raw debug `.mjs` modules from a Jazor host project
+- build the production browser artifact through `JazorMode=release` and Netpack
+- execute generated-module runtime and DOM coverage through the DenoHost-provided Deno runtime
 
 The sample is split into:
 
 - `VueRoute.MemorySmoke.Host`: Jazor host that emits the generated modules
-- `vueroute-consumer`: minimal Deno consumer that imports the generated host module and runs build/runtime/DOM smoke coverage against the generated Vue Router modules
+- `vueroute-consumer`: minimal Deno runtime consumer that imports debug modules for coverage and materializes the already-built Netpack browser artifact
 
 ## Build from this repository
 
@@ -38,14 +39,16 @@ This validates the production-oriented consumer path:
 - pack `Jazor` from the current repository state
 - rebuild `VueRoute.MemorySmoke.Host` against the freshly packed local NuGet
 - emit isolated generated Vue Router artifacts and assert the expected lowering shape
-- run the Deno bundle build
-- run the Deno runtime/DOM suites
+- build and assert the Netpack release bundle
+- run the DenoHost runtime/DOM suites
 
 ## Run the frontend consumer
 
-After `build-local.cs` succeeds:
+Build the production artifact and then materialize it through the Deno runtime consumer:
 
 ```powershell
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs -- --bundle-out-dir .\.tmp\vueroute-bundle
+$env:JAZOR_BUNDLE_ROOT = (Resolve-Path .\.tmp\vueroute-bundle)
 cd .\vueroute-consumer
 deno task build
 deno task test
