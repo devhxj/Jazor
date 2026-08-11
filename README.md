@@ -33,46 +33,81 @@ The core package provides the compiler, runtime contracts, analyzer, emit tool, 
 
 The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.Emit`, `Jazor.Common`, and the ECMAScript/Vue binding assemblies.
 
+## Acknowledgements
+
+Jazor draws on these projects and the work of their maintainers:
+
+- [Roslyn](https://github.com/dotnet/roslyn) - C# compiler platform
+- [Esprima .NET](https://github.com/sebastienros/esprima-dotnet) - ECMAScript parser for .NET
+- [Acornima](https://github.com/adams85/acornima) - ECMAScript parser and ESTree library for .NET
+- [Netpack](https://github.com/FlorianRappl/netpack) - JavaScript module bundling support
+- [Jint](https://github.com/sebastienros/jint) - JavaScript interpreter for .NET
+- [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
+- [WebRef](https://github.com/w3c/webref) - Web specification references
+- [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit) - prior C# to JavaScript compilers
+
 ## Verified Compiler Baseline
 
-`Jazor.Compiler` is validated against genuine Roslyn `IOperation` graphs and emits JavaScript through Acornima ESTree. The current reproducible baseline, recorded on 2026-08-05, is:
-
-| Metric | Verified result | Active enforced minimum |
-|--------|-----------------|-------------------------|
-| Compiler regression tests | 10297 / 10297 passed | 10000 passed |
-| Line coverage | 16369 / 16545 (98.94%) | 98% |
-| Branch coverage | 6324 / 6587 (96.01%) | 96% |
-
-Run the authoritative coverage gate from the repository root:
-
-```bash
-dotnet run --file scripts/csharp/verify-compiler-coverage.cs
-```
-
-The gate runs the complete compiler suite, reads the resulting TRX and Cobertura reports, and exits with a nonzero status when the test-count or coverage thresholds are not met. The 96.01% result is the verified `v0.1.45` release baseline and satisfies the active 96% branch gate. See the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) and [compiler test guide](src/Jazor.CompilerTest/README.md) for the current scope and methodology.
-
-## RazorVue Verification Baseline
-
-Official Razor SG output is tested through Roslyn binding, direct Vue render-function generation, source maps, catalog output, and Deno.host runtime scenarios. The current reproducible baseline is:
-
-| Metric | Verified result | Enforced minimum |
-|--------|-----------------|------------------|
-| RazorVue SG scenarios | 4484 / 4484 passed | 4000 passed |
-| Line coverage | 8147 / 8719 (93.44%) | 90% |
-| Branch coverage | 3568 / 4265 (83.66%) | 80% |
-
-Run the RazorVue coverage gate from the repository root:
-
-```bash
-dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
-```
+The compiler and RazorVue paths are covered by repeatable regression, coverage, and runtime gates. Current results, thresholds, and reproduction commands live in the [compiler status](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md), [compiler test guide](src/Jazor.CompilerTest/README.md), and [RazorVue integration guide](src/Jazor.RazorVue/README.md).
 
 ## Architecture
 
-- **Semantic lowering**: Roslyn `IOperation` is translated to Acornima ESTree with explicit support boundaries and deterministic output.
-- **Razor integration**: `Jazor.Vue` receives the final `Compilation` from `GeneratorDriver.RunGeneratorsAndUpdateCompilation` and binds generated `BuildRenderTree` operations. Razor DR/IR, host-output documents, and generated-C# reparsing are not part of the production boundary.
-- **Artifact contract**: Razor components produce Vue render-function `.mjs` modules. `Jazor.Emit` materializes modules, source maps, manifests, runtime assets, and production bundles.
-- **Typed bindings**: Vue 3 bindings are included with `Jazor`; Pinia, Vue Router, Vuetify, and other ecosystem bindings are independently referenced packages.
+The ownership and data flow are:
+
+```mermaid
+flowchart LR
+    subgraph Authoring["Authoring"]
+        CSharp["C# modules"]
+        Razor["Razor components"]
+    end
+
+    subgraph Roslyn["Roslyn semantic boundary"]
+        SG["Official Razor SG"]
+        Compilation["Final Compilation<br/>SemanticModel + IOperation"]
+        Analyzer["Jazor.Analyzer<br/>compile-time diagnostics"]
+    end
+
+    subgraph Lowering["Jazor lowering"]
+        Compiler["Jazor.Compiler<br/>AstConverter + SemanticWalker"]
+        RazorVue["Jazor.RazorVue<br/>BuildRenderTree binding + Vue framing"]
+        Bindings["Jazor.CLR + ECMAScript/Vue bindings<br/>whitelist mappings"]
+        ESTree["Acornima ESTree"]
+    end
+
+    subgraph Artifacts["Artifact delivery"]
+        Emit["Jazor.Emit"]
+        Modules[".mjs modules + source maps"]
+        Catalog["manifest + runtime assets"]
+        Bundle["production bundle"]
+    end
+
+    CSharp --> Compilation
+    Razor --> SG --> Compilation
+    Compilation -. validation .-> Analyzer
+    Compilation --> Compiler
+    Compilation -. BuildRenderTree binding .-> RazorVue
+    RazorVue -. compiler translation hooks .-> Compiler
+    Bindings --> Compiler
+    Compiler --> ESTree --> Emit
+    RazorVue --> Emit
+    Emit --> Modules
+    Emit --> Catalog
+    Emit --> Bundle
+
+    classDef authoring fill:#EFF6FF,stroke:#3B82F6,color:#1D4ED8,stroke-width:1.5px
+    classDef semantic fill:#ECFEFF,stroke:#0F766E,color:#134E4A,stroke-width:1.5px
+    classDef lowering fill:#F0FDF4,stroke:#16A34A,color:#14532D,stroke-width:1.5px
+    classDef artifact fill:#FFF7ED,stroke:#EA580C,color:#9A3412,stroke-width:1.5px
+    class CSharp,Razor authoring
+    class SG,Compilation,Analyzer semantic
+    class Compiler,RazorVue,Bindings,ESTree lowering
+    class Emit,Modules,Catalog,Bundle artifact
+```
+
+- **One semantic boundary**: C# modules and official Razor SG output are both bound from the final Roslyn `Compilation`.
+- **Compiler-owned lowering**: `Jazor.Compiler` translates C# member and expression semantics to Acornima ESTree; host bindings are supplied through generated whitelist mappings.
+- **RazorVue framing**: `Jazor.RazorVue` binds generated `BuildRenderTree` operations and uses compiler translation hooks to form Vue render-function modules.
+- **Artifact delivery**: `Jazor.Emit` materializes modules, source maps, manifests, runtime assets, and production bundles.
 
 ## Capabilities
 
@@ -143,7 +178,19 @@ public static class GreetingModule
 }
 ```
 
-The compiler emits a named-export ECMAScript module and resolves cross-module imports automatically when another module calls `GreetingModule.Compose(...)`.
+The resulting `shared/greetings.mjs` is a named-export ECMAScript module:
+
+```js
+export function prefix() {
+  return "Hello";
+}
+export function compose(name) {
+  return `${prefix()}, ${name}`;
+}
+//# sourceMappingURL=greetings.mjs.map
+```
+
+When another module calls `GreetingModule.Compose(...)`, the compiler resolves the corresponding cross-module import automatically.
 
 ### Vue 3 h() Authoring
 
@@ -340,14 +387,6 @@ Contributions are welcome. Keep changes scoped, follow the repository convention
 ## License
 
 This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
-
-## Acknowledgements
-
-- [Roslyn](https://github.com/dotnet/roslyn) — C# compiler platform
-- [Acornima](https://github.com/adams85/acornima) — JavaScript parser and AST library
-- [WebRef](https://github.com/w3c/webref) — Web specification references
-- [DenoHost](https://github.com/thomas3577/DenoHost) — Deno runtime host for .NET
-- [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit) — prior C# to JavaScript compilers
 
 ## Security Policy
 

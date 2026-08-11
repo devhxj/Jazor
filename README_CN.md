@@ -33,46 +33,81 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 实现由 `Jazor.Compiler`、`Jazor.CLR`、`Jazor.Analyzer`、`Jazor.Emit`、`Jazor.Common` 以及 ECMAScript / Vue 绑定程序集组成。
 
+## 致谢
+
+Jazor 的实现建立在以下项目及其维护者的工作之上：
+
+- [Roslyn](https://github.com/dotnet/roslyn) - C# 编译器平台
+- [Esprima .NET](https://github.com/sebastienros/esprima-dotnet) - .NET 的 ECMAScript 解析器
+- [Acornima](https://github.com/adams85/acornima) - .NET 的 ECMAScript 解析器和 ESTree 库
+- [Netpack](https://github.com/FlorianRappl/netpack) - JavaScript 模块打包工具
+- [Jint](https://github.com/sebastienros/jint) - .NET 的 JavaScript 解释器
+- [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时宿主
+- [WebRef](https://github.com/w3c/webref) - Web 规范引用
+- [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) - 早期 C# 到 JavaScript 编译器
+
 ## 已验证的编译器基线
 
-`Jazor.Compiler` 使用真实 Roslyn `IOperation` 操作图进行验证，并通过 Acornima ESTree 生成 JavaScript。当前可复验基线记录于 2026-08-05：
-
-| 指标 | 验证结果 | 当前强制阈值 |
-|------|----------|--------------|
-| 编译器回归测试 | 10297 / 10297 通过 | 至少通过 10000 项 |
-| 行覆盖率 | 16369 / 16545（98.94%） | 98% |
-| 分支覆盖率 | 6324 / 6587（96.01%） | 96% |
-
-在仓库根目录运行正式覆盖率门禁：
-
-```bash
-dotnet run --file scripts/csharp/verify-compiler-coverage.cs
-```
-
-该门禁会运行完整编译器测试套件，读取本次 TRX 与 Cobertura 报告；测试数量或覆盖率未达到阈值时以非零状态退出。96.01% 是已验证的 `v0.1.45` 发布基线，已达到当前 96% 分支门槛。当前范围和统计方法见[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)与[编译器测试指南](src/Jazor.CompilerTest/README.md)。
-
-## RazorVue 验证基线
-
-官方 Razor SG 输出会经过 Roslyn 绑定、直接 Vue render-function 生成、源映射、catalog 产物与 Deno.host 运行时场景验证。当前可复验基线为：
-
-| 指标 | 验证结果 | 强制阈值 |
-|------|----------|----------|
-| RazorVue SG 场景 | 4484 / 4484 通过 | 至少通过 4000 项 |
-| 行覆盖率 | 8147 / 8719（93.44%） | 90% |
-| 分支覆盖率 | 3568 / 4265（83.66%） | 80% |
-
-在仓库根目录运行 RazorVue 覆盖率门禁：
-
-```bash
-dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
-```
+编译器与 RazorVue 路径均由可复现的回归、覆盖率和运行时门禁覆盖。当前结果、阈值与复现命令请参阅[编译器状态](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md)、[编译器测试指南](src/Jazor.CompilerTest/README.md)和 [RazorVue 集成说明](src/Jazor.RazorVue/README.md)。
 
 ## 架构
 
-- **语义降低**：Roslyn `IOperation` 被转换为 Acornima ESTree，并保持明确的支持边界与确定性输出。
-- **Razor 集成**：`Jazor.Vue` 从 `GeneratorDriver.RunGeneratorsAndUpdateCompilation` 取得最终 `Compilation`，并绑定生成的 `BuildRenderTree` 操作。Razor DR/IR、宿主输出文档和生成 C# 的二次解析不属于生产边界。
-- **产物契约**：Razor 组件生成 Vue render-function `.mjs` 模块；`Jazor.Emit` 负责物化模块、源映射、清单、运行时资产和生产包。
-- **类型化绑定**：Vue 3 核心绑定随 `Jazor` 提供；Pinia、Vue Router、Vuetify 和其他生态绑定以独立包方式引用。
+下图给出实际的模块归属与数据流：
+
+```mermaid
+flowchart LR
+    subgraph Authoring["编写入口"]
+        CSharp["C# 模块"]
+        Razor["Razor 组件"]
+    end
+
+    subgraph Roslyn["Roslyn 语义边界"]
+        SG["官方 Razor SG"]
+        Compilation["最终 Compilation<br/>SemanticModel + IOperation"]
+        Analyzer["Jazor.Analyzer<br/>编译期诊断"]
+    end
+
+    subgraph Lowering["Jazor 降低"]
+        Compiler["Jazor.Compiler<br/>AstConverter + SemanticWalker"]
+        RazorVue["Jazor.RazorVue<br/>BuildRenderTree 绑定 + Vue 模块组装"]
+        Bindings["Jazor.CLR + ECMAScript/Vue bindings<br/>白名单映射"]
+        ESTree["Acornima ESTree"]
+    end
+
+    subgraph Artifacts["产物交付"]
+        Emit["Jazor.Emit"]
+        Modules[".mjs 模块 + 源映射"]
+        Catalog["清单 + 运行时资产"]
+        Bundle["生产包"]
+    end
+
+    CSharp --> Compilation
+    Razor --> SG --> Compilation
+    Compilation -. 编译期校验 .-> Analyzer
+    Compilation --> Compiler
+    Compilation -. BuildRenderTree 绑定 .-> RazorVue
+    RazorVue -. 调用编译器翻译钩子 .-> Compiler
+    Bindings --> Compiler
+    Compiler --> ESTree --> Emit
+    RazorVue --> Emit
+    Emit --> Modules
+    Emit --> Catalog
+    Emit --> Bundle
+
+    classDef authoring fill:#EFF6FF,stroke:#3B82F6,color:#1D4ED8,stroke-width:1.5px
+    classDef semantic fill:#ECFEFF,stroke:#0F766E,color:#134E4A,stroke-width:1.5px
+    classDef lowering fill:#F0FDF4,stroke:#16A34A,color:#14532D,stroke-width:1.5px
+    classDef artifact fill:#FFF7ED,stroke:#EA580C,color:#9A3412,stroke-width:1.5px
+    class CSharp,Razor authoring
+    class SG,Compilation,Analyzer semantic
+    class Compiler,RazorVue,Bindings,ESTree lowering
+    class Emit,Modules,Catalog,Bundle artifact
+```
+
+- **统一语义边界**：C# 模块和官方 Razor SG 输出都从最终 Roslyn `Compilation` 进行绑定。
+- **编译器持有 lowering**：`Jazor.Compiler` 将 C# 成员和表达式语义转换为 Acornima ESTree；宿主绑定通过生成的白名单映射提供。
+- **RazorVue 模块组装**：`Jazor.RazorVue` 绑定生成的 `BuildRenderTree` 操作，并通过 `Jazor.Compiler` 的翻译钩子生成 Vue render-function 模块。
+- **产物交付**：`Jazor.Emit` 物化模块、源映射、清单、运行时资产和生产包。
 
 ## 能力
 
@@ -144,7 +179,19 @@ public static class GreetingModule
 }
 ```
 
-编译器会生成具名导出的 ECMAScript 模块。其他模块调用 `GreetingModule.Compose(...)` 时，跨模块导入会自动解析。
+生成的 `shared/greetings.mjs` 是一个具名导出的 ECMAScript 模块：
+
+```js
+export function prefix() {
+  return "Hello";
+}
+export function compose(name) {
+  return `${prefix()}, ${name}`;
+}
+//# sourceMappingURL=greetings.mjs.map
+```
+
+其他模块调用 `GreetingModule.Compose(...)` 时，编译器会自动解析对应的跨模块导入。
 
 ### Vue 3 `h()` 组件
 
@@ -339,14 +386,6 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 ## 许可证
 
 本项目采用 MIT 许可证。详见 [LICENSE.txt](LICENSE.txt)。
-
-## 致谢
-
-- [Roslyn](https://github.com/dotnet/roslyn) — C# 编译器平台
-- [Acornima](https://github.com/adams85/acornima) — JavaScript 解析器和 AST 库
-- [WebRef](https://github.com/w3c/webref) — Web 规范引用
-- [DenoHost](https://github.com/thomas3577/DenoHost) — .NET 的 Deno runtime host
-- [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) — 早期 C# 到 JavaScript 编译器
 
 ## 安全策略
 
