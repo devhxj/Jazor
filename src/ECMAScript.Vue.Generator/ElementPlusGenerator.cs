@@ -14,6 +14,7 @@ using File = global::System.IO.File;
 internal static class ElementPlusGenerator
 {
     private static bool _check;
+    private const string UpstreamVersion = "2.14.4";
     private const string CssClassPropertyName = "CssClass";
     private const string CssStylePropertyName = "CssStyle";
     private const string AdditionalAttributesPropertyName = "AdditionalAttributes";
@@ -463,7 +464,7 @@ internal static class ElementPlusGenerator
             "ECMAScript.Vue.Generator",
             "upstream",
             "element-plus",
-            "2.9.8");
+            UpstreamVersion);
 
         var webTypesPath = Path.Combine(metadataRoot, "web-types.json");
         var attributesPath = Path.Combine(metadataRoot, "attributes.json");

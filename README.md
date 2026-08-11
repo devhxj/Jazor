@@ -30,6 +30,15 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
 
+## Latest Update
+
+### 2026-08-12
+
+- Element Plus bindings now target `2.14.4`, including typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
+- `Jazor.Analyzer` now reports unsupported concrete external types earlier in generic containers, ECMAScript contracts, and runtime type filters.
+
+See the [changelog](CHANGELOG.md) for the full release history.
+
 ## Acknowledgements
 
 Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [Netpack](https://github.com/FlorianRappl/netpack), [DenoHost](https://github.com/thomas3577/DenoHost), [WebRef](https://github.com/w3c/webref), and earlier C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
@@ -82,15 +91,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.9.0
+dotnet add package Jazor --version 0.11.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.9.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.11.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.11.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

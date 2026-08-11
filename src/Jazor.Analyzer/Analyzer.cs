@@ -15,7 +15,8 @@ namespace Jazor.Analyzer;
 /// 表示一个诊断分析器，该分析器对标记有[ECMAScript]、[ECMAScriptModule]特性的类型和成员强制执行特定的规则。
 /// </summary>
 /// <remarks>
-/// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>，同时约定只诊断被“ES特性”标记的类，不考虑“ES特性”的来源
+/// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>。分析器会诊断进入该编译域的源声明：
+/// class 同时分析声明和方法体，interface 与 delegate 只分析其声明签名，不考虑“ES特性”的来源。
 /// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、record、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
 /// <para>2、分析器对泛型实参、数组元素类型、局部推断类型、集合表达式等擦除位置做严格入口诊断；若出现闭合的外部具体类型，要求该类型本身受支持</para>
 /// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
@@ -25,7 +26,7 @@ namespace Jazor.Analyzer;
 /// <para>6、“ES特性”标记的类中不能使用析构函数</para>
 /// <para>7、“ES特性”标记的类中默认支持Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数</para>
 /// <para>8、“ES特性”标记的类可支持其他特性，但不需要对特性的类型参数进行检查</para>
-/// <para>9、“ES特性”还可以标记枚举类型，不支持结构体和接口，但都不进行诊断</para>
+/// <para>9、interface 与 delegate 只检查声明签名；enum 不需要 runtime member 白名单诊断，struct 仍不在声明级支持范围</para>
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class Analyzer : DiagnosticAnalyzer
@@ -123,6 +124,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
+		context.RegisterSymbolAction(AnalyzeContractTypeSignature, SymbolKind.NamedType);
 		context.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
 		context.RegisterSymbolAction(AnalyzeEventSymbol, SymbolKind.Event);
         context.RegisterSymbolStartAction(startContext =>
@@ -158,16 +160,40 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private static void AnalyzeEventSymbol(SymbolAnalysisContext ctx)
 	{
 		var eventSymbol = (IEventSymbol)ctx.Symbol;
-		if (!InECMAScriptAttribute(eventSymbol.ContainingType) ||
-			IsSupportedRuntimeMemberEvent(eventSymbol))
-		{
+		if (!InECMAScriptAttribute(eventSymbol.ContainingType))
 			return;
-		}
+
+		CheckType(ctx.ReportDiagnostic, eventSymbol.Type, GetLocation(eventSymbol.Locations));
+		if (IsSupportedRuntimeMemberEvent(eventSymbol))
+			return;
 
 		ctx.ReportDiagnostic(Diagnostic.Create(
 			Rule,
 			GetLocation(eventSymbol.Locations),
 			$"Event '{eventSymbol.Name}'"));
+	}
+
+	private static void AnalyzeContractTypeSignature(SymbolAnalysisContext ctx)
+	{
+		var symbol = (INamedTypeSymbol)ctx.Symbol;
+		if (symbol.TypeKind is not (TypeKind.Interface or TypeKind.Delegate) ||
+			(!HasECMAScriptAttribute(symbol) && !InECMAScriptAttribute(symbol)))
+		{
+			return;
+		}
+
+		if (symbol.TypeKind == TypeKind.Interface)
+		{
+			AnalysisSymbolEndAction(ctx);
+			return;
+		}
+
+		// Delegate 的 synthesized members（BeginInvoke/EndInvoke 等）不是作者声明的契约；
+		// only inspect Invoke so diagnostics stay tied to the authored callback signature.
+		if (symbol.DelegateInvokeMethod is { } invokeMethod)
+			CheckMethodSignature(ctx.ReportDiagnostic, invokeMethod, GetLocation(symbol.Locations));
+
+		CheckTypeParameterConstraints(ctx.ReportDiagnostic, symbol.TypeParameters);
 	}
 
 	private static bool InECMAScriptAttribute(ITypeSymbol typeSymbol)
@@ -336,6 +362,46 @@ public partial class Analyzer : DiagnosticAnalyzer
 		}
 	}
 
+	private static void CheckPatternTypes(
+		Action<Diagnostic> report,
+		IPatternOperation? pattern,
+		Location location)
+	{
+		if (pattern is null)
+			return;
+
+		switch (pattern)
+		{
+			case IDeclarationPatternOperation declarationPattern:
+				CheckType(report, declarationPattern.MatchedType, location);
+				break;
+			case ITypePatternOperation typePattern:
+				CheckType(report, typePattern.MatchedType, location);
+				break;
+			case IRecursivePatternOperation recursivePattern:
+				CheckType(report, recursivePattern.MatchedType, location);
+				foreach (var subpattern in recursivePattern.DeconstructionSubpatterns)
+					CheckPatternTypes(report, subpattern, location);
+				foreach (var subpattern in recursivePattern.PropertySubpatterns)
+					CheckPatternTypes(report, subpattern.Pattern, location);
+				break;
+			case IBinaryPatternOperation binaryPattern:
+				CheckPatternTypes(report, binaryPattern.LeftPattern, location);
+				CheckPatternTypes(report, binaryPattern.RightPattern, location);
+				break;
+			case INegatedPatternOperation negatedPattern:
+				CheckPatternTypes(report, negatedPattern.Pattern, location);
+				break;
+			case IListPatternOperation listPattern:
+				foreach (var subpattern in listPattern.Patterns)
+					CheckPatternTypes(report, subpattern, location);
+				break;
+			case ISlicePatternOperation slicePattern:
+				CheckPatternTypes(report, slicePattern.Pattern, location);
+				break;
+		}
+	}
+
 	private static ITypeSymbol? TryResolveWhiteListAliasType(Compilation compilation, string displayName)
 	{
 		return displayName switch
@@ -435,7 +501,21 @@ public partial class Analyzer : DiagnosticAnalyzer
 		foreach (var param in method.Parameters)
 			CheckType(report, param.Type, GetLocation(param.Locations));
 
-		foreach (var typeParam in method.TypeParameters)
+		CheckTypeParameterConstraints(report, method.TypeParameters);
+	}
+
+	private static void CheckPropertySignature(Action<Diagnostic> report, IPropertySymbol property)
+	{
+		CheckType(report, property.Type, GetLocation(property.Locations));
+		foreach (var parameter in property.Parameters)
+			CheckType(report, parameter.Type, GetLocation(parameter.Locations));
+	}
+
+	private static void CheckTypeParameterConstraints(
+		Action<Diagnostic> report,
+		ImmutableArray<ITypeParameterSymbol> typeParameters)
+	{
+		foreach (var typeParam in typeParameters)
 			foreach (var constraint in typeParam.ConstraintTypes)
 				CheckType(report, constraint, GetLocation(typeParam.Locations));
 	}
@@ -448,16 +528,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol, Location location)
 	{
-		// 允许枚举、接口、委托、匿名类型、抽象类、特性、类型参数
-		if (typeSymbol is null ||
-			typeSymbol.TypeKind == TypeKind.Enum ||
-			typeSymbol.TypeKind == TypeKind.Interface ||
-			typeSymbol.TypeKind == TypeKind.Delegate ||
-			StructuralRecordSupport.IsStructuralRecordType(typeSymbol) ||
-			typeSymbol.IsAnonymousType ||
-			typeSymbol.IsAbstract ||
-			IsAttribute(typeSymbol) ||
-			typeSymbol is ITypeParameterSymbol)
+		if (typeSymbol is null || typeSymbol is ITypeParameterSymbol)
 			return;
 
 		if (typeSymbol is IArrayTypeSymbol arrayType)
@@ -478,16 +549,21 @@ public partial class Analyzer : DiagnosticAnalyzer
 				return;
 			}
 
+			// 接口、委托、抽象类和 structural record 只豁免外层容器本身；
+			// their closed generic arguments still enter the ECMAScript runtime boundary and must be checked.
 			if (namedType.IsGenericType)
-			{
-				CheckDirectType(report, namedType.OriginalDefinition, location);
-
-				foreach (var typeArg in namedType.TypeArguments)
-					CheckType(report, typeArg, location);
-
-				return;
-			}
+				CheckTypeArguments(report, namedType.TypeArguments, location);
 		}
+
+		// 允许枚举、接口、委托、匿名类型、抽象类、特性和结构化 record 的外层类型。
+		if (typeSymbol.TypeKind == TypeKind.Enum ||
+			typeSymbol.TypeKind == TypeKind.Interface ||
+			typeSymbol.TypeKind == TypeKind.Delegate ||
+			StructuralRecordSupport.IsStructuralRecordType(typeSymbol) ||
+			typeSymbol.IsAnonymousType ||
+			typeSymbol.IsAbstract ||
+			IsAttribute(typeSymbol))
+			return;
 
 		CheckDirectType(report, typeSymbol.OriginalDefinition, location);
 	}
@@ -731,6 +807,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.IsType:
 				{
 					var operation = (IIsTypeOperation)ctx.Operation;
+					CheckType(
+						ctx.ReportDiagnostic,
+						operation.TypeOperand,
+						operation.Syntax.GetLocation());
 					CheckAmbiguousRuntimeTypeFilter(
 						ctx.ReportDiagnostic,
 						ctx.Compilation,
@@ -742,6 +822,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.IsPattern:
 				{
 					var operation = (IIsPatternOperation)ctx.Operation;
+					CheckPatternTypes(ctx.ReportDiagnostic, operation.Pattern, operation.Syntax.GetLocation());
 					CheckAmbiguousRuntimePattern(
 						ctx.ReportDiagnostic,
 						ctx.Compilation,
@@ -756,6 +837,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					{
 						foreach (var clause in @case.Clauses.OfType<IPatternCaseClauseOperation>())
 						{
+							CheckPatternTypes(ctx.ReportDiagnostic, clause.Pattern, clause.Syntax.GetLocation());
 							CheckAmbiguousRuntimePattern(
 								ctx.ReportDiagnostic,
 								ctx.Compilation,
@@ -770,6 +852,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var operation = (ISwitchExpressionOperation)ctx.Operation;
 					foreach (var arm in operation.Arms)
 					{
+						CheckPatternTypes(ctx.ReportDiagnostic, arm.Pattern, arm.Syntax.GetLocation());
 						CheckAmbiguousRuntimePattern(
 							ctx.ReportDiagnostic,
 							ctx.Compilation,
@@ -784,6 +867,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (operation.ExceptionType is null)
 						return;
 
+					CheckType(
+						ctx.ReportDiagnostic,
+						operation.ExceptionType,
+						operation.Syntax.GetLocation());
 					CheckAmbiguousRuntimeTypeFilter(
 						ctx.ReportDiagnostic,
 						ctx.Compilation,
@@ -873,9 +960,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			CheckType(ctx.ReportDiagnostic, iface, GetLocation(symbol.Locations));
 
 		// 检查类型参数约束
-		foreach (var typeParam in symbol.TypeParameters)
-			foreach (var constraint in typeParam.ConstraintTypes)
-				CheckType(ctx.ReportDiagnostic, constraint, GetLocation(typeParam.Locations));
+		CheckTypeParameterConstraints(ctx.ReportDiagnostic, symbol.TypeParameters);
 
 		foreach (var member in symbol.GetMembers())
 		{
@@ -883,10 +968,13 @@ public partial class Analyzer : DiagnosticAnalyzer
 				CheckType(ctx.ReportDiagnostic, field.Type, GetLocation(field.Locations));
 
 			else if (member is IPropertySymbol property)
-				CheckType(ctx.ReportDiagnostic, property.Type, GetLocation(property.Locations));
+				CheckPropertySignature(ctx.ReportDiagnostic, property);
 
 			else if (member is IMethodSymbol method)
 			{
+				if (method.AssociatedSymbol is IPropertySymbol or IEventSymbol)
+					continue;
+
 				// 不支持析构函数
 				if (method.MethodKind == MethodKind.Destructor)
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule, GetLocation(method.Locations), "Destructor"));

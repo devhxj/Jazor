@@ -6,8 +6,9 @@
 
 ## 职责
 
-- 对进入 ECMAScript 编译域的类型和成员执行白名单诊断。
+- 对进入 ECMAScript 编译域的类型和成员执行白名单诊断；class 会分析声明与方法体，interface 和 delegate 会分析其声明签名。
 - 在泛型实参、数组元素、局部推断与集合表达式目标等 erased positions 提前报告不支持的具体类型。
+- 在 <c>is</c>、pattern、<c>switch</c> pattern 与 <c>catch</c> 的 runtime type filtering 位置检查具体类型，保留 alias 歧义的独立诊断。
 - 注册 Razor SG hook/bootstrap，并在最终文档输入不可用时提供可定位诊断。
 
 ## 边界

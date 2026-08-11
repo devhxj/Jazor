@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-12
+
+- Element Plus bindings now ship the local `2.14.4` runtime, stylesheet, license, manifest, and regenerated authoring contracts. The update includes typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
+- `Jazor.Analyzer` now reports unsupported concrete external types earlier when they appear in generic containers, ECMAScript interface or delegate signatures, and runtime type filters such as `is`, pattern matching, `switch`, and `catch`.
+
 ## 2026-08-11
 
 - Generated WebIDL bindings now expose the browser `File` interface as `ECMAScript.Files`, avoiding an authoring collision with `System.IO.File`. Its JavaScript ABI remains `File` through the generated `Description("@#File")` mapping; C# callers should update `ECMAScript.File` references to `ECMAScript.Files`.

@@ -22,7 +22,7 @@ interface PopperProps {
  * @deprecated Removed after 3.0.0, Use `PopperProps` instead.
  */
 declare const popperProps: {
-  readonly role: EpPropFinalized<StringConstructor, "dialog" | "tree" | "listbox" | "grid" | "menu" | "tooltip" | "group" | "navigation", unknown, "tooltip", boolean>;
+  readonly role: EpPropFinalized<StringConstructor, "dialog" | "menu" | "tooltip" | "grid" | "group" | "listbox" | "navigation" | "tree", unknown, "tooltip", boolean>;
 };
 /**
  * @deprecated Removed after 3.0.0, Use `PopperProps` instead.
@@ -31,7 +31,7 @@ type PopperPropsPublic = ExtractPublicPropTypes<typeof popperProps>;
 type PopperInstance = InstanceType<typeof _default> & unknown;
 /** @deprecated use `popperProps` instead, and it will be deprecated in the next major version */
 declare const usePopperProps: {
-  readonly role: EpPropFinalized<StringConstructor, "dialog" | "tree" | "listbox" | "grid" | "menu" | "tooltip" | "group" | "navigation", unknown, "tooltip", boolean>;
+  readonly role: EpPropFinalized<StringConstructor, "dialog" | "menu" | "tooltip" | "grid" | "group" | "listbox" | "navigation" | "tree", unknown, "tooltip", boolean>;
 };
 /** @deprecated use `PopperProps` instead, and it will be deprecated in the next major version */
 type UsePopperProps = PopperProps;

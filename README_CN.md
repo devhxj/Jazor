@@ -30,6 +30,15 @@ Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强�
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
 
+## 最新更新
+
+### 2026-08-12
+
+- Element Plus 绑定现已升级至 `2.14.4`，并提供 `ElTransfer.VirtualScroll` 与 `ElTransfer.ItemSize` 的强类型参数。
+- `Jazor.Analyzer` 现在会在泛型容器、ECMAScript 契约和运行时类型过滤中更早报告不受支持的具体外部类型。
+
+完整版本历史见 [CHANGELOG](CHANGELOG.md)。
+
 ## 致谢
 
 Jazor 使用了 [Roslyn](https://github.com/dotnet/roslyn)、[Acornima](https://github.com/adams85/acornima)、[Netpack](https://github.com/FlorianRappl/netpack)、[DenoHost](https://github.com/thomas3577/DenoHost)、[WebRef](https://github.com/w3c/webref)，并参考了 [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) 等早期 C# 到 JavaScript 项目。
@@ -82,15 +91,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.9.0
+dotnet add package Jazor --version 0.11.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.9.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.11.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.11.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

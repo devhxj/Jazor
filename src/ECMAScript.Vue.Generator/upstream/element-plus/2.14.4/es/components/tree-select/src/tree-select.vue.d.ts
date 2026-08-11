@@ -1,4 +1,5 @@
 import { EpPropFinalized, EpPropMergeType } from "../../../utils/vue/props/types.js";
+import { ClassValue } from "../../../utils/typescript.js";
 import { PopperEffect } from "../../popper/src/popper.js";
 import { Options, Placement } from "../../popper/index.js";
 import { TagTooltipProps } from "../../select/src/select.js";
@@ -101,7 +102,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   valueOnClear: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null) | (((new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null)) | null)[], unknown, unknown, undefined, boolean>;
   name: StringConstructor;
   id: StringConstructor;
-  modelValue: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown, undefined, boolean>;
+  modelValue: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown, undefined, boolean>;
   autocomplete: EpPropFinalized<StringConstructor, unknown, unknown, string, boolean>;
   automaticDropdown: BooleanConstructor;
   size: {
@@ -116,13 +117,8 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   filterable: BooleanConstructor;
   allowCreate: BooleanConstructor;
   loading: BooleanConstructor;
-  popperClass: EpPropFinalized<StringConstructor, unknown, unknown, string, boolean>;
-  popperStyle: {
-    readonly type: _$vue.PropType<EpPropMergeType<(new (...args: any[]) => string | _$vue.CSSProperties) | (() => string | _$vue.CSSProperties) | (((new (...args: any[]) => string | _$vue.CSSProperties) | (() => string | _$vue.CSSProperties)) | null)[], unknown, unknown>>;
-    readonly required: false;
-    readonly validator: ((val: unknown) => boolean) | undefined;
-    __epPropKey: true;
-  };
+  popperClass: EpPropFinalized<(new (...args: any[]) => string | false | Record<string, any> | ClassValue[]) | (() => ClassValue) | (((new (...args: any[]) => string | false | Record<string, any> | ClassValue[]) | (() => ClassValue)) | null)[], unknown, unknown, string, boolean>;
+  popperStyle: EpPropFinalized<(new (...args: any[]) => string | false | _$vue.CSSProperties | _$vue.StyleValue[]) | (() => _$vue.StyleValue) | (((new (...args: any[]) => string | false | _$vue.CSSProperties | _$vue.StyleValue[]) | (() => _$vue.StyleValue)) | null)[], unknown, unknown, undefined, boolean>;
   popperOptions: EpPropFinalized<(new (...args: any[]) => Partial<Options>) | (() => Partial<Options>) | (((new (...args: any[]) => Partial<Options>) | (() => Partial<Options>)) | null)[], unknown, unknown, () => Partial<Options>, boolean>;
   remote: BooleanConstructor;
   debounce: EpPropFinalized<NumberConstructor, unknown, unknown, number, boolean>;
@@ -163,7 +159,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   suffixIcon: EpPropFinalized<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown, _$vue.DefineComponent<{}, void, {}, {}, {}, _$vue.ComponentOptionsMixin, _$vue.ComponentOptionsMixin, {}, string, _$vue.PublicProps, Readonly<{}>, {}, {}, {}, {}, string, _$vue.ComponentProvideOptions, true, {}, any>, boolean>;
   tagType: {
     default: string;
-    type: _$vue.PropType<EpPropMergeType<StringConstructor, "info" | "primary" | "success" | "warning" | "danger", unknown>>;
+    type: _$vue.PropType<EpPropMergeType<StringConstructor, "primary" | "success" | "info" | "warning" | "danger", unknown>>;
     required: false;
     validator: ((val: unknown) => boolean) | undefined;
     __epPropKey: true;
@@ -179,7 +175,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   remoteShowSuffix: BooleanConstructor;
   showArrow: EpPropFinalized<BooleanConstructor, unknown, unknown, boolean, boolean>;
   offset: EpPropFinalized<NumberConstructor, unknown, unknown, number, boolean>;
-  placement: EpPropFinalized<(new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown, string, boolean>;
+  placement: EpPropFinalized<(new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown, string, boolean>;
   fallbackPlacements: EpPropFinalized<(new (...args: any[]) => Placement[]) | (() => Placement[]) | (((new (...args: any[]) => Placement[]) | (() => Placement[])) | null)[], unknown, unknown, string[], boolean>;
   tabindex: EpPropFinalized<(StringConstructor | NumberConstructor)[], unknown, unknown, number, boolean>;
   appendTo: {
@@ -290,7 +286,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   valueOnClear: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null) | (((new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null)) | null)[], unknown, unknown, undefined, boolean>;
   name: StringConstructor;
   id: StringConstructor;
-  modelValue: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown, undefined, boolean>;
+  modelValue: EpPropFinalized<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown, undefined, boolean>;
   autocomplete: EpPropFinalized<StringConstructor, unknown, unknown, string, boolean>;
   automaticDropdown: BooleanConstructor;
   size: {
@@ -305,13 +301,8 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   filterable: BooleanConstructor;
   allowCreate: BooleanConstructor;
   loading: BooleanConstructor;
-  popperClass: EpPropFinalized<StringConstructor, unknown, unknown, string, boolean>;
-  popperStyle: {
-    readonly type: _$vue.PropType<EpPropMergeType<(new (...args: any[]) => string | _$vue.CSSProperties) | (() => string | _$vue.CSSProperties) | (((new (...args: any[]) => string | _$vue.CSSProperties) | (() => string | _$vue.CSSProperties)) | null)[], unknown, unknown>>;
-    readonly required: false;
-    readonly validator: ((val: unknown) => boolean) | undefined;
-    __epPropKey: true;
-  };
+  popperClass: EpPropFinalized<(new (...args: any[]) => string | false | Record<string, any> | ClassValue[]) | (() => ClassValue) | (((new (...args: any[]) => string | false | Record<string, any> | ClassValue[]) | (() => ClassValue)) | null)[], unknown, unknown, string, boolean>;
+  popperStyle: EpPropFinalized<(new (...args: any[]) => string | false | _$vue.CSSProperties | _$vue.StyleValue[]) | (() => _$vue.StyleValue) | (((new (...args: any[]) => string | false | _$vue.CSSProperties | _$vue.StyleValue[]) | (() => _$vue.StyleValue)) | null)[], unknown, unknown, undefined, boolean>;
   popperOptions: EpPropFinalized<(new (...args: any[]) => Partial<Options>) | (() => Partial<Options>) | (((new (...args: any[]) => Partial<Options>) | (() => Partial<Options>)) | null)[], unknown, unknown, () => Partial<Options>, boolean>;
   remote: BooleanConstructor;
   debounce: EpPropFinalized<NumberConstructor, unknown, unknown, number, boolean>;
@@ -352,7 +343,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   suffixIcon: EpPropFinalized<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown, _$vue.DefineComponent<{}, void, {}, {}, {}, _$vue.ComponentOptionsMixin, _$vue.ComponentOptionsMixin, {}, string, _$vue.PublicProps, Readonly<{}>, {}, {}, {}, {}, string, _$vue.ComponentProvideOptions, true, {}, any>, boolean>;
   tagType: {
     default: string;
-    type: _$vue.PropType<EpPropMergeType<StringConstructor, "info" | "primary" | "success" | "warning" | "danger", unknown>>;
+    type: _$vue.PropType<EpPropMergeType<StringConstructor, "primary" | "success" | "info" | "warning" | "danger", unknown>>;
     required: false;
     validator: ((val: unknown) => boolean) | undefined;
     __epPropKey: true;
@@ -368,7 +359,7 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
   remoteShowSuffix: BooleanConstructor;
   showArrow: EpPropFinalized<BooleanConstructor, unknown, unknown, boolean, boolean>;
   offset: EpPropFinalized<NumberConstructor, unknown, unknown, number, boolean>;
-  placement: EpPropFinalized<(new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown, string, boolean>;
+  placement: EpPropFinalized<(new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown, string, boolean>;
   fallbackPlacements: EpPropFinalized<(new (...args: any[]) => Placement[]) | (() => Placement[]) | (((new (...args: any[]) => Placement[]) | (() => Placement[])) | null)[], unknown, unknown, string[], boolean>;
   tabindex: EpPropFinalized<(StringConstructor | NumberConstructor)[], unknown, unknown, number, boolean>;
   appendTo: {
@@ -384,58 +375,59 @@ declare const __VLS_export: _$vue.DefineComponent<_$vue.ExtractPropTypes<{
     __epPropKey: true;
   };
 }>> & Readonly<{}>, {
-  loading: boolean;
   disabled: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  modelValue: EpPropMergeType<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown> | EpPropMergeType<(BooleanConstructor | ObjectConstructor | StringConstructor | NumberConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown>;
-  offset: number;
-  teleported: EpPropMergeType<BooleanConstructor, unknown, unknown>;
   props: TreeOptionProps;
-  effect: EpPropMergeType<(new (...args: any[]) => string) | (() => PopperEffect) | (((new (...args: any[]) => string) | (() => PopperEffect)) | null)[], unknown, unknown>;
+  modelValue: EpPropMergeType<(new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null) | (((new (...args: any[]) => string | number | boolean | Record<string, any> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[]) | (() => EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown> | EpPropMergeType<(StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor)[], unknown, unknown>[] | null)) | null)[], unknown, unknown>;
   autocomplete: string;
-  clearable: boolean;
-  clearIcon: EpPropMergeType<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown>;
-  suffixIcon: EpPropMergeType<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown>;
-  tabindex: EpPropMergeType<(StringConstructor | NumberConstructor)[], unknown, unknown>;
-  validateEvent: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  multiple: boolean;
-  popperClass: string;
-  fallbackPlacements: Placement[];
-  placement: EpPropMergeType<(new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "top" | "auto" | "bottom" | "left" | "right" | "auto-start" | "auto-end" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown>;
-  popperOptions: Partial<Options>;
-  showArrow: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  persistent: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  data: TreeData;
-  valueKey: string;
-  debounce: number;
-  fitInputWidth: boolean;
-  accordion: boolean;
-  tagTooltip: TagTooltipProps;
-  maxCollapseTags: number;
-  multipleLimit: number;
-  reserveKeyword: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  tagType: EpPropMergeType<StringConstructor, "info" | "primary" | "success" | "warning" | "danger", unknown>;
-  tagEffect: EpPropMergeType<StringConstructor, "light" | "dark" | "plain", unknown>;
-  valueOnClear: EpPropMergeType<(new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null) | (((new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null)) | null)[], unknown, unknown>;
-  allowCreate: boolean;
   automaticDropdown: boolean;
+  effect: EpPropMergeType<(new (...args: any[]) => string) | (() => PopperEffect) | (((new (...args: any[]) => string) | (() => PopperEffect)) | null)[], unknown, unknown>;
+  clearable: boolean;
+  filterable: boolean;
+  allowCreate: boolean;
+  loading: boolean;
+  popperClass: ClassValue;
+  popperStyle: _$vue.StyleValue;
+  popperOptions: Partial<Options>;
+  placement: EpPropMergeType<(new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement) | (((new (...args: any[]) => "auto" | "auto-start" | "auto-end" | "top" | "bottom" | "right" | "left" | "top-start" | "top-end" | "bottom-start" | "bottom-end" | "right-start" | "right-end" | "left-start" | "left-end") | (() => Placement)) | null)[], Placement, unknown>;
+  remote: boolean;
+  debounce: number;
+  multiple: boolean;
+  multipleLimit: number;
+  defaultFirstOption: boolean;
+  reserveKeyword: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  valueKey: string;
   collapseTags: boolean;
   collapseTagsTooltip: boolean;
-  defaultFirstOption: boolean;
-  filterable: boolean;
-  remote: boolean;
+  tagTooltip: TagTooltipProps;
+  maxCollapseTags: number;
+  fallbackPlacements: Placement[];
+  offset: number;
+  teleported: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  persistent: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  clearIcon: EpPropMergeType<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown>;
+  fitInputWidth: boolean;
+  suffixIcon: EpPropMergeType<(new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component) | (((new (...args: any[]) => (string | _$vue.Component) & {}) | (() => string | _$vue.Component)) | null)[], unknown, unknown>;
+  tagType: EpPropMergeType<StringConstructor, "primary" | "success" | "info" | "warning" | "danger", unknown>;
+  tagEffect: EpPropMergeType<StringConstructor, "light" | "dark" | "plain", unknown>;
+  validateEvent: EpPropMergeType<BooleanConstructor, unknown, unknown>;
   remoteShowSuffix: boolean;
+  showArrow: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  tabindex: EpPropMergeType<(StringConstructor | NumberConstructor)[], unknown, unknown>;
+  valueOnClear: EpPropMergeType<(new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null) | (((new (...args: any[]) => string | number | boolean | Function) | (() => string | number | boolean | Function | null)) | null)[], unknown, unknown>;
+  data: TreeData;
   lazy: boolean;
-  checkStrictly: boolean;
-  checkOnClickNode: boolean;
-  checkOnClickLeaf: EpPropMergeType<BooleanConstructor, unknown, unknown>;
-  draggable: boolean;
   defaultExpandAll: boolean;
   indent: number;
+  accordion: boolean;
   renderAfterExpand: EpPropMergeType<BooleanConstructor, unknown, unknown>;
   showCheckbox: boolean;
   expandOnClickNode: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  checkOnClickLeaf: EpPropMergeType<BooleanConstructor, unknown, unknown>;
   autoExpandParent: EpPropMergeType<BooleanConstructor, unknown, unknown>;
+  checkStrictly: boolean;
+  checkOnClickNode: boolean;
   checkDescendants: boolean;
+  draggable: boolean;
   highlightCurrent: boolean;
   cacheData: unknown[];
 }, {}, {}, {}, string, _$vue.ComponentProvideOptions, true, {}, any>;

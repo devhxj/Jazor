@@ -1,6 +1,6 @@
 {
   "name": "element-plus",
-  "version": "2.14.0",
+  "version": "2.14.4",
   "description": "A Component Library for Vue 3",
   "keywords": [
     "element-plus",
@@ -15,6 +15,18 @@
     "url": "https://github.com/element-plus/element-plus/issues"
   },
   "license": "MIT",
+  "files": [
+    "dist",
+    "es",
+    "lib",
+    "theme-chalk",
+    "global.d.ts",
+    "attributes.json",
+    "tags.json",
+    "web-types.json",
+    "LICENSE",
+    "README.md"
+  ],
   "main": "lib/index.js",
   "module": "es/index.mjs",
   "types": "es/index.d.ts",
@@ -82,7 +94,7 @@
   "dependencies": {
     "@ctrl/tinycolor": "^4.2.0",
     "@element-plus/icons-vue": "^2.3.2",
-    "@floating-ui/dom": "^1.0.1",
+    "@floating-ui/dom": "^1.8.0",
     "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.8",
     "@types/lodash": "^4.17.24",
     "@types/lodash-es": "^4.17.12",
@@ -94,11 +106,12 @@
     "lodash-unified": "^1.0.3",
     "memoize-one": "^6.0.0",
     "normalize-wheel-es": "^1.2.0",
-    "vue-component-type-helpers": "^3.2.8"
+    "vue-component-type-helpers": "^3.3.9"
   },
   "devDependencies": {
     "@types/node": "*",
-    "vue-router": "^5.0.6"
+    "vue": "3.5.25",
+    "vue-router": "^5.2.0"
   },
   "vetur": {
     "tags": "tags.json",
@@ -110,5 +123,5 @@
     "not ie 11",
     "not op_mini all"
   ],
-  "gitHead": "4a0706b16886ee70f8783b3ef4a6c1faf64cae94"
+  "gitHead": "6c060ee09b93a80e0c753af1ac6fef542af12dd7"
 }

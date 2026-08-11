@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "libraryId": "element-plus",
-  "version": "2.9.8",
+  "version": "2.14.4",
   "imports": {
     "element-plus": {
       "development": "dist/index.full.min.mjs",
