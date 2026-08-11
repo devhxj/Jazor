@@ -1,0 +1,12 @@
+<Project>
+  <!-- Jazor.RazorVue is packaged as an analyzer, so the core SDK cannot discover it
+       from normal runtime references. This adapter-specific target contributes the
+       provider assembly to Emit's neutral runtime-provider collection. -->
+  <Target Name="RegisterJazorVueArtifactProvider"
+          BeforeTargets="JazorDebug;JazorRelease">
+    <ItemGroup>
+      <JazorArtifactProviderAssembly Include="@(Analyzer)"
+                                     Condition="'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
+</Project>

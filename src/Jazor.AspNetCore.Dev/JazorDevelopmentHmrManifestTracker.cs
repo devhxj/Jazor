@@ -3,12 +3,14 @@ using System.Text.Json;
 namespace Jazor.AspNetCore.Dev;
 
 /// <summary>
-/// Reads compiler-owned metadata from the emitted manifest and compares snapshots.
-/// It deliberately has no knowledge of Razor syntax or Vue runtime internals.
+/// Reads provider-owned metadata from the emitted manifest and compares snapshots.
+/// Unknown providers remain valid manifest entries and conservatively fall back to a full reload.
 /// </summary>
 internal sealed class JazorDevelopmentHmrManifestTracker(
     IReadOnlyList<JazorDevelopmentHmrArtifactRegistration> registrations)
 {
+    private const string VueHmrProviderId = "jazor.vue";
+
     private readonly IReadOnlyList<JazorDevelopmentHmrArtifactRegistration> _registrations = registrations;
     private JazorDevelopmentHmrManifestSnapshot _previous = JazorDevelopmentHmrManifestSnapshot.Empty;
 
@@ -182,33 +184,41 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         if (previous.Hmr is null || current.Hmr is null)
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-metadata-missing");
 
-        if (!string.Equals(previous.Hmr.ComponentId, current.Hmr.ComponentId, StringComparison.Ordinal) ||
+        if (!string.Equals(previous.Hmr.ProviderId, current.Hmr.ProviderId, StringComparison.Ordinal) ||
             !string.Equals(previous.Hmr.ModuleId, current.Hmr.ModuleId, StringComparison.Ordinal))
         {
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-module-identity-changed");
         }
 
-        if (!string.Equals(previous.Hmr.DescriptorHash, current.Hmr.DescriptorHash, StringComparison.Ordinal))
+        if (!string.Equals(current.Hmr.ProviderId, VueHmrProviderId, StringComparison.Ordinal))
+            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-provider-unsupported");
+
+        var previousVue = ReadVueHmrMetadata(previous.Hmr.Payload);
+        var currentVue = ReadVueHmrMetadata(current.Hmr.Payload);
+        if (!string.Equals(previousVue.ComponentId, currentVue.ComponentId, StringComparison.Ordinal))
+            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-module-identity-changed");
+
+        if (!string.Equals(previousVue.DescriptorHash, currentVue.DescriptorHash, StringComparison.Ordinal))
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-descriptor-changed");
 
-        if (!string.Equals(previous.Hmr.LogicHash, current.Hmr.LogicHash, StringComparison.Ordinal))
+        if (!string.Equals(previousVue.LogicHash, currentVue.LogicHash, StringComparison.Ordinal))
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-logic-changed");
 
-        if (string.Equals(previous.Hmr.TemplateHash, current.Hmr.TemplateHash, StringComparison.Ordinal))
+        if (string.Equals(previousVue.TemplateHash, currentVue.TemplateHash, StringComparison.Ordinal))
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-unclassified-content-change");
 
-        if (!string.Equals(current.Hmr.BoundaryKind, "template-only", StringComparison.Ordinal))
+        if (!string.Equals(currentVue.BoundaryKind, "template-only", StringComparison.Ordinal))
             return JazorDevelopmentHmrModuleClassification.FullReload("hmr-boundary-requires-reload");
 
         return JazorDevelopmentHmrModuleClassification.ModuleUpdate(new JazorDevelopmentHmrModuleUpdate(
             current.RelativePath,
             current.RequestUrl,
-            current.Hmr.ComponentId,
+            currentVue.ComponentId,
             current.Hmr.ModuleId,
-            current.Hmr.DescriptorHash,
-            current.Hmr.TemplateHash,
-            current.Hmr.LogicHash,
-            current.Hmr.BoundaryKind));
+            currentVue.DescriptorHash,
+            currentVue.TemplateHash,
+            currentVue.LogicHash,
+            currentVue.BoundaryKind));
     }
 
     private JazorDevelopmentHmrArtifactRegistration? FindRegistration(string path)
@@ -224,16 +234,37 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         if (hmr.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException("hmr metadata must be an object");
 
-        var boundaryKind = ReadRequiredString(hmr, "boundaryKind");
+        if (!TryGetProperty(hmr, "data", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException("hmr metadata data must be an object");
+
+        var providerId = ReadRequiredString(hmr, "providerId");
+        var moduleId = ReadRequiredString(hmr, "moduleId");
+        if (string.Equals(providerId, VueHmrProviderId, StringComparison.Ordinal))
+            _ = ReadVueHmrMetadata(payload);
+
+        return new JazorDevelopmentHmrMetadata(
+            providerId,
+            moduleId,
+            payload.GetRawText());
+    }
+
+    private static JazorDevelopmentVueHmrMetadata ReadVueHmrMetadata(string payload)
+    {
+        using var document = JsonDocument.Parse(payload);
+        return ReadVueHmrMetadata(document.RootElement);
+    }
+
+    private static JazorDevelopmentVueHmrMetadata ReadVueHmrMetadata(JsonElement payload)
+    {
+        var boundaryKind = ReadRequiredString(payload, "boundaryKind");
         if (boundaryKind is not ("unknown" or "template-only" or "logic-safe" or "full-reload-required"))
             throw new InvalidOperationException("unsupported hmr boundary kind '" + boundaryKind + "'");
 
-        return new JazorDevelopmentHmrMetadata(
-            ReadRequiredString(hmr, "componentId"),
-            ReadRequiredString(hmr, "moduleId"),
-            ReadRequiredString(hmr, "descriptorHash"),
-            ReadRequiredString(hmr, "templateHash"),
-            ReadRequiredString(hmr, "logicHash"),
+        return new JazorDevelopmentVueHmrMetadata(
+            ReadRequiredString(payload, "componentId"),
+            ReadRequiredString(payload, "descriptorHash"),
+            ReadRequiredString(payload, "templateHash"),
+            ReadRequiredString(payload, "logicHash"),
             boundaryKind);
     }
 
@@ -332,8 +363,12 @@ internal sealed record JazorDevelopmentHmrManifestEntry(
     JazorDevelopmentHmrMetadata? Hmr);
 
 internal sealed record JazorDevelopmentHmrMetadata(
-    string ComponentId,
+    string ProviderId,
     string ModuleId,
+    string Payload);
+
+internal sealed record JazorDevelopmentVueHmrMetadata(
+    string ComponentId,
     string DescriptorHash,
     string TemplateHash,
     string LogicHash,

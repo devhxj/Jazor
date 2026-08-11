@@ -1,6 +1,6 @@
 // WikiHomeModule.Deployment.cs - 部署 / Deployment
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

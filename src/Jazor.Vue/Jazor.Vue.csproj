@@ -27,6 +27,7 @@
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
+    <None Include="buildTransitive\Jazor.Vue.targets" Pack="true" PackagePath="buildTransitive\Jazor.Vue.targets" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +45,7 @@
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
-    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
   </ItemGroup>

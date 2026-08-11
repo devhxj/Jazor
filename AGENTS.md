@@ -29,7 +29,7 @@ ECMAScript ecosystem layer:
 
 | Project | Role |
 |---------|------|
-| `src/ECMAScript.Vue3` | Vue 3 core type bindings |
+| `src/ECMAScript.Vue` | Vue 3 core type bindings |
 | `src/ECMAScript.VueContract` | Vue component contracts, descriptors, and slot metadata attributes |
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Vuetify` | Vuetify component wrappers (props, events, slots, value types) |

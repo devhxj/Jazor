@@ -93,7 +93,7 @@ internal static class RazorSgDirectRenderMatrixTestHost
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Web;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace RazorVue.Matrix;
 
@@ -115,7 +115,7 @@ internal static class RazorSgDirectRenderMatrixTestHost
         using ECMAScript.VueContract;
         using Microsoft.AspNetCore.Components;
         using Microsoft.AspNetCore.Components.Rendering;
-        using static ECMAScript.Vue3;
+        using static ECMAScript.Vue;
 
         namespace RazorVue.Matrix;
 

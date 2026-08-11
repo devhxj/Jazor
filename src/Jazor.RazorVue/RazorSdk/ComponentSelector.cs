@@ -12,7 +12,7 @@ internal static class ComponentSelector
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    private const string VueComponentMarkerMetadataName = "ECMAScript.Vue3+IVueComponent";
+    private const string VueComponentMarkerMetadataName = "ECMAScript.Vue+IVueComponent";
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
 
     public static ImmutableArray<INamedTypeSymbol> DiscoverCurrentComponents(Compilation compilation)

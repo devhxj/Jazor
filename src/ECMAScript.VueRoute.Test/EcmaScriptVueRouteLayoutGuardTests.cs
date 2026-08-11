@@ -73,7 +73,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(source, "<PackageId>ECMAScript.VueRoute</PackageId>");
         StringAssert.Contains(source, "<RootNamespace>ECMAScript</RootNamespace>");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
-        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue3\\ECMAScript.Vue3.csproj\" />");
+        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
         StringAssert.Contains(source, "<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />");
     }
 
@@ -142,7 +142,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
 
         StringAssert.Contains(source, "<IsPackable>true</IsPackable>");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
-        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue3\\ECMAScript.Vue3.csproj\" />");
+        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
         StringAssert.Contains(source, "<NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"$dependencyVersion$\" />");
         StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
@@ -171,7 +171,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var coverlet = System.IO.File.ReadAllText(coverletPath);
 
         StringAssert.Contains(readme, "# ECMAScript.VueRoute.Test");
-        StringAssert.Contains(readme, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute");
+        StringAssert.Contains(readme, "dotnet run --file scripts/csharp/test-dotnet.cs -- --project vueroute");
         StringAssert.Contains(coverlet, "<LineMinimum>85</LineMinimum>");
         StringAssert.Contains(coverlet, "<BranchMinimum>80</BranchMinimum>");
     }

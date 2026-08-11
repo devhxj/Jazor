@@ -12,7 +12,7 @@
 
 | 包 | 用途 |
 | --- | --- |
-| `ECMAScript.Vue3` | Vue 3 核心类型、响应式 API、组件与 render-function authoring |
+| `ECMAScript.Vue` | Vue 3 核心类型、响应式 API、组件与 render-function authoring |
 | `ECMAScript.VueContract` | 组件、props、事件、slot 与注入契约 |
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |

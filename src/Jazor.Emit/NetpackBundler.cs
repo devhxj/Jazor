@@ -176,10 +176,15 @@ internal sealed class NetpackBundler
                 Directory.CreateDirectory(artifactDirectory);
 
             File.Copy(sourcePath, artifactPath, overwrite: true);
-            if (string.Equals(asset.Kind, AssetEntry.KindVueSfc, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(asset.Kind, AssetEntry.KindModuleSource, StringComparison.Ordinal))
             {
-                var artifactRelativePath = asset.ArtifactPath.Replace('\\', '/');
-                rewrites[artifactRelativePath + ".mjs"] = artifactRelativePath;
+                if (string.IsNullOrWhiteSpace(asset.ImportPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Module-source asset '{asset.ArtifactPath}' must declare ImportPath.");
+                }
+
+                rewrites[asset.ImportPath.Replace('\\', '/')] = asset.ArtifactPath.Replace('\\', '/');
                 continue;
             }
 

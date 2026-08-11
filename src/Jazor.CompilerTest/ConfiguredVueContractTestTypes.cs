@@ -1,6 +1,6 @@
 using ECMAScript;
 using ECMAScript.Contract;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 using ComponentDescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 
 namespace Jazor.ComplierTest;

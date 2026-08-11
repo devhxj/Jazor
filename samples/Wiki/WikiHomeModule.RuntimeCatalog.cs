@@ -1,6 +1,6 @@
 // WikiHomeModule.RuntimeCatalog.cs - CLR 运行时目录 / CLR Runtime Catalog
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

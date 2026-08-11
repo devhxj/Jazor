@@ -24,7 +24,7 @@ public static partial class WikiHomeModule
 
     private static readonly string[] PageSummaries =
     [
-        "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue3 H functions.",
+        "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue H functions.",
         "Run the site locally, understand the route model, and validate the emitted Wiki host end to end."
     ];
 

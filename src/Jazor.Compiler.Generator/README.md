@@ -12,7 +12,7 @@
 
 ## 扫描范围与规则
 
-当前扫描 `src/ECMAScript/`、`src/Jazor.CLR/`、`src/ECMAScript.Vue3/` 与 `src/ECMAScript.Vuetify/`，不依赖运行时反射装载这些项目。
+当前扫描 `src/ECMAScript/`、`src/Jazor.CLR/`、`src/ECMAScript.Vue/` 与 `src/ECMAScript.Vuetify/`，不依赖运行时反射装载这些项目。
 
 - 未显式提供成员字符串时，key 必须来自 `symbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)`。
 - `Op.Discard` 不进入可消费白名单；属性会展开为 getter/setter 记录。

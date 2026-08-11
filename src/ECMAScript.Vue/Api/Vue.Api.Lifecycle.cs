@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue 组件生命周期注册 API。</summary>
 /// <remarks>回调执行时机完全由当前组件实例和 Vue scheduler 决定，不能按普通 C# 事件理解。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 注册在组件首次挂载到 DOM 后运行的回调。该回调只运行一次；后续重渲染请使用 <see cref="OnUpdated"/>。

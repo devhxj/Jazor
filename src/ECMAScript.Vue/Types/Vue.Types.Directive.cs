@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue directive 及 model modifier 的类型化参数形状。</summary>
 /// <remarks>modifier bag 是对象字面量 contract，不应生成额外的指令包装协议。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 在 <c>withDirectives()</c> 指令参数元组中使用的写入侧修饰符对象。键为最终修饰符名称，值指示该修饰符是否存在。

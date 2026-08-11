@@ -2,14 +2,14 @@
 
 > 定位：Razor SDK 项目显式启用 Razor-to-Vue 的 NuGet 包。
 
-`Jazor.Vue` 安装消费官方 Razor Source Generator 最终 Roslyn `Compilation` 的 generator-driver hook。Razor 组件的 `BuildRenderTree` 操作会降低为 Vue render-function 模块，并注册到供 `Jazor.Emit` 使用的 `Jazor.Generated.VueRenderCatalog`。
+`Jazor.Vue` 安装消费官方 Razor Source Generator 最终 Roslyn `Compilation` 的 generator-driver hook。Razor 组件的 `BuildRenderTree` 操作会降低为 Vue render-function 模块，并注册到供 `Jazor.Emit` 使用的中性 `Jazor.Generated.ArtifactCatalog`；本包的 build-transitive target 还会注册 RazorVue runtime provider。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.4" />
-  <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.9.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

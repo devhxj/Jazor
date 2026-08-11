@@ -1,7 +1,7 @@
 // WikiHomeModule.RouteContract.cs - Wiki 页面路由元数据目录 / Wiki page route metadata catalog
 using System;
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 
@@ -97,7 +97,7 @@ public static partial class WikiHomeModule
     // 页面摘要 / Page summaries
     internal static readonly string[] PageSummaries =
     [
-        "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。",
+        "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue H 函数编写。",
         "基于 URL 的全文搜索，覆盖路由元数据、标签、精选页面正文和章节标题。",
         "本地运行站点，理解路由模型，并端到端验证发射的 Wiki 宿主。",
         "了解当前 Razor-to-Vue 转型主线、共享编译器基础和已经退役的 Jolt 历史边界。",

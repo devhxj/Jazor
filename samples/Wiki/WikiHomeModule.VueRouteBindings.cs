@@ -1,6 +1,6 @@
 // WikiHomeModule.VueRouteBindings.cs - VueRoute 绑定 / VueRoute Bindings
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 
@@ -12,7 +12,7 @@ public static partial class WikiHomeModule
         [
             PageSection("why-vueroute-exists", "为什么存在 VueRoute 绑定",
             [
-                H("p", "`ECMAScript.VueRoute` 的存在使 Vue Router 4 可以通过与 `ECMAScript.Vue3` 相同的类型化 C# 宿主绑定模型编写，而非依赖临时字符串导入或编译器特殊情况。"),
+                H("p", "`ECMAScript.VueRoute` 的存在使 Vue Router 4 可以通过与 `ECMAScript.Vue` 相同的类型化 C# 宿主绑定模型编写，而非依赖临时字符串导入或编译器特殊情况。"),
                 H("ul",
                 [
                     H("li", "保持 `vue-router` 导入显式且局限于绑定库。"),

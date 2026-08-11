@@ -124,7 +124,8 @@ public sealed class VueModuleBuilderPrivateContractTests
         var asset = assetArguments[2] as VueAsset;
         Assert.IsNotNull(asset);
         Assert.AreEqual("pages/components/child.vue", asset.ArtifactPath);
-        Assert.AreEqual("vue-sfc", asset.Kind);
+        Assert.AreEqual("module-source", asset.Kind);
+        Assert.AreEqual("pages/components/child.vue.mjs", asset.ImportPath);
         Assert.IsFalse(Invoke<bool>("TryCreateVueSfcAsset", new object?[] { imports[3], "pages/host.mjs", null }));
 
         Assert.AreEqual(

@@ -19,6 +19,7 @@ internal static class ImportMapWriter
     public static async Task WriteAsync(
         string outputRoot,
         LibraryAssets materialization,
+        IReadOnlyList<ImportMapEntry>? providerEntries = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputRoot);
@@ -27,17 +28,16 @@ internal static class ImportMapWriter
         var browserImports = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["style.mjs"] = "/jazor/style.mjs",
-            ["@jazor/vue-runtime/"] = "/jazor/@jazor/vue-runtime/",
             ["components/"] = "/jazor/components/",
             ["System/"] = "/jazor/System/"
         };
         var ssrImports = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["style.mjs"] = "./style.mjs",
-            ["@jazor/vue-runtime/"] = "./@jazor/vue-runtime/",
             ["components/"] = "./components/",
             ["System/"] = "./System/"
         };
+        AddProviderEntries(browserImports, ssrImports, providerEntries ?? []);
         foreach (var (specifier, path) in materialization.ImportPaths)
         {
             var normalizedPath = path.Replace('\\', '/');
@@ -65,5 +65,45 @@ internal static class ImportMapWriter
             Path.Combine(outputRoot, AssetManifestFileName),
             JsonSerializer.Serialize(assets, JsonOptions),
             cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void AddProviderEntries(
+        IDictionary<string, string> browserImports,
+        IDictionary<string, string> ssrImports,
+        IEnumerable<ImportMapEntry> entries)
+    {
+        foreach (var entry in entries
+                     .OrderBy(static entry => entry.Specifier, StringComparer.Ordinal)
+                     .ThenBy(static entry => entry.ProviderId, StringComparer.Ordinal)
+                     .ThenBy(static entry => entry.ArtifactPath, StringComparer.Ordinal))
+        {
+            var specifier = entry.Specifier.Trim();
+            var artifactPath = entry.ArtifactPath.Replace('\\', '/').TrimStart('/');
+            if (string.IsNullOrWhiteSpace(specifier) || string.IsNullOrWhiteSpace(artifactPath))
+                throw new InvalidOperationException("Runtime provider import-map entries must have a specifier and artifact path.");
+
+            AddImport(browserImports, specifier, "/jazor/" + artifactPath, entry.ProviderId);
+            AddImport(ssrImports, specifier, "./" + artifactPath, entry.ProviderId);
+        }
+    }
+
+    private static void AddImport(
+        IDictionary<string, string> imports,
+        string specifier,
+        string path,
+        string providerId)
+    {
+        if (imports.TryGetValue(specifier, out var existing))
+        {
+            if (!StringComparer.Ordinal.Equals(existing, path))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime provider '{providerId}' conflicts with existing import-map entry '{specifier}'.");
+            }
+
+            return;
+        }
+
+        imports.Add(specifier, path);
     }
 }

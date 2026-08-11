@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using ECMAScript.Contract;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace ECMAScript;
 
@@ -45,7 +45,7 @@ public delegate string RouteQueryStringifier(LocationQueryRaw? query);
 /// </summary>
 /// <param name="to">当前路由位置。Current route location.</param>
 /// <returns>解析后的 Vue props 对象。Resolved Vue props object.</returns>
-public delegate Vue3.VueProps RouteRecordPropsResolver(RouteLocationNormalized to);
+public delegate Vue.VueProps RouteRecordPropsResolver(RouteLocationNormalized to);
 
 /// <summary>
 /// 路由器滚动行为回调，控制路由切换时的滚动位置。
@@ -98,7 +98,7 @@ public delegate RouteLocationRaw RouteRedirectCallback(RouteLocation to, RouteLo
 /// </summary>
 /// <param name="instance">当前 Vue 组件公共实例。Current Vue component public instance.</param>
 [Obsolete("Vue Router 4 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
-public delegate void NavigationGuardNextCallback(Vue3.VueComponentPublicInstance instance);
+public delegate void NavigationGuardNextCallback(Vue.VueComponentPublicInstance instance);
 
 /// <summary>
 /// 导航守卫 next 函数，用于在旧版 API 中控制导航行为。
@@ -234,7 +234,7 @@ public delegate IPromise<RouteNavigationResult?> RouterLinkNavigateCallback(Mous
 /// </summary>
 /// <param name="link">RouterLink 插槽作用域对象，提供导航状态和属性。RouterLink slot scope object providing navigation state and properties.</param>
 /// <returns>渲染的虚拟节点数组。Array of rendered virtual nodes.</returns>
-public delegate Vue3.IVNode[] RouterLinkSlotCallback(RouterLinkSlotScope link);
+public delegate Vue.IVNode[] RouterLinkSlotCallback(RouterLinkSlotScope link);
 
 /// <summary>
 /// RouterView 插槽回调，根据路由视图作用域自定义渲染内容。
@@ -242,7 +242,7 @@ public delegate Vue3.IVNode[] RouterLinkSlotCallback(RouterLinkSlotScope link);
 /// </summary>
 /// <param name="scope">RouterView 插槽作用域对象，提供当前路由组件和状态。RouterView slot scope object providing the current route component and state.</param>
 /// <returns>渲染的虚拟节点数组。Array of rendered virtual nodes.</returns>
-public delegate Vue3.IVNode[] RouterViewSlotCallback(RouterViewSlotScope scope);
+public delegate Vue.IVNode[] RouterViewSlotCallback(RouterViewSlotScope scope);
 
 /// <summary>
 /// 路由历史导航回调，在历史记录导航发生时触发。

@@ -8,49 +8,49 @@ using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore;
 
-public static class JazorSsrApplicationBuilderExtensions
+public static class JazorSSRApplicationBuilderExtensions
 {
     /// <summary>Uses one fixed generated root component for all SPA-fallback navigation requests.</summary>
-    public static IApplicationBuilder UseJazorSsr(
+    public static IApplicationBuilder UseJazorSSR(
         this IApplicationBuilder app,
         string modulePath,
         object? props = null)
     {
         ArgumentNullException.ThrowIfNull(app);
-        return app.UseJazorSsr(new JazorSsrRequest(modulePath, props));
+        return app.UseJazorSSR(new JazorSSRRequest(modulePath, props));
     }
 
     /// <summary>Uses one fixed generated root component for all SPA-fallback navigation requests.</summary>
-    public static IApplicationBuilder UseJazorSsr(
+    public static IApplicationBuilder UseJazorSSR(
         this IApplicationBuilder app,
-        JazorSsrRequest request,
+        JazorSSRRequest request,
         Action<JazorSpaFallbackOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(request);
-        return app.UseJazorSsr(
+        return app.UseJazorSSR(
             static (_, _, state) => Task.FromResult(state),
             request,
             configure);
     }
 
     /// <summary>Uses a request-specific generated root component and props for SPA-fallback navigation requests.</summary>
-    public static IApplicationBuilder UseJazorSsr(
+    public static IApplicationBuilder UseJazorSSR(
         this IApplicationBuilder app,
-        Func<HttpContext, CancellationToken, Task<JazorSsrRequest>> requestFactory,
+        Func<HttpContext, CancellationToken, Task<JazorSSRRequest>> requestFactory,
         Action<JazorSpaFallbackOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(requestFactory);
-        return app.UseJazorSsr(
+        return app.UseJazorSSR(
             static (context, cancellationToken, state) => state(context, cancellationToken),
             requestFactory,
             configure);
     }
 
-    private static IApplicationBuilder UseJazorSsr<TState>(
+    private static IApplicationBuilder UseJazorSSR<TState>(
         this IApplicationBuilder app,
-        Func<HttpContext, CancellationToken, TState, Task<JazorSsrRequest>> requestFactory,
+        Func<HttpContext, CancellationToken, TState, Task<JazorSSRRequest>> requestFactory,
         TState state,
         Action<JazorSpaFallbackOptions>? configure)
         => app.UseJazorSpaFallback(
@@ -61,19 +61,19 @@ public static class JazorSsrApplicationBuilderExtensions
                     return;
 
                 var services = context.RequestServices;
-                var renderer = services.GetService<IJazorSsrRenderer>()
+                var renderer = services.GetService<IJazorSSRRenderer>()
                     ?? throw new InvalidOperationException(
-                        "Jazor SSR requires AddJazorSsr() before UseJazorSsr().");
-                var artifacts = services.GetService<JazorSsrArtifactLocator>()
+                        "Jazor SSR requires AddJazorSSR() before UseJazorSSR().");
+                var artifacts = services.GetService<JazorSSRArtifactLocator>()
                     ?? throw new InvalidOperationException(
-                        "Jazor SSR artifact services were not registered. Call AddJazorSsr() before UseJazorSsr().");
-                var options = services.GetService<IOptions<JazorSsrOptions>>()?.Value
+                        "Jazor SSR artifact services were not registered. Call AddJazorSSR() before UseJazorSSR().");
+                var options = services.GetService<IOptions<JazorSSROptions>>()?.Value
                     ?? throw new InvalidOperationException(
-                        "Jazor SSR options were not registered. Call AddJazorSsr() before UseJazorSsr().");
+                        "Jazor SSR options were not registered. Call AddJazorSSR() before UseJazorSSR().");
                 var request = await requestFactory(context, cancellationToken, state).ConfigureAwait(false);
                 var result = await renderer.RenderAsync(request, cancellationToken).ConfigureAwait(false);
                 var artifactRoot = artifacts.Resolve();
-                await JazorSsrDocumentWriter.WriteAsync(
+                await JazorSSRDocumentWriter.WriteAsync(
                     context,
                     artifactRoot,
                     artifacts,
@@ -84,7 +84,7 @@ public static class JazorSsrApplicationBuilderExtensions
             configure);
 }
 
-internal static class JazorSsrDocumentWriter
+internal static class JazorSSRDocumentWriter
 {
     private const string PropsElementId = "__jazor_ssr_props";
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -94,10 +94,10 @@ internal static class JazorSsrDocumentWriter
 
     public static async Task WriteAsync(
         HttpContext context,
-        JazorSsrArtifacts artifactRoot,
-        JazorSsrArtifactLocator artifacts,
-        JazorSsrOptions options,
-        JazorSsrRenderResult result,
+        JazorSSRArtifacts artifactRoot,
+        JazorSSRArtifactLocator artifacts,
+        JazorSSROptions options,
+        JazorSSRRenderResult result,
         CancellationToken cancellationToken)
     {
         var mountElementId = NormalizeMountElementId(options.MountElementId);

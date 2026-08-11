@@ -29,7 +29,7 @@ public sealed class SemanticWalkerCreationTest
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
@@ -1526,7 +1526,7 @@ public sealed class SemanticWalkerCreationTest
     public void VisitObjectCreation_VueDictionaryIndexer_StaticNullLiteral_IsOmitted()
     {
         var block = GetBlockOperation(@"
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             class TestClass
             {
@@ -1999,7 +1999,7 @@ public sealed class SemanticWalkerCreationTest
     public void VisitObjectCreation_VueDictionaryAdd_StaticNullLiteral_IsOmitted()
     {
         var block = GetBlockOperation(@"
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             class TestClass
             {

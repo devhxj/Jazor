@@ -1,6 +1,6 @@
 // WikiHomeModule.CompilerOverview.cs - 编译器概览 / Compiler Overview
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

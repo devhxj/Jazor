@@ -2,7 +2,7 @@
 // 创建 Vue 3 应用实例并挂载到 DOM / Creates a Vue 3 app instance and mounts to DOM
 
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

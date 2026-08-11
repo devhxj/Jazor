@@ -6,10 +6,10 @@ namespace ECMAScript;
 
 /// <summary>Vue 组件、VNode、props/slots 等核心类型 contract。</summary>
 /// <remarks>本分片描述运行时形状，组件实际发射由 RazorVue/compiler framing 负责。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
-	/// RazorVue/Vue3 组件创作契约。
+	/// RazorVue/Vue 组件创作契约。
 	/// Components are expected to inherit <c>ComponentBase</c> and implement this marker.
 	/// </summary>
 	public interface IVueComponent : IUIComponent
@@ -22,7 +22,7 @@ public static partial class Vue3
 	/// to select the correct <c>h()</c> overload for props-only components.
 	/// </summary>
 	/// <typeparam name="TProps">描述组件接受的 props 的 props 记录类型。The props record type describing the component's accepted props.</typeparam>
-	public interface IVueComponent<TProps> : ECMAScript.Vue3.IVueComponent
+	public interface IVueComponent<TProps> : ECMAScript.Vue.IVueComponent
 		where TProps : VueProps
 	{
 	}
@@ -33,7 +33,7 @@ public static partial class Vue3
 	/// this interface to select the correct <c>h()</c> overload for slots-only components.
 	/// </summary>
 	/// <typeparam name="TSlots">描述组件接受的插槽的插槽记录类型。The slots record type describing the component's accepted slots.</typeparam>
-	public interface IVueSlotComponent<TSlots> : ECMAScript.Vue3.IVueComponent
+	public interface IVueSlotComponent<TSlots> : ECMAScript.Vue.IVueComponent
 		where TSlots : VueSlots
 	{
 	}

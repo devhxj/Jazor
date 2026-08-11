@@ -597,12 +597,16 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
                     contentHash,
                     hmr = new
                     {
-                        componentId = "Demo.Pages.Counter",
+                        providerId = "jazor.vue",
                         moduleId = "Demo.Pages.Counter:" + relativePath,
-                        descriptorHash,
-                        templateHash,
-                        logicHash,
-                        boundaryKind = "template-only"
+                        data = new
+                        {
+                            componentId = "Demo.Pages.Counter",
+                            descriptorHash,
+                            templateHash,
+                            logicHash,
+                            boundaryKind = "template-only"
+                        }
                     }
                 }
             }

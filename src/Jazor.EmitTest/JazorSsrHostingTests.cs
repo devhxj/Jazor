@@ -10,10 +10,10 @@ using Jazor.Emit;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class JazorSsrHostingTests
+public sealed class JazorSSRHostingTests
 {
     [TestMethod]
-    public async Task UseJazorSsr_RendersLocallyHydratesWithSamePropsAndPreservesEndpoints()
+    public async Task UseJazorSSR_RendersLocallyHydratesWithSamePropsAndPreservesEndpoints()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -24,7 +24,7 @@ public sealed class JazorSsrHostingTests
             {
                 app.UsePathBase("/docs");
                 app.UseStaticFiles();
-                app.UseJazorSsr(new JazorSsrRequest(
+                app.UseJazorSSR(new JazorSSRRequest(
                     "components/counter.mjs",
                     new { Title = "SSR <title>" }));
                 app.MapGet("/api/status", () => Results.Ok(new { status = "ok" }));
@@ -58,14 +58,14 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
-    public async Task UseJazorSsr_HeadRequestDoesNotExecuteTheRenderer()
+    public async Task UseJazorSSR_HeadRequestDoesNotExecuteTheRenderer()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             artifactRoot,
-            app => app.UseJazorSsr(new JazorSsrRequest("components/counter.mjs")));
+            app => app.UseJazorSSR(new JazorSSRRequest("components/counter.mjs")));
 
         var client = host.GetTestClient();
         using var request = new HttpRequestMessage(HttpMethod.Head, "/features/ssr");
@@ -78,7 +78,7 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
-    public async Task JazorSsrRenderer_UsesPackagedDenoHostRuntime()
+    public async Task JazorSSRRenderer_UsesPackagedDenoHostRuntime()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -88,12 +88,12 @@ public sealed class JazorSsrHostingTests
             WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
             EnvironmentName = Environments.Development
         });
-        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+        builder.Services.AddJazorSSR(options => options.ArtifactRootPath = artifactRoot);
 
         await using var app = builder.Build();
-        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+        var renderer = app.Services.GetRequiredService<IJazorSSRRenderer>();
 
-        var result = await renderer.RenderAsync(new JazorSsrRequest(
+        var result = await renderer.RenderAsync(new JazorSSRRequest(
             "components/counter.mjs",
             new { Title = "DenoHost" }));
 
@@ -103,7 +103,7 @@ public sealed class JazorSsrHostingTests
 
     [TestMethod]
     [TestCategory("Browser")]
-    public async Task UseJazorSsr_HydratesServerHtmlInRealBrowser()
+    public async Task UseJazorSSR_HydratesServerHtmlInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
         if (browserPath is null)
@@ -123,7 +123,7 @@ public sealed class JazorSsrHostingTests
             {
                 app.UsePathBase("/docs");
                 app.UseStaticFiles();
-                app.UseJazorSsr(new JazorSsrRequest(
+                app.UseJazorSSR(new JazorSSRRequest(
                     "components/hydration.mjs",
                     new { Title = "SSR hydration" }));
             });
@@ -155,7 +155,7 @@ public sealed class JazorSsrHostingTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
-        builder.Services.AddJazorSsr(options =>
+        builder.Services.AddJazorSSR(options =>
         {
             options.ArtifactRootPath = artifactRoot;
             options.AssetPath = "/jazor";
@@ -179,7 +179,7 @@ public sealed class JazorSsrHostingTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, port: 0));
-        builder.Services.AddJazorSsr(options =>
+        builder.Services.AddJazorSSR(options =>
         {
             options.ArtifactRootPath = artifactRoot;
             options.AssetPath = "/jazor";
@@ -215,7 +215,7 @@ public sealed class JazorSsrHostingTests
         public async Task<string> CreateArtifactRootAsync()
         {
             var artifactRoot = Path.Combine(RootPath, "wwwroot", "jazor");
-            var manifestPath = Path.Combine(FindRepositoryRoot(), "src", "ECMAScript.Vue3", "manifest.json");
+            var manifestPath = Path.Combine(FindRepositoryRoot(), "src", "ECMAScript.Vue", "manifest.json");
             var materialization = new LibraryMaterializer().Materialize(
                 [manifestPath],
                 artifactRoot,

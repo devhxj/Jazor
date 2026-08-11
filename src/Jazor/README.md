@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.4" />
+  <PackageReference Include="Jazor" Version="0.9.0" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@
 | `debug` | 输出模块、source map 与 `jazor-manifest.json` |
 | `release` | 经内置 Netpack 路径输出生产浏览器 bundle |
 
-`JazorSsrEnabled=true` 会在 release 输出中额外保留服务器渲染所需的原始模块图；它与浏览器 bundle 分开维护。
+`JazorSSR=true` 会在 release 输出中额外保留服务器渲染所需的原始模块图；它与浏览器 bundle 分开维护。
 
 ## 可选生态包
 
@@ -37,15 +37,15 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.Style" Version="0.8.4" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.9.0" />
 </ItemGroup>
 ```
 
-`ECMAScript.Vue3` 随 `Jazor` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor 与 `ECMAScript.*` 包应保持相同版本。
+`ECMAScript.Vue` 随 `Jazor` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor 与 `ECMAScript.*` 包应保持相同版本。
 
 ## SSR
 
@@ -54,16 +54,16 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 ```xml
 <PropertyGroup>
   <JazorMode>release</JazorMode>
-  <JazorSsrEnabled>true</JazorSsrEnabled>
+  <JazorSSR>true</JazorSSR>
 </PropertyGroup>
 ```
 
 ```csharp
-builder.Services.AddJazorSsr();
+builder.Services.AddJazorSSR();
 
 var app = builder.Build();
 app.UseStaticFiles();
-app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
+app.UseJazorSSR("components/app.mjs", new { Title = "Jazor" });
 ```
 
 ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行本地 Vue 服务器模块，Netpack 只负责浏览器构建。应用不需要全局 Deno、`node_modules`、CDN 或远程 import。
@@ -74,7 +74,7 @@ Razor SDK 项目需要额外引用 `Jazor.Vue`：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

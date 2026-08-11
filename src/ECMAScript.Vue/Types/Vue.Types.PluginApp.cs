@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue app、plugin、provide/inject 相关的结构化类型 contract。</summary>
 /// <remarks>该分片只描述 app.use 等 host surface，不负责插件安装或全局注册的运行时实现。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 直接对象形式的 Vue 插件编写表面。映射到带有 <c>install(app)</c> 函数的普通 JavaScript 对象，可以直接传递给 <see cref="VueApp.Use(VuePlugin)"/> 或 <see cref="VueApp.Use(VuePlugin, VuePluginOptions)"/>。对于类型化安装选项，使用 <see cref="VuePlugin{TOptions}"/>。

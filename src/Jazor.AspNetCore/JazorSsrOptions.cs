@@ -1,7 +1,7 @@
 namespace Jazor.AspNetCore;
 
 /// <summary>Configures Jazor SSR artifacts.</summary>
-public sealed class JazorSsrOptions
+public sealed class JazorSSROptions
 {
     /// <summary>
     /// Overrides the generated Jazor artifact root. Relative paths are resolved from the

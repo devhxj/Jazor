@@ -1,49 +1,47 @@
 namespace Jazor.Emit;
 
 /// <summary>
-/// Compiler-owned RazorVue HMR metadata materialized beside a module entry.
-/// Emit preserves this record verbatim; classification remains in the compiler/host contract.
+/// Provider-owned HMR metadata materialized beside a module entry.
+/// Emit validates only the transport envelope and never interprets provider payload semantics.
 /// </summary>
 internal sealed record HmrMetadata(
-    string ComponentId,
+    string ProviderId,
     string ModuleId,
-    string DescriptorHash,
-    string TemplateHash,
-    string LogicHash,
-    string BoundaryKind)
+    string Payload)
 {
     public static HmrMetadata Create(
-        string componentId,
+        string providerId,
         string moduleId,
-        string descriptorHash,
-        string templateHash,
-        string logicHash,
-        string boundaryKind)
+        string payload)
     {
-        RequireValue(componentId, nameof(componentId));
+        RequireValue(providerId, nameof(providerId));
         RequireValue(moduleId, nameof(moduleId));
-        RequireValue(descriptorHash, nameof(descriptorHash));
-        RequireValue(templateHash, nameof(templateHash));
-        RequireValue(logicHash, nameof(logicHash));
-        RequireValue(boundaryKind, nameof(boundaryKind));
-        if (!IsKnownBoundaryKind(boundaryKind))
-            throw new InvalidOperationException($"Unsupported RazorVue HMR boundary kind '{boundaryKind}'.");
+        RequireValue(payload, nameof(payload));
+        ValidatePayload(payload);
 
         return new HmrMetadata(
-            componentId,
+            providerId,
             moduleId,
-            descriptorHash,
-            templateHash,
-            logicHash,
-            boundaryKind);
+            payload);
     }
-
-    public static bool IsKnownBoundaryKind(string value)
-        => value is "unknown" or "template-only" or "logic-safe" or "full-reload-required";
 
     private static void RequireValue(string value, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new InvalidOperationException($"RazorVue HMR metadata field '{parameterName}' is required.");
+            throw new InvalidOperationException($"HMR metadata field '{parameterName}' is required.");
+    }
+
+    private static void ValidatePayload(string payload)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(payload);
+            if (document.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+                throw new InvalidOperationException("HMR metadata payload must be a JSON object.");
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            throw new InvalidOperationException("HMR metadata payload must be valid JSON.", ex);
+        }
     }
 }

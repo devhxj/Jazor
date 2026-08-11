@@ -1,5 +1,5 @@
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 using static ECMAScript.VueRoute;
 
 namespace VueRoute.MemorySmoke.Host;

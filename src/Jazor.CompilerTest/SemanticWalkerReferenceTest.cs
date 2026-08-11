@@ -10299,7 +10299,7 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_Reference_VueModifiers_PreservesParamsArrayArgument()
 	{
 		var block = GetBlockOperation("""
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             class TestClass
             {
@@ -10310,7 +10310,7 @@ public sealed class SemanticWalkerReferenceTest
                 }
             }
             """,
-			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
 
 		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
@@ -10330,7 +10330,7 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_Reference_ReorderedVueModifierArguments_PreserveParamsArrayAfterBinding()
 	{
 		var block = GetBlockOperation("""
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             class TestClass
             {
@@ -10342,7 +10342,7 @@ public sealed class SemanticWalkerReferenceTest
                 }
             }
             """,
-			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+			additionalReferences: MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
 
 		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 

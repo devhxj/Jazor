@@ -4,6 +4,8 @@
 
 ## 2026-08-11
 
+- `Jazor.Emit` now consumes framework-neutral `Jazor.Generated.ArtifactCatalog` and `Jazor.Artifacts.RuntimeProviderCatalog` contracts. Vue runtime resources, internal import-map entries, and Vue HMR details are supplied by RazorVue; assemblies built against the retired `Jazor.Generated.VueRenderCatalog` contract must be rebuilt.
+- Vue 3 core bindings are now published as `ECMAScript.Vue`, with the C# authoring host renamed from `Vue3` to `Vue`. The `vue3` runtime library ID remains stable so existing manifests and emitted asset paths continue to resolve.
 - Jazor 0.8.4 reorganizes the documentation center into stable overview, architecture, guide, roadmap, and history sections. Current installation, quick-start, package configuration, module documentation, and example entry points now use one consistent Chinese-first format; superseded exploration material is condensed into a single evolution record.
 - The RazorVue release gate now verifies 4,689 official Razor Source Generator scenarios with 97.63% line coverage and 96.03% branch coverage, including source-text carrier and logical-to-physical Razor path resolution boundaries.
 - Development reload now registers generated RazorVue components with Vue's HMR runtime. Compiler-proven template-only updates reload the affected component in place and preserve parent component state; unavailable Vue HMR support, failed module imports, descriptor or logic changes, and other unproven boundaries still use a full-page reload.

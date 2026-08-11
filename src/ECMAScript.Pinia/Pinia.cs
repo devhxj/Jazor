@@ -81,7 +81,7 @@ public delegate Pinia.PiniaValue? PiniaMapStateSelector<TStore>(TStore store)
 /// </summary>
 /// <param name="context">包含应用、pinia 实例、store 和定义选项的插件上下文。The plugin context containing the app, pinia instance, store, and defining options.</param>
 /// <returns>可选的附加属性，将合并到 store 实例中。Optional additional properties to merge into the store instance.</returns>
-public delegate Vue3.VueProps? PiniaPlugin(Pinia.PiniaPluginContext context);
+public delegate Vue.VueProps? PiniaPlugin(Pinia.PiniaPluginContext context);
 
 /// <summary>
 /// 上下文将当前 store 投影到更强用户声明类型的强类型 Pinia 插件回调。
@@ -91,7 +91,7 @@ public delegate Vue3.VueProps? PiniaPlugin(Pinia.PiniaPluginContext context);
 /// <typeparam name="TStore">插件上下文提供的强类型 store 投影。The typed store projection supplied by the plugin context.</typeparam>
 /// <param name="context">当前 store 的强类型插件上下文。The typed plugin context for the current store.</param>
 /// <returns>可选的附加属性，将合并到 store 实例中。Optional additional properties to merge into the store instance.</returns>
-public delegate Vue3.VueProps? PiniaPlugin<TStore>(Pinia.PiniaPluginContext<TStore> context)
+public delegate Vue.VueProps? PiniaPlugin<TStore>(Pinia.PiniaPluginContext<TStore> context)
 	where TStore : class;
 
 /// <summary>
@@ -103,7 +103,7 @@ public delegate Vue3.VueProps? PiniaPlugin<TStore>(Pinia.PiniaPluginContext<TSto
 /// <typeparam name="TOptions">强类型的插件可见选项投影。The typed plugin-visible options projection.</typeparam>
 /// <param name="context">当前 store 的强类型插件上下文。The typed plugin context for the current store.</param>
 /// <returns>可选的附加属性，将合并到 store 实例中。Optional additional properties to merge into the store instance.</returns>
-public delegate Vue3.VueProps? PiniaPlugin<TStore, TOptions>(Pinia.PiniaPluginContext<TStore, TOptions> context)
+public delegate Vue.VueProps? PiniaPlugin<TStore, TOptions>(Pinia.PiniaPluginContext<TStore, TOptions> context)
 	where TStore : class
 	where TOptions : Pinia.DefineStoreOptionsInPlugin;
 
@@ -120,7 +120,7 @@ public delegate Vue3.VueProps? PiniaPlugin<TStore, TOptions>(Pinia.PiniaPluginCo
 public delegate TExtension? PiniaPlugin<TStore, TOptions, TExtension>(Pinia.PiniaPluginContext<TStore, TOptions> context)
 	where TStore : class
 	where TOptions : Pinia.DefineStoreOptionsInPlugin
-	where TExtension : Vue3.VueProps;
+	where TExtension : Vue.VueProps;
 
 /// <summary>
 /// 完全强类型的 Pinia 插件回调，其上下文还将当前 store 投影到由先前插件产生的显式插件自定义属性视图。
@@ -136,8 +136,8 @@ public delegate TExtension? PiniaPlugin<TStore, TOptions, TExtension>(Pinia.Pini
 public delegate TExtension? PiniaPlugin<TStore, TOptions, TCustomProperties, TExtension>(Pinia.PiniaPluginContext<TStore, TOptions, TCustomProperties> context)
 	where TStore : class
 	where TOptions : Pinia.DefineStoreOptionsInPlugin
-	where TCustomProperties : Vue3.VueProps
-	where TExtension : Vue3.VueProps;
+	where TCustomProperties : Vue.VueProps
+	where TExtension : Vue.VueProps;
 
 /// <summary>
 /// 完全强类型的 Pinia 插件回调，其上下文将当前 store 投影到显式自定义属性视图，并将其 <c>$state</c> 投影到由先前插件产生的显式插件自定义状态视图。
@@ -155,9 +155,9 @@ public delegate TExtension? PiniaPlugin<TStore, TOptions, TCustomProperties, TEx
 public delegate TExtension? PiniaPlugin<TStore, TOptions, TCustomProperties, TCustomState, TExtension>(Pinia.PiniaPluginContext<TStore, TOptions, TCustomProperties, TCustomState> context)
 	where TStore : class
 	where TOptions : Pinia.DefineStoreOptionsInPlugin
-	where TCustomProperties : Vue3.VueProps
+	where TCustomProperties : Vue.VueProps
 	where TCustomState : Pinia.PiniaStateTree
-	where TExtension : Vue3.VueProps;
+	where TExtension : Vue.VueProps;
 
 /// <summary>
 /// <c>acceptHMRUpdate()</c> 返回的热模块替换接受回调。

@@ -17,7 +17,7 @@ internal static class RazorSgOfficialAuthoringTestHost
         global using Microsoft.AspNetCore.Components.Web;
         global using Microsoft.AspNetCore.Components.Rendering;
         global using ECMAScript;
-        global using static ECMAScript.Vue3;
+        global using static ECMAScript.Vue;
         """;
 
     public static async Task<RazorSgOfficialAuthoringObservation> BuildComponentAsync(

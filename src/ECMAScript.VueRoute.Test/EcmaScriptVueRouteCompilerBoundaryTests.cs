@@ -53,8 +53,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -133,8 +133,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -182,7 +182,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -233,8 +233,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -315,7 +315,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -381,7 +381,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -434,7 +434,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -466,7 +466,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                         Component = component,
                         BeforeEnter = RouteRecordBeforeEnter.From((RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
                         {
-                            next(NavigationGuardNextArgument.From((Vue3.VueComponentPublicInstance instance) =>
+                            next(NavigationGuardNextArgument.From((Vue.VueComponentPublicInstance instance) =>
                             {
                                 _ = instance;
                             }));
@@ -481,7 +481,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -551,7 +551,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -616,7 +616,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -642,7 +642,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             using ECMAScript;
             using static ECMAScript.VueRoute;
 
-            public sealed record TestViewProps : ECMAScript.Vue3.VueProps
+            public sealed record TestViewProps : ECMAScript.Vue.VueProps
             {
                 [Description("@#featured")]
                 public bool Featured { get; init; }
@@ -707,7 +707,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -736,7 +736,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             public static class TestClass
             {
@@ -791,8 +791,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -840,7 +840,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -863,18 +863,18 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             {
                 public static RouteRecordSingleView BuildLazyRecord()
                 {
-                    ECMAScript.Vue3.IVueComponent component = null!;
+                    ECMAScript.Vue.IVueComponent component = null!;
                     return new RouteRecordSingleView
                     {
                         Path = "/lazy",
-                        Component = RawRouteComponent.From(() => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component))
+                        Component = RawRouteComponent.From(() => Promise<ECMAScript.Vue.IVueComponent>.Resolve(component))
                     };
                 }
 
                 public static RouteComponent BuildTypedLoader()
                 {
-                    ECMAScript.Vue3.IVueComponent component = null!;
-                    return RouteComponent.From(() => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component));
+                    ECMAScript.Vue.IVueComponent component = null!;
+                    return RouteComponent.From(() => Promise<ECMAScript.Vue.IVueComponent>.Resolve(component));
                 }
             }
             """;
@@ -883,8 +883,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -907,7 +907,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
             public static class TestClass
             {
-                public static RouteRecordSingleView BuildSingle(ECMAScript.Vue3.IVueComponent component)
+                public static RouteRecordSingleView BuildSingle(ECMAScript.Vue.IVueComponent component)
                 {
                     return new RouteRecordSingleView
                     {
@@ -916,7 +916,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                     };
                 }
 
-                public static RouteComponent BuildLoaded(ECMAScript.Vue3.IVueComponent component)
+                public static RouteComponent BuildLoaded(ECMAScript.Vue.IVueComponent component)
                 {
                     return component;
                 }
@@ -929,8 +929,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -951,11 +951,11 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             {
                 public static RawRouteComponents BuildComponents()
                 {
-                    ECMAScript.Vue3.IVueComponent component = null!;
+                    ECMAScript.Vue.IVueComponent component = null!;
                     return new RawRouteComponents
                     {
-                        { "default", () => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component) },
-                        { "sidebar", () => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component) }
+                        { "default", () => Promise<ECMAScript.Vue.IVueComponent>.Resolve(component) },
+                        { "sidebar", () => Promise<ECMAScript.Vue.IVueComponent>.Resolve(component) }
                     };
                 }
             }
@@ -965,8 +965,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -987,7 +987,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
             public static class TestClass
             {
-                public static RawRouteComponents BuildComponents(ECMAScript.Vue3.IVueComponent component)
+                public static RawRouteComponents BuildComponents(ECMAScript.Vue.IVueComponent component)
                 {
                     return new RawRouteComponents
                     {
@@ -1002,8 +1002,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1025,8 +1025,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             {
                 public static RawRouteComponent BuildRawLoader()
                 {
-                    ECMAScript.Vue3.IVueComponent component = null!;
-                    RouteComponent typed = RouteComponent.From(() => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component));
+                    ECMAScript.Vue.IVueComponent component = null!;
+                    RouteComponent typed = RouteComponent.From(() => Promise<ECMAScript.Vue.IVueComponent>.Resolve(component));
                     RawRouteComponent raw = typed;
                     return raw;
                 }
@@ -1037,8 +1037,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1072,7 +1072,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1104,7 +1104,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1148,7 +1148,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1185,7 +1185,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1226,7 +1226,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1273,7 +1273,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1318,7 +1318,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1374,8 +1374,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1448,7 +1448,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1505,7 +1505,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1552,7 +1552,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1642,7 +1642,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1695,7 +1695,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1736,7 +1736,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -1761,7 +1761,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                 {
                     var legacy = new LegacyRouteNavigationGuard((RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
                     {
-                        next(NavigationGuardNextArgument.From((Vue3.VueComponentPublicInstance instance) =>
+                        next(NavigationGuardNextArgument.From((Vue.VueComponentPublicInstance instance) =>
                         {
                             _ = instance;
                         }));
@@ -1791,7 +1791,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -1862,8 +1862,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -1912,7 +1912,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1953,7 +1953,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -1990,7 +1990,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2025,7 +2025,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2061,7 +2061,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2096,7 +2096,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2113,7 +2113,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2146,7 +2146,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2170,7 +2170,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2198,7 +2198,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2220,7 +2220,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2248,7 +2248,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2272,7 +2272,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             using ECMAScript;
             using static ECMAScript.VueRoute;
 
-            public sealed record TestViewProps : ECMAScript.Vue3.VueProps
+            public sealed record TestViewProps : ECMAScript.Vue.VueProps
             {
             }
 
@@ -2307,7 +2307,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
                 public static bool RunLegacyNext(NavigationGuardNext next)
                 {
-                    NavigationGuardNextCallback callback = (Vue3.VueComponentPublicInstance instance) =>
+                    NavigationGuardNextCallback callback = (Vue.VueComponentPublicInstance instance) =>
                     {
                         _ = instance;
                     };
@@ -2321,7 +2321,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2342,7 +2342,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             using ECMAScript;
             using static ECMAScript.VueRoute;
 
-            public sealed record TestViewProps : ECMAScript.Vue3.VueProps
+            public sealed record TestViewProps : ECMAScript.Vue.VueProps
             {
             }
 
@@ -2352,7 +2352,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                 {
                     NavigationGuardNext next = null!;
 
-                    next((Vue3.VueComponentPublicInstance instance) =>
+                    next((Vue.VueComponentPublicInstance instance) =>
                     {
                         _ = instance;
                     });
@@ -2386,7 +2386,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -2420,7 +2420,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2444,7 +2444,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2491,8 +2491,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2555,7 +2555,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2597,7 +2597,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2615,7 +2615,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2644,7 +2644,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2673,7 +2673,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             public static class TestClass
@@ -2727,7 +2727,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2798,7 +2798,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
 
@@ -2866,7 +2866,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Element).Assembly.Location));
         var converter = new AstConverter(classSymbol, semanticModel);
@@ -2938,7 +2938,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             BuildCompilationReferences(new[]
             {
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
             }),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

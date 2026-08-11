@@ -87,7 +87,7 @@ public sealed class SemanticWalkerNumericObjectKeyProtocolTests
             syntaxTrees: [syntaxTree],
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(HistoryState).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

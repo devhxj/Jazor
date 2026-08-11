@@ -8,7 +8,7 @@ namespace ECMAScript;
 
 /// <summary>Vue API 中多分支值域的强类型 union 定义。</summary>
 /// <remarks>union 是 authoring/编译期表示，分支投影必须保持精确，不能退化为 object catch-all。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// Options API computed 属性声明的联合类型。可以是一个 getter 回调或可写计算属性的 get/set 选项。

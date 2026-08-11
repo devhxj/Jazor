@@ -20,7 +20,7 @@ var libRoot = Path.Combine(nupkgExtractRoot, "lib", "net11.0");
 var analyzerRoot = Path.Combine(nupkgExtractRoot, "analyzers", "dotnet", "cs");
 var code = """
     using ECMAScript;
-    using static ECMAScript.Vue3;
+    using static ECMAScript.Vue;
     using static ECMAScript.VueRoute;
 
     namespace Probe;

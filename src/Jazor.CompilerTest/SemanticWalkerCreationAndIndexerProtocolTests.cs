@@ -551,7 +551,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             using System;
             using System.Collections.Generic;
             using System.ComponentModel;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             public sealed class TestClass
             {
@@ -664,7 +664,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
             [
                 .. TestMetadataReferences.Net11,
                 MetadataReference.CreateFromFile(typeof(ECMAScript.SpreadAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)
             ],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

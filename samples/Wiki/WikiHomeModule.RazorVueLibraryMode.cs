@@ -1,6 +1,6 @@
 // WikiHomeModule.RazorVueLibraryMode.cs - RazorVue 库模式 / RazorVue Library Mode
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

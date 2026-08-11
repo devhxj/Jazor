@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using ECMAScript;
 using static ECMAScript.Pinia;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
@@ -35,14 +35,14 @@ public abstract class ActivityStore : Store<ActivityState>
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ActivityGetters : Vue3.VueProps
+public sealed record ActivityGetters : Vue.VueProps
 {
     public Func<string> Summary { get; init; } = default!;
 }
 
 [ECMAScript]
 [Description("@#")]
-public sealed record ActivityActions : Vue3.VueProps
+public sealed record ActivityActions : Vue.VueProps
 {
     public Action<string> Capture { get; init; } = default!;
 

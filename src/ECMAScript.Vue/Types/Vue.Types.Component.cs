@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue defineComponent 和组件选项对象的类型化 authoring surface。</summary>
 /// <remarks>record 主要表达结构化对象形状，不意味着生成 CLR 风格组件类。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 传递给 <c>defineComponent()</c> 的组件定义对象的基础 record。包含所有组件选项形态共享的选项。
@@ -42,10 +42,10 @@ public static partial class Vue3
 		public VueProps? Provide { get; init; }
 
 		/// <summary>
-		/// 选项式 API 的函数形式 provide 回调。当提供的值应该为每个组件实例惰性生成时使用。对于绑定 this 的编写方式，将此属性与 <see cref="Vue3.BindThis{TThis}(VueThisDataCallback{TThis})"/> 结合使用。
+		/// 选项式 API 的函数形式 provide 回调。当提供的值应该为每个组件实例惰性生成时使用。对于绑定 this 的编写方式，将此属性与 <see cref="Vue.BindThis{TThis}(VueThisDataCallback{TThis})"/> 结合使用。
 		/// Options API function-form provide callback. Use this when the provided values
 		/// should be produced lazily per component instance. For this-bound authoring,
-		/// combine this property with <see cref="Vue3.BindThis{TThis}(VueThisDataCallback{TThis})"/>.
+		/// combine this property with <see cref="Vue.BindThis{TThis}(VueThisDataCallback{TThis})"/>.
 		/// </summary>
 		[Description("@#provide")]
 		public VueDataCallback? ProvideFactory { get; init; }
@@ -1097,14 +1097,14 @@ public static partial class Vue3
 		/// Component rendered while the async component is loading.
 		/// </summary>
 		[Description("@#loadingComponent")]
-		public ECMAScript.Vue3.IVueComponent? LoadingComponent { get; init; }
+		public ECMAScript.Vue.IVueComponent? LoadingComponent { get; init; }
 
 		/// <summary>
 		/// 在异步组件加载失败时渲染的组件。
 		/// Component rendered when the async component fails to load.
 		/// </summary>
 		[Description("@#errorComponent")]
-		public ECMAScript.Vue3.IVueComponent? ErrorComponent { get; init; }
+		public ECMAScript.Vue.IVueComponent? ErrorComponent { get; init; }
 
 		/// <summary>
 		/// 显示加载组件前的延迟毫秒数。
@@ -1142,7 +1142,7 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="TComponent">由 loader 生成的组件契约。The component contract produced by the loader.</typeparam>
 	public record VueAsyncComponentOptions<TComponent> : IVueOptionsBag
-		where TComponent : ECMAScript.Vue3.IVueComponent
+		where TComponent : ECMAScript.Vue.IVueComponent
 	{
 		/// <summary>
 		/// 加载并解析类型化组件定义的函数。
@@ -1156,14 +1156,14 @@ public static partial class Vue3
 		/// Component rendered while the async component is loading.
 		/// </summary>
 		[Description("@#loadingComponent")]
-		public ECMAScript.Vue3.IVueComponent? LoadingComponent { get; init; }
+		public ECMAScript.Vue.IVueComponent? LoadingComponent { get; init; }
 
 		/// <summary>
 		/// 在异步组件加载失败时渲染的组件。
 		/// Component rendered when the async component fails to load.
 		/// </summary>
 		[Description("@#errorComponent")]
-		public ECMAScript.Vue3.IVueComponent? ErrorComponent { get; init; }
+		public ECMAScript.Vue.IVueComponent? ErrorComponent { get; init; }
 
 		/// <summary>
 		/// 显示加载组件前的延迟毫秒数。

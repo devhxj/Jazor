@@ -205,7 +205,7 @@ public sealed class MemberClosureBuilderContractTests
             using System;
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 

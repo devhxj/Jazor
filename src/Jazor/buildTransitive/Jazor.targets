@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <!-- The umbrella package carries Vue3's runtime assets as well as its binding DLL. -->
+    <!-- The umbrella package carries Vue's runtime assets as well as its binding DLL. -->
     <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json"
                           Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json')" />
   </ItemGroup>
@@ -43,11 +43,8 @@
       <JazorDebugAssembly Include="$(TargetPath)" />
       <JazorDebugAssembly Include="@(ReferenceCopyLocalPaths)"
                          Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
-      <!-- RazorVue is an analyzer, so it is absent from ReferenceCopyLocalPaths. Its
-           embedded runtime modules must still reach Emit. RazorVue 作为 analyzer 不会复制到
-           运行时引用；但其嵌入的运行时模块必须传入 Emit。 -->
-      <JazorDebugAssembly Include="@(Analyzer)"
-                         Condition="'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'" />
+      <!-- Adapter packages register analyzer-owned runtime providers through this neutral item. -->
+      <JazorDebugAssembly Include="@(JazorArtifactProviderAssembly)" />
     </ItemGroup>
 
     <!-- Emit reflects managed assemblies only. Native runtime DLLs can also use a .dll extension on Windows. -->
@@ -74,9 +71,8 @@
       <JazorReleaseAssembly Include="$(TargetPath)" />
       <JazorReleaseAssembly Include="@(ReferenceCopyLocalPaths)"
                            Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
-      <!-- Keep the analyzer-owned RazorVue runtime available to release materialization too. -->
-      <JazorReleaseAssembly Include="@(Analyzer)"
-                           Condition="'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'" />
+      <!-- Keep adapter-owned runtime providers available to release materialization too. -->
+      <JazorReleaseAssembly Include="@(JazorArtifactProviderAssembly)" />
     </ItemGroup>
 
     <!-- Keep release emission consistent with the debug managed-assembly boundary above. -->
@@ -96,7 +92,7 @@
   <Target Name="JazorReleaseSsrArtifacts"
           AfterTargets="JazorRelease"
           DependsOnTargets="_ResolveJazorEmitTool"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'release' and '$(JazorSsrEnabled)' == 'true' and Exists('$(TargetPath)')">
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'release' and '$(JazorSSR)' == 'true' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorReleaseSsrArtifactDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)jazor-release')), '[\\/]+$', ''))</_JazorReleaseSsrArtifactDir>
       <_JazorReleaseSsrOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)ssr')), '[\\/]+$', ''))</_JazorReleaseSsrOutputDir>

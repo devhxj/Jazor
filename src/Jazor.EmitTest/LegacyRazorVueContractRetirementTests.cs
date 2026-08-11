@@ -114,17 +114,21 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_IncludeRazorVueRuntimeAnalyzerInEmit()
+    public void SdkTargets_CollectNeutralRuntimeProvidersAndVueAdapterRegistersItsAnalyzer()
     {
         var repositoryRoot = FindRepositoryRoot();
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        var vueTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Vue", "buildTransitive", "Jazor.Vue.targets"));
         const string analyzerCondition =
             "'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'";
 
         Assert.AreEqual(
             2,
-            targets.Split(analyzerCondition, StringSplitOptions.None).Length - 1,
-            "Both debug and release emission must materialize RazorVue runtime assets from the analyzer assembly.");
+            targets.Split("@(JazorArtifactProviderAssembly)", StringSplitOptions.None).Length - 1,
+            "Both debug and release emission must receive adapter-owned runtime providers through the neutral item.");
+        Assert.IsFalse(targets.Contains("Jazor.RazorVue", StringComparison.Ordinal), targets);
+        StringAssert.Contains(vueTargets, "RegisterJazorVueArtifactProvider", StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, analyzerCondition, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

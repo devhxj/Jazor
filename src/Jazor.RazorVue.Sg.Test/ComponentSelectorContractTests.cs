@@ -49,7 +49,7 @@ public sealed class ComponentSelectorContractTests
         var compilation = CreateCompilation(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -106,7 +106,7 @@ public sealed class ComponentSelectorContractTests
         var razorCompilation = CreateCompilation(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -130,7 +130,7 @@ public sealed class ComponentSelectorContractTests
         var generatedCompilation = CreateCompilation(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -181,7 +181,7 @@ public sealed class ComponentSelectorContractTests
         var compilation = CreateCompilation(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -214,7 +214,7 @@ public sealed class ComponentSelectorContractTests
         var compilation = CreateCompilation(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 

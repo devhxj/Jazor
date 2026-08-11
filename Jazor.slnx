@@ -27,7 +27,7 @@
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
   <Project Path="src/Jazor.Admin/Jazor.Admin.csproj" />
-  <Project Path="src/ECMAScript.Vue3/ECMAScript.Vue3.csproj" />
+  <Project Path="src/ECMAScript.Vue/ECMAScript.Vue.csproj" />
   <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
   <Project Path="src/ECMAScript.Vuetify/ECMAScript.Vuetify.csproj" />

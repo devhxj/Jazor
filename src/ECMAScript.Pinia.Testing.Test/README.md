@@ -24,7 +24,7 @@ dotnet test src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.cspr
 仓库统一入口：
 
 ```bash
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project pinia-testing
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia-testing
 ```
 
 ## 相关文档

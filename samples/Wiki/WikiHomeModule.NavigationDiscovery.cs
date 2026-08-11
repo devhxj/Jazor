@@ -1,6 +1,6 @@
 // WikiHomeModule.NavigationDiscovery.cs - 导航与发现 / Navigation & Discovery
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

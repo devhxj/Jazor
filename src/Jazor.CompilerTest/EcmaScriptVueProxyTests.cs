@@ -8,7 +8,7 @@ using ECMAScript.ElementPlus;
 using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Jazor.ComplierTest;
 
@@ -22,7 +22,7 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_CoreProxyMethods_DoNotExposeObject()
     {
-        var proxyTypes = new[] { typeof(Vue3), typeof(VueApp), typeof(VueSetupContext), typeof(VueWatchHandle) };
+        var proxyTypes = new[] { typeof(Vue), typeof(VueApp), typeof(VueSetupContext), typeof(VueWatchHandle) };
 
         foreach (var method in proxyTypes.SelectMany(static type =>
             type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly)
@@ -665,7 +665,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(typeof(System.Collections.IEnumerable).IsAssignableFrom(directiveRegistryType));
         Assert.IsNotNull(componentIndexer);
         Assert.IsNotNull(directiveIndexer);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), componentIndexer.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent), componentIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueDirective), directiveIndexer.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, componentIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.AreEqual(new[] { typeof(string) }, directiveIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
@@ -741,7 +741,7 @@ public sealed class EcmaScriptVueProxyTests
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(static method => method.Name == nameof(VueApp.Directive))
             .ToArray();
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
 
@@ -818,19 +818,19 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType == typeof(string) &&
             method.ReturnType == typeof(VueDirectiveValue)));
         var withDirectivesMethod = staticMethods.FirstOrDefault(static method =>
-            method.Name == nameof(Vue3.WithDirectives) &&
+            method.Name == nameof(Vue.WithDirectives) &&
             method.ReturnType == typeof(IVNode) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode), typeof(VueDirectiveArguments[]) }));
         Assert.IsNotNull(withDirectivesMethod);
         Assert.IsTrue(withDirectivesMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
         Assert.IsTrue(withDirectivesMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
         var withModifiersMethod = staticMethods.FirstOrDefault(static method =>
-            method.Name == nameof(Vue3.WithModifiers) &&
+            method.Name == nameof(Vue.WithModifiers) &&
             !method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(Action) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action), typeof(string[]) }));
         var withModifiersTypedMethod = staticMethods.FirstOrDefault(static method =>
-            method.Name == nameof(Vue3.WithModifiers) &&
+            method.Name == nameof(Vue.WithModifiers) &&
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueEventHandler<>) &&
@@ -947,9 +947,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_CreateApp_And_CreateSSRApp_ExposeTypedRootPropsOverloads()
     {
-        var methods = typeof(Vue3)
+        var methods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name is nameof(Vue3.CreateApp) or nameof(Vue3.CreateSSRApp))
+            .Where(static method => method.Name is nameof(Vue.CreateApp) or nameof(Vue.CreateSSRApp))
             .ToArray();
 
         static bool HasTypedRootPropsOverload(MethodInfo[] methods, string methodName, int genericArity, Func<ParameterInfo[], bool> predicate)
@@ -961,77 +961,77 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateApp),
+            nameof(Vue.CreateApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericParameter));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateApp),
+            nameof(Vue.CreateApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateApp),
+            nameof(Vue.CreateApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericParameter));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateApp),
+            nameof(Vue.CreateApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSSRApp),
+            nameof(Vue.CreateSSRApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericParameter));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSSRApp),
+            nameof(Vue.CreateSSRApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSSRApp),
+            nameof(Vue.CreateSSRApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericParameter));
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSSRApp),
+            nameof(Vue.CreateSSRApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
     }
@@ -1039,89 +1039,89 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_PublicApiNames_Follow_VueJsNameProjection_Policy()
     {
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static method => !method.IsSpecialName)
             .ToArray();
 
-        Assert.IsTrue(staticMethods.Any(static method => method.Name == nameof(Vue3.CreateSSRApp)));
+        Assert.IsTrue(staticMethods.Any(static method => method.Name == nameof(Vue.CreateSSRApp)));
         Assert.IsFalse(staticMethods.Any(static method => method.Name == "CreateSsrApp"));
         Assert.IsFalse(staticMethods.Any(static method => method.Name == "CreateSSRAppFn"));
 
-        AssertDirectVueName(staticMethods, nameof(Vue3.CreateApp), "createApp");
-        AssertDirectVueName(staticMethods, nameof(Vue3.CreateSSRApp), "createSSRApp");
-        AssertDirectVueName(staticMethods, nameof(Vue3.DefineComponent), "defineComponent");
-        AssertDirectVueName(staticMethods, nameof(Vue3.DefineAsyncComponent), "defineAsyncComponent");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ResolveComponent), "resolveComponent");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ResolveDirective), "resolveDirective");
-        AssertDirectVueName(staticMethods, nameof(Vue3.MergeProps), "mergeProps");
-        AssertDirectVueName(staticMethods, nameof(Vue3.CloneVNode), "cloneVNode");
-        AssertDirectVueName(staticMethods, nameof(Vue3.WithDirectives), "withDirectives");
-        AssertDirectVueName(staticMethods, nameof(Vue3.WithModifiers), "withModifiers");
-        AssertDirectVueName(staticMethods, nameof(Vue3.H), "h");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Ref), "ref");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Reactive), "reactive");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Readonly), "readonly");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowRef), "shallowRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowReactive), "shallowReactive");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowReadonly), "shallowReadonly");
-        AssertDirectVueName(staticMethods, nameof(Vue3.TriggerRef), "triggerRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.CustomRef), "customRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.IsRef), "isRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Unref), "unref");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ToRef), "toRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ToRefs), "toRefs");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ToRaw), "toRaw");
-        AssertDirectVueName(staticMethods, nameof(Vue3.ToValue), "toValue");
-        AssertDirectVueName(staticMethods, nameof(Vue3.MarkRaw), "markRaw");
-        AssertDirectVueName(staticMethods, nameof(Vue3.IsProxy), "isProxy");
-        AssertDirectVueName(staticMethods, nameof(Vue3.IsReactive), "isReactive");
-        AssertDirectVueName(staticMethods, nameof(Vue3.IsReadonly), "isReadonly");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Computed), "computed");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Watch), "watch");
-        AssertDirectVueName(staticMethods, nameof(Vue3.WatchEffect), "watchEffect");
-        AssertDirectVueName(staticMethods, nameof(Vue3.WatchPostEffect), "watchPostEffect");
-        AssertDirectVueName(staticMethods, nameof(Vue3.WatchSyncEffect), "watchSyncEffect");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnWatcherCleanup), "onWatcherCleanup");
-        AssertDirectVueName(staticMethods, nameof(Vue3.NextTick), "nextTick");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseAttrs), "useAttrs");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseSlots), "useSlots");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseTemplateRef), "useTemplateRef");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseId), "useId");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseModel), "useModel");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseHost), "useHost");
-        AssertDirectVueName(staticMethods, nameof(Vue3.UseShadowRoot), "useShadowRoot");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Provide), "provide");
-        AssertDirectVueName(staticMethods, nameof(Vue3.Inject), "inject");
-        AssertDirectVueName(staticMethods, nameof(Vue3.HasInjectionContext), "hasInjectionContext");
-        AssertDirectVueName(staticMethods, nameof(Vue3.EffectScope), "effectScope");
-        AssertDirectVueName(staticMethods, nameof(Vue3.GetCurrentScope), "getCurrentScope");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnScopeDispose), "onScopeDispose");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnMounted), "onMounted");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeMount), "onBeforeMount");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeUnmount), "onBeforeUnmount");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnUnmounted), "onUnmounted");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnUpdated), "onUpdated");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeUpdate), "onBeforeUpdate");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnActivated), "onActivated");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnDeactivated), "onDeactivated");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnErrorCaptured), "onErrorCaptured");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnRenderTracked), "onRenderTracked");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnRenderTriggered), "onRenderTriggered");
-        AssertDirectVueName(staticMethods, nameof(Vue3.OnServerPrefetch), "onServerPrefetch");
+        AssertDirectVueName(staticMethods, nameof(Vue.CreateApp), "createApp");
+        AssertDirectVueName(staticMethods, nameof(Vue.CreateSSRApp), "createSSRApp");
+        AssertDirectVueName(staticMethods, nameof(Vue.DefineComponent), "defineComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue.DefineAsyncComponent), "defineAsyncComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue.ResolveComponent), "resolveComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue.ResolveDirective), "resolveDirective");
+        AssertDirectVueName(staticMethods, nameof(Vue.MergeProps), "mergeProps");
+        AssertDirectVueName(staticMethods, nameof(Vue.CloneVNode), "cloneVNode");
+        AssertDirectVueName(staticMethods, nameof(Vue.WithDirectives), "withDirectives");
+        AssertDirectVueName(staticMethods, nameof(Vue.WithModifiers), "withModifiers");
+        AssertDirectVueName(staticMethods, nameof(Vue.H), "h");
+        AssertDirectVueName(staticMethods, nameof(Vue.Ref), "ref");
+        AssertDirectVueName(staticMethods, nameof(Vue.Reactive), "reactive");
+        AssertDirectVueName(staticMethods, nameof(Vue.Readonly), "readonly");
+        AssertDirectVueName(staticMethods, nameof(Vue.ShallowRef), "shallowRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.ShallowReactive), "shallowReactive");
+        AssertDirectVueName(staticMethods, nameof(Vue.ShallowReadonly), "shallowReadonly");
+        AssertDirectVueName(staticMethods, nameof(Vue.TriggerRef), "triggerRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.CustomRef), "customRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.IsRef), "isRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.Unref), "unref");
+        AssertDirectVueName(staticMethods, nameof(Vue.ToRef), "toRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.ToRefs), "toRefs");
+        AssertDirectVueName(staticMethods, nameof(Vue.ToRaw), "toRaw");
+        AssertDirectVueName(staticMethods, nameof(Vue.ToValue), "toValue");
+        AssertDirectVueName(staticMethods, nameof(Vue.MarkRaw), "markRaw");
+        AssertDirectVueName(staticMethods, nameof(Vue.IsProxy), "isProxy");
+        AssertDirectVueName(staticMethods, nameof(Vue.IsReactive), "isReactive");
+        AssertDirectVueName(staticMethods, nameof(Vue.IsReadonly), "isReadonly");
+        AssertDirectVueName(staticMethods, nameof(Vue.Computed), "computed");
+        AssertDirectVueName(staticMethods, nameof(Vue.Watch), "watch");
+        AssertDirectVueName(staticMethods, nameof(Vue.WatchEffect), "watchEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue.WatchPostEffect), "watchPostEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue.WatchSyncEffect), "watchSyncEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnWatcherCleanup), "onWatcherCleanup");
+        AssertDirectVueName(staticMethods, nameof(Vue.NextTick), "nextTick");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseAttrs), "useAttrs");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseSlots), "useSlots");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseTemplateRef), "useTemplateRef");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseId), "useId");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseModel), "useModel");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseHost), "useHost");
+        AssertDirectVueName(staticMethods, nameof(Vue.UseShadowRoot), "useShadowRoot");
+        AssertDirectVueName(staticMethods, nameof(Vue.Provide), "provide");
+        AssertDirectVueName(staticMethods, nameof(Vue.Inject), "inject");
+        AssertDirectVueName(staticMethods, nameof(Vue.HasInjectionContext), "hasInjectionContext");
+        AssertDirectVueName(staticMethods, nameof(Vue.EffectScope), "effectScope");
+        AssertDirectVueName(staticMethods, nameof(Vue.GetCurrentScope), "getCurrentScope");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnScopeDispose), "onScopeDispose");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnMounted), "onMounted");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnBeforeMount), "onBeforeMount");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnBeforeUnmount), "onBeforeUnmount");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnUnmounted), "onUnmounted");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnUpdated), "onUpdated");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnBeforeUpdate), "onBeforeUpdate");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnActivated), "onActivated");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnDeactivated), "onDeactivated");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnErrorCaptured), "onErrorCaptured");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnRenderTracked), "onRenderTracked");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnRenderTriggered), "onRenderTriggered");
+        AssertDirectVueName(staticMethods, nameof(Vue.OnServerPrefetch), "onServerPrefetch");
 
-        AssertHelperVueName(staticMethods, nameof(Vue3.BindThis), null);
-        AssertHelperVueName(staticMethods, nameof(Vue3.ModelName), null);
-        AssertHelperVueName(staticMethods, nameof(Vue3.ModelPropName), null);
-        AssertHelperVueName(staticMethods, nameof(Vue3.ModelUpdateEventName), null);
+        AssertHelperVueName(staticMethods, nameof(Vue.BindThis), null);
+        AssertHelperVueName(staticMethods, nameof(Vue.ModelName), null);
+        AssertHelperVueName(staticMethods, nameof(Vue.ModelPropName), null);
+        AssertHelperVueName(staticMethods, nameof(Vue.ModelUpdateEventName), null);
 
         CollectionAssert.AreEquivalent(
             new[]
             {
-                nameof(Vue3.BindThis),
-                nameof(Vue3.ModelName),
-                nameof(Vue3.ModelPropName),
-                nameof(Vue3.ModelUpdateEventName)
+                nameof(Vue.BindThis),
+                nameof(Vue.ModelName),
+                nameof(Vue.ModelPropName),
+                nameof(Vue.ModelUpdateEventName)
             },
             staticMethods
                 .Where(static method =>
@@ -1131,19 +1131,19 @@ public sealed class EcmaScriptVueProxyTests
                 })
                 .Select(static method => method.Name)
                 .Distinct()
-                .Where(static name => name is nameof(Vue3.BindThis)
-                    or nameof(Vue3.ModelName)
-                    or nameof(Vue3.ModelPropName)
-                    or nameof(Vue3.ModelUpdateEventName))
+                .Where(static name => name is nameof(Vue.BindThis)
+                    or nameof(Vue.ModelName)
+                    or nameof(Vue.ModelPropName)
+                    or nameof(Vue.ModelUpdateEventName))
                 .ToArray());
 
         static void AssertDirectVueName(MethodInfo[] methods, string methodName, string runtimeName)
         {
             var matchingMethods = methods.Where(method => method.Name == methodName).ToArray();
-            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue3.{methodName}.");
+            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue.{methodName}.");
             Assert.IsTrue(
                 matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description == "@#" + runtimeName),
-                $"Vue3.{methodName} must map directly to Vue runtime name '{runtimeName}'.");
+                $"Vue.{methodName} must map directly to Vue runtime name '{runtimeName}'.");
         }
 
         static void AssertHelperVueName(MethodInfo[] methods, string methodName, string? runtimeName)
@@ -1187,21 +1187,21 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual("@#getSSRProps", typedGetSSRProps.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description);
         Assert.IsNull(directiveType.GetProperty("GetSsrProps", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(typedDirectiveType.GetProperty("GetSsrProps", BindingFlags.Public | BindingFlags.Instance));
-        Assert.IsNull(typeof(Vue3).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback"));
-        Assert.IsNull(typeof(Vue3).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback`1"));
+        Assert.IsNull(typeof(Vue).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback"));
+        Assert.IsNull(typeof(Vue).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback`1"));
     }
 
     [TestMethod]
     public void Vue_P0CoverageBindings_ExposeStronglyTypedRuntimeSurface()
     {
-        var version = typeof(Vue3).GetProperty(nameof(Vue3.Version), BindingFlags.Public | BindingFlags.Static);
+        var version = typeof(Vue).GetProperty(nameof(Vue.Version), BindingFlags.Public | BindingFlags.Static);
         var appVersion = typeof(VueApp).GetProperty(nameof(VueApp.Version), BindingFlags.Public | BindingFlags.Instance);
         var appOnUnmount = typeof(VueApp).GetMethod(nameof(VueApp.OnUnmount), BindingFlags.Public | BindingFlags.Instance);
         var appMixin = typeof(VueApp).GetMethod(nameof(VueApp.Mixin), BindingFlags.Public | BindingFlags.Instance);
         var appRunWithContext = typeof(VueApp)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
             .Single(static method => method.Name == nameof(VueApp.RunWithContext));
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
 
@@ -1222,109 +1222,109 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(Func<>), appRunWithContext.GetParameters()[0].ParameterType.GetGenericTypeDefinition());
         Assert.AreEqual(appRunWithContext.GetGenericArguments()[0], appRunWithContext.ReturnType);
 
-        RequiredStatic(staticMethods, nameof(Vue3.WatchPostEffect), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.WatchPostEffect), static method =>
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.WatchSyncEffect), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.WatchSyncEffect), static method =>
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.TriggerRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.TriggerRef), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(void) &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueShallowRef<>));
-        RequiredStatic(staticMethods, nameof(Vue3.ShallowReactive), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ShallowReactive), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter);
-        RequiredStatic(staticMethods, nameof(Vue3.ShallowReadonly), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ShallowReadonly), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter);
-        RequiredStatic(staticMethods, nameof(Vue3.ToRaw), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRaw), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter);
-        RequiredStatic(staticMethods, nameof(Vue3.MarkRaw), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.MarkRaw), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter);
-        RequiredStatic(staticMethods, nameof(Vue3.IsRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.IsRef), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
-        RequiredStatic(staticMethods, nameof(Vue3.Unref), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Unref), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericParameter);
-        RequiredStatic(staticMethods, nameof(Vue3.Unref), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Unref), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>));
-        RequiredStatic(staticMethods, nameof(Vue3.Unref), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Unref), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueShallowRef<>));
-        RequiredStatic(staticMethods, nameof(Vue3.NextTick), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.NextTick), static method =>
             method.ReturnType == typeof(PromiseResult) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.NextTick), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.NextTick), static method =>
             method.ReturnType == typeof(PromiseResult) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.IsProxy), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.IsProxy), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
-        RequiredStatic(staticMethods, nameof(Vue3.IsReactive), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.IsReactive), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
-        RequiredStatic(staticMethods, nameof(Vue3.IsReadonly), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.IsReadonly), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
-        RequiredStatic(staticMethods, nameof(Vue3.HasInjectionContext), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.HasInjectionContext), static method =>
             method.ReturnType == typeof(bool) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.OnBeforeMount), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnBeforeMount), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnBeforeUpdate), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnBeforeUpdate), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnBeforeUnmount), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnBeforeUnmount), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnErrorCaptured), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnErrorCaptured), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueErrorCapturedHandler) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnErrorCaptured), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnErrorCaptured), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueErrorCapturedCallback) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnActivated), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnActivated), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnDeactivated), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnDeactivated), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnRenderTracked), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnRenderTracked), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueDebuggerCallback) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnRenderTriggered), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnRenderTriggered), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueDebuggerCallback) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnServerPrefetch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnServerPrefetch), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueServerPrefetchPromiseCallback) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnServerPrefetch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnServerPrefetch), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueServerPrefetchCallback) }));
-        RequiredStatic(staticMethods, nameof(Vue3.MergeProps), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.MergeProps), static method =>
             method.ReturnType == typeof(VueProps) &&
             method.GetParameters()[0].ParameterType == typeof(VueProps[]));
-        RequiredStatic(staticMethods, nameof(Vue3.CloneVNode), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.CloneVNode), static method =>
             method.ReturnType == typeof(IVNode) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode) }));
-        RequiredStatic(staticMethods, nameof(Vue3.CloneVNode), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.CloneVNode), static method =>
             method.ReturnType == typeof(IVNode) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode), typeof(VueProps) }));
-        RequiredStatic(staticMethods, nameof(Vue3.IsVNode), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.IsVNode), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
-        RequiredStatic(staticMethods, nameof(Vue3.ResolveComponent), static method =>
-            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
+        RequiredStatic(staticMethods, nameof(Vue.ResolveComponent), static method =>
+            method.ReturnType == typeof(ECMAScript.Vue.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
-        RequiredStatic(staticMethods, nameof(Vue3.ResolveDirective), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ResolveDirective), static method =>
             method.ReturnType == typeof(VueDirectiveValue) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
     }
@@ -1447,43 +1447,43 @@ public sealed class EcmaScriptVueProxyTests
         CollectionAssert.AreEqual(new[] { typeof(string) }, scopedSlotsIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.AreEqual(new[] { typeof(string) }, modifierIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
 
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
 
         static MethodInfo RequiredStatic(MethodInfo[] methods, string name, Func<MethodInfo, bool> predicate)
             => methods.Single(method => method.Name == name && predicate(method));
 
-        RequiredStatic(staticMethods, nameof(Vue3.UseAttrs), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseAttrs), static method =>
             method.ReturnType == typeof(VueAttributeBag) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseAttrs), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseAttrs), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericParameter &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseSlots), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseSlots), static method =>
             method.ReturnType == typeof(VueSlotBag) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseSlots), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseSlots), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericParameter &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseTemplateRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseTemplateRef), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueReadonlyRef<>) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
-        RequiredStatic(staticMethods, nameof(Vue3.UseId), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseId), static method =>
             method.ReturnType == typeof(string) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseModel), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelRef<>) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueProps), typeof(string) }));
-        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseModel), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelRef<>) &&
@@ -1492,7 +1492,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[1].ParameterType == typeof(string) &&
             method.GetParameters()[2].ParameterType.IsGenericType &&
             method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(VueModelOptions<>));
-        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseModel), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType.IsGenericType &&
@@ -1501,7 +1501,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.IsGenericParameter &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>));
-        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseModel), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType.IsGenericType &&
@@ -1512,21 +1512,21 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
             method.GetParameters()[2].ParameterType.IsGenericType &&
             method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(VueModelOptions<>));
-        RequiredStatic(staticMethods, nameof(Vue3.ModelName), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ModelName), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
             method.GetParameters().Length == 0 &&
             method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "\"modelValue\"");
-        RequiredStatic(staticMethods, nameof(Vue3.ModelName), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ModelName), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }) &&
             method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1");
-        RequiredStatic(staticMethods, nameof(Vue3.ModelPropName), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ModelPropName), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType == typeof(string) &&
@@ -1534,7 +1534,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
             method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1");
-        RequiredStatic(staticMethods, nameof(Vue3.ModelUpdateEventName), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ModelUpdateEventName), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             method.ReturnType == typeof(string) &&
@@ -1574,7 +1574,7 @@ public sealed class EcmaScriptVueProxyTests
         var mergedTypedPropsSlotsOptionsType = typeof(VueCustomElementComponentOptions<,>).MakeGenericType(typeof(TestVueProps), typeof(TestVueSlots));
         var mergedTypedSlotsOptionsType = typeof(VueCustomElementSlotComponentOptions<>).MakeGenericType(typeof(TestVueSlots));
         var configureAppInvoke = typeof(VueCustomElementConfigureAppCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
 
@@ -1607,21 +1607,21 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(string[]), mergedTypedPropsSlotsOptionsType.GetProperty("Styles")!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string[]), mergedTypedSlotsOptionsType.GetProperty("Styles")!.PropertyType.UnwrapNullable());
 
-        RequiredStatic(staticMethods, nameof(Vue3.DefineCustomElement), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.DefineCustomElement), static method =>
             method.ReturnType == typeof(CustomElementConstructor) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueComponentDefinition) }));
-        RequiredStatic(staticMethods, nameof(Vue3.DefineCustomElement), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.DefineCustomElement), static method =>
             method.ReturnType == typeof(CustomElementConstructor) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueComponentDefinition), typeof(VueCustomElementOptions) }));
-        RequiredStatic(staticMethods, nameof(Vue3.UseHost), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseHost), static method =>
             method.ReturnType == typeof(HTMLElement) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseHost), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseHost), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericParameter &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.UseShadowRoot), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.UseShadowRoot), static method =>
             method.ReturnType == typeof(ShadowRoot) &&
             method.GetParameters().Length == 0);
 
@@ -1658,7 +1658,7 @@ public sealed class EcmaScriptVueProxyTests
         var refsType = typeof(VueRefs);
         var typedRefsType = typeof(VueRefs<>).MakeGenericType(typeof(TestVueProps));
         var refsIndexer = refsType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
 
@@ -1704,11 +1704,11 @@ public sealed class EcmaScriptVueProxyTests
             typeof(VueWatchFlush).GetMember(nameof(VueWatchFlush.Post)).Single().CustomAttributes.Select(static attribute => attribute.AttributeType.Name).ToArray(),
             "DescriptionAttribute");
 
-        RequiredStatic(staticMethods, nameof(Vue3.Computed), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Computed), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueWritableComputedRef<>) &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueWritableComputedOptions<>));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[]
@@ -1717,7 +1717,7 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(Action<,>).MakeGenericType(method.GetGenericArguments()[0], method.GetGenericArguments()[0]),
                 typeof(VueWatchOptions)
             }));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Length == 2 &&
@@ -1725,7 +1725,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>) &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             HasReferenceTypeConstraint(method.GetGenericArguments()[0]) &&
@@ -1733,7 +1733,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType == method.GetGenericArguments()[0] &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Length == 2 &&
@@ -1741,7 +1741,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueReadonlyRef<>) &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Length == 3 &&
@@ -1751,7 +1751,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueWatchSourcesCallback<>) &&
             method.GetParameters()[2].ParameterType == typeof(VueWatchOptions));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Length == 2 &&
@@ -1760,7 +1760,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.GetElementType()!.GetGenericTypeDefinition() == typeof(Func<>) &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueWatchSourcesCleanupCallback<>));
-        RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Watch), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Length == 2 &&
@@ -1769,30 +1769,30 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.GetElementType()!.GetGenericTypeDefinition() == typeof(VueReadonlyRef<>) &&
             method.GetParameters()[1].ParameterType.IsGenericType &&
             method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueWatchSourcesCallback<>));
-        RequiredStatic(staticMethods, nameof(Vue3.WatchEffect), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.WatchEffect), static method =>
             method.ReturnType == typeof(VueWatchHandle) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueWatchEffectCallback), typeof(VueWatchEffectOptions) }));
-        RequiredStatic(staticMethods, nameof(Vue3.CustomRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.CustomRef), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(IVueRef<>) &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueCustomRefFactory<>));
-        RequiredStatic(staticMethods, nameof(Vue3.OnWatcherCleanup), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnWatcherCleanup), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action) }));
-        RequiredStatic(staticMethods, nameof(Vue3.OnWatcherCleanup), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnWatcherCleanup), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action), typeof(bool) }));
-        RequiredStatic(staticMethods, nameof(Vue3.ToValue), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToValue), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(IVueRef<>) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(method.GetGenericArguments()));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericType &&
@@ -1800,7 +1800,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters().Length == 1 &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericType &&
@@ -1808,7 +1808,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters().Length == 1 &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<>));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             HasReferenceTypeConstraint(method.GetGenericArguments()[0]) &&
@@ -1819,7 +1819,7 @@ public sealed class EcmaScriptVueProxyTests
                 method.GetGenericArguments()[0],
                 typeof(string)
             }));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             HasReferenceTypeConstraint(method.GetGenericArguments()[0]) &&
@@ -1831,7 +1831,7 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(string),
                 method.GetGenericArguments()[1]
             }));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRef), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRef), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericType &&
@@ -1840,20 +1840,20 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueDictionary<>) &&
             method.GetParameters()[1].ParameterType == typeof(string));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRefs), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRefs), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             HasReferenceTypeConstraint(method.GetGenericArguments()[0]) &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueRefs<>) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(method.GetGenericArguments()));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRefs), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRefs), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType == method.GetGenericArguments()[0] &&
             method.GetGenericArguments()[0].GetGenericParameterConstraints().SequenceEqual(new[] { typeof(VueRefs) }) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueProps) }));
-        RequiredStatic(staticMethods, nameof(Vue3.ToRefs), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.ToRefs), static method =>
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 2 &&
             HasReferenceTypeConstraint(method.GetGenericArguments()[1]) &&
@@ -1861,20 +1861,20 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { method.GetGenericArguments()[1] }) &&
             method.GetGenericArguments()[0].GetGenericParameterConstraints().Single().IsGenericType &&
             method.GetGenericArguments()[0].GetGenericParameterConstraints().Single().GetGenericTypeDefinition() == typeof(VueRefs<>));
-        RequiredStatic(staticMethods, nameof(Vue3.Provide), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Provide), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(void) &&
             method.GetParameters()[0].ParameterType == typeof(string));
-        RequiredStatic(staticMethods, nameof(Vue3.Inject), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.Inject), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
-        RequiredStatic(staticMethods, nameof(Vue3.EffectScope), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.EffectScope), static method =>
             method.ReturnType == typeof(VueEffectScope) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(bool) }));
-        RequiredStatic(staticMethods, nameof(Vue3.GetCurrentScope), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.GetCurrentScope), static method =>
             method.ReturnType == typeof(VueEffectScope) &&
             method.GetParameters().Length == 0);
-        RequiredStatic(staticMethods, nameof(Vue3.OnScopeDispose), static method =>
+        RequiredStatic(staticMethods, nameof(Vue.OnScopeDispose), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action), typeof(bool) }));
 
@@ -1895,13 +1895,13 @@ public sealed class EcmaScriptVueProxyTests
     {
         var injectionKeyType = typeof(VueInjectionKey<>).MakeGenericType(typeof(int));
         var asyncOptionsType = typeof(VueAsyncComponentOptions);
-        var typedAsyncOptionsType = typeof(VueAsyncComponentOptions<>).MakeGenericType(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>));
+        var typedAsyncOptionsType = typeof(VueAsyncComponentOptions<>).MakeGenericType(typeof(ECMAScript.Vue.IVueComponent<TestVueProps>));
         var asyncLoaderInvoke = typeof(VueAsyncComponentLoader).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var typedAsyncLoaderInvoke = typeof(VueAsyncComponentLoader<>)
-            .MakeGenericType(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>))
+            .MakeGenericType(typeof(ECMAScript.Vue.IVueComponent<TestVueProps>))
             .GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var asyncErrorInvoke = typeof(VueAsyncComponentErrorCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
-        var staticMethods = typeof(Vue3)
+        var staticMethods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .ToArray();
         var appMethods = typeof(VueApp)
@@ -1916,22 +1916,22 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(asyncErrorInvoke);
         Assert.IsTrue(asyncLoaderInvoke.ReturnType.IsGenericType);
         Assert.AreEqual(typeof(IPromise<>), asyncLoaderInvoke.ReturnType.GetGenericTypeDefinition());
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), asyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent), asyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
         Assert.IsTrue(typedAsyncLoaderInvoke.ReturnType.IsGenericType);
         Assert.AreEqual(typeof(IPromise<>), typedAsyncLoaderInvoke.ReturnType.GetGenericTypeDefinition());
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>), typedAsyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<TestVueProps>), typedAsyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
         CollectionAssert.AreEqual(
             new[] { typeof(Error), typeof(VueAsyncComponentRetryCallback), typeof(VueAsyncComponentRetryCallback), typeof(Number) },
             asyncErrorInvoke.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(typeof(VueAsyncComponentLoader), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Loader))!.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.LoadingComponent))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.LoadingComponent))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Delay))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Timeout))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Suspensible))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueAsyncComponentErrorCallback), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.OnError))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(
-            typeof(VueAsyncComponentLoader<>).MakeGenericType(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>)),
-            typedAsyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions<ECMAScript.Vue3.IVueComponent<TestVueProps>>.Loader))!.PropertyType);
+            typeof(VueAsyncComponentLoader<>).MakeGenericType(typeof(ECMAScript.Vue.IVueComponent<TestVueProps>)),
+            typedAsyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions<ECMAScript.Vue.IVueComponent<TestVueProps>>.Loader))!.PropertyType);
         Assert.IsTrue(injectionKeyType.GetMethods(BindingFlags.Public | BindingFlags.Static).Any(static method =>
             method.Name == "op_Implicit" &&
             method.ReturnType.IsGenericType &&
@@ -1943,24 +1943,24 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueInjectionKey<>)));
 
-        RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
+        RequiredMethod(staticMethods, nameof(Vue.DefineAsyncComponent), static method =>
             !method.IsGenericMethodDefinition &&
-            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
+            method.ReturnType == typeof(ECMAScript.Vue.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueAsyncComponentLoader) }));
-        RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
+        RequiredMethod(staticMethods, nameof(Vue.DefineAsyncComponent), static method =>
             !method.IsGenericMethodDefinition &&
-            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
+            method.ReturnType == typeof(ECMAScript.Vue.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueAsyncComponentOptions) }));
-        RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
+        RequiredMethod(staticMethods, nameof(Vue.DefineAsyncComponent), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueAsyncComponentOptions<>));
-        RequiredMethod(staticMethods, nameof(Vue3.Provide), static method =>
+        RequiredMethod(staticMethods, nameof(Vue.Provide), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueInjectionKey<>));
-        RequiredMethod(staticMethods, nameof(Vue3.Inject), static method =>
+        RequiredMethod(staticMethods, nameof(Vue.Inject), static method =>
             method.IsGenericMethodDefinition &&
             method.GetParameters().Length == 2 &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
@@ -2062,7 +2062,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(componentRegistryIndexer);
         Assert.IsNotNull(eventHandlersIndexer);
         Assert.IsNotNull(typedEventHandlersIndexer);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), componentRegistryIndexer!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent), componentRegistryIndexer!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Action), eventHandlersIndexer!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueEventHandler<MouseEvent>), typedEventHandlersIndexer!.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, componentRegistryIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
@@ -2229,11 +2229,11 @@ public sealed class EcmaScriptVueProxyTests
         var setup = componentOptions.GetProperty("Setup", BindingFlags.Public | BindingFlags.Instance);
         var setupContext = typeof(VueSetupContext<>).MakeGenericType(typeof(TestVueSlots));
         var slots = setupContext.GetProperty("Slots", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-        var typedComponent = typeof(ECMAScript.Vue3.IVueComponent<,>).MakeGenericType(typeof(TestVueProps), typeof(TestVueSlots));
-        var defineComponentOverload = typeof(Vue3)
+        var typedComponent = typeof(ECMAScript.Vue.IVueComponent<,>).MakeGenericType(typeof(TestVueProps), typeof(TestVueSlots));
+        var defineComponentOverload = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Single(static method =>
-                method.Name == nameof(Vue3.DefineComponent) &&
+                method.Name == nameof(Vue.DefineComponent) &&
                 method.IsGenericMethodDefinition &&
                 method.GetGenericArguments().Length == 2);
 
@@ -2241,13 +2241,13 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(slots);
         Assert.AreEqual(typeof(VueTypedSetupCallback<TestVueProps, TestVueSlots>), setup.PropertyType);
         Assert.AreEqual(typeof(TestVueSlots), slots.PropertyType);
-        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>).IsAssignableFrom(typedComponent));
-        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(typedComponent));
+        Assert.IsTrue(typeof(ECMAScript.Vue.IVueComponent<TestVueProps>).IsAssignableFrom(typedComponent));
+        Assert.IsTrue(typeof(ECMAScript.Vue.IVueComponent).IsAssignableFrom(typedComponent));
 
         var parameters = defineComponentOverload.GetParameters();
         Assert.AreEqual(1, parameters.Length);
         Assert.AreEqual(typeof(VueComponentOptions<,>), parameters[0].ParameterType.GetGenericTypeDefinition());
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<,>), defineComponentOverload.ReturnType.GetGenericTypeDefinition());
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<,>), defineComponentOverload.ReturnType.GetGenericTypeDefinition());
     }
 
     [TestMethod]
@@ -2255,11 +2255,11 @@ public sealed class EcmaScriptVueProxyTests
     {
         var componentOptions = typeof(VueSlotComponentOptions<>).MakeGenericType(typeof(TestVueSlots));
         var setup = componentOptions.GetProperty("Setup", BindingFlags.Public | BindingFlags.Instance);
-        var slotComponent = typeof(ECMAScript.Vue3.IVueSlotComponent<>).MakeGenericType(typeof(TestVueSlots));
-        var defineComponentOverload = typeof(Vue3)
+        var slotComponent = typeof(ECMAScript.Vue.IVueSlotComponent<>).MakeGenericType(typeof(TestVueSlots));
+        var defineComponentOverload = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Single(static method =>
-                method.Name == nameof(Vue3.DefineComponent) &&
+                method.Name == nameof(Vue.DefineComponent) &&
                 method.IsGenericMethodDefinition &&
                 method.GetGenericArguments().Length == 1 &&
                 method.GetParameters()[0].ParameterType.IsGenericType &&
@@ -2267,12 +2267,12 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsNotNull(setup);
         Assert.AreEqual(typeof(VueTypedSlotSetupCallback<TestVueSlots>), setup.PropertyType);
-        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(slotComponent));
+        Assert.IsTrue(typeof(ECMAScript.Vue.IVueComponent).IsAssignableFrom(slotComponent));
 
         var parameters = defineComponentOverload.GetParameters();
         Assert.AreEqual(1, parameters.Length);
         Assert.AreEqual(typeof(VueSlotComponentOptions<>), parameters[0].ParameterType.GetGenericTypeDefinition());
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueSlotComponent<>), defineComponentOverload.ReturnType.GetGenericTypeDefinition());
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueSlotComponent<>), defineComponentOverload.ReturnType.GetGenericTypeDefinition());
     }
 
     [TestMethod]
@@ -2281,11 +2281,11 @@ public sealed class EcmaScriptVueProxyTests
         var definitionType = typeof(VueComponentDefinition);
         var inheritAttrs = definitionType.GetProperty(nameof(VueComponentDefinition.InheritAttrs), BindingFlags.Public | BindingFlags.Instance);
         var expose = definitionType.GetProperty(nameof(VueComponentDefinition.Expose), BindingFlags.Public | BindingFlags.Instance);
-        var transition = typeof(Vue3).GetProperty(nameof(Vue3.Transition), BindingFlags.Public | BindingFlags.Static);
-        var transitionGroup = typeof(Vue3).GetProperty(nameof(Vue3.TransitionGroup), BindingFlags.Public | BindingFlags.Static);
-        var keepAlive = typeof(Vue3).GetProperty(nameof(Vue3.KeepAlive), BindingFlags.Public | BindingFlags.Static);
-        var teleport = typeof(Vue3).GetProperty(nameof(Vue3.Teleport), BindingFlags.Public | BindingFlags.Static);
-        var suspense = typeof(Vue3).GetProperty(nameof(Vue3.Suspense), BindingFlags.Public | BindingFlags.Static);
+        var transition = typeof(Vue).GetProperty(nameof(Vue.Transition), BindingFlags.Public | BindingFlags.Static);
+        var transitionGroup = typeof(Vue).GetProperty(nameof(Vue.TransitionGroup), BindingFlags.Public | BindingFlags.Static);
+        var keepAlive = typeof(Vue).GetProperty(nameof(Vue.KeepAlive), BindingFlags.Public | BindingFlags.Static);
+        var teleport = typeof(Vue).GetProperty(nameof(Vue.Teleport), BindingFlags.Public | BindingFlags.Static);
+        var suspense = typeof(Vue).GetProperty(nameof(Vue.Suspense), BindingFlags.Public | BindingFlags.Static);
         var transitionProps = typeof(VueTransitionProps);
         var transitionGroupProps = typeof(VueTransitionGroupProps);
         var keepAliveProps = typeof(VueKeepAliveProps);
@@ -2306,11 +2306,11 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(keepAlive);
         Assert.IsNotNull(teleport);
         Assert.IsNotNull(suspense);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionProps, VueDefaultSlots>), transition.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTransitionGroupProps, VueDefaultSlots>), transitionGroup.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueKeepAliveProps, VueDefaultSlots>), keepAlive.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueTeleportProps, VueDefaultSlots>), teleport.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<VueSuspenseProps, VueSuspenseSlots>), suspense.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<VueTransitionProps, VueDefaultSlots>), transition.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<VueTransitionGroupProps, VueDefaultSlots>), transitionGroup.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<VueKeepAliveProps, VueDefaultSlots>), keepAlive.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<VueTeleportProps, VueDefaultSlots>), teleport.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueComponent<VueSuspenseProps, VueSuspenseSlots>), suspense.PropertyType);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(transitionProps));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(transitionGroupProps));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(keepAliveProps));
@@ -2591,9 +2591,9 @@ public sealed class EcmaScriptVueProxyTests
             .MakeGenericType(typeof(string))
             .GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var slotIndexer = typeof(VueSlots).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
-        var slotOverloads = typeof(Vue3)
+        var slotOverloads = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.H))
+            .Where(static method => method.Name == nameof(Vue.H))
             .ToArray();
 
         Assert.IsNotNull(slotInvoke);
@@ -2612,7 +2612,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return !method.IsGenericMethodDefinition &&
                    parameters.Length == 2 &&
-                   parameters[0].ParameterType == typeof(ECMAScript.Vue3.IVueComponent) &&
+                   parameters[0].ParameterType == typeof(ECMAScript.Vue.IVueComponent) &&
                    parameters[1].ParameterType == typeof(VueSlots);
         }));
         Assert.IsTrue(slotOverloads.Any(static method =>
@@ -2620,7 +2620,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return !method.IsGenericMethodDefinition &&
                    parameters.Length == 3 &&
-                   parameters[0].ParameterType == typeof(ECMAScript.Vue3.IVueComponent) &&
+                   parameters[0].ParameterType == typeof(ECMAScript.Vue.IVueComponent) &&
                    parameters[1].ParameterType == typeof(VueProps) &&
                    parameters[2].ParameterType == typeof(VueSlots);
         }));
@@ -2632,7 +2632,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return parameters.Length == 2 &&
                    parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) &&
+                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
                    parameters[1].ParameterType.IsGenericParameter;
         }));
         Assert.IsTrue(slotOverloads.Any(static method =>
@@ -2643,7 +2643,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return parameters.Length == 2 &&
                    parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                    parameters[1].ParameterType.IsGenericParameter;
         }));
         Assert.IsTrue(slotOverloads.Any(static method =>
@@ -2654,7 +2654,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return parameters.Length == 3 &&
                    parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                    parameters[1].ParameterType.IsGenericParameter &&
                    parameters[2].ParameterType.IsGenericParameter;
         }));
@@ -2663,9 +2663,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_H_ExposesChildOverloads()
     {
-        var overloads = typeof(Vue3)
+        var overloads = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.H) && !method.IsGenericMethodDefinition)
+            .Where(static method => method.Name == nameof(Vue.H) && !method.IsGenericMethodDefinition)
             .Select(static method => method.GetParameters().Select(static parameter => parameter.ParameterType).ToArray())
             .ToArray();
 
@@ -2678,12 +2678,12 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(IVNode)));
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(IVNode[])));
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(VueChild)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(IVNode)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(IVNode[])));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueChild)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(IVNode)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(IVNode[])));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(VueChild)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(IVNode)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(IVNode[])));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(VueChild)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(VueProps), typeof(IVNode)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(VueProps), typeof(IVNode[])));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(VueProps), typeof(VueChild)));
 
         Assert.IsFalse(overloads.Any(static parameters =>
             parameters.Any(static parameter =>
@@ -2694,9 +2694,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_H_ExposesTypedDefaultSlotChildOverloads()
     {
-        var overloads = typeof(Vue3)
+        var overloads = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.H) && method.IsGenericMethodDefinition)
+            .Where(static method => method.Name == nameof(Vue.H) && method.IsGenericMethodDefinition)
             .ToArray();
 
         static bool HasGenericOverload(MethodInfo[] methods, int genericArity, params Func<ParameterInfo[], bool>[] predicates)
@@ -2714,7 +2714,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType == typeof(IVNode)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2722,7 +2722,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType == typeof(IVNode[])));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2730,7 +2730,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType == typeof(VueChild)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2738,7 +2738,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(IVNode)));
 
@@ -2747,7 +2747,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(IVNode[])));
 
@@ -2756,7 +2756,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(VueChild)));
 
@@ -2765,7 +2765,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(IVNode)));
@@ -2775,7 +2775,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(IVNode[])));
@@ -2785,7 +2785,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(VueChild)));
@@ -2795,7 +2795,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
                           parameters[1].ParameterType == typeof(IVNode)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2803,7 +2803,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
                           parameters[1].ParameterType == typeof(IVNode[])));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2811,7 +2811,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
                           parameters[1].ParameterType == typeof(VueChild)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2819,7 +2819,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType == typeof(IVNode)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2827,7 +2827,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType == typeof(IVNode[])));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2835,7 +2835,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType == typeof(VueChild)));
 
         Assert.IsTrue(HasGenericOverload(
@@ -2843,7 +2843,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(IVNode)));
 
@@ -2852,7 +2852,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(IVNode[])));
 
@@ -2861,7 +2861,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericParameter &&
                           parameters[2].ParameterType == typeof(VueChild)));
 
@@ -2870,7 +2870,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(IVNode)));
@@ -2880,7 +2880,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(IVNode[])));
@@ -2890,7 +2890,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(VueChild)));
@@ -2904,9 +2904,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_H_ExposesTypedVueObjectPropsOverloads()
     {
-        var overloads = typeof(Vue3)
+        var overloads = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.H) && method.IsGenericMethodDefinition)
+            .Where(static method => method.Name == nameof(Vue.H) && method.IsGenericMethodDefinition)
             .ToArray();
 
         static bool HasGenericOverload(MethodInfo[] methods, int genericArity, Func<ParameterInfo[], bool> predicate)
@@ -2919,7 +2919,7 @@ public sealed class EcmaScriptVueProxyTests
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
 
@@ -2928,7 +2928,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
 
@@ -2937,7 +2937,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType == typeof(VueChild)));
@@ -2947,7 +2947,7 @@ public sealed class EcmaScriptVueProxyTests
             2,
             parameters => parameters.Length == 3 &&
                           parameters[0].ParameterType.IsGenericType &&
-                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType.IsGenericParameter));
@@ -2956,9 +2956,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_BindThis_ExposesThisBoundCallbackBridge()
     {
-        var methods = typeof(Vue3)
+        var methods = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.BindThis))
+            .Where(static method => method.Name == nameof(Vue.BindThis))
             .ToArray();
         const string bindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
 
@@ -2995,8 +2995,8 @@ public sealed class EcmaScriptVueProxyTests
         foreach (var method in methods)
         {
             var inline = method.GetCustomAttribute<ECMAScriptInlineAttribute>();
-            Assert.IsNotNull(inline, $"Vue3.{nameof(Vue3.BindThis)} overload must declare [{nameof(ECMAScriptInlineAttribute)}].");
-            Assert.AreEqual(bindThisInlineTemplate, inline.RawFuncCode, $"Vue3.{nameof(Vue3.BindThis)} overload inline template drifted.");
+            Assert.IsNotNull(inline, $"Vue.{nameof(Vue.BindThis)} overload must declare [{nameof(ECMAScriptInlineAttribute)}].");
+            Assert.AreEqual(bindThisInlineTemplate, inline.RawFuncCode, $"Vue.{nameof(Vue.BindThis)} overload inline template drifted.");
         }
 
         AssertNotObject(typeof(VueThisDataCallback<>), "VueThisDataCallback<TThis>");
@@ -3048,10 +3048,10 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_DefaultSlotSugar_DoesNotDependOnJazorAttributes()
     {
-        var vueType = typeof(Vue3);
+        var vueType = typeof(Vue);
         var hOverloads = vueType
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == nameof(Vue3.H))
+            .Where(static method => method.Name == nameof(Vue.H))
             .ToArray();
 
         Assert.IsFalse(HasAttribute(vueType, "JazorAttribute"));
@@ -3067,10 +3067,10 @@ public sealed class EcmaScriptVueProxyTests
 
             var receiverType = parameters[0].ParameterType;
             var childType = parameters[^1].ParameterType;
-            if (receiverType != typeof(ECMAScript.Vue3.IVueComponent) &&
+            if (receiverType != typeof(ECMAScript.Vue.IVueComponent) &&
                 !(receiverType.IsGenericType &&
-                  (receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) ||
-                   receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>))))
+                  (receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) ||
+                   receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>))))
             {
                 return false;
             }
@@ -3099,7 +3099,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(exportedComponents.Length > 0);
         foreach (var property in exportedComponents)
         {
-            Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
+            Assert.IsTrue(typeof(ECMAScript.Vue.IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.IsTrue(typeof(IVuetifyComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.AreEqual(property.PropertyType, registryProperties[property.Name].PropertyType.UnwrapNullable(), property.Name);
         }

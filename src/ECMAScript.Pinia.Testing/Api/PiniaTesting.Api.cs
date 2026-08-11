@@ -115,7 +115,7 @@ public static partial class PiniaTesting
 	public extern static PiniaPlugin ProjectPlugin<TStore, TOptions, TExtension>(PiniaPlugin<TStore, TOptions, TExtension> plugin)
 		where TStore : class
 		where TOptions : Pinia.DefineStoreOptionsInPlugin
-		where TExtension : Vue3.VueProps;
+		where TExtension : Vue.VueProps;
 
 	/// <summary>
 	/// 将上下文同时暴露显式插件添加的自定义 store 属性的带类型 Pinia 插件回调投影到 <see cref="TestingOptions.Plugins"/> 所需的无类型运行时插件形态。
@@ -137,8 +137,8 @@ public static partial class PiniaTesting
 	public extern static PiniaPlugin ProjectPlugin<TStore, TOptions, TCustomProperties, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TExtension> plugin)
 		where TStore : class
 		where TOptions : Pinia.DefineStoreOptionsInPlugin
-		where TCustomProperties : Vue3.VueProps
-		where TExtension : Vue3.VueProps;
+		where TCustomProperties : Vue.VueProps
+		where TExtension : Vue.VueProps;
 
 	/// <summary>
 	/// 将上下文同时暴露显式插件添加的自定义 store 属性和自定义状态的带类型 Pinia 插件回调投影到 <see cref="TestingOptions.Plugins"/> 所需的无类型运行时插件形态。
@@ -161,7 +161,7 @@ public static partial class PiniaTesting
 	public extern static PiniaPlugin ProjectPlugin<TStore, TOptions, TCustomProperties, TCustomState, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TCustomState, TExtension> plugin)
 		where TStore : class
 		where TOptions : Pinia.DefineStoreOptionsInPlugin
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : Pinia.PiniaStateTree
-		where TExtension : Vue3.VueProps;
+		where TExtension : Vue.VueProps;
 }

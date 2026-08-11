@@ -15,7 +15,7 @@ Jazor 的核心价值是让 C# 作者在编写阶段保留类型检查、符号�
 | 核心平台 | ECMAScript 模块 | 标注为 `[ECMAScriptModule]` 的 C# 模块 | `.mjs`、源映射与 manifest | 引用 `Jazor` |
 | 核心平台 | 浏览器交付 | 上游生成的模块 catalog | debug 模块或 Netpack 生产包 | 在宿主项目设置 `JazorMode` |
 | 框架集成层 | Razor-to-Vue（当前实现） | 官方 Razor Source Generator 生成的最终 C# 语义 | Vue render-function `.mjs` | 在 Razor 项目中额外引用 `Jazor.Vue` |
-| 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSsrEnabled` 并注册 SSR 服务 |
+| 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 
 Vue 3、Vue Router、Pinia、Vuetify、Element Plus、TDesign、CSS-in-JS 与管理壳均是围绕 Jazor 核心平台提供的强类型绑定或可选库，不构成独立编译路线。
 

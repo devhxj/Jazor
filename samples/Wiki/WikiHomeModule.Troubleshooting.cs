@@ -1,6 +1,6 @@
 // WikiHomeModule.Troubleshooting.cs - 故障排除 / Troubleshooting
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

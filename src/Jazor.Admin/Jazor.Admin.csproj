@@ -33,8 +33,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\ECMAScript.Style\ECMAScript.Style.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />

@@ -1,7 +1,7 @@
 // WikiHomeModule.Search.cs - 搜索 / Search
 using System.Collections.Generic;
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

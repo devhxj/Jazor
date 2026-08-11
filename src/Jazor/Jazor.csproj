@@ -32,11 +32,11 @@
     <None Include="buildTransitive\Jazor.props" Pack="true" PackagePath="buildTransitive\Jazor.props" />
     <None Include="buildTransitive\Jazor.targets" Pack="true" PackagePath="buildTransitive\Jazor.targets" />
     <!-- Browser resources are source-owned package inputs; isolated build output roots contain binaries only. -->
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\licenses\VUE-SERVER-RENDERER-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\VUE-SERVER-RENDERER-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,8 +49,8 @@
   <ItemGroup>
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net11.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="lib\net11.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue\bin\$(Configuration)\net11.0\ECMAScript.Vue.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue\bin\$(Configuration)\net11.0\ECMAScript.Vue.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="lib\net11.0\" />
@@ -76,8 +76,8 @@
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue\bin\$(Configuration)\net11.0\ECMAScript.Vue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue\bin\$(Configuration)\net11.0\ECMAScript.Vue.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <!-- 跟随 Directory.Build.props 中的统一版本，避免升级 Acornima 后打包仍读取旧缓存路径。 -->
@@ -90,7 +90,7 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />

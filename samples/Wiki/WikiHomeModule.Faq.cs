@@ -1,6 +1,6 @@
 // WikiHomeModule.Faq.cs - 常见问题 / FAQ
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

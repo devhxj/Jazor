@@ -3,57 +3,57 @@ using System.Text.RegularExpressions;
 namespace Jazor.ComplierTest;
 
 [TestClass]
-public sealed class EcmaScriptVue3LayoutGuardTests
+public sealed class EcmaScriptVueLayoutGuardTests
 {
     [TestMethod]
-    public void Vue3_ModuleLayout_UsesApiAndTypesSubdirectories()
+    public void Vue_ModuleLayout_UsesApiAndTypesSubdirectories()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var vue3Root = Path.Combine(repoRoot, "src", "ECMAScript.Vue3");
-        var apiDir = Path.Combine(vue3Root, "Api");
-        var typesDir = Path.Combine(vue3Root, "Types");
+        var vueRoot = Path.Combine(repoRoot, "src", "ECMAScript.Vue");
+        var apiDir = Path.Combine(vueRoot, "Api");
+        var typesDir = Path.Combine(vueRoot, "Types");
 
-        Assert.IsTrue(Directory.Exists(vue3Root), $"Vue3 module directory not found: {vue3Root}");
-        Assert.IsTrue(Directory.Exists(apiDir), $"Vue3 API directory not found: {apiDir}");
-        Assert.IsTrue(Directory.Exists(typesDir), $"Vue3 Types directory not found: {typesDir}");
+        Assert.IsTrue(Directory.Exists(vueRoot), $"Vue module directory not found: {vueRoot}");
+        Assert.IsTrue(Directory.Exists(apiDir), $"Vue API directory not found: {apiDir}");
+        Assert.IsTrue(Directory.Exists(typesDir), $"Vue Types directory not found: {typesDir}");
 
-        var apiFiles = Directory.GetFiles(apiDir, "Vue3.Api*.cs", SearchOption.TopDirectoryOnly);
-        var typeFiles = Directory.GetFiles(typesDir, "Vue3.Types.*.cs", SearchOption.TopDirectoryOnly);
-        var rootApiFiles = Directory.GetFiles(vue3Root, "Vue3.Api*.cs", SearchOption.TopDirectoryOnly);
-        var rootTypeFiles = Directory.GetFiles(vue3Root, "Vue3.Types.*.cs", SearchOption.TopDirectoryOnly);
+        var apiFiles = Directory.GetFiles(apiDir, "Vue.Api*.cs", SearchOption.TopDirectoryOnly);
+        var typeFiles = Directory.GetFiles(typesDir, "Vue.Types.*.cs", SearchOption.TopDirectoryOnly);
+        var rootApiFiles = Directory.GetFiles(vueRoot, "Vue.Api*.cs", SearchOption.TopDirectoryOnly);
+        var rootTypeFiles = Directory.GetFiles(vueRoot, "Vue.Types.*.cs", SearchOption.TopDirectoryOnly);
 
-        Assert.IsTrue(apiFiles.Length >= 5, $"Expected at least 5 Vue3 API partial files under {apiDir}, actual: {apiFiles.Length}");
-        Assert.IsTrue(typeFiles.Length >= 7, $"Expected at least 7 Vue3 Types partial files under {typesDir}, actual: {typeFiles.Length}");
-        Assert.AreEqual(0, rootApiFiles.Length, $"Vue3 API partial files should not stay in module root: {string.Join(", ", rootApiFiles.Select(Path.GetFileName))}");
-        Assert.AreEqual(0, rootTypeFiles.Length, $"Vue3 Types partial files should not stay in module root: {string.Join(", ", rootTypeFiles.Select(Path.GetFileName))}");
+        Assert.IsTrue(apiFiles.Length >= 5, $"Expected at least 5 Vue API partial files under {apiDir}, actual: {apiFiles.Length}");
+        Assert.IsTrue(typeFiles.Length >= 7, $"Expected at least 7 Vue Types partial files under {typesDir}, actual: {typeFiles.Length}");
+        Assert.AreEqual(0, rootApiFiles.Length, $"Vue API partial files should not stay in module root: {string.Join(", ", rootApiFiles.Select(Path.GetFileName))}");
+        Assert.AreEqual(0, rootTypeFiles.Length, $"Vue Types partial files should not stay in module root: {string.Join(", ", rootTypeFiles.Select(Path.GetFileName))}");
 
-        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue3.Api.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue3.Api.Render.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue3.Api.Reactivity.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue3.Api.Composition.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue3.Api.Lifecycle.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue.Api.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue.Api.Render.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue.Api.Reactivity.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue.Api.Composition.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(apiDir, "Vue.Api.Lifecycle.cs")));
     }
 
     [TestMethod]
-    public void Vue3_ShellFile_RemainsHostAttributeEntryPointOnly()
+    public void Vue_ShellFile_RemainsHostAttributeEntryPointOnly()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var shellPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Vue3.cs");
+        var shellPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "Vue.cs");
         var source = File.ReadAllText(shellPath);
 
         StringAssert.Contains(source, "[ECMAScript(\"vue\")]");
         StringAssert.Contains(source, "[Description(\"@#\")]");
-        StringAssert.Contains(source, "public static partial class Vue3");
-        Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "Vue3 shell file should not contain static API members.");
-        Assert.IsFalse(source.Contains("public interface IVueComponent", StringComparison.Ordinal), "Vue3 nested type contracts should stay in Types/ partial files.");
+        StringAssert.Contains(source, "public static partial class Vue");
+        Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "Vue shell file should not contain static API members.");
+        Assert.IsFalse(source.Contains("public interface IVueComponent", StringComparison.Ordinal), "Vue nested type contracts should stay in Types/ partial files.");
         Assert.IsFalse(source.Contains("public abstract class VueApp", StringComparison.Ordinal), "VueApp runtime-shape type should stay in Types/ partial files.");
 
         var match = Regex.Match(
             source,
-            @"public\s+static\s+partial\s+class\s+Vue3\s*\{(?<body>[\s\S]*)\}\s*$",
+            @"public\s+static\s+partial\s+class\s+Vue\s*\{(?<body>[\s\S]*)\}\s*$",
             RegexOptions.Compiled);
 
-        Assert.IsTrue(match.Success, "Cannot locate Vue3 shell class body.");
+        Assert.IsTrue(match.Success, "Cannot locate Vue shell class body.");
 
         var body = match.Groups["body"].Value;
         var nonCommentLines = body
@@ -65,30 +65,30 @@ public sealed class EcmaScriptVue3LayoutGuardTests
         Assert.AreEqual(
             0,
             nonCommentLines.Length,
-            $"Vue3 shell class should only keep attribute entrypoint semantics. Unexpected content: {string.Join(" | ", nonCommentLines)}");
+            $"Vue shell class should only keep attribute entrypoint semantics. Unexpected content: {string.Join(" | ", nonCommentLines)}");
     }
 
     [TestMethod]
-    public void Vue3_ProjectFile_UsesExternalLibraryMetadataAndPlatformNamespace()
+    public void Vue_ProjectFile_UsesExternalLibraryMetadataAndPlatformNamespace()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var projectPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "ECMAScript.Vue3.csproj");
+        var projectPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "ECMAScript.Vue.csproj");
         var source = File.ReadAllText(projectPath);
 
-        StringAssert.Contains(source, "<PackageId>ECMAScript.Vue3</PackageId>");
+        StringAssert.Contains(source, "<PackageId>ECMAScript.Vue</PackageId>");
         StringAssert.Contains(source, "<RootNamespace>ECMAScript</RootNamespace>");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
     }
 
     [TestMethod]
-    public void Vue3_Documentation_UsesCurrentPlatformAndBindingsGuide()
+    public void Vue_Documentation_UsesCurrentPlatformAndBindingsGuide()
     {
         var repoRoot = ResolveRepositoryRoot();
         var guidePath = Path.Combine(repoRoot, "docs", "02-architecture", "platform-and-bindings.md");
 
         Assert.IsTrue(File.Exists(guidePath), $"Platform and bindings guide not found: {guidePath}");
         var guide = File.ReadAllText(guidePath);
-        StringAssert.Contains(guide, "ECMAScript.Vue3");
+        StringAssert.Contains(guide, "ECMAScript.Vue");
         StringAssert.Contains(guide, "ECMAScript.VueRoute");
         StringAssert.Contains(guide, "ECMAScript.Pinia");
 
@@ -101,23 +101,23 @@ public sealed class EcmaScriptVue3LayoutGuardTests
     }
 
     [TestMethod]
-    public void Vue3_Source_DoesNotFlowBackIntoPlatformCoreModule()
+    public void Vue_Source_DoesNotFlowBackIntoPlatformCoreModule()
     {
         var repoRoot = ResolveRepositoryRoot();
         var ecmascriptRoot = Path.Combine(repoRoot, "src", "ECMAScript");
-        var misplacedVueFiles = Directory.GetFiles(ecmascriptRoot, "*Vue3*.cs", SearchOption.AllDirectories)
+        var misplacedVueFiles = Directory.GetFiles(ecmascriptRoot, "*Vue*.cs", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(ecmascriptRoot, path))
             .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), misplacedVueFiles, $"Vue3 source files should not flow back into {ecmascriptRoot}");
+        CollectionAssert.AreEqual(Array.Empty<string>(), misplacedVueFiles, $"Vue source files should not flow back into {ecmascriptRoot}");
     }
 
     [TestMethod]
-    public void Vue3_SafeErasedValueUnions_UseNativeUnionKeyword()
+    public void Vue_SafeErasedValueUnions_UseNativeUnionKeyword()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var propsSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Types", "Vue3.Types.Props.cs"));
-        var unionSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Types", "Vue3.Types.Unions.cs"));
+        var propsSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue", "Types", "Vue.Types.Props.cs"));
+        var unionSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue", "Types", "Vue.Types.Unions.cs"));
 
         AssertUsesNativeUnion(propsSource, "VueNamesOrOptions");
         AssertUsesNativeUnion(unionSource, "VueInjectFrom");

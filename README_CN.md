@@ -82,15 +82,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.8.4
+dotnet add package Jazor --version 0.9.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.4" />
-  <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.9.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -133,7 +133,7 @@ public static class GreetingModule
 | `debug` | 可检查的模块、外部 source map 与 `jazor-manifest.json` |
 | `release` | 通过内置 Netpack 路径生成生产浏览器包 |
 
-ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设置 `JazorSsrEnabled=true`。详见[产物管线](docs/02-architecture/artifact-pipeline.md)。
+ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设置 `JazorSSR=true`。详见[产物管线](docs/02-architecture/artifact-pipeline.md)。
 
 ## 文档
 

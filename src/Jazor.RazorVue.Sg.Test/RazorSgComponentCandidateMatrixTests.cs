@@ -91,7 +91,7 @@ public sealed class RazorSgComponentCandidateMatrixTests
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace RazorVue.Candidates;
 

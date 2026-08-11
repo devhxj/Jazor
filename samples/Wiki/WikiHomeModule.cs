@@ -1,7 +1,7 @@
 // WikiHomeModule.cs - Wiki 主模块：路由、导航、状态管理和事件处理 / Main Wiki module: routing, navigation, state management and event handling
 using System.Collections.Generic;
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 
@@ -77,7 +77,7 @@ public static partial class WikiHomeModule
     private static bool ActiveSectionSyncQueued;
 
     // ── 组件定义和 Setup 入口 / Component definition and setup entry ──
-    public static ECMAScript.Vue3.IVueComponent Component
+    public static ECMAScript.Vue.IVueComponent Component
         => DefineComponent(new VueComponentOptions
         {
             Name = "WikiHome",
@@ -1357,17 +1357,17 @@ public static partial class WikiHomeModule
         if (hash.Length == 0)
             return;
 
-        Vue3.NextTick(() => ScrollToHashAnchor(hash));
+        Vue.NextTick(() => ScrollToHashAnchor(hash));
     }
 
     private static void QueueRouteChangeFocus(string path, string searchQuery)
     {
         var routeKey = BuildScrollRouteKey(path, searchQuery);
-        Vue3.NextTick(() => FocusMainContentForRoute(routeKey));
+        Vue.NextTick(() => FocusMainContentForRoute(routeKey));
     }
 
     private static void QueueStoredScrollRestore(string path, string searchQuery, bool fallbackToTop)
-        => Vue3.NextTick(() => RestoreStoredScrollPosition(path, searchQuery, fallbackToTop));
+        => Vue.NextTick(() => RestoreStoredScrollPosition(path, searchQuery, fallbackToTop));
 
     private static void ScrollToHashAnchor(string hash)
     {

@@ -6,4 +6,4 @@ global using System.Runtime.CompilerServices;
 global using ECMAScript;
 global using ECMAScript.VueContract;
 global using static ECMAScript.Global;
-global using static ECMAScript.Vue3;
+global using static ECMAScript.Vue;

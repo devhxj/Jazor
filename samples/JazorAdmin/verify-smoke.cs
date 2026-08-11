@@ -347,7 +347,7 @@ static async Task VerifyBrowserSmokeAsync(
 
     var denoPath = ResolveDenoHostRuntime(repoRoot);
 
-    var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "dist", "vue.runtime.esm-browser.prod.js");
+    var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "vue.runtime.esm-browser.prod.js");
     var vueRouterRuntime = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "dist", "vue-router.esm-browser.prod.js");
     var tDesignRuntime = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.mjs");
     var tDesignStyle = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.css");

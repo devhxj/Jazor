@@ -20,7 +20,7 @@ public sealed class ComponentSelectorTests
                     """
                     using ECMAScript;
                     using Microsoft.AspNetCore.Components;
-                    using static ECMAScript.Vue3;
+                    using static ECMAScript.Vue;
 
                     namespace Demo.Pages;
 
@@ -62,7 +62,7 @@ public sealed class ComponentSelectorTests
                     using ECMAScript;
                     using Microsoft.AspNetCore.Components;
                     using Microsoft.AspNetCore.Components.Rendering;
-                    using static ECMAScript.Vue3;
+                    using static ECMAScript.Vue;
 
                     namespace Demo.Pages;
 
@@ -94,7 +94,7 @@ public sealed class ComponentSelectorTests
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Pages;
 
@@ -220,7 +220,7 @@ public sealed class ComponentSelectorTests
         var childTree = CSharpSyntaxTree.ParseText(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Components;
 
@@ -255,7 +255,7 @@ public sealed class ComponentSelectorTests
             """
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Components;
 
@@ -334,7 +334,7 @@ public sealed class ComponentSelectorTests
             """
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Components;
 

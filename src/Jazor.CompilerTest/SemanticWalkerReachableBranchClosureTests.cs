@@ -172,7 +172,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
     {
         var script = VisitBlock(
             """
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             static class TestClass
             {
@@ -192,7 +192,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
     {
         var script = VisitBlock(
             """
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             static class TestClass
             {
@@ -979,7 +979,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

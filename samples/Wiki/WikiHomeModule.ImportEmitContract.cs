@@ -1,6 +1,6 @@
 // WikiHomeModule.ImportEmitContract.cs - 导入与发射契约 / Import & Emit Contract
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

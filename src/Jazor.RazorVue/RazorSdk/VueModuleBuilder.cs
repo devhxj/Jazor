@@ -1522,11 +1522,13 @@ internal static class VueModuleBuilder
             return false;
         }
 
+        var importPath = ResolveImportArtifactPath(specifier, importerRelativePath);
         var artifactPath = ResolveImportArtifactPath(specifier.Substring(0, specifier.Length - ".mjs".Length), importerRelativePath);
         asset = new VueAsset(
             SourcePath: artifactPath,
             ArtifactPath: artifactPath,
-            Kind: "vue-sfc",
+            Kind: "module-source",
+            ImportPath: importPath,
             ContentHash: string.Empty);
         return true;
     }
@@ -2833,4 +2835,5 @@ internal sealed record VueAsset(
     string SourcePath,
     string ArtifactPath,
     string Kind,
+    string ImportPath,
     string ContentHash);

@@ -311,7 +311,7 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
    - 这条规则的目标是消除结构对象里的无意义字面量垃圾，而不是引入通用运行时 omit-null 协议；
    - 因此非静态、非字面量的 `null` 流值仍按普通成员保留。
 
-3. `ECMAScript.Vue3.VueObject` / `VueObject<TProps>` 只是建立在 record structural lowering 之上的 authoring surface：
+3. `ECMAScript.Vue.VueObject` / `VueObject<TProps>` 只是建立在 record structural lowering 之上的 authoring surface：
    - 编译器不应为它们再开一条 Vue-only lowering 分支；
    - `Props` / `Attrs` / `Dataset` / `Raw` 的 flatten 行为都应通过通用 `[Spread]` 路线获得；
    - `VueObject` 允许直接写字符串索引键，但这仍然应落到同一套 object-literal lowering；

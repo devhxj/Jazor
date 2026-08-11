@@ -12,8 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
     <ProjectReference Include="..\ECMAScript.ElementPlus\ECMAScript.ElementPlus.csproj" />

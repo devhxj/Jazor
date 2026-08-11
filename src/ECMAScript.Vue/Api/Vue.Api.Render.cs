@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue render/h/children/slot 等渲染函数 API。</summary>
 /// <remarks>该分片只提供最终 render-function 所需的 host contract，不引入中间模板 marker。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 将 this 感知数据回调绑定到 Vue Options API <c>data()</c> 运行时形式。

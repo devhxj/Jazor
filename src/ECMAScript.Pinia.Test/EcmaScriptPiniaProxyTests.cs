@@ -23,7 +23,7 @@ public sealed class EcmaScriptPiniaProxyTests
 			.Single(static method => method.Name == nameof(Pinia.CreatePinia));
 
 		Assert.AreEqual(typeof(Pinia.PiniaInstance), createPinia.ReturnType);
-		Assert.IsTrue(typeof(Vue3.VuePlugin).IsAssignableFrom(typeof(Pinia.PiniaInstance)));
+		Assert.IsTrue(typeof(Vue.VuePlugin).IsAssignableFrom(typeof(Pinia.PiniaInstance)));
 	}
 
 	[TestMethod]
@@ -125,17 +125,17 @@ public sealed class EcmaScriptPiniaProxyTests
 
 		Assert.IsNotNull(piniaInstanceState);
 		Assert.IsNotNull(storeState);
-		Assert.AreEqual(typeof(Vue3.IVueRef<Vue3.VueDictionary<Pinia.PiniaStateTree>>), piniaInstanceState!.PropertyType);
+		Assert.AreEqual(typeof(Vue.IVueRef<Vue.VueDictionary<Pinia.PiniaStateTree>>), piniaInstanceState!.PropertyType);
 		Assert.AreEqual(typeof(TestPiniaState), storeState!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueWatchOptions), subscribeOptions.BaseType);
+		Assert.AreEqual(typeof(Vue.VueWatchOptions), subscribeOptions.BaseType);
 
 		var detached = subscribeOptions.GetProperty(nameof(Pinia.SubscribeOptions.Detached), BindingFlags.Public | BindingFlags.Instance);
 		var flush = subscribeOptions.GetProperty(nameof(Pinia.SubscribeOptions.Flush), BindingFlags.Public | BindingFlags.Instance);
-		var immediate = subscribeOptions.GetProperty(nameof(Vue3.VueWatchOptions.Immediate), BindingFlags.Public | BindingFlags.Instance);
-		var deep = subscribeOptions.GetProperty(nameof(Vue3.VueWatchOptions.Deep), BindingFlags.Public | BindingFlags.Instance);
-		var once = subscribeOptions.GetProperty(nameof(Vue3.VueWatchOptions.Once), BindingFlags.Public | BindingFlags.Instance);
-		var onTrack = subscribeOptions.GetProperty(nameof(Vue3.VueWatchEffectOptions.OnTrack), BindingFlags.Public | BindingFlags.Instance);
-		var onTrigger = subscribeOptions.GetProperty(nameof(Vue3.VueWatchEffectOptions.OnTrigger), BindingFlags.Public | BindingFlags.Instance);
+		var immediate = subscribeOptions.GetProperty(nameof(Vue.VueWatchOptions.Immediate), BindingFlags.Public | BindingFlags.Instance);
+		var deep = subscribeOptions.GetProperty(nameof(Vue.VueWatchOptions.Deep), BindingFlags.Public | BindingFlags.Instance);
+		var once = subscribeOptions.GetProperty(nameof(Vue.VueWatchOptions.Once), BindingFlags.Public | BindingFlags.Instance);
+		var onTrack = subscribeOptions.GetProperty(nameof(Vue.VueWatchEffectOptions.OnTrack), BindingFlags.Public | BindingFlags.Instance);
+		var onTrigger = subscribeOptions.GetProperty(nameof(Vue.VueWatchEffectOptions.OnTrigger), BindingFlags.Public | BindingFlags.Instance);
 
 		Assert.IsNotNull(detached);
 		Assert.IsNotNull(flush);
@@ -145,9 +145,9 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.IsNotNull(onTrack);
 		Assert.IsNotNull(onTrigger);
 		Assert.AreEqual(typeof(bool?), detached!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueWatchFlush?), flush!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueWatchFlush?), flush!.PropertyType);
 		Assert.AreEqual(typeof(bool?), immediate!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueWatchDeep?), deep!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueWatchDeep?), deep!.PropertyType);
 		Assert.AreEqual(typeof(bool?), once!.PropertyType);
 		Assert.AreEqual(typeof(global::ECMAScript.VueDebuggerCallback), onTrack!.PropertyType);
 		Assert.AreEqual(typeof(global::ECMAScript.VueDebuggerCallback), onTrigger!.PropertyType);
@@ -181,9 +181,9 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.IsNotNull(patchObjectEvents);
 		Assert.IsNotNull(patchObjectPayload);
 		Assert.AreEqual(typeof(Pinia.SubscriptionMutationEvents?), baseEvents!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent), directEvents!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchFunctionEvents!.PropertyType);
-		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchObjectEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueDebuggerEvent), directEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueDebuggerEvent[]), patchFunctionEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueDebuggerEvent[]), patchObjectEvents!.PropertyType);
 		Assert.AreEqual(typeof(Pinia.PiniaStatePatch<TestPiniaState>), patchObjectPayload!.PropertyType);
 	}
 
@@ -202,7 +202,7 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.AreEqual(typeof(PiniaStatePatchCallback<TestPiniaState>), patchMethods[1].GetParameters()[0].ParameterType);
 
 		var patchContract = typeof(Pinia.PiniaStatePatch<>).MakeGenericType(typeof(TestPiniaState));
-		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(patchContract));
+		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(patchContract));
 	}
 
 	[TestMethod]
@@ -262,7 +262,7 @@ public sealed class EcmaScriptPiniaProxyTests
 
 		Assert.IsNotNull(setupActions);
 		Assert.IsNotNull(typedSetupActions);
-		Assert.AreEqual(typeof(Vue3.VueProps), setupActions!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueProps), setupActions!.PropertyType);
 		Assert.AreEqual(typeof(TestPiniaActions), typedSetupActions!.PropertyType);
 	}
 
@@ -542,8 +542,8 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.AreEqual(1, mapStoresParams.Length);
 		Assert.AreEqual(typeof(Pinia.StoreDefinition[]), mapStoresParams[0].ParameterType);
 
-		Assert.IsTrue(typeof(Vue3.VueDictionary<string>).IsAssignableFrom(typeof(Pinia.PiniaKeyMapper)));
-		Assert.IsTrue(typeof(Vue3.VueDictionary<Pinia.PiniaStateMapValue<Pinia.StoreGeneric>>)
+		Assert.IsTrue(typeof(Vue.VueDictionary<string>).IsAssignableFrom(typeof(Pinia.PiniaKeyMapper)));
+		Assert.IsTrue(typeof(Vue.VueDictionary<Pinia.PiniaStateMapValue<Pinia.StoreGeneric>>)
 			.IsAssignableFrom(typeof(Pinia.PiniaStateMapper<Pinia.StoreGeneric>)));
 
 		var mapValueType = typeof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>);
@@ -568,8 +568,8 @@ public sealed class EcmaScriptPiniaProxyTests
 
 		AssertNet11UnionContract(
 			typeof(Pinia.SubscriptionMutationEvents),
-			typeof(Vue3.VueDebuggerEvent),
-			typeof(Vue3.VueDebuggerEvent[]));
+			typeof(Vue.VueDebuggerEvent),
+			typeof(Vue.VueDebuggerEvent[]));
 	}
 
 	[TestMethod]
@@ -728,17 +728,17 @@ public abstract class TestPiniaStore : Pinia.Store<TestPiniaState>
 	public extern void Increment();
 }
 
-public sealed record TestPiniaGetters : Vue3.VueProps
+public sealed record TestPiniaGetters : Vue.VueProps
 {
 	public Func<int> DoubleCount { get; init; } = default!;
 }
 
-public sealed record TestPiniaActions : Vue3.VueProps
+public sealed record TestPiniaActions : Vue.VueProps
 {
 	public Action Increment { get; init; } = default!;
 }
 
-public sealed record TestPiniaPluginExtensions : Vue3.VueProps
+public sealed record TestPiniaPluginExtensions : Vue.VueProps
 {
 	public string AuditTag { get; init; } = "";
 }

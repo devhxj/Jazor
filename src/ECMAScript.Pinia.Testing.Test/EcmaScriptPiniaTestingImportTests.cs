@@ -22,8 +22,8 @@ public sealed class EcmaScriptPiniaTestingImportTests
 			[
 				MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Vue3).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Vue).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(Pinia).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(PiniaTesting).Assembly.Location)
 			]),
@@ -358,7 +358,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 				[ECMAScriptModule("tests/testing-root-app.mjs")]
 				public static class CounterTestingModule
 				{
-					public static Vue3.VueApp ResolveApp()
+					public static Vue.VueApp ResolveApp()
 					{
 						var pinia = CreateTestingPinia(new TestingOptions
 						{
@@ -412,7 +412,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 				{
 				}
 
-				public sealed record CounterPluginOutput : Vue3.VueProps
+				public sealed record CounterPluginOutput : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -440,7 +440,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 							CreateSpy = WrapSpy
 						});
 
-					private static Vue3.VueProps? InstallPlugin(PiniaPluginContext context)
+					private static Vue.VueProps? InstallPlugin(PiniaPluginContext context)
 						=> new CounterPluginOutput
 						{
 							AuditTag = context.Store.Id + ":testing"
@@ -860,12 +860,12 @@ public sealed class EcmaScriptPiniaTestingImportTests
 				{
 				}
 
-				public sealed record CounterGetters : Vue3.VueProps
+				public sealed record CounterGetters : Vue.VueProps
 				{
 					public Func<int> DoubleCount { get; init; } = default!;
 				}
 
-				public sealed record CounterActions : Vue3.VueProps
+				public sealed record CounterActions : Vue.VueProps
 				{
 					public Action Increment { get; init; } = default!;
 				}
@@ -875,7 +875,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 					public string AuditMode { get; init; } = "";
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}

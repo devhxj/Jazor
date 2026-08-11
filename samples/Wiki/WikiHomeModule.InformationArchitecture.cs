@@ -1,6 +1,6 @@
 // WikiHomeModule.InformationArchitecture.cs - 信息架构 / Information Architecture
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

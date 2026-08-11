@@ -6,7 +6,7 @@ namespace ECMAScript;
 
 /// <summary>Vue 应用创建、组件注册和基础 runtime API。</summary>
 /// <remarks>调用直接映射 Vue 3 host module；compiler 不在此分片实现应用生命周期。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 当前 Vue 运行时版本。
@@ -282,7 +282,7 @@ public static partial class Vue3
 	/// <returns>保留 prop/slot 契约的类型化异步组件引用。A typed async component reference that preserves prop/slot contracts.</returns>
 	[Description("@#defineAsyncComponent")]
 	public extern static TComponent DefineAsyncComponent<TComponent>(VueAsyncComponentOptions<TComponent> options)
-		where TComponent : ECMAScript.Vue3.IVueComponent;
+		where TComponent : ECMAScript.Vue.IVueComponent;
 
 	/// <summary>
 	/// Vue 内置的 <c>Transition</c> 组件，用于动画化单个元素或组件的进入和离开。

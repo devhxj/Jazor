@@ -15,7 +15,7 @@ public sealed class RazorVueAnalyzerScopeTests
             """
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("./components/counter")]
             public sealed class Counter : ComponentBase, IVueComponent
@@ -33,7 +33,7 @@ public sealed class RazorVueAnalyzerScopeTests
             """
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("./components/counter")]
             public sealed class Counter : ComponentBase, IVueComponent
@@ -71,7 +71,7 @@ public sealed class RazorVueAnalyzerScopeTests
             using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("./components/counter")]
             public sealed class Counter : ComponentBase, IVueComponent
@@ -94,7 +94,7 @@ public sealed class RazorVueAnalyzerScopeTests
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("./components/counter")]
             public sealed class Counter : ComponentBase, IVueComponent

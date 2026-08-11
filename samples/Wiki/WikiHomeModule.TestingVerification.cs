@@ -1,6 +1,6 @@
 // WikiHomeModule.TestingVerification.cs - 测试与验证 / Testing & Verification
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

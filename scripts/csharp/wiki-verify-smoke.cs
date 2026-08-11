@@ -219,7 +219,7 @@ foreach (var marker in new[]
 
 var docsRoutes = new List<RouteExpectation>
 {
-    new("/", "概览 | jazor.wiki", "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。", "index, follow"),
+    new("/", "概览 | jazor.wiki", "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue H 函数编写。", "index, follow"),
     new("/search", "搜索 | jazor.wiki", "通过子系统、路由片段、工作流或标签搜索完整 Wiki 语料库。", "noindex, nofollow"),
     new("/guides/getting-started", "快速开始 | jazor.wiki", "本地运行站点，理解路由模型，并端到端验证发射的 Wiki 宿主。", "index, follow"),
     new("/guides/project-lines", "项目线路 | jazor.wiki", "了解当前 Razor-to-Vue 转型主线、共享编译器基础和已经退役的 Jolt 历史边界。", "index, follow"),

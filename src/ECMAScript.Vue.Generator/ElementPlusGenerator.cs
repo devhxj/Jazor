@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ECMAScript.ElementPlus;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 using File = global::System.IO.File;
 
 internal static class ElementPlusGenerator

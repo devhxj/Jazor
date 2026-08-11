@@ -1,4 +1,4 @@
-namespace ECMAScript.Vue.Generator;
+namespace ECMAScript.VueGenerator;
 
 internal static class Program
 {

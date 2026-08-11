@@ -10,7 +10,7 @@ public static partial class Pinia
 	/// String-keyed helper mapper used by object-form <c>mapActions()</c> and
 	/// <c>mapWritableState()</c>.
 	/// </summary>
-	public record PiniaKeyMapper : Vue3.VueDictionary<string>;
+	public record PiniaKeyMapper : Vue.VueDictionary<string>;
 
 	/// <summary>
 	/// 对象形式的 <c>mapState()</c> / <c>mapGetters()</c> 所使用的字符串键辅助映射器。
@@ -18,7 +18,7 @@ public static partial class Pinia
 	/// <c>mapGetters()</c>.
 	/// </summary>
 	/// <typeparam name="TStore">由 store 定义提供的类型化 store 投影。The typed store projection supplied by the store definition.</typeparam>
-	public record PiniaStateMapper<TStore> : Vue3.VueDictionary<PiniaStateMapValue<TStore>>
+	public record PiniaStateMapper<TStore> : Vue.VueDictionary<PiniaStateMapValue<TStore>>
 		where TStore : class;
 
 	/// <summary>

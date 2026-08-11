@@ -187,8 +187,9 @@ public sealed class ToolchainTests
                 new AssetEntry(
                     "components/LocalCard.vue",
                     "host/LocalCard.vue",
-                    AssetEntry.KindVueSfc,
-                    "hash-asset-1")
+                    AssetEntry.KindModuleSource,
+                    "hash-asset-1",
+                    "host/LocalCard.vue.mjs")
             ],
             ["vue"]);
 
@@ -202,7 +203,7 @@ public sealed class ToolchainTests
                 ToolchainCapability.ProductionBuild,
                 ToolchainCapability.SourceMaps
             },
-            libraryManifests: [FindLibraryManifest("ECMAScript.Vue3")]);
+            libraryManifests: [FindLibraryManifest("ECMAScript.Vue")]);
 
         var result = await new Toolchain().BuildAsync(request);
 
@@ -316,8 +317,9 @@ public sealed class ToolchainTests
                 new AssetEntry(
                     "components/LocalCard.vue",
                     "host/LocalCard.vue",
-                    AssetEntry.KindVueSfc,
-                    "hash-asset-1")
+                    AssetEntry.KindModuleSource,
+                    "hash-asset-1",
+                    "host/LocalCard.vue.mjs")
             ],
             ["vue"]);
 
@@ -331,7 +333,7 @@ public sealed class ToolchainTests
                 ToolchainCapability.ProductionBuild,
                 ToolchainCapability.SourceMaps
             },
-            libraryManifests: [FindLibraryManifest("ECMAScript.Vue3")]);
+            libraryManifests: [FindLibraryManifest("ECMAScript.Vue")]);
 
         var result = await new Toolchain().BuildAsync(request);
 
@@ -399,7 +401,7 @@ public sealed class ToolchainTests
             },
             libraryManifests:
             [
-                FindLibraryManifest("ECMAScript.Vue3"),
+                FindLibraryManifest("ECMAScript.Vue"),
                 FindLibraryManifest("ECMAScript.Vuetify")
             ]);
 

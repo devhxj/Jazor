@@ -1,6 +1,6 @@
 // WikiHomeModule.TopicIndex.cs - 主题索引页正文 / Topic index page body
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

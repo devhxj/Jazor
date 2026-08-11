@@ -23,7 +23,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.4" />
+  <PackageReference Include="Jazor" Version="0.9.0" />
 </ItemGroup>
 ```
 
@@ -36,8 +36,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.8.4" />
-    <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.9.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -46,10 +46,10 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.8.4" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.8.4" />
+  <PackageReference Include="ECMAScript.Style" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.9.0" />
 </ItemGroup>
 ```
 
@@ -68,7 +68,7 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 输出模块、source map 和 manifest；`release` 输出生产浏览器包 |
 | `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 模块或 release bundle 的输出目录 |
-| `JazorSsrEnabled` | `false` | 启用受支持 SSR 时保留服务器渲染需要的原始模块图 |
+| `JazorSSR` | `false` | 启用受支持 SSR 时保留服务器渲染需要的原始模块图 |
 
 `debug` 与 `release` 是互斥输出模式。`release` 通过内置 Netpack 路径完成浏览器打包；不要求应用自行维护 `node_modules` 或 CDN import。
 
@@ -79,18 +79,18 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 ```xml
 <PropertyGroup>
   <JazorMode>release</JazorMode>
-  <JazorSsrEnabled>true</JazorSsrEnabled>
+  <JazorSSR>true</JazorSSR>
 </PropertyGroup>
 ```
 
 随后在应用启动代码中注册并使用 SSR 服务：
 
 ```csharp
-builder.Services.AddJazorSsr();
+builder.Services.AddJazorSSR();
 
 var app = builder.Build();
 app.UseStaticFiles();
-app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
+app.UseJazorSSR("components/app.mjs", new { Title = "Jazor" });
 ```
 
 ASP.NET Core 负责路由、静态文件与响应；DenoHost 执行本地 Vue 服务器模块；Netpack 负责浏览器 bundle。SSR 不自动传递 Vue server-prefetch 状态，应用应把需要共享的状态显式放入 props 或自己的 payload。

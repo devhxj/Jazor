@@ -1,6 +1,6 @@
 using ECMAScript;
 using Jazor.Admin;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 using Microsoft.AspNetCore.Components;
 using static JazorAdmin.Routes;
 using static ECMAScript.VueRoute;

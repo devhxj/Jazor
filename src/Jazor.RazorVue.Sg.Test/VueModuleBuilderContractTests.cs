@@ -46,7 +46,7 @@ public sealed class VueModuleBuilderContractTests
         var sourceTree = CSharpSyntaxTree.ParseText(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 

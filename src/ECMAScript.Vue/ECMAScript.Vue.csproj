@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <PackageId>ECMAScript.Vue3</PackageId>
+    <PackageId>ECMAScript.Vue</PackageId>
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\ECMAScript.Vue3.targets" Pack="true" PackagePath="buildTransitive\ECMAScript.Vue3.targets" />
+    <None Include="buildTransitive\ECMAScript.Vue.targets" Pack="true" PackagePath="buildTransitive\ECMAScript.Vue.targets" />
     <None Include="manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
     <None Include="dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />

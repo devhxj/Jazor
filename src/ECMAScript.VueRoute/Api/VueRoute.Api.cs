@@ -198,47 +198,47 @@ public static partial class VueRoute
 	/// Typed injection key for the active router instance provided by Vue Router.
 	/// </summary>
 	[Description("@#routerKey")]
-	public extern static Vue3.VueInjectionKey<Router> RouterKey { get; }
+	public extern static Vue.VueInjectionKey<Router> RouterKey { get; }
 
 	/// <summary>
 	/// 暴露给组合式消费者的当前已加载路由的类型化注入键。
 	/// Typed injection key for the current loaded route exposed to composition consumers.
 	/// </summary>
 	[Description("@#routeLocationKey")]
-	public extern static Vue3.VueInjectionKey<RouteLocationNormalizedLoaded> RouteLocationKey { get; }
+	public extern static Vue.VueInjectionKey<RouteLocationNormalizedLoaded> RouteLocationKey { get; }
 
 	/// <summary>
 	/// 由 <c>RouterView</c> 消费的响应式路由位置源的类型化注入键。
 	/// Typed injection key for the reactive route location source consumed by <c>RouterView</c>.
 	/// </summary>
 	[Description("@#routerViewLocationKey")]
-	public extern static Vue3.VueInjectionKey<Vue3.IVueRef<RouteLocationNormalizedLoaded>> RouterViewLocationKey { get; }
+	public extern static Vue.VueInjectionKey<Vue.IVueRef<RouteLocationNormalizedLoaded>> RouterViewLocationKey { get; }
 
 	/// <summary>
 	/// 由最近路由视图渲染的当前匹配路由记录的类型化注入键。
 	/// Typed injection key for the matched route record currently rendered by the nearest router view.
 	/// </summary>
 	[Description("@#matchedRouteKey")]
-	public extern static Vue3.VueInjectionKey<Vue3.VueComputedRef<RouteRecordNormalized?>> MatchedRouteKey { get; }
+	public extern static Vue.VueInjectionKey<Vue.VueComputedRef<RouteRecordNormalized?>> MatchedRouteKey { get; }
 
 	/// <summary>
 	/// 当前 router-view 嵌套深度的类型化注入键。
 	/// Typed injection key for the current router-view nesting depth.
 	/// </summary>
 	[Description("@#viewDepthKey")]
-	public extern static Vue3.VueInjectionKey<RouterViewDepthValue> ViewDepthKey { get; }
+	public extern static Vue.VueInjectionKey<RouterViewDepthValue> ViewDepthKey { get; }
 
 	/// <summary>
 	/// 渲染类型化路由链接的内置组件。
 	/// Built-in component that renders a typed router link.
 	/// </summary>
 	[Description("@#RouterLink")]
-	public extern static Vue3.IVueComponent<RouterLinkProps, RouterLinkSlots> RouterLink { get; }
+	public extern static Vue.IVueComponent<RouterLinkProps, RouterLinkSlots> RouterLink { get; }
 
 	/// <summary>
 	/// 渲染活动路由组件树的内置组件。
 	/// Built-in component that renders the active route component tree.
 	/// </summary>
 	[Description("@#RouterView")]
-	public extern static Vue3.IVueComponent<RouterViewProps, RouterViewSlots> RouterView { get; }
+	public extern static Vue.IVueComponent<RouterViewProps, RouterViewSlots> RouterView { get; }
 }

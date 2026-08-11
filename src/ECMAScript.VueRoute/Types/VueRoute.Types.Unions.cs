@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ECMAScript.Contract;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace ECMAScript;
 
@@ -117,14 +117,14 @@ public readonly union RouteLocationRaw(string, RouteLocationAsPath, RouteLocatio
 [Description("@#")]
 public readonly union RouteLocationRawMaybeRef(
     RouteLocationRaw,
-    Vue3.IVueRef<RouteLocationRaw>,
-    Vue3.VueReadonlyRef<RouteLocationRaw>,
-    Vue3.IVueRef<string>,
-    Vue3.IVueRef<RouteLocationAsPath>,
-    Vue3.IVueRef<RouteLocationAsRelative>,
-    Vue3.VueReadonlyRef<string>,
-    Vue3.VueReadonlyRef<RouteLocationAsPath>,
-    Vue3.VueReadonlyRef<RouteLocationAsRelative>)
+    Vue.IVueRef<RouteLocationRaw>,
+    Vue.VueReadonlyRef<RouteLocationRaw>,
+    Vue.IVueRef<string>,
+    Vue.IVueRef<RouteLocationAsPath>,
+    Vue.IVueRef<RouteLocationAsRelative>,
+    Vue.VueReadonlyRef<string>,
+    Vue.VueReadonlyRef<RouteLocationAsPath>,
+    Vue.VueReadonlyRef<RouteLocationAsRelative>)
 {
     /// <summary>
     /// 以 RouteLocationRaw 值返回，如果不是值变体则返回 default。
@@ -136,49 +136,49 @@ public readonly union RouteLocationRawMaybeRef(
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationRaw>? AsRef => Value as Vue3.IVueRef<RouteLocationRaw>;
+    public Vue.IVueRef<RouteLocationRaw>? AsRef => Value as Vue.IVueRef<RouteLocationRaw>;
 
     /// <summary>
     /// 以 Vue ReadonlyRef 返回，如果不是 ReadonlyRef 变体则返回 default。
     /// Returns as Vue ReadonlyRef, or default if not a ReadonlyRef variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationRaw>? AsReadonlyRef => Value as Vue3.VueReadonlyRef<RouteLocationRaw>;
+    public Vue.VueReadonlyRef<RouteLocationRaw>? AsReadonlyRef => Value as Vue.VueReadonlyRef<RouteLocationRaw>;
 
     /// <summary>
     /// 以字符串 Vue Ref 返回，如果不是字符串 Ref 变体则返回 default。
     /// Returns as string Vue Ref, or default if not a string Ref variant.
     /// </summary>
-    public Vue3.IVueRef<string>? AsStringRef => Value as Vue3.IVueRef<string>;
+    public Vue.IVueRef<string>? AsStringRef => Value as Vue.IVueRef<string>;
 
     /// <summary>
     /// 以路径式路由位置 Vue Ref 返回，如果不是路径 Ref 变体则返回 default。
     /// Returns as path-based route location Vue Ref, or default if not a path Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationAsPath>? AsPathRef => Value as Vue3.IVueRef<RouteLocationAsPath>;
+    public Vue.IVueRef<RouteLocationAsPath>? AsPathRef => Value as Vue.IVueRef<RouteLocationAsPath>;
 
     /// <summary>
     /// 以相对式路由位置 Vue Ref 返回，如果不是相对 Ref 变体则返回 default。
     /// Returns as relative route location Vue Ref, or default if not a relative Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationAsRelative>? AsRelativeRef => Value as Vue3.IVueRef<RouteLocationAsRelative>;
+    public Vue.IVueRef<RouteLocationAsRelative>? AsRelativeRef => Value as Vue.IVueRef<RouteLocationAsRelative>;
 
     /// <summary>
     /// 以字符串 Vue ReadonlyRef 返回，如果不是字符串只读引用变体则返回 default。
     /// Returns as string Vue ReadonlyRef, or default if not a string readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<string>? AsReadonlyStringRef => Value as Vue3.VueReadonlyRef<string>;
+    public Vue.VueReadonlyRef<string>? AsReadonlyStringRef => Value as Vue.VueReadonlyRef<string>;
 
     /// <summary>
     /// 以路径式路由位置 Vue ReadonlyRef 返回，如果不是路径只读引用变体则返回 default。
     /// Returns as path-based route location Vue ReadonlyRef, or default if not a path readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationAsPath>? AsReadonlyPathRef => Value as Vue3.VueReadonlyRef<RouteLocationAsPath>;
+    public Vue.VueReadonlyRef<RouteLocationAsPath>? AsReadonlyPathRef => Value as Vue.VueReadonlyRef<RouteLocationAsPath>;
 
     /// <summary>
     /// 以相对式路由位置 Vue ReadonlyRef 返回，如果不是相对只读引用变体则返回 default。
     /// Returns as relative route location Vue ReadonlyRef, or default if not a relative readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationAsRelative>? AsReadonlyRelativeRef => Value as Vue3.VueReadonlyRef<RouteLocationAsRelative>;
+    public Vue.VueReadonlyRef<RouteLocationAsRelative>? AsReadonlyRelativeRef => Value as Vue.VueReadonlyRef<RouteLocationAsRelative>;
 
     /// <summary>
     /// 从字符串隐式转换。
@@ -211,7 +211,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">RouteLocationRaw 的响应式引用。The reactive ref of RouteLocationRaw.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationRaw> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.IVueRef<RouteLocationRaw> value);
 
     /// <summary>
     /// 从 RouteLocationRaw 的 Vue ReadonlyRef 创建联合值。
@@ -220,7 +220,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">RouteLocationRaw 的只读响应式引用。The readonly ref of RouteLocationRaw.</param>
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationRaw> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.VueReadonlyRef<RouteLocationRaw> value);
 
     /// <summary>
     /// 从字符串的 Vue Ref 创建联合值。
@@ -229,7 +229,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">字符串的响应式引用。The reactive ref of string.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<string> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.IVueRef<string> value);
 
     /// <summary>
     /// 从路径式路由位置的 Vue Ref 创建联合值。
@@ -238,7 +238,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">路径式路由位置的响应式引用。The reactive ref of path-based route location.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationAsPath> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.IVueRef<RouteLocationAsPath> value);
 
     /// <summary>
     /// 从相对式路由位置的 Vue Ref 创建联合值。
@@ -247,7 +247,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">相对式路由位置的响应式引用。The reactive ref of relative route location.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationAsRelative> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.IVueRef<RouteLocationAsRelative> value);
 
     /// <summary>
     /// 从字符串的 Vue ReadonlyRef 创建联合值。
@@ -256,7 +256,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">字符串的只读响应式引用。The readonly ref of string.</param>
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<string> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.VueReadonlyRef<string> value);
 
     /// <summary>
     /// 从路径式路由位置的 Vue ReadonlyRef 创建联合值。
@@ -265,7 +265,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">路径式路由位置的只读响应式引用。The readonly ref of path-based route location.</param>
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationAsPath> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.VueReadonlyRef<RouteLocationAsPath> value);
 
     /// <summary>
     /// 从相对式路由位置的 Vue ReadonlyRef 创建联合值。
@@ -274,7 +274,7 @@ public readonly union RouteLocationRawMaybeRef(
     /// <param name="value">相对式路由位置的只读响应式引用。The readonly ref of relative route location.</param>
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationAsRelative> value);
+    public extern static RouteLocationRawMaybeRef From(Vue.VueReadonlyRef<RouteLocationAsRelative> value);
 }
 
 /// <summary>
@@ -283,7 +283,7 @@ public readonly union RouteLocationRawMaybeRef(
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueReadonlyRef<bool>)
+public readonly union RouteBooleanMaybeRef(bool, Vue.IVueRef<bool>, Vue.VueReadonlyRef<bool>)
 {
     /// <summary>
     /// 以布尔值返回，如果不是值变体则返回 default。
@@ -295,13 +295,13 @@ public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueRea
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<bool>? AsRef => Value as Vue3.IVueRef<bool>;
+    public Vue.IVueRef<bool>? AsRef => Value as Vue.IVueRef<bool>;
 
     /// <summary>
     /// 以 Vue ReadonlyRef 返回，如果不是 ReadonlyRef 变体则返回 default。
     /// Returns as Vue ReadonlyRef, or default if not a ReadonlyRef variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<bool>? AsReadonlyRef => Value as Vue3.VueReadonlyRef<bool>;
+    public Vue.VueReadonlyRef<bool>? AsReadonlyRef => Value as Vue.VueReadonlyRef<bool>;
 
     /// <summary>
     /// 从布尔值的 Vue Ref 创建联合值。
@@ -310,7 +310,7 @@ public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueRea
     /// <param name="value">布尔值的响应式引用。The reactive ref of bool.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteBooleanMaybeRef From(Vue3.IVueRef<bool> value);
+    public extern static RouteBooleanMaybeRef From(Vue.IVueRef<bool> value);
 
     /// <summary>
     /// 从布尔值的 Vue ReadonlyRef 创建联合值。
@@ -319,7 +319,7 @@ public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueRea
     /// <param name="value">布尔值的只读响应式引用。The readonly ref of bool.</param>
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteBooleanMaybeRef From(Vue3.VueReadonlyRef<bool> value);
+    public extern static RouteBooleanMaybeRef From(Vue.VueReadonlyRef<bool> value);
 }
 
 /// <summary>
@@ -328,7 +328,7 @@ public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueRea
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
+public readonly union RouterViewDepthValue(Number, Vue.IVueRef<Number>)
 {
     /// <summary>
     /// 以 Number 返回，如果不是 Number 变体则返回 default。
@@ -340,7 +340,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<Number>? AsRef => Value as Vue3.IVueRef<Number>;
+    public Vue.IVueRef<Number>? AsRef => Value as Vue.IVueRef<Number>;
 
     /// <summary>
     /// 从 Number 隐式转换。
@@ -429,7 +429,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">Number 的响应式引用。The reactive ref of Number.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<Number> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<Number> value);
 
     /// <summary>
     /// 从 byte 的 Vue Ref 创建联合值。
@@ -438,7 +438,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">byte 的响应式引用。The reactive ref of byte.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<byte> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<byte> value);
 
     /// <summary>
     /// 从 sbyte 的 Vue Ref 创建联合值。
@@ -447,7 +447,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">sbyte 的响应式引用。The reactive ref of sbyte.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<sbyte> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<sbyte> value);
 
     /// <summary>
     /// 从 short 的 Vue Ref 创建联合值。
@@ -456,7 +456,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">short 的响应式引用。The reactive ref of short.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<short> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<short> value);
 
     /// <summary>
     /// 从 ushort 的 Vue Ref 创建联合值。
@@ -465,7 +465,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">ushort 的响应式引用。The reactive ref of ushort.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<ushort> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<ushort> value);
 
     /// <summary>
     /// 从 int 的 Vue Ref 创建联合值。
@@ -474,7 +474,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">int 的响应式引用。The reactive ref of int.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<int> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<int> value);
 
     /// <summary>
     /// 从 uint 的 Vue Ref 创建联合值。
@@ -483,7 +483,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">uint 的响应式引用。The reactive ref of uint.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<uint> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<uint> value);
 
     /// <summary>
     /// 从 float 的 Vue Ref 创建联合值。
@@ -492,7 +492,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">float 的响应式引用。The reactive ref of float.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<float> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<float> value);
 
     /// <summary>
     /// 从 double 的 Vue Ref 创建联合值。
@@ -501,7 +501,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">double 的响应式引用。The reactive ref of double.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<double> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<double> value);
 
     /// <summary>
     /// 从 decimal 的 Vue Ref 创建联合值。
@@ -510,7 +510,7 @@ public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
     /// <param name="value">decimal 的响应式引用。The reactive ref of decimal.</param>
     /// <returns>包含该引用的联合值。The union value containing the ref.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouterViewDepthValue From(Vue3.IVueRef<decimal> value);
+    public extern static RouterViewDepthValue From(Vue.IVueRef<decimal> value);
 }
 
 /// <summary>
@@ -760,7 +760,7 @@ public readonly union RouteComponent(IVueComponent, RouteComponentLoader)
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union RouteRecordProps(bool, Vue3.VueProps, RouteRecordPropsResolver)
+public readonly union RouteRecordProps(bool, Vue.VueProps, RouteRecordPropsResolver)
 {
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
@@ -772,7 +772,7 @@ public readonly union RouteRecordProps(bool, Vue3.VueProps, RouteRecordPropsReso
     /// 以 VueProps 返回，如果不是 Props 变体则返回 default。
     /// Returns as VueProps, or default if not a Props variant.
     /// </summary>
-    public Vue3.VueProps? AsProps => Value as Vue3.VueProps;
+    public Vue.VueProps? AsProps => Value as Vue.VueProps;
 
     /// <summary>
     /// 以 RouteRecordPropsResolver 返回，如果不是解析器变体则返回 default。
@@ -796,7 +796,7 @@ public readonly union RouteRecordProps(bool, Vue3.VueProps, RouteRecordPropsReso
     /// <param name="value">Props 对象。The props object.</param>
     /// <returns>包含该 Props 的联合值。The union value containing the props.</returns>
     [ECMAScriptInline("__arg1")]
-    public extern static RouteRecordProps From(Vue3.VueProps value);
+    public extern static RouteRecordProps From(Vue.VueProps value);
 
     /// <summary>
     /// 从 RouteRecordPropsResolver 创建联合值。

@@ -10,14 +10,14 @@ public static partial class Pinia
 	/// Pinia root instance created by <c>createPinia()</c>. The same object is both a
 	/// Pinia runtime root and a Vue plugin install target.
 	/// </summary>
-	public abstract record PiniaInstance : Vue3.VuePlugin
+	public abstract record PiniaInstance : Vue.VuePlugin
 	{
 		/// <summary>
 		/// Pinia 的根状态树，以 store id 为键。
 		/// Pinia's root state tree, keyed by store id.
 		/// </summary>
 		[Description("@#state")]
-		public extern Vue3.IVueRef<Vue3.VueDictionary<PiniaStateTree>> State { get; }
+		public extern Vue.IVueRef<Vue.VueDictionary<PiniaStateTree>> State { get; }
 
 		/// <summary>
 		/// 在此根实例上注册一个 Pinia 插件。
@@ -67,7 +67,7 @@ public static partial class Pinia
 		public extern PiniaInstance Use<TStore, TOptions, TExtension>(PiniaPlugin<TStore, TOptions, TExtension> plugin)
 			where TStore : class
 			where TOptions : DefineStoreOptionsInPlugin
-			where TExtension : Vue3.VueProps;
+			where TExtension : Vue.VueProps;
 
 		/// <summary>
 		/// 在此根实例上注册一个完全类型化的 Pinia 插件，其上下文还将当前 store 投影到先前插件可见的显式自定义属性。
@@ -85,8 +85,8 @@ public static partial class Pinia
 		public extern PiniaInstance Use<TStore, TOptions, TCustomProperties, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TExtension> plugin)
 			where TStore : class
 			where TOptions : DefineStoreOptionsInPlugin
-			where TCustomProperties : Vue3.VueProps
-			where TExtension : Vue3.VueProps;
+			where TCustomProperties : Vue.VueProps
+			where TExtension : Vue.VueProps;
 
 		/// <summary>
 		/// 在此根实例上注册一个完全类型化的 Pinia 插件，其上下文还将当前 store 投影到先前插件可见的显式自定义属性和自定义状态视图。
@@ -105,9 +105,9 @@ public static partial class Pinia
 		public extern PiniaInstance Use<TStore, TOptions, TCustomProperties, TCustomState, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TCustomState, TExtension> plugin)
 			where TStore : class
 			where TOptions : DefineStoreOptionsInPlugin
-			where TCustomProperties : Vue3.VueProps
+			where TCustomProperties : Vue.VueProps
 			where TCustomState : PiniaStateTree
-			where TExtension : Vue3.VueProps;
+			where TExtension : Vue.VueProps;
 	}
 
 	/// <summary>
@@ -125,7 +125,7 @@ public static partial class Pinia
 		/// The Vue application instance this Pinia root was installed on.
 		/// </summary>
 		[Description("@#app")]
-		public extern Vue3.VueApp App { get; }
+		public extern Vue.VueApp App { get; }
 
 		/// <summary>
 		/// 当前正在调用插件的 Pinia 根实例。
@@ -207,7 +207,7 @@ public static partial class Pinia
 	public abstract class PiniaPluginContext<TStore, TOptions, TCustomProperties> : PiniaPluginContext<TStore, TOptions>
 		where TStore : class
 		where TOptions : DefineStoreOptionsInPlugin
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 	{
 		protected PiniaPluginContext()
 		{
@@ -235,7 +235,7 @@ public static partial class Pinia
 	public abstract class PiniaPluginContext<TStore, TOptions, TCustomProperties, TCustomState> : PiniaPluginContext<TStore, TOptions, TCustomProperties>
 		where TStore : class
 		where TOptions : DefineStoreOptionsInPlugin
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
 		protected PiniaPluginContext()
@@ -408,19 +408,19 @@ public static partial class Pinia
 	/// </summary>
 	[ECMAScript]
 	[Description("@#")]
-	public readonly union SubscriptionMutationEvents(Vue3.VueDebuggerEvent, Vue3.VueDebuggerEvent[])
+	public readonly union SubscriptionMutationEvents(Vue.VueDebuggerEvent, Vue.VueDebuggerEvent[])
 	{
 		/// <summary>
 		/// 以单个事件形式返回调试事件，如果不是该变体则返回 default。
 		/// Returns the debugger event as a single event, or default if not this variant.
 		/// </summary>
-		public Vue3.VueDebuggerEvent? AsEvent => Value as Vue3.VueDebuggerEvent;
+		public Vue.VueDebuggerEvent? AsEvent => Value as Vue.VueDebuggerEvent;
 
 		/// <summary>
 		/// 以事件批次形式返回调试事件，如果不是该变体则返回 default。
 		/// Returns the debugger events as a batch, or default if not this variant.
 		/// </summary>
-		public Vue3.VueDebuggerEvent[]? AsBatch => Value as Vue3.VueDebuggerEvent[];
+		public Vue.VueDebuggerEvent[]? AsBatch => Value as Vue.VueDebuggerEvent[];
 	}
 
 	/// <summary>
@@ -484,7 +484,7 @@ public static partial class Pinia
 		/// The debugger event emitted for the direct assignment.
 		/// </summary>
 		[Description("@#events")]
-		public new extern Vue3.VueDebuggerEvent Events { get; }
+		public new extern Vue.VueDebuggerEvent Events { get; }
 	}
 
 	/// <summary>
@@ -504,7 +504,7 @@ public static partial class Pinia
 		/// The debugger events emitted for the function patch.
 		/// </summary>
 		[Description("@#events")]
-		public new extern Vue3.VueDebuggerEvent[] Events { get; }
+		public new extern Vue.VueDebuggerEvent[] Events { get; }
 	}
 
 	/// <summary>
@@ -531,7 +531,7 @@ public static partial class Pinia
 		/// The debugger events emitted for the object patch.
 		/// </summary>
 		[Description("@#events")]
-		public new extern Vue3.VueDebuggerEvent[] Events { get; }
+		public new extern Vue.VueDebuggerEvent[] Events { get; }
 	}
 
 	/// <summary>
@@ -1100,7 +1100,7 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ProjectedStore<TStore, TCustomProperties>
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 	{
 		protected ProjectedStore()
 		{
@@ -1134,7 +1134,7 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ProjectedStore<TStore, TCustomProperties, TCustomState> : ProjectedStore<TStore, TCustomProperties>
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
 		protected ProjectedStore()
@@ -1164,7 +1164,7 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties> : StoreDefinition<ProjectedStore<TStore, TCustomProperties>>
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 	{
 		protected ProjectedStoreDefinition()
 		{
@@ -1191,7 +1191,7 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> : StoreDefinition<ProjectedStore<TStore, TCustomProperties, TCustomState>>
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
 		protected ProjectedStoreDefinition()

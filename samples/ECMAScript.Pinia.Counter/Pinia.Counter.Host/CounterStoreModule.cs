@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using ECMAScript;
 using static ECMAScript.Pinia;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
@@ -31,7 +31,7 @@ public abstract class CounterStore : Store<CounterState>
 
 [ECMAScript]
 [Description("@#")]
-public sealed record CounterPluginExtensions : Vue3.VueProps
+public sealed record CounterPluginExtensions : Vue.VueProps
 {
     public string AuditTag { get; init; } = "";
 }
@@ -47,23 +47,23 @@ public sealed record CounterPluginState : PiniaStateTree
 [Description("@#")]
 public abstract class CounterStoreRefs : StoreRefs<CounterStore>
 {
-    public extern Vue3.IVueRef<int> Count { get; }
+    public extern Vue.IVueRef<int> Count { get; }
 
-    public extern Vue3.IVueRef<string> Status { get; }
+    public extern Vue.IVueRef<string> Status { get; }
 
-    public extern Vue3.VueReadonlyRef<int> DoubleCount { get; }
+    public extern Vue.VueReadonlyRef<int> DoubleCount { get; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public record CounterGetters : Vue3.VueProps
+public record CounterGetters : Vue.VueProps
 {
     public Func<int> DoubleCount { get; init; } = default!;
 }
 
 [ECMAScript]
 [Description("@#")]
-public record CounterActions : Vue3.VueProps
+public record CounterActions : Vue.VueProps
 {
     public Action Increment { get; init; } = default!;
 
@@ -102,7 +102,7 @@ public static class CounterStoreModule
         ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState> store)
         => StoreToRefs(store);
 
-    public static Vue3.VueProps? InstallAuditPlugin(PiniaPluginContext context)
+    public static Vue.VueProps? InstallAuditPlugin(PiniaPluginContext context)
     {
         if (context.Store.Id != CounterStoreId)
         {

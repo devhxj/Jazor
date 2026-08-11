@@ -82,15 +82,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.8.4
+dotnet add package Jazor --version 0.9.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.8.4" />
-  <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.9.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -133,7 +133,7 @@ The executable or web host selects its artifact mode through MSBuild:
 | `debug` | Inspectable modules, external source maps, and `jazor-manifest.json` |
 | `release` | Production browser bundle through the packaged Netpack lane |
 
-Set `JazorSsrEnabled=true` with the supported SSR setup when an ASP.NET Core application needs Vue server rendering and hydration. See [Artifact Pipeline](docs/02-architecture/artifact-pipeline.md).
+Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core application needs Vue server rendering and hydration. See [Artifact Pipeline](docs/02-architecture/artifact-pipeline.md).
 
 ## Documentation
 

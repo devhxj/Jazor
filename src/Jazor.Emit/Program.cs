@@ -43,7 +43,8 @@ static async Task<int> RunEmitAsync(string[] args)
             options.ManifestPath,
             collectResult.Modules,
             options.Clean,
-            collectResult.Assets);
+            collectResult.Assets,
+            collectResult.ImportMapEntries);
 
         if (!writeResult.IsSuccess)
         {
@@ -151,7 +152,10 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
             mode,
             requiredImports,
             providedModulePaths);
-        await ImportMapWriter.WriteAsync(outputRoot, materialization);
+        await ImportMapWriter.WriteAsync(
+            outputRoot,
+            materialization,
+            manifest?.ImportMapEntries);
         Console.WriteLine($"manifests={materialization.ManifestPaths.Count} imports={materialization.ImportPaths.Count} out={outputRoot}");
         return 0;
     }

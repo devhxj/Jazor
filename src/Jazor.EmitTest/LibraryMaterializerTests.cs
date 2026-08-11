@@ -47,7 +47,10 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             BuildMode.Production);
 
-        await ImportMapWriter.WriteAsync(outputRoot, materialization);
+        await ImportMapWriter.WriteAsync(
+            outputRoot,
+            materialization,
+            [new ImportMapEntry("adapter.test", "@adapter/runtime/", "@adapter/runtime/")]);
 
         using var browserMap = System.Text.Json.JsonDocument.Parse(
             await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
@@ -62,6 +65,12 @@ public sealed class LibraryMaterializerTests
         Assert.AreEqual(
             "./vendor/vue-server-renderer/3.5.13/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
+        Assert.AreEqual(
+            "/jazor/@adapter/runtime/",
+            browserMap.RootElement.GetProperty("imports").GetProperty("@adapter/runtime/").GetString());
+        Assert.AreEqual(
+            "./@adapter/runtime/",
+            ssrMap.RootElement.GetProperty("imports").GetProperty("@adapter/runtime/").GetString());
         Assert.IsFalse(
             (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
                 .Contains("node_modules", StringComparison.Ordinal));

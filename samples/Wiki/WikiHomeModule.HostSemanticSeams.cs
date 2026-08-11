@@ -1,6 +1,6 @@
 // WikiHomeModule.HostSemanticSeams.cs - 宿主语义接缝 / Host Semantic Seams
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

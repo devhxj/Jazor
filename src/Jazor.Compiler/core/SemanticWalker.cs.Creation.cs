@@ -404,7 +404,7 @@ public partial class SemanticWalker
 		for (var current = namedType; current is not null; current = current.BaseType)
 		{
 			var display = current.OriginalDefinition.ToDisplayString(Format.NameFormat);
-			if (display is "ECMAScript.Vue3.VueDictionary" or "ECMAScript.Vue3.VueDictionary<TValue>")
+			if (display is "ECMAScript.Vue.VueDictionary" or "ECMAScript.Vue.VueDictionary<TValue>")
 			{
 				return true;
 			}

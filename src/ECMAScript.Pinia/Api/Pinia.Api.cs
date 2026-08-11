@@ -188,7 +188,7 @@ public static partial class Pinia
 	/// <param name="keys">应投影为 computed 条目的 store 成员名。The store member names that should be projected into computed entries.</param>
 	/// <returns>适用于 <c>computed:</c> 的 Vue 选项包。A Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapState")]
-	public extern static Vue3.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+	public extern static Vue.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
 		where TStore : class;
 
 	/// <summary>
@@ -204,7 +204,7 @@ public static partial class Pinia
 	/// <returns>适用于 <c>computed:</c> 的类型化 Vue 选项包。The typed Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapState")]
 	public extern static TComputed MapState<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -218,7 +218,7 @@ public static partial class Pinia
 	/// <param name="keyMapper">键映射器对象，其值为 store 成员名或自定义选择器。The key-mapper object whose values are store member names or custom selectors.</param>
 	/// <returns>适用于 <c>computed:</c> 的 Vue 选项包。A Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapState")]
-	public extern static Vue3.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+	public extern static Vue.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
 		where TStore : class;
 
 	/// <summary>
@@ -234,7 +234,7 @@ public static partial class Pinia
 	/// <returns>适用于 <c>computed:</c> 的类型化 Vue 选项包。The typed Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapState")]
 	public extern static TComputed MapState<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -243,7 +243,7 @@ public static partial class Pinia
 	/// </summary>
 	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
 	[Description("@#mapGetters")]
-	public extern static Vue3.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+	public extern static Vue.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, string[] keys)
 		where TStore : class;
 
 	/// <summary>
@@ -253,7 +253,7 @@ public static partial class Pinia
 	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
 	[Description("@#mapGetters")]
 	public extern static TComputed MapGetters<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -262,7 +262,7 @@ public static partial class Pinia
 	/// </summary>
 	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
 	[Description("@#mapGetters")]
-	public extern static Vue3.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+	public extern static Vue.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
 		where TStore : class;
 
 	/// <summary>
@@ -272,7 +272,7 @@ public static partial class Pinia
 	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
 	[Description("@#mapGetters")]
 	public extern static TComputed MapGetters<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -286,7 +286,7 @@ public static partial class Pinia
 	/// <param name="keys">应投影为 computed 条目的可写状态成员名。The writable state member names that should be projected into computed entries.</param>
 	/// <returns>适用于 <c>computed:</c> 的 Vue 选项包。A Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapWritableState")]
-	public extern static Vue3.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+	public extern static Vue.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
 		where TStore : class;
 
 	/// <summary>
@@ -297,7 +297,7 @@ public static partial class Pinia
 	/// </summary>
 	[Description("@#mapWritableState")]
 	public extern static TComputed MapWritableState<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -307,7 +307,7 @@ public static partial class Pinia
 	/// object-form key mapping.
 	/// </summary>
 	[Description("@#mapWritableState")]
-	public extern static Vue3.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+	public extern static Vue.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
 		where TStore : class;
 
 	/// <summary>
@@ -318,7 +318,7 @@ public static partial class Pinia
 	/// </summary>
 	[Description("@#mapWritableState")]
 	public extern static TComputed MapWritableState<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
-		where TComputed : Vue3.VueProps
+		where TComputed : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -328,7 +328,7 @@ public static partial class Pinia
 	/// action names.
 	/// </summary>
 	[Description("@#mapActions")]
-	public extern static Vue3.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+	public extern static Vue.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, string[] keys)
 		where TStore : class;
 
 	/// <summary>
@@ -339,7 +339,7 @@ public static partial class Pinia
 	/// </summary>
 	[Description("@#mapActions")]
 	public extern static TMethods MapActions<TMethods, TStore>(StoreDefinition<TStore> useStore, string[] keys)
-		where TMethods : Vue3.VueProps
+		where TMethods : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -349,7 +349,7 @@ public static partial class Pinia
 	/// key mapping.
 	/// </summary>
 	[Description("@#mapActions")]
-	public extern static Vue3.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+	public extern static Vue.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
 		where TStore : class;
 
 	/// <summary>
@@ -360,7 +360,7 @@ public static partial class Pinia
 	/// </summary>
 	[Description("@#mapActions")]
 	public extern static TMethods MapActions<TMethods, TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
-		where TMethods : Vue3.VueProps
+		where TMethods : Vue.VueProps
 		where TStore : class;
 
 	/// <summary>
@@ -372,7 +372,7 @@ public static partial class Pinia
 	/// <param name="stores">应投影到组件实例上的 store 定义。The store definitions that should be projected onto the component instance.</param>
 	/// <returns>适用于 <c>computed:</c> 的 Vue 选项包。A Vue options bag suitable for <c>computed:</c>.</returns>
 	[Description("@#mapStores")]
-	public extern static Vue3.VueProps MapStores(params StoreDefinition[] stores);
+	public extern static Vue.VueProps MapStores(params StoreDefinition[] stores);
 
 	/// <summary>
 	/// 使用 Pinia 的 store 后缀命名约定，将多个 store 映射到用户声明的类型化
@@ -382,7 +382,7 @@ public static partial class Pinia
 	/// </summary>
 	[Description("@#mapStores")]
 	public extern static TComputed MapStores<TComputed>(params StoreDefinition[] stores)
-		where TComputed : Vue3.VueProps;
+		where TComputed : Vue.VueProps;
 
 	/// <summary>
 	/// 更改 <c>mapStores()</c> 在将 store 定义投影到组件实例属性时使用的后缀。
@@ -408,7 +408,7 @@ public static partial class Pinia
 	[ECMAScriptInline(IdentityInlineTemplate)]
 	public extern static ProjectedStore<TStore, TCustomProperties> ProjectStore<TStore, TCustomProperties>(TStore store)
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps;
+		where TCustomProperties : Vue.VueProps;
 
 	/// <summary>
 	/// 将一个类型化的 action 监听器上下文投影到一个显式包装器，将 action 名称和
@@ -464,7 +464,7 @@ public static partial class Pinia
 	[ECMAScriptInline(IdentityInlineTemplate)]
 	public extern static ProjectedStore<TStore, TCustomProperties, TCustomState> ProjectStore<TStore, TCustomProperties, TCustomState>(TStore store)
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree;
 
 	/// <summary>
@@ -482,7 +482,7 @@ public static partial class Pinia
 	[ECMAScriptInline(IdentityInlineTemplate)]
 	public extern static ProjectedStoreDefinition<TStore, TCustomProperties> ProjectStoreDefinition<TStore, TCustomProperties>(StoreDefinition<TStore> storeDefinition)
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps;
+		where TCustomProperties : Vue.VueProps;
 
 	/// <summary>
 	/// 投影一个 store 定义，使插件添加的自定义属性和自定义状态通过其
@@ -500,7 +500,7 @@ public static partial class Pinia
 	[ECMAScriptInline(IdentityInlineTemplate)]
 	public extern static ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> ProjectStoreDefinition<TStore, TCustomProperties, TCustomState>(StoreDefinition<TStore> storeDefinition)
 		where TStore : class
-		where TCustomProperties : Vue3.VueProps
+		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree;
 
 	/// <summary>

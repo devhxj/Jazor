@@ -1,7 +1,7 @@
 // WikiHomeModule.Elements.cs - 共享 UI 元素（按钮、链接、卡片、代码块等） / Shared UI elements (buttons, links, cards, code blocks, etc.)
 using System.Collections.Generic;
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

@@ -1,6 +1,6 @@
 // WikiHomeModule.HFunctionAuthoring.cs - H 函数编写 / H-Function Authoring
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

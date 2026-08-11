@@ -2108,7 +2108,7 @@ internal static class GeneratedArtifactBenchmarkRunner
             Path.Combine(projectRoot, "Counter.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgGeneratedArtifactConsumer;
@@ -2141,7 +2141,7 @@ internal static class GeneratedArtifactBenchmarkRunner
             Path.Combine(projectRoot, "PlainText.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgGeneratedArtifactConsumer;
@@ -2163,7 +2163,7 @@ internal static class GeneratedArtifactBenchmarkRunner
             Path.Combine(projectRoot, "KeyedList100.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgGeneratedArtifactConsumer;

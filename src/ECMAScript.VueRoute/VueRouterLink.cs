@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace ECMAScript;
 

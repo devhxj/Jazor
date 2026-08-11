@@ -15,7 +15,7 @@ public sealed class GeneratedCSharpBinderInvariantTests
         var authoredTree = CSharpSyntaxTree.ParseText(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo.Pages;
@@ -73,7 +73,7 @@ public sealed class GeneratedCSharpBinderInvariantTests
             """
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Pages;
 

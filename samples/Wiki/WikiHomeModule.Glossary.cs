@@ -1,6 +1,6 @@
 // WikiHomeModule.Glossary.cs - 术语表 / Glossary
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

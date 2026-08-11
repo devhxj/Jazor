@@ -14,7 +14,8 @@ internal sealed class ModuleWriter
         string manifestPath,
         IReadOnlyList<ModuleRecord> modules,
         bool clean,
-        IReadOnlyList<AssetEntry>? assets = null)
+        IReadOnlyList<AssetEntry>? assets = null,
+        IReadOnlyList<ImportMapEntry>? importMapEntries = null)
     {
         Directory.CreateDirectory(outputDirectory);
 
@@ -105,6 +106,7 @@ internal sealed class ModuleWriter
         nextManifest.Assets.AddRange(nextAssetsByArtifactPath.Values
             .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal));
+        nextManifest.ImportMapEntries.AddRange(importMapEntries ?? []);
 
         if (clean && existingManifest is not null)
         {

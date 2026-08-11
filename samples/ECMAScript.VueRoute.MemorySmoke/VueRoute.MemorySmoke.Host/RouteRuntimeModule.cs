@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 using static ECMAScript.VueRoute;
 
 namespace VueRoute.MemorySmoke.Host;
@@ -165,7 +165,7 @@ public static class RouteRuntimeModule
 
 [ECMAScript]
 [Description("@#")]
-public sealed record RouteRuntimeSnapshot : ECMAScript.Vue3.VueProps
+public sealed record RouteRuntimeSnapshot : ECMAScript.Vue.VueProps
 {
     [Description("@#currentPath")]
     public string CurrentPath { get; init; } = "";

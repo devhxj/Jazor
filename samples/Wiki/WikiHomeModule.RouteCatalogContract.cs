@@ -1,6 +1,6 @@
 // WikiHomeModule.RouteCatalogContract.cs - 路由目录契约 / Route Catalog Contract
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

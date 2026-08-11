@@ -433,7 +433,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
         var script = VisitBlock(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using System.ComponentModel;
 
             [ECMAScript]
@@ -1087,7 +1087,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

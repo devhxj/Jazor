@@ -28,7 +28,7 @@ public static partial class PiniaTesting
 		/// Pinia installation on an app boundary before executing.
 		/// </summary>
 		[Description("@#app")]
-		public extern Vue3.VueApp App { get; }
+		public extern Vue.VueApp App { get; }
 	}
 
 	/// <summary>
@@ -40,7 +40,7 @@ public static partial class PiniaTesting
 	/// </summary>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract record TestingInitialState : Vue3.VueProps;
+	public abstract record TestingInitialState : Vue.VueProps;
 
 	/// <summary>
 	/// <c>@pinia/testing</c> 接受的 <c>stubActions</c> 配置。
@@ -172,7 +172,7 @@ public static partial class PiniaTesting
 	/// The contract stays close to Pinia's official testing package while preserving
 	/// explicit C# host authoring types.
 	/// </summary>
-	public record TestingOptions : Vue3.VueProps
+	public record TestingOptions : Vue.VueProps
 	{
 		/// <summary>
 		/// 创建后要种子到 store 中的 Pinia 根状态。

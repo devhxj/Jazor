@@ -22,8 +22,8 @@
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
   </ItemGroup>
 
   <Import Project="..\Packaging\JazorPackage.targets" />

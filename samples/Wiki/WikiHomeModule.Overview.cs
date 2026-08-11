@@ -1,6 +1,6 @@
 // WikiHomeModule.Overview.cs - 项目概览 / Project Overview
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

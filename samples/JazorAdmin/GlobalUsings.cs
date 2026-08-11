@@ -7,4 +7,4 @@ global using Jazor.Admin;
 global using ECMAScript.VueContract;
 global using Microsoft.AspNetCore.Components;
 global using Microsoft.AspNetCore.Components.Rendering;
-global using static ECMAScript.Vue3;
+global using static ECMAScript.Vue;

@@ -36,7 +36,7 @@ public sealed class BootstrapPatchTests
             [CSharpSyntaxTree.ParseText(
                 """
                 using ECMAScript;
-                using static ECMAScript.Vue3;
+                using static ECMAScript.Vue;
                 using Microsoft.AspNetCore.Components;
 
                 namespace Demo.Pages;
@@ -69,7 +69,7 @@ public sealed class BootstrapPatchTests
         Assert.IsFalse(
             allDiagnostics.Any(static diagnostic => diagnostic.Id == "JAZORVGA020"),
             string.Join(Environment.NewLine, allDiagnostics));
-        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs"));
+        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
     }
 
     private static void AssertDriverCompletionCatalog()
@@ -81,7 +81,7 @@ public sealed class BootstrapPatchTests
             [CSharpSyntaxTree.ParseText(
                 """
                 using ECMAScript;
-                using static ECMAScript.Vue3;
+                using static ECMAScript.Vue;
                 using Microsoft.AspNetCore.Components;
 
                 namespace Demo.Pages;
@@ -108,7 +108,7 @@ public sealed class BootstrapPatchTests
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics));
         Assert.IsTrue(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.EndsWith("_razor.g.cs", StringComparison.Ordinal)));
         var catalog = outputCompilation.SyntaxTrees.SingleOrDefault(
-            static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs");
+            static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs");
         Assert.IsNotNull(catalog);
         Assert.IsFalse(
             outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.Contains("RazorSourceTextCatalog", StringComparison.Ordinal)),

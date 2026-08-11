@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using Jazor.Emit;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -7,49 +8,40 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class VueRenderCatalogReaderTests
+public sealed class ArtifactCatalogReaderTests
 {
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsVueRenderCatalog()
+    public void CatalogReader_TryRead_ReadsNeutralArtifactCatalog()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.Reader.Tests",
+            "ArtifactCatalog.Reader.Tests",
             """
             namespace Jazor.Generated
             {
-                internal static partial class VueRenderCatalog
+                internal static partial class ArtifactCatalog
                 {
                     internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
+                    internal const string ProducerId = "adapter.test";
 
-                    internal static System.Collections.IEnumerable GetModules()
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly ArtifactModule[] _modules =
+                    [
+                        new ArtifactModule(
+                            "Demo.Pages.Counter",
+                            "Demo.Pages.Counter",
+                            "components/counter.mjs",
+                            "export default {};",
+                            "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+                    ];
+
+                    private sealed class ArtifactModule(string id, string typeName, string relativePath, string content, string hash)
                     {
-                        return _modules;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "export default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(string componentId, string relativePath, string moduleText, string contentHash)
-                        {
-                            ComponentId = componentId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                        }
-
-                        public string ComponentId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
+                        public string Id { get; } = id;
+                        public string TypeName { get; } = typeName;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string Hash { get; } = hash;
                     }
                 }
             }
@@ -60,7 +52,7 @@ public sealed class VueRenderCatalogReaderTests
         Assert.IsNotNull(modules);
         Assert.AreEqual(1, modules.Count);
         var module = modules[0];
-        Assert.AreEqual("VueRenderCatalog.Reader.Tests", module.AssemblyName);
+        Assert.AreEqual("ArtifactCatalog.Reader.Tests", module.AssemblyName);
         Assert.AreEqual("Demo.Pages.Counter", module.TypeName);
         Assert.AreEqual("Demo.Pages.Counter", module.Id);
         Assert.AreEqual("components/counter.mjs", module.RelativePath);
@@ -69,70 +61,51 @@ public sealed class VueRenderCatalogReaderTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsCompilerOwnedVueHmrMetadata()
+    public void CatalogReader_TryRead_PreservesOpaqueProviderHmrPayload()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.Hmr.Tests",
+            "ArtifactCatalog.Hmr.Tests",
             """
             namespace Jazor.Generated
             {
-                internal static partial class VueRenderCatalog
+                internal static partial class ArtifactCatalog
                 {
                     internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
+                    internal const string ProducerId = "jazor.vue";
 
-                    internal static System.Collections.IEnumerable GetModules()
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly ArtifactModule[] _modules =
+                    [
+                        new ArtifactModule(
+                            "Demo.Pages.Counter",
+                            "Demo.Pages.Counter",
+                            "components/counter.mjs",
+                            "export default {};",
+                            "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                            "jazor.vue",
+                            "ArtifactCatalog.Hmr.Tests:components/counter.mjs",
+                            "{\"componentId\":\"Demo.Pages.Counter\",\"boundaryKind\":\"template-only\"}")
+                    ];
+
+                    private sealed class ArtifactModule(
+                        string id,
+                        string typeName,
+                        string relativePath,
+                        string content,
+                        string hash,
+                        string hmrProviderId,
+                        string hmrModuleId,
+                        string hmrPayload)
                     {
-                        return _modules;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            moduleId: "VueRenderCatalog.Hmr.Tests:components/counter.mjs",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "export default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-                            descriptorHash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-                            templateHash: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-                            logicHash: "sha256:3333333333333333333333333333333333333333333333333333333333333333",
-                            hmrBoundaryKind: "template-only")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(
-                            string componentId,
-                            string moduleId,
-                            string relativePath,
-                            string moduleText,
-                            string contentHash,
-                            string descriptorHash,
-                            string templateHash,
-                            string logicHash,
-                            string hmrBoundaryKind)
-                        {
-                            ComponentId = componentId;
-                            ModuleId = moduleId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                            DescriptorHash = descriptorHash;
-                            TemplateHash = templateHash;
-                            LogicHash = logicHash;
-                            HmrBoundaryKind = hmrBoundaryKind;
-                        }
-
-                        public string ComponentId { get; }
-                        public string ModuleId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
-                        public string DescriptorHash { get; }
-                        public string TemplateHash { get; }
-                        public string LogicHash { get; }
-                        public string HmrBoundaryKind { get; }
+                        public string Id { get; } = id;
+                        public string TypeName { get; } = typeName;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string Hash { get; } = hash;
+                        public string HmrProviderId { get; } = hmrProviderId;
+                        public string HmrModuleId { get; } = hmrModuleId;
+                        public string HmrPayload { get; } = hmrPayload;
                     }
                 }
             }
@@ -141,626 +114,264 @@ public sealed class VueRenderCatalogReaderTests
         var module = CatalogReader.TryRead(assembly)!.Single();
 
         Assert.IsNotNull(module.Hmr);
-        Assert.AreEqual("Demo.Pages.Counter", module.Hmr.ComponentId);
-        Assert.AreEqual("VueRenderCatalog.Hmr.Tests:components/counter.mjs", module.Hmr.ModuleId);
-        Assert.AreEqual("sha256:1111111111111111111111111111111111111111111111111111111111111111", module.Hmr.DescriptorHash);
-        Assert.AreEqual("sha256:2222222222222222222222222222222222222222222222222222222222222222", module.Hmr.TemplateHash);
-        Assert.AreEqual("sha256:3333333333333333333333333333333333333333333333333333333333333333", module.Hmr.LogicHash);
-        Assert.AreEqual("template-only", module.Hmr.BoundaryKind);
+        Assert.AreEqual("jazor.vue", module.Hmr.ProviderId);
+        Assert.AreEqual("ArtifactCatalog.Hmr.Tests:components/counter.mjs", module.Hmr.ModuleId);
+        StringAssert.Contains(module.Hmr.Payload, "\"componentId\":\"Demo.Pages.Counter\"");
+        StringAssert.Contains(module.Hmr.Payload, "\"boundaryKind\":\"template-only\"");
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsVueRenderCatalogSourceMapPayload()
+    public void CatalogReader_TryRead_ReadsArtifactCatalogSourceMapPayload()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.SourceMap.Tests",
+            "ArtifactCatalog.SourceMap.Tests",
             """
             namespace Jazor.Generated
             {
-                internal static partial class VueRenderCatalog
+                internal static partial class ArtifactCatalog
                 {
                     internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
+                    internal const string ProducerId = "adapter.test";
 
-                    internal static System.Collections.IEnumerable GetModules()
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly ArtifactModule[] _modules =
+                    [
+                        new ArtifactModule(
+                            "Demo.Pages.Counter",
+                            "Demo.Pages.Counter",
+                            "components/counter.mjs",
+                            "export default {};",
+                            "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                            "components/counter.mjs.map",
+                            "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
+                            "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789")
+                    ];
+
+                    private sealed class ArtifactModule(
+                        string id,
+                        string typeName,
+                        string relativePath,
+                        string content,
+                        string hash,
+                        string sourceMapRelativePath,
+                        string sourceMapContent,
+                        string mapHash)
                     {
-                        return _modules;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "export default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-                            sourceMapRelativePath: "components/counter.mjs.map",
-                            sourceMapContent: "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
-                            mapHash: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(
-                            string componentId,
-                            string relativePath,
-                            string moduleText,
-                            string contentHash,
-                            string sourceMapRelativePath,
-                            string sourceMapContent,
-                            string mapHash)
-                        {
-                            ComponentId = componentId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                            SourceMapRelativePath = sourceMapRelativePath;
-                            SourceMapContent = sourceMapContent;
-                            MapHash = mapHash;
-                        }
-
-                        public string ComponentId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
-                        public string SourceMapRelativePath { get; }
-                        public string SourceMapContent { get; }
-                        public string MapHash { get; }
+                        public string Id { get; } = id;
+                        public string TypeName { get; } = typeName;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string Hash { get; } = hash;
+                        public string SourceMapRelativePath { get; } = sourceMapRelativePath;
+                        public string SourceMapContent { get; } = sourceMapContent;
+                        public string MapHash { get; } = mapHash;
                     }
                 }
             }
             """);
 
-        var modules = CatalogReader.TryRead(assembly);
+        var module = CatalogReader.TryRead(assembly)!.Single();
 
-        Assert.IsNotNull(modules);
-        var module = modules.Single(static item => item.Id == "Demo.Pages.Counter");
         Assert.AreEqual("components/counter.mjs.map", module.SourceMapRelativePath);
         StringAssert.Contains(module.SourceMapContent, "\"sources\":[\"Counter.razor\"]");
         Assert.AreEqual("sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789", module.MapHash);
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsVueRenderCatalogFrontendAssets()
+    public void CatalogReader_TryRead_ReadsModuleSourceAssets()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.Assets.Tests",
+            "ArtifactCatalog.Assets.Tests",
             """
             namespace Jazor.Generated
             {
-                internal static partial class VueRenderCatalog
+                internal static partial class ArtifactCatalog
                 {
                     internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
+                    internal const string ProducerId = "adapter.test";
 
-                    internal static System.Collections.IEnumerable GetModules()
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+                    internal static System.Collections.IEnumerable GetAssets() => _assets;
+
+                    private static readonly ArtifactModule[] _modules =
+                    [
+                        new ArtifactModule("Demo.Pages.Counter", "Demo.Pages.Counter", "components/counter.mjs", "export default {};", "sha256:test")
+                    ];
+                    private static readonly ArtifactAsset[] _assets =
+                    [
+                        new ArtifactAsset("components/LocalCard.vue", "components/LocalCard.vue", "module-source", "components/LocalCard.vue.mjs", "")
+                    ];
+
+                    private sealed class ArtifactModule(string id, string typeName, string relativePath, string content, string hash)
                     {
-                        return _modules;
+                        public string Id { get; } = id;
+                        public string TypeName { get; } = typeName;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string Hash { get; } = hash;
                     }
 
-                    internal static System.Collections.IEnumerable GetAssets()
+                    private sealed class ArtifactAsset(string sourcePath, string artifactPath, string kind, string importPath, string contentHash)
                     {
-                        return _assets;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "import LocalCard from \"./LocalCard.vue.mjs\";\nexport default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
-                    };
-
-                    private static readonly GeneratedVueRenderAsset[] _assets = new[]
-                    {
-                        new GeneratedVueRenderAsset(
-                            sourcePath: "components/LocalCard.vue",
-                            artifactPath: "components/LocalCard.vue",
-                            kind: "vue-sfc",
-                            contentHash: "")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(string componentId, string relativePath, string moduleText, string contentHash)
-                        {
-                            ComponentId = componentId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                        }
-
-                        public string ComponentId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
-                    }
-
-                    private sealed class GeneratedVueRenderAsset
-                    {
-                        public GeneratedVueRenderAsset(string sourcePath, string artifactPath, string kind, string contentHash)
-                        {
-                            SourcePath = sourcePath;
-                            ArtifactPath = artifactPath;
-                            Kind = kind;
-                            ContentHash = contentHash;
-                        }
-
-                        public string SourcePath { get; }
-                        public string ArtifactPath { get; }
-                        public string Kind { get; }
-                        public string ContentHash { get; }
+                        public string SourcePath { get; } = sourcePath;
+                        public string ArtifactPath { get; } = artifactPath;
+                        public string Kind { get; } = kind;
+                        public string ImportPath { get; } = importPath;
+                        public string ContentHash { get; } = contentHash;
                     }
                 }
             }
             """);
 
-        var modules = CatalogReader.TryRead(assembly);
+        var asset = CatalogReader.TryRead(assembly)!.Single().Assets!.Single();
 
-        Assert.IsNotNull(modules);
-        var asset = modules.Single().Assets?.Single();
-        Assert.IsNotNull(asset);
         Assert.AreEqual("components/LocalCard.vue", asset.SourcePath);
         Assert.AreEqual("components/LocalCard.vue", asset.ArtifactPath);
-        Assert.AreEqual(AssetEntry.KindVueSfc, asset.Kind);
+        Assert.AreEqual(AssetEntry.KindModuleSource, asset.Kind);
+        Assert.AreEqual("components/LocalCard.vue.mjs", asset.ImportPath);
         Assert.AreEqual(string.Empty, asset.Hash);
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsRazorVueRuntimeEmbeddedResources()
+    public void CatalogReader_TryReadCatalogs_ReadsRuntimeProviderResourcesAndImportMapContributions()
     {
         var assembly = CompileCatalogAssembly(
-            "Jazor.RazorVue.Runtime.Resource.Tests",
+            "RuntimeProvider.Reader.Tests",
             """
-            namespace Jazor.RazorVue
+            namespace Jazor.Artifacts
             {
-                internal static class Marker
+                internal static class RuntimeProviderCatalog
                 {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+                    internal static System.Collections.IEnumerable GetImportMapEntries() => _importMapEntries;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("Runtime.context.mjs", "adapter.context", "@adapter/runtime/context.mjs", ["@adapter/runtime/core.mjs"]),
+                        new RuntimeModule("Runtime.core.mjs", "adapter.core", "@adapter/runtime/core.mjs", [])
+                    ];
+                    private static readonly ImportMapEntry[] _importMapEntries =
+                    [
+                        new ImportMapEntry("@adapter/runtime/", "@adapter/runtime/")
+                    ];
+
+                    private sealed class RuntimeModule(string resourceName, string id, string relativePath, string[] dependencies)
+                    {
+                        public string ResourceName { get; } = resourceName;
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+
+                    private sealed class ImportMapEntry(string specifier, string artifactPath)
+                    {
+                        public string Specifier { get; } = specifier;
+                        public string ArtifactPath { get; } = artifactPath;
+                    }
                 }
             }
             """,
             new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function createRenderContext() {}\n")),
+                "Runtime.context.mjs",
+                static () => new MemoryStream(Encoding.UTF8.GetBytes("export { createContext } from './core.mjs';\n")),
                 isPublic: true),
             new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context-core.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export const RENDER_CONTEXT_PROTOCOL_VERSION = 1;\n")),
+                "Runtime.core.mjs",
+                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function createContext() {}\n")),
                 isPublic: true));
 
-        var modules = CatalogReader.TryRead(assembly);
+        var result = CatalogReader.TryReadCatalogs(assembly);
 
-        Assert.IsNotNull(modules);
-        Assert.HasCount(2, modules);
-
-        var runtimeModule = modules.Single(static item => item.RelativePath == "@jazor/vue-runtime/render-context.mjs");
-        Assert.AreEqual("Jazor.RazorVue.Runtime.Resource.Tests", runtimeModule.AssemblyName);
-        Assert.AreEqual("Jazor.RazorVue.Runtime.render-context", runtimeModule.TypeName);
-        Assert.AreEqual("Jazor.RazorVue.Runtime.render-context", runtimeModule.Id);
-        StringAssert.Contains(runtimeModule.Content, "createRenderContext");
-        StringAssert.StartsWith(runtimeModule.Hash, "sha256:");
-
-        var coreModule = modules.Single(static item => item.RelativePath == "@jazor/vue-runtime/render-context-core.mjs");
-        StringAssert.Contains(coreModule.Content, "RENDER_CONTEXT_PROTOCOL_VERSION");
-        StringAssert.StartsWith(coreModule.Hash, "sha256:");
-
+        Assert.HasCount(2, result.Modules);
+        Assert.AreEqual("adapter.test", result.Modules[0].RuntimeProviderId);
+        CollectionAssert.AreEquivalent(
+            new[] { "@adapter/runtime/core.mjs" },
+            result.Modules.Single(static module => module.RelativePath == "@adapter/runtime/context.mjs").RuntimeDependencies!.ToArray());
+        Assert.HasCount(1, result.ImportMapEntries);
+        Assert.AreEqual("@adapter/runtime/", result.ImportMapEntries[0].Specifier);
+        Assert.AreEqual("@adapter/runtime/", result.ImportMapEntries[0].ArtifactPath);
     }
 
     [TestMethod]
-    public void ModuleCollector_RetainsTransitiveRazorVueRuntimeImports()
+    public void ModuleCollector_RetainsTransitiveRuntimeProviderImports()
     {
         var component = CreateModule(
             "components/context-usage.mjs",
-            "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";\ncreateRenderContext();\n");
+            "import { createContext } from \"@adapter/runtime/context.mjs\";\ncreateContext();\n");
         var context = CreateModule(
-            "@jazor/vue-runtime/render-context.mjs",
-            "import { createRenderContextCore } from \"./render-context-core.mjs\";\nexport { createRenderContextCore };\n");
+            "@adapter/runtime/context.mjs",
+            "export { createContext } from \"./core.mjs\";\n",
+            runtimeProviderId: "adapter.test",
+            runtimeDependencies: ["@adapter/runtime/core.mjs"]);
         var core = CreateModule(
-            "@jazor/vue-runtime/render-context-core.mjs",
-            "export function createRenderContextCore() {}\n");
-        var retained = ModuleCollector.RetainReferencedRazorVueRuntimeModules(
-            [component, context, core]);
+            "@adapter/runtime/core.mjs",
+            "export function createContext() {}\n",
+            runtimeProviderId: "adapter.test");
+
+        var retained = ModuleCollector.RetainReferencedRuntimeProviderModules([component, context, core]);
         var paths = retained.Select(static module => module.RelativePath).ToArray();
 
         CollectionAssert.Contains(paths, "components/context-usage.mjs");
-        CollectionAssert.Contains(paths, "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.Contains(paths, "@jazor/vue-runtime/render-context-core.mjs");
+        CollectionAssert.Contains(paths, "@adapter/runtime/context.mjs");
+        CollectionAssert.Contains(paths, "@adapter/runtime/core.mjs");
     }
 
     [TestMethod]
-    public void ModuleWriter_Write_MaterializesVueRenderCatalogWithSourceMapAndRuntimeAssets()
+    public void ModuleWriter_Write_MaterializesNeutralHmrAndRuntimeProviderData()
     {
-        var catalogAssembly = CompileCatalogAssembly(
-            "VueRenderCatalog.Materialize.Tests",
-            """
-            namespace Jazor.Generated
-            {
-                internal static partial class VueRenderCatalog
-                {
-                    internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
-
-                    internal static System.Collections.IEnumerable GetModules()
-                    {
-                        return _modules;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";\nexport default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-                            sourceMapRelativePath: "components/counter.mjs.map",
-                            sourceMapContent: "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Pages/Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
-                            mapHash: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(
-                            string componentId,
-                            string relativePath,
-                            string moduleText,
-                            string contentHash,
-                            string sourceMapRelativePath,
-                            string sourceMapContent,
-                            string mapHash)
-                        {
-                            ComponentId = componentId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                            SourceMapRelativePath = sourceMapRelativePath;
-                            SourceMapContent = sourceMapContent;
-                            MapHash = mapHash;
-                        }
-
-                        public string ComponentId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
-                        public string SourceMapRelativePath { get; }
-                        public string SourceMapContent { get; }
-                        public string MapHash { get; }
-                    }
-                }
-            }
-            """);
-        var runtimeAssembly = CompileCatalogAssembly(
-            "Jazor.RazorVue.Runtime.Materialize.Tests",
-            """
-            namespace Jazor.RazorVue
-            {
-                internal static class Marker
-                {
-                }
-            }
-            """,
-            new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function createRenderContext() {}\n")),
-                isPublic: true),
-            new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context-core.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export const RENDER_CONTEXT_PROTOCOL_VERSION = 1;\n")),
-                isPublic: true));
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.Materialize.Tests.dll");
-
+        var outputDirectory = Path.Combine(root, "out");
+        var manifestPath = Path.Combine(root, "jazor-manifest.json");
         try
         {
-            var modules = CatalogReader.TryRead(catalogAssembly)!
-                .Concat(CatalogReader.TryRead(runtimeAssembly)!)
-                .ToArray();
+            var module = new ModuleRecord(
+                SourceAssemblyPath: "test.dll",
+                AssemblyName: "ArtifactCatalog.Materialize.Tests",
+                TypeName: "Demo.Pages.Counter",
+                Id: "Demo.Pages.Counter",
+                RelativePath: "components/counter.mjs",
+                Content: "export default {};",
+                Hash: "sha256:test",
+                Hmr: HmrMetadata.Create(
+                    "adapter.test",
+                    "ArtifactCatalog.Materialize.Tests:components/counter.mjs",
+                    "{\"change\":\"safe\"}"));
+            var runtime = CreateModule(
+                "@adapter/runtime/context.mjs",
+                "export function createContext() {}\n",
+                runtimeProviderId: "adapter.test");
+            var mapEntry = new ImportMapEntry("adapter.test", "@adapter/runtime/", "@adapter/runtime/");
+
             var result = ModuleWriter.Write(
-                rootAssemblyPath,
+                "ArtifactCatalog.Materialize.Tests.dll",
                 outputDirectory,
                 manifestPath,
-                modules,
-                clean: true);
+                [module, runtime],
+                clean: true,
+                importMapEntries: [mapEntry]);
 
-            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+            Assert.IsTrue(result.IsSuccess, result.Error);
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter.mjs")));
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter.mjs.map")));
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "@jazor", "vue-runtime", "render-context.mjs")));
-            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "@jazor", "vue-runtime", "render-context-core.mjs")));
-
-            var moduleText = File.ReadAllText(Path.Combine(outputDirectory, "components", "counter.mjs"));
-            StringAssert.Contains(moduleText, "@jazor/vue-runtime/render-context.mjs");
-            StringAssert.Contains(moduleText, "sourceMappingURL=counter.mjs.map");
-
-            var mapText = File.ReadAllText(Path.Combine(outputDirectory, "components", "counter.mjs.map"));
-            StringAssert.Contains(mapText, "Pages/Counter.razor");
-
-            var manifestText = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
-            StringAssert.Contains(manifestText, "\"schemaVersion\": 1");
-            StringAssert.Contains(manifestText, "\"path\": \"components/counter.mjs\"");
-            StringAssert.Contains(manifestText, "\"sourceMap\": \"components/counter.mjs.map\"");
-            StringAssert.Contains(manifestText, "\"path\": \"@jazor/vue-runtime/render-context.mjs\"");
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public void ModuleWriter_Write_VueRenderCatalogRepeatWriteIsByteForByteStable()
-    {
-        var catalogAssembly = CompileCatalogAssembly(
-            "VueRenderCatalog.RepeatStable.Tests",
-            """
-            namespace Jazor.Generated
-            {
-                internal static partial class VueRenderCatalog
-                {
-                    internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 1;
-
-                    internal static System.Collections.IEnumerable GetModules()
-                    {
-                        return _modules;
-                    }
-
-                    private static readonly GeneratedVueRenderModule[] _modules = new[]
-                    {
-                        new GeneratedVueRenderModule(
-                            componentId: "Demo.Pages.Counter",
-                            relativePath: "components/counter.mjs",
-                            moduleText: "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";\nexport default {};",
-                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-                            sourceMapRelativePath: "components/counter.mjs.map",
-                            sourceMapContent: "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Pages/Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
-                            mapHash: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789")
-                    };
-
-                    private sealed class GeneratedVueRenderModule
-                    {
-                        public GeneratedVueRenderModule(
-                            string componentId,
-                            string relativePath,
-                            string moduleText,
-                            string contentHash,
-                            string sourceMapRelativePath,
-                            string sourceMapContent,
-                            string mapHash)
-                        {
-                            ComponentId = componentId;
-                            RelativePath = relativePath;
-                            ModuleText = moduleText;
-                            ContentHash = contentHash;
-                            SourceMapRelativePath = sourceMapRelativePath;
-                            SourceMapContent = sourceMapContent;
-                            MapHash = mapHash;
-                        }
-
-                        public string ComponentId { get; }
-                        public string RelativePath { get; }
-                        public string ModuleText { get; }
-                        public string ContentHash { get; }
-                        public string SourceMapRelativePath { get; }
-                        public string SourceMapContent { get; }
-                        public string MapHash { get; }
-                    }
-                }
-            }
-            """);
-        var runtimeAssembly = CompileCatalogAssembly(
-            "Jazor.RazorVue.Runtime.RepeatStable.Tests",
-            """
-            namespace Jazor.RazorVue
-            {
-                internal static class Marker
-                {
-                }
-            }
-            """,
-            new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function createRenderContext() {}\n")),
-                isPublic: true),
-            new ResourceDescription(
-                "Jazor.RazorVue.Runtime.render-context-core.mjs",
-                static () => new MemoryStream(Encoding.UTF8.GetBytes("export const RENDER_CONTEXT_PROTOCOL_VERSION = 1;\n")),
-                isPublic: true));
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.RepeatStable.Tests.dll");
-        var componentPath = Path.Combine(outputDirectory, "components", "counter.mjs");
-        var componentMapPath = Path.Combine(outputDirectory, "components", "counter.mjs.map");
-        var runtimePath = Path.Combine(outputDirectory, "@jazor", "vue-runtime", "render-context.mjs");
-        var runtimeCorePath = Path.Combine(outputDirectory, "@jazor", "vue-runtime", "render-context-core.mjs");
-
-        try
-        {
-            var modules = CatalogReader.TryRead(catalogAssembly)!
-                .Concat(CatalogReader.TryRead(runtimeAssembly)!)
-                .ToArray();
-            var writer = new ModuleWriter();
-
-            var first = ModuleWriter.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                modules,
-                clean: true);
-
-            Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
-            Assert.AreEqual(3, first.Written);
-            Assert.AreEqual(0, first.Skipped);
-
-            var firstComponent = File.ReadAllBytes(componentPath);
-            var firstMap = File.ReadAllBytes(componentMapPath);
-            var firstRuntime = File.ReadAllBytes(runtimePath);
-            var firstRuntimeCore = File.ReadAllBytes(runtimeCorePath);
-            var firstManifest = File.ReadAllBytes(manifestPath);
-
-            var second = ModuleWriter.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                modules,
-                clean: true);
-
-            Assert.IsTrue(second.IsSuccess, second.Error ?? string.Empty);
-            Assert.AreEqual(0, second.Written);
-            Assert.AreEqual(3, second.Skipped);
-            Assert.AreEqual(0, second.Deleted);
-            CollectionAssert.AreEqual(firstComponent, File.ReadAllBytes(componentPath), "Component module changed between identical writes.");
-            CollectionAssert.AreEqual(firstMap, File.ReadAllBytes(componentMapPath), "Component source map changed between identical writes.");
-            CollectionAssert.AreEqual(firstRuntime, File.ReadAllBytes(runtimePath), "Runtime module changed between identical writes.");
-            CollectionAssert.AreEqual(firstRuntimeCore, File.ReadAllBytes(runtimeCorePath), "Runtime core module changed between identical writes.");
-            CollectionAssert.AreEqual(firstManifest, File.ReadAllBytes(manifestPath), "Manifest changed between identical writes.");
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public void ModuleWriter_Write_MaterializesVueRenderCatalogFrontendAssetsIntoManifest()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.AssetManifest.Tests.dll");
-        var module = new ModuleRecord(
-            SourceAssemblyPath: rootAssemblyPath,
-            AssemblyName: "VueRenderCatalog.AssetManifest.Tests",
-            TypeName: "Demo.Pages.Counter",
-            Id: "Demo.Pages.Counter",
-            RelativePath: "components/counter.mjs",
-            Content: "import LocalCard from \"./LocalCard.vue.mjs\";\nexport default {};\n",
-            Hash: "sha256:counter",
-            Assets:
-            [
-                new AssetEntry(
-                    "components/LocalCard.vue",
-                    "components/LocalCard.vue",
-                    AssetEntry.KindVueSfc,
-                    string.Empty)
-            ],
-            Hmr: HmrMetadata.Create(
-                "Demo.Pages.Counter",
-                "VueRenderCatalog.AssetManifest.Tests:components/counter.mjs",
-                "sha256:descriptor",
-                "sha256:template",
-                "sha256:logic",
-                "template-only"));
-
-        try
-        {
-            var result = ModuleWriter.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                [module],
-                clean: true);
-
-            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
-            var manifest = ManifestModel.TryLoad(manifestPath);
-            Assert.IsNotNull(manifest);
-            Assert.HasCount(1, manifest.Assets);
-            Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].SourcePath);
-            Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].ArtifactPath);
-            Assert.AreEqual(AssetEntry.KindVueSfc, manifest.Assets[0].Kind);
-            var hmr = manifest.Modules[0].Hmr
-                ?? throw new AssertFailedException("Manifest HMR metadata was not materialized.");
-            Assert.AreEqual(
-                "VueRenderCatalog.AssetManifest.Tests:components/counter.mjs",
-                hmr.ModuleId);
-            Assert.AreEqual("template-only", hmr.BoundaryKind);
-            StringAssert.Contains(File.ReadAllText(manifestPath), "\"hmr\": {");
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
-    [TestMethod]
-    public void ModuleWriter_Write_WhenVueRenderComponentRemoved_DeletesStaleComponentAndSourceMap()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.Stale.Tests.dll");
-        var counterPath = Path.Combine(outputDirectory, "components", "counter.mjs");
-        var counterMapPath = Path.Combine(outputDirectory, "components", "counter.mjs.map");
-        var todoPath = Path.Combine(outputDirectory, "components", "todo.mjs");
-        var todoMapPath = Path.Combine(outputDirectory, "components", "todo.mjs.map");
-
-        var counter = new ModuleRecord(
-            SourceAssemblyPath: rootAssemblyPath,
-            AssemblyName: "VueRenderCatalog.Stale.Tests",
-            TypeName: "Demo.Pages.Counter",
-            Id: "Demo.Pages.Counter",
-            RelativePath: "components/counter.mjs",
-            Content: "export default { name: \"Counter\" };\n",
-            Hash: "sha256:counter",
-            SourceMapRelativePath: "components/counter.mjs.map",
-            SourceMapContent: "{\"version\":3,\"file\":\"components/counter.mjs\",\"sources\":[\"Pages/Counter.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
-            MapHash: "sha256:counter-map");
-        var todo = new ModuleRecord(
-            SourceAssemblyPath: rootAssemblyPath,
-            AssemblyName: "VueRenderCatalog.Stale.Tests",
-            TypeName: "Demo.Pages.Todo",
-            Id: "Demo.Pages.Todo",
-            RelativePath: "components/todo.mjs",
-            Content: "export default { name: \"Todo\" };\n",
-            Hash: "sha256:todo",
-            SourceMapRelativePath: "components/todo.mjs.map",
-            SourceMapContent: "{\"version\":3,\"file\":\"components/todo.mjs\",\"sources\":[\"Pages/Todo.razor\"],\"names\":[],\"mappings\":\"AAAA\"}",
-            MapHash: "sha256:todo-map");
-
-        try
-        {
-            var writer = new ModuleWriter();
-            var first = ModuleWriter.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                [counter, todo],
-                clean: true);
-
-            Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
-            Assert.IsTrue(File.Exists(counterPath));
-            Assert.IsTrue(File.Exists(counterMapPath));
-            Assert.IsTrue(File.Exists(todoPath));
-            Assert.IsTrue(File.Exists(todoMapPath));
-
-            var second = ModuleWriter.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                [todo],
-                clean: true);
-
-            Assert.IsTrue(second.IsSuccess, second.Error ?? string.Empty);
-            Assert.AreEqual(2, second.Deleted);
-            Assert.IsFalse(File.Exists(counterPath), "Removed Vue render component module should be deleted.");
-            Assert.IsFalse(File.Exists(counterMapPath), "Removed Vue render component source map should be deleted.");
-            Assert.IsTrue(File.Exists(todoPath));
-            Assert.IsTrue(File.Exists(todoMapPath));
+            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "@adapter", "runtime", "context.mjs")));
 
             var manifest = ManifestModel.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
-            Assert.HasCount(1, manifest.Modules);
-            Assert.AreEqual("components/todo.mjs", manifest.Modules[0].RelativePath);
-            Assert.AreEqual("components/todo.mjs.map", manifest.Modules[0].SourceMapPath);
-            Assert.IsFalse(
-                File.ReadAllText(manifestPath).Contains("components/counter.mjs", StringComparison.Ordinal),
-                "Manifest must stop declaring removed Vue render components.");
+            Assert.HasCount(2, manifest.Modules);
+            Assert.HasCount(1, manifest.ImportMapEntries);
+            Assert.AreEqual("@adapter/runtime/", manifest.ImportMapEntries[0].Specifier);
+            var hmr = manifest.Modules.Single(static entry => entry.RelativePath == "components/counter.mjs").Hmr;
+            Assert.IsNotNull(hmr);
+            Assert.AreEqual("adapter.test", hmr.ProviderId);
+            using var hmrPayload = JsonDocument.Parse(hmr.Payload);
+            Assert.AreEqual("safe", hmrPayload.RootElement.GetProperty("change").GetString());
+
+            var manifestText = File.ReadAllText(manifestPath);
+            StringAssert.Contains(manifestText, "\"providerId\": \"adapter.test\"");
+            StringAssert.Contains(manifestText, "\"data\": {");
         }
         finally
         {
@@ -770,53 +381,45 @@ public sealed class VueRenderCatalogReaderTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_RejectsUnsupportedVueRenderCatalogSchema()
+    public void CatalogReader_TryRead_RejectsUnsupportedArtifactCatalogSchema()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.BadSchema.Tests",
+            "ArtifactCatalog.BadSchema.Tests",
             """
             namespace Jazor.Generated
             {
-                internal static partial class VueRenderCatalog
+                internal static partial class ArtifactCatalog
                 {
                     internal const int SchemaVersion = 99;
-                    internal const int RuntimeProtocolVersion = 1;
-
-                    internal static System.Collections.IEnumerable GetModules()
-                    {
-                        return System.Array.Empty<object>();
-                    }
+                    internal const string ProducerId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => System.Array.Empty<object>();
                 }
             }
             """);
 
         var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryRead(assembly));
-        StringAssert.Contains(exception.Message, "VueRenderCatalog schema version '99'");
+        StringAssert.Contains(exception.Message, "artifact catalog schema version '99'");
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_RejectsUnsupportedVueRenderRuntimeProtocol()
+    public void CatalogReader_TryReadCatalogs_RejectsUnsupportedRuntimeProviderSchema()
     {
         var assembly = CompileCatalogAssembly(
-            "VueRenderCatalog.BadRuntime.Tests",
+            "RuntimeProvider.BadSchema.Tests",
             """
-            namespace Jazor.Generated
+            namespace Jazor.Artifacts
             {
-                internal static partial class VueRenderCatalog
+                internal static class RuntimeProviderCatalog
                 {
-                    internal const int SchemaVersion = 1;
-                    internal const int RuntimeProtocolVersion = 99;
-
-                    internal static System.Collections.IEnumerable GetModules()
-                    {
-                        return System.Array.Empty<object>();
-                    }
+                    internal const int SchemaVersion = 99;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => System.Array.Empty<object>();
                 }
             }
             """);
 
-        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryRead(assembly));
-        StringAssert.Contains(exception.Message, "VueRenderCatalog runtime protocol version '99'");
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+        StringAssert.Contains(exception.Message, "runtime provider catalog schema version '99'");
     }
 
     private static Assembly CompileCatalogAssembly(
@@ -848,7 +451,11 @@ public sealed class VueRenderCatalogReaderTests
         return Assembly.Load(stream.ToArray());
     }
 
-    private static ModuleRecord CreateModule(string relativePath, string content)
+    private static ModuleRecord CreateModule(
+        string relativePath,
+        string content,
+        string? runtimeProviderId = null,
+        IReadOnlyList<string>? runtimeDependencies = null)
         => new(
             SourceAssemblyPath: "test.dll",
             AssemblyName: "Test",
@@ -856,5 +463,7 @@ public sealed class VueRenderCatalogReaderTests
             Id: relativePath,
             RelativePath: relativePath,
             Content: content,
-            Hash: "sha256:test");
+            Hash: "sha256:test",
+            RuntimeProviderId: runtimeProviderId,
+            RuntimeDependencies: runtimeDependencies);
 }

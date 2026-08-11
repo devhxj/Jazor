@@ -3,21 +3,21 @@ using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore;
 
-public static class JazorSsrServiceCollectionExtensions
+public static class JazorSSRServiceCollectionExtensions
 {
     /// <summary>Adds SSR services backed by the packaged DenoHost runtime.</summary>
-    public static IServiceCollection AddJazorSsr(
+    public static IServiceCollection AddJazorSSR(
         this IServiceCollection services,
-        Action<JazorSsrOptions>? configure = null)
+        Action<JazorSSROptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = services.AddOptions<JazorSsrOptions>();
+        var options = services.AddOptions<JazorSSROptions>();
         if (configure is not null)
             options.Configure(configure);
 
-        services.AddSingleton<JazorSsrArtifactLocator>();
-        services.AddSingleton<IJazorSsrRenderer, JazorSsrRenderer>();
+        services.AddSingleton<JazorSSRArtifactLocator>();
+        services.AddSingleton<IJazorSSRRenderer, JazorSSRRenderer>();
         return services;
     }
 }

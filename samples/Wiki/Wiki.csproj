@@ -24,10 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Source builds do not import ECMAScript.Vue3's packaged buildTransitive target. -->
-    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue3\manifest.json" />
+    <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
+    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue\manifest.json" />
     <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\..\src\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <ProjectReference Include="..\..\src\Jazor.CLR\Jazor.CLR.csproj" />

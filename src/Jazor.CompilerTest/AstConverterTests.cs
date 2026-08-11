@@ -49,8 +49,8 @@ public sealed class AstConverterTests
         return $"$ctor_{Format.HashName(constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
     }
 
-    private static bool ContainsVue3Reference(IEnumerable<MetadataReference> references)
-        => references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3).Assembly.Location, StringComparison.OrdinalIgnoreCase));
+    private static bool ContainsVueReference(IEnumerable<MetadataReference> references)
+        => references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue).Assembly.Location, StringComparison.OrdinalIgnoreCase));
 
     private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
     {
@@ -58,16 +58,16 @@ public sealed class AstConverterTests
         if (additionalReferences is not null)
             references.AddRange(additionalReferences);
 
-        if (ContainsVue3Reference(references) &&
+        if (ContainsVueReference(references) &&
             !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
             references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location));
         }
 
-        if (ContainsVue3Reference(references) &&
-            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+        if (ContainsVueReference(references) &&
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
-            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location));
         }
 
         return references.ToArray();
@@ -76,7 +76,7 @@ public sealed class AstConverterTests
     private static SyntaxTree[] BuildSyntaxTrees(string code, IEnumerable<MetadataReference>? additionalReferences = null)
     {
         var syntaxTrees = new List<SyntaxTree>();
-        if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
+        if (additionalReferences is not null && ContainsVueReference(additionalReferences))
         {
             syntaxTrees.Add(CSharpSyntaxTree.ParseText(
                 "global using ECMAScript.VueContract;",
@@ -91,7 +91,7 @@ public sealed class AstConverterTests
     private static SyntaxTree[] BuildSyntaxTrees((string Path, string Text)[] sources, IEnumerable<MetadataReference>? additionalReferences = null)
     {
         var syntaxTrees = new List<SyntaxTree>();
-        if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
+        if (additionalReferences is not null && ContainsVueReference(additionalReferences))
         {
             syntaxTrees.Add(CSharpSyntaxTree.ParseText(
                 "global using ECMAScript.VueContract;",
@@ -6176,7 +6176,7 @@ export function Create() {
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6185,13 +6185,13 @@ export function Create() {
                 {
                     public static VueComponentPublicInstance Mount(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         return app.Mount("#app");
                     }
 
                     public static int ReadRef()
                     {
-                        var count = Vue3.Ref(1);
+                        var count = Vue.Ref(1);
                         return count.Value;
                     }
                 }
@@ -6203,7 +6203,7 @@ export function Create() {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6293,7 +6293,7 @@ export function ReadRef() {
             using ECMAScript;
             using System;
             using System.ComponentModel;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6308,7 +6308,7 @@ export function ReadRef() {
                 {
                     public static VueApp Boot(IVueComponent component)
                     {
-                        return Vue3.CreateApp(component, new RootProps { Message = "Hello" });
+                        return Vue.CreateApp(component, new RootProps { Message = "Hello" });
                     }
                 }
             }
@@ -6319,7 +6319,7 @@ export function ReadRef() {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6348,7 +6348,7 @@ export function Boot(component) {
             using ECMAScript;
             using ECMAScript.Contract;
             using System.ComponentModel;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6363,7 +6363,7 @@ export function Boot(component) {
                 {
                     public static VueApp Boot(IVueComponent component)
                     {
-                        return Vue3.CreateApp(component, new VueObject<RootProps>
+                        return Vue.CreateApp(component, new VueObject<RootProps>
                         {
                             Props = new RootProps { Message = "Hello" }
                         });
@@ -6377,7 +6377,7 @@ export function Boot(component) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6406,7 +6406,7 @@ export function Boot(component) {
             using ECMAScript.Contract;
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6460,7 +6460,7 @@ export function Boot(component) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6498,7 +6498,7 @@ export function Render() {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6541,7 +6541,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6575,7 +6575,7 @@ export function Render() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6619,7 +6619,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6656,7 +6656,7 @@ export function Render(raw) {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6680,7 +6680,7 @@ export function Render(raw) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6693,7 +6693,7 @@ export function Render(raw) {
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueObject");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueObject");
     }
 
     [TestMethod]
@@ -6702,7 +6702,7 @@ export function Render(raw) {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6729,7 +6729,7 @@ export function Render(raw) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6742,7 +6742,7 @@ export function Render(raw) {
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueDictionary");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueDictionary");
     }
 
     [TestMethod]
@@ -6751,7 +6751,7 @@ export function Render(raw) {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6764,7 +6764,7 @@ export function Render(raw) {
                             Events = new VueEventHandlers
                             {
                                 ["onClick"] = OnClick,
-                                ["onFocus"] = Vue3.WithModifiers(OnFocus, "stop")
+                                ["onFocus"] = Vue.WithModifiers(OnFocus, "stop")
                             }
                         }, "Save");
 
@@ -6797,7 +6797,7 @@ export function Render(raw) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6831,7 +6831,7 @@ function OnMouseMove(mouseEvent) { }
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6871,7 +6871,7 @@ function OnMouseMove(mouseEvent) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -6910,7 +6910,7 @@ function OnInput(event) { }
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -6957,7 +6957,7 @@ function OnInput(event) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -7002,7 +7002,7 @@ export function RenderImage() {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -7059,7 +7059,7 @@ export function RenderImage() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -7531,7 +7531,7 @@ export function ReadValue(value) {
             using ECMAScript;
             using ECMAScript.ElementPlus;
             using ECMAScript.TDesign;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -7559,7 +7559,7 @@ export function ReadValue(value) {
             code,
             "ComponentUnionModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.ElementPlus.ElementPlus).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.TDesign.TDesign).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
@@ -7727,7 +7727,7 @@ export function ReadUploadBlob(value) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("vue/union-value-projection.mjs")]
             public static class TestClass
@@ -7741,7 +7741,7 @@ export function ReadUploadBlob(value) {
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var classSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -7767,7 +7767,7 @@ export function ReadUploadBlob(value) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [ECMAScriptModule("vue/value-union-projection.mjs")]
             public static class TestClass
@@ -7793,7 +7793,7 @@ export function ReadUploadBlob(value) {
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var classSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -7844,7 +7844,7 @@ export function ReadPropDeclaration(value) {
             code,
             "TestClass",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var classSymbol = semanticModel.SyntaxTree
             .GetRoot()
@@ -7872,7 +7872,7 @@ export function ReadPropDeclaration(value) {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -7922,7 +7922,7 @@ export function ReadPropDeclaration(value) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -7975,7 +7975,7 @@ export function RenderFileInput() {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -7997,7 +7997,7 @@ export function RenderFileInput() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8025,7 +8025,7 @@ export function RenderCustomizedBuiltIn() {
         var code = """
             using ECMAScript.Contract;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -8037,7 +8037,7 @@ export function RenderCustomizedBuiltIn() {
                         var modifiers = new[] { "stop", "prevent" };
                         return H("button", new VueObject
                         {
-                            ["onClick"] = Vue3.WithModifiers(OnClick, modifiers)
+                            ["onClick"] = Vue.WithModifiers(OnClick, modifiers)
                         }, "Save");
                     }
 
@@ -8053,7 +8053,7 @@ export function RenderCustomizedBuiltIn() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8082,7 +8082,7 @@ function OnClick() { }
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -8101,7 +8101,7 @@ function OnClick() { }
                             new VueDirectiveArguments(Focus)
                         };
                         var button = H("button", "Save");
-                        return Vue3.WithDirectives(button, directives);
+                        return Vue.WithDirectives(button, directives);
                     }
 
                     private static void MountedDirective(Element element, VueDirectiveBinding binding, IVNode vnode)
@@ -8117,7 +8117,7 @@ function OnClick() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8150,14 +8150,14 @@ function MountedDirective(element, binding, vnode) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "Panel",
                         InheritAttrs = false,
@@ -8176,7 +8176,7 @@ function MountedDirective(element, binding, vnode) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8210,7 +8210,7 @@ export function Render() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -8235,7 +8235,7 @@ export function Render() {
                 [ECMAScriptModule("components/validated-label.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<LabelProps> Component = Vue3.DefineComponent(new VueComponentOptions<LabelProps>
+                    public static IVueComponent<LabelProps> Component = Vue.DefineComponent(new VueComponentOptions<LabelProps>
                     {
                         Name = "ValidatedLabel",
                         Props = new LabelPropOptions
@@ -8290,7 +8290,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8348,14 +8348,14 @@ function ValidateSave(value) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/prop-registry.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PropRegistryPanel",
                         Props = new VuePropRegistry
@@ -8382,7 +8382,7 @@ function ValidateSave(value) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8414,14 +8414,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/prop-registry.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PropRegistryPanel",
                         Props = BuildProps(),
@@ -8448,7 +8448,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8461,7 +8461,7 @@ export function Render() {
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VuePropRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VuePropRegistry");
     }
 
     [TestMethod]
@@ -8469,14 +8469,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/emit-registry.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "EmitRegistryPanel",
                         Emits = BuildEmits(),
@@ -8506,7 +8506,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8519,7 +8519,7 @@ export function Render() {
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueEmitRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueEmitRegistry");
     }
 
     [TestMethod]
@@ -8527,14 +8527,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/lifecycle-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "LifecyclePanel",
                         BeforeCreate = BeforeCreate,
@@ -8615,7 +8615,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8678,7 +8678,7 @@ function Prefetch() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -8691,7 +8691,7 @@ function Prefetch() {
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ProviderPanel",
                         Provide = new ProvidedValues
@@ -8713,7 +8713,7 @@ function Prefetch() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8746,14 +8746,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ProviderPanel",
                         Inject = new VueInjectRegistry<string>
@@ -8779,7 +8779,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -8813,7 +8813,7 @@ export function Render() {
             using System;
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -8828,7 +8828,7 @@ export function Render() {
                 {
                     private static readonly VueInjectionKey<int> CountKey = Global.SymbolFn("count");
 
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "TypedPanel",
                         Provide = BuildProvide(),
@@ -8898,7 +8898,7 @@ export function Render() {
 
                     private static VueComponentRegistry BuildComponents()
                     {
-                        ECMAScript.Vue3.IVueComponent child = Vue3.DefineComponent(new VueComponentOptions
+                        ECMAScript.Vue.IVueComponent child = Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "ChildView"
                         });
@@ -8938,7 +8938,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9007,7 +9007,7 @@ function OnTotalChanged(value, oldValue) { }
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -9020,7 +9020,7 @@ function OnTotalChanged(value, oldValue) { }
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ProviderPanel",
                         ProvideFactory = BuildProvide,
@@ -9044,7 +9044,7 @@ function OnTotalChanged(value, oldValue) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9079,16 +9079,16 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    private static readonly Vue3.VueInjectionKey<int> CountKey = Global.SymbolFn("count");
+                    private static readonly Vue.VueInjectionKey<int> CountKey = Global.SymbolFn("count");
 
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ProviderPanel",
                         Provide = new VueDictionary
@@ -9118,7 +9118,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9152,14 +9152,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ProviderPanel",
                         Inject = new VueInjectRegistry<string>
@@ -9187,7 +9187,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9222,14 +9222,14 @@ export function Render() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/mixed-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "MixedPanel",
                         Extends = new VueComponentOptions
@@ -9267,7 +9267,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9303,7 +9303,7 @@ function FocusMounted() { }
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -9316,7 +9316,7 @@ function FocusMounted() { }
                 [ECMAScriptModule("components/data-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "DataPanel",
                         Data = CreateState,
@@ -9340,7 +9340,7 @@ function FocusMounted() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9375,14 +9375,14 @@ function CreateState() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/computed-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ComputedPanel",
                         Computed = new VueComputedRegistry<int>
@@ -9418,7 +9418,7 @@ function CreateState() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9457,14 +9457,14 @@ function WritePlusOne(value) { }
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/computed-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ComputedPanel",
                         Computed = BuildComputed(),
@@ -9494,7 +9494,7 @@ function WritePlusOne(value) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9507,7 +9507,7 @@ function WritePlusOne(value) { }
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueComputedRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueComputedRegistry");
     }
 
     [TestMethod]
@@ -9516,14 +9516,14 @@ function WritePlusOne(value) { }
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/methods-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "MethodsPanel",
                         Methods = new VueMethodRegistry<Action>
@@ -9553,7 +9553,7 @@ function WritePlusOne(value) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9588,14 +9588,14 @@ function Focus() { }
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/methods-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "MethodsPanel",
                         Methods = BuildMethods(),
@@ -9626,7 +9626,7 @@ function Focus() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9639,7 +9639,7 @@ function Focus() { }
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueMethodRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueMethodRegistry");
     }
 
     [TestMethod]
@@ -9648,14 +9648,14 @@ function Focus() { }
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/watch-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "WatchPanel",
                         Watch = new VueWatchRegistry<int>
@@ -9712,7 +9712,7 @@ function Focus() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9762,7 +9762,7 @@ function OnCountChangedAgain(value, oldValue) { }
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -9773,31 +9773,31 @@ function OnCountChangedAgain(value, oldValue) { }
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ThisPanel",
-                        Data = Vue3.BindThis<PanelThis>(BuildData),
+                        Data = Vue.BindThis<PanelThis>(BuildData),
                         Computed = new VueComputedRegistry<int>
                         {
-                            { "double", Vue3.BindThis<PanelThis, int>(GetDouble) },
+                            { "double", Vue.BindThis<PanelThis, int>(GetDouble) },
                             { "labelLength", new VueWritableComputedOptions<int>
                                 {
-                                    Get = Vue3.BindThis<PanelThis, int>(GetLabelLength),
-                                    Set = Vue3.BindThis<PanelThis, int>(SetLabelLength)
+                                    Get = Vue.BindThis<PanelThis, int>(GetLabelLength),
+                                    Set = Vue.BindThis<PanelThis, int>(SetLabelLength)
                                 }
                             }
                         },
                         Methods = new VueMethodRegistry<global::System.Action<int>>
                         {
-                            { "add", Vue3.BindThis<PanelThis, int>(AddCount) }
+                            { "add", Vue.BindThis<PanelThis, int>(AddCount) }
                         },
                         Watch = new VueWatchRegistry<int>
                         {
-                            { "count", Vue3.BindThis<PanelThis, int, int>(OnCountChanged) },
+                            { "count", Vue.BindThis<PanelThis, int, int>(OnCountChanged) },
                             { "labelSize", new VueWatchCleanupHandlerOptions<int>
                                 {
                                     Immediate = true,
-                                    Handler = Vue3.BindThis<PanelThis, int>(OnLabelSizeChanged)
+                                    Handler = Vue.BindThis<PanelThis, int>(OnLabelSizeChanged)
                                 }
                             }
                         },
@@ -9845,7 +9845,7 @@ function OnCountChangedAgain(value, oldValue) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9883,14 +9883,14 @@ function OnCountChangedAgain(value, oldValue) { }
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/watch-panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "WatchPanel",
                         Watch = BuildWatch(),
@@ -9921,7 +9921,7 @@ function OnCountChangedAgain(value, oldValue) { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -9934,14 +9934,14 @@ function OnCountChangedAgain(value, oldValue) { }
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueWatchRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueWatchRegistry");
     }
     [TestMethod]
     public async Task Convert_ClassUsingVueAppConfig_GeneratesPlainConfigurationAssignments()
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -9950,12 +9950,12 @@ function OnCountChangedAgain(value, oldValue) { }
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Config.ErrorHandler = OnError;
                         app.Config.WarnHandler = OnWarn;
                         app.Config.Performance = true;
                         app.Config.CompilerOptions.IsCustomElement = IsCustomElement;
-                        app.Config.CompilerOptions.Whitespace = Vue3.VueCompilerWhitespace.Preserve;
+                        app.Config.CompilerOptions.Whitespace = Vue.VueCompilerWhitespace.Preserve;
                         app.Config.CompilerOptions.Delimiters = new[] { "[[", "]]" };
                         app.Config.CompilerOptions.Comments = true;
                         app.Config.GlobalProperties["$name"] = "jazor";
@@ -9987,7 +9987,7 @@ function OnCountChangedAgain(value, oldValue) { }
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10036,7 +10036,7 @@ function MergeRoute(parent, child) {
             using ECMAScript.Contract;
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10049,7 +10049,7 @@ function MergeRoute(parent, child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    public static IVueComponent<ChildProps> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps>
                     {
                         Name = "ChildView"
                     });
@@ -10072,7 +10072,7 @@ function MergeRoute(parent, child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10101,14 +10101,14 @@ export function Render() {
         var code = """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "CounterView",
                         Setup = Setup
@@ -10116,7 +10116,7 @@ export function Render() {
 
                     private static VueRenderCallback Setup()
                     {
-                        var count = Vue3.Ref(1);
+                        var count = Vue.Ref(1);
                         return () => H("button", count.Value == 1);
                     }
                 }
@@ -10128,7 +10128,7 @@ export function Render() {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10160,7 +10160,7 @@ function Setup() {
         var code = """
             using ECMAScript;
             using System;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10169,7 +10169,7 @@ function Setup() {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Props = ["message"],
@@ -10191,7 +10191,7 @@ function Setup() {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10227,7 +10227,7 @@ function Setup(props, context) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10236,7 +10236,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Emits = ["batch"],
@@ -10257,7 +10257,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10293,7 +10293,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10306,7 +10306,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Props = ["modelValue"],
@@ -10316,7 +10316,7 @@ function Setup(props, context) {
 
                     private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
                     {
-                        var model = Vue3.UseModel<int>(props, "modelValue", new VueModelOptions<int>
+                        var model = Vue.UseModel<int>(props, "modelValue", new VueModelOptions<int>
                         {
                             Get = Normalize,
                             Set = Normalize
@@ -10336,7 +10336,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10377,7 +10377,7 @@ function Normalize(value) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10390,20 +10390,20 @@ function Normalize(value) {
                 [ECMAScriptModule("components/counter-default-model.mjs")]
                 public static class CounterModule
                 {
-                    private static readonly VueModelName<CounterProps, int> CounterModel = Vue3.ModelName<CounterProps, int>();
-                    private static readonly string CounterUpdate = Vue3.ModelUpdateEventName(CounterModel);
+                    private static readonly VueModelName<CounterProps, int> CounterModel = Vue.ModelName<CounterProps, int>();
+                    private static readonly string CounterUpdate = Vue.ModelUpdateEventName(CounterModel);
 
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        Props = [Vue3.ModelPropName(CounterModel)],
+                        Props = [Vue.ModelPropName(CounterModel)],
                         Emits = [CounterUpdate],
                         Setup = Setup
                     });
 
                     private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
                     {
-                        var model = Vue3.UseModel(props, CounterModel);
+                        var model = Vue.UseModel(props, CounterModel);
                         return () => H("button", model.Value);
                     }
                 }
@@ -10415,7 +10415,7 @@ function Normalize(value) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10454,7 +10454,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10467,20 +10467,20 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter-named-model.mjs")]
                 public static class CounterModule
                 {
-                    private static readonly VueModelName<CounterProps, int> CountModel = Vue3.ModelName<CounterProps, int>("count");
-                    private static readonly string CountUpdate = Vue3.ModelUpdateEventName(CountModel);
+                    private static readonly VueModelName<CounterProps, int> CountModel = Vue.ModelName<CounterProps, int>("count");
+                    private static readonly string CountUpdate = Vue.ModelUpdateEventName(CountModel);
 
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        Props = [Vue3.ModelPropName(CountModel)],
+                        Props = [Vue.ModelPropName(CountModel)],
                         Emits = [CountUpdate],
                         Setup = Setup
                     });
 
                     private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
                     {
-                        var model = Vue3.UseModel(props, CountModel, new VueModelOptions<int>
+                        var model = Vue.UseModel(props, CountModel, new VueModelOptions<int>
                         {
                             Get = Normalize,
                             Set = Normalize
@@ -10499,7 +10499,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10541,7 +10541,7 @@ function Normalize(value) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10554,20 +10554,20 @@ function Normalize(value) {
                 [ECMAScriptModule("components/counter-model-emit.mjs")]
                 public static class CounterModule
                 {
-                    private static readonly VueModelName<CounterProps, int> CountModel = Vue3.ModelName<CounterProps, int>("count");
-                    private static readonly string CountUpdate = Vue3.ModelUpdateEventName(CountModel);
+                    private static readonly VueModelName<CounterProps, int> CountModel = Vue.ModelName<CounterProps, int>("count");
+                    private static readonly string CountUpdate = Vue.ModelUpdateEventName(CountModel);
 
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        Props = [Vue3.ModelPropName(CountModel)],
+                        Props = [Vue.ModelPropName(CountModel)],
                         Emits = [CountUpdate],
                         Setup = Setup
                     });
 
                     private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
                     {
-                        var model = Vue3.UseModel(props, CountModel);
+                        var model = Vue.UseModel(props, CountModel);
                         context.Emit(CountModel, model.Value);
                         return () => H("button", model.Value);
                     }
@@ -10580,7 +10580,7 @@ function Normalize(value) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10620,7 +10620,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10639,7 +10639,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter-view.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent<CounterProps> Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent<CounterProps> Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Props = ["modelValue"],
@@ -10649,7 +10649,7 @@ function Setup(props, context) {
 
                     private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
                     {
-                        var model = Vue3.UseModel<int>(props, "modelValue");
+                        var model = Vue.UseModel<int>(props, "modelValue");
                         var modifiers = model.GetModifiers<CounterModifiers>();
                         return () => H("button", modifiers.Trimmed == true ? model.Value : 0);
                     }
@@ -10662,7 +10662,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10700,7 +10700,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10719,7 +10719,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PanelView",
                         Setup = Setup
@@ -10727,8 +10727,8 @@ function Setup(props, context) {
 
                     private static VueRenderCallback Setup()
                     {
-                        var attrs = Vue3.UseAttrs<PanelAttrs>();
-                        var slots = Vue3.UseSlots<PanelSlots>();
+                        var attrs = Vue.UseAttrs<PanelAttrs>();
+                        var slots = Vue.UseSlots<PanelSlots>();
                         return () => H("section", attrs.Title == "ready" ? slots.Default() : H("span", "empty"));
                     }
                 }
@@ -10740,7 +10740,7 @@ function Setup(props, context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10772,14 +10772,14 @@ function Setup() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PanelView",
                         Setup = Setup
@@ -10787,7 +10787,7 @@ function Setup() {
 
                     private static VueRenderCallback Setup()
                     {
-                        var attrs = Vue3.UseAttrs();
+                        var attrs = Vue.UseAttrs();
                         return () => H("input", new VueObject
                         {
                             For = attrs.For,
@@ -10810,7 +10810,7 @@ function Setup() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10852,7 +10852,7 @@ function Setup() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -10865,7 +10865,7 @@ function Setup() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PanelView",
                         Setup = Setup
@@ -10873,8 +10873,8 @@ function Setup() {
 
                     private static VueRenderCallback Setup()
                     {
-                        var attrs = Vue3.UseAttrs<VueAttributeListeners>();
-                        var slots = Vue3.UseSlots<VueScopedSlots<RowScope>>();
+                        var attrs = Vue.UseAttrs<VueAttributeListeners>();
+                        var slots = Vue.UseSlots<VueScopedSlots<RowScope>>();
                         return () => H("section", new IVNode[]
                         {
                             H("button", new VueObject
@@ -10897,7 +10897,7 @@ function Setup() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10929,14 +10929,14 @@ function Setup() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "PanelView",
                         Props = ["title", "active"],
@@ -10957,7 +10957,7 @@ function Setup() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -10993,7 +10993,7 @@ function Setup() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11012,7 +11012,7 @@ function Setup() {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Setup = Setup
@@ -11032,7 +11032,7 @@ function Setup() {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11064,7 +11064,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11083,7 +11083,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView",
                         Setup = SetupChild
@@ -11112,7 +11112,7 @@ function Setup(props, context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11149,7 +11149,7 @@ function SetupChild(props, context) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11158,7 +11158,7 @@ function SetupChild(props, context) {
                 [ECMAScriptModule("components/empty.mjs")]
                 public static class EmptyModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<EmptyProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<EmptyProps>
                     {
                         Name = "EmptyView",
                         Setup = Setup
@@ -11177,7 +11177,7 @@ function SetupChild(props, context) {
             "EmptyModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11209,7 +11209,7 @@ function Setup(props, context) {
             using System.ComponentModel;
             using ECMAScript;
             using Jazor.ComplierTest;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11222,7 +11222,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new TestShiftedContractComponentOptions<int, CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new TestShiftedContractComponentOptions<int, CounterProps>
                     {
                         Name = "CounterView",
                         Bootstrap = Setup
@@ -11242,7 +11242,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(TestShiftedContractComponentOptions<,>).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
@@ -11281,7 +11281,7 @@ function Setup(props, context) {
             using System.ComponentModel;
             using ECMAScript;
             using Jazor.ComplierTest;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11294,7 +11294,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new TestInheritedContractComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new TestInheritedContractComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Setup = Setup
@@ -11314,7 +11314,7 @@ function Setup(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(TestInheritedContractComponentOptions<>).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
@@ -11352,7 +11352,7 @@ function Setup(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11365,7 +11365,7 @@ function Setup(props, context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ChildView"
                     });
@@ -11384,7 +11384,7 @@ function Setup(props, context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11415,14 +11415,14 @@ function RenderBody() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ChildView"
                     });
@@ -11444,7 +11444,7 @@ function RenderBody() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11475,7 +11475,7 @@ function RenderBody() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11487,7 +11487,7 @@ function RenderBody() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions
                     {
                         Name = "ChildView"
                     });
@@ -11506,7 +11506,7 @@ function RenderBody() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11538,7 +11538,7 @@ function RenderBody() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11551,7 +11551,7 @@ function RenderBody() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions<ChildProps>
                     {
                         Name = "ChildView",
                         Setup = SetupChild
@@ -11574,7 +11574,7 @@ function RenderBody() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11611,7 +11611,7 @@ function SetupChild(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11630,7 +11630,7 @@ function SetupChild(props, context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions<ChildProps>
                     {
                         Name = "ChildView",
                         Setup = SetupChild
@@ -11653,7 +11653,7 @@ function SetupChild(props, context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11689,7 +11689,7 @@ function SetupChild(props, context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11702,7 +11702,7 @@ function SetupChild(props, context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView",
                         Emits = ["ready"],
@@ -11732,7 +11732,7 @@ function SetupChild(props, context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11774,7 +11774,7 @@ function SetupChild(context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11787,7 +11787,7 @@ function SetupChild(context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView",
                         Setup = SetupChild
@@ -11816,7 +11816,7 @@ function SetupChild(context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11853,7 +11853,7 @@ function SetupChild(context) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11875,7 +11875,7 @@ function SetupChild(context) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView",
                         Setup = SetupChild
@@ -11909,7 +11909,7 @@ function SetupChild(context) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -11949,7 +11949,7 @@ function SetupChild(props, context) {
         var code = """
             using ECMAScript;
             using Jazor.ComplierTest;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -11958,7 +11958,7 @@ function SetupChild(props, context) {
                 [ECMAScriptModule("components/counter.mjs")]
                 public static class CounterModule
                 {
-                    public static IVueComponent Component = Vue3.DefineComponent(new TestInheritedContractComponentOptions<CounterProps>
+                    public static IVueComponent Component = Vue.DefineComponent(new TestInheritedContractComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
                         Setup = Setup
@@ -11979,7 +11979,7 @@ function SetupChild(props, context) {
             "CounterModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(TestInheritedContractComponentOptions<>).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
@@ -12002,7 +12002,7 @@ function SetupChild(props, context) {
         var code = """
             using ECMAScript;
             using ECMAScript.Vuetify;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12011,7 +12011,7 @@ function SetupChild(props, context) {
                 {
                     public static VueComponentPublicInstance Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use(Vuetify.CreateVuetify(new VuetifyOptions
                         {
                             Components = new VuetifyComponentRegistry
@@ -12040,7 +12040,7 @@ function SetupChild(props, context) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vuetify.Vuetify).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
@@ -12080,7 +12080,7 @@ export function Boot(component) {
         var code = """
             using ECMAScript;
             using ECMAScript.Vuetify;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12088,12 +12088,12 @@ export function Boot(component) {
                 public static class AppModule
                 {
                     public static IVueComponent Create()
-                        => Vue3.DefineComponent(new VueComponentOptions
+                        => Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "ParentView",
                             Components = new VueComponentRegistry
                             {
-                                ["ChildView"] = Vue3.DefineComponent(new VueComponentOptions
+                                ["ChildView"] = Vue.DefineComponent(new VueComponentOptions
                                 {
                                     Name = "ChildView"
                                 })
@@ -12112,7 +12112,7 @@ export function Boot(component) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vuetify.Vuetify).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
@@ -12145,7 +12145,7 @@ export function Create() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12154,7 +12154,7 @@ export function Create() {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Directive("focus", new VueDirective
                         {
                             Mounted = MountedDirective
@@ -12174,7 +12174,7 @@ export function Create() {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12205,7 +12205,7 @@ function MountedDirective(element, binding, vnode) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12213,7 +12213,7 @@ function MountedDirective(element, binding, vnode) {
                 public static class PanelModule
                 {
                     public static IVueComponent Create()
-                        => Vue3.DefineComponent(new VueComponentOptions
+                        => Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "PanelView",
                             Directives = new VueDirectiveRegistry
@@ -12238,7 +12238,7 @@ function MountedDirective(element, binding, vnode) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12268,7 +12268,7 @@ function ApplyColor(element, binding, vnode) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12277,7 +12277,7 @@ function ApplyColor(element, binding, vnode) {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Directive("focus", ApplyFocus);
                     }
 
@@ -12294,7 +12294,7 @@ function ApplyColor(element, binding, vnode) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12325,7 +12325,7 @@ function ApplyFocus(element, binding) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12334,7 +12334,7 @@ function ApplyFocus(element, binding) {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Directive<string>("colorize", ApplyColor);
                     }
 
@@ -12351,7 +12351,7 @@ function ApplyFocus(element, binding) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12382,7 +12382,7 @@ function ApplyColor(element, binding) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12390,7 +12390,7 @@ function ApplyColor(element, binding) {
                 public static class PanelModule
                 {
                     public static IVueComponent Create()
-                        => Vue3.DefineComponent(new VueComponentOptions
+                        => Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "PanelView",
                             Directives = new VueDirectiveRegistry
@@ -12412,7 +12412,7 @@ function ApplyColor(element, binding) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12442,7 +12442,7 @@ function ApplyFocus(element, binding) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12452,7 +12452,7 @@ function ApplyFocus(element, binding) {
                     public static IVueComponent Create()
                     {
                         var key = "Focus";
-                        return Vue3.DefineComponent(new VueComponentOptions
+                        return Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "PanelView",
                             Directives = new VueDirectiveRegistry
@@ -12475,7 +12475,7 @@ function ApplyFocus(element, binding) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12488,7 +12488,7 @@ function ApplyFocus(element, binding) {
         var converter = new AstConverter(moduleSymbol, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VueDirectiveRegistry");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VueDirectiveRegistry");
     }
 
     [TestMethod]
@@ -12496,7 +12496,7 @@ function ApplyFocus(element, binding) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12517,9 +12517,9 @@ function ApplyFocus(element, binding) {
                     {
                         var button = H("button", new VueObject
                         {
-                            ["onClick"] = Vue3.WithModifiers(OnClick, "stop", "prevent")
+                            ["onClick"] = Vue.WithModifiers(OnClick, "stop", "prevent")
                         }, "Save");
-                        return Vue3.WithDirectives(
+                        return Vue.WithDirectives(
                             button,
                             new VueDirectiveArguments(Focus),
                             new VueDirectiveArguments<string>(Colorize, "red", "background", new VueDirectiveModifierBag
@@ -12550,7 +12550,7 @@ function ApplyFocus(element, binding) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12587,7 +12587,7 @@ function OnClick() { }
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12595,7 +12595,7 @@ function OnClick() { }
                 public static class PanelModule
                 {
                     public static IVueComponent Create()
-                        => Vue3.DefineComponent(new VueComponentOptions
+                        => Vue.DefineComponent(new VueComponentOptions
                         {
                             Name = "PanelView",
                             Directives = new VueDirectiveRegistry
@@ -12617,7 +12617,7 @@ function OnClick() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12647,7 +12647,7 @@ function ApplyColor(element, binding) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12656,7 +12656,7 @@ function ApplyColor(element, binding) {
                 {
                     public static void Boot(IVueComponent component, VuePlugin plugin)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use(plugin, new VuePluginOptions
                         {
                             ["feature"] = true,
@@ -12675,7 +12675,7 @@ function ApplyColor(element, binding) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12703,7 +12703,7 @@ export function Boot(component, plugin) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12713,7 +12713,7 @@ export function Boot(component, plugin) {
                     public static void Boot(IVueComponent component, VuePlugin plugin)
                     {
                         var key = "feature";
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use(plugin, new VuePluginOptions
                         {
                             [key] = true
@@ -12728,7 +12728,7 @@ export function Boot(component, plugin) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12741,7 +12741,7 @@ export function Boot(component, plugin) {
         var converter = new AstConverter(appModule, semanticModel);
         var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
         StringAssert.Contains(exception.Message, "unsupported dynamic object key");
-        StringAssert.Contains(exception.Message, "ECMAScript.Vue3.VuePluginOptions");
+        StringAssert.Contains(exception.Message, "ECMAScript.Vue.VuePluginOptions");
     }
 
     [TestMethod]
@@ -12749,7 +12749,7 @@ export function Boot(component, plugin) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12758,7 +12758,7 @@ export function Boot(component, plugin) {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use(new VuePlugin
                         {
                             Install = InstallPlugin
@@ -12778,7 +12778,7 @@ export function Boot(component, plugin) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12809,7 +12809,7 @@ function InstallPlugin(app) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12823,7 +12823,7 @@ function InstallPlugin(app) {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use<FeaturePluginOptions>(InstallPlugin, new FeaturePluginOptions
                         {
                             FeatureEnabled = true
@@ -12843,7 +12843,7 @@ function InstallPlugin(app) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12874,7 +12874,7 @@ function InstallPlugin(app, options) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12888,7 +12888,7 @@ function InstallPlugin(app, options) {
                 {
                     public static void Boot(IVueComponent component)
                     {
-                        var app = Vue3.CreateApp(component);
+                        var app = Vue.CreateApp(component);
                         app.Use(new VuePlugin<FeaturePluginOptions>
                         {
                             Install = InstallPlugin
@@ -12911,7 +12911,7 @@ function InstallPlugin(app, options) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -12943,7 +12943,7 @@ function InstallPlugin(app, options) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -12958,8 +12958,8 @@ function InstallPlugin(app, options) {
                 {
                     public static IVNode Boot(IVueComponent component, IVNode vnode, VueProps props, VueObject attrs, VueShallowRef<int> count)
                     {
-                        var app = Vue3.CreateApp(component);
-                        var runtimeVersion = Vue3.Version;
+                        var app = Vue.CreateApp(component);
+                        var runtimeVersion = Vue.Version;
                         var appVersion = app.Version;
                         app.OnUnmount(Cleanup);
                         app.Mixin(new VueComponentOptions
@@ -12967,40 +12967,40 @@ function InstallPlugin(app, options) {
                             Name = "SharedMixin"
                         });
                         var message = app.RunWithContext(GetMessage);
-                        var merged = Vue3.MergeProps(props, attrs);
-                        var cloned = Vue3.CloneVNode(vnode, merged);
-                        var cloneOnly = Vue3.CloneVNode(cloned);
-                        var isVNodeValue = Vue3.IsVNode(cloneOnly);
-                        var isRefValue = Vue3.IsRef(count);
-                        var current = Vue3.Unref(count);
-                        Vue3.TriggerRef(count);
-                        var state = Vue3.ShallowReactive(new LocalState { Value = current });
-                        var readonlyState = Vue3.ShallowReadonly(state);
-                        var raw = Vue3.ToRaw(readonlyState);
-                        var stable = Vue3.MarkRaw(raw);
-                        var proxy = Vue3.IsProxy(state);
-                        var reactive = Vue3.IsReactive(state);
-                        var readonlyFlag = Vue3.IsReadonly(readonlyState);
-                        var hasContext = Vue3.HasInjectionContext();
-                        var tick = Vue3.NextTick();
-                        var tickWithCallback = Vue3.NextTick(Cleanup);
-                        var setupAttrs = Vue3.UseAttrs();
-                        var setupSlots = Vue3.UseSlots();
-                        var panelRef = Vue3.UseTemplateRef<HTMLDivElement>("panel");
-                        var generatedId = Vue3.UseId();
-                        Vue3.WatchPostEffect(Cleanup);
-                        Vue3.WatchSyncEffect(Cleanup);
-                        Vue3.OnBeforeMount(Cleanup);
-                        Vue3.OnBeforeUpdate(Cleanup);
-                        Vue3.OnBeforeUnmount(Cleanup);
-                        Vue3.OnErrorCaptured(CaptureError);
-                        Vue3.OnActivated(Cleanup);
-                        Vue3.OnDeactivated(Cleanup);
-                        Vue3.OnRenderTracked(OnDebug);
-                        Vue3.OnRenderTriggered(OnDebug);
-                        Vue3.OnServerPrefetch(Prefetch);
-                        var resolved = Vue3.ResolveComponent("ChildView");
-                        var directive = Vue3.ResolveDirective("focus");
+                        var merged = Vue.MergeProps(props, attrs);
+                        var cloned = Vue.CloneVNode(vnode, merged);
+                        var cloneOnly = Vue.CloneVNode(cloned);
+                        var isVNodeValue = Vue.IsVNode(cloneOnly);
+                        var isRefValue = Vue.IsRef(count);
+                        var current = Vue.Unref(count);
+                        Vue.TriggerRef(count);
+                        var state = Vue.ShallowReactive(new LocalState { Value = current });
+                        var readonlyState = Vue.ShallowReadonly(state);
+                        var raw = Vue.ToRaw(readonlyState);
+                        var stable = Vue.MarkRaw(raw);
+                        var proxy = Vue.IsProxy(state);
+                        var reactive = Vue.IsReactive(state);
+                        var readonlyFlag = Vue.IsReadonly(readonlyState);
+                        var hasContext = Vue.HasInjectionContext();
+                        var tick = Vue.NextTick();
+                        var tickWithCallback = Vue.NextTick(Cleanup);
+                        var setupAttrs = Vue.UseAttrs();
+                        var setupSlots = Vue.UseSlots();
+                        var panelRef = Vue.UseTemplateRef<HTMLDivElement>("panel");
+                        var generatedId = Vue.UseId();
+                        Vue.WatchPostEffect(Cleanup);
+                        Vue.WatchSyncEffect(Cleanup);
+                        Vue.OnBeforeMount(Cleanup);
+                        Vue.OnBeforeUpdate(Cleanup);
+                        Vue.OnBeforeUnmount(Cleanup);
+                        Vue.OnErrorCaptured(CaptureError);
+                        Vue.OnActivated(Cleanup);
+                        Vue.OnDeactivated(Cleanup);
+                        Vue.OnRenderTracked(OnDebug);
+                        Vue.OnRenderTriggered(OnDebug);
+                        Vue.OnServerPrefetch(Prefetch);
+                        var resolved = Vue.ResolveComponent("ChildView");
+                        var directive = Vue.ResolveDirective("focus");
                         return cloneOnly;
                     }
 
@@ -13028,7 +13028,7 @@ function InstallPlugin(app, options) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -13106,7 +13106,7 @@ function Prefetch() {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -13117,7 +13117,7 @@ function Prefetch() {
                 {
                     public static CustomElementConstructor Boot()
                     {
-                        var elementCtor = Vue3.DefineCustomElement(new VueComponentOptions
+                        var elementCtor = Vue.DefineCustomElement(new VueComponentOptions
                         {
                             Name = "UserBadge",
                             Render = Render
@@ -13132,15 +13132,15 @@ function Prefetch() {
                             },
                             Nonce = "nonce-1"
                         });
-                        var typedCtor = Vue3.DefineCustomElement(new VueComponentOptions<BadgeProps>
+                        var typedCtor = Vue.DefineCustomElement(new VueComponentOptions<BadgeProps>
                         {
                             Name = "TypedBadge",
                             Props = ["label"],
                             Emits = [],
                             Setup = Setup
                         });
-                        var host = Vue3.UseHost();
-                        var shadow = Vue3.UseShadowRoot();
+                        var host = Vue.UseHost();
+                        var shadow = Vue.UseShadowRoot();
                         Global.Window.CustomElements.Define("user-badge", elementCtor);
                         return elementCtor;
                     }
@@ -13164,7 +13164,7 @@ function Prefetch() {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -13217,7 +13217,7 @@ function ConfigureElementApp(app) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -13232,7 +13232,7 @@ function ConfigureElementApp(app) {
                 {
                     public static CustomElementConstructor Boot()
                     {
-                        var elementCtor = Vue3.DefineCustomElement(new VueCustomElementComponentOptions<BadgeProps>
+                        var elementCtor = Vue.DefineCustomElement(new VueCustomElementComponentOptions<BadgeProps>
                         {
                             Name = "UserBadge",
                             Props = ["label"],
@@ -13243,7 +13243,7 @@ function ConfigureElementApp(app) {
                             ShadowRoot = false,
                             Nonce = "nonce-1"
                         });
-                        var host = Vue3.UseHost<HTMLElement>();
+                        var host = Vue.UseHost<HTMLElement>();
                         Global.Window.CustomElements.Define("user-badge", elementCtor);
                         return elementCtor;
                     }
@@ -13270,7 +13270,7 @@ function ConfigureElementApp(app) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -13321,7 +13321,7 @@ function ConfigureElementApp(app) {
             using System.ComponentModel;
             using ECMAScript;
             using System;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -13342,17 +13342,17 @@ function ConfigureElementApp(app) {
                 {
                     public static int Boot()
                     {
-                        var count = Vue3.Ref(1);
-                        var writable = Vue3.Computed(new Vue3.VueWritableComputedOptions<int>
+                        var count = Vue.Ref(1);
+                        var writable = Vue.Computed(new Vue.VueWritableComputedOptions<int>
                         {
                             Get = Read,
                             Set = Write
                         });
-                        var readonlyCount = Vue3.Computed(Read);
-                        var readonlyHandle = Vue3.Watch(readonlyCount, OnCountChanged);
-                        var handle = Vue3.Watch(count, OnCountChanged, new Vue3.VueWatchOptions
+                        var readonlyCount = Vue.Computed(Read);
+                        var readonlyHandle = Vue.Watch(readonlyCount, OnCountChanged);
+                        var handle = Vue.Watch(count, OnCountChanged, new Vue.VueWatchOptions
                         {
-                            Flush = Vue3.VueWatchFlush.Post,
+                            Flush = Vue.VueWatchFlush.Post,
                             Immediate = true,
                             Deep = 2,
                             Once = true,
@@ -13362,44 +13362,44 @@ function ConfigureElementApp(app) {
                         handle.Pause();
                         handle.Resume();
                         handle.Stop();
-                        var effect = Vue3.WatchEffect(RegisterCleanup, new Vue3.VueWatchEffectOptions
+                        var effect = Vue.WatchEffect(RegisterCleanup, new Vue.VueWatchEffectOptions
                         {
-                            Flush = Vue3.VueWatchFlush.Sync,
+                            Flush = Vue.VueWatchFlush.Sync,
                             OnTrack = OnDebug,
                             OnTrigger = OnDebug
                         });
-                        var post = Vue3.WatchPostEffect(RegisterCleanup);
-                        var sync = Vue3.WatchSyncEffect(RegisterCleanup);
-                        Vue3.OnWatcherCleanup(Cleanup, true);
-                        var custom = Vue3.CustomRef<int>(CreateCustomRef);
-                        var normalizedRef = Vue3.ToValue(count);
-                        var normalizedGetter = Vue3.ToValue<int>(Read);
-                        var state = Vue3.Reactive(new LocalState { Value = normalizedRef });
-                        var stateHandle = Vue3.Watch(state, OnStateChanged, new Vue3.VueWatchOptions
+                        var post = Vue.WatchPostEffect(RegisterCleanup);
+                        var sync = Vue.WatchSyncEffect(RegisterCleanup);
+                        Vue.OnWatcherCleanup(Cleanup, true);
+                        var custom = Vue.CustomRef<int>(CreateCustomRef);
+                        var normalizedRef = Vue.ToValue(count);
+                        var normalizedGetter = Vue.ToValue<int>(Read);
+                        var state = Vue.Reactive(new LocalState { Value = normalizedRef });
+                        var stateHandle = Vue.Watch(state, OnStateChanged, new Vue.VueWatchOptions
                         {
                             Deep = true
                         });
-                        var multi = Vue3.Watch(new IVueRef<int>[] { count, count }, OnCountSourcesChanged, new Vue3.VueWatchOptions
+                        var multi = Vue.Watch(new IVueRef<int>[] { count, count }, OnCountSourcesChanged, new Vue.VueWatchOptions
                         {
-                            Flush = Vue3.VueWatchFlush.Pre
+                            Flush = Vue.VueWatchFlush.Pre
                         });
-                        var readonlyMulti = Vue3.Watch(new VueReadonlyRef<int>[] { readonlyCount }, OnCountSourcesChanged);
-                        var getterMultiCleanup = Vue3.Watch(new Func<int>[] { Read, Read }, OnCountSourcesCleanup);
-                        var linked = Vue3.ToRef<LocalState, int>(state, "value");
-                        var linkedWithDefault = Vue3.ToRef<LocalState, int>(state, "missing", 10);
-                        var normalizedPlainRef = Vue3.ToRef<int>(1);
-                        var normalizedExistingRef = Vue3.ToRef<int>(count);
-                        var normalizedGetterRef = Vue3.ToRef<int>(Read);
-                        var refs = Vue3.ToRefs(state);
-                        var typedRefs = Vue3.ToRefs<LocalRefs, LocalState>(state);
-                        var propsRefs = Vue3.ToRefs<LocalRefs>(state);
-                        Vue3.Provide("count", normalizedRef);
-                        var injected = Vue3.Inject("count", 1);
-                        Vue3.VueInjectionKey<int> countKey = Global.SymbolFn("count");
-                        Vue3.Provide(countKey, normalizedRef);
-                        var typedInjected = Vue3.Inject(countKey, Read, true);
-                        var asyncChild = Vue3.DefineAsyncComponent(LoadChild);
-                        var asyncWithOptions = Vue3.DefineAsyncComponent(new Vue3.VueAsyncComponentOptions
+                        var readonlyMulti = Vue.Watch(new VueReadonlyRef<int>[] { readonlyCount }, OnCountSourcesChanged);
+                        var getterMultiCleanup = Vue.Watch(new Func<int>[] { Read, Read }, OnCountSourcesCleanup);
+                        var linked = Vue.ToRef<LocalState, int>(state, "value");
+                        var linkedWithDefault = Vue.ToRef<LocalState, int>(state, "missing", 10);
+                        var normalizedPlainRef = Vue.ToRef<int>(1);
+                        var normalizedExistingRef = Vue.ToRef<int>(count);
+                        var normalizedGetterRef = Vue.ToRef<int>(Read);
+                        var refs = Vue.ToRefs(state);
+                        var typedRefs = Vue.ToRefs<LocalRefs, LocalState>(state);
+                        var propsRefs = Vue.ToRefs<LocalRefs>(state);
+                        Vue.Provide("count", normalizedRef);
+                        var injected = Vue.Inject("count", 1);
+                        Vue.VueInjectionKey<int> countKey = Global.SymbolFn("count");
+                        Vue.Provide(countKey, normalizedRef);
+                        var typedInjected = Vue.Inject(countKey, Read, true);
+                        var asyncChild = Vue.DefineAsyncComponent(LoadChild);
+                        var asyncWithOptions = Vue.DefineAsyncComponent(new Vue.VueAsyncComponentOptions
                         {
                             Loader = LoadChild,
                             Delay = 200,
@@ -13407,11 +13407,11 @@ function ConfigureElementApp(app) {
                             Suspensible = false,
                             OnError = OnAsyncError
                         });
-                        var scope = Vue3.EffectScope(true);
+                        var scope = Vue.EffectScope(true);
                         var scoped = scope.Run(Read);
                         scope.Stop();
-                        var current = Vue3.GetCurrentScope();
-                        Vue3.OnScopeDispose(Cleanup, true);
+                        var current = Vue.GetCurrentScope();
+                        Vue.OnScopeDispose(Cleanup, true);
                         return writable.Value + custom.Value + injected + typedInjected + scoped + normalizedGetter;
                     }
 
@@ -13447,11 +13447,11 @@ function ConfigureElementApp(app) {
                         onCleanup(Cleanup);
                     }
 
-                    private static Vue3.VueCustomRefHandlers<int> CreateCustomRef(Action track, Action trigger)
+                    private static Vue.VueCustomRefHandlers<int> CreateCustomRef(Action track, Action trigger)
                     {
                         track();
                         trigger();
-                        return new Vue3.VueCustomRefHandlers<int>
+                        return new Vue.VueCustomRefHandlers<int>
                         {
                             Get = Read,
                             Set = Write
@@ -13481,7 +13481,7 @@ function ConfigureElementApp(app) {
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()

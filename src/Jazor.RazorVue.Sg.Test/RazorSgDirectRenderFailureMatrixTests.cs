@@ -358,7 +358,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Web;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace RazorVue.FailureMatrix;
 
@@ -381,7 +381,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         using ECMAScript.VueContract;
         using Microsoft.AspNetCore.Components;
         using Microsoft.AspNetCore.Components.Rendering;
-        using static ECMAScript.Vue3;
+        using static ECMAScript.Vue;
 
         namespace RazorVue.FailureMatrix;
 

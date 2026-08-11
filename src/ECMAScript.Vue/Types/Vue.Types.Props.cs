@@ -9,7 +9,7 @@ namespace ECMAScript;
 
 /// <summary>Vue render-function props、attrs、events 和 slots 的结构化类型分片。</summary>
 /// <remarks>这些类型用于静态键和值域约束，最终直接落入 h()/组件调用的对象形状。</remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 	/// <summary>
 	/// 渲染函数属性用的字符串键事件侦听器集合。键为最终 Vue 侦听器属性名（如 <c>onClick</c>），值为无载荷回调。

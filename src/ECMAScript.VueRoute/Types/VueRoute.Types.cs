@@ -11,7 +11,7 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterOptions : Vue3.VueProps
+public record RouterOptions : Vue.VueProps
 {
 	/// <summary>
 	/// 路由器使用的历史实现。
@@ -237,7 +237,7 @@ public sealed class RouteMetaValue
 	/// Implicit conversion from a Vue props object to a route meta value.
 	/// </summary>
 	/// <param name="value">要转换的 Vue 属性对象。The Vue props object to convert.</param>
-	public extern static implicit operator RouteMetaValue(Vue3.VueProps value);
+	public extern static implicit operator RouteMetaValue(Vue.VueProps value);
 
 	/// <summary>
 	/// 从元信息值数组隐式转换为路由元信息值。
@@ -260,7 +260,7 @@ public sealed class RouteMetaValue
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteMeta : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteMeta : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按字符串键获取或设置元信息值。
@@ -351,7 +351,7 @@ public record RouteMeta : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record HistoryState : Vue3.VueProps, System.Collections.IEnumerable
+public record HistoryState : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按字符串键获取或设置历史状态值。
@@ -399,7 +399,7 @@ public record HistoryState : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record LocationQuery : Vue3.VueProps, System.Collections.IEnumerable
+public record LocationQuery : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按键名获取或设置查询参数值。
@@ -431,7 +431,7 @@ public record LocationQuery : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record LocationQueryRaw : Vue3.VueProps, System.Collections.IEnumerable
+public record LocationQueryRaw : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按字符串键获取或设置原始查询参数值。
@@ -479,7 +479,7 @@ public record LocationQueryRaw : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteParams : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteParams : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按键名获取或设置路由参数值。
@@ -511,7 +511,7 @@ public record RouteParams : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteParamsRaw : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteParamsRaw : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按键名获取或设置原始路由参数值。
@@ -543,7 +543,7 @@ public record RouteParamsRaw : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public abstract record RouteLocationOptions : Vue3.VueProps
+public abstract record RouteLocationOptions : Vue.VueProps
 {
 	/// <summary>
 	/// 是否通过替换当前历史条目进行导航。
@@ -713,7 +713,7 @@ public record RouteLocationAsPath : RouteLocationPathRawBase
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public abstract record RouteQueryAndHash : Vue3.VueProps
+public abstract record RouteQueryAndHash : Vue.VueProps
 {
 	/// <summary>
 	/// 原始查询参数。
@@ -810,7 +810,7 @@ public record RouteLocationNamedRaw : LocationAsRelativeRaw
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record PathParserOptions : Vue3.VueProps
+public record PathParserOptions : Vue.VueProps
 {
 	/// <summary>
 	/// 是否对路径匹配区分大小写。
@@ -841,7 +841,7 @@ public record PathParserOptions : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record PathParserKey : Vue3.VueProps
+public record PathParserKey : Vue.VueProps
 {
 	/// <summary>
 	/// 参数名称。
@@ -927,7 +927,7 @@ public abstract class PathParser
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record MatcherLocationAsPath : Vue3.VueProps
+public record MatcherLocationAsPath : Vue.VueProps
 {
 	/// <summary>
 	/// 路径字符串。
@@ -943,7 +943,7 @@ public record MatcherLocationAsPath : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record MatcherLocationAsRelative : Vue3.VueProps
+public record MatcherLocationAsRelative : Vue.VueProps
 {
 	/// <summary>
 	/// 路由参数。
@@ -959,7 +959,7 @@ public record MatcherLocationAsRelative : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record MatcherLocationAsName : Vue3.VueProps
+public record MatcherLocationAsName : Vue.VueProps
 {
 	/// <summary>
 	/// 路由记录名称。
@@ -982,7 +982,7 @@ public record MatcherLocationAsName : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record MatcherLocation : Vue3.VueProps
+public record MatcherLocation : Vue.VueProps
 {
 	/// <summary>
 	/// 路由记录名称。
@@ -1132,7 +1132,7 @@ public abstract class RouteRecordNormalized
 	/// The effect scope of the route record.
 	/// </summary>
 	[Description("@#mods")]
-	public extern Vue3.VueDictionary Mods { get; }
+	public extern Vue.VueDictionary Mods { get; }
 }
 
 /// <summary>
@@ -1490,14 +1490,14 @@ public abstract class RouterHistory
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public abstract record Router : Vue3.VuePlugin
+public abstract record Router : Vue.VuePlugin
 {
 	/// <summary>
 	/// 当前路由位置的浅响应式引用。
 	/// Shallow reactive reference to the current route location.
 	/// </summary>
 	[Description("@#currentRoute")]
-	public extern Vue3.VueShallowRef<RouteLocationNormalizedLoaded> CurrentRoute { get; }
+	public extern Vue.VueShallowRef<RouteLocationNormalizedLoaded> CurrentRoute { get; }
 
 	/// <summary>
 	/// 路由器是否正在监听历史变化。
@@ -1971,7 +1971,7 @@ public abstract class NavigationRedirectError : Error
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
+public record RawRouteComponents : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按视图名称获取或设置原始路由组件。
@@ -1996,7 +1996,7 @@ public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 	/// <param name="key">视图名称。The view name.</param>
 	/// <param name="value">Vue 组件。The Vue component.</param>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, ECMAScript.Vue3.IVueComponent value);
+	public extern void Add(string key, ECMAScript.Vue.IVueComponent value);
 
 	/// <summary>
 	/// 添加具有指定视图名称的组件加载器。
@@ -2021,7 +2021,7 @@ public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteComponents : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按视图名称获取或设置已解析的路由组件。
@@ -2046,7 +2046,7 @@ public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 	/// <param name="key">视图名称。The view name.</param>
 	/// <param name="value">Vue 组件。The Vue component.</param>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, ECMAScript.Vue3.IVueComponent value);
+	public extern void Add(string key, ECMAScript.Vue.IVueComponent value);
 
 	/// <summary>
 	/// 添加具有指定视图名称的组件加载器。
@@ -2071,7 +2071,7 @@ public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record NavigationGuardNextCallbackList : Vue3.VueProps, System.Collections.IEnumerable
+public record NavigationGuardNextCallbackList : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按索引获取或设置导航守卫 next 回调。
@@ -2102,7 +2102,7 @@ public record NavigationGuardNextCallbackList : Vue3.VueProps, System.Collection
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record NavigationGuardNextCallbackMap : Vue3.VueProps, System.Collections.IEnumerable
+public record NavigationGuardNextCallbackMap : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按视图名称获取或设置导航守卫 next 回调列表。
@@ -2134,14 +2134,14 @@ public record NavigationGuardNextCallbackMap : Vue3.VueProps, System.Collections
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteComponentInstanceMap : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteComponentInstanceMap : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按视图名称获取或设置组件公共实例。
 	/// Gets or sets a component public instance by view name.
 	/// </summary>
 	/// <param name="key">视图名称。The view name.</param>
-	public extern Vue3.VueComponentPublicInstance? this[string key] { get; set; }
+	public extern Vue.VueComponentPublicInstance? this[string key] { get; set; }
 
 	/// <summary>
 	/// 添加具有指定视图名称的组件公共实例。
@@ -2150,7 +2150,7 @@ public record RouteComponentInstanceMap : Vue3.VueProps, System.Collections.IEnu
 	/// <param name="key">视图名称。The view name.</param>
 	/// <param name="value">组件公共实例。The component public instance.</param>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, Vue3.VueComponentPublicInstance? value);
+	public extern void Add(string key, Vue.VueComponentPublicInstance? value);
 
 	/// <summary>
 	/// 返回遍历组件实例映射条目的枚举器。
@@ -2166,7 +2166,7 @@ public record RouteComponentInstanceMap : Vue3.VueProps, System.Collections.IEnu
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouteNamedProps : Vue3.VueProps, System.Collections.IEnumerable
+public record RouteNamedProps : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
 	/// 按视图名称获取或设置路由属性配置。
@@ -2200,7 +2200,7 @@ public record RouteNamedProps : Vue3.VueProps, System.Collections.IEnumerable
 	/// <param name="key">视图名称。The view name.</param>
 	/// <param name="value">Vue 属性对象。The Vue props object.</param>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, Vue3.VueProps value);
+	public extern void Add(string key, Vue.VueProps value);
 
 	/// <summary>
 	/// 添加属性解析函数作为路由属性配置。
@@ -2225,7 +2225,7 @@ public record RouteNamedProps : Vue3.VueProps, System.Collections.IEnumerable
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public abstract record RouteRecordBase : Vue3.VueProps
+public abstract record RouteRecordBase : Vue.VueProps
 {
 	/// <summary>
 	/// 路由记录的名称。
@@ -2491,7 +2491,7 @@ public enum RouterLinkAriaCurrentValue
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterLinkOptions : Vue3.VueProps
+public record RouterLinkOptions : Vue.VueProps
 {
 	/// <summary>
 	/// 链接的目标路由位置。
@@ -2559,7 +2559,7 @@ public record RouterLinkProps : RouterLinkOptions
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record UseLinkOptions : Vue3.VueProps
+public record UseLinkOptions : Vue.VueProps
 {
 	/// <summary>
 	/// <c>useLink()</c> 接受的链接目标。Vue Router 官方同时接受
@@ -2608,28 +2608,28 @@ public abstract class UseLinkReturn
 	/// Reactive computed reference to the resolved route location.
 	/// </summary>
 	[Description("@#route")]
-	public extern Vue3.VueComputedRef<RouteLocationResolved> Route { get; }
+	public extern Vue.VueComputedRef<RouteLocationResolved> Route { get; }
 
 	/// <summary>
 	/// 链接 href 的响应式计算引用。
 	/// Reactive computed reference to the link href.
 	/// </summary>
 	[Description("@#href")]
-	public extern Vue3.VueComputedRef<string> Href { get; }
+	public extern Vue.VueComputedRef<string> Href { get; }
 
 	/// <summary>
 	/// 链接是否活跃（部分匹配）的响应式计算引用。
 	/// Reactive computed reference indicating whether the link is active (partial match).
 	/// </summary>
 	[Description("@#isActive")]
-	public extern Vue3.VueComputedRef<bool> IsActive { get; }
+	public extern Vue.VueComputedRef<bool> IsActive { get; }
 
 	/// <summary>
 	/// 链接是否精确活跃（完全匹配）的响应式计算引用。
 	/// Reactive computed reference indicating whether the link is exactly active (exact match).
 	/// </summary>
 	[Description("@#isExactActive")]
-	public extern Vue3.VueComputedRef<bool> IsExactActive { get; }
+	public extern Vue.VueComputedRef<bool> IsExactActive { get; }
 
 	/// <summary>
 	/// 触发链接导航。
@@ -2672,7 +2672,7 @@ public abstract class UseLinkResult : UseLinkReturn
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record ScrollPositionCoordinates : Vue3.VueProps
+public record ScrollPositionCoordinates : Vue.VueProps
 {
 	/// <summary>
 	/// 水平滚动偏移（像素）。
@@ -2718,7 +2718,7 @@ public record ScrollPositionElement : ScrollPositionCoordinates
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record ScrollPositionNormalized : Vue3.VueProps
+public record ScrollPositionNormalized : Vue.VueProps
 {
 	/// <summary>
 	/// 水平滚动偏移（像素）。
@@ -2929,7 +2929,7 @@ public readonly union RouterScrollHandler(RouterScrollBehavior, AsyncRouterScrol
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterLinkSlots : Vue3.VueSlots
+public record RouterLinkSlots : Vue.VueSlots
 {
 	/// <summary>
 	/// 默认作用域插槽，用于自定义链接内容渲染。
@@ -2945,7 +2945,7 @@ public record RouterLinkSlots : Vue3.VueSlots
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterLinkSlotScope : Vue3.VueProps
+public record RouterLinkSlotScope : Vue.VueProps
 {
 	/// <summary>
 	/// 已解析的路由位置。
@@ -2989,7 +2989,7 @@ public record RouterLinkSlotScope : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterViewProps : Vue3.VueProps
+public record RouterViewProps : Vue.VueProps
 {
 	/// <summary>
 	/// 要渲染的命名视图名称。
@@ -3012,14 +3012,14 @@ public record RouterViewProps : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterViewSlotScope : Vue3.VueProps
+public record RouterViewSlotScope : Vue.VueProps
 {
 	/// <summary>
 	/// 匹配的组件的 VNode。
 	/// The VNode of the matched component.
 	/// </summary>
 	[Description("@#Component")]
-	public Vue3.IVNode? Component { get; init; }
+	public Vue.IVNode? Component { get; init; }
 
 	/// <summary>
 	/// 已加载的规范化路由位置。
@@ -3035,7 +3035,7 @@ public record RouterViewSlotScope : Vue3.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record RouterViewSlots : Vue3.VueSlots
+public record RouterViewSlots : Vue.VueSlots
 {
 	/// <summary>
 	/// 默认作用域插槽，用于自定义路由视图内容渲染。

@@ -16,7 +16,7 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo;
 
@@ -31,7 +31,7 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
             [ECMAScriptModule("components/inherited-slot.mjs")]
             public static class EditorModule
             {
-                public static IVueSlotComponent<EditorSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<EditorSlots>
+                public static IVueSlotComponent<EditorSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<EditorSlots>
                 {
                     Name = "ChildView"
                 });
@@ -80,7 +80,7 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var diagnostics = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

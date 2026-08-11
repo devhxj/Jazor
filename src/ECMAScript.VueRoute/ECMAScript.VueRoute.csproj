@@ -23,7 +23,7 @@
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
   </ItemGroup>
 
   <Import Project="..\Packaging\JazorPackage.targets" />

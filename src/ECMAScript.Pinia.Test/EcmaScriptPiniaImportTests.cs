@@ -27,8 +27,8 @@ public sealed class EcmaScriptPiniaImportTests
 				MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Vue3).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Vue).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(Pinia).Assembly.Location)
 			]),
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -152,7 +152,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -222,7 +222,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -293,7 +293,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -369,7 +369,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -450,7 +450,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -510,7 +510,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -621,7 +621,7 @@ public sealed class EcmaScriptPiniaImportTests
 				{
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -661,7 +661,7 @@ public sealed class EcmaScriptPiniaImportTests
 			{
 				[ECMAScript]
 				[Description("@#")]
-				public sealed record CounterSetupStore : Vue3.VueProps
+				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public int Count { get; init; }
 
@@ -709,7 +709,7 @@ public sealed class EcmaScriptPiniaImportTests
 			{
 				[ECMAScript]
 				[Description("@#")]
-				public sealed record CounterSetupStore : Vue3.VueProps
+				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public Action<int, int, int, int> Report { get; init; } = default!;
 
@@ -760,14 +760,14 @@ public sealed class EcmaScriptPiniaImportTests
 			{
 				[ECMAScript]
 				[Description("@#")]
-				public sealed record CounterSetupStore : Vue3.VueProps
+				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public Action Increment { get; init; } = default!;
 				}
 
 				[ECMAScript]
 				[Description("@#")]
-				public sealed record CounterSetupActions : Vue3.VueProps
+				public sealed record CounterSetupActions : Vue.VueProps
 				{
 					public Action Increment { get; init; } = default!;
 				}
@@ -1222,7 +1222,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public bool? Persist { get; init; }
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1273,7 +1273,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public bool? Persist { get; init; }
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1283,7 +1283,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public string PersistedAt { get; init; } = "";
 				}
 
-				public sealed record CounterPluginOutput : Vue3.VueProps
+				public sealed record CounterPluginOutput : Vue.VueProps
 				{
 					public string MirrorTag { get; init; } = "";
 				}
@@ -1333,7 +1333,7 @@ public sealed class EcmaScriptPiniaImportTests
 				{
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1396,7 +1396,7 @@ public sealed class EcmaScriptPiniaImportTests
 				{
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1457,7 +1457,7 @@ public sealed class EcmaScriptPiniaImportTests
 				{
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1559,7 +1559,7 @@ public sealed class EcmaScriptPiniaImportTests
 				{
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1633,7 +1633,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -1649,7 +1649,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public extern void Increment();
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1714,7 +1714,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -1730,7 +1730,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public extern void Increment();
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
@@ -1740,12 +1740,12 @@ public sealed class EcmaScriptPiniaImportTests
 					public string PersistedAt { get; init; } = "";
 				}
 
-				public sealed record CounterComputed : Vue3.VueProps
+				public sealed record CounterComputed : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}
 
-				public sealed record CounterMethods : Vue3.VueProps
+				public sealed record CounterMethods : Vue.VueProps
 				{
 					public System.Action Increment { get; init; } = default!;
 				}
@@ -1799,7 +1799,7 @@ public sealed class EcmaScriptPiniaImportTests
 			using ECMAScript;
 			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -1831,7 +1831,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public extern string Summary { get; set; }
 				}
 
-				public sealed record MultiStoreComputed : Vue3.VueProps
+				public sealed record MultiStoreComputed : Vue.VueProps
 				{
 					public CounterStore Counter { get; init; } = default!;
 
@@ -1930,7 +1930,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using ECMAScript;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -2047,7 +2047,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using ECMAScript;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -2123,10 +2123,10 @@ public sealed class EcmaScriptPiniaImportTests
 					public static SubscriptionMutationEvents? ReadBaseEvents(SubscriptionMutation<CounterState> mutation)
 						=> mutation.Events;
 
-					public static Vue3.VueDebuggerEvent ReadDirectEvent(SubscriptionMutationDirect<CounterState> mutation)
+					public static Vue.VueDebuggerEvent ReadDirectEvent(SubscriptionMutationDirect<CounterState> mutation)
 						=> mutation.Events;
 
-					public static Vue3.VueDebuggerEvent[] ReadPatchFunctionEvents(SubscriptionMutationPatchFunction<CounterState> mutation)
+					public static Vue.VueDebuggerEvent[] ReadPatchFunctionEvents(SubscriptionMutationPatchFunction<CounterState> mutation)
 						=> mutation.Events;
 
 					public static PiniaStatePatch<CounterState> ReadPatchPayload(SubscriptionMutationPatchObject<CounterState> mutation)
@@ -2257,7 +2257,7 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using ECMAScript;
 			using static ECMAScript.Pinia;
-			using static ECMAScript.Vue3;
+			using static ECMAScript.Vue;
 
 			namespace Demo
 			{
@@ -2267,7 +2267,7 @@ public sealed class EcmaScriptPiniaImportTests
 
 					public string Status { get; set; } = "";
 
-					public Vue3.IVueRef<string> ClientOnlyNote { get; set; } = default!;
+					public Vue.IVueRef<string> ClientOnlyNote { get; set; } = default!;
 				}
 
 				[ECMAScriptModule("stores/hydration-counter.mjs")]
@@ -2433,7 +2433,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public extern void Increment();
 				}
 
-				public sealed record CounterPluginExtensions : Vue3.VueProps
+				public sealed record CounterPluginExtensions : Vue.VueProps
 				{
 					public string AuditTag { get; init; } = "";
 				}

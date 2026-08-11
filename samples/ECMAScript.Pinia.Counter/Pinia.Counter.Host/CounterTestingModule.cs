@@ -2,7 +2,7 @@ using System.ComponentModel;
 using ECMAScript;
 using static ECMAScript.Pinia;
 using static ECMAScript.PiniaTesting;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 

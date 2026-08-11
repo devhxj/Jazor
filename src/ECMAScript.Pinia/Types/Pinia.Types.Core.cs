@@ -9,7 +9,7 @@ public static partial class Pinia
 	/// Pinia store 定义选项包的基础 record。
 	/// Base record for Pinia store-definition option bags.
 	/// </summary>
-	public abstract record DefineStoreOptionsBase : Vue3.VueProps;
+	public abstract record DefineStoreOptionsBase : Vue.VueProps;
 
 	/// <summary>
 	/// 通过 <c>PiniaPluginContext.Options</c> 提供的插件可见 store 定义选项包。
@@ -26,7 +26,7 @@ public static partial class Pinia
 		/// Normalized action declarations visible to plugins.
 		/// </summary>
 		[Description("@#actions")]
-		public Vue3.VueProps Actions { get; init; } = default!;
+		public Vue.VueProps Actions { get; init; } = default!;
 	}
 
 	/// <summary>
@@ -52,7 +52,7 @@ public static partial class Pinia
 		/// Getter declarations bag visible to plugins.
 		/// </summary>
 		[Description("@#getters")]
-		public Vue3.VueProps? Getters { get; init; }
+		public Vue.VueProps? Getters { get; init; }
 
 		/// <summary>
 		/// 插件可见的可选 hydration 钩子。
@@ -72,8 +72,8 @@ public static partial class Pinia
 	/// <typeparam name="TActions">插件可见的类型化 actions 包。The typed actions bag visible to plugins.</typeparam>
 	public record DefineStoreOptionsInPlugin<TState, TGetters, TActions> : DefineStoreOptionsInPlugin<TState>
 		where TState : PiniaStateTree
-		where TGetters : Vue3.VueProps
-		where TActions : Vue3.VueProps
+		where TGetters : Vue.VueProps
+		where TActions : Vue.VueProps
 	{
 		/// <summary>
 		/// 插件可见的强类型 getter 声明包。
@@ -107,21 +107,21 @@ public static partial class Pinia
 
 		/// <summary>
 		/// Getter 声明包。当 store 暴露异构 getter 签名时，
-		/// 请使用类型化的 <see cref="Vue3.VueProps"/> record。
-		/// Getter declarations bag. Use a typed <see cref="Vue3.VueProps"/> record when
+		/// 请使用类型化的 <see cref="Vue.VueProps"/> record。
+		/// Getter declarations bag. Use a typed <see cref="Vue.VueProps"/> record when
 		/// the store exposes heterogeneous getter signatures.
 		/// </summary>
 		[Description("@#getters")]
-		public Vue3.VueProps? Getters { get; init; }
+		public Vue.VueProps? Getters { get; init; }
 
 		/// <summary>
 		/// Action 声明包。当 store 暴露异构 action 签名时，
-		/// 请使用类型化的 <see cref="Vue3.VueProps"/> record。
-		/// Action declarations bag. Use a typed <see cref="Vue3.VueProps"/> record when
+		/// 请使用类型化的 <see cref="Vue.VueProps"/> record。
+		/// Action declarations bag. Use a typed <see cref="Vue.VueProps"/> record when
 		/// the store exposes heterogeneous action signatures.
 		/// </summary>
 		[Description("@#actions")]
-		public Vue3.VueProps? Actions { get; init; }
+		public Vue.VueProps? Actions { get; init; }
 
 		/// <summary>
 		/// 用于 SSR/客户端 hydration 边界的可选 hydration 钩子。
@@ -522,7 +522,7 @@ public static partial class Pinia
 		/// day-to-day authoring path.
 		/// </summary>
 		[Description("@#actions")]
-		public Vue3.VueProps Actions { get; init; } = default!;
+		public Vue.VueProps Actions { get; init; } = default!;
 	}
 
 	/// <summary>
@@ -531,7 +531,7 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TActions">与 setup store 关联的类型化 action 声明。The typed action declarations associated with the setup store.</typeparam>
 	public record DefineSetupStoreOptions<TActions> : DefineSetupStoreOptions
-		where TActions : Vue3.VueProps
+		where TActions : Vue.VueProps
 	{
 		/// <summary>
 		/// 与 setup store 关联的强类型 action 声明。
@@ -545,7 +545,7 @@ public static partial class Pinia
 	/// 强类型 store-state 投影的基础 record。
 	/// Base record for strongly typed store-state projections.
 	/// </summary>
-	public abstract record PiniaStateTree : Vue3.VueProps;
+	public abstract record PiniaStateTree : Vue.VueProps;
 
 	/// <summary>
 	/// 对象形式 <c>$patch({ ... })</c> 负载的基础 record。
@@ -562,7 +562,7 @@ public static partial class Pinia
 	/// <typeparam name="TState">被 patch 的 state record。The state record being patched.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract record PiniaStatePatch<TState> : Vue3.VueProps
+	public abstract record PiniaStatePatch<TState> : Vue.VueProps
 		where TState : PiniaStateTree;
 
 	/// <summary>
@@ -705,7 +705,7 @@ public static partial class Pinia
 		/// Implicitly converts a VueProps to a Pinia value.
 		/// </summary>
 		/// <param name="value">要转换的 VueProps 值。The VueProps value to convert.</param>
-		public extern static implicit operator PiniaValue(Vue3.VueProps value);
+		public extern static implicit operator PiniaValue(Vue.VueProps value);
 
 		/// <summary>
 		/// 从 PiniaValue 数组隐式转换为 Pinia 值。
@@ -748,7 +748,7 @@ public static partial class Pinia
 	/// <c>$subscribe()</c> 的选项。
 	/// Options for <c>$subscribe()</c>.
 	/// </summary>
-	public record SubscribeOptions : Vue3.VueWatchOptions
+	public record SubscribeOptions : Vue.VueWatchOptions
 	{
 		/// <summary>
 		/// 即使当前没有组件正在使用该 store，也保持订阅活跃。
@@ -765,7 +765,7 @@ public static partial class Pinia
 	/// <typeparam name="TStore">正在转换为 refs 的 store 契约。The store contract being converted to refs.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract class StoreRefs<TStore> : Vue3.VueRefs<TStore>
+	public abstract class StoreRefs<TStore> : Vue.VueRefs<TStore>
 		where TStore : class
 	{
 		protected StoreRefs()

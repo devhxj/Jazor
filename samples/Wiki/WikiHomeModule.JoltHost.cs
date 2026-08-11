@@ -1,6 +1,6 @@
 // WikiHomeModule.JoltHost.cs - Jolt 历史宿主 / Retired Jolt Host
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

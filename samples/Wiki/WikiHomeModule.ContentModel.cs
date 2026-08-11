@@ -1,6 +1,6 @@
 // WikiHomeModule.ContentModel.cs - 内容模型 / Content Model
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

@@ -19,7 +19,7 @@ internal static class InitializeHookInstaller
     private static int _platformValidated;
     private static InitializeNativeHook? _hook;
     private static string? _failure;
-    private const string VueRenderCatalogPath = "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs";
+    private const string ArtifactCatalogPath = "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs";
 
     internal static bool TryInstall()
     {
@@ -130,7 +130,7 @@ internal static class InitializeHookInstaller
         outputCompilation = compilation.AddSyntaxTrees(
             runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree)));
         diagnostics = runResult.Diagnostics;
-        if (ContainsVueRenderCatalog(outputCompilation))
+        if (ContainsArtifactCatalog(outputCompilation))
             return result;
 
         // Only a successful final Compilation is a valid lowering input. Razor SG diagnostics
@@ -159,10 +159,10 @@ internal static class InitializeHookInstaller
         return result;
     }
 
-    private static bool ContainsVueRenderCatalog(Compilation compilation)
+    private static bool ContainsArtifactCatalog(Compilation compilation)
         => compilation.SyntaxTrees.Any(static tree => string.Equals(
             tree.FilePath,
-            VueRenderCatalogPath,
+            ArtifactCatalogPath,
             StringComparison.Ordinal));
 
     private static SyntaxTree CreateCatalogSyntaxTree(Compilation compilation, string catalogSource)
@@ -174,6 +174,6 @@ internal static class InitializeHookInstaller
         return CSharpSyntaxTree.ParseText(
             SourceText.From(catalogSource, System.Text.Encoding.UTF8),
             parseOptions,
-            VueRenderCatalogPath);
+            ArtifactCatalogPath);
     }
 }

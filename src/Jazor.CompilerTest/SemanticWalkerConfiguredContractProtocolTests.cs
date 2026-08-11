@@ -91,7 +91,7 @@ public sealed class SemanticWalkerConfiguredContractProtocolTests
             using System.ComponentModel;
             using ECMAScript;
             using Jazor.ComplierTest;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             public record BaseCounterProps : VueProps
             {
@@ -148,7 +148,7 @@ public sealed class SemanticWalkerConfiguredContractProtocolTests
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.PropsAttribute).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(TestShiftedContractComponentOptions<,>).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

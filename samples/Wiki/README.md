@@ -2,7 +2,7 @@
 
 > 定位：使用 Jazor 和 ASP.NET Core 构建文档站点的端到端示例。
 
-Wiki 使用 `ECMAScript.Vue3` 的 C# `H()` authoring、Jazor module 输出和 ASP.NET Core static hosting 实现文档站点。它用于验证站点壳、路由、产物、SEO 元数据和浏览器交互，不是独立的产品线或可编辑 CMS。
+Wiki 使用 `ECMAScript.Vue` 的 C# `H()` authoring、Jazor module 输出和 ASP.NET Core static hosting 实现文档站点。它用于验证站点壳、路由、产物、SEO 元数据和浏览器交互，不是独立的产品线或可编辑 CMS。
 
 ## 结构
 
@@ -42,6 +42,6 @@ smoke 验证路由、产物、首屏元数据、robots/sitemap 和静态资源�
 
 ## 相关文档
 
-- [ECMAScript.Vue3](../../src/ECMAScript.Vue3/README.md)
+- [ECMAScript.Vue](../../src/ECMAScript.Vue/README.md)
 - [产物管线](../../docs/02-architecture/artifact-pipeline.md)
 - [示例总览](../../docs/03-guides/examples.md)

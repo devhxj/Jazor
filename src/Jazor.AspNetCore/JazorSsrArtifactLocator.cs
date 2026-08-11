@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace Jazor.AspNetCore;
 
 /// <summary>Resolves the generated artifact graph and rewrites its browser URLs for the request path base.</summary>
-internal sealed class JazorSsrArtifactLocator
+internal sealed class JazorSSRArtifactLocator
 {
     private const string ArtifactManifestFileName = "jazor-manifest.json";
     private const string BrowserImportMapFileName = "importmap.json";
@@ -21,17 +21,17 @@ internal sealed class JazorSsrArtifactLocator
     };
 
     private readonly IWebHostEnvironment _environment;
-    private readonly JazorSsrOptions _options;
+    private readonly JazorSSROptions _options;
 
-    public JazorSsrArtifactLocator(
+    public JazorSSRArtifactLocator(
         IWebHostEnvironment environment,
-        IOptions<JazorSsrOptions> options)
+        IOptions<JazorSSROptions> options)
     {
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public JazorSsrArtifacts Resolve()
+    public JazorSSRArtifacts Resolve()
     {
         foreach (var candidate in GetArtifactRootCandidates())
         {
@@ -43,7 +43,7 @@ internal sealed class JazorSsrArtifactLocator
                 continue;
             }
 
-            return new JazorSsrArtifacts(
+            return new JazorSSRArtifacts(
                 candidate,
                 Path.Combine(candidate, ArtifactManifestFileName),
                 Path.Combine(candidate, BrowserImportMapFileName),
@@ -59,7 +59,7 @@ internal sealed class JazorSsrArtifactLocator
             "'. Build with Jazor debug output, or enable the SSR release artifact target.");
     }
 
-    public string ReadBrowserImportMap(JazorSsrArtifacts artifacts, PathString pathBase)
+    public string ReadBrowserImportMap(JazorSSRArtifacts artifacts, PathString pathBase)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.BrowserImportMapPath));
         if (!document.RootElement.TryGetProperty("imports", out var importsElement) ||
@@ -86,7 +86,7 @@ internal sealed class JazorSsrArtifactLocator
         return JsonSerializer.Serialize(new { imports }, JsonOptions);
     }
 
-    public IReadOnlyList<string> ReadStylePaths(JazorSsrArtifacts artifacts)
+    public IReadOnlyList<string> ReadStylePaths(JazorSSRArtifacts artifacts)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.AssetManifestPath));
         if (!document.RootElement.TryGetProperty("styles", out var stylesElement) ||
@@ -111,7 +111,7 @@ internal sealed class JazorSsrArtifactLocator
     }
 
     public string CreateBrowserArtifactUrl(
-        JazorSsrArtifacts artifacts,
+        JazorSSRArtifacts artifacts,
         PathString pathBase,
         string relativePath)
     {
@@ -238,7 +238,7 @@ internal sealed class JazorSsrArtifactLocator
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 }
 
-internal sealed record JazorSsrArtifacts(
+internal sealed record JazorSSRArtifacts(
     string RootPath,
     string ApplicationManifestPath,
     string BrowserImportMapPath,

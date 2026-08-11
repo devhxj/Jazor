@@ -34,8 +34,10 @@ public sealed class SdkIntegrationTests
             "Jazor must not install the opt-in RazorVue generator assembly.");
 
         using var vueArchive = ZipFile.OpenRead(package.VuePackagePath);
-        var vueAnalyzerEntries = vueArchive.Entries
+        var vueEntryNames = vueArchive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var vueAnalyzerEntries = vueEntryNames
             .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -47,6 +49,7 @@ public sealed class SdkIntegrationTests
             },
             vueAnalyzerEntries,
             "Jazor.Vue must install only the merged RazorVue analyzer and rely on Jazor for shared dependencies.");
+        CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
     }
 
     [TestMethod]
@@ -157,7 +160,7 @@ public sealed class SdkIntegrationTests
 
         AssertPackageEntries(
             package.PackagePath,
-            "lib/net11.0/ECMAScript.Vue3.dll",
+            "lib/net11.0/ECMAScript.Vue.dll",
             "jazor/vue3/manifest.json",
             "jazor/vue3/dist/vue.runtime.esm-browser.js",
             "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
@@ -220,7 +223,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_Vue3DevtoolsApi_SatisfiesVueRouterAndPiniaDevelopmentImports()
+    public async Task CreateLocalPackage_VueDevtoolsApi_SatisfiesVueRouterAndPiniaDevelopmentImports()
     {
         var package = await LocalPackage.Value;
         using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.PackagePath, "jazor/vue3/manifest.json"));
@@ -251,7 +254,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_TDesignManifest_DeclaresOnlyPackagedAssetsAndVue3()
+    public async Task CreateLocalPackage_TDesignManifest_DeclaresOnlyPackagedAssetsAndVue()
     {
         var package = await LocalPackage.Value;
         using var manifest = JsonDocument.Parse(ReadPackageEntryText(
@@ -440,7 +443,7 @@ public sealed class SdkIntegrationTests
                 $"-p:RestorePackagesPath={package.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release",
-                "-p:JazorSsrEnabled=true"
+                "-p:JazorSSR=true"
             ]);
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
@@ -490,7 +493,7 @@ public sealed class SdkIntegrationTests
                 $"-p:RestorePackagesPath={package.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release",
-                "-p:JazorSsrEnabled=true"
+                "-p:JazorSSR=true"
             ]);
 
         Assert.AreEqual(0, publish.ExitCode, publish.ToString());
@@ -1527,7 +1530,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "AppModule.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             namespace VueRouteReactiveSdkSample;
@@ -1682,7 +1685,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "AppModule.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using static ECMAScript.VueRoute;
 
             namespace VueRouteReactiveBundleSdkSample;
@@ -1976,7 +1979,7 @@ public sealed class SdkIntegrationTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
@@ -2040,7 +2043,7 @@ public sealed class SdkIntegrationTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
@@ -2098,7 +2101,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
@@ -3576,7 +3579,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "Counter.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
@@ -3609,7 +3612,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "PlainText.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;
@@ -3631,7 +3634,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "KeyedList100.razor.cs"),
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
 
             namespace ExternalRazorSgG0Consumer;

@@ -343,7 +343,7 @@ public sealed class UtilBoundaryScenarioTests
             syntaxTrees: [sourceTree],
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -372,7 +372,7 @@ public sealed class UtilBoundaryScenarioTests
         var backingField = namingHost.GetMembers()
             .OfType<IFieldSymbol>()
             .Single(static field => field.AssociatedSymbol?.Name == "Count");
-        var taggedRuntimeUnion = compilation.GetTypeByMetadataName(typeof(ECMAScript.Vue3.VueNumberPair).FullName!)
+        var taggedRuntimeUnion = compilation.GetTypeByMetadataName(typeof(ECMAScript.Vue.VueNumberPair).FullName!)
             ?? throw new InvalidOperationException("VueNumberPair metadata symbol was not available.");
 
         return new UtilSymbolFixture(

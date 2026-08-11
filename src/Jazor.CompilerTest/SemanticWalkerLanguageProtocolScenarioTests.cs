@@ -260,7 +260,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         var script = VisitBlock(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             static class TestClass
             {
@@ -1510,7 +1510,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
                 .AddRange(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

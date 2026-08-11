@@ -1,6 +1,6 @@
 // WikiHomeModule.GettingStarted.cs - 快速开始 / Getting Started
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

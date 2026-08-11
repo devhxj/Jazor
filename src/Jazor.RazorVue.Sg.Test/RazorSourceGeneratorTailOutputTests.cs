@@ -19,7 +19,7 @@ public sealed class RazorTailOutputTests
                     global using ECMAScript;
                     global using Microsoft.AspNetCore.Components;
                     global using Microsoft.AspNetCore.Components.Rendering;
-                    global using static ECMAScript.Vue3;
+                    global using static ECMAScript.Vue;
                     """,
                     parseOptions,
                     "GlobalUsings.g.cs"),
@@ -69,14 +69,17 @@ public sealed class RazorTailOutputTests
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
         StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
-        StringAssert.Contains(catalogSource, "moduleId:");
-        StringAssert.Contains(catalogSource, "descriptorHash:");
-        StringAssert.Contains(catalogSource, "templateHash:");
-        StringAssert.Contains(catalogSource, "logicHash:");
-        StringAssert.Contains(catalogSource, "hmrBoundaryKind:");
+        StringAssert.Contains(catalogSource, "internal static partial class ArtifactCatalog");
+        StringAssert.Contains(catalogSource, "hmrProviderId: \"jazor.vue\"");
+        StringAssert.Contains(catalogSource, "hmrModuleId:");
+        StringAssert.Contains(catalogSource, "hmrPayload:");
+        StringAssert.Contains(catalogSource, "descriptorHash");
+        StringAssert.Contains(catalogSource, "templateHash");
+        StringAssert.Contains(catalogSource, "logicHash");
+        StringAssert.Contains(catalogSource, "boundaryKind");
         StringAssert.Contains(catalogSource, "function $renderDirect()");
         Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal));
-        Assert.IsFalse(catalogSource.Contains(".vue", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(catalogSource.Contains("\"module-source\"", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -109,7 +112,7 @@ public sealed class RazorTailOutputTests
                 using ECMAScript;
                 using Microsoft.AspNetCore.Components;
                 using Microsoft.AspNetCore.Components.Rendering;
-                using static ECMAScript.Vue3;
+                using static ECMAScript.Vue;
 
                 namespace Demo.Pages;
 
@@ -156,7 +159,7 @@ public sealed class RazorTailOutputTests
                 using ECMAScript;
                 using Microsoft.AspNetCore.Components;
                 using Microsoft.AspNetCore.Components.Rendering;
-                using static ECMAScript.Vue3;
+                using static ECMAScript.Vue;
 
                 namespace Demo.Pages;
 

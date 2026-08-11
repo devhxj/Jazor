@@ -7,10 +7,19 @@
 ## 职责
 
 - 读取根程序集与显式引用程序集。
-- 收集 ECMAScript module catalog、`Jazor.Generated.VueRenderCatalog`、CLR runtime catalog 与 Razor-to-Vue runtime asset。
+- 收集 ECMAScript module catalog、`Jazor.Generated.ArtifactCatalog`、CLR runtime catalog 与 adapter-owned runtime provider。
 - 写入 `.mjs`、可选 `.mjs.map` 与 schema-v1 `jazor-manifest.json`。
 - 在受控输出范围内清理过期模块和 source map。
 - 通过 Netpack 打包应用模块，同时保留本地包提供的 library ESM 与 chained source map。
+
+## Adapter 契约
+
+Emit 只识别两个结构性数据 carrier，不引用 Vue、React 或其运行时程序集：
+
+- `Jazor.Generated.ArtifactCatalog`：producer id、模块、source map、资产、package imports 与不透明 HMR payload。
+- `Jazor.Artifacts.RuntimeProviderCatalog`：provider id、嵌入模块、静态依赖路径与 import-map contribution。
+
+runtime provider 的模块仅在应用模块引用其入口时物化；provider 负责声明内部依赖闭包。`module-source` 资产以 producer 声明的 `ImportPath` 重写到其 artifact path，Emit 不再按框架类型分支处理 SFC、JSX 或其他源格式。
 
 ## 关键文件
 

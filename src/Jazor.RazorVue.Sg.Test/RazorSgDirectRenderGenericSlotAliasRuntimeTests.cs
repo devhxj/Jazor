@@ -16,7 +16,7 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Direct;
 

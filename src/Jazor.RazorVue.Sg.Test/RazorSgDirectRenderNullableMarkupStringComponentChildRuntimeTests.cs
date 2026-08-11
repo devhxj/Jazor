@@ -15,7 +15,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo.Direct;
 

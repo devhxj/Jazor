@@ -124,7 +124,7 @@ public sealed class VueInjectRegistryMatrixTests
             using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [assembly: VueInject(typeof(Demo.ContractShell), typeof(Demo.InjectedShell))]
 
@@ -217,7 +217,7 @@ public sealed class VueInjectRegistryMatrixTests
             using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             [assembly: VueInject(typeof(Demo.ContractShell), typeof(Demo.InjectedShell))]
             {{duplicate}}

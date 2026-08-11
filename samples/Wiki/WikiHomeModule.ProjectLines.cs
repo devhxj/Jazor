@@ -1,6 +1,6 @@
 // WikiHomeModule.ProjectLines.cs - 项目线路 / Project Lines
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

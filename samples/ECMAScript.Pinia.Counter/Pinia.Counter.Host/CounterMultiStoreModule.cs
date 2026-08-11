@@ -3,13 +3,13 @@ using System.ComponentModel;
 using ECMAScript;
 using ECMAScript.VueContract;
 using static ECMAScript.Pinia;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
 [ECMAScript]
 [Description("@#")]
-public sealed record CounterMultiStoreComputed : Vue3.VueProps
+public sealed record CounterMultiStoreComputed : Vue.VueProps
 {
     [ECMAScriptName("counter")]
     public CounterStore Counter { get; init; } = default!;
@@ -32,8 +32,8 @@ public abstract class CounterMultiStoreThis
 [ECMAScriptModule("components/counter-multi-store.mjs")]
 public static class CounterMultiStoreModule
 {
-    private static Vue3.IVueRef<string> OptionsApiSnapshot = Ref("mapStores() snapshot will be captured after mount.");
-    private static Vue3.IVueRef<string> OptionsApiStoreIds = Ref("store ids pending");
+    private static Vue.IVueRef<string> OptionsApiSnapshot = Ref("mapStores() snapshot will be captured after mount.");
+    private static Vue.IVueRef<string> OptionsApiStoreIds = Ref("store ids pending");
 
     public static IVueComponent Component = DefineComponent(new VueComponentOptions
     {

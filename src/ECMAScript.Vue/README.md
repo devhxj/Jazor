@@ -1,18 +1,18 @@
-# ECMAScript.Vue3
+# ECMAScript.Vue
 
 > 定位：独立的 Vue 3 强类型 C# binding，也是框架无关 Jazor 核心上的第一个外部库映射样例。
 
-该项目通过通用 C# 类型系统和 `[ECMAScript]`、`[Description]`、`[ECMAScriptInline]` 等映射表达 Vue 3 API，不在 compiler 中硬编码 `ECMAScript.Vue3` 专用规则。
+该项目通过通用 C# 类型系统和 `[ECMAScript]`、`[Description]`、`[ECMAScriptInline]` 等映射表达 Vue 3 API，不在 compiler 中硬编码 `ECMAScript.Vue` 专用规则。
 
 ## 代码结构
 
-- `Vue3.cs`：模块映射特性与顶层委托/handle 类型。
-- `Api/Vue3.Api.cs`：App、component、custom element、VNode utility 等 API。
-- `Api/Vue3.Api.Render.cs`：`BindThis(...)` 与 `H(...)` overload。
-- `Api/Vue3.Api.Reactivity.cs`：`reactive`、`ref`、`computed`、`watch` 等响应式 API。
-- `Api/Vue3.Api.Composition.cs`：composition API。
-- `Api/Vue3.Api.Lifecycle.cs`：生命周期、scope 与 hook API。
-- `Types/Vue3.Types.*.cs`：嵌套 runtime shape 与 options contract。
+- `Vue.cs`：模块映射特性与顶层委托/handle 类型。
+- `Api/Vue.Api.cs`：App、component、custom element、VNode utility 等 API。
+- `Api/Vue.Api.Render.cs`：`BindThis(...)` 与 `H(...)` overload。
+- `Api/Vue.Api.Reactivity.cs`：`reactive`、`ref`、`computed`、`watch` 等响应式 API。
+- `Api/Vue.Api.Composition.cs`：composition API。
+- `Api/Vue.Api.Lifecycle.cs`：生命周期、scope 与 hook API。
+- `Types/Vue.Types.*.cs`：嵌套 runtime shape 与 options contract。
 
 ## 映射与 authoring 规则
 

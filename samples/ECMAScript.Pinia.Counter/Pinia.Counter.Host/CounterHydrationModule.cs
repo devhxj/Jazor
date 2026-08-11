@@ -3,7 +3,7 @@ using System.ComponentModel;
 using ECMAScript;
 using ECMAScript.VueContract;
 using static ECMAScript.Pinia;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
@@ -27,13 +27,13 @@ public sealed record CounterHydrationStatePatch : PiniaStatePatch<CounterHydrati
 
 [ECMAScript]
 [Description("@#")]
-public sealed record CounterHydrationStore : Vue3.VueProps
+public sealed record CounterHydrationStore : Vue.VueProps
 {
     public int Count { get; init; }
 
     public string Status { get; init; } = "";
 
-    public Vue3.IVueRef<string> ClientOnlyNote { get; init; } = default!;
+    public Vue.IVueRef<string> ClientOnlyNote { get; init; } = default!;
 
     public Func<bool> CanHydrateClientOnlyNote { get; init; } = default!;
 

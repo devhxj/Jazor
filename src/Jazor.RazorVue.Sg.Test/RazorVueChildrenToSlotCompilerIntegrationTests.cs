@@ -14,7 +14,7 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -24,24 +24,24 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
                     public static IVNode Render()
                     {
                         var content = H("main", "content");
-                        var transitioned = H(Vue3.Transition, new VueTransitionProps
+                        var transitioned = H(Vue.Transition, new VueTransitionProps
                         {
                             Name = "fade",
                             Mode = VueTransitionMode.OutIn,
                             Appear = true
                         }, content);
-                        var teleported = H(Vue3.Teleport, new VueTeleportProps
+                        var teleported = H(Vue.Teleport, new VueTeleportProps
                         {
                             To = "#modal",
                             Disabled = false,
                             Defer = true
                         }, transitioned);
-                        var kept = H(Vue3.KeepAlive, new VueKeepAliveProps
+                        var kept = H(Vue.KeepAlive, new VueKeepAliveProps
                         {
                             Include = "Panel",
                             Max = 2
                         }, teleported);
-                        return H(Vue3.Suspense, new VueSuspenseProps
+                        return H(Vue.Suspense, new VueSuspenseProps
                         {
                             Timeout = 1000,
                             OnFallback = OnFallback
@@ -67,7 +67,7 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
             "BuiltInsModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -114,7 +114,7 @@ function OnFallback() { }
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -127,7 +127,7 @@ function OnFallback() { }
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -143,7 +143,7 @@ function OnFallback() { }
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -173,7 +173,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -192,7 +192,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -208,7 +208,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -238,7 +238,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -261,7 +261,7 @@ export function Render(child) {
                         => H(GetChild(), CreateProps(), RenderChild());
 
                     private static IVueComponent<ChildProps, ChildSlots> GetChild()
-                        => Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                        => Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                         {
                             Name = "ChildView"
                         });
@@ -283,7 +283,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -321,7 +321,7 @@ function RenderChild() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -334,7 +334,7 @@ function RenderChild() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -350,7 +350,7 @@ function RenderChild() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -380,7 +380,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -393,7 +393,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -409,7 +409,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -439,7 +439,7 @@ export function Render() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -452,7 +452,7 @@ export function Render() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -468,7 +468,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -498,7 +498,7 @@ export function Render() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -511,7 +511,7 @@ export function Render() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -527,7 +527,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -557,7 +557,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -570,7 +570,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -586,7 +586,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -616,7 +616,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -635,7 +635,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -655,7 +655,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -685,7 +685,7 @@ export function Render() {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -698,7 +698,7 @@ export function Render() {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -714,7 +714,7 @@ export function Render() {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -791,7 +791,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -881,7 +881,7 @@ export function Render(component, child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -957,7 +957,7 @@ export function Render(component, child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -986,7 +986,7 @@ export function Render(component, child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -999,7 +999,7 @@ export function Render(component, child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1015,7 +1015,7 @@ export function Render(component, child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1045,7 +1045,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1064,7 +1064,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1080,7 +1080,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1110,7 +1110,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1129,7 +1129,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1145,7 +1145,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1174,7 +1174,7 @@ export function Render(child) {
     {
         var code = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1186,7 +1186,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1202,7 +1202,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1225,7 +1225,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1238,7 +1238,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1254,7 +1254,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1277,7 +1277,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1293,7 +1293,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1309,7 +1309,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1333,7 +1333,7 @@ export function Render(child) {
             using System;
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1346,7 +1346,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1362,7 +1362,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1385,7 +1385,7 @@ export function Render(child) {
         var code = """
             using System.ComponentModel;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -1404,7 +1404,7 @@ export function Render(child) {
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
-                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
                     {
                         Name = "ChildView"
                     });
@@ -1420,7 +1420,7 @@ export function Render(child) {
             "PanelModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var moduleSymbol = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -1463,12 +1463,12 @@ export function Render() {
     {
         var references = TestMetadataReferences.Net11.AddRange(additionalReferences).ToList();
         if (references.Any(static reference =>
-                string.Equals(reference.Display, typeof(ECMAScript.Vue3).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+                string.Equals(reference.Display, typeof(ECMAScript.Vue).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
             references.Add(MetadataReference.CreateFromFile(
                 typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(
-                typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location));
+                typeof(ECMAScript.Vue.IVueComponent).Assembly.Location));
         }
 
         var syntaxTrees = new List<SyntaxTree>

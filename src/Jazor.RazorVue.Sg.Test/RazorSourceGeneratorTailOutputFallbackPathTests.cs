@@ -18,7 +18,7 @@ public sealed class RazorTailOutputFallbackPathTests
                 global using ECMAScript;
                 global using Microsoft.AspNetCore.Components;
                 global using Microsoft.AspNetCore.Components.Rendering;
-                global using static ECMAScript.Vue3;
+                global using static ECMAScript.Vue;
 
                 [ECMAScriptModule]
                 public sealed class ReleaseShell : ComponentBase, IVueComponent
@@ -61,8 +61,10 @@ public sealed class RazorTailOutputFallbackPathTests
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "ReleaseConsole/ReleaseShell.mjs", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "ReleaseConsole/Demo/Pages/ReleaseStatus.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "internal static partial class ArtifactCatalog", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "ProducerId = \"jazor.vue\"", StringComparison.Ordinal);
         Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal), catalogSource);
-        Assert.IsFalse(catalogSource.Contains(".vue", StringComparison.OrdinalIgnoreCase), catalogSource);
+        Assert.IsFalse(catalogSource.Contains("\"module-source\"", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("builder.finish()", StringComparison.Ordinal), catalogSource);
     }
@@ -78,7 +80,7 @@ public sealed class RazorTailOutputFallbackPathTests
                 global using ECMAScript;
                 global using Microsoft.AspNetCore.Components;
                 global using Microsoft.AspNetCore.Components.Rendering;
-                global using static ECMAScript.Vue3;
+                global using static ECMAScript.Vue;
 
                 namespace Demo.Components
                 {

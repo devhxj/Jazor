@@ -3,7 +3,7 @@ using Jazor.Admin;
 using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 [assembly: VueInject(typeof(PageContainer), typeof(JazorAdmin.InjectSmoke.InjectPageContainer))]
 

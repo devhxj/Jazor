@@ -1,6 +1,6 @@
 // WikiHomeModule.CompilerBoundary.cs - 编译器支持边界 / Compiler Support Boundary
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

@@ -61,7 +61,7 @@ public sealed class MemberClosureTests
             using System;
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -125,7 +125,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -224,7 +224,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -283,7 +283,7 @@ public sealed class MemberClosureTests
             """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -349,7 +349,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -431,7 +431,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -555,7 +555,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -653,7 +653,7 @@ public sealed class MemberClosureTests
             """
             using System.Collections.Generic;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -771,7 +771,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -906,7 +906,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1047,7 +1047,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1170,7 +1170,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1307,7 +1307,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1420,7 +1420,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1470,7 +1470,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1519,7 +1519,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1604,7 +1604,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1717,7 +1717,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1819,7 +1819,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1926,7 +1926,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2046,7 +2046,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2158,7 +2158,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2270,7 +2270,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2303,7 +2303,8 @@ public sealed class MemberClosureTests
         Assert.HasCount(1, artifact.Assets);
         Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].SourcePath);
         Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].ArtifactPath);
-        Assert.AreEqual("vue-sfc", artifact.Assets[0].Kind);
+        Assert.AreEqual("module-source", artifact.Assets[0].Kind);
+        Assert.AreEqual("components/widgets/LocalCard.vue.mjs", artifact.Assets[0].ImportPath);
     }
 
     [TestMethod]
@@ -2313,7 +2314,7 @@ public sealed class MemberClosureTests
             """
             using System;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2364,7 +2365,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using Microsoft.AspNetCore.Components.Web;
@@ -2532,7 +2533,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2633,7 +2634,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2745,7 +2746,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Collections.Generic;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2877,7 +2878,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using Microsoft.AspNetCore.Components.Web;
@@ -2999,7 +3000,7 @@ public sealed class MemberClosureTests
             using ECMAScript;
             using ECMAScript.Style;
             using static ECMAScript.Style.css;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3054,7 +3055,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Collections.Generic;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using Microsoft.AspNetCore.Components.Web;
@@ -3586,7 +3587,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3696,7 +3697,7 @@ public sealed class MemberClosureTests
     {
         const string baselineSource = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3766,7 +3767,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3806,7 +3807,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3858,7 +3859,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3906,7 +3907,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3954,7 +3955,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4136,7 +4137,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4186,7 +4187,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4318,7 +4319,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4465,7 +4466,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4510,7 +4511,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4648,7 +4649,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4803,7 +4804,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4861,7 +4862,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5013,7 +5014,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5065,7 +5066,7 @@ public sealed class MemberClosureTests
             using System;
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5224,7 +5225,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5276,7 +5277,7 @@ public sealed class MemberClosureTests
         var childFixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5314,7 +5315,7 @@ public sealed class MemberClosureTests
         var parentFixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5471,7 +5472,7 @@ public sealed class MemberClosureTests
         var childFixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5507,7 +5508,7 @@ public sealed class MemberClosureTests
         var parentFixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5646,7 +5647,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5724,7 +5725,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5794,7 +5795,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5862,7 +5863,7 @@ public sealed class MemberClosureTests
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
         const string generatedSource = """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5936,7 +5937,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6086,7 +6087,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6230,7 +6231,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6374,7 +6375,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6520,7 +6521,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6678,7 +6679,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6901,7 +6902,7 @@ public sealed class MemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6949,7 +6950,7 @@ public sealed class MemberClosureTests
             """
             using System.Threading.Tasks;
             using ECMAScript;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7303,7 +7304,7 @@ public sealed class MemberClosureTests
             using System.ComponentModel;
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7391,7 +7392,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7440,7 +7441,7 @@ public sealed class MemberClosureTests
             """
             using ECMAScript;
             using ECMAScript.VueContract;
-            using static ECMAScript.Vue3;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7547,7 +7548,7 @@ public sealed class MemberClosureTests
                     global using Microsoft.AspNetCore.Components.Web;
                     global using Microsoft.AspNetCore.Components.Rendering;
                     global using ECMAScript;
-                    global using static ECMAScript.Vue3;
+                    global using static ECMAScript.Vue;
                     """,
                     options: parseOptions,
                     path: "GlobalUsings.g.cs"),

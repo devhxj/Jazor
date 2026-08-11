@@ -21,7 +21,7 @@ var testLanes = new[]
         "vue-bindings-compiler.trx",
         MinimumPassedTests: 10_000,
         [
-            new VueBindingTarget("vue3", "ECMAScript.Vue3", "net11.0"),
+            new VueBindingTarget("vue3", "ECMAScript.Vue", "net11.0"),
             new VueBindingTarget("vuetify", "ECMAScript.Vuetify", "net11.0"),
             new VueBindingTarget("element-plus", "ECMAScript.ElementPlus", "net11.0"),
             new VueBindingTarget("tdesign", "ECMAScript.TDesign", "net11.0")

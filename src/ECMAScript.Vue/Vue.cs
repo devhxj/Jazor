@@ -109,7 +109,7 @@ public delegate TValue VuePropDefaultFactory<TValue>();
 /// <typeparam name="TValue">prop 值类型。The prop value type.</typeparam>
 /// <param name="rawProps">传递给组件实例的原始 prop 值。The raw prop values supplied to the component instance.</param>
 /// <returns>当 prop 缺失时 Vue 应使用的默认值。The default value Vue should use when the prop is absent.</returns>
-public delegate TValue VuePropRawPropsDefaultFactory<TValue>(Vue3.VueProps rawProps);
+public delegate TValue VuePropRawPropsDefaultFactory<TValue>(Vue.VueProps rawProps);
 
 /// <summary>
 /// Vue prop 声明的验证回调。
@@ -128,7 +128,7 @@ public delegate bool VuePropValidator<TValue>(TValue value);
 /// <param name="value">正在验证的 prop 值。The prop value being validated.</param>
 /// <param name="rawProps">传递给组件实例的原始 prop 值。The raw prop values supplied to the component instance.</param>
 /// <returns>值被接受时返回 <c>true</c>。<c>true</c> when the value is accepted.</returns>
-public delegate bool VuePropRawPropsValidator<TValue>(TValue value, Vue3.VueProps rawProps);
+public delegate bool VuePropRawPropsValidator<TValue>(TValue value, Vue.VueProps rawProps);
 
 /// <summary>
 /// 无负载 Vue emit 声明的验证回调。
@@ -191,14 +191,14 @@ public delegate bool VueEmitValidator<T0, T1, T2, T3>(T0 arg0, T1 arg1, T2 arg2,
 /// to provide the component's render function.
 /// </summary>
 /// <returns>表示组件渲染输出的根 VNode。A root VNode representing the rendered component output.</returns>
-public delegate Vue3.IVNode VueRenderCallback();
+public delegate Vue.IVNode VueRenderCallback();
 
 /// <summary>
 /// 从无作用域数据的插槽返回 VNode 的回调。
 /// Callback that returns a VNode from a slot with no scoped data.
 /// </summary>
 /// <returns>插槽产生的 VNode，如果插槽为空则返回 <c>null</c>。A VNode produced by the slot, or <c>null</c> if the slot is empty.</returns>
-public delegate Vue3.IVNode VueSlotCallback();
+public delegate Vue.IVNode VueSlotCallback();
 
 /// <summary>
 /// 从接收插槽 props 的作用域插槽返回 VNode 的回调。
@@ -207,7 +207,7 @@ public delegate Vue3.IVNode VueSlotCallback();
 /// <typeparam name="TScope">传递给插槽的作用域数据类型。The type of the scoped data passed into the slot.</typeparam>
 /// <param name="scope">父组件提供给插槽的作用域数据对象。The scoped data object provided by the parent component to the slot.</param>
 /// <returns>插槽产生的 VNode，如果插槽为空则返回 <c>null</c>。A VNode produced by the slot, or <c>null</c> if the slot is empty.</returns>
-public delegate Vue3.IVNode VueSlotCallback<TScope>(TScope scope);
+public delegate Vue.IVNode VueSlotCallback<TScope>(TScope scope);
 
 /// <summary>
 /// 无类型 props 的组件 <c>setup()</c> 函数的回调签名。
@@ -222,35 +222,35 @@ public delegate VueRenderCallback VueSetupCallback();
 /// 接收类型化 props 的组件 <c>setup()</c> 函数的回调签名。
 /// Callback signature for a component <c>setup()</c> function that receives typed props.
 /// </summary>
-/// <typeparam name="TProps">props 记录类型，继承自 <see cref="Vue3.VueProps"/>。The props record type, inheriting from <see cref="Vue3.VueProps"/>.</typeparam>
+/// <typeparam name="TProps">props 记录类型，继承自 <see cref="Vue.VueProps"/>。The props record type, inheriting from <see cref="Vue.VueProps"/>.</typeparam>
 /// <param name="props">父组件传递的响应式 props 对象。The reactive props object passed by the parent component.</param>
 /// <param name="context">提供 <c>attrs</c>、<c>slots</c>、<c>emit</c> 和 <c>expose</c> 的 setup 上下文。The setup context providing <c>attrs</c>, <c>slots</c>, <c>emit</c>, and <c>expose</c>.</param>
 /// <returns>框架调用以产生组件 VNode 树的 <see cref="VueRenderCallback"/>。A <see cref="VueRenderCallback"/> that the framework calls to produce the component's VNode tree.</returns>
-public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue3.VueSetupContext context)
-	where TProps : Vue3.VueProps;
+public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue.VueSetupContext context)
+	where TProps : Vue.VueProps;
 
 /// <summary>
 /// 接收类型化插槽但无类型 props 的组件 <c>setup()</c> 函数的回调签名。
 /// Callback signature for a component <c>setup()</c> function that receives typed slots but no typed props.
 /// </summary>
-/// <typeparam name="TSlots">插槽记录类型，继承自 <see cref="Vue3.VueSlots"/>。The slots record type, inheriting from <see cref="Vue3.VueSlots"/>.</typeparam>
+/// <typeparam name="TSlots">插槽记录类型，继承自 <see cref="Vue.VueSlots"/>。The slots record type, inheriting from <see cref="Vue.VueSlots"/>.</typeparam>
 /// <param name="context">除标准上下文成员外还提供类型化 <c>slots</c> 的类型化 setup 上下文。The typed setup context providing typed <c>slots</c> in addition to the standard context members.</param>
 /// <returns>框架调用以产生组件 VNode 树的 <see cref="VueRenderCallback"/>。A <see cref="VueRenderCallback"/> that the framework calls to produce the component's VNode tree.</returns>
-public delegate VueRenderCallback VueTypedSlotSetupCallback<TSlots>(Vue3.VueSetupContext<TSlots> context)
-	where TSlots : Vue3.VueSlots;
+public delegate VueRenderCallback VueTypedSlotSetupCallback<TSlots>(Vue.VueSetupContext<TSlots> context)
+	where TSlots : Vue.VueSlots;
 
 /// <summary>
 /// 同时接收类型化 props 和类型化插槽的组件 <c>setup()</c> 函数的回调签名。
 /// Callback signature for a component <c>setup()</c> function that receives both typed props and typed slots.
 /// </summary>
-/// <typeparam name="TProps">props 记录类型，继承自 <see cref="Vue3.VueProps"/>。The props record type, inheriting from <see cref="Vue3.VueProps"/>.</typeparam>
-/// <typeparam name="TSlots">插槽记录类型，继承自 <see cref="Vue3.VueSlots"/>。The slots record type, inheriting from <see cref="Vue3.VueSlots"/>.</typeparam>
+/// <typeparam name="TProps">props 记录类型，继承自 <see cref="Vue.VueProps"/>。The props record type, inheriting from <see cref="Vue.VueProps"/>.</typeparam>
+/// <typeparam name="TSlots">插槽记录类型，继承自 <see cref="Vue.VueSlots"/>。The slots record type, inheriting from <see cref="Vue.VueSlots"/>.</typeparam>
 /// <param name="props">父组件传递的响应式 props 对象。The reactive props object passed by the parent component.</param>
 /// <param name="context">除标准上下文成员外还提供类型化 <c>slots</c> 的类型化 setup 上下文。The typed setup context providing typed <c>slots</c> in addition to the standard context members.</param>
 /// <returns>框架调用以产生组件 VNode 树的 <see cref="VueRenderCallback"/>。A <see cref="VueRenderCallback"/> that the framework calls to produce the component's VNode tree.</returns>
-public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps props, Vue3.VueSetupContext<TSlots> context)
-	where TProps : Vue3.VueProps
-	where TSlots : Vue3.VueSlots;
+public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps props, Vue.VueSetupContext<TSlots> context)
+	where TProps : Vue.VueProps
+	where TSlots : Vue.VueSlots;
 
 /// <summary>
 /// Options API <c>data()</c> 的回调签名。返回的记录被降级为
@@ -259,14 +259,14 @@ public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps p
 /// the plain object that Vue makes reactive for each component instance.
 /// </summary>
 /// <returns>一个组件实例的新状态对象。A fresh state object for one component instance.</returns>
-public delegate Vue3.VueProps VueDataCallback();
+public delegate Vue.VueProps VueDataCallback();
 
 /// <summary>
 /// 函数形式的 Vue 插件安装入口回调签名。
 /// Callback signature for a function-form Vue plugin installation entrypoint.
 /// </summary>
 /// <param name="app">当前正在配置的 Vue 应用实例。The Vue application instance currently being configured.</param>
-public delegate void VuePluginInstallCallback(Vue3.VueApp app);
+public delegate void VuePluginInstallCallback(Vue.VueApp app);
 
 /// <summary>
 /// 接收强类型安装选项的函数形式或对象形式的 Vue 插件安装入口回调签名。
@@ -276,8 +276,8 @@ public delegate void VuePluginInstallCallback(Vue3.VueApp app);
 /// <typeparam name="TOptions">类型化的插件选项契约。The typed plugin options contract.</typeparam>
 /// <param name="app">当前正在配置的 Vue 应用实例。The Vue application instance currently being configured.</param>
 /// <param name="options">传递给 <c>app.use(plugin, options)</c> 的强类型选项。The strongly typed options passed to <c>app.use(plugin, options)</c>.</param>
-public delegate void VuePluginInstallCallback<TOptions>(Vue3.VueApp app, TOptions options)
-	where TOptions : Vue3.VuePluginOptions;
+public delegate void VuePluginInstallCallback<TOptions>(Vue.VueApp app, TOptions options)
+	where TOptions : Vue.VuePluginOptions;
 
 /// <summary>
 /// <c>defineCustomElement()</c> 用来配置为 Vue 自定义元素创建的应用实例的回调。
@@ -285,7 +285,7 @@ public delegate void VuePluginInstallCallback<TOptions>(Vue3.VueApp app, TOption
 /// created for a Vue custom element.
 /// </summary>
 /// <param name="app">自定义元素内部创建的 Vue 应用实例。The custom element's internally created Vue application instance.</param>
-public delegate void VueCustomElementConfigureAppCallback(Vue3.VueApp app);
+public delegate void VueCustomElementConfigureAppCallback(Vue.VueApp app);
 
 /// <summary>
 /// 不需要之前值的 Vue 指令生命周期钩子回调签名。
@@ -294,7 +294,7 @@ public delegate void VueCustomElementConfigureAppCallback(Vue3.VueApp app);
 /// <param name="element">当前受指令控制的目标 DOM 元素。The target DOM element currently controlled by the directive.</param>
 /// <param name="binding">当前的指令绑定负载。The current directive binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
-public delegate void VueDirectiveHook(Element element, Vue3.VueDirectiveBinding binding, Vue3.IVNode vnode);
+public delegate void VueDirectiveHook(Element element, Vue.VueDirectiveBinding binding, Vue.IVNode vnode);
 
 /// <summary>
 /// 类型化的 Vue 指令生命周期钩子（不需要之前值）回调签名。
@@ -304,7 +304,7 @@ public delegate void VueDirectiveHook(Element element, Vue3.VueDirectiveBinding 
 /// <param name="element">当前受指令控制的目标 DOM 元素。The target DOM element currently controlled by the directive.</param>
 /// <param name="binding">当前的类型化指令绑定负载。The current typed directive binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
-public delegate void VueDirectiveHook<TValue>(Element element, Vue3.VueDirectiveBinding<TValue> binding, Vue3.IVNode vnode);
+public delegate void VueDirectiveHook<TValue>(Element element, Vue.VueDirectiveBinding<TValue> binding, Vue.IVNode vnode);
 
 /// <summary>
 /// Vue 指令函数简写形式的回调签名。Vue 将其视为 <c>mounted</c> 和 <c>updated</c> 的相同回调。
@@ -313,7 +313,7 @@ public delegate void VueDirectiveHook<TValue>(Element element, Vue3.VueDirective
 /// </summary>
 /// <param name="element">当前受指令控制的目标 DOM 元素。The target DOM element currently controlled by the directive.</param>
 /// <param name="binding">当前的指令绑定负载。The current directive binding payload.</param>
-public delegate void VueDirectiveFunction(Element element, Vue3.VueDirectiveBinding binding);
+public delegate void VueDirectiveFunction(Element element, Vue.VueDirectiveBinding binding);
 
 /// <summary>
 /// 类型化的 Vue 指令函数简写形式的回调签名。Vue 将其视为 <c>mounted</c> 和 <c>updated</c> 的相同回调。
@@ -323,7 +323,7 @@ public delegate void VueDirectiveFunction(Element element, Vue3.VueDirectiveBind
 /// <typeparam name="TValue">指令当前绑定值的类型化契约。The typed contract of the directive's current binding value.</typeparam>
 /// <param name="element">当前受指令控制的目标 DOM 元素。The target DOM element currently controlled by the directive.</param>
 /// <param name="binding">当前的类型化指令绑定负载。The current typed directive binding payload.</param>
-public delegate void VueDirectiveFunction<TValue>(Element element, Vue3.VueDirectiveBinding<TValue> binding);
+public delegate void VueDirectiveFunction<TValue>(Element element, Vue.VueDirectiveBinding<TValue> binding);
 
 /// <summary>
 /// 还需要之前绑定值的 Vue 指令更新钩子回调签名。
@@ -333,7 +333,7 @@ public delegate void VueDirectiveFunction<TValue>(Element element, Vue3.VueDirec
 /// <param name="binding">当前的指令更新绑定负载。The current directive update binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
 /// <param name="previousVNode">与同一元素关联的之前的 VNode。The previous VNode associated with the same element.</param>
-public delegate void VueDirectiveUpdateHook(Element element, Vue3.VueDirectiveUpdateBinding binding, Vue3.IVNode vnode, Vue3.IVNode previousVNode);
+public delegate void VueDirectiveUpdateHook(Element element, Vue.VueDirectiveUpdateBinding binding, Vue.IVNode vnode, Vue.IVNode previousVNode);
 
 /// <summary>
 /// 还需要之前绑定值的类型化 Vue 指令更新钩子回调签名。
@@ -344,7 +344,7 @@ public delegate void VueDirectiveUpdateHook(Element element, Vue3.VueDirectiveUp
 /// <param name="binding">当前的类型化指令更新绑定负载。The current typed directive update binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
 /// <param name="previousVNode">与同一元素关联的之前的 VNode。The previous VNode associated with the same element.</param>
-public delegate void VueDirectiveUpdateHook<TValue>(Element element, Vue3.VueDirectiveUpdateBinding<TValue> binding, Vue3.IVNode vnode, Vue3.IVNode previousVNode);
+public delegate void VueDirectiveUpdateHook<TValue>(Element element, Vue.VueDirectiveUpdateBinding<TValue> binding, Vue.IVNode vnode, Vue.IVNode previousVNode);
 
 /// <summary>
 /// 返回要合并到渲染元素中的 props 的 Vue 指令 SSR 钩子回调签名。
@@ -353,7 +353,7 @@ public delegate void VueDirectiveUpdateHook<TValue>(Element element, Vue3.VueDir
 /// <param name="binding">当前的指令绑定负载。The current directive binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
 /// <returns>应合并到 SSR 渲染元素中的额外 props。Additional props that should be merged into the SSR-rendered element.</returns>
-public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback(Vue3.VueDirectiveBinding binding, Vue3.IVNode vnode);
+public delegate Vue.VueProps? VueDirectiveSSRPropsCallback(Vue.VueDirectiveBinding binding, Vue.IVNode vnode);
 
 /// <summary>
 /// 返回要合并到渲染元素中的 props 的类型化 Vue 指令 SSR 钩子回调签名。
@@ -363,7 +363,7 @@ public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback(Vue3.VueDirectiveBin
 /// <param name="binding">当前的类型化指令绑定负载。The current typed directive binding payload.</param>
 /// <param name="vnode">与元素关联的当前 VNode。The current VNode associated with the element.</param>
 /// <returns>应合并到 SSR 渲染元素中的额外 props。Additional props that should be merged into the SSR-rendered element.</returns>
-public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue3.VueDirectiveBinding<TValue> binding, Vue3.IVNode vnode);
+public delegate Vue.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue.VueDirectiveBinding<TValue> binding, Vue.IVNode vnode);
 
 /// <summary>
 /// Vue 异步组件的加载回调。返回一个解析为组件定义的 JavaScript promise。
@@ -371,7 +371,7 @@ public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue3.VueDire
 /// resolves to the component definition.
 /// </summary>
 /// <returns>解析为异步组件定义的 promise。A promise resolving to the async component definition.</returns>
-public delegate IPromise<Vue3.IVueComponent> VueAsyncComponentLoader();
+public delegate IPromise<Vue.IVueComponent> VueAsyncComponentLoader();
 
 /// <summary>
 /// 强类型 Vue 异步组件的加载回调。
@@ -380,7 +380,7 @@ public delegate IPromise<Vue3.IVueComponent> VueAsyncComponentLoader();
 /// <typeparam name="TComponent">加载器产生的组件契约。The component contract produced by the loader.</typeparam>
 /// <returns>解析为类型化异步组件定义的 promise。A promise resolving to the typed async component definition.</returns>
 public delegate IPromise<TComponent> VueAsyncComponentLoader<TComponent>()
-	where TComponent : ECMAScript.Vue3.IVueComponent;
+	where TComponent : ECMAScript.Vue.IVueComponent;
 
 /// <summary>
 /// Vue 异步组件错误处理中用于重试或使加载失败的回调。
@@ -409,7 +409,7 @@ public delegate void VueAsyncComponentErrorCallback(Error error, VueAsyncCompone
 /// <param name="track">当自定义 getter 应追踪依赖时调用。Call when the custom getter should track a dependency.</param>
 /// <param name="trigger">当自定义 setter 应触发依赖更新时调用。Call when the custom setter should trigger dependents.</param>
 /// <returns>自定义 ref 使用的 get/set 处理器。The get/set handlers used by the custom ref.</returns>
-public delegate Vue3.VueCustomRefHandlers<T> VueCustomRefFactory<T>(Action track, Action trigger);
+public delegate Vue.VueCustomRefHandlers<T> VueCustomRefFactory<T>(Action track, Action trigger);
 
 /// <summary>
 /// Vue 侦听器调试钩子（如 <c>onTrack</c> 和 <c>onTrigger</c>）使用的回调。
@@ -417,7 +417,7 @@ public delegate Vue3.VueCustomRefHandlers<T> VueCustomRefFactory<T>(Action track
 /// <c>onTrigger</c>.
 /// </summary>
 /// <param name="event">Vue 响应式系统发出的调试器事件。The debugger event emitted by Vue's reactivity system.</param>
-public delegate void VueDebuggerCallback(Vue3.VueDebuggerEvent @event);
+public delegate void VueDebuggerCallback(Vue.VueDebuggerEvent @event);
 
 /// <summary>
 /// 可通过返回 <c>false</c> 阻止 Vue 错误传播的错误捕获回调。
@@ -428,7 +428,7 @@ public delegate void VueDebuggerCallback(Vue3.VueDebuggerEvent @event);
 /// <param name="instance">错误来源的组件公开实例（如可用）。The component public instance where the error originated, when available.</param>
 /// <param name="info">Vue 的错误上下文字符串。Vue's error context string.</param>
 /// <returns>返回 <c>false</c> 阻止传播；返回 <c>true</c> 继续传播。<c>false</c> to stop propagation; <c>true</c> to continue.</returns>
-public delegate bool VueErrorCapturedCallback(Vue3.VueValue? error, Vue3.VueComponentPublicInstance? instance, string info);
+public delegate bool VueErrorCapturedCallback(Vue.VueValue? error, Vue.VueComponentPublicInstance? instance, string info);
 
 /// <summary>
 /// 仅观察捕获的错误并始终让 Vue 继续传播的错误捕获处理器。
@@ -438,7 +438,7 @@ public delegate bool VueErrorCapturedCallback(Vue3.VueValue? error, Vue3.VueComp
 /// <param name="error">Vue 捕获的 unknown 类型的错误值。The unknown-like error value captured by Vue.</param>
 /// <param name="instance">错误来源的组件公开实例（如可用）。The component public instance where the error originated, when available.</param>
 /// <param name="info">Vue 的错误上下文字符串。Vue's error context string.</param>
-public delegate void VueErrorCapturedHandler(Vue3.VueValue? error, Vue3.VueComponentPublicInstance? instance, string info);
+public delegate void VueErrorCapturedHandler(Vue.VueValue? error, Vue.VueComponentPublicInstance? instance, string info);
 
 /// <summary>
 /// 返回 JavaScript promise 的服务端预取回调。
@@ -462,7 +462,7 @@ public delegate PromiseResult VueServerPrefetchCallback();
 /// <typeparam name="TThis">组件公开实例的类型化视图。Typed view of the component public instance.</typeparam>
 /// <param name="self">运行时的组件公开实例。The runtime component public instance.</param>
 /// <returns>当前组件实例的数据对象。The data object for the current component instance.</returns>
-public delegate Vue3.VueProps VueThisDataCallback<TThis>(TThis self)
+public delegate Vue.VueProps VueThisDataCallback<TThis>(TThis self)
 	where TThis : class;
 
 /// <summary>
@@ -566,66 +566,66 @@ public sealed class VueRenderHost
 	}
 
 	[ECMAScriptInline("__arg1(__arg2)")]
-	public extern Vue3.IVNode Invoke(string type);
+	public extern Vue.IVNode Invoke(string type);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.IVNode child);
+	public extern Vue.IVNode Invoke(string type, Vue.IVNode child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.IVNode[] children);
+	public extern Vue.IVNode Invoke(string type, Vue.IVNode[] children);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.VueChild child);
+	public extern Vue.IVNode Invoke(string type, Vue.VueChild child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props);
+	public extern Vue.IVNode Invoke(string type, Vue.VueProps props);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.IVNode child);
+	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.IVNode child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.IVNode[] children);
+	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.IVNode[] children);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.VueChild child);
+	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.VueChild child);
 
 	[ECMAScriptInline("__arg1(__arg2)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.IVNode child);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.IVNode child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.IVNode[] children);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.IVNode[] children);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueChild child);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueChild child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueSlots slots);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueSlots slots);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.IVNode child);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.IVNode child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.IVNode[] children);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.IVNode[] children);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.VueChild child);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.VueChild child);
 
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
-	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.VueSlots slots);
+	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.VueSlots slots);
 }
 
 [ECMAScript("vue")]
 [Description("@#")]
 /// <remarks>
-/// Vue3 静态 partial surface 按 API、类型和结构分片维护，最终都映射到 Vue 3 runtime module。
+/// Vue 静态 partial surface 按 API、类型和结构分片维护，最终都映射到 Vue 3 runtime module。
 /// 这里的类型与方法是 authoring contract，不是 C# 对 Vue runtime 的重新实现。
 /// </remarks>
-public static partial class Vue3
+public static partial class Vue
 {
 }

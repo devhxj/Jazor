@@ -75,7 +75,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "<PackageId>ECMAScript.Pinia</PackageId>");
 		StringAssert.Contains(source, "<RootNamespace>ECMAScript</RootNamespace>");
 		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
-		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue3\\ECMAScript.Vue3.csproj\" />");
+		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
 	}
 
 	[TestMethod]

@@ -1,6 +1,6 @@
 // WikiHomeModule.ContentGovernance.cs - 内容治理 / Content Governance
 using ECMAScript;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace Wiki;
 

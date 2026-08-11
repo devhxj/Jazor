@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SystemFile = global::System.IO.File;
 
-namespace ECMAScript.Vue.Generator;
+namespace ECMAScript.VueGenerator;
 
 /// <summary>
 /// Maintains the Vuetify projection from the pinned upstream metadata.

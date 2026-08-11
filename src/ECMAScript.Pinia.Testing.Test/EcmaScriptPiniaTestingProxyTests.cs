@@ -152,8 +152,8 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.AreEqual(typeof(bool?), stubReset!.PropertyType);
 		Assert.AreEqual(typeof(bool?), fakeApp!.PropertyType);
 		Assert.AreEqual(typeof(PiniaTestingSpyFactory), createSpy!.PropertyType);
-		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingOptions)));
-		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingInitialState)));
+		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingOptions)));
+		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingInitialState)));
 		Assert.IsTrue(typeof(Pinia.PiniaInstance).IsAssignableFrom(typeof(PiniaTesting.TestingPinia)));
 	}
 
@@ -166,7 +166,7 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsNotNull(createSpy);
 		Assert.AreEqual(typeof(PiniaTestingSpyFactory<Action<int>>), createSpy!.PropertyType);
 		Assert.IsTrue(typeof(PiniaTesting.TestingOptions).IsAssignableFrom(optionsType));
-		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(optionsType));
+		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(optionsType));
 	}
 
 	[TestMethod]
@@ -184,7 +184,7 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.AreEqual(typeof(PiniaTestingSpyFactory<Action<int>>), createSpy!.PropertyType);
 		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>?), stubActions!.PropertyType);
 		Assert.IsTrue(typeof(PiniaTesting.TestingOptions).IsAssignableFrom(optionsType));
-		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(optionsType));
+		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(optionsType));
 	}
 
 	[TestMethod]
@@ -194,7 +194,7 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 			.GetProperty(nameof(PiniaTesting.TestingPinia.App), BindingFlags.Public | BindingFlags.Instance);
 
 		Assert.IsNotNull(app);
-		Assert.AreEqual(typeof(Vue3.VueApp), app!.PropertyType);
+		Assert.AreEqual(typeof(Vue.VueApp), app!.PropertyType);
 	}
 
 	[TestMethod]

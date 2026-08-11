@@ -2,7 +2,7 @@ using ECMAScript;
 using Jazor.Admin;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using static ECMAScript.Vue3;
+using static ECMAScript.Vue;
 
 namespace JazorAdmin.InjectSmoke;
 

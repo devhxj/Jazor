@@ -475,7 +475,7 @@ async function main() {
   if (report.home.title !== "概览 | jazor.wiki") {
     failures.push(`Home page title was unexpected before SPA navigation: ${report.home.title}`);
   }
-  if (report.home.description !== "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。") {
+  if (report.home.description !== "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue H 函数编写。") {
     failures.push(`Home page description was unexpected before SPA navigation: ${report.home.description}`);
   }
   if (report.home.robots !== "index, follow") {

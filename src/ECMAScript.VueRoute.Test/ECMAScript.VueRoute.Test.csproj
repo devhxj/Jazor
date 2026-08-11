@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
