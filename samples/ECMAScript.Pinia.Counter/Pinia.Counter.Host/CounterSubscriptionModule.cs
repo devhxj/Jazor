@@ -56,7 +56,7 @@ public static class CounterSubscriptionModule
 
         OnMounted(() =>
         {
-            detach = store.Subscribe(handleMutation, new SubscribeOptions
+            detach = store.Subscribe(handleMutation, new global::ECMAScript.Pinia.SubscribeOptions
             {
                 Detached = true,
                 Flush = VueWatchFlush.Sync
