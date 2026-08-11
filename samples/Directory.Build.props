@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- Samples consume the latest released Jazor package set. Local smoke scripts override this value. -->
-    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.8.3</JazorPackageVersion>
+    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.8.4</JazorPackageVersion>
     <!-- Samples exercise native-union public APIs directly and must compile in preview mode. -->
     <LangVersion>preview</LangVersion>
   </PropertyGroup>

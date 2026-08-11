@@ -1,54 +1,45 @@
 # Jazor.Emit
 
-> Status: active reference
-> Positioning: host-facing ECMAScript module materialization and bundle layer.
+> 定位：面向宿主的 ECMAScript 模块物化、manifest 与浏览器 bundle 层。
 
-`Jazor.Emit` materializes compiler-produced ECMAScript catalogs and source-map carriers. It owns assembly loading, deterministic file output, manifest maintenance, cleanup, local library materialization, and browser bundling; it does not own compiler lowering semantics.
+`Jazor.Emit` 消费 compiler 生成的 ECMAScript catalog 与 source-map carrier，负责程序集读取、确定性文件输出、manifest、清理、本地库资源物化和 Netpack 浏览器打包；它不拥有 C# lowering 语义。
 
-## Responsibilities
+## 职责
 
-- Load the root assembly and explicitly supplied reference assemblies.
-- Collect generated ECMAScript module catalogs, `Jazor.Generated.VueRenderCatalog`, the repository-owned CLR runtime catalog, and embedded RazorVue render-context runtime assets.
-- Write `.mjs`, optional `.map`, and the shared schema-v1 `jazor-manifest.json`.
-- Remove stale module and source-map files when clean output is requested.
-- Bundle application modules through Netpack while preserving local packaged library ESM and chained source maps.
+- 读取根程序集与显式引用程序集。
+- 收集 ECMAScript module catalog、`Jazor.Generated.VueRenderCatalog`、CLR runtime catalog 与 Razor-to-Vue runtime asset。
+- 写入 `.mjs`、可选 `.mjs.map` 与 schema-v1 `jazor-manifest.json`。
+- 在受控输出范围内清理过期模块和 source map。
+- 通过 Netpack 打包应用模块，同时保留本地包提供的 library ESM 与 chained source map。
 
-`Jazor.Emit` 不负责 Razor Hook、官方 Razor Source Generator 的运行、Compiler lowering 或开发服务器协议。它只消费上游已完成的 catalog，并将模块图物化为调试文件或生产 Bundle。
+## 关键文件
 
-## Key Files
-
-- `Program.cs`: CLI entry point.
-- `CatalogReader.cs`: reads generated, CLR runtime, VueRenderCatalog, source-map, and RazorVue runtime resource catalogs.
-- `ModuleCollector.cs`: merges modules across assemblies with deterministic conflict handling.
-- `ModuleWriter.cs`: writes modules, source maps, and the manifest.
-- `LibraryMaterializer.cs`: validates package manifests and copies local library resources.
-- `Toolchain.cs`: parses and validates the local bundling contract.
-- `NetpackBundler.cs`: bundles application modules and preserves vendor ESM.
-- `ManifestModel.cs`: defines the canonical schema-v1 module manifest contract; legacy `rootAssemblyPath` / `generatedAtUtc` manifests remain readable, but new manifest writes use `rootAssemblyName` and omit wall-clock or machine-absolute state.
+- `Program.cs`：CLI 入口。
+- `CatalogReader.cs`、`ModuleCollector.cs`：读取并稳定合并各程序集 catalog。
+- `ModuleWriter.cs`、`ManifestModel.cs`：物化模块、source map 与 manifest。
+- `LibraryMaterializer.cs`、`Toolchain.cs`、`NetpackBundler.cs`：本地资源与浏览器 bundle。
 
 ## CLI
 
-Emit modules:
+物化模块：
 
-```powershell
+```bash
 dotnet run --project src/Jazor.Emit -- --root <root.dll> --assembly <ref.dll> --out <dir> --write-manifest <manifest.json>
 ```
 
-Bundle modules:
+打包模块：
 
-```powershell
+```bash
 dotnet run --project src/Jazor.Emit -- toolchain build --manifest <manifest.json> --artifacts <dir> --source-root <source-root> --out-root <output-root>
 ```
 
-## Verification
+## 验证
 
-```powershell
+```bash
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 ```
 
-## Read Next
+## 相关文档
 
-- [../Jazor.EmitTest/README.md](../Jazor.EmitTest/README.md)
-- [../../docs/01-目标/compiler/emit/Emit.Pipeline.Overview.md](../../docs/01-目标/compiler/emit/Emit.Pipeline.Overview.md)
-- [../../docs/01-目标/compiler/emit/Emit.Materialization.Overview.md](../../docs/01-目标/compiler/emit/Emit.Materialization.Overview.md)
-- [../../docs/01-目标/compiler/emit/Emit.BundleAndSourceMap.Overview.md](../../docs/01-目标/compiler/emit/Emit.BundleAndSourceMap.Overview.md)
+- [Jazor.EmitTest](../Jazor.EmitTest/README.md)
+- [产物管线](../../docs/02-architecture/artifact-pipeline.md)

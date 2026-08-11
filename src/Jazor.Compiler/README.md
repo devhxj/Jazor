@@ -1,146 +1,54 @@
 # Jazor.Compiler
 
-`Jazor.Compiler` 是 Jazor 仓库中的核心 C# -> JavaScript 编译器模块。
+> 定位：受控 C# 编译域到 ECMAScript 的核心 lowering 层。
 
-它的主职责不是“把任意 .NET 代码直接翻译成 JS 文本”，而是：
+`Jazor.Compiler` 以 Roslyn `IOperation` 为语义输入，以 Acornima ESTree 为中间表示，输出确定的 JavaScript module text、source-origin 和 catalog carrier。它不直接物化文件，也不为任何框架产品内置特判。
 
-- 以 Roslyn `IOperation` 为主要语义输入
-- 以 Acornima ESTree 为主要中间表示
-- 在受控输入域内追求使用点可观察行为等价
-- 对宿主语义、命名、导入、source-origin 和输出确定性给出稳定契约
+## 职责
 
-## 当前定位
+- `AstConverter` 负责模块、类型、导入、导出和运行时成员类的结构转换。
+- `SemanticWalker` 负责表达式和语句 lowering，以及运行时敏感使用点的最终验证。
+- `ESGenerator` 负责 JavaScript 文本、source map 和 catalog carrier；`.mjs`、manifest 和 bundle 由 `Jazor.Emit` 物化。
+- WhiteList 与 `Alias`、`Inline`、`Import`、`Compile` 映射连接 CLR/host API 和 compiler lowering。
 
-`Jazor.Compiler` 当前应被理解为三层协作：
+## 稳定边界
 
-1. `AstConverter`：负责模块级和类型级展开，例如顶层 `function` / `class` / 字段 / 属性 / 导入声明组织。
-2. `SemanticWalker`：负责语义级 lowering，把 `IOperation` 转成 ESTree。
-3. WhiteList / `Op.Compile` / SourceOrigin：负责宿主映射事实、复杂宿主钩子和调试来源锚点。
+- 目标是保持使用点可观察行为和确定性输出，不是复刻完整 CLR runtime identity。
+- 支持范围由已绑定的 Roslyn 语义、白名单映射和测试共同定义；不支持的运行时敏感类型或成员必须显式失败。
+- `Jazor.Analyzer` 可以在 erased positions 提前诊断，`SemanticWalker` 仍在真正 lowering 处做最终裁定。
+- interface 只作为编译期契约，不发射 runtime declaration；enum、tuple、record、`ref/out` 等按照各自已实现的擦除或协议语义处理。
+- temp 名、import alias、helper 名、声明排序和 source-origin 锚点都是长期输出契约。
 
-产品集成通过通用、强类型的扩展契约接入，普通 compiler mainline 不携带产品 profile 或 ASP.NET Components lowering：
+## 扩展位置
 
-- `AstConverterModulePolicy`：定义模块层级、runtime class 位置、声明名与额外可见性的确定性投影策略。
-- `SemanticWalkerHost`：定义窄 Roslyn operation rewrite seam；`RewriteInvocationIntrinsic` 在 compiler intrinsic/whitelist dispatch 前接收已 lower 的 operands 与 `SemanticInvocationLoweringContext`。
-- `CompositeSemanticWalkerHost`：按“第一个 rewrite 声明者获胜、观察扇出、skip/claim OR”组合多个 product host，不暴露 `SemanticWalker` 继承面。
-- `SourceOrigin`、`GeneratedNodePosition` 和 node-layout emitter：为需要组合更大 artifact 的产品提供 source-map 锚点与稳定节点坐标。
+| 问题 | 归属 |
+| --- | --- |
+| 输入域的前置诊断 | `Jazor.Analyzer` |
+| 外部 API 映射 | `Jazor.CLR` 或 `ECMAScript` 标注与 WhiteList 生成 |
+| 模块级结构 | `AstConverter` |
+| C# 表达式、语句和使用点验证 | `SemanticWalker` |
+| 文件输出与 bundle | `Jazor.Emit` |
 
-RazorVue 的 current-component、RenderTreeBuilder、children-to-slot 和 Components catalog 均由 `Jazor.RazorVue` 自己实现并测试；其最终 `defineComponent`/setup/render-function artifact 也不属于本项目。
-
-真正的文件物化不在本项目内完成：
-
-- `Jazor.Compiler` 负责 AST、模块文本、catalog / source map carriers
-- `Jazor.Emit` 负责 `.mjs` / `.mjs.map` 与 manifest 物化
-
-## 当前硬契约
-
-下面这些路线已经不应再按“探索态”理解：
-
-- `tuple`：走表达式组合 lowering，保投影、解构、比较与 remap 行为，不保 `System.ValueTuple` runtime identity。
-- `ref/out`：走 caller/callee 协议模拟，优先保证求值顺序、回写顺序和最终结果；同模块成员类的单一显式构造函数以隐藏 sink 回传 writable 参数，构造函数 overload dispatch 仍不接受 `ref/out/in/params`。
-- 具名实参：调用与构造都以 Roslyn 已绑定的 `IArgumentOperation.Parameter` 作为目标槽位；参数顺序被重排时，先在首个 JavaScript 实参位置按 C# 源码顺序缓存，再按形参顺序传递，保留 receiver 先求值、默认参数占位与 `ref/out` 回写目标。
-- `enum`：走“声明擦除 + 使用点常量化”，运行时按底层标量处理。
-- `interface`：只作为契约参与分析、宿主查找和投影，不发射 runtime declaration。
-- `record`：固定走 structural lowering；创建、`with`、位置/属性模式、解构都按结构属性键处理，不保 nominal runtime identity；若需要普通 runtime class 语义，必须显式写 `class`。
-- iterator：module method、runtime member method 和 local function 依据实际 Roslyn operation tree 声明 generator；`yield` 输出 `function*`，async iterator 输出 `async function*`，nested lambda/local function 的 yield 不影响外层函数。
-- field-like event：当前模块 non-record runtime member class 的非静态、非 virtual/override 字段式事件使用私有调用列表与 add/remove/snapshot helper；直接实例方法组按 `(method, receiver)` 等价而非 JS `bind` 临时函数身份比较，raise 前固定快照以保留 C# 的多播顺序和订阅变更语义。模块静态事件、custom accessor、virtual/override、by-ref 参数或返回、delegate equality/combination 与 `IRaiseEventOperation` 保持显式失败。
-- interpolated string：普通插值按绑定后的静态类型 lowering。`string`、`char`、标量与 `[ECMAScript.String]` enum 直接进入 template literal；可空 direct value 用单次求值的 `?? ""` 保持 C# 的 null-to-empty 语义。格式化、对齐和 source/CLR `ToString` 只通过已绑定的调用与白名单契约进入 AST；source type 必须在自身或 source base class 提供 `ToString`，不能把 JavaScript `Object.prototype.toString()` 当作 CLR 默认文本。没有稳定 string conversion contract 的 `object`、type parameter、interface、delegate、tuple、anonymous type、array 与普通 enum 显式失败。custom interpolated-string handler 仍不支持，因为它需要独立的 `AppendLiteral` / `AppendFormatted` / short-circuit runtime protocol，不能以普通插值近似。
-- `foreach (char in string)`：静态集合类型为 `string` 时复用绑定后的 `string.ToCharArray()` CLR 映射，再进入 `for...of`。这保留 C# `char` 的 UTF-16 code-unit 枚举，而非 JavaScript 字符串默认的 Unicode code-point 枚举；不根据 `IEnumerable<char>` 的运行时值猜测其具体实现。
-- UTF-8 string literal：`IUtf8StringOperation` 使用 Roslyn 已解码的字符串值直接构造精确 byte `ArrayExpression`，沿 `ReadOnlySpan<byte>` 的既有 Array carrier 传递；不发射 JS 字符串、`TextEncoder`、BOM、隐式结束符或新的 typed-array identity。
-- 成员类继承：当前支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`。
-- 普通方法重载：仅在确有同名 overload 时追加稳定签名 hash；ECMAScript runtime host API 默认跳过该后缀。
-- 成员类构造函数重载：固定为单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher。
-- `Op.Import`：已完成“发现 -> 收集 -> 合并 -> 模块头输出”的闭环，后续重点是稳定性而不是接线。
-- `Op.Compile`：已接入主分发，但当前 contract 仍限于自包含表达式级钩子，不是完整 lowering 子系统。
-- 模块导出：只支持 named export，不支持 default export；任何成员若解析到导出名 `default` 都应显式失败。
-
-## 模块边界
-
-新增能力时，优先按下面的边界落点判断：
-
-- 输入是否合法：`Jazor.Analyzer`
-- 外部 API 如何映射：`Jazor.CLR` / `ECMAScript` 标注 + WhiteList 生成
-- 模块级结构如何展开：`AstConverter`
-- 方法体 / 表达式如何 lowering：`SemanticWalker`
-- 文件如何物化：`Jazor.Emit`
-
-不要在 `ESGenerator`、`AstConverter`、`SemanticWalker` 里重复实现另一套宿主语义。
+复杂且依赖 temp、import、source-origin 或语句级协议的 host 语义，必须通过正式 compiler extension seam 实现，不能绕过 compiler 手拼 JavaScript 或 AST。
 
 ## 代码结构
 
-```text
-src/Jazor.Compiler/
-├── AstConverter.cs
-├── ESGenerator.cs
-├── ESGenerator.SourceMap.cs
-├── ESGenerator.SourceMapCatalog.cs
-├── ESGenerator.SourceOrigin.cs
-├── Optimizer.cs
-├── Sense.cs
-├── SenseArgument.cs
-├── TypeMapper.cs
-├── Util.cs
-├── WhiteList.cs.*
-├── SourceMap/
-└── core/
-    ├── SemanticWalker.cs
-    ├── SemanticWalker.cs.Reference.cs
-    ├── SemanticWalker.cs.Creation.cs
-    ├── SemanticWalker.cs.Tuple.cs
-    ├── SemanticWalker.cs.Pattern.cs
-    ├── SemanticWalker.cs.Ordinary.cs
-    ├── SemanticWalker.cs.TryCatch.cs
-    └── ...
-```
+- `AstConverter.cs`：模块和声明转换。
+- `core/SemanticWalker.cs.*`：语义 lowering 的分区实现。
+- `ESGenerator*.cs`：JavaScript writer、source map 与 catalog。
+- `WhiteList.cs.*`：宿主映射消费；`WhiteList.cs.Generate.cs` 为生成结果。
+- `ImplementationPrinciples.md`：支持边界与设计理由的权威说明。
 
-## 开发约束
+## 验证
 
-修改本项目时，优先遵守这些约束：
-
-1. 先保使用点可观察行为，再考虑 runtime 结构外观。
-2. 对不支持的外部运行时语义，优先显式失败，不做 silent raw-JS 直通。
-3. 稳定 temp 名、import alias、helper 名和 source-origin 锚点属于编译器契约，不是测试便利。
-4. 能稳定用 `Alias` / `Inline` / `Import` 解决的宿主语义，不要冒进塞进 `Compile`。
-5. 需要 temp / import / source-origin / 语句级协议的复杂宿主改写，不要硬塞进当前 `Compile(handler, args)` contract。
-6. 生成文件不手改；若宿主映射变更，应回到 CLR/ECMAScript 标注源和 generator。
-
-## 测试
-
-主回归测试项目：
-
-- `src/Jazor.CompilerTest`
-
-常见入口：
-
-```powershell
+```bash
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet run --file scripts/csharp/verify-compiler-coverage.cs
 ```
-
-如需更细的测试分层、SourceMap / catalog 测试入口和编写约束，直接看：
-
-- `src/Jazor.CompilerTest/README.md`
-
-说明：
-
-- 瞬时构建状态、测试总数和通过率不在本 README 中维护。
-- 这类信息应以当前 CI、测试运行结果和仓库状态页为准，而不是写死在源码目录文档里。
-
-## 推荐阅读顺序
-
-如果要理解当前实现路线，建议按下面顺序阅读：
-
-1. `src/Jazor.Compiler/ImplementationPrinciples.md`
-2. `docs/01-目标/compiler/Compiler.HardRules.md`
-3. `docs/01-目标/compiler/README.md`
-4. `docs/01-目标/compiler/ArchitectureOverview.md`
-5. `docs/01-目标/compiler/SyntaxTransformationPipeline.md`
-6. `docs/01-目标/compiler/semantic-walker/SemanticWalker.md`
-7. `docs/01-目标/compiler/ModuleConversionSpec.md`
-8. `docs/01-目标/compiler/OpCompileSpec.md`
 
 ## 相关文档
 
 - [ImplementationPrinciples.md](./ImplementationPrinciples.md)
-- [Compiler Hard Rules](../../docs/01-目标/compiler/Compiler.HardRules.md)
-- [Compiler 文档索引](../../docs/01-目标/compiler/README.md)
-- [Compiler 架构桥接](../../docs/01-目标/compiler/architecture.md)
-- [Jazor.CompilerTest README](../Jazor.CompilerTest/README.md)
+- [Jazor.CompilerTest](../Jazor.CompilerTest/README.md)
+- [编译器架构](../../docs/02-architecture/compiler.md)
+- [产物管线](../../docs/02-architecture/artifact-pipeline.md)

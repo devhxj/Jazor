@@ -1,33 +1,32 @@
 # ECMAScript.WebIDL.Generator
 
-This project is the new .NET host for the WebIDL generation pipeline.
+> 定位：WebIDL 生成管线的 .NET 宿主，负责采集 WebRef inventory 并生成预览 C# binding。
 
-Current responsibilities:
+## 职责
 
-- run the Deno collection worker through `DenoHost`
-- own the Deno worker/config for the WebIDL inventory pipeline
-- collect a stable JSON inventory from `webref` and `webidl2`
-- persist inventory artifacts under `src/ECMAScript/webidl`
-- generate preview C# bindings for `typedef`, `enum`, `callback`, `callback interface`, `dictionary`, `interface`, and `namespace`
+- 通过 `DenoHost` 运行 Deno collection worker，并维护 worker 与 `deno.json`。
+- 从 `webref` 和 `webidl2` 收集稳定 JSON inventory，写入 `src/ECMAScript/webidl`。
+- 为 `typedef`、`enum`、`callback`、`dictionary`、`interface` 和 `namespace` 生成预览 C# binding。
 
-Current non-goals:
+## 运行
 
-- replacing the existing `app.ts` emitter in one step
-- assuming legacy TypeScript output is the source of truth when current `webref` inventory disagrees
+采集并生成：
 
-Typical command:
-
-```powershell
+```bash
 dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl
 ```
 
-Regenerate bindings from the committed inventory without contacting WebRef. Use this for
-deterministic emitter changes and package regressions:
+只根据已提交 inventory 再生，不访问 WebRef：
 
-```powershell
+```bash
 dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl --from-inventory src/ECMAScript/webidl/webidl.inventory.json
 ```
 
-The Deno worker entrypoint and `deno.json` live under `src/ECMAScript.WebIDL.Generator/` so this project does not depend on `src/ECMAScript.WebIDL`.
+## 边界
 
-`src/ECMAScript.WebIDL` is now archived legacy code and no longer participates in the active build.
+`src/ECMAScript.WebIDL` 是归档的 legacy TypeScript generator，不参与当前构建。该项目不以旧 TypeScript 输出作为当前 WebIDL contract 的唯一依据。
+
+## 相关文档
+
+- [ECMAScript](../ECMAScript/README.md)
+- [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)

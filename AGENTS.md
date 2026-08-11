@@ -46,15 +46,15 @@ ASP.NET Core integration layer:
 Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `src/Wiki` and `samples/`.
 
 Documentation is organized under `docs/` in five categories:
-- `docs/01-目标/` — why each module exists, the problem it solves, and implementation direction
-- `docs/02-计划/` — WBS, milestones, and phase breakdowns
-- `docs/03-完成/` — review results and status snapshots
-- `docs/04-补充/` — governance rules and forward-looking supplements
-- `docs/05-遗弃/` — archived or abandoned historical material
+- `docs/01-overview/` — product scope, reading map, and system overview
+- `docs/02-architecture/` — current architecture, module ownership, and stable boundaries
+- `docs/03-guides/` — installation, configuration, authoring, development, and testing
+- `docs/04-roadmap/` — current direction, status, and reproducible quality gates
+- `docs/05-history/` — concise background for retired routes and major evolution
 
 Documentation interpretation rule:
-- Treat `docs/03-完成/compiler/testing/` as historical audit/archive material, not the primary source of current compiler truth. Statements such as “全部通过”, fixed pass-rate numbers, old source paths, or historical issue lists inside that folder are snapshot-only unless re-confirmed against current code and tests.
-- For current compiler semantics, lowering direction, and support boundaries, prefer `src/Jazor.Compiler/ImplementationPrinciples.md`, `docs/03-完成/compiler/status.md`, and the current `src/Jazor.Compiler/README.md` / `src/Jazor.CompilerTest/README.md`.
+- Historical exploration, old audits, and fixed test snapshots belong only to `docs/05-history/evolution.md`; Git history retains the detailed record.
+- For current compiler semantics, lowering direction, and support boundaries, prefer `src/Jazor.Compiler/ImplementationPrinciples.md`, `docs/02-architecture/compiler.md`, `docs/04-roadmap/current-status.md`, and the current `src/Jazor.Compiler/README.md` / `src/Jazor.CompilerTest/README.md`.
 
 RazorVue artifact and lowering boundary rule:
 - The production input is official Razor SG generated C#, and the output contract is a Vue render-function `.mjs` artifact. Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.

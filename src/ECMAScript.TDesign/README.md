@@ -1,27 +1,18 @@
 # ECMAScript.TDesign
 
-> Purpose: standalone TDesign Vue Next binding and RazorVue authoring surface.
+> 定位：TDesign Vue Next 的强类型 C# host binding 与 Razor-to-Vue authoring 接口。
 
-The published package is self-contained: it ships the browser ESM, CSS, license, and
-`manifest.json` for `tdesign-vue-next` 1.20.5. Consumers restore NuGet only; they do
-not install Node.js packages or resolve resources from a CDN.
+发布包携带 `tdesign-vue-next` 1.20.5 的浏览器 ESM、CSS、许可证和 `manifest.json`。应用只需还原 NuGet 包；Jazor 会从本地包资源物化 TDesign 与 Vue 依赖，不要求 `node_modules`、CDN 或额外的 Node.js 安装。
 
-The frozen ESM has one bare runtime dependency, `vue`. The package manifest declares
-that dependency as `vue3: ^3.5.0`, so Jazor materializes the TDesign and Vue resources
-from the restored NuGet packages into the generated application's local `vendor/`
-directory. No `node_modules` lookup is part of the consumer path.
+## 维护输入
 
-The component binding input is driven by the versioned upstream snapshot under
-`../ECMAScript.Vue.Generator/upstream/tdesign-vue-next/1.20.5`. `components.json` lists the 120 documented entries
-whose exports exist in the current browser ESM, while `bindings.json` maps each entry to
-its real module, named export, and TypeScript Props declaration. `contracts.json` resolves
-each documented prop to its current TypeScript type and declaration source, including the
-small set of Vue-mixin properties represented only in upstream `web-types`. Documentation-
-only tags without a current runtime export are not binding inputs.
+绑定输入固定在 `../ECMAScript.Vue.Generator/upstream/tdesign-vue-next/1.20.5`。`components.json`、`bindings.json` 和 `contracts.json` 分别记录可导出的组件、实际模块/export 与强类型 props 契约。没有当前 runtime export 的文档标签不是 binding 输入。
 
-Update the upstream input with:
+## 维护命令
 
-```text
+以下命令只供包维护者更新锁定上游快照和验证生成结果；应用构建与发布不会执行它们：
+
+```bash
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components
@@ -31,26 +22,15 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ```
 
-These are package-maintainer tools. They use .NET to snapshot the locked upstream
-version and Tree-sitter to read its TypeScript syntax, then generate audited binding and
-Props-contract catalogs. They are never invoked by application build or publish, and do
-not create a consumer dependency on Node.js, npm, or Tree-sitter.
+`tdesign components` 是全覆盖门禁：只有每个已声明 props 都具备具体 C# 类型时才生成当前 118 个 runtime 组件。不能为了通过生成而使用 `object`、`VueValue` 或占位契约。
 
-`ECMAScript.Vue.Generator tdesign components` is a full-coverage verification gate. It emits the
-118 current runtime components only when every declared prop has a concrete C# type;
-the generated catalog and `--report` must remain `118/118`. It never substitutes
-`object`, `VueValue`, or placeholder contracts to preserve component coverage.
+## 类型与产物边界
 
-Component contracts remain strongly typed: `object` is only permitted for Razor's
-`AdditionalAttributes` sink. Rich TDesign content is represented by verified slots and
-named value/callback contracts. A source type that cannot be expressed directly must
-receive a documented, dedicated C# contract; it must not be silently reduced to
-`object` or `VueValue` to make generation pass.
+公开 authoring 类型使用 `T*` 命名，例如 `TMenuValue`、`TButtonThemeValue` 与 `TComponents`；根 host 保留 `TDesign`。字符串域使用 `[String]` enum，因此 `TButtonThemeValue.Primary` 会发射为 `"primary"`，不会变成数值序号。
 
-Public authoring types follow TDesign component naming: use `T*` (`TMenuValue`, `TButtonThemeValue`, `TComponents`). Only the package root host remains `TDesign`.
+Razor Source Generator 集成、render-function lowering 和产物物化分别属于 `Jazor.Vue`、`Jazor.RazorVue` 和 `Jazor.Emit`。本包只定义 host binding 与组件契约。
 
-String-literal domains are emitted as `[String]` enums. Values such as `TButtonThemeValue.Primary` therefore lower to the authored TDesign literal (`"primary"`), never to a numeric enum ordinal.
+## 相关文档
 
-## Boundary
-
-This package defines host bindings and component contracts. Razor SG integration, render-function lowering, and output materialization remain owned by `Jazor.Vue`, `Jazor.RazorVue`, and `Jazor.Emit` respectively.
+- [ECMAScript.Vue.Generator](../ECMAScript.Vue.Generator/README.md)
+- [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)

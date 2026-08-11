@@ -81,42 +81,23 @@ public sealed class EcmaScriptVue3LayoutGuardTests
     }
 
     [TestMethod]
-    public void Vue3_Documentation_IsSplitOutOfPlatformCoreDirectories()
+    public void Vue3_Documentation_UsesCurrentPlatformAndBindingsGuide()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var goalRoot = Path.Combine(repoRoot, "docs", "01-目标");
-        var planRoot = Path.Combine(repoRoot, "docs", "02-计划");
-        var statusRoot = Path.Combine(repoRoot, "docs", "03-完成");
+        var guidePath = Path.Combine(repoRoot, "docs", "02-architecture", "platform-and-bindings.md");
 
-        var vueGoalRoot = Path.Combine(goalRoot, "ecmascript.vue3");
-        var vuePlanRoot = Path.Combine(planRoot, "ecmascript.vue3");
-        var vueStatusRoot = Path.Combine(statusRoot, "ecmascript.vue3");
-        var coreGoalRoot = Path.Combine(goalRoot, "ecmascript");
-        var corePlanRoot = Path.Combine(planRoot, "ecmascript");
+        Assert.IsTrue(File.Exists(guidePath), $"Platform and bindings guide not found: {guidePath}");
+        var guide = File.ReadAllText(guidePath);
+        StringAssert.Contains(guide, "ECMAScript.Vue3");
+        StringAssert.Contains(guide, "ECMAScript.VueRoute");
+        StringAssert.Contains(guide, "ECMAScript.Pinia");
 
-        Assert.IsTrue(Directory.Exists(vueGoalRoot), $"Vue3 goal docs directory not found: {vueGoalRoot}");
-        Assert.IsTrue(Directory.Exists(vuePlanRoot), $"Vue3 plan docs directory not found: {vuePlanRoot}");
-        Assert.IsTrue(Directory.Exists(vueStatusRoot), $"Vue3 status docs directory not found: {vueStatusRoot}");
-        Assert.IsTrue(File.Exists(Path.Combine(vueGoalRoot, "README.md")), $"Vue3 goal README missing under {vueGoalRoot}");
-        Assert.IsTrue(File.Exists(Path.Combine(vuePlanRoot, "README.md")), $"Vue3 plan README missing under {vuePlanRoot}");
-        Assert.IsTrue(File.Exists(Path.Combine(vueStatusRoot, "status.md")), $"Vue3 status file missing under {vueStatusRoot}");
-
-        var coreGoalReadme = File.ReadAllText(Path.Combine(coreGoalRoot, "README.md"));
-        var corePlanReadme = File.ReadAllText(Path.Combine(corePlanRoot, "README.md"));
-        StringAssert.Contains(coreGoalReadme, "ECMAScript.Vue3");
-        StringAssert.Contains(coreGoalReadme, "ecmascript.vue3");
-        StringAssert.Contains(corePlanReadme, "ECMAScript.Vue3");
-        StringAssert.Contains(corePlanReadme, "ecmascript.vue3");
-
-        var misplacedGoalFiles = Directory.GetFiles(coreGoalRoot, "*vue*", SearchOption.TopDirectoryOnly)
-            .Select(Path.GetFileName)
-            .ToArray();
-        var misplacedPlanFiles = Directory.GetFiles(corePlanRoot, "*vue*", SearchOption.TopDirectoryOnly)
-            .Select(Path.GetFileName)
-            .ToArray();
-
-        CollectionAssert.AreEqual(Array.Empty<string>(), misplacedGoalFiles, $"Vue docs should not remain under {coreGoalRoot}");
-        CollectionAssert.AreEqual(Array.Empty<string>(), misplacedPlanFiles, $"Vue docs should not remain under {corePlanRoot}");
+        foreach (var legacyDirectory in new[] { "01-目标", "02-计划", "03-完成" })
+        {
+            Assert.IsFalse(
+                Directory.Exists(Path.Combine(repoRoot, "docs", legacyDirectory)),
+                $"Legacy documentation directory should not exist: {legacyDirectory}");
+        }
     }
 
     [TestMethod]

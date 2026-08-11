@@ -1,14 +1,14 @@
 # ECMAScript.Vue.Generator
 
-Maintenance-only generator for the Element Plus, Vuetify, and TDesign binding
-packages. It owns frozen upstream inputs and the tools that read them. Binding
-packages retain only their authoring contracts, generated C#, `manifest.json`,
-`dist/`, and `licenses/`; none references this project at application build or
-runtime.
+> 定位：Element Plus、Vuetify 和 TDesign binding 的维护期生成器，不参与应用构建或运行时。
 
-Run from the repository root:
+该项目维护锁定的上游输入，并生成或校验 binding catalog。各 binding 包只保留其 authoring contract、生成的 C#、`manifest.json`、`dist/` 和 `licenses/`，不会在应用构建时引用本项目。
 
-```text
+## 运行
+
+在仓库根目录执行：
+
+```bash
 dotnet run --project src/ECMAScript.Vue.Generator -- elementplus
 dotnet run --project src/ECMAScript.Vue.Generator -- elementplus --check
 dotnet run --project src/ECMAScript.Vue.Generator -- vuetify
@@ -19,11 +19,15 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ```
 
-`upstream/element-plus/2.9.8` freezes only the Element Plus files consumed by
-its generator. `upstream/tdesign-vue-next/1.20.5` preserves the declaration
-snapshot and external type inputs required for reproducible TDesign contracts.
+## 输入与边界
 
-Vuetify has no frozen strong-prop source in this project. Its catalog command
-uses Roslyn to derive `VuetifyCatalog.g.cs` from the current
-`[VueLibraryComponent]` declarations. Component props remain authored contracts;
-the generator does not present them as a complete upstream-derived surface.
+- `upstream/element-plus/2.9.8` 只冻结 Element Plus 生成实际需要的上游文件。
+- `upstream/tdesign-vue-next/1.20.5` 保存可复现 TDesign contract 所需的声明快照与外部类型输入。
+- Vuetify catalog 由当前 `[VueLibraryComponent]` 声明经 Roslyn 生成 `VuetifyCatalog.g.cs`；它不是完整的上游类型镜像。
+- 生成器不得用 `object`、`VueValue` 或占位类型伪造组件覆盖率。
+
+## 相关文档
+
+- [ECMAScript.ElementPlus](../ECMAScript.ElementPlus/README.md)
+- [ECMAScript.TDesign](../ECMAScript.TDesign/README.md)
+- [ECMAScript.Vuetify](../ECMAScript.Vuetify/README.md)

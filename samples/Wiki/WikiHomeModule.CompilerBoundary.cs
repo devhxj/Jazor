@@ -58,7 +58,8 @@ public static partial class WikiHomeModule
                 H("p", "扩展编译器支持时，从活跃的原理文档开始，而非历史通过率快照。"),
                 CodeBlock("推荐来源", """
 src/Jazor.Compiler/ImplementationPrinciples.md
-docs/03-完成/compiler/status.md
+docs/02-architecture/compiler.md
+docs/04-roadmap/current-status.md
 src/Jazor.Compiler/README.md
 src/Jazor.CompilerTest/README.md
 """),

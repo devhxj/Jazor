@@ -1,50 +1,28 @@
 # ECMAScript.VueRoute.Test
 
-`ECMAScript.VueRoute.Test` is the dedicated regression project for the `src/ECMAScript.VueRoute` host binding surface.
+> 定位：`ECMAScript.VueRoute` 的独立 binding 回归测试项目。
 
-## Scope
+该项目维护 Vue Router public binding surface 的契约，不把框架特定 fixture 混入 `Jazor.CompilerTest`。
 
-- Module layout and project wiring guards for the standalone `ECMAScript.VueRoute` library.
-- Reflection-based proxy surface checks for the exported Vue Router runtime bindings.
-- Compiler-boundary coverage proving the binding types are consumable by `Jazor.Compiler`.
-- Packaging and shared-test-entry wiring guards so `ECMAScript.VueRoute` remains part of the normal repo build/test flow.
+## 覆盖范围
 
-## Current regression coverage
+- 项目布局、打包和仓库测试入口。
+- runtime proxy 的公开成员和强类型 authoring surface。
+- union、maybe-ref、注入 key、命名视图、route props 与 navigation guard 的 C# 表达能力。
+- binding 与 `Jazor.Compiler` lowering 边界的一致性。
 
-- `EcmaScriptVueRouteLayoutGuardTests`
-- `EcmaScriptVueRouteProxyTests`
-- `EcmaScriptVueRouteCompilerBoundaryTests`
+当前测试入口为 `EcmaScriptVueRouteLayoutGuardTests`、`EcmaScriptVueRouteProxyTests` 和 `EcmaScriptVueRouteCompilerBoundaryTests`。具体 API 覆盖以这些测试和 `ECMAScript.VueRoute` 源码为准。
 
-重点覆盖的 authoring seam:
+## 运行
 
-- delegate / lambda -> union 的显式 `From(...)` authoring
-- 接口类型值进入 union 或字典宿主时的强类型入口
-- maybe-ref authoring 的语言边界：`VueReadonlyRef<T>` 可直接赋值，`IVueRef<T>` 继续显式 `From(...)`
-- 官方公开注入 key 与其值面 contract：避免把 router/view-depth 等公开导出弱化成 `object`
-- 命名视图组件字典、`props` 字典、`beforeEnter` guard 数组、legacy `next(...)` callback 的集合初始化与对象初始化 authoring
-- `Jazor.Compiler` 降级结果与宿主 API 公开形状之间的一致性
-
-These tests intentionally live outside `Jazor.CompilerTest`. The compiler project keeps compiler semantics, while `ECMAScript.VueRoute.Test` owns the external library contract for the Vue Router binding surface.
-
-## Run
-
-```powershell
+```bash
 dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj
-```
-
-Run with coverage settings:
-
-```powershell
 dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj --settings src/ECMAScript.VueRoute.Test/coverlet.runsettings
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project vueroute
 ```
 
-Or use the shared repo entry point:
+## 相关文档
 
-```powershell
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
-```
-
-## Notes
-
-- The tests read repository files directly to guard solution, package, and script wiring.
-- Compiler-boundary tests validate current supported behavior instead of forcing `Jazor.CompilerTest` to carry Vue Router-specific fixtures.
+- [ECMAScript.VueRoute](../ECMAScript.VueRoute/README.md)
+- [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)
+- [开发与测试](../../docs/03-guides/development-and-testing.md)

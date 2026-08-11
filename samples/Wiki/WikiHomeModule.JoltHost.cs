@@ -31,14 +31,10 @@ public static partial class WikiHomeModule
                     CheckCard("Build / Deno", "组织生产构建、Volar worker、import map 与 bundle。")
                 ])
             ]),
-            PageSection("run-modes", "历史恢复入口",
+            PageSection("run-modes", "历史说明",
             [
-                H("p", "需要维护、对照或追溯旧线路时，请从固定 baseline 或原分支恢复。不要在转型分支重新引入已删除的 Jolt 项目和协议。"),
-                CodeBlock("固定历史边界", """
-baseline commit: d68aecbb00b23aa35735c9a269b2e987c7815b05
-retirement commit: 3ee18679fbdf43c13e05d7bfac8857ddcebd19f9
-G0 evidence: docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md
-""")
+                H("p", "已退役路线的背景和恢复边界已收敛到仓库历史文档。不要在当前转型分支重新引入已删除的 Jolt 项目或协议。"),
+                CodeBlock("历史入口", "docs/05-history/evolution.md")
             ]),
             PageSection("when-to-choose-jolt", "新项目如何选择",
             [

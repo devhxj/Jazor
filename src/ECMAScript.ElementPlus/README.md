@@ -1,19 +1,20 @@
 # ECMAScript.ElementPlus
 
-> Purpose: standalone Element Plus binding and RazorVue authoring surface.
+> 定位：`element-plus` 的强类型 C# host binding 与 Razor-to-Vue authoring 接口。
 
-Conservative first-slice bindings for `element-plus`.
+该包提供经过验证的 Element Plus runtime 导入、组件代理和 props/slot 契约。它只覆盖当前发布的稳定 authoring surface，不以 `object` 或弱类型选择器补齐未建模 API。
 
-Scope of this package:
+## 当前支持范围
 
-- Root plugin/runtime host: `ElementPlus`
-- Stable admin-shell component proxies: config provider, container layout, menu, button, card, link, space, divider
-- Strongly typed RazorVue authoring surface without `object` catch-all props
+- 根插件与 runtime host：`ElementPlus`。
+- 管理壳常用组件：config provider、container layout、menu、button、card、link、space 与 divider。
+- 遵循 Element Plus 命名的公开类型，例如 `ElButtonType`、`ElUploadFile` 与 `ElComponents`；根 host 保留 `ElementPlus` 名称。
 
-Current package contract intentionally avoids weak catch-all choice wrappers. Rich content is exposed through verified slots, while high-frequency scalar props stay strongly typed.
+## 边界
 
-Public authoring types follow Element Plus component naming: use `El*` (`ElUploadFile`, `ElButtonType`, `ElComponents`). Only the package root host remains `ElementPlus`.
+Razor Source Generator 集成、render-function lowering 与产物物化分别属于 `Jazor.Vue`、`Jazor.RazorVue` 与 `Jazor.Emit`。本包只定义 host binding 和组件契约。
 
-## Boundary
+## 相关文档
 
-This package defines host bindings and component contracts. Razor SG integration, render-function lowering, and output materialization remain owned by `Jazor.Vue`, `Jazor.RazorVue`, and `Jazor.Emit` respectively.
+- [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)
+- [Razor-to-Vue](../../docs/02-architecture/razor-to-vue.md)

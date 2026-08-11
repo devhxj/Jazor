@@ -1,30 +1,32 @@
 # Jazor.Vue
 
-`Jazor.Vue` is the explicit Razor-to-Vue integration package for Jazor.
+> 定位：Razor SDK 项目显式启用 Razor-to-Vue 的 NuGet 包。
 
-It installs the generator-driver hook that consumes the final Roslyn `Compilation` produced by the official Razor source generator. Razor component `BuildRenderTree` operations are lowered to Vue render-function modules and registered in `Jazor.Generated.VueRenderCatalog` for `Jazor.Emit`.
+`Jazor.Vue` 安装消费官方 Razor Source Generator 最终 Roslyn `Compilation` 的 generator-driver hook。Razor 组件的 `BuildRenderTree` 操作会降低为 Vue render-function 模块，并注册到供 `Jazor.Emit` 使用的 `Jazor.Generated.VueRenderCatalog`。
 
-## Install
+## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.8.4" />
+  <PackageReference Include="Jazor.Vue" Version="0.8.4" PrivateAssets="all" />
 </ItemGroup>
 ```
 
-The package is opt-in and must be used together with `Jazor`, which supplies the shared analyzer dependencies. Referencing `Jazor` alone does not install the Razor hook, scan Razor components, or generate a Vue render catalog. `Jazor.Vue` packages only the merged `Jazor.RazorVue` analyzer assembly so shared generators are loaded exactly once.
+该包是 opt-in，必须与 `Jazor` 一起引用。只引用 `Jazor` 不会安装 Razor hook、扫描 Razor 组件或生成 Vue render catalog。`Jazor.Vue` 只携带合并后的 `Jazor.RazorVue` analyzer，避免重复装载共享 generator。
 
-No Razor host-output property is required. The integration does not use `EnableRazorHostOutputs`, `RazorCodeDocument`, `RazorCSharpDocument`, or a second parse of generated C#.
+## 产物输出
 
-## Output
+| `JazorMode` | 结果 |
+| --- | --- |
+| `none` | 默认值，不输出产物 |
+| `debug` | 模块、source map 与 manifest |
+| `release` | 生产浏览器 bundle 与 source map |
 
-`JazorMode` only selects output materialization:
+`JazorDir` 默认是 `$(MSBuildProjectDirectory)\wwwroot\jazor\`。该集成不需要 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或二次解析生成 C#；`release` 使用 Netpack 进行浏览器打包。
 
-| Value | Result |
-|---|---|
-| `none` | Default. No output. |
-| `debug` | Modules, source maps, and manifest. |
-| `release` | Production bundle and source map. |
+## 相关文档
 
-`JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`. `JazorMode=release` always uses Netpack for browser bundling.
+- [Jazor.RazorVue](../Jazor.RazorVue/README.md)
+- [安装与配置](../../docs/03-guides/installation-and-configuration.md)
+- [Razor-to-Vue](../../docs/02-architecture/razor-to-vue.md)

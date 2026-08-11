@@ -1,44 +1,42 @@
 # Jazor.Analyzer
 
-> Status: active reference
-> Positioning: Roslyn analyzer and Razor SG hook host for whitelist validation.
+> 定位：ECMAScript 白名单诊断与 Razor Source Generator hook 的 Roslyn analyzer 入口。
 
-`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断，以及 RazorVue 使用的 Razor SG hook/bootstrap 生成器。它不承载 Razor IR、SFC 语义模型或宿主 RPC。
+`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断，以及 Razor-to-Vue 所需的 Razor SG hook/bootstrap。它不承载 Razor IR、SFC 语义模型或宿主 RPC。
 
-## Responsibilities
+## 职责
 
-- 对 `ECMAScript` 标注代码执行白名单类型/成员诊断。
-- 在 erased positions（泛型实参、数组元素、局部推断、集合表达式目标等）做更早、更严格的入口诊断。
-- 为 RazorVue 注册 Razor SG hook/bootstrap，并保留 final-document 输入不可用时的 fail-fast 诊断。
+- 对进入 ECMAScript 编译域的类型和成员执行白名单诊断。
+- 在泛型实参、数组元素、局部推断与集合表达式目标等 erased positions 提前报告不支持的具体类型。
+- 注册 Razor SG hook/bootstrap，并在最终文档输入不可用时提供可定位诊断。
 
-## Architectural Boundaries
+## 边界
 
-- `Jazor.Analyzer` 可以比 `Jazor.Compiler` 更严格，但编译器仍是最终 runtime-sensitive 验证层。
-- `ECMAScript.Contract` 提供最小契约，如 `Op` 和 `JazorAttribute`。
-- `Jazor.Common` 提供 `Format` 与 `SourceMaps` 等真正通用实现。
-- `Jazor.RazorVue` 提供 Razor SDK final-document 绑定边界；本程序集只承载 Hook 所需的分析器入口。
+- Analyzer 可以比 `Jazor.Compiler` 更严格，但 compiler 仍是 runtime-sensitive lowering 的最终验证层。
+- `ECMAScript.Contract` 提供最小声明契约，`Jazor.Common` 提供 `Format` 与 `SourceMaps` 等共享实现。
+- `Jazor.RazorVue` 持有 Razor SDK final-document 绑定边界；本程序集只提供 hook 所需的 analyzer 入口。
 
-## Current Layout
+## 代码结构
 
-- `Analyzer.cs`: ECMAScript 主线静态分析器。
-- `RazorVue/Generation/*.cs`: Razor SG hook/bootstrap 与 final-document 输入诊断。
-- `AnalyzerReleases.*.md`: 分析器规则发布记录。
+- `Analyzer.cs`：ECMAScript 主线静态分析器。
+- `RazorVue/Generation/*.cs`：Razor SG hook/bootstrap 与 final-document 输入诊断。
+- `AnalyzerReleases.*.md`：诊断规则发布说明。
 
-## Diagnostic Surface
+## 诊断范围
 
-- `JAZOR001`: 不支持的类型/成员进入 ECMAScript 编译域。
-- `JAZOR002`: 共享 runtime alias 造成的类型过滤歧义。
+- `JAZOR001`：不支持的类型或成员进入 ECMAScript 编译域。
+- `JAZOR002`：共享 runtime alias 造成的类型过滤歧义。
 
-## Build and Test
+## 构建与验证
 
-```powershell
+```bash
 dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 ```
 
-## Read Next
+## 相关文档
 
-- [../Jazor.Compiler/README.md](../Jazor.Compiler/README.md)
-- [../Jazor.Common/README.md](../Jazor.Common/README.md)
-- [../../docs/01-目标/analyzer/README.md](../../docs/01-目标/analyzer/README.md)
+- [Jazor.Compiler](../Jazor.Compiler/README.md)
+- [Jazor.RazorVue](../Jazor.RazorVue/README.md)
+- [编译器架构](../../docs/02-architecture/compiler.md)

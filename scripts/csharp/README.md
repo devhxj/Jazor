@@ -1,25 +1,34 @@
-﻿# C# Diagnostic Scripts
+# C# 脚本
 
-This directory contains single-file C# apps for local repository diagnostics.
+> 定位：仓库构建、验证和可复用诊断的单文件 C# 入口。
 
-Run scripts from the repository root with:
+仓库自动化统一使用 `dotnet run --file` 运行本目录下的 C# 文件。需要反射、Roslyn、元数据检查或复杂参数编排时，应新增或扩展这里的脚本，而不是添加仓库自有的 PowerShell 脚本。
 
-```powershell
-dotnet run --file scripts/csharp/<script-name>.cs
+## 使用方式
+
+在仓库根目录执行：
+
+```bash
+dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 ```
 
-Use these scripts for reflection, Roslyn, metadata inspection, and other probes where inline PowerShell quoting would be fragile. Keep scripts deterministic and read-only unless their name and header clearly say otherwise.
+脚本应保持确定性，并明确其输出目录、外部进程和是否会修改构建产物。一次性输入可置于 `.tmp/`；可复用的检查应保留在本目录。
 
-## Current script lanes
+## 主要入口
 
-- `test-dotnet.cs` builds once and runs the active compiler, CLR, Pinia, VueRoute, Razor SG, emit, and render-context suites.
-- `verify-compiler-coverage.cs` runs the complete compiler suite and fails unless at least 10,000 tests pass with 98% line and 96% branch coverage for `Jazor.Compiler`.
-- `verify-vue-binding-coverage.cs` runs the Vue binding test lanes and independently audits every public binding contract unit in Vue3, Vuetify, Element Plus, TDesign, Pinia, Pinia Testing, and Vue Router. It requires every target to reach 90%; this is a metadata-contract audit, not misleading Coverlet IL line coverage for `extern` wrappers.
-- `verify-development-hmr.cs` starts a temporary development host and real browser, then verifies the custom artifact mapping, manifest template-only diff, WebSocket `module-update`, cache-busted dynamic import, and `JazorHmr.accept` callback path.
-- `test-render-context.cs` runs the RazorVue render-context runtime checks directly with Node.
-- `benchmark-razorvue-g2.cs` records the RazorVue G2 benchmark protocol for the plain-text, Counter, and 100-item keyed-list fixtures. `--write-release-report` runs the protocol, runtime, external official Razor SG package-consumer, and browser lanes, including generated module/source-map/manifest checks. The report is a reproducible baseline and keeps warnings or unavailable retired-line comparisons explicit rather than claiming performance completion.
-- `wiki-verify-smoke.cs` verifies the current Wiki host smoke path.
-- `generate-jazoradmin-brand-assets.cs` deterministically regenerates the JazorAdmin 16/32/48/64px ICO fallback from the compact local mark; pass `--check` in verification lanes.
-- Element Plus, Vuetify, and TDesign binding maintenance is owned by `src/ECMAScript.Vue.Generator/`; it is a project because it owns versioned snapshots and multiple reproducible generator lanes, rather than a local diagnostic script.
+| 脚本 | 用途 |
+| --- | --- |
+| `test-dotnet.cs` | 构建一次并运行当前主测试 lane，支持 `--project <name>` 聚焦项目 |
+| `verify-compiler-coverage.cs` | 执行编译器测试和正式覆盖率门槛 |
+| `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
+| `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
+| `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
+| `wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs` | 构建、预览与验证 Wiki 示例 |
+| `generate-jazoradmin-brand-assets.cs` | 再生成或检查 JazorAdmin 本地品牌图标 |
 
-The retired `Playground` host and `playground-verify-smoke.cs` lane are no longer part of the active transformation branch. Use Git history for the old Playground smoke workflow.
+具体参数和验证范围以脚本开头的说明及相应项目 README 为准。
+
+## 相关文档
+
+- [开发与测试](../../docs/03-guides/development-and-testing.md)
+- [示例总览](../../docs/03-guides/examples.md)

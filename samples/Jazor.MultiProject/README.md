@@ -1,61 +1,43 @@
 # Jazor.MultiProject
 
-> Purpose: multi-project module discovery and output-mode reference sample.
+> 定位：多项目 C# -> ECMAScript 模块发现与输出模式的最小示例。
 
-This sample shows the recommended SDK layout for a multi-project solution:
+该示例展示推荐的 SDK 布局：共享契约项目声明模块，功能项目引用共享契约，最终 host 统一发射自身及其引用项目中标记为 `[ECMAScriptModule]` 的模块。
 
-- `Sample.Contracts`: shared module library.
-- `Sample.Features`: class library that declares `[ECMAScriptModule]` and references `Sample.Contracts`.
-- `Sample.Host`: final host that uses `JazorMode=debug` to emit modules from itself and referenced libraries.
+## 结构
 
-## Build with a published package
+- `Sample.Contracts`：共享模块库。
+- `Sample.Features`：声明 ECMAScript module 并引用共享契约的类库。
+- `Sample.Host`：最终应用 host，负责生成模块和选择输出模式。
 
-If `Jazor` is already published to your feed, build the host project directly:
+## 构建
 
-```powershell
-dotnet build .\Sample.Host\Sample.Host.csproj
+已配置发布包源时，直接构建 host：
+
+```bash
+dotnet build samples/Jazor.MultiProject/Sample.Host/Sample.Host.csproj
 ```
 
-Generated modules are written to:
+生成模块位于 `Sample.Host/wwwroot/jazor/`。
 
-```text
-.\Sample.Host\wwwroot\jazor\
+使用当前仓库的本地包进行验证：
+
+```bash
+dotnet run --file samples/Jazor.MultiProject/build-local.cs
 ```
 
-## Build from this repository
+## 输出模式
 
-Use the helper script to build the pack inputs, pack the local `Jazor` package, and rebuild the host against that package:
+`JazorMode=debug` 输出可检查的模块；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。构建 release bundle：
 
-```powershell
-dotnet run --file .\samples\Jazor.MultiProject\build-local.cs
+```bash
+dotnet run --file samples/Jazor.MultiProject/build-local.cs -- --bundle
 ```
 
-The script:
+本示例的 bundle 位于 `Sample.Host/wwwroot/jazor/bundle.js`，并导出 host 的 `boot` 入口。
 
-1. builds the runtime, analyzer/compiler, and emit tool,
-2. packs `src/Jazor`,
-3. restores the sample from the local package folder,
-4. rebuilds `Sample.Host`,
-5. emits JavaScript into `Sample.Host\wwwroot\jazor\`.
+## 相关文档
 
-The script uses `Rebuild` on the host so local package/output caching does not leave stale generated modules behind.
-
-Generated output includes modules from all referenced projects that declare `[ECMAScriptModule]`.
-
-## Production Bundle
-
-`JazorMode=release` uses the packaged Netpack lane for browser bundling. DenoHost is reserved for runtime execution, including SSR and smoke coverage.
-
-Use the same script with `-Bundle`:
-
-```powershell
-dotnet run --file .\samples\Jazor.MultiProject\build-local.cs -- --bundle
-```
-
-This writes:
-
-```text
-.\Sample.Host\wwwroot\jazor\bundle.js
-```
-
-The bundled file re-exports the host module members, so in this sample the final bundle exports `boot`.
+- [快速开始](../../docs/03-guides/quick-start.md)
+- [安装与配置](../../docs/03-guides/installation-and-configuration.md)
+- [产物管线](../../docs/02-architecture/artifact-pipeline.md)

@@ -1,62 +1,37 @@
 # ECMAScript.VueRoute.MemorySmoke
 
-> Purpose: external Vue Router binding, generated modules, Netpack browser bundle, and DenoHost runtime smoke sample.
+> 定位：Vue Router binding、生成模块和浏览器运行时的端到端 smoke 示例。
 
-This sample demonstrates the current `ECMAScript.VueRoute` consumer path with a fixed build/runtime boundary:
+本示例以 C# 编写 Vue Router 4 route table、guard、link 和 router-view 组合，验证 `ECMAScript.VueRoute` 在 Jazor 输出链路中的真实消费方式。
 
-- author Vue Router 4 route tables, guards, links, and router-view composition in C#
-- emit raw debug `.mjs` modules from a Jazor host project
-- build the production browser artifact through `JazorMode=release` and Netpack
-- execute generated-module runtime and DOM coverage through the DenoHost-provided Deno runtime
+## 结构
 
-The sample is split into:
+- `VueRoute.MemorySmoke.Host`：生成 router、components、tests 和 host 模块。
+- `vueroute-consumer`：Deno consumer，加载 debug module 并验证 bundle 的运行时行为。
+- `build-local.cs`：打包当前仓库的本地依赖并构建 host。
+- `verify-smoke.cs`：生成隔离产物、检查 lowering、构建 bundle 并执行 runtime/DOM 测试。
 
-- `VueRoute.MemorySmoke.Host`: Jazor host that emits the generated modules
-- `vueroute-consumer`: minimal Deno runtime consumer that imports debug modules for coverage and materializes the already-built Netpack browser artifact
+## 构建与验证
 
-## Build from this repository
+在仓库根目录执行：
 
-Use the helper script to build the local package inputs, pack `Jazor`, and rebuild the host:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs
+```bash
+dotnet run --file samples/ECMAScript.VueRoute.MemorySmoke/build-local.cs
+dotnet run --file samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.cs -- -Configuration Release
 ```
 
-By default, generated output is written to an isolated smoke directory:
+smoke 默认输出到仓库 `.tmp/sample-smoke/`，不依赖固定的 `wwwroot/jazor` 路径。
 
-```text
-.\..\..\.tmp\sample-smoke\ECMAScript.VueRoute.MemorySmoke\Debug\jazor\
-```
+如需单独检查 consumer：
 
-Run the end-to-end smoke verification from the repository root or sample directory:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.cs -- -Configuration Release
-```
-
-This validates the production-oriented consumer path:
-
-- pack `Jazor` from the current repository state
-- rebuild `VueRoute.MemorySmoke.Host` against the freshly packed local NuGet
-- emit isolated generated Vue Router artifacts and assert the expected lowering shape
-- build and assert the Netpack release bundle
-- run the DenoHost runtime/DOM suites
-
-## Run the frontend consumer
-
-Build the production artifact and then materialize it through the Deno runtime consumer:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs -- --bundle-out-dir .\.tmp\vueroute-bundle
-$env:JAZOR_BUNDLE_ROOT = (Resolve-Path .\.tmp\vueroute-bundle)
-cd .\vueroute-consumer
+```bash
+cd samples/ECMAScript.VueRoute.MemorySmoke/vueroute-consumer
 deno task build
 deno task test
 ```
 
-The consumer imports:
+## 相关文档
 
-- the generated host bootstrap from `host/app.mjs`
-- the generated internal `components/*`, `router/*`, `tests/*`, and `System/*` modules through import-map aliases
-
-`verify-smoke.cs` sets `JAZOR_GENERATED_ROOT` so the consumer resolves the isolated generated output instead of relying on a fixed `wwwroot/jazor` path.
+- [ECMAScript.VueRoute](../../src/ECMAScript.VueRoute/README.md)
+- [VueRoute 测试](../../src/ECMAScript.VueRoute.Test/README.md)
+- [示例总览](../../docs/03-guides/examples.md)

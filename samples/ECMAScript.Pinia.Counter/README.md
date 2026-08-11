@@ -1,124 +1,44 @@
 # ECMAScript.Pinia.Counter
 
-> Purpose: Pinia binding, generated modules, Netpack browser bundle, and DenoHost runtime/DOM verification sample.
+> 定位：Pinia binding、生成模块、浏览器 bundle 和运行时验证的端到端示例。
 
-This sample demonstrates the current `ECMAScript.Pinia` consumption path with a fixed build/runtime boundary:
+本示例演示如何在 C# 中编写 Pinia option store，并将 Jazor 生成的模块交给 Vue、Pinia 和 Deno runtime 消费。它验证 binding 的真实使用路径，不定义 `ECMAScript.Pinia` 的公共 API。
 
-- author a Pinia option store in C#
-- emit raw debug `.mjs` modules from a Jazor host project
-- build the production browser artifact through `JazorMode=release` and Netpack
-- execute generated-module runtime and DOM coverage through the DenoHost-provided Deno runtime
+## 结构
 
-The sample is split into:
+- `Pinia.Counter.Host`：Jazor host，生成 `stores/`、`components/`、`tests/` 和 `host/` 模块。
+- `pinia-consumer`：Deno consumer，通过 import map 运行生成模块并检查 DOM 行为。
+- `build-local.cs`：基于当前仓库打包本地 `Jazor` 后构建 host。
+- `verify-smoke.cs`：构建 release bundle 并执行 Deno runtime/DOM smoke。
 
-- `Pinia.Counter.Host`: Jazor host that emits the generated modules to `wwwroot/jazor/`
-- `pinia-consumer`: Deno runtime consumer that resolves debug modules through an import map and materializes the already-built Netpack browser artifact
+## 构建与验证
 
-## Build from this repository
+在仓库根目录执行：
 
-Use the helper script to build the local package inputs, pack `Jazor`, and rebuild the host:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.Pinia.Counter\build-local.cs
+```bash
+dotnet run --file samples/ECMAScript.Pinia.Counter/build-local.cs
+dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- -Configuration Release
 ```
 
-Generated output is written to:
+常规构建产物位于 `Pinia.Counter.Host/wwwroot/jazor/`；smoke 会使用隔离的 `.tmp/` 输出，避免改动跟踪的示例文件。
 
-```text
-.\Pinia.Counter.Host\wwwroot\jazor\
-```
+如需单独检查前端 consumer：
 
-You should see:
-
-- `stores/counter-store.mjs`
-- `stores/activity-store.mjs`
-- `components/counter-app.mjs`
-- `components/counter-cookbook.mjs`
-- `components/counter-multi-store.mjs`
-- `components/counter-subscription.mjs`
-- `components/counter-hydration.mjs`
-- `components/counter-hmr.mjs`
-- `tests/counter-testing.mjs`
-- `host/app.mjs`
-- `jazor-manifest.json`
-
-Run the end-to-end smoke verification from the repository root or sample directory:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.Pinia.Counter\verify-smoke.cs -- -Configuration Release
-```
-
-This validates the production-oriented consumer path:
-
-- pack `Jazor` from the current repository state
-- rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
-- keep `NuGet.Config` on stable sources only while `build-local.cs` / `verify-smoke.cs` inject the transient local package source explicitly, so `dotnet run --file` can restore before the sample creates `.tmp/nupkg-sample`
-- emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
-- assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
-- build and assert the Netpack release bundle
-- run the DenoHost runtime/DOM suites
-
-## Run the frontend consumer
-
-Build the production artifact and then materialize it through the Deno runtime consumer:
-
-```powershell
-dotnet run --file .\samples\ECMAScript.Pinia.Counter\build-local.cs -- --bundle-out-dir .\.tmp\pinia-counter-bundle
-$env:JAZOR_BUNDLE_ROOT = (Resolve-Path .\.tmp\pinia-counter-bundle)
-cd .\pinia-consumer
+```bash
+cd samples/ECMAScript.Pinia.Counter/pinia-consumer
 deno task build
 deno task test
 ```
 
-The consumer imports:
+## 验证范围
 
-- the generated host bootstrap through the `host/*` import-map alias
-- the generated internal `components/*`, `stores/*`, and `tests/*` modules through import-map aliases
-- Vue, Pinia, `@pinia/testing`, and `jsdom` through Deno/npm resolution
+- `createPinia()`、option store、`storeToRefs()`、Options API helpers 与自定义 plugin state。
+- `@pinia/testing` 的 testing root、seed state 与 action stub authoring。
+- hydration、HMR、multi-root isolation 与应用 unmount 后的 Pinia 清理。
+- Jazor debug module、release bundle 和浏览器 DOM 的一致性。
 
-Set `JAZOR_GENERATED_ROOT` if you want the consumer to resolve generated modules from a non-default output directory.
-The generated root app installs the sample Pinia audit plugin through `createConfiguredPinia()`, so projected custom properties/state are exercised through the same runtime path the sample UI uses.
-The generated root app also disposes its Pinia root on `app.unmount()`, so repeated mount/unmount flows do not retain store state or plugin side effects.
-The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate(...)` stays generated in C# while `import.meta.hot.accept(...)` remains an explicit host concern.
+## 相关文档
 
-## What the sample covers
-
-- `createPinia()` root installation on a Vue app
-- `createTestingPinia()` testing root authoring through the standalone `ECMAScript.Pinia.Testing` line
-- option-store authoring with `defineStore(...)`
-- explicit `StoreDefinition<TStore>.Use()` store resolution
-- typed `storeToRefs()` projections
-- projected plugin store / store-definition authoring via `ProjectStoreDefinition(...)`
-- projected store flowing through `storeToRefs()`, object-form `mapState()`, and `mapActions()`
-- object-form `mapState()` explicit union factory authoring through `PiniaStateMapValue<TStore>.From("key")` and `PiniaStateMapValue<TStore>.From(selector)`
-- multi-store Options API helper authoring via `mapStores()` + `setMapStoreSuffix("")`
-- `$subscribe()` cookbook coverage across direct mutation, object patch, and function patch flows
-- `skipHydrate()` / `shouldHydrate()` plus option-store `hydrate(storeState, initialState)` cookbook coverage
-- explicit multi-root `StoreDefinition.Use(pinia)` isolation coverage
-- `acceptHMRUpdate(...)` plus `StoreDefinition<TStore>.Use(pinia, hot)` cookbook coverage
-- consumer-side `import.meta.hot.accept(...)` bridge over the generated HMR handlers
-- typed `this`-bound Pinia actions via `Vue3.BindThis(...)`
-- plugin-added custom properties / custom state cookbook contracts
-- direct store runtime calls such as `$patch({ ... })` and `$reset()`
-- root lifecycle coverage for `setActivePinia()` / `setActivePinia(undefined)` / `getActivePinia()` / `disposePinia()`
-- generated host helper coverage for clearing the active root via `ClearActivePinia()` instead of consumer-side raw `setActivePinia(undefined)` calls
-- generated root-app teardown coverage for `app.unmount()` -> `disposePinia(...)`
-- testing-only state seeding, selective `stubActions`, and plugin install ordering through `TestingOptions`
-- combined typed testing-root authoring through `TestingOptions<TDelegate, TStore>` without changing the emitted `@pinia/testing` runtime shape
-- testing-root `fakeApp` / `TestingPinia.app` runtime seam
-- testing-only named-action `stubActions` contract through the standalone `ECMAScript.Pinia.Testing` line
-- testing-root typed `stubActions` predicate projection through `ProjectStubActionPredicate<TStore>(...)`
-- testing-root combined typed `createSpy` + typed `stubActions` projection through `ProjectStubActions<TStore>(...)`
-- testing-root combined typed `createSpy` + typed `stubActions` explicit union factory path through `TestingStubActions<TStore>.From(...)`
-- testing-root typed/projected plugin reuse through `ProjectPlugin(...)`, including projected custom-state writes on the generated testing root
-- strict testing-root coverage for named action stubs plus `stubPatch` / `stubReset`
-- Deno-side smoke coverage against generated `createTestingPinia()` + store modules
-- Deno-side DOM coverage against the generated root app, including plugin projection, multi-store rendering, subscription notifications, hydration state, and HMR cookbook state
-- Deno-side runtime coverage for store `$dispose()`, root recreation after `disposePinia()`, and repeated mount/unmount cleanup
-- Deno-side runtime/DOM coverage for explicit multi-root isolation and non-leaking plugin custom state
-
-## Notes
-
-- The host's default `JazorMode=debug` keeps raw modules available for import-map runtime checks. Supplying `--bundle-out-dir` performs a second `JazorMode=release` build that uses Netpack for the browser artifact.
-- The testing root module is emitted as a normal generated artifact so consumers can inspect `@pinia/testing` lowering without mixing testing-only APIs back into `ECMAScript.Pinia` main package code.
-- `pinia-consumer` intentionally stays small and explicit so the module-resolution boundary is visible: Vue comes from npm, Pinia comes from npm, `@pinia/testing` comes from npm, and the generated C# modules are imported from the host output.
+- [ECMAScript.Pinia](../../src/ECMAScript.Pinia/README.md)
+- [ECMAScript.Pinia.Testing](../../src/ECMAScript.Pinia.Testing/README.md)
+- [示例总览](../../docs/03-guides/examples.md)
