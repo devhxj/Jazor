@@ -5,6 +5,7 @@
 - Development reload now registers generated RazorVue components with Vue's HMR runtime. Compiler-proven template-only updates reload the affected component in place and preserve parent component state; unavailable Vue HMR support, failed module imports, descriptor or logic changes, and other unproven boundaries still use a full-page reload.
 - RazorVue debug modules now declare their external source map and embed the authored Razor text as `sourcesContent`. Browser DevTools can open the originating `.razor` source directly from generated render-function code without an additional source-file HTTP route.
 - ASP.NET Core applications can now opt into Vue SSR. The generated artifact graph includes local Vue server-renderer assets, import maps, styles, server HTML, and browser hydration without application `node_modules`, a CDN, or remote imports. The current Deno renderer is explicitly configured and transitional; a Jint renderer over a Netpack SSR bundle is the planned replacement.
+- Pinia sample applications now retain authored C# member names and declare Pinia's lowercase protocol keys explicitly where the runtime requires them, so generated browser modules and test workflows remain compatible with the explicit naming contract.
 
 ## 2026-08-10
 
