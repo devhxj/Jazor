@@ -7366,7 +7366,7 @@ export function CreateFacingMode() {
                     public static string? ReadValue(FormDataEntryValue value)
                         => value.AsString;
 
-                    public static File? ReadFile(FormDataEntryValue value)
+                    public static Files? ReadFile(FormDataEntryValue value)
                         => value.AsFile;
                 }
             }
@@ -7542,13 +7542,13 @@ export function ReadValue(value) {
 
                     public static TMenuWidthValue CreateMenuWidth(TMenuWidthValueOption3Item[] values) => values;
 
-                    public static ElUploadBeforeUploadResult CreateUploadFile(File value) => value;
+                    public static ElUploadBeforeUploadResult CreateUploadFile(Files value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadBlob(Blob value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadPromise(IPromise<VueValue?> value) => new(value);
 
-                    public static File? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
+                    public static Files? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
 
                     public static Blob? ReadUploadBlob(ElUploadBeforeUploadResult value) => value.AsBlob;
                 }

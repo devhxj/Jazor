@@ -20,7 +20,12 @@ internal sealed class PreviewBindingEmitter
         "global using ECMAScript;",
         "global using ECMAScript.CSS;",
         "global using ECMAScript.GPUBufferUsage;",
-        "global using ECMAScript.WebAssembly;"
+        "global using ECMAScript.WebAssembly;",
+        // SVG 2 retains these legacy names in several signatures while its
+        // extracted IDL no longer declares the equivalent interfaces.
+        "global using SVGPoint = ECMAScript.DOMPoint;",
+        "global using SVGRect = ECMAScript.DOMRect;",
+        "global using SVGMatrix = ECMAScript.DOMMatrix;"
     ];
 
     private static readonly HashSet<string> ExcludedDeclarationNames = new(StringComparer.Ordinal)
@@ -31,6 +36,7 @@ internal sealed class PreviewBindingEmitter
     private readonly GeneratorOptions _options;
     private readonly WebIdlTypeMapper _typeMapper = new();
     private readonly Dictionary<string, IReadOnlyList<JsonElement>> _mixinMembersByKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IReadOnlyDictionary<string, WebIdlMemberDocumentation>> _mixinMemberDocumentationByKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, InterfaceCache> _interfaceCachesByKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string[]> _interfaceKeysByName = new(StringComparer.Ordinal);
     private readonly Dictionary<string, GeneratedUnionDefinition> _generatedUnionDefinitionsByQualifiedName = new(StringComparer.Ordinal);
@@ -79,11 +85,15 @@ internal sealed class PreviewBindingEmitter
 
             if (declaration.Kind == "enum" && declaration.Name is not null)
             {
-                _typeMapper.RegisterEnum(WebIdlNaming.ToPascalCase(declaration.Name));
+                _typeMapper.RegisterEnum(
+                    WebIdlNaming.ToTypeName(declaration.Name),
+                    declaration.Payload
+                        .GetArray("values")
+                        .Select(static value => value.GetStringOrNull("value") ?? string.Empty));
             }
             else if (declaration.Kind == "dictionary" && declaration.Name is not null)
             {
-                _typeMapper.RegisterDictionary(WebIdlNaming.ToPascalCase(declaration.Name));
+                _typeMapper.RegisterDictionary(WebIdlNaming.ToTypeName(declaration.Name));
             }
         }
 
@@ -140,6 +150,7 @@ internal sealed class PreviewBindingEmitter
         }
 
         _mixinMembersByKey.Clear();
+        _mixinMemberDocumentationByKey.Clear();
         foreach (var mixinGroup in inventory.Files
                      .SelectMany(file => file.Declarations
                          .Where(static declaration => declaration.Kind == "interface mixin")
@@ -154,7 +165,11 @@ internal sealed class PreviewBindingEmitter
             var members = mixinGroup
                 .SelectMany(item => item.Declaration.Payload.GetArray("members"))
                 .ToArray();
-            _mixinMembersByKey[$"{mixinGroup.Key.Namespace}|{mixinGroup.Key.Name}"] = DistinctMembers(members, namespaceName);
+            var mixinKey = $"{mixinGroup.Key.Namespace}|{mixinGroup.Key.Name}";
+            _mixinMembersByKey[mixinKey] = DistinctMembers(members, namespaceName);
+            _mixinMemberDocumentationByKey[mixinKey] = BuildMemberDocumentationByKey(
+                mixinGroup.Select(item => item.Declaration),
+                namespaceName);
         }
 
         var includesByTarget = inventory.Files
@@ -241,7 +256,7 @@ internal sealed class PreviewBindingEmitter
 
     private string EmitTypedef(WebIdlDeclarationInventory declaration, string? namespaceName)
     {
-        var name = WebIdlNaming.ToPascalCase(declaration.Name ?? throw new InvalidOperationException("Typedef name is required."));
+        var name = WebIdlNaming.ToTypeName(declaration.Name ?? throw new InvalidOperationException("Typedef name is required."));
         var idlType = declaration.Payload.GetProperty("idlType");
         var aliasTarget = ResolveAliasTargetType(idlType, namespaceName, name, preferRequestedNameForFirstUnion: true);
         if (idlType.GetBooleanOrNull("union") == true
@@ -268,13 +283,11 @@ internal sealed class PreviewBindingEmitter
         var enumName = declaration.Name ?? throw new InvalidOperationException("Enum name is required.");
         var enumValues = payload.GetArray("values");
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {enumName}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, declaration.Documentation);
         builder.AppendLine($"[Description(\"@#{enumName}\")]");
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[String]");
-        builder.AppendLine($"public enum {WebIdlNaming.ToPascalCase(enumName)}");
+        builder.AppendLine($"public enum {WebIdlNaming.ToTypeName(enumName)}");
         builder.AppendLine("{");
 
         for (var index = 0; index < enumValues.Count; index++)
@@ -282,6 +295,7 @@ internal sealed class PreviewBindingEmitter
             var value = enumValues[index].GetStringOrNull("value") ?? string.Empty;
             var enumValueName = WebIdlNaming.ToPascalCase(string.IsNullOrEmpty(value) ? "Empty" : value);
             // WebIDL enum tokens are wire values. The C# name is only an authoring projection.
+            AppendDocumentation(builder, GetMemberDocumentation(declaration, index)?.Documentation, 1);
             builder.AppendLine($"    [Description({JsonSerializer.Serialize($"@#{value}")})]");
             builder.Append($"    {enumValueName} = {index}");
             if (index < enumValues.Count - 1)
@@ -302,14 +316,12 @@ internal sealed class PreviewBindingEmitter
     private string EmitCallback(WebIdlDeclarationInventory declaration, string? namespaceName)
     {
         var payload = declaration.Payload;
-        var callbackName = WebIdlNaming.ToPascalCase(declaration.Name ?? throw new InvalidOperationException("Callback name is required."));
+        var callbackName = WebIdlNaming.ToTypeName(declaration.Name ?? throw new InvalidOperationException("Callback name is required."));
         var returnType = ResolveInlineType(payload.GetProperty("idlType"), namespaceName, callbackName, "void");
         var parameters = BuildParameterList(payload.GetArray("arguments"), namespaceName);
 
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {declaration.Name}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, declaration.Documentation);
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
@@ -323,7 +335,7 @@ internal sealed class PreviewBindingEmitter
         ICollection<string> globalUsings)
     {
         var payload = declaration.Payload;
-        var callbackInterfaceName = WebIdlNaming.ToPascalCase(declaration.Name ?? throw new InvalidOperationException("Callback interface name is required."));
+        var callbackInterfaceName = WebIdlNaming.ToTypeName(declaration.Name ?? throw new InvalidOperationException("Callback interface name is required."));
         var members = payload.GetArray("members");
         var operations = members.Where(static member => member.GetStringOrNull("type") == "operation").ToArray();
         if (operations.Length != 1)
@@ -340,16 +352,20 @@ internal sealed class PreviewBindingEmitter
             callbackInterfaceName);
         globalUsings.Add($"global using {callbackInterfaceName} = {GetQualifiedTypeName(namespaceName, aliasUnionType)};");
 
+        var operationIndex = Array.FindIndex(members.ToArray(), member => member.GetStringOrNull("type") == "operation");
         var emitted = new List<string>
         {
-            EmitCallbackInterfaceDelegate(declaration.Name!, operations[0], namespaceName)
+            EmitCallbackInterfaceDelegate(
+                declaration.Name!,
+                operations[0],
+                namespaceName,
+                declaration.Documentation,
+                GetMemberDocumentation(declaration, operationIndex))
         };
 
         var partialKeyword = declaration.Partial == true ? " partial" : string.Empty;
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {declaration.Name}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, declaration.Documentation);
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
@@ -357,24 +373,25 @@ internal sealed class PreviewBindingEmitter
         builder.AppendLine("{");
 
         var bodyMembers = new List<string>();
-        foreach (var member in members)
+        for (var memberIndex = 0; memberIndex < members.Count; memberIndex++)
         {
+            var member = members[memberIndex];
+            var memberDocumentation = GetMemberDocumentation(declaration, memberIndex);
             var type = member.GetStringOrNull("type");
             if (type == "operation")
             {
                 var memberName = member.GetStringOrNull("name") ?? throw new InvalidOperationException("Operation name is required.");
                 var callbackName = WebIdlNaming.ToPascalCase(memberName);
-                bodyMembers.Add(
-                    "    /// <summary>\n"
-                    + $"    /// {memberName}\n"
-                    + "    /// </summary>\n"
-                    + "    [ECMAScript]\n"
-                    + $"    [Description(\"@#{memberName}\")]\n"
-                    + $"    public {callbackName}Callback? {callbackName} {{ get; set; }}");
+                var callbackBuilder = new StringBuilder();
+                AppendDocumentation(callbackBuilder, memberDocumentation?.Documentation);
+                callbackBuilder.AppendLine("[ECMAScript]");
+                callbackBuilder.AppendLine($"[Description(\"@#{memberName}\")]" );
+                callbackBuilder.Append($"public {callbackName}Callback? {callbackName} {{ get; set; }}");
+                bodyMembers.Add(Indent(callbackBuilder.ToString(), 1));
             }
             else if (type == "const")
             {
-                bodyMembers.Add(Indent(EmitConst(member, namespaceName), 1));
+                bodyMembers.Add(Indent(EmitConst(member, namespaceName, memberDocumentation?.Documentation), 1));
             }
         }
 
@@ -386,16 +403,19 @@ internal sealed class PreviewBindingEmitter
         return emitted;
     }
 
-    private string EmitCallbackInterfaceDelegate(string interfaceName, JsonElement operation, string? namespaceName)
+    private string EmitCallbackInterfaceDelegate(
+        string interfaceName,
+        JsonElement operation,
+        string? namespaceName,
+        WebIdlDocumentation? interfaceDocumentation,
+        WebIdlMemberDocumentation? operationDocumentation)
     {
         var callbackName = WebIdlNaming.ToPascalCase(operation.GetStringOrNull("name") ?? throw new InvalidOperationException("Operation name is required."));
         var returnType = ResolveInlineType(operation.GetProperty("idlType"), namespaceName, callbackName, "void");
         var parameters = BuildParameterList(operation.GetArray("arguments"), namespaceName);
 
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {interfaceName}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, operationDocumentation?.Documentation ?? interfaceDocumentation);
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
@@ -403,18 +423,18 @@ internal sealed class PreviewBindingEmitter
         return builder.ToString();
     }
 
-    private string EmitConst(JsonElement member, string? namespaceName)
+    private string EmitConst(JsonElement member, string? namespaceName, WebIdlDocumentation? documentation = null)
     {
         var memberName = member.GetStringOrNull("name") ?? throw new InvalidOperationException("Const name is required.");
         var type = ResolveInlineType(member.GetProperty("idlType"), namespaceName, WebIdlNaming.ToPascalCase(memberName));
         var propertyName = WebIdlNaming.ToPascalCase(member.GetStringOrNull("name") ?? throw new InvalidOperationException("Const name is required."));
         var value = _typeMapper.FormatValue(member.GetProperty("value"), member.GetProperty("idlType"), namespaceName);
 
-        return "/// <summary>\n"
-            + $"/// {member.GetStringOrNull("name")}\n"
-            + "/// </summary>\n"
-            + $"[Description(\"@#{member.GetStringOrNull("name")}\")]\n"
-            + $"public const {type} {propertyName} = {value};";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        builder.AppendLine($"[Description(\"@#{member.GetStringOrNull("name")}\")]" );
+        builder.Append($"public const {type} {propertyName} = {value};");
+        return builder.ToString();
     }
 
     private static void AddByNamespace(IDictionary<string, List<string>> target, string? namespaceName, string code)
@@ -482,8 +502,121 @@ internal sealed class PreviewBindingEmitter
         var normalized = text
             .Replace("\r\n", "\n", StringComparison.Ordinal)
             .Replace('\r', '\n');
-        return string.Join(Environment.NewLine, normalized.Split('\n').Select(line => prefix + line));
+        // Keep separator lines truly empty. Prefixing them would create trailing whitespace in
+        // every generated member block, especially now that XML documentation adds blank lines.
+        // 空的分隔行必须保持为空；否则 XML 文档生成后会在每个成员块之间产生行尾空白。
+        return string.Join(Environment.NewLine, normalized.Split('\n').Select(line => line.Length == 0 ? string.Empty : prefix + line));
     }
+
+    private static void AppendDocumentation(StringBuilder builder, WebIdlDocumentation? documentation, int level = 0)
+    {
+        if (documentation is null)
+        {
+            return;
+        }
+
+        var indent = new string(' ', level * 4);
+        builder.Append(indent).AppendLine("/// <summary>");
+        builder.Append(indent).Append("/// ");
+        if (string.IsNullOrWhiteSpace(documentation.Prose))
+        {
+            AppendDocumentationLink(builder, documentation);
+        }
+        else
+        {
+            builder.Append(EscapeXmlDocumentation(documentation.Prose));
+        }
+
+        builder.AppendLine();
+        builder.Append(indent).AppendLine("/// </summary>");
+
+        if (!string.IsNullOrWhiteSpace(documentation.Prose))
+        {
+            builder.Append(indent).AppendLine("/// <remarks>");
+            builder.Append(indent).Append("/// ");
+            AppendDocumentationLink(builder, documentation);
+            builder.AppendLine();
+            builder.Append(indent).AppendLine("/// </remarks>");
+        }
+
+        if (!string.IsNullOrWhiteSpace(documentation.Usage))
+        {
+            builder.Append(indent).AppendLine("/// <example>");
+            builder.Append(indent).Append("/// <code>")
+                .Append(EscapeXmlDocumentation(documentation.Usage))
+                .AppendLine("</code>");
+            builder.Append(indent).AppendLine("/// </example>");
+        }
+    }
+
+    private static void AppendParameterDocumentation(StringBuilder builder, IEnumerable<MethodParameterEmission> parameters, int level = 0)
+    {
+        var indent = new string(' ', level * 4);
+        foreach (var parameter in parameters)
+        {
+            if (parameter.Documentation is null)
+            {
+                continue;
+            }
+
+            builder.Append(indent).Append("/// <param name=\"")
+                .Append(EscapeXmlDocumentation(parameter.CommentName))
+                .Append("\">");
+            if (!string.IsNullOrWhiteSpace(parameter.Documentation.Prose))
+            {
+                builder.Append(EscapeXmlDocumentation(parameter.Documentation.Prose)).Append(' ');
+            }
+
+            AppendDocumentationLink(builder, parameter.Documentation);
+            builder.AppendLine("</param>");
+        }
+    }
+
+    private static void AppendDictionaryParameterDocumentation(
+        StringBuilder builder,
+        IEnumerable<DictionaryParameterEmission> parameters,
+        int level = 0)
+    {
+        var indent = new string(' ', level * 4);
+        foreach (var parameter in parameters)
+        {
+            if (parameter.Documentation is null)
+            {
+                continue;
+            }
+
+            builder.Append(indent).Append("/// <param name=\"")
+                .Append(EscapeXmlDocumentation(parameter.PascalName))
+                .Append("\">");
+            if (!string.IsNullOrWhiteSpace(parameter.Documentation.Prose))
+            {
+                builder.Append(EscapeXmlDocumentation(parameter.Documentation.Prose)).Append(' ');
+            }
+
+            AppendDocumentationLink(builder, parameter.Documentation);
+            builder.AppendLine("</param>");
+        }
+    }
+
+    private static void AppendDocumentationLink(StringBuilder builder, WebIdlDocumentation documentation)
+    {
+        var label = string.IsNullOrWhiteSpace(documentation.Heading)
+            ? documentation.SpecificationTitle
+            : $"{documentation.SpecificationTitle}: {documentation.Heading}";
+        builder.Append("<see href=\"")
+            .Append(EscapeXmlDocumentation(documentation.Href))
+            .Append("\">")
+            .Append(EscapeXmlDocumentation(label))
+            .Append("</see>");
+    }
+
+    private static string EscapeXmlDocumentation(string value)
+        => value
+            .Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal)
+            .Replace("'", "&apos;", StringComparison.Ordinal);
 
     private string BuildParameterList(IReadOnlyList<JsonElement> arguments, string? namespaceName)
     {
@@ -502,35 +635,38 @@ internal sealed class PreviewBindingEmitter
     private string EmitDictionary(IReadOnlyList<WebIdlDeclarationInventory> declarations, string? namespaceName)
     {
         var name = declarations[0].Name ?? throw new InvalidOperationException("Dictionary name is required.");
-        var recordName = WebIdlNaming.ToPascalCase(name);
+        var recordName = WebIdlNaming.ToTypeName(name);
         var inheritances = declarations
             .Select(static declaration => declaration.Inheritance)
             .Where(static inheritance => !string.IsNullOrWhiteSpace(inheritance))
-            .Select(static inheritance => WebIdlNaming.ToPascalCase(inheritance!))
+            .Select(static inheritance => WebIdlNaming.ToTypeName(inheritance!))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         var inheritanceClause = inheritances.Length > 0 ? $" : {string.Join(", ", inheritances)}" : string.Empty;
 
         var parameterGroups = declarations
             .Select(declaration => declaration.Payload.GetArray("members")
-                .Select(member => EmitDictionaryParameter(member, recordName, namespaceName))
+                .Select((member, memberIndex) => EmitDictionaryParameter(
+                    member,
+                    recordName,
+                    namespaceName,
+                    GetMemberDocumentation(declaration, memberIndex)?.Documentation))
                 .ToArray())
             .ToArray();
 
         if (parameterGroups.Length == 1 && parameterGroups[0].Length == 0)
         {
-            return "/// <summary>\n"
-                + $"/// {name}\n"
-                + "/// </summary>\n"
-                + "[ECMAScript]\n"
-                + $"[Description(\"@#{name}\")]\n"
-                + $"public abstract record {recordName}();";
+            var emptyDictionary = new StringBuilder();
+            AppendDocumentation(emptyDictionary, SelectDocumentation(declarations));
+            emptyDictionary.AppendLine("[ECMAScript]");
+            emptyDictionary.AppendLine($"[Description(\"@#{name}\")]");
+            emptyDictionary.Append($"public abstract record {recordName}();");
+            return emptyDictionary.ToString();
         }
 
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {name}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, SelectDocumentation(declarations));
+        AppendDictionaryParameterDocumentation(builder, parameterGroups.SelectMany(static group => group));
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{name}\")]");
         builder.AppendLine($"public record {recordName}(");
@@ -575,7 +711,11 @@ internal sealed class PreviewBindingEmitter
         return builder.ToString();
     }
 
-    private DictionaryParameterEmission EmitDictionaryParameter(JsonElement member, string ownerName, string? namespaceName)
+    private DictionaryParameterEmission EmitDictionaryParameter(
+        JsonElement member,
+        string ownerName,
+        string? namespaceName,
+        WebIdlDocumentation? documentation)
     {
         var memberName = member.GetStringOrNull("name") ?? throw new InvalidOperationException("Dictionary member name is required.");
         var pascalName = WebIdlNaming.ToPascalCase(memberName);
@@ -589,9 +729,15 @@ internal sealed class PreviewBindingEmitter
         if (hasDefault)
         {
             var value = _typeMapper.FormatValue(defaultValue, member.GetProperty("idlType"), namespaceName);
-            if (isEnumType && (!isNullable || (value.Length > 0 && value is not "default" and not "null")))
+            if (isEnumType)
             {
-                value = $"{typeKey}.{NormalizeEnumValue(value)}";
+                var enumValue = NormalizeEnumValue(value);
+                // Specs occasionally retain an older wire-token default after
+                // removing that token from the enum. Preserve compilability and
+                // let the all-zero C# default represent the omitted value.
+                value = _typeMapper.HasEnumValue(typeKey, enumValue)
+                    ? $"{typeKey}.{enumValue}"
+                    : "default";
             }
 
             if (member.GetProperty("idlType").GetBooleanOrNull("union") == true)
@@ -610,14 +756,16 @@ internal sealed class PreviewBindingEmitter
             return new DictionaryParameterEmission(
                 pascalName,
                 $"[property: Description(\"@#{memberName}\")]{type} {pascalName} = {value}",
-                $"[Description(\"@#{memberName}\")]{type} {WebIdlNaming.ToCamelCase(memberName)} = {value}");
+                $"[Description(\"@#{memberName}\")]{type} {WebIdlNaming.ToCamelCase(memberName)} = {value}",
+                documentation);
         }
 
         var propertyType = _typeMapper.IsOptionalPrimitive(typeKey) ? typeKey : $"{typeKey}?";
         return new DictionaryParameterEmission(
             pascalName,
             $"[property: Description(\"@#{memberName}\")]{propertyType} {pascalName} = default",
-            $"[Description(\"@#{memberName}\")]{propertyType} {pascalName} = default");
+            $"[Description(\"@#{memberName}\")]{propertyType} {pascalName} = default",
+            documentation);
     }
 
     private static string NormalizeEnumValue(string value)
@@ -668,11 +816,11 @@ internal sealed class PreviewBindingEmitter
         IReadOnlyDictionary<string, string[]> includesByTarget)
     {
         var originalName = declarations[0].Name ?? throw new InvalidOperationException("Interface name is required.");
-        var className = WebIdlNaming.ToPascalCase(originalName);
+        var className = WebIdlNaming.ToTypeName(originalName);
         var inheritances = declarations
             .Select(static declaration => declaration.Inheritance)
             .Where(static inheritance => !string.IsNullOrWhiteSpace(inheritance))
-            .Select(static inheritance => WebIdlNaming.ToPascalCase(inheritance!))
+            .Select(static inheritance => WebIdlNaming.ToTypeName(inheritance!))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         if (inheritances.Length > 1)
@@ -684,6 +832,9 @@ internal sealed class PreviewBindingEmitter
             .SelectMany(declaration => declaration.Payload.GetArray("members"))
             .ToArray();
         var distinctMembers = DistinctMembers(members, namespaceName);
+        var memberDocumentationByKey = new Dictionary<string, WebIdlMemberDocumentation>(
+            BuildMemberDocumentationByKey(declarations, namespaceName),
+            StringComparer.Ordinal);
         var effectiveMembers = GetEffectiveInterfaceMembers(declarations, namespaceName, includesByTarget);
         var interfaceKey = BuildTypeKey(namespaceName, originalName);
         _interfaceCachesByKey.TryGetValue(interfaceKey, out var interfaceCache);
@@ -754,7 +905,8 @@ internal sealed class PreviewBindingEmitter
             InterfaceKey: interfaceKey,
             Cache: interfaceCache,
             ForceStatic: false,
-            EnableInheritance: true);
+            EnableInheritance: true,
+            MemberDocumentationByKey: memberDocumentationByKey);
         var bodyMembers = distinctMembers
             .Select(member => EmitInterfaceMember(member, emissionContext, accessorInfo))
             .Where(static code => !string.IsNullOrWhiteSpace(code))
@@ -769,6 +921,14 @@ internal sealed class PreviewBindingEmitter
                 var mixinKey = $"{namespaceName ?? string.Empty}|{mixinName}";
                 if (_mixinMembersByKey.TryGetValue(mixinKey, out var mixinMembers))
                 {
+                    if (_mixinMemberDocumentationByKey.TryGetValue(mixinKey, out var mixinDocumentation))
+                    {
+                        foreach (var (key, documentation) in mixinDocumentation)
+                        {
+                            memberDocumentationByKey.TryAdd(key, documentation);
+                        }
+                    }
+
                     var regionMembers = new List<JsonElement>();
                     foreach (var mixinMember in mixinMembers)
                     {
@@ -794,9 +954,7 @@ internal sealed class PreviewBindingEmitter
         var partialKeyword = declarations.Any(static declaration => declaration.Partial == true) ? " partial" : string.Empty;
         var abstractKeyword = inheritances.Length == 0 && bodyMembers.Count == 0 && isInheritedByOtherType ? " abstract" : string.Empty;
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {originalName}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, SelectDocumentation(declarations));
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{originalName}\")]");
         builder.AppendLine($"public{abstractKeyword}{partialKeyword} class {className}{primaryConstructor}{inheritanceClause}");
@@ -815,11 +973,12 @@ internal sealed class PreviewBindingEmitter
         string? namespaceName)
     {
         var originalName = declarations[0].Name ?? throw new InvalidOperationException("Namespace name is required.");
-        var className = WebIdlNaming.ToPascalCase(originalName);
+        var className = WebIdlNaming.ToTypeName(originalName);
         var members = declarations
             .SelectMany(declaration => declaration.Payload.GetArray("members"))
             .ToArray();
         var distinctMembers = DistinctMembers(members, namespaceName);
+        var memberDocumentationByKey = BuildMemberDocumentationByKey(declarations, namespaceName);
         var accessorInfo = BuildAccessorInfo(distinctMembers);
         var emissionContext = new InterfaceEmissionContext(
             OwnerName: originalName,
@@ -827,7 +986,8 @@ internal sealed class PreviewBindingEmitter
             InterfaceKey: BuildTypeKey(namespaceName, originalName),
             Cache: null,
             ForceStatic: true,
-            EnableInheritance: false);
+            EnableInheritance: false,
+            MemberDocumentationByKey: memberDocumentationByKey);
         var bodyMembers = distinctMembers
             .Select(member => EmitNamespaceMember(member, emissionContext, accessorInfo))
             .Where(static code => !string.IsNullOrWhiteSpace(code))
@@ -835,9 +995,7 @@ internal sealed class PreviewBindingEmitter
 
         var partialKeyword = declarations.Any(static declaration => declaration.Partial == true) ? " partial" : string.Empty;
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {originalName}");
-        builder.AppendLine("/// </summary>");
+        AppendDocumentation(builder, SelectDocumentation(declarations));
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{originalName}\")]");
         builder.AppendLine($"public static{partialKeyword} class {className}");
@@ -854,39 +1012,44 @@ internal sealed class PreviewBindingEmitter
     private static string EmitNamespaceAlias(string originalName, string? namespaceName)
     {
         var aliasName = EscapeIdentifier(originalName);
-        var className = WebIdlNaming.ToPascalCase(originalName);
+        var className = WebIdlNaming.ToTypeName(originalName);
         return $"global using {aliasName} = {GetQualifiedTypeName(namespaceName, className)};";
     }
 
     private string? EmitInterfaceMember(JsonElement member, InterfaceEmissionContext context, AccessorInfo accessorInfo)
     {
+        var documentation = GetMemberDocumentation(context, member);
         var type = member.GetStringOrNull("type");
         return type switch
         {
-            "constructor" => EmitConstructor(member, context.OwnerName, context.NamespaceName),
-            "attribute" => EmitAttribute(member, context),
-            "const" => EmitConst(member, context.NamespaceName),
-            "operation" => EmitOperation(member, context, accessorInfo),
-            "iterable" => EmitIterableMember(member, context.NamespaceName),
-            "maplike" => EmitMaplikeMember(member, context.NamespaceName),
-            "setlike" => EmitSetlikeMember(member, context.NamespaceName),
+            "constructor" => EmitConstructor(member, context.OwnerName, context.NamespaceName, documentation),
+            "attribute" => EmitAttribute(member, context, documentation?.Documentation),
+            "const" => EmitConst(member, context.NamespaceName, documentation?.Documentation),
+            "operation" => EmitOperation(member, context, accessorInfo, documentation),
+            "iterable" => EmitIterableMember(member, context.NamespaceName, documentation?.Documentation),
+            "maplike" => EmitMaplikeMember(member, context.NamespaceName, documentation?.Documentation),
+            "setlike" => EmitSetlikeMember(member, context.NamespaceName, documentation?.Documentation),
             _ => null,
         };
     }
 
     private string? EmitNamespaceMember(JsonElement member, InterfaceEmissionContext context, AccessorInfo accessorInfo)
     {
+        var documentation = GetMemberDocumentation(context, member);
         var type = member.GetStringOrNull("type");
         return type switch
         {
-            "attribute" => EmitAttribute(member, context),
-            "const" => EmitConst(member, context.NamespaceName),
-            "operation" => EmitOperation(member, context, accessorInfo),
+            "attribute" => EmitAttribute(member, context, documentation?.Documentation),
+            "const" => EmitConst(member, context.NamespaceName, documentation?.Documentation),
+            "operation" => EmitOperation(member, context, accessorInfo, documentation),
             _ => null,
         };
     }
 
-    private string? EmitAttribute(JsonElement attribute, InterfaceEmissionContext context)
+    private string? EmitAttribute(
+        JsonElement attribute,
+        InterfaceEmissionContext context,
+        WebIdlDocumentation? documentation)
     {
         var originalName = attribute.GetStringOrNull("name") ?? string.Empty;
         var propertyName = GetAttributePropertyName(originalName, context.OwnerName);
@@ -904,30 +1067,34 @@ internal sealed class PreviewBindingEmitter
 
         var isStatic = context.ForceStatic || attribute.GetStringOrNull("special") == "static";
         var inheritanceModifier = inheritanceDisposition == InheritanceDisposition.New ? "new " : string.Empty;
-        var isReadonly = attribute.GetBooleanOrNull("readonly") == true;
-
-        return "/// <summary>\n"
-            + $"/// {originalName}\n"
-            + "/// </summary>\n"
-            + $"[Description(\"@#{originalName}\")]\n"
-            + $"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {propertyType} {propertyName} {{ get;{(isReadonly ? string.Empty : " set;")} }}";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        builder.AppendLine($"[Description(\"@#{originalName}\")]");
+        builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {propertyType} {propertyName} {{ get;{(attribute.GetBooleanOrNull("readonly") == true ? string.Empty : " set;")} }}");
+        return builder.ToString();
     }
 
-    private string EmitConstructor(JsonElement constructor, string ownerName, string? namespaceName)
+    private string EmitConstructor(
+        JsonElement constructor,
+        string ownerName,
+        string? namespaceName,
+        WebIdlMemberDocumentation? documentation)
     {
         var arguments = constructor.GetArray("arguments");
-        var parameters = BuildMethodParameters(arguments, namespaceName, ownerName);
+        var parameters = BuildMethodParameters(arguments, namespaceName, ownerName, documentation);
 
-        return "/// <summary>\n"
-            + "/// Constructor \n"
-            + "/// </summary>\n"
-            + (parameters.Count > 0
-                ? string.Join(Environment.NewLine, parameters.Select(static parameter => $"/// <param name=\"{parameter.CommentName}\">{parameter.OriginalName}</param>")) + Environment.NewLine
-                : string.Empty)
-            + $"public extern {ownerName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation?.Documentation);
+        AppendParameterDocumentation(builder, parameters);
+        builder.Append($"public extern {WebIdlNaming.ToTypeName(ownerName)}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
+        return builder.ToString();
     }
 
-    private string? EmitOperation(JsonElement operation, InterfaceEmissionContext context, AccessorInfo accessorInfo)
+    private string? EmitOperation(
+        JsonElement operation,
+        InterfaceEmissionContext context,
+        AccessorInfo accessorInfo,
+        WebIdlMemberDocumentation? documentation)
     {
         var special = operation.GetStringOrNull("special") ?? string.Empty;
         var operationName = operation.GetStringOrNull("name");
@@ -954,13 +1121,14 @@ internal sealed class PreviewBindingEmitter
             var unnamedParameters = BuildMethodParameters(
                 arguments,
                 context.NamespaceName,
-                CombineUnionBaseName(context.OwnerName, WebIdlNaming.ToPascalCase(special)));
+                CombineUnionBaseName(context.OwnerName, WebIdlNaming.ToPascalCase(special)),
+                documentation);
             return special switch
             {
                 "stringifier" => null,
-                "getter" => EmitIndexerGetter(arguments, returnType, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
-                "setter" => EmitIndexerSetter(arguments, context.OwnerName, accessorInfo, context.NamespaceName, unnamedInheritanceModifier),
-                "deleter" => $"[Description(\"@#\")]{Environment.NewLine}[Jazor(\"{BuildDeleterInlineTemplate(unnamedParameters)}\")]{Environment.NewLine}public extern {unnamedInheritanceModifier}void Delete({string.Join(", ", unnamedParameters.Select(static parameter => parameter.Signature))});",
+                "getter" => EmitIndexerGetter(arguments, returnType, accessorInfo, context.NamespaceName, unnamedInheritanceModifier, documentation),
+                "setter" => EmitIndexerSetter(arguments, context.OwnerName, accessorInfo, context.NamespaceName, unnamedInheritanceModifier, documentation),
+                "deleter" => EmitDeleter(unnamedParameters, unnamedInheritanceModifier, documentation?.Documentation),
                 _ => null,
             };
         }
@@ -977,17 +1145,13 @@ internal sealed class PreviewBindingEmitter
         var parameters = BuildMethodParameters(
             arguments,
             context.NamespaceName,
-            CombineUnionBaseName(context.OwnerName, methodName));
+            CombineUnionBaseName(context.OwnerName, methodName),
+            documentation);
         var isStatic = context.ForceStatic || special == "static";
         var inheritanceModifier = inheritanceDisposition == InheritanceDisposition.New ? "new " : string.Empty;
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {operationName}");
-        builder.AppendLine("/// </summary>");
-        foreach (var parameter in parameters)
-        {
-            builder.AppendLine($"/// <param name=\"{parameter.CommentName}\">{parameter.OriginalName}</param>");
-        }
+        AppendDocumentation(builder, documentation?.Documentation);
+        AppendParameterDocumentation(builder, parameters);
 
         builder.AppendLine($"[Description(\"@#{operationName}\")]");
         builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {returnType} {methodName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
@@ -1010,7 +1174,8 @@ internal sealed class PreviewBindingEmitter
                 inheritanceModifier,
                 arguments,
                 context.NamespaceName,
-                CombineUnionBaseName(context.OwnerName, methodName));
+                CombineUnionBaseName(context.OwnerName, methodName),
+                documentation);
             if (overloads.Count > 0)
             {
                 builder.AppendLine();
@@ -1041,12 +1206,18 @@ internal sealed class PreviewBindingEmitter
         string returnType,
         AccessorInfo accessorInfo,
         string? namespaceName,
-        string inheritanceModifier)
+        string inheritanceModifier,
+        WebIdlMemberDocumentation? documentation)
     {
-        var parameters = BuildMethodParameters(arguments, namespaceName, "Indexer");
-        return accessorInfo.HasSetter
-            ? $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
-            : $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}";
+        var parameters = BuildMethodParameters(arguments, namespaceName, "Indexer", documentation);
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation?.Documentation);
+        AppendParameterDocumentation(builder, parameters);
+        builder.AppendLine("[Description(\"@#\")]");
+        builder.Append(accessorInfo.HasSetter
+            ? $"public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
+            : $"public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}");
+        return builder.ToString();
     }
 
     private string? EmitIndexerSetter(
@@ -1054,7 +1225,8 @@ internal sealed class PreviewBindingEmitter
         string ownerName,
         AccessorInfo accessorInfo,
         string? namespaceName,
-        string inheritanceModifier)
+        string inheritanceModifier,
+        WebIdlMemberDocumentation? documentation)
     {
         if (accessorInfo.HasGetter)
         {
@@ -1069,68 +1241,95 @@ internal sealed class PreviewBindingEmitter
         var indexType = ResolveInlineType(arguments[0].GetProperty("idlType"), namespaceName, "IndexerKey");
         var indexName = WebIdlNaming.ToCamelCase(arguments[0].GetStringOrNull("name") ?? string.Empty);
         var valueType = ResolveInlineType(arguments[1].GetProperty("idlType"), namespaceName, "IndexerValue");
-        return $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{valueType} this[{indexType} {indexName}] {{ set; }}";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation?.Documentation);
+        builder.AppendLine("[Description(\"@#\")]");
+        builder.Append($"public extern {inheritanceModifier}{valueType} this[{indexType} {indexName}] {{ set; }}");
+        return builder.ToString();
     }
 
-    private string EmitIterableMember(JsonElement member, string? namespaceName)
+    private static string EmitDeleter(
+        IReadOnlyList<MethodParameterEmission> parameters,
+        string inheritanceModifier,
+        WebIdlDocumentation? documentation)
+    {
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        AppendParameterDocumentation(builder, parameters);
+        builder.AppendLine("[Description(\"@#\")]");
+        builder.AppendLine($"[Jazor(\"{BuildDeleterInlineTemplate(parameters)}\")]");
+        builder.Append($"public extern {inheritanceModifier}void Delete({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
+        return builder.ToString();
+    }
+
+    private string EmitIterableMember(JsonElement member, string? namespaceName, WebIdlDocumentation? documentation)
     {
         var types = member.GetArray("idlType");
         var returnType = types.Count == 1
             ? ResolveInlineType(types[0], namespaceName, "IterableItem")
             : $"({ResolveInlineType(types[0], namespaceName, "IterableKey")}, {ResolveInlineType(types[1], namespaceName, "IterableValue")})";
 
-        return $"extern IEnumerator<{returnType}> IEnumerable<{returnType}>.GetEnumerator();{Environment.NewLine}extern IEnumerator IEnumerable.GetEnumerator();";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        builder.Append($"extern IEnumerator<{returnType}> IEnumerable<{returnType}>.GetEnumerator();{Environment.NewLine}extern IEnumerator IEnumerable.GetEnumerator();");
+        return builder.ToString();
     }
 
-    private string EmitMaplikeMember(JsonElement member, string? namespaceName)
+    private string EmitMaplikeMember(JsonElement member, string? namespaceName, WebIdlDocumentation? documentation)
     {
         var keyType = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "MaplikeKey");
         var valueType = ResolveInlineType(member.GetArray("idlType")[1], namespaceName, "MaplikeValue");
-        return "#region Dictionary\n"
-            + $"extern {valueType} IDictionary<{keyType}, {valueType}>.this[{keyType} key] {{ get; set; }}\n"
-            + $"extern ICollection<{keyType}> IDictionary<{keyType}, {valueType}>.Keys {{ get; }}\n"
-            + $"extern ICollection<{valueType}> IDictionary<{keyType}, {valueType}>.Values {{ get; }}\n"
-            + $"extern int ICollection<KeyValuePair<{keyType}, {valueType}>>.Count {{ get; }}\n"
-            + $"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.IsReadOnly {{ get; }}\n"
-            + $"extern void IDictionary<{keyType}, {valueType}>.Add({keyType} key, {valueType} value);\n"
-            + $"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.Add(KeyValuePair<{keyType}, {valueType}> item);\n"
-            + $"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.Clear();\n"
-            + $"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.Contains(KeyValuePair<{keyType}, {valueType}> item);\n"
-            + $"extern bool IDictionary<{keyType}, {valueType}>.ContainsKey({keyType} key);\n"
-            + $"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.CopyTo(KeyValuePair<{keyType}, {valueType}>[] array, int arrayIndex);\n"
-            + $"extern IEnumerator<KeyValuePair<{keyType}, {valueType}>> IEnumerable<KeyValuePair<{keyType}, {valueType}>>.GetEnumerator();\n"
-            + $"extern bool IDictionary<{keyType}, {valueType}>.Remove({keyType} key);\n"
-            + $"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.Remove(KeyValuePair<{keyType}, {valueType}> item);\n"
-            + $"extern bool IDictionary<{keyType}, {valueType}>.TryGetValue({keyType} key, [MaybeNullWhen(false)] out {valueType} value);\n"
-            + "extern IEnumerator IEnumerable.GetEnumerator();\n"
-            + "#endregion";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        builder.Append("#region Dictionary\n")
+            .Append($"extern {valueType} IDictionary<{keyType}, {valueType}>.this[{keyType} key] {{ get; set; }}\n")
+            .Append($"extern ICollection<{keyType}> IDictionary<{keyType}, {valueType}>.Keys {{ get; }}\n")
+            .Append($"extern ICollection<{valueType}> IDictionary<{keyType}, {valueType}>.Values {{ get; }}\n")
+            .Append($"extern int ICollection<KeyValuePair<{keyType}, {valueType}>>.Count {{ get; }}\n")
+            .Append($"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.IsReadOnly {{ get; }}\n")
+            .Append($"extern void IDictionary<{keyType}, {valueType}>.Add({keyType} key, {valueType} value);\n")
+            .Append($"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.Add(KeyValuePair<{keyType}, {valueType}> item);\n")
+            .Append($"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.Clear();\n")
+            .Append($"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.Contains(KeyValuePair<{keyType}, {valueType}> item);\n")
+            .Append($"extern bool IDictionary<{keyType}, {valueType}>.ContainsKey({keyType} key);\n")
+            .Append($"extern void ICollection<KeyValuePair<{keyType}, {valueType}>>.CopyTo(KeyValuePair<{keyType}, {valueType}>[] array, int arrayIndex);\n")
+            .Append($"extern IEnumerator<KeyValuePair<{keyType}, {valueType}>> IEnumerable<KeyValuePair<{keyType}, {valueType}>>.GetEnumerator();\n")
+            .Append($"extern bool IDictionary<{keyType}, {valueType}>.Remove({keyType} key);\n")
+            .Append($"extern bool ICollection<KeyValuePair<{keyType}, {valueType}>>.Remove(KeyValuePair<{keyType}, {valueType}> item);\n")
+            .Append($"extern bool IDictionary<{keyType}, {valueType}>.TryGetValue({keyType} key, [MaybeNullWhen(false)] out {valueType} value);\n")
+            .Append("extern IEnumerator IEnumerable.GetEnumerator();\n")
+            .Append("#endregion");
+        return builder.ToString();
     }
 
-    private string EmitSetlikeMember(JsonElement member, string? namespaceName)
+    private string EmitSetlikeMember(JsonElement member, string? namespaceName, WebIdlDocumentation? documentation)
     {
         var type = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "SetlikeItem");
-        return "#region Set\n"
-            + $"extern int ICollection<{type}>.Count {{ get; }}\n"
-            + $"extern bool ICollection<{type}>.IsReadOnly {{ get; }}\n"
-            + $"extern bool ISet<{type}>.Add({type} item);\n"
-            + $"extern void ICollection<{type}>.Clear();\n"
-            + $"extern bool ICollection<{type}>.Contains({type} item);\n"
-            + $"extern void ICollection<{type}>.CopyTo({type}[] array, int arrayIndex);\n"
-            + $"extern void ISet<{type}>.ExceptWith(IEnumerable<{type}> other);\n"
-            + $"extern IEnumerator<{type}> IEnumerable<{type}>.GetEnumerator();\n"
-            + $"extern void ISet<{type}>.IntersectWith(IEnumerable<{type}> other);\n"
-            + $"extern bool ISet<{type}>.IsProperSubsetOf(IEnumerable<{type}> other);\n"
-            + $"extern bool ISet<{type}>.IsProperSupersetOf(IEnumerable<{type}> other);\n"
-            + $"extern bool ISet<{type}>.IsSubsetOf(IEnumerable<{type}> other);\n"
-            + $"extern bool ISet<{type}>.IsSupersetOf(IEnumerable<{type}> other);\n"
-            + $"extern bool ISet<{type}>.Overlaps(IEnumerable<{type}> other);\n"
-            + $"extern bool ICollection<{type}>.Remove({type} item);\n"
-            + $"extern bool ISet<{type}>.SetEquals(IEnumerable<{type}> other);\n"
-            + $"extern void ISet<{type}>.SymmetricExceptWith(IEnumerable<{type}> other);\n"
-            + $"extern void ISet<{type}>.UnionWith(IEnumerable<{type}> other);\n"
-            + $"extern void ICollection<{type}>.Add({type} item);\n"
-            + "extern IEnumerator IEnumerable.GetEnumerator();\n"
-            + "#endregion";
+        var builder = new StringBuilder();
+        AppendDocumentation(builder, documentation);
+        builder.Append("#region Set\n")
+            .Append($"extern int ICollection<{type}>.Count {{ get; }}\n")
+            .Append($"extern bool ICollection<{type}>.IsReadOnly {{ get; }}\n")
+            .Append($"extern bool ISet<{type}>.Add({type} item);\n")
+            .Append($"extern void ICollection<{type}>.Clear();\n")
+            .Append($"extern bool ICollection<{type}>.Contains({type} item);\n")
+            .Append($"extern void ICollection<{type}>.CopyTo({type}[] array, int arrayIndex);\n")
+            .Append($"extern void ISet<{type}>.ExceptWith(IEnumerable<{type}> other);\n")
+            .Append($"extern IEnumerator<{type}> IEnumerable<{type}>.GetEnumerator();\n")
+            .Append($"extern void ISet<{type}>.IntersectWith(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ISet<{type}>.IsProperSubsetOf(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ISet<{type}>.IsProperSupersetOf(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ISet<{type}>.IsSubsetOf(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ISet<{type}>.IsSupersetOf(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ISet<{type}>.Overlaps(IEnumerable<{type}> other);\n")
+            .Append($"extern bool ICollection<{type}>.Remove({type} item);\n")
+            .Append($"extern bool ISet<{type}>.SetEquals(IEnumerable<{type}> other);\n")
+            .Append($"extern void ISet<{type}>.SymmetricExceptWith(IEnumerable<{type}> other);\n")
+            .Append($"extern void ISet<{type}>.UnionWith(IEnumerable<{type}> other);\n")
+            .Append($"extern void ICollection<{type}>.Add({type} item);\n")
+            .Append("extern IEnumerator IEnumerable.GetEnumerator();\n")
+            .Append("#endregion");
+        return builder.ToString();
     }
 
     private static string BuildDeleterInlineTemplate(IReadOnlyList<MethodParameterEmission> parameters)
@@ -1164,13 +1363,19 @@ internal sealed class PreviewBindingEmitter
         return $"ISet<{type}>";
     }
 
-    private IReadOnlyList<MethodParameterEmission> BuildMethodParameters(IReadOnlyList<JsonElement> arguments, string? namespaceName, string ownerBaseName)
+    private IReadOnlyList<MethodParameterEmission> BuildMethodParameters(
+        IReadOnlyList<JsonElement> arguments,
+        string? namespaceName,
+        string ownerBaseName,
+        WebIdlMemberDocumentation? documentation = null)
     {
         var parameters = new List<MethodParameterEmission>();
         var hasOptionalParameter = false;
 
-        foreach (var argument in arguments)
+        for (var argumentIndex = 0; argumentIndex < arguments.Count; argumentIndex++)
         {
+            var argument = arguments[argumentIndex];
+            var argumentDocumentation = GetArgumentDocumentation(documentation, argumentIndex);
             var originalName = argument.GetStringOrNull("name") ?? string.Empty;
             var name = WebIdlNaming.ToCamelCase(originalName);
             var idlType = argument.GetProperty("idlType");
@@ -1191,7 +1396,8 @@ internal sealed class PreviewBindingEmitter
                     CommentName: name.TrimStart('@'),
                     Signature: $"params {variadicType} {name}",
                     Type: variadicType,
-                    Name: name));
+                    Name: name,
+                    Documentation: argumentDocumentation));
                 continue;
             }
 
@@ -1234,7 +1440,8 @@ internal sealed class PreviewBindingEmitter
                 CommentName: name.TrimStart('@'),
                 Signature: $"{type} {name}{(defaultValue is null ? string.Empty : $" = {defaultValue}")}",
                 Type: type,
-                Name: name));
+                Name: name,
+                Documentation: argumentDocumentation));
         }
 
         return parameters;
@@ -1248,12 +1455,13 @@ internal sealed class PreviewBindingEmitter
         string inheritanceModifier,
         IReadOnlyList<JsonElement> arguments,
         string? namespaceName,
-        string ownerBaseName)
+        string ownerBaseName,
+        WebIdlMemberDocumentation? documentation)
     {
         var lastArgument = arguments[^1];
         var lastArgumentName = WebIdlNaming.ToCamelCase(lastArgument.GetStringOrNull("name") ?? string.Empty);
         var priorArguments = arguments.Take(arguments.Count - 1).ToArray();
-        var priorParameters = BuildMethodParameters(priorArguments, namespaceName, ownerBaseName);
+        var priorParameters = BuildMethodParameters(priorArguments, namespaceName, ownerBaseName, documentation);
         var overloads = new List<string>();
 
         foreach (var unionType in lastArgument.GetProperty("idlType").GetArray("idlType"))
@@ -1270,15 +1478,23 @@ internal sealed class PreviewBindingEmitter
                 : $"{parameterType} {lastArgumentName}");
 
             var builder = new StringBuilder();
-            builder.AppendLine("/// <summary>");
-            builder.AppendLine($"/// {originalOperationName}");
-            builder.AppendLine("/// </summary>");
-            foreach (var parameter in priorParameters)
+            AppendDocumentation(builder, documentation?.Documentation);
+            AppendParameterDocumentation(builder, priorParameters);
+            var lastArgumentDocumentation = GetArgumentDocumentation(documentation, arguments.Count - 1);
+            if (lastArgumentDocumentation is not null)
             {
-                builder.AppendLine($"/// <param name=\"{parameter.CommentName}\">{parameter.OriginalName} para</param>");
+                builder.Append("/// <param name=\"")
+                    .Append(EscapeXmlDocumentation(lastArgumentName.TrimStart('@')))
+                    .Append("\">");
+                if (!string.IsNullOrWhiteSpace(lastArgumentDocumentation.Prose))
+                {
+                    builder.Append(EscapeXmlDocumentation(lastArgumentDocumentation.Prose)).Append(' ');
+                }
+
+                AppendDocumentationLink(builder, lastArgumentDocumentation);
+                builder.AppendLine("</param>");
             }
 
-            builder.AppendLine($"/// <param name=\"{lastArgumentName.TrimStart('@')}\">{lastArgument.GetStringOrNull("name")}</param>");
             builder.AppendLine($"[Description(\"@#{originalOperationName}\")]");
             builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {returnType} {methodName}({string.Join(", ", signatureParts)});");
             overloads.Add(builder.ToString());
@@ -1329,7 +1545,7 @@ internal sealed class PreviewBindingEmitter
                 .Where(static member => member.GetStringOrNull("type") == "constructor")
                 .Select(member => BuildConstructorCache(member, group.Key.Name, namespaceName))
                 .ToArray();
-            var className = WebIdlNaming.ToPascalCase(group.Key.Name);
+            var className = WebIdlNaming.ToTypeName(group.Key.Name);
             var properties = effectiveMembers
                 .Where(static member => member.GetStringOrNull("type") == "attribute")
                 .Select(member => BuildPropertyCache(member, group.Key.Name, className, namespaceName))
@@ -1401,9 +1617,9 @@ internal sealed class PreviewBindingEmitter
             return keys[0];
         }
 
-        var pascalName = WebIdlNaming.ToPascalCase(typeName);
+        var typeNameProjection = WebIdlNaming.ToTypeName(typeName);
         var pascalMatches = _interfaceKeysByName
-            .Where(pair => WebIdlNaming.ToPascalCase(pair.Key) == pascalName)
+            .Where(pair => WebIdlNaming.ToTypeName(pair.Key) == typeNameProjection)
             .SelectMany(static pair => pair.Value)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -1543,7 +1759,7 @@ internal sealed class PreviewBindingEmitter
     private static string GetAttributePropertyName(string originalName, string ownerName, string? className = null)
     {
         var propertyName = WebIdlNaming.ToPascalCase(originalName);
-        var resolvedClassName = className ?? WebIdlNaming.ToPascalCase(ownerName);
+        var resolvedClassName = className ?? WebIdlNaming.ToTypeName(ownerName);
         if (propertyName == resolvedClassName)
         {
             propertyName += "_";
@@ -1593,6 +1809,85 @@ internal sealed class PreviewBindingEmitter
         return $"{namespaceName ?? string.Empty}|{name ?? string.Empty}";
     }
 
+    private static WebIdlDocumentation? SelectDocumentation(IEnumerable<WebIdlDeclarationInventory> declarations)
+    {
+        return declarations
+            .Select(static declaration => declaration.Documentation)
+            .Where(static documentation => documentation is not null)
+            .Cast<WebIdlDocumentation>()
+            .OrderByDescending(static documentation => !string.IsNullOrWhiteSpace(documentation.Prose))
+            .ThenBy(static documentation => documentation.Href, StringComparer.Ordinal)
+            .FirstOrDefault();
+    }
+
+    private WebIdlMemberDocumentation? GetMemberDocumentation(WebIdlDeclarationInventory declaration, int memberIndex)
+    {
+        return declaration.MemberDocumentation?
+            .FirstOrDefault(documentation => documentation.MemberIndex == memberIndex);
+    }
+
+    private WebIdlMemberDocumentation? GetMemberDocumentation(InterfaceEmissionContext context, JsonElement member)
+    {
+        return context.MemberDocumentationByKey.TryGetValue(BuildMemberKey(member, context.NamespaceName), out var documentation)
+            ? documentation
+            : null;
+    }
+
+    private static WebIdlDocumentation? GetArgumentDocumentation(WebIdlMemberDocumentation? documentation, int argumentIndex)
+    {
+        return documentation?.Arguments?
+            .FirstOrDefault(argumentDocumentation => argumentDocumentation.ArgumentIndex == argumentIndex)
+            ?.Documentation;
+    }
+
+    private IReadOnlyDictionary<string, WebIdlMemberDocumentation> BuildMemberDocumentationByKey(
+        IEnumerable<WebIdlDeclarationInventory> declarations,
+        string? namespaceName)
+    {
+        var result = new Dictionary<string, WebIdlMemberDocumentation>(StringComparer.Ordinal);
+        foreach (var declaration in declarations)
+        {
+            if (declaration.MemberDocumentation is null)
+            {
+                continue;
+            }
+
+            var members = declaration.Payload.GetArray("members");
+            foreach (var documentation in declaration.MemberDocumentation)
+            {
+                if (documentation.MemberIndex < 0 || documentation.MemberIndex >= members.Count)
+                {
+                    continue;
+                }
+
+                var key = BuildMemberKey(members[documentation.MemberIndex], namespaceName);
+                if (!result.TryGetValue(key, out var existing)
+                    || PreferDocumentation(documentation.Documentation, existing.Documentation))
+                {
+                    result[key] = documentation;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static bool PreferDocumentation(WebIdlDocumentation? candidate, WebIdlDocumentation? existing)
+    {
+        if (candidate is null)
+        {
+            return false;
+        }
+
+        if (existing is null)
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(candidate.Prose)
+            && string.IsNullOrWhiteSpace(existing.Prose);
+    }
+
     private IReadOnlyList<JsonElement> DistinctMembers(IReadOnlyList<JsonElement> members, string? namespaceName)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -1618,6 +1913,7 @@ internal sealed class PreviewBindingEmitter
             "operation" => $"{type}${member.GetStringOrNull("name")}${string.Join("@", member.GetArray("arguments").Select(argument => $"{argument.GetStringOrNull("name")}:{GetStructuralCacheType(argument.GetProperty("idlType"), namespaceName)}"))}{(member.TryGetProperty("idlType", out var operationType) ? GetStructuralCacheType(operationType, namespaceName, "void") : "void")}${member.GetStringOrNull("special")}",
             "attribute" => $"{type}${member.GetStringOrNull("name")}${GetStructuralCacheType(member.GetProperty("idlType"), namespaceName)}",
             "const" => $"{type}${member.GetStringOrNull("name")}${GetStructuralCacheType(member.GetProperty("idlType"), namespaceName)}",
+            "field" => $"{type}${member.GetStringOrNull("name")}${GetStructuralCacheType(member.GetProperty("idlType"), namespaceName)}",
             "iterable" or "maplike" or "setlike" => $"{type}${string.Join(":", member.GetArray("idlType").Select(idlType => GetStructuralCacheType(idlType, namespaceName)))}",
             _ => type,
         };
@@ -1714,9 +2010,6 @@ internal sealed class PreviewBindingEmitter
     {
         var supportsNativeUnionSyntax = SupportsNativeUnionSyntax(union.NamespaceName, union.Branches);
         var builder = new StringBuilder();
-        builder.AppendLine("/// <summary>");
-        builder.AppendLine($"/// {union.Name}");
-        builder.AppendLine("/// </summary>");
         builder.AppendLine("[ECMAScript]");
         if (union.SupportsSystemUnionContract)
         {
@@ -1908,7 +2201,13 @@ internal sealed class PreviewBindingEmitter
                 index++;
             }
 
-            builder.Append(WebIdlNaming.ToPascalCase(displayTypeName[start..index]));
+            var segment = displayTypeName[start..index];
+            // `Files` is the C# authoring projection of the browser's singular
+            // File type. Keep generated union accessors as AsFile so the member
+            // still describes the runtime value rather than the C# collision fix.
+            // `Files` 是浏览器单数 File 类型的 C# 作者侧投影。联合类型访问器仍应
+            // 使用 AsFile，描述运行时值本身，而不能泄露为规避命名冲突而做的 C# 改名。
+            builder.Append(segment == "Files" ? "File" : WebIdlNaming.ToPascalCase(segment));
             index--;
         }
 
@@ -2103,7 +2402,7 @@ internal sealed class PreviewBindingEmitter
     {
         if (!string.IsNullOrWhiteSpace(declaration.Name))
         {
-            RegisterOccupiedTypeName(namespaceName, WebIdlNaming.ToPascalCase(declaration.Name));
+            RegisterOccupiedTypeName(namespaceName, WebIdlNaming.ToTypeName(declaration.Name));
         }
     }
 
@@ -2171,14 +2470,16 @@ internal sealed class PreviewBindingEmitter
     private sealed record DictionaryParameterEmission(
         string PascalName,
         string Code,
-        string ArgumentCode);
+        string ArgumentCode,
+        WebIdlDocumentation? Documentation);
 
     private sealed record MethodParameterEmission(
         string OriginalName,
         string CommentName,
         string Signature,
         string Type,
-        string Name);
+        string Name,
+        WebIdlDocumentation? Documentation);
 
     private sealed record AccessorInfo(
         bool HasGetter,
@@ -2190,7 +2491,8 @@ internal sealed class PreviewBindingEmitter
         string InterfaceKey,
         InterfaceCache? Cache,
         bool ForceStatic,
-        bool EnableInheritance);
+        bool EnableInheritance,
+        IReadOnlyDictionary<string, WebIdlMemberDocumentation> MemberDocumentationByKey);
 
     private sealed record InterfaceCache(
         IReadOnlyList<ConstructorCache> Constructors,

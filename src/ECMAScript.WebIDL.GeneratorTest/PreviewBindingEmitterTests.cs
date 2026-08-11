@@ -28,6 +28,62 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
+    public async Task EmitAsync_FileInterface_UsesFilesAuthoringTypeAndPreservesFileAbi()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("File", """
+                [
+                  {
+                    "type": "constructor",
+                    "arguments": [],
+                    "special": ""
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "file",
+                    "idlType": { "idlType": "File" },
+                    "readonly": true,
+                    "special": ""
+                  }
+                ]
+                """),
+            Interface("FileChild", "[]", inheritance: "File"),
+            Callback("FileConsumer", """
+                {
+                  "idlType": { "idlType": "undefined" },
+                  "arguments": [
+                    { "name": "file", "idlType": { "idlType": "File" }, "optional": false, "variadic": false }
+                  ]
+                }
+                """),
+            Dictionary("FileReference", """
+                [
+                  {
+                    "type": "field",
+                    "name": "value",
+                    "idlType": {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "File" },
+                        { "idlType": "DOMString" }
+                      ]
+                    }
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "[Description(\"@#File\")]\r\npublic class Files");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern Files();");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern Files File { get; }");
+        StringAssert.Contains(files["Interfaces.cs"], "public class FileChild : Files");
+        StringAssert.Contains(files["Callbacks.cs"], "public delegate void FileConsumer(Files file);");
+        StringAssert.Contains(files["Dictionaries.cs"], "FileReferenceValue? Value = default");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union FileReferenceValue(Files, string)");
+        StringAssert.Contains(files["Unions.cs"], "public Files? AsFile => Value is Files value ? value : default(Files?);");
+        Assert.IsFalse(files.Values.Any(static file => file.Contains("public class File\r\n", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
     public async Task EmitAsync_WebCryptoBigIntegerTypedef_DoesNotCapturePrimitiveBigInt()
     {
         var files = await EmitGeneratedFilesAsync(
@@ -111,6 +167,33 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#method\")]string? Method = default");
         StringAssert.Contains(files["Unions.cs"], "public readonly union HeadersInit(string[][], Dictionary<string, string>) : IEnumerable<string[]>");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void Append(string name, string value);");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_EnumDefaultRemovedFromLatestSpec_UsesCSharpDefault()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Enum("LanguageModelSamplingMode", """
+                [
+                  { "type": "enum-value", "value": "balanced" }
+                ]
+                """),
+            Dictionary("LanguageModelCreateCoreOptions", """
+                [
+                  {
+                    "type": "field",
+                    "name": "samplingMode",
+                    "idlType": { "idlType": "LanguageModelSamplingMode" },
+                    "default": { "type": "string", "value": "default" }
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(
+            files["Dictionaries.cs"],
+            "LanguageModelSamplingMode SamplingMode = default");
+        Assert.IsFalse(
+            files["Dictionaries.cs"].Contains("LanguageModelSamplingMode.Default", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -601,11 +684,11 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, ElementInternalsSetFormValueState? state = default);");
-        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, File state);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, Files state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, string state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValue(File, string, FormData)");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValueState(File, string, FormData)");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValue(Files, string, FormData)");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValueState(Files, string, FormData)");
         Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
     }
@@ -738,7 +821,7 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
-    public async Task EmitAsync_InterfaceMemberDocumentation_IsIndentedConsistently()
+    public async Task EmitAsync_W3cDocumentation_UsesSourceAuthoredProseExamplesAndSpecificationAnchors()
     {
         var output = await EmitInterfacesAsync(
             Interface("AbortController", """
@@ -764,11 +847,69 @@ public sealed class PreviewBindingEmitterTests
                     "special": ""
                   }
                 ]
+                """,
+                documentation: Documentation(
+                    "https://dom.spec.whatwg.org/#abortcontroller",
+                    "DOM Standard",
+                    "3.1 Interface AbortController",
+                    "A controller that can stop a request when its lifetime ends.",
+                    "controller = new AbortController()"),
+                memberDocumentation:
+                [
+                    new WebIdlMemberDocumentation(
+                        0,
+                        Documentation(
+                            "https://dom.spec.whatwg.org/#dom-abortcontroller-abortcontroller",
+                            "DOM Standard",
+                            "3.1 Interface AbortController")),
+                    new WebIdlMemberDocumentation(
+                        1,
+                        Documentation(
+                            "https://dom.spec.whatwg.org/#dom-abortcontroller-signal",
+                            "DOM Standard",
+                            "3.1 Interface AbortController")),
+                    new WebIdlMemberDocumentation(
+                        2,
+                        Documentation(
+                            "https://dom.spec.whatwg.org/#dom-abortcontroller-abort",
+                            "DOM Standard",
+                            "3.1 Interface AbortController"),
+                        [
+                            new WebIdlArgumentDocumentation(
+                                0,
+                                Documentation(
+                                    "https://dom.spec.whatwg.org/#dom-abortcontroller-abort-reason-reason",
+                                    "DOM Standard",
+                                    "3.1 Interface AbortController"))
+                        ])
+                ]));
+
+        StringAssert.Contains(output, $"/// <summary>{Environment.NewLine}/// A controller that can stop a request when its lifetime ends.{Environment.NewLine}/// </summary>{Environment.NewLine}/// <remarks>{Environment.NewLine}/// <see href=\"https://dom.spec.whatwg.org/#abortcontroller\">DOM Standard: 3.1 Interface AbortController</see>{Environment.NewLine}/// </remarks>");
+        StringAssert.Contains(output, $"/// <example>{Environment.NewLine}/// <code>controller = new AbortController()</code>{Environment.NewLine}/// </example>{Environment.NewLine}[ECMAScript]");
+        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// <see href=\"https://dom.spec.whatwg.org/#dom-abortcontroller-signal\">DOM Standard: 3.1 Interface AbortController</see>{Environment.NewLine}    /// </summary>{Environment.NewLine}    [Description(\"@#signal\")]");
+        StringAssert.Contains(output, $"    /// <param name=\"reason\"><see href=\"https://dom.spec.whatwg.org/#dom-abortcontroller-abort-reason-reason\">DOM Standard: 3.1 Interface AbortController</see></param>{Environment.NewLine}    [Description(\"@#abort\")]");
+        Assert.IsFalse(output.Contains("Represents the", StringComparison.Ordinal));
+        Assert.IsFalse(output.Contains("Invokes the", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_UnmatchedDeclarations_DoNotInventDocumentation()
+    {
+        var output = await EmitInterfacesAsync(
+            Interface("UnmatchedPlatformType", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "run",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [],
+                    "special": ""
+                  }
+                ]
                 """));
 
-        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// Constructor {Environment.NewLine}    /// </summary>{Environment.NewLine}    public extern AbortController();");
-        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// signal{Environment.NewLine}    /// </summary>{Environment.NewLine}    [Description(\"@#signal\")]");
-        StringAssert.Contains(output, $"    /// <summary>{Environment.NewLine}    /// abort{Environment.NewLine}    /// </summary>{Environment.NewLine}    /// <param name=\"reason\">reason</param>{Environment.NewLine}    [Description(\"@#abort\")]");
+        Assert.IsFalse(output.Contains("/// <summary>", StringComparison.Ordinal));
+        Assert.IsFalse(output.Contains("/// <param", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -1135,6 +1276,12 @@ public sealed class PreviewBindingEmitterTests
             {
                 [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = false)]
                 public sealed class ECMAScriptAttribute : System.Attribute;
+
+                public class DOMPoint;
+
+                public class DOMRect;
+
+                public class DOMMatrix;
             }
 
             namespace ECMAScript.Contract
@@ -1203,15 +1350,53 @@ public sealed class PreviewBindingEmitterTests
             Stats: new WebIdlStats(files.Length, declarations.Length, 0, new Dictionary<string, int>(StringComparer.Ordinal)));
     }
 
-    private static WebIdlDeclarationInventory Interface(string name, string membersJson, string? inheritance = null, bool partial = false)
+    private static WebIdlDeclarationInventory Interface(
+        string name,
+        string membersJson,
+        string? inheritance = null,
+        bool partial = false,
+        WebIdlDocumentation? documentation = null,
+        IReadOnlyList<WebIdlMemberDocumentation>? memberDocumentation = null)
     {
         var payload = ParseObject($$"""
             {
               "members": {{membersJson}}
             }
         """);
-        return new WebIdlDeclarationInventory("interface", name, partial ? true : null, inheritance, null, null, payload.GetArray("members").Count, payload);
+        return new WebIdlDeclarationInventory(
+            "interface",
+            name,
+            partial ? true : null,
+            inheritance,
+            null,
+            null,
+            payload.GetArray("members").Count,
+            payload,
+            documentation,
+            memberDocumentation);
     }
+
+    private static WebIdlDeclarationInventory Callback(string name, string signatureJson)
+    {
+        var payload = ParseObject(signatureJson);
+        return new WebIdlDeclarationInventory(
+            "callback",
+            name,
+            null,
+            null,
+            null,
+            null,
+            payload.GetArray("arguments").Count,
+            payload);
+    }
+
+    private static WebIdlDocumentation Documentation(
+        string href,
+        string specificationTitle,
+        string heading,
+        string? prose = null,
+        string? usage = null)
+        => new(href, specificationTitle, heading, href, prose, usage);
 
     private static WebIdlDeclarationInventory Enum(string name, string valuesJson)
     {

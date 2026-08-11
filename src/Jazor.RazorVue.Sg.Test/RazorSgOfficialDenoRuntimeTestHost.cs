@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
 using ECMAScriptGlobal = ECMAScript.Global;
@@ -44,7 +45,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 """{"type":"module"}""");
             WriteFile(
                 Path.Combine(root, "deno.json"),
-                """{"imports":{"System/":"./System/"}}""");
+                BuildDenoImportMap(supportingModules));
             WriteFile(
                 Path.Combine(root, "node_modules", "vue", "package.json"),
                 """{"type":"module","exports":"./index.mjs"}""");
@@ -137,6 +138,53 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             ?? throw new InvalidOperationException($"Could not resolve parent directory for '{path}'.");
         Directory.CreateDirectory(directory);
         File.WriteAllText(path, content);
+    }
+
+    private static string BuildDenoImportMap(IReadOnlyDictionary<string, string>? supportingModules)
+    {
+        var imports = new SortedDictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["System/"] = "./System/",
+            ["vue"] = "./node_modules/vue/index.mjs",
+        };
+
+        if (supportingModules is not null)
+        {
+            foreach (var supportingModule in supportingModules)
+            {
+                var packageName = GetPackageName(supportingModule.Key);
+                if (packageName is null)
+                {
+                    continue;
+                }
+
+                using var manifest = JsonDocument.Parse(supportingModule.Value);
+                var exportPath = manifest.RootElement.GetProperty("exports").GetString()
+                    ?? throw new InvalidOperationException($"Package fixture '{packageName}' must expose a string exports path.");
+                if (!exportPath.StartsWith("./", StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"Package fixture '{packageName}' must expose a relative exports path.");
+                }
+
+                imports.Add(packageName, $"./node_modules/{packageName}/{exportPath[2..]}");
+            }
+        }
+
+        return JsonSerializer.Serialize(new { imports });
+    }
+
+    private static string? GetPackageName(string supportingModulePath)
+    {
+        var normalizedPath = supportingModulePath.Replace('\\', '/');
+        const string prefix = "node_modules/";
+        const string suffix = "/package.json";
+        if (!normalizedPath.StartsWith(prefix, StringComparison.Ordinal)
+            || !normalizedPath.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return normalizedPath[prefix.Length..^suffix.Length];
     }
 
     private static void MaterializeCatalogDependencies(

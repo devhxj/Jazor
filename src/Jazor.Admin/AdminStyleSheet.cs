@@ -336,5 +336,5 @@ internal static class AdminStyleSheet
     }
 
     private static void Media(string selector, string prelude, CssRule rule)
-        => global(selector, new CssRule { Children = [new(CssChildKind.Media, prelude, rule)] });
+        => global(selector, new CssRule { Children = [new(ChildKind.Media, prelude, rule)] });
 }

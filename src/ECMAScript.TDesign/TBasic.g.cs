@@ -9791,12 +9791,12 @@ public record TImageInfo : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageInfoMainImage(string, File)
+public readonly union TImageInfoMainImage(string, Files)
 {
 }
 
 [ECMAScript]
-public readonly union TImageInfoThumbnail(string, File)
+public readonly union TImageInfoThumbnail(string, Files)
 {
 }
 
@@ -9869,7 +9869,7 @@ public enum TImageShapeValue
 }
 
 [ECMAScript]
-public readonly union TImageSrcValue(string, File)
+public readonly union TImageSrcValue(string, Files)
 {
 }
 
@@ -9932,7 +9932,7 @@ public record TImageViewerConfig : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageViewerDownloadEventUrl(string, File)
+public readonly union TImageViewerDownloadEventUrl(string, Files)
 {
 }
 
@@ -9959,7 +9959,7 @@ public enum TImageViewerImageReferrerpolicyValue
 }
 
 [ECMAScript]
-public readonly union TImageViewerImagesValueItem(string, File, TImageInfo)
+public readonly union TImageViewerImagesValueItem(string, Files, TImageInfo)
 {
 }
 
@@ -18022,7 +18022,7 @@ public record TUploadFile : VueProps
     public Number? Percent { get; init; }
 
     [ECMAScriptName("raw")]
-    public File? Raw { get; init; }
+    public Files? Raw { get; init; }
 
     [ECMAScriptName("response")]
     public TJsonObject? Response { get; init; }
@@ -18075,7 +18075,7 @@ public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData
 public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response, TFormatResponseContext context);
 
 [ECMAScript]
-public delegate TUploadFile TUploadFormatValue<T>(File @file);
+public delegate TUploadFile TUploadFormatValue<T>(Files @file);
 
 [ECMAScript]
 public record TUploadHeadersValue<T> : VueDictionary<string>
@@ -19604,7 +19604,7 @@ public enum TdImagePropsShape
 }
 
 [ECMAScript]
-public readonly union TdImagePropsSrc(string, File)
+public readonly union TdImagePropsSrc(string, Files)
 {
 }
 
@@ -19709,7 +19709,7 @@ public enum TdImageViewerPropsImageReferrerpolicy
 }
 
 [ECMAScript]
-public readonly union TdImageViewerPropsImagesItem(string, File, TImageInfo)
+public readonly union TdImageViewerPropsImagesItem(string, Files, TImageInfo)
 {
 }
 
@@ -19762,7 +19762,7 @@ public enum TdImageViewerPropsOnCloseContextTrigger
 public delegate void TdImageViewerPropsOnDownload(TdImageViewerPropsOnDownloadUrl url);
 
 [ECMAScript]
-public readonly union TdImageViewerPropsOnDownloadUrl(string, File)
+public readonly union TdImageViewerPropsOnDownloadUrl(string, Files)
 {
 }
 
@@ -32923,7 +32923,7 @@ public class TUpload<T> : TContentComponentBase
 
     [Parameter]
     [ECMAScriptName("onSelectChange")]
-    public EventCallback<File[]> OnSelectChange { get; set; }
+    public EventCallback<Files[]> OnSelectChange { get; set; }
 
     [Parameter]
     [ECMAScriptName("onSuccess")]

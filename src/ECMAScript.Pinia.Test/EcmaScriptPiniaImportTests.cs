@@ -1963,7 +1963,7 @@ public sealed class EcmaScriptPiniaImportTests
 						string mutationKind = "";
 						string payloadSummary = "";
 						string eventShape = "";
-						var detach = store.Subscribe(HandleMutation, new SubscribeOptions
+						var detach = store.Subscribe(HandleMutation, new Pinia.SubscribeOptions
 						{
 							Detached = true,
 							Flush = VueWatchFlush.Sync
@@ -2064,7 +2064,7 @@ public sealed class EcmaScriptPiniaImportTests
 				public static class SubscriptionWatchOptionsModule
 				{
 					public static PiniaDetachCallback Observe(CounterStore store)
-						=> store.Subscribe(HandleMutation, new SubscribeOptions
+						=> store.Subscribe(HandleMutation, new Pinia.SubscribeOptions
 						{
 							Detached = true,
 							Flush = VueWatchFlush.Sync,

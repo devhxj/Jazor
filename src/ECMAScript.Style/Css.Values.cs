@@ -12,6 +12,56 @@ public static partial class css
     public static readonly CssNormalKeyword normal = CssNormalKeyword.Normal;
     public static readonly CssSizingKeyword minContent = CssSizingKeyword.MinContent;
     public static readonly CssSizingKeyword maxContent = CssSizingKeyword.MaxContent;
+    /// <summary>Intrinsic sizing keyword <c>fit-content</c> without parentheses。内在尺寸关键字 <c>fit-content</c>（无括号形式）。</summary>
+    public static readonly CssSizingFunctionKeyword fitContentKeyword = CssSizingFunctionKeyword.FitContent;
+    /// <summary>Intrinsic sizing keyword <c>stretch</c>, distinct from alignment <c>stretch</c>。内在尺寸关键字 <c>stretch</c>，与 alignment 的同名值分离。</summary>
+    public static readonly CssSizingFunctionKeyword sizingStretch = CssSizingFunctionKeyword.Stretch;
+    /// <summary>Intrinsic sizing keyword <c>contain</c>, distinct from object-fit <c>contain</c>。内在尺寸关键字 <c>contain</c>，与 object-fit 的同名值分离。</summary>
+    public static readonly CssSizingFunctionKeyword sizingContain = CssSizingFunctionKeyword.Contain;
+    /// <summary>Special <c>any</c> basis for <c>calc-size(...)</c>。<c>calc-size(...)</c> 的特殊 <c>any</c> 基值。</summary>
+    public static readonly CssCalcSizeBasisKeyword anySize = CssCalcSizeBasisKeyword.Any;
+    /// <summary>Result-side <c>size</c> token for <c>calc-size(...)</c> arithmetic。用于 <c>calc-size(...)</c> 算术的结果侧 <c>size</c> token。</summary>
+    public static readonly CssCalcSizeExpression size = CssCalcSizeExpression.create("size");
+    /// <summary>Named-anchor side <c>inside</c>。命名锚点边 <c>inside</c>。</summary>
+    public static readonly CssAnchorSide anchorInside = CssAnchorSide.Inside;
+    /// <summary>Named-anchor side <c>outside</c>。命名锚点边 <c>outside</c>。</summary>
+    public static readonly CssAnchorSide anchorOutside = CssAnchorSide.Outside;
+    /// <summary>Named-anchor side <c>top</c>。命名锚点边 <c>top</c>。</summary>
+    public static readonly CssAnchorSide anchorTop = CssAnchorSide.Top;
+    /// <summary>Named-anchor side <c>right</c>。命名锚点边 <c>right</c>。</summary>
+    public static readonly CssAnchorSide anchorRight = CssAnchorSide.Right;
+    /// <summary>Named-anchor side <c>bottom</c>。命名锚点边 <c>bottom</c>。</summary>
+    public static readonly CssAnchorSide anchorBottom = CssAnchorSide.Bottom;
+    /// <summary>Named-anchor side <c>left</c>。命名锚点边 <c>left</c>。</summary>
+    public static readonly CssAnchorSide anchorLeft = CssAnchorSide.Left;
+    /// <summary>Named-anchor side <c>start</c>。命名锚点边 <c>start</c>。</summary>
+    public static readonly CssAnchorSide anchorStart = CssAnchorSide.Start;
+    /// <summary>Named-anchor side <c>end</c>。命名锚点边 <c>end</c>。</summary>
+    public static readonly CssAnchorSide anchorEnd = CssAnchorSide.End;
+    /// <summary>Named-anchor side <c>self-start</c>。命名锚点边 <c>self-start</c>。</summary>
+    public static readonly CssAnchorSide anchorSelfStart = CssAnchorSide.SelfStart;
+    /// <summary>Named-anchor side <c>self-end</c>。命名锚点边 <c>self-end</c>。</summary>
+    public static readonly CssAnchorSide anchorSelfEnd = CssAnchorSide.SelfEnd;
+    /// <summary>Named-anchor side <c>center</c>。命名锚点边 <c>center</c>。</summary>
+    public static readonly CssAnchorSide anchorCenter = CssAnchorSide.Center;
+    /// <summary>Anchor-size axis <c>width</c>。anchor-size 维度 <c>width</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorWidth = CssAnchorSizeAxis.Width;
+    /// <summary>Anchor-size axis <c>height</c>。anchor-size 维度 <c>height</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorHeight = CssAnchorSizeAxis.Height;
+    /// <summary>Anchor-size axis <c>block</c>。anchor-size 维度 <c>block</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorBlock = CssAnchorSizeAxis.Block;
+    /// <summary>Anchor-size axis <c>inline</c>。anchor-size 维度 <c>inline</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorInline = CssAnchorSizeAxis.Inline;
+    /// <summary>Anchor-size axis <c>self-block</c>。anchor-size 维度 <c>self-block</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorSelfBlock = CssAnchorSizeAxis.SelfBlock;
+    /// <summary>Anchor-size axis <c>self-inline</c>。anchor-size 维度 <c>self-inline</c>。</summary>
+    public static readonly CssAnchorSizeAxis anchorSelfInline = CssAnchorSizeAxis.SelfInline;
+    /// <summary>Keyword <c>all</c> for <c>anchor-scope</c>。<c>anchor-scope</c> 的 <c>all</c> 关键字。</summary>
+    public static readonly CssAnchorScopeKeyword anchorScopeAll = CssAnchorScopeKeyword.All;
+    /// <summary>Keyword <c>match-parent</c> for <c>position-anchor</c>。<c>position-anchor</c> 的 <c>match-parent</c> 关键字。</summary>
+    public static readonly CssPositionAnchorKeyword anchorMatchParent = CssPositionAnchorKeyword.MatchParent;
+    /// <summary>Keyword <c>content</c> for <c>flex-basis</c>。<c>flex-basis</c> 的 <c>content</c> 关键字。</summary>
+    public static readonly CssFlexBasisKeyword flexContent = CssFlexBasisKeyword.Content;
     public static readonly CssDisplayKeyword block = CssDisplayKeyword.Block;
     public static readonly CssDisplayKeyword inline = CssDisplayKeyword.Inline;
     public static readonly CssDisplayKeyword inlineBlock = CssDisplayKeyword.InlineBlock;
@@ -91,24 +141,55 @@ public static partial class css
     public static readonly CssTimingFunctionKeyword easeOut = CssTimingFunctionKeyword.EaseOut;
     public static readonly CssTimingFunctionKeyword easeInOut = CssTimingFunctionKeyword.EaseInOut;
 
+    /// <summary>
+    /// Preserves an explicitly supplied CSS fragment as a <see cref="CssRaw"/> value.
+    /// Use it only for grammar that has no typed carrier yet; typed factories remain preferable because they
+    /// preserve property-domain checking.
+    /// 将显式提供的 CSS 片段保留为 <see cref="CssRaw"/> 值。仅在尚无类型化载体的 grammar 中使用；
+    /// 应优先使用类型化工厂，以保留属性值域检查。
+    /// </summary>
     public static CssRaw raw(string value)
         => CssRaw.create(value);
 
+    /// <summary>
+    /// Creates one explicitly ordered declaration for <see cref="CssDeclarations.Additional"/>.
+    /// The value must still be a closed <see cref="CssValue"/> branch; this API does not accept raw strings.
+    /// 为 <see cref="CssDeclarations.Additional"/> 创建一条显式排序的声明。值仍必须是封闭的
+    /// <see cref="CssValue"/> 分支；该 API 不接受原始字符串。
+    /// </summary>
     public static CssDeclaration declaration(string name, CssValue value)
         => new(name, value);
 
+    /// <summary>
+    /// Creates an explicitly ordered declaration with <c>!important</c> priority.
+    /// For normal typed properties, prefer <c>important(value)</c> so the original value domain remains exact.
+    /// 创建带 <c>!important</c> 优先级的显式排序声明。对于普通类型化属性，应优先使用
+    /// <c>important(value)</c>，以保持原始值域精确。
+    /// </summary>
     public static CssDeclaration important(string name, CssValue value)
         => new(name, value, CssDeclarationPriority.Important);
 
-    /// <summary>Marks one strongly typed property value as important.</summary>
+    /// <summary>
+    /// Marks one strongly typed property value as <c>!important</c> without widening its value domain.
+    /// 将一个强类型属性值标记为 <c>!important</c>，同时不扩大其值域。
+    /// </summary>
     [ECMAScriptName("importantValue")]
     public static CssImportant<TValue> important<TValue>(TValue value)
         => CssImportant<TValue>.create(value);
 
+    /// <summary>
+    /// Copies an explicit declaration and upgrades only its priority to <c>!important</c>.
+    /// 复制一条显式声明，并且只将其优先级升级为 <c>!important</c>。
+    /// </summary>
     [ECMAScriptName("importantFrom")]
     public static CssDeclaration important(ICssDeclaration value)
         => new(value.Name, value.Value, CssDeclarationPriority.Important);
 
+    /// <summary>
+    /// Validates a CSS keyword token that cannot use a custom-property prefix.
+    /// Prefer a closed keyword enum when the target property has a modeled vocabulary.
+    /// 验证不能使用自定义属性前缀的 CSS keyword token。目标属性已有建模词汇时，应优先使用封闭 keyword enum。
+    /// </summary>
     public static CssKeyword keyword(string value)
     {
         var normalized = value.Trim();
@@ -116,6 +197,10 @@ public static partial class css
         return CssKeyword.create(normalized);
     }
 
+    /// <summary>
+    /// Validates a CSS identifier, including a dashed custom-property-style identifier where the grammar permits it.
+    /// 验证 CSS 标识符；在 grammar 允许时可使用带短横线的自定义属性风格标识符。
+    /// </summary>
     public static CssIdent ident(string value)
     {
         var normalized = value.Trim();
@@ -123,6 +208,10 @@ public static partial class css
         return CssIdent.create(normalized);
     }
 
+    /// <summary>
+    /// Creates a typed CSS custom-property reference in <c>var(--name)</c> form.
+    /// 创建 <c>var(--name)</c> 形式的类型化 CSS 自定义属性引用。
+    /// </summary>
     [ECMAScriptName("variable")]
     public static CssVariable var(string name)
     {
@@ -130,13 +219,162 @@ public static partial class css
         return CssVariable.create("var(" + normalized + ")");
     }
 
+    /// <summary>
+    /// Creates a typed custom-property reference with a typed CSS fallback.
+    /// Fallback serialization keeps its original union branch rather than accepting an arbitrary string.
+    /// 创建带类型化 CSS 后备值的自定义属性引用。后备值序列化会保持原始 union 分支，而非接受任意字符串。
+    /// </summary>
     public static CssVariable varOr(string name, CssValue fallback)
     {
         var normalized = normalizeVariableName(name);
         return CssVariable.create("var(" + normalized + "," + StringFn(fallback.Value) + ")");
     }
 
+    /// <summary>
+    /// Creates one CSS named-anchor identifier. The name must use the <c>--name</c> form required
+    /// by the anchor-positioning grammar; this is separate from an arbitrary <see cref="CssIdent"/>.
+    /// 创建一个 CSS 命名锚点标识符。名称必须符合锚点定位语法要求的 <c>--name</c> 形式；它与任意
+    /// <see cref="CssIdent"/> 分离。
+    /// </summary>
+    public static CssAnchorName anchorName(string value)
+        => CssAnchorName.create(normalizeAnchorName(value));
+
+    /// <summary>
+    /// Creates a space-separated list for <c>anchor-name</c> or <c>anchor-scope</c>. At least one
+    /// already validated <see cref="CssAnchorName"/> is required.
+    /// 创建用于 <c>anchor-name</c> 或 <c>anchor-scope</c> 的空格分隔列表。至少需要一个已验证的
+    /// <see cref="CssAnchorName"/>。
+    /// </summary>
+    public static CssAnchorNameList anchorNames([PreserveParamsArray] params CssAnchorName[] values)
+    {
+        if (values.Length == 0)
+            Fail("CSS anchor-name requires at least one anchor name.");
+
+        var output = new Array<string>();
+        foreach (var value in values)
+            output.Push(StringFn(value));
+        return CssAnchorNameList.create(output.Join(" "));
+    }
+
+    /// <summary>
+    /// References the requested side of the implicit anchor with <c>anchor(...)</c>.
+    /// 使用 <c>anchor(...)</c> 引用隐式锚点的指定边。
+    /// </summary>
+    public static CssAnchor anchor(CssAnchorSideValue side)
+        => CssAnchor.create("anchor(" + StringFn(side.Value) + ")");
+
+    /// <summary>
+    /// References a specified named anchor side with <c>anchor(...)</c>.
+    /// 使用 <c>anchor(...)</c> 引用指定命名锚点的一条边。
+    /// </summary>
+    [ECMAScriptName("anchorNamed")]
+    public static CssAnchor anchor(CssAnchorName name, CssAnchorSideValue side)
+        => CssAnchor.create("anchor(" + StringFn(name) + " " + StringFn(side.Value) + ")");
+
+    /// <summary>
+    /// References an implicit anchor side and supplies the CSS fallback used when no anchor resolves.
+    /// 引用隐式锚点边，并提供无法解析锚点时使用的 CSS 后备值。
+    /// </summary>
+    [ECMAScriptName("anchorFallback")]
+    public static CssAnchor anchor(CssAnchorSideValue side, CssLengthPercentageValue fallback)
+        => CssAnchor.create("anchor(" + StringFn(side.Value) + "," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// References a named anchor side and supplies its CSS fallback.
+    /// 引用命名锚点边，并提供其 CSS 后备值。
+    /// </summary>
+    [ECMAScriptName("anchorNamedFallback")]
+    public static CssAnchor anchor(CssAnchorName name, CssAnchorSideValue side, CssLengthPercentageValue fallback)
+        => CssAnchor.create("anchor(" + StringFn(name) + " " + StringFn(side.Value) + "," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression using the implicit anchor and its default axis.
+    /// 使用隐式锚点及默认轴创建 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    public static CssAnchorSize anchorSize()
+        => CssAnchorSize.create("anchor-size()");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for one named anchor.
+    /// 为一个命名锚点创建 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeNamed")]
+    public static CssAnchorSize anchorSize(CssAnchorName name)
+        => CssAnchorSize.create("anchor-size(" + StringFn(name) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for one axis of the implicit anchor.
+    /// 为隐式锚点的一个轴创建 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeAxis")]
+    public static CssAnchorSize anchorSize(CssAnchorSizeAxis axis)
+        => CssAnchorSize.create("anchor-size(" + StringFn(axis) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for one axis of a named anchor.
+    /// 为命名锚点的一个轴创建 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeNamedAxis")]
+    public static CssAnchorSize anchorSize(CssAnchorName name, CssAnchorSizeAxis axis)
+        => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + ")");
+
+    /// <summary>
+    /// Creates <c>anchor-size(, fallback)</c> for the implicit anchor when its size cannot resolve.
+    /// 在隐式锚点尺寸无法解析时创建 <c>anchor-size(, fallback)</c>。
+    /// </summary>
+    [ECMAScriptName("anchorSizeFallback")]
+    public static CssAnchorSize anchorSize(CssLengthPercentageValue fallback)
+        => CssAnchorSize.create("anchor-size(," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for a named anchor with a fallback.
+    /// 为命名锚点创建带后备值的 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeNamedFallback")]
+    public static CssAnchorSize anchorSize(CssAnchorName name, CssLengthPercentageValue fallback)
+        => CssAnchorSize.create("anchor-size(" + StringFn(name) + "," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for an implicit anchor axis with a fallback.
+    /// 为隐式锚点轴创建带后备值的 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeAxisFallback")]
+    public static CssAnchorSize anchorSize(CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
+        => CssAnchorSize.create("anchor-size(" + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// Creates an <c>anchor-size()</c> expression for a named anchor axis with a fallback.
+    /// 为命名锚点轴创建带后备值的 <c>anchor-size()</c> 表达式。
+    /// </summary>
+    [ECMAScriptName("anchorSizeNamedAxisFallback")]
+    public static CssAnchorSize anchorSize(CssAnchorName name, CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
+        => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
+
+    /// <summary>
+    /// Creates <c>calc-size(basis, calculation)</c> using the typed result-side expression rooted
+    /// at <c>size</c>.
+    /// 使用以 <c>size</c> 为根的类型化结果表达式创建 <c>calc-size(basis, calculation)</c>。
+    /// </summary>
+    public static CssCalcSize calcSize(CssCalcSizeBasis basis, CssCalcSizeExpression calculation)
+        => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation) + ")");
+
+    /// <summary>
+    /// Creates <c>calc-size(basis, calculation)</c> when the calculation is already a typed
+    /// length-percentage expression.
+    /// 当计算式已经是类型化 length-percentage 表达式时，创建 <c>calc-size(basis, calculation)</c>。
+    /// </summary>
+    [ECMAScriptName("calcSizeValue")]
+    public static CssCalcSize calcSize(CssCalcSizeBasis basis, CssLengthPercentageValue calculation)
+        => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation.Value) + ")");
+
+    /// <summary>
+    /// Creates a pixel CSS length. Unit factories return <see cref="CssLength"/>, so they cannot accidentally
+    /// occupy percentage-only or time-only properties.
+    /// 创建像素 CSS 长度。单位工厂返回 <see cref="CssLength"/>，因此不能意外用于仅百分比或仅时间属性。
+    /// </summary>
     public static CssLength px(double value) => CssLength.create(number(value) + "px");
+
+    /// <summary>Creates a root-font-relative CSS length。创建相对于根字体大小的 CSS 长度。</summary>
     public static CssLength rem(double value) => CssLength.create(number(value) + "rem");
     public static CssLength em(double value) => CssLength.create(number(value) + "em");
     public static CssLength ex(double value) => CssLength.create(number(value) + "ex");
@@ -161,18 +399,23 @@ public static partial class css
     public static CssLength inch(double value) => CssLength.create(number(value) + "in");
     public static CssLength pt(double value) => CssLength.create(number(value) + "pt");
     public static CssLength pc(double value) => CssLength.create(number(value) + "pc");
+    /// <summary>Creates a CSS percentage, distinct from a unitless number。创建 CSS 百分比，与无单位数值分离。</summary>
     public static CssPercentage percent(double value) => CssPercentage.create(number(value) + "%");
 
+    /// <summary>Creates a length-only <c>min(...)</c> expression。创建仅长度的 <c>min(...)</c> 表达式。</summary>
     public static CssLength min(CssLength first, CssLength second)
         => CssLength.create("min(" + StringFn(first) + "," + StringFn(second) + ")");
 
+    /// <summary>Creates a mixed length-percentage <c>min(...)</c> expression。创建混合长度/百分比 <c>min(...)</c> 表达式。</summary>
     [ECMAScriptName("minLengthPercentage")]
     public static CssLengthPercentage min(CssLengthPercentageValue first, CssLengthPercentageValue second)
         => CssLengthPercentage.create("min(" + StringFn(first.Value) + "," + StringFn(second.Value) + ")");
 
+    /// <summary>Creates a length-only <c>max(...)</c> expression。创建仅长度的 <c>max(...)</c> 表达式。</summary>
     public static CssLength max(CssLength first, CssLength second)
         => CssLength.create("max(" + StringFn(first) + "," + StringFn(second) + ")");
 
+    /// <summary>Creates a length-only <c>clamp(minimum, preferred, maximum)</c> expression。创建仅长度的 <c>clamp(minimum, preferred, maximum)</c> 表达式。</summary>
     public static CssLength clamp(CssLength minimum, CssLength preferred, CssLength maximum)
         => CssLength.create("clamp(" + StringFn(minimum) + "," + StringFn(preferred) + "," + StringFn(maximum) + ")");
 
@@ -188,6 +431,10 @@ public static partial class css
     public static CssResolution dpcm(double value) => CssResolution.create(number(value) + "dpcm");
     public static CssResolution dppx(double value) => CssResolution.create(number(value) + "dppx");
 
+    /// <summary>
+    /// Creates an opaque RGB color after validating each channel in the inclusive byte range.
+    /// 创建不透明 RGB 颜色，并验证每个通道位于包含端点的字节范围内。
+    /// </summary>
     public static CssColor rgb(int red, int green, int blue)
     {
         validateByte(red, "red");
@@ -196,6 +443,12 @@ public static partial class css
         return CssColor.create("rgb(" + StringFn(red) + " " + StringFn(green) + " " + StringFn(blue) + ")");
     }
 
+    /// <summary>
+    /// Creates a validated named CSS color. Use <see cref="hex(string)"/>, <see cref="rgb(int, int, int)"/>,
+    /// or <see cref="hsl(double, double, double)"/> when the color's construction should be explicit.
+    /// 创建经过验证的 CSS 命名颜色。需要显式构造颜色时，应使用 <see cref="hex(string)"/>、
+    /// <see cref="rgb(int, int, int)"/> 或 <see cref="hsl(double, double, double)"/>。
+    /// </summary>
     public static CssColor color(string value)
     {
         var normalized = value.Trim();
@@ -203,6 +456,7 @@ public static partial class css
         return CssColor.create(normalized);
     }
 
+    /// <summary>Creates an RGB color with a validated 0..1 alpha channel。创建带经验证 0..1 alpha 通道的 RGB 颜色。</summary>
     public static CssColor rgba(int red, int green, int blue, double alpha)
     {
         validateByte(red, "red");
@@ -212,6 +466,7 @@ public static partial class css
         return CssColor.create("rgb(" + StringFn(red) + " " + StringFn(green) + " " + StringFn(blue) + " / " + number(alpha) + ")");
     }
 
+    /// <summary>Creates an HSL color with percentage saturation and lightness。创建 saturation、lightness 为百分比的 HSL 颜色。</summary>
     public static CssColor hsl(double hue, double saturation, double lightness)
     {
         validatePercentage(saturation, "saturation");
@@ -219,6 +474,7 @@ public static partial class css
         return CssColor.create("hsl(" + number(hue) + " " + number(saturation) + "% " + number(lightness) + "%)");
     }
 
+    /// <summary>Creates an HSL color with a validated alpha channel。创建带经验证 alpha 通道的 HSL 颜色。</summary>
     public static CssColor hsla(double hue, double saturation, double lightness, double alpha)
     {
         validatePercentage(saturation, "saturation");
@@ -227,6 +483,11 @@ public static partial class css
         return CssColor.create("hsl(" + number(hue) + " " + number(saturation) + "% " + number(lightness) + "% / " + number(alpha) + ")");
     }
 
+    /// <summary>
+    /// Creates a normalized hexadecimal CSS color. The optional leading <c>#</c> is accepted; only 3, 4, 6, and 8
+    /// hexadecimal digit forms are emitted.
+    /// 创建规范化十六进制 CSS 颜色。可省略前导 <c>#</c>；仅输出 3、4、6、8 位十六进制形式。
+    /// </summary>
     public static CssColor hex(string value)
     {
         var trimmed = value.Trim();
@@ -248,21 +509,35 @@ public static partial class css
         return CssColor.create(normalized.ToLowerInvariant());
     }
 
+    /// <summary>Creates a quoted CSS <c>url(...)</c> token。创建带引号的 CSS <c>url(...)</c> token。</summary>
     public static CssUrl url(string value)
         => CssUrl.create("url(" + quote(value) + ")");
 
+    /// <summary>Creates a quoted CSS string token。创建带引号的 CSS 字符串 token。</summary>
     public static CssString str(string value)
         => CssString.create(quote(value));
 
+    /// <summary>Creates a grid-only fractional track size。创建仅用于 grid 的分数轨道尺寸。</summary>
     public static CssTrack fr(double value)
         => CssTrack.create(number(value) + "fr");
 
+    /// <summary>Creates a typed grid <c>minmax(...)</c> track function。创建类型化 grid <c>minmax(...)</c> 轨道函数。</summary>
     public static CssTrack minMax(CssTrackValue minimum, CssTrackValue maximum)
         => CssTrack.create("minmax(" + StringFn(minimum.Value) + "," + StringFn(maximum.Value) + ")");
 
-    public static CssTrack fitContent(CssLengthPercentageValue limit)
-        => CssTrack.create("fit-content(" + StringFn(limit.Value) + ")");
+    /// <summary>
+    /// Creates the functional <c>fit-content(...)</c> size. The returned carrier is accepted by
+    /// grid tracks, box sizing, and column-width without becoming a general track value.
+    /// 创建函数形式的 <c>fit-content(...)</c> 尺寸。返回的载体可用于 grid track、盒尺寸和
+    /// column-width，同时不会退化为通用轨道值。
+    /// </summary>
+    public static CssFitContent fitContent(CssLengthPercentageValue limit)
+        => CssFitContent.create("fit-content(" + StringFn(limit.Value) + ")");
 
+    /// <summary>
+    /// Creates a fixed-count grid <c>repeat(...)</c> function. The count is validated as positive before emission.
+    /// 创建固定次数的 grid <c>repeat(...)</c> 函数。次数会在输出前验证为正数。
+    /// </summary>
     public static CssTrack repeat(int count, CssTrackValue track)
     {
         if (count <= 0)
@@ -270,6 +545,12 @@ public static partial class css
         return CssTrack.create("repeat(" + StringFn(count) + "," + StringFn(track.Value) + ")");
     }
 
+    /// <summary>
+    /// Joins one or more typed grid tracks in authored order.
+    /// The result remains <see cref="CssTrack"/> rather than a generic string so it cannot leave grid-track properties.
+    /// 按作者顺序连接一个或多个类型化 grid track。结果仍为 <see cref="CssTrack"/> 而不是通用字符串，
+    /// 因而不能离开 grid-track 属性。
+    /// </summary>
     public static CssTrack tracks([PreserveParamsArray] params CssTrackValue[] values)
     {
         if (values.Length == 0)
@@ -281,6 +562,10 @@ public static partial class css
         return CssTrack.create(output.Join(" "));
     }
 
+    /// <summary>
+    /// Creates a CSS padding shorthand. Its overloads map to the standard one-, two-, three-, and four-side forms.
+    /// 创建 CSS padding 简写。各重载分别映射标准的一、二、三、四边形式。
+    /// </summary>
     public static CssPadding padding(CssPaddingPart value)
         => CssPadding.create(StringFn(value.Value));
 
@@ -296,6 +581,10 @@ public static partial class css
     public static CssPadding padding(CssPaddingPart top, CssPaddingPart right, CssPaddingPart bottom, CssPaddingPart left)
         => CssPadding.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
 
+    /// <summary>
+    /// Creates a CSS margin shorthand. Anchor-size values remain allowed only through <see cref="CssMarginPart"/>.
+    /// 创建 CSS margin 简写。anchor-size 值只会通过 <see cref="CssMarginPart"/> 被允许。
+    /// </summary>
     public static CssMargin margin(CssMarginPart value)
         => CssMargin.create(StringFn(value.Value));
 
@@ -311,6 +600,31 @@ public static partial class css
     public static CssMargin margin(CssMarginPart top, CssMarginPart right, CssMarginPart bottom, CssMarginPart left)
         => CssMargin.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
 
+    /// <summary>
+    /// Creates a one-side <c>inset</c> shorthand. Use the overloads for two to four sides when the
+    /// shorthand is assigned to <c>inset</c>, <c>inset-block</c>, or <c>inset-inline</c>.
+    /// 创建单边 <c>inset</c> 简写。赋给 <c>inset</c>、<c>inset-block</c> 或 <c>inset-inline</c>
+    /// 时，可使用二至四边重载。
+    /// </summary>
+    public static CssInset insetSides(CssInsetPart value)
+        => CssInset.create(StringFn(value.Value));
+
+    /// <summary>Creates a two-side <c>inset</c> shorthand。创建双边 <c>inset</c> 简写。</summary>
+    [ECMAScriptName("insetSides2")]
+    public static CssInset insetSides(CssInsetPart vertical, CssInsetPart horizontal)
+        => CssInset.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+
+    /// <summary>Creates a three-side <c>inset</c> shorthand。创建三值 <c>inset</c> 简写。</summary>
+    [ECMAScriptName("insetSides3")]
+    public static CssInset insetSides(CssInsetPart top, CssInsetPart horizontal, CssInsetPart bottom)
+        => CssInset.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+
+    /// <summary>Creates a four-side <c>inset</c> shorthand。创建四边 <c>inset</c> 简写。</summary>
+    [ECMAScriptName("insetSides4")]
+    public static CssInset insetSides(CssInsetPart top, CssInsetPart right, CssInsetPart bottom, CssInsetPart left)
+        => CssInset.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+
+    /// <summary>Creates a one- or two-axis CSS gap shorthand。创建单轴或双轴 CSS gap 简写。</summary>
     public static CssGap gap(CssGapPart value)
         => CssGap.create(StringFn(value.Value));
 
@@ -318,6 +632,7 @@ public static partial class css
     public static CssGap gap(CssGapPart row, CssGapPart column)
         => CssGap.create(join(StringFn(row.Value), StringFn(column.Value)));
 
+    /// <summary>Creates a one-, two-, or four-corner radius shorthand。创建一、二或四角 radius 简写。</summary>
     public static CssRadius radius(CssRadiusPart value)
         => CssRadius.create(StringFn(value.Value));
 
@@ -329,12 +644,15 @@ public static partial class css
     public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRight, CssRadiusPart bottomRight, CssRadiusPart bottomLeft)
         => CssRadius.create(join(StringFn(topLeft.Value), StringFn(topRight.Value), StringFn(bottomRight.Value), StringFn(bottomLeft.Value)));
 
+    /// <summary>Creates the structured <c>flex-grow flex-shrink flex-basis</c> shorthand。创建结构化 <c>flex-grow flex-shrink flex-basis</c> 简写。</summary>
     public static CssFlex flexBox(double grow, double shrink, CssLengthPercentageValue basis)
         => CssFlex.create(number(grow) + " " + number(shrink) + " " + StringFn(basis.Value));
 
+    /// <summary>Creates a two-dimensional background-size value。创建二维 background-size 值。</summary>
     public static CssBackgroundSize backgroundSize(CssLengthPercentageValue width, CssLengthPercentageValue height)
         => CssBackgroundSize.create(join(StringFn(width.Value), StringFn(height.Value)));
 
+    /// <summary>Creates a grid line reference or start/end line range。创建 grid 线引用或 start/end 线区间。</summary>
     public static CssGridLine gridLine(int line)
         => CssGridLine.create(StringFn(line));
 
@@ -342,6 +660,7 @@ public static partial class css
     public static CssGridLine gridLine(int start, int end)
         => CssGridLine.create(StringFn(start) + " / " + StringFn(end));
 
+    /// <summary>Creates a gradient stop, optionally with a point or range position。创建 gradient stop，可选单点或区间位置。</summary>
     public static CssGradientStop stop(CssColorValue color)
         => new(color);
 
@@ -353,21 +672,27 @@ public static partial class css
     public static CssGradientStop stop(CssColorValue color, CssLengthPercentageValue from, CssLengthPercentageValue to)
         => new(color, from, to);
 
+    /// <summary>Creates a linear gradient with at least two typed stops。创建至少含两个类型化 stop 的线性渐变。</summary>
     public static CssGradient linearGradient([PreserveParamsArray] params CssGradientStop[] stops)
         => gradient("linear-gradient", stops);
 
+    /// <summary>Creates a conic gradient with at least two typed stops。创建至少含两个类型化 stop 的圆锥渐变。</summary>
     public static CssGradient conicGradient([PreserveParamsArray] params CssGradientStop[] stops)
         => gradient("conic-gradient", stops);
 
+    /// <summary>Creates a compact animation shorthand from a typed name, duration, and timing keyword。根据类型化名称、duration、timing keyword 创建紧凑 animation 简写。</summary>
     public static CssAnimation animation(CssIdent name, CssTime duration, CssTimingFunctionKeyword timing)
         => CssAnimation.create(StringFn(name) + " " + StringFn(duration) + " " + StringFn(timing));
 
+    /// <summary>Creates a quoted font-family entry。创建带引号的 font-family 条目。</summary>
     public static CssFontFamilyName font(string value)
         => CssFontFamilyName.create(quote(value));
 
+    /// <summary>Creates a validated generic font-family identifier without quotes。创建不带引号、已验证的 generic font-family 标识符。</summary>
     public static CssFontFamilyName genericFont(string value)
         => CssFontFamilyName.create(StringFn(ident(value)));
 
+    /// <summary>Creates an ordered font fallback list that contains at least one family。创建至少含一个字体族的有序后备列表。</summary>
     public static CssFontFamily fontFamily([PreserveParamsArray] params CssFontFamilyName[] names)
     {
         if (names.Length == 0)
@@ -379,18 +704,23 @@ public static partial class css
         return CssFontFamily.create(output.Join(","));
     }
 
+    /// <summary>Creates an X-axis translate transform from a length-percentage value。根据长度/百分比值创建 X 轴 translate transform。</summary>
     public static CssTransform translateX(CssLengthPercentageValue value)
         => CssTransform.create("translateX(" + StringFn(value.Value) + ")");
 
+    /// <summary>Creates a Y-axis translate transform from a length-percentage value。根据长度/百分比值创建 Y 轴 translate transform。</summary>
     public static CssTransform translateY(CssLengthPercentageValue value)
         => CssTransform.create("translateY(" + StringFn(value.Value) + ")");
 
+    /// <summary>Creates a two-axis translate transform。创建双轴 translate transform。</summary>
     public static CssTransform translate(CssLengthPercentageValue x, CssLengthPercentageValue y)
         => CssTransform.create("translate(" + StringFn(x.Value) + "," + StringFn(y.Value) + ")");
 
+    /// <summary>Creates a rotate transform from a typed angle。根据类型化角度创建 rotate transform。</summary>
     public static CssTransform rotate(CssAngle angle)
         => CssTransform.create("rotate(" + StringFn(angle) + ")");
 
+    /// <summary>Creates a uniform scale transform。创建统一缩放的 scale transform。</summary>
     public static CssTransform scale(double value)
         => CssTransform.create("scale(" + number(value) + ")");
 
@@ -398,6 +728,10 @@ public static partial class css
     public static CssTransform scale(double x, double y)
         => CssTransform.create("scale(" + number(x) + "," + number(y) + ")");
 
+    /// <summary>
+    /// Joins one or more transform functions in authored order. The result remains a transform-only carrier.
+    /// 按作者顺序连接一个或多个 transform 函数。结果仍保持 transform 专用载体。
+    /// </summary>
     public static CssTransform transform([PreserveParamsArray] params CssTransform[] functions)
     {
         if (functions.Length == 0)
@@ -409,6 +743,12 @@ public static partial class css
         return CssTransform.create(output.Join(" "));
     }
 
+    /// <summary>
+    /// Creates a deterministic comma-separated box-shadow list. Optional shadow fields are emitted in one stable order
+    /// so semantically equal records receive the same CSS and generated class hash.
+    /// 创建确定性的逗号分隔 box-shadow 列表。可选字段会按固定顺序输出，使语义相等的 record 获得相同 CSS
+    /// 与生成 class hash。
+    /// </summary>
     public static CssShadowList shadows([PreserveParamsArray] params CssShadow[] values)
     {
         if (values.Length == 0)
@@ -445,6 +785,7 @@ public static partial class css
         return CssShadowList.create(output.Join(","));
     }
 
+    /// <summary>Creates a positive CSS ratio and rejects zero or negative terms。创建正 CSS 比率，并拒绝零或负分量。</summary>
     public static CssRatio ratio(int numerator, int denominator = 1)
     {
         if (numerator <= 0 || denominator <= 0)
@@ -452,6 +793,11 @@ public static partial class css
         return CssRatio.create(StringFn(numerator) + " / " + StringFn(denominator));
     }
 
+    /// <summary>
+    /// Creates a border shorthand from its typed width, style, and color branches.
+    /// At least one branch is required; use the <c>|</c> operators when incremental composition reads better.
+    /// 根据类型化宽度、样式和颜色分支创建 border 简写。至少需要一个分支；增量组合更易读时可使用 <c>|</c> 运算符。
+    /// </summary>
     public static CssBorder border(
         CssLineWidthValue? width = null,
         CssLineStyleValue? style = null,
@@ -470,15 +816,18 @@ public static partial class css
         return CssBorder.create(parts.Join(" "));
     }
 
+    /// <summary>Creates a blur filter from a typed length。根据类型化长度创建 blur filter。</summary>
     public static CssFilter blur(CssLength value)
         => CssFilter.create("blur(" + StringFn(value) + ")");
 
+    /// <summary>Creates a grayscale filter with a validated 0..1 amount。创建 amount 已验证为 0..1 的 grayscale filter。</summary>
     public static CssFilter grayscale(double amount)
     {
         validateUnitInterval(amount, "grayscale amount");
         return CssFilter.create("grayscale(" + number(amount) + ")");
     }
 
+    /// <summary>Creates a saturate filter with a finite non-negative amount。创建 amount 为有限非负数的 saturate filter。</summary>
     public static CssFilter saturate(double amount)
     {
         if (!IsFinite(amount) || amount < 0)
@@ -486,6 +835,7 @@ public static partial class css
         return CssFilter.create("saturate(" + number(amount) + ")");
     }
 
+    /// <summary>Joins one or more typed filter functions in authored order。按作者顺序连接一个或多个类型化 filter 函数。</summary>
     public static CssFilter filters([PreserveParamsArray] params CssFilter[] values)
     {
         if (values.Length == 0)
@@ -555,6 +905,15 @@ public static partial class css
         if (!normalized.StartsWith("--"))
             Fail("CSS variable names must start with '--'.");
         validateToken(normalized, "CSS variable name", allowCustomPropertyPrefix: true);
+        return normalized;
+    }
+
+    private static string normalizeAnchorName(string value)
+    {
+        var normalized = value.Trim();
+        if (!normalized.StartsWith("--"))
+            Fail("CSS anchor names must start with '--'.");
+        validateToken(normalized, "CSS anchor name", allowCustomPropertyPrefix: true);
         return normalized;
     }
 

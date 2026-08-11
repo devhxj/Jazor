@@ -14,12 +14,41 @@ internal sealed record WebIdlSourceInfo(
     string Parser,
     string WebrefIdl,
     string WebrefCss,
-    string WebrefEvents);
+    string WebrefEvents,
+    string? WebrefXref = null);
 
 internal sealed record WebIdlFileInventory(
     string FileName,
     string? Namespace,
-    IReadOnlyList<WebIdlDeclarationInventory> Declarations);
+    IReadOnlyList<WebIdlDeclarationInventory> Declarations,
+    WebIdlSpecificationSource? Source = null);
+
+internal sealed record WebIdlSpecificationSource(
+    string Title,
+    string Url,
+    string? Shortname = null);
+
+/// <summary>
+/// Source-authored documentation associated with an IDL declaration, member, or argument.
+/// The collector retains only prose that it can trace to the corresponding W3C/WHATWG
+/// specification definition; it never invents descriptions from an IDL shape.
+/// </summary>
+internal sealed record WebIdlDocumentation(
+    string Href,
+    string SpecificationTitle,
+    string? Heading,
+    string? HeadingHref,
+    string? Prose,
+    string? Usage = null);
+
+internal sealed record WebIdlArgumentDocumentation(
+    int ArgumentIndex,
+    WebIdlDocumentation Documentation);
+
+internal sealed record WebIdlMemberDocumentation(
+    int MemberIndex,
+    WebIdlDocumentation? Documentation,
+    IReadOnlyList<WebIdlArgumentDocumentation>? Arguments = null);
 
 internal sealed record WebIdlDeclarationInventory(
     string Kind,
@@ -29,7 +58,9 @@ internal sealed record WebIdlDeclarationInventory(
     string? Target,
     string? Includes,
     int? MemberCount,
-    JsonElement Payload);
+    JsonElement Payload,
+    WebIdlDocumentation? Documentation = null,
+    IReadOnlyList<WebIdlMemberDocumentation>? MemberDocumentation = null);
 
 internal sealed record InterfaceEventMap(
     string InterfaceName,

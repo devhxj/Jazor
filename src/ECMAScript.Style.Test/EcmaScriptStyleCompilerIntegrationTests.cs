@@ -47,7 +47,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     ["--button-gap"] = rem(0.5),
                     Children =
                     [
-                        new(CssChildKind.Selector, "&:hover", new CssRule
+                        new(ChildKind.Selector, "&:hover", new CssRule
                         {
                             Color = color("blue")
                         })
@@ -122,7 +122,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     ContainerType = keyword("inline-size"),
                     Children =
                     [
-                        new(CssChildKind.Container, "card (width > 30rem)", new CssRule
+                        new(ChildKind.Container, "card (width > 30rem)", new CssRule
                         {
                             Display = grid
                         })
@@ -177,6 +177,68 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
     }
 
     [TestMethod]
+    public async Task Convert_AnchorAndSizingValues_UseBoundOverloadExportsAndNarrowDomains()
+    {
+        const string source = """
+            using ECMAScript;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            namespace Demo;
+
+            [ECMAScriptModule("styles/anchor.mjs")]
+            public static class AnchorStyles
+            {
+                private static readonly CssAnchorName Card = anchorName("--card");
+
+                public static readonly string Popover = style(new CssRule
+                {
+                    AnchorName = Card,
+                    PositionAnchor = Card,
+                    Width = calcSize(minContent, size + rem(1)),
+                    Height = anchorSize(Card, anchorInline, rem(20)),
+                    Top = anchor(Card, anchorBottom, rem(0.5)),
+                    Inset = insetSides(anchor(anchorTop), anchorSize(Card, anchorBlock)),
+                    MarginTop = anchorSize(Card, anchorInline),
+                    ColumnWidth = fitContent(percent(50))
+                });
+            }
+            """;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            source,
+            CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
+            path: "/src/AnchorStyles.cs");
+        var compilation = CSharpCompilation.Create(
+            "EcmaScriptStyleAnchorConsumer",
+            [syntaxTree],
+            Net110.References.All.Concat(
+            [
+                MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(css).Assembly.Location)
+            ]),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var declaration = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+        var symbol = semanticModel.GetDeclaredSymbol(declaration);
+        Assert.IsNotNull(symbol);
+
+        var module = await new AstConverter(symbol, semanticModel).Convert();
+        var script = module?.ToKnRECMAScript() ?? string.Empty;
+
+        StringAssert.Contains(script, "anchorName(\"--card\")");
+        StringAssert.Contains(script, "calcSize(minContent, size + \" + \" + rem(1))");
+        StringAssert.Contains(script, "anchorSizeNamedAxis(Card, anchorInline)");
+        StringAssert.Contains(script, "anchorNamedFallback(Card, anchorBottom, rem(0.5))");
+        StringAssert.Contains(script, "insetSides2(anchor(anchorTop), anchorSizeNamedAxis(Card, anchorBlock))");
+        StringAssert.Contains(script, "\"anchor-name\": Card");
+        StringAssert.Contains(script, "\"position-anchor\": Card");
+        StringAssert.Contains(script, "\"column-width\": fitContent(percent(50))");
+    }
+
+    [TestMethod]
     public void Compile_ValueDomains_RejectCrossDomainAndImplicitStringAssignments()
     {
         const string source = """
@@ -209,7 +271,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
     }
 
     [TestMethod]
-    public void Compile_RawEscapeHatch_AllowsFutureSyntaxExplicitly()
+    public void Compile_TypedAnchorAndSizingSyntax_CompilesWithoutRawWidthFallback()
     {
         const string source = """
             using ECMAScript.Style;
@@ -221,7 +283,10 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = raw("anchor-size(--card inline, 20rem)"),
+                    Width = calcSize(minContent, size + rem(2)),
+                    Height = anchorSize(anchorName("--card"), anchorInline, rem(20)),
+                    Top = anchor(anchorName("--card"), anchorBottom, rem(1)),
+                    Inset = insetSides(anchor(anchorTop), anchorSize(anchorName("--card"), anchorBlock)),
                     Color = raw("oklch(from var(--brand) l c h)")
                 };
             }

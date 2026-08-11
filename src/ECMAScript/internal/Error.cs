@@ -25,7 +25,7 @@ public sealed class ErrorOptions
 /// Error 的 runtime branding 来自 JavaScript，而不是 CLR Exception 继承关系；异常 lowering
 /// 需要遵守 compiler 的错误协议，不能把所有 Error 都当作普通 C# Exception 类型匹配。
 /// </remarks>
-public class Error : Exception
+public class Error : System.Exception
 {
 	/// <summary>
 	/// JavaScript <c>Error.prototype</c> object.

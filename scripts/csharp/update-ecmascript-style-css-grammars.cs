@@ -30,9 +30,9 @@ foreach (var path in Directory.EnumerateFiles(packageRoot, "*.json").Order(Strin
     foreach (var entry in entries.EnumerateArray())
     {
         if (!entry.TryGetProperty("name", out var nameElement) ||
-            !entry.TryGetProperty("value", out var valueElement) ||
+            !entry.TryGetProperty("syntax", out var syntaxElement) ||
             nameElement.GetString() is not { } name ||
-            valueElement.GetString() is not { } grammar)
+            syntaxElement.GetString() is not { } grammar)
         {
             continue;
         }

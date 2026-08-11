@@ -1,5 +1,5 @@
 export interface WebIdlInventory {
-  schemaVersion: 1;
+  schemaVersion: 3;
   generatedAt: string;
   source: WebIdlSourceInfo;
   files: WebIdlFile[];
@@ -12,12 +12,49 @@ export interface WebIdlSourceInfo {
   webrefIdl: string;
   webrefCss: string;
   webrefEvents: string;
+  webrefXref?: string;
 }
 
 export interface WebIdlFile {
   fileName: string;
   namespace?: string;
+  source?: WebIdlSpecificationSource;
   declarations: WebIdlDeclaration[];
+}
+
+/**
+ * The specification that contributed an IDL source file. This preserves the
+ * provenance needed to make generated binding documentation traceable.
+ */
+export interface WebIdlSpecificationSource {
+  title: string;
+  url: string;
+  shortname?: string;
+}
+
+/**
+ * Documentation copied from the W3C/WHATWG specification source that defines an
+ * API. `prose` is deliberately limited to a nearby author-written explanatory
+ * paragraph; it is never synthesized from the WebIDL declaration shape.
+ */
+export interface WebIdlDocumentation {
+  href: string;
+  specificationTitle: string;
+  heading?: string;
+  headingHref?: string;
+  prose?: string;
+  usage?: string;
+}
+
+export interface WebIdlArgumentDocumentation {
+  argumentIndex: number;
+  documentation: WebIdlDocumentation;
+}
+
+export interface WebIdlMemberDocumentation {
+  memberIndex: number;
+  documentation?: WebIdlDocumentation;
+  arguments?: WebIdlArgumentDocumentation[];
 }
 
 export interface WebIdlDeclaration {
@@ -29,6 +66,8 @@ export interface WebIdlDeclaration {
   includes?: string;
   memberCount?: number;
   payload: unknown;
+  documentation?: WebIdlDocumentation;
+  memberDocumentation?: WebIdlMemberDocumentation[];
 }
 
 export interface InterfaceEventMap {

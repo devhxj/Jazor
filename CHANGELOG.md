@@ -4,6 +4,9 @@
 
 ## 2026-08-11
 
+- Generated WebIDL bindings now expose the browser `File` interface as `ECMAScript.Files`, avoiding an authoring collision with `System.IO.File`. Its JavaScript ABI remains `File` through the generated `Description("@#File")` mapping; C# callers should update `ECMAScript.File` references to `ECMAScript.Files`.
+- `ECMAScript.Style` now refreshes its WebRef grammar catalog to 817 properties and exposes modern anchor-positioning and intrinsic-sizing syntax through dedicated typed domains. `anchor()`, `anchor-size()`, `calc-size()`, and `fit-content()` remain constrained to the CSS properties that accept them instead of falling back to an untyped string or generic CSS value.
+- `ECMAScript.WebIDL.Generator` now refreshes its WebRef sources and emits developer-facing XML documentation from source-authored W3C/WHATWG specification prose, exact definition anchors, and available specification examples. Unverified or unrelated prose is omitted rather than synthesized.
 - `Jazor.Emit` now consumes framework-neutral `Jazor.Generated.ArtifactCatalog` and `Jazor.Artifacts.RuntimeProviderCatalog` contracts. Vue runtime resources, internal import-map entries, and Vue HMR details are supplied by RazorVue; assemblies built against the retired `Jazor.Generated.VueRenderCatalog` contract must be rebuilt.
 - Vue 3 core bindings are now published as `ECMAScript.Vue`, with the C# authoring host renamed from `Vue3` to `Vue`. The `vue3` runtime library ID remains stable so existing manifests and emitted asset paths continue to resolve.
 - Jazor 0.8.4 reorganizes the documentation center into stable overview, architecture, guide, roadmap, and history sections. Current installation, quick-start, package configuration, module documentation, and example entry points now use one consistent Chinese-first format; superseded exploration material is condensed into a single evolution record.

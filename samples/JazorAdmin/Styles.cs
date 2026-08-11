@@ -3044,6 +3044,6 @@ internal static class Styles
     private static void Media(string selector, string prelude, CssRule rule)
         => global(selector, new CssRule
         {
-            Children = [new(CssChildKind.Media, prelude, rule)]
+            Children = [new(ChildKind.Media, prelude, rule)]
         });
 }

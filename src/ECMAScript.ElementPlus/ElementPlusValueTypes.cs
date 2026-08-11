@@ -2354,7 +2354,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
     // File 继承 Blob；这里必须保留显式 tag，确保 AsFile 与 AsBlob 不会同时命中。
     private readonly byte _kind;
     private readonly bool? _bool;
-    private readonly File? _file;
+    private readonly Files? _file;
     private readonly Blob? _blob;
     private readonly IPromise<VueValue?>? _promise;
 
@@ -2367,7 +2367,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
         _promise = default;
     }
 
-    public ElUploadBeforeUploadResult(File value)
+    public ElUploadBeforeUploadResult(Files value)
     {
         _kind = 2;
         _bool = default;
@@ -2398,7 +2398,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
 
     public bool? AsBool => _kind == 1 ? _bool : default;
 
-    public File? AsFile => _kind == 2 ? _file : default;
+    public Files? AsFile => _kind == 2 ? _file : default;
 
     public Blob? AsBlob => _kind == 3 ? _blob : default;
 
@@ -2416,7 +2416,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
     public static implicit operator ElUploadBeforeUploadResult(bool value)
         => new(value);
 
-    public static implicit operator ElUploadBeforeUploadResult(File value)
+    public static implicit operator ElUploadBeforeUploadResult(Files value)
         => new(value);
 
     public static implicit operator ElUploadBeforeUploadResult(Blob value)
@@ -2471,7 +2471,7 @@ public delegate void ElUploadErrorCallback(Error error, ElUploadFile uploadFile,
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElUploadExceedCallback(File[] files, ElUploadUserFile[] uploadFiles);
+public delegate void ElUploadExceedCallback(Files[] files, ElUploadUserFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]

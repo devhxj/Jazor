@@ -15,7 +15,7 @@ public sealed class EcmaScriptStylePropertyGenerationTests
             .Select(static property => property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description)
             .ToArray();
 
-        Assert.HasCount(705, cssNames);
+        Assert.HasCount(817, cssNames);
         Assert.AreEqual(1, cssNames.Count(static name => name == "@#background-color"));
         Assert.AreEqual(1, cssNames.Count(static name => name == "@#float"));
         Assert.AreEqual(1, cssNames.Count(static name => name == "@#-webkit-text-fill-color"));

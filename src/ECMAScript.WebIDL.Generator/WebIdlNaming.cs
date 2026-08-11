@@ -77,6 +77,24 @@ internal static class WebIdlNaming
         return result;
     }
 
+    /// <summary>
+    /// Projects a Web IDL declaration or reference into the public C# type name.
+    /// This is deliberately separate from <see cref="ToPascalCase"/>: members keep
+    /// their normal C# casing, while a type can avoid a collision with a commonly
+    /// imported BCL type. Web IDL / JavaScript binding names continue to be emitted
+    /// through <c>Description("@#...")</c> by the binding emitter.
+    ///
+    /// 将 Web IDL 的声明或引用投影为公开的 C# 类型名。这里必须与
+    /// <see cref="ToPascalCase"/> 分离：成员仍使用普通 C# 大小写规则，只有类型
+    /// 才需要规避常用 BCL 类型冲突；实际 Web IDL / JavaScript 名称仍由生成器的
+    /// <c>Description("@#...")</c> 特性保留。
+    /// </summary>
+    public static string ToTypeName(string input)
+    {
+        var typeName = ToPascalCase(input);
+        return typeName == "File" ? "Files" : typeName;
+    }
+
     public static string ToCamelCase(string input)
     {
         var pascal = ToPascalCase(input);

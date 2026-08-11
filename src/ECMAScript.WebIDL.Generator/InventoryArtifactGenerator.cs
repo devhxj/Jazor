@@ -46,6 +46,10 @@ internal sealed class InventoryArtifactGenerator
         builder.AppendLine($"- WebRef IDL: `{inventory.Source.WebrefIdl}`");
         builder.AppendLine($"- WebRef CSS: `{inventory.Source.WebrefCss}`");
         builder.AppendLine($"- WebRef Events: `{inventory.Source.WebrefEvents}`");
+        if (!string.IsNullOrWhiteSpace(inventory.Source.WebrefXref))
+        {
+            builder.AppendLine($"- WebRef XRef: `{inventory.Source.WebrefXref}`");
+        }
         builder.AppendLine();
         builder.AppendLine("## Declaration Kinds");
         builder.AppendLine();
@@ -58,8 +62,9 @@ internal sealed class InventoryArtifactGenerator
         builder.AppendLine();
         builder.AppendLine("## Next Step");
         builder.AppendLine();
-        builder.AppendLine("This inventory is the stable interchange format between the Deno collection layer and the future C# binding emitter.");
-        builder.AppendLine("A preview emitter currently writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `webidl/`.");
+        builder.AppendLine("This inventory is the stable interchange format between the Deno collection layer and the C# binding emitter.");
+        builder.AppendLine("The preview emitter writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `webidl/`.");
+        builder.AppendLine("When WebRef XRef can match a declaration, member, or argument to a specification definition, the inventory also carries the source anchor, heading, source-authored prose, and available specification usage expressions for XML documentation emission.");
         return builder.ToString();
     }
 

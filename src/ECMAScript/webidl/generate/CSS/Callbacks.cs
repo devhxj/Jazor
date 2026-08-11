@@ -1,7 +1,7 @@
 namespace ECMAScript.CSS;
 
 /// <summary>
-/// AnimatorInstanceConstructor
+/// <see href="https://drafts.css-houdini.org/css-animationworklet-1/#callbackdef-animatorinstanceconstructor">CSS Animation Worklet API: 2 Animation Worklet</see>
 /// </summary>
 [ECMAScript]
 [Description("@#")]

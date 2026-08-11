@@ -4,9 +4,11 @@
     "collect": "deno run --config deno.json --allow-read --allow-write --allow-net deno/collect.ts"
   },
   "imports": {
-    "@webref/css": "npm:@webref/css@6.12.7",
-    "@webref/events": "npm:@webref/events@1.11.3",
-    "@webref/idl": "npm:@webref/idl@3.46.1",
-    "webidl2": "npm:webidl2@24.4.1"
+    "@webref/css": "npm:@webref/css@8.7.1",
+    "@webref/events": "npm:@webref/events@1.24.2",
+    "@webref/idl": "npm:@webref/idl@3.82.0",
+    "@webref/xref": "npm:@webref/xref@1.2.11",
+    "parse5": "npm:parse5@8.0.0",
+    "webidl2": "npm:webidl2@24.5.0"
   }
 }

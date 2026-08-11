@@ -1,58 +1,5 @@
 namespace ECMAScript.GPUBufferUsage;
 
-/// <summary>
-/// GPUBindingResource
-/// </summary>
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union GPUBindingResource(GPUSampler, GPUTextureView, GPUBufferBinding, GPUExternalTexture)
-{
-
-    public GPUSampler? AsGPUSampler => Value is GPUSampler value ? value : default(GPUSampler?);
-
-    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
-
-    public GPUBufferBinding? AsGPUBufferBinding => Value is GPUBufferBinding value ? value : default(GPUBufferBinding?);
-
-    public GPUExternalTexture? AsGPUExternalTexture => Value is GPUExternalTexture value ? value : default(GPUExternalTexture?);
-
-    public static implicit operator GPUBindingResource(GPUSampler value)
-        => new(value);
-
-    public static implicit operator GPUBindingResource(GPUTextureView value)
-        => new(value);
-
-    public static implicit operator GPUBindingResource(GPUBufferBinding value)
-        => new(value);
-
-    public static implicit operator GPUBindingResource(GPUExternalTexture value)
-        => new(value);
-}
-
-/// <summary>
-/// GPUCanvasContextCanvas
-/// </summary>
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union GPUCanvasContextCanvas(HTMLCanvasElement, OffscreenCanvas)
-{
-
-    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
-
-    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
-
-    public static implicit operator GPUCanvasContextCanvas(HTMLCanvasElement value)
-        => new(value);
-
-    public static implicit operator GPUCanvasContextCanvas(OffscreenCanvas value)
-        => new(value);
-}
-
-/// <summary>
-/// GPUColor
-/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -84,9 +31,6 @@ public static class GPUColorCollectionBuilder
         => items.ToArray();
 }
 
-/// <summary>
-/// GPUExtent3D
-/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -118,74 +62,6 @@ public static class GPUExtent3DCollectionBuilder
         => items.ToArray();
 }
 
-/// <summary>
-/// GPUExternalTextureDescriptorSource
-/// </summary>
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union GPUExternalTextureDescriptorSource(HTMLVideoElement, VideoFrame)
-{
-
-    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
-
-    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
-
-    public static implicit operator GPUExternalTextureDescriptorSource(HTMLVideoElement value)
-        => new(value);
-
-    public static implicit operator GPUExternalTextureDescriptorSource(VideoFrame value)
-        => new(value);
-}
-
-/// <summary>
-/// GPUImageCopyExternalImageSource
-/// </summary>
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union GPUImageCopyExternalImageSource(ImageBitmap, ImageData, HTMLImageElement, HTMLVideoElement, VideoFrame, HTMLCanvasElement, OffscreenCanvas)
-{
-
-    public ImageBitmap? AsImageBitmap => Value is ImageBitmap value ? value : default(ImageBitmap?);
-
-    public ImageData? AsImageData => Value is ImageData value ? value : default(ImageData?);
-
-    public HTMLImageElement? AsHTMLImageElement => Value is HTMLImageElement value ? value : default(HTMLImageElement?);
-
-    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
-
-    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
-
-    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
-
-    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
-
-    public static implicit operator GPUImageCopyExternalImageSource(ImageBitmap value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(ImageData value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(HTMLImageElement value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(HTMLVideoElement value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(VideoFrame value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(HTMLCanvasElement value)
-        => new(value);
-
-    public static implicit operator GPUImageCopyExternalImageSource(OffscreenCanvas value)
-        => new(value);
-}
-
-/// <summary>
-/// GPUOrigin2D
-/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -217,9 +93,6 @@ public static class GPUOrigin2DCollectionBuilder
         => items.ToArray();
 }
 
-/// <summary>
-/// GPUOrigin3D
-/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -251,9 +124,119 @@ public static class GPUOrigin3DCollectionBuilder
         => items.ToArray();
 }
 
-/// <summary>
-/// GPUPipelineDescriptorBaseLayout
-/// </summary>
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPUBindingResource(GPUSampler, GPUTexture, GPUTextureView, GPUBuffer, GPUBufferBinding, GPUExternalTexture)
+{
+
+    public GPUSampler? AsGPUSampler => Value is GPUSampler value ? value : default(GPUSampler?);
+
+    public GPUTexture? AsGPUTexture => Value is GPUTexture value ? value : default(GPUTexture?);
+
+    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
+
+    public GPUBuffer? AsGPUBuffer => Value is GPUBuffer value ? value : default(GPUBuffer?);
+
+    public GPUBufferBinding? AsGPUBufferBinding => Value is GPUBufferBinding value ? value : default(GPUBufferBinding?);
+
+    public GPUExternalTexture? AsGPUExternalTexture => Value is GPUExternalTexture value ? value : default(GPUExternalTexture?);
+
+    public static implicit operator GPUBindingResource(GPUSampler value)
+        => new(value);
+
+    public static implicit operator GPUBindingResource(GPUTexture value)
+        => new(value);
+
+    public static implicit operator GPUBindingResource(GPUTextureView value)
+        => new(value);
+
+    public static implicit operator GPUBindingResource(GPUBuffer value)
+        => new(value);
+
+    public static implicit operator GPUBindingResource(GPUBufferBinding value)
+        => new(value);
+
+    public static implicit operator GPUBindingResource(GPUExternalTexture value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPUCanvasContextCanvas(HTMLCanvasElement, OffscreenCanvas)
+{
+
+    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
+
+    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
+
+    public static implicit operator GPUCanvasContextCanvas(HTMLCanvasElement value)
+        => new(value);
+
+    public static implicit operator GPUCanvasContextCanvas(OffscreenCanvas value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPUCopyExternalImageSource(ImageBitmap, ImageData, HTMLImageElement, HTMLVideoElement, VideoFrame, HTMLCanvasElement, OffscreenCanvas)
+{
+
+    public ImageBitmap? AsImageBitmap => Value is ImageBitmap value ? value : default(ImageBitmap?);
+
+    public ImageData? AsImageData => Value is ImageData value ? value : default(ImageData?);
+
+    public HTMLImageElement? AsHTMLImageElement => Value is HTMLImageElement value ? value : default(HTMLImageElement?);
+
+    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
+
+    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
+
+    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
+
+    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
+
+    public static implicit operator GPUCopyExternalImageSource(ImageBitmap value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(ImageData value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(HTMLImageElement value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(HTMLVideoElement value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(VideoFrame value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(HTMLCanvasElement value)
+        => new(value);
+
+    public static implicit operator GPUCopyExternalImageSource(OffscreenCanvas value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPUExternalTextureDescriptorSource(HTMLVideoElement, VideoFrame)
+{
+
+    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
+
+    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
+
+    public static implicit operator GPUExternalTextureDescriptorSource(HTMLVideoElement value)
+        => new(value);
+
+    public static implicit operator GPUExternalTextureDescriptorSource(VideoFrame value)
+        => new(value);
+}
+
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -271,9 +254,57 @@ public readonly union GPUPipelineDescriptorBaseLayout(GPUPipelineLayout, GPUAuto
         => new(value);
 }
 
-/// <summary>
-/// GPUShaderModuleCompilationHintLayout
-/// </summary>
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPURenderPassColorAttachmentResolveTarget(GPUTexture, GPUTextureView)
+{
+
+    public GPUTexture? AsGPUTexture => Value is GPUTexture value ? value : default(GPUTexture?);
+
+    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
+
+    public static implicit operator GPURenderPassColorAttachmentResolveTarget(GPUTexture value)
+        => new(value);
+
+    public static implicit operator GPURenderPassColorAttachmentResolveTarget(GPUTextureView value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPURenderPassColorAttachmentView(GPUTexture, GPUTextureView)
+{
+
+    public GPUTexture? AsGPUTexture => Value is GPUTexture value ? value : default(GPUTexture?);
+
+    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
+
+    public static implicit operator GPURenderPassColorAttachmentView(GPUTexture value)
+        => new(value);
+
+    public static implicit operator GPURenderPassColorAttachmentView(GPUTextureView value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union GPURenderPassDepthStencilAttachmentView(GPUTexture, GPUTextureView)
+{
+
+    public GPUTexture? AsGPUTexture => Value is GPUTexture value ? value : default(GPUTexture?);
+
+    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
+
+    public static implicit operator GPURenderPassDepthStencilAttachmentView(GPUTexture value)
+        => new(value);
+
+    public static implicit operator GPURenderPassDepthStencilAttachmentView(GPUTextureView value)
+        => new(value);
+}
+
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -291,9 +322,6 @@ public readonly union GPUShaderModuleCompilationHintLayout(GPUPipelineLayout, GP
         => new(value);
 }
 
-/// <summary>
-/// StructuralCache
-/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

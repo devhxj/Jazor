@@ -54,7 +54,7 @@ internal static class ElementPlusGenerator
         ["HTMLElement"] = typeof(ECMAScript.HTMLElement),
         ["Headers"] = typeof(ECMAScript.Headers),
         ["XMLHttpRequest"] = typeof(ECMAScript.XMLHttpRequest),
-        ["File"] = typeof(ECMAScript.File),
+        ["File"] = typeof(ECMAScript.Files),
         ["Blob"] = typeof(ECMAScript.Blob),
         ["Error"] = typeof(ECMAScript.Error),
         ["IVueComponent"] = typeof(IVueComponent),
@@ -1506,7 +1506,7 @@ internal static class ElementPlusGenerator
             "RouteLocationRaw" => GeneratedType.Value("RouteLocationRaw").AsOptional(required),
             "Headers" => GeneratedType.Reference("Headers?").AsOptional(required),
             "XMLHttpRequest" => GeneratedType.Reference("XMLHttpRequest?").AsOptional(required),
-            "File" => GeneratedType.Reference("File?").AsOptional(required),
+            "File" => GeneratedType.Reference("Files?").AsOptional(required),
             "Blob" => GeneratedType.Reference("Blob?").AsOptional(required),
             "Error" => GeneratedType.Reference("Error?").AsOptional(required),
             "object" => GeneratedType.Reference("VueDictionary?").AsOptional(required),
@@ -1643,7 +1643,7 @@ internal static class ElementPlusGenerator
             return "XMLHttpRequest";
 
         if (string.Equals(normalized, "File", StringComparison.Ordinal))
-            return "File";
+            return "Files";
 
         if (string.Equals(normalized, "Blob", StringComparison.Ordinal))
             return "Blob";

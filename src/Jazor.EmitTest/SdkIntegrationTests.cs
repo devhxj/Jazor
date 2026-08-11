@@ -3406,7 +3406,7 @@ public sealed class SdkIntegrationTests
                     BackgroundColor = hex("1769aa"),
                     Children =
                     [
-                        new(CssChildKind.Container, "toolbar (width > 30rem)", new CssRule
+                        new(ChildKind.Container, "toolbar (width > 30rem)", new CssRule
                         {
                             Display = grid
                         })

@@ -1,5 +1,17 @@
 namespace ECMAScript.Style;
 
+/// <summary>
+/// Provides the framework-neutral CSS-in-JS authoring facade for ECMAScript modules.
+/// The lowercase name intentionally mirrors CSS authoring when imported with <c>using static ECMAScript.Style.css</c>.
+/// 提供面向 ECMAScript 模块、框架无关的 CSS-in-JS 作者入口。小写名称刻意在
+/// <c>using static ECMAScript.Style.css</c> 后贴近 CSS 写作体验。
+/// </summary>
+/// <remarks>
+/// The facade serializes typed values deterministically, deduplicates equal rules within a context, and owns at most one
+/// managed style element per non-detached context. Call context-aware overloads for SSR, Shadow DOM, or isolated tests.
+/// 该入口确定性地序列化强类型值，在同一 context 内去重相等规则，并且每个非分离 context 最多拥有一个
+/// 受管理 style 元素。SSR、Shadow DOM 和隔离测试应调用带 context 的重载。
+/// </remarks>
 [ECMAScriptModule("style.mjs")]
 public static partial class css
 {
@@ -11,9 +23,21 @@ public static partial class css
 
     private static readonly CssContext DefaultContext = createContextCore(new CssOptions());
 
+    /// <summary>
+    /// Registers a component-scoped rule in the default context and returns its deterministic class name.
+    /// Re-registering an equivalent rule returns the same class name and does not duplicate CSS output.
+    /// 在默认 context 中注册组件作用域规则并返回确定性 class 名。重复注册等价规则会返回相同 class 名，
+    /// 且不会重复输出 CSS。
+    /// </summary>
     public static string style(CssRule rule)
         => style(DefaultContext, rule);
 
+    /// <summary>
+    /// Registers a component-scoped rule in <paramref name="context"/> and returns its deterministic class name.
+    /// The rule is serialized relative to the generated class selector, so nested selector children remain scoped.
+    /// 在 <paramref name="context"/> 中注册组件作用域规则并返回确定性 class 名。规则会相对于生成的 class
+    /// 选择器序列化，因此嵌套选择器子项仍保持作用域隔离。
+    /// </summary>
     [ECMAScriptName("styleIn")]
     public static string style(CssContext context, CssRule rule)
     {
@@ -31,9 +55,21 @@ public static partial class css
         return name;
     }
 
+    /// <summary>
+    /// Registers keyframes in the default context and returns their deterministic animation name.
+    /// At least one frame is required; equivalent frame sequences share one emitted <c>@keyframes</c> block.
+    /// 在默认 context 中注册关键帧并返回确定性动画名。至少需要一个帧；等价帧序列共享同一个输出的
+    /// <c>@keyframes</c> 块。
+    /// </summary>
     public static string keyframes([PreserveParamsArray] params CssFrame[] frames)
         => keyframes(DefaultContext, frames);
 
+    /// <summary>
+    /// Registers keyframes in <paramref name="context"/> and returns their deterministic animation name.
+    /// Use this overload when the result must be extracted or hydrated independently from the default registry.
+    /// 在 <paramref name="context"/> 中注册关键帧并返回确定性动画名。当结果必须独立于默认 registry
+    /// 提取或 hydration 时使用此重载。
+    /// </summary>
     [ECMAScriptName("keyframesIn")]
     public static string keyframes(CssContext context, CssFrame[] frames)
     {
@@ -53,9 +89,21 @@ public static partial class css
         return name;
     }
 
+    /// <summary>
+    /// Registers a global CSS rule in the default context.
+    /// The selector must be a selector list, not an at-rule; use <see cref="atRule(CssAtRule)"/> for top-level at-rules.
+    /// 在默认 context 中注册全局 CSS 规则。selector 必须是选择器列表而非 at-rule；顶层 at-rule 请使用
+    /// <see cref="atRule(CssAtRule)"/>。
+    /// </summary>
     public static void global(string selector, CssRule rule)
         => global(DefaultContext, selector, rule);
 
+    /// <summary>
+    /// Registers a global CSS rule in <paramref name="context"/>.
+    /// Equal serialized rules are deduplicated, while selector normalization preserves the authored selector structure.
+    /// 在 <paramref name="context"/> 中注册全局 CSS 规则。相同的序列化规则会去重，
+    /// selector 规范化则保留作者提供的选择器结构。
+    /// </summary>
     [ECMAScriptName("globalIn")]
     public static void global(CssContext context, string selector, CssRule rule)
     {
@@ -69,9 +117,21 @@ public static partial class css
         Register(context, canonical, id, body);
     }
 
+    /// <summary>
+    /// Registers a top-level CSS at-rule in the default context.
+    /// Use this for constructs whose body is not naturally a nested selector child, such as <c>@font-face</c> or <c>@property</c>.
+    /// 在默认 context 中注册顶层 CSS at-rule。适用于不能自然表示为嵌套选择器子项的构造，
+    /// 例如 <c>@font-face</c> 或 <c>@property</c>。
+    /// </summary>
     public static void atRule(CssAtRule rule)
         => atRule(DefaultContext, rule);
 
+    /// <summary>
+    /// Registers a top-level CSS at-rule in <paramref name="context"/>.
+    /// Names are normalized and validated without an <c>@</c> prefix; nested <see cref="CssAtRule.Children"/> retain author order.
+    /// 在 <paramref name="context"/> 中注册顶层 CSS at-rule。名称会被规范化并验证，且不得带 <c>@</c> 前缀；
+    /// 嵌套 <see cref="CssAtRule.Children"/> 保留作者顺序。
+    /// </summary>
     [ECMAScriptName("atRuleIn")]
     public static void atRule(CssContext context, CssAtRule rule)
     {
@@ -81,9 +141,20 @@ public static partial class css
         Register(context, canonical, id, body);
     }
 
+    /// <summary>
+    /// Returns the concatenated CSS currently registered in the default context.
+    /// For DOM-backed contexts this first adopts or synchronizes the managed style element.
+    /// 返回默认 context 当前已注册的拼接 CSS。对于 DOM 支持的 context，调用前会先接管或同步受管理的 style 元素。
+    /// </summary>
     public static string extract()
         => extract(DefaultContext);
 
+    /// <summary>
+    /// Returns the concatenated CSS currently registered in <paramref name="context"/>.
+    /// This is non-destructive: subsequent registrations append to the same context and retain their deterministic ids.
+    /// 返回 <paramref name="context"/> 当前已注册的拼接 CSS。该操作不会清空 context；之后注册的规则会继续追加，
+    /// 并保留其确定性 id。
+    /// </summary>
     [ECMAScriptName("extractFrom")]
     public static string extract(CssContext context)
     {
@@ -91,9 +162,21 @@ public static partial class css
         return context.EntryBodies.Join("");
     }
 
+    /// <summary>
+    /// Captures the default context as a CSS and hydration snapshot for server rendering or client transfer.
+    /// The snapshot includes the style id and nonce required to adopt the exact same managed style element.
+    /// 将默认 context 捕获为 CSS 与 hydration 快照，供服务端渲染或客户端传输使用。快照包含接管完全相同的
+    /// 受管理 style 元素所需的 style id 和 nonce。
+    /// </summary>
     public static CssSnapshot snapshot()
         => snapshot(DefaultContext);
 
+    /// <summary>
+    /// Captures <paramref name="context"/> as a CSS and hydration snapshot.
+    /// Prefer a detached context for pure SSR collection when no browser DOM should be observed.
+    /// 将 <paramref name="context"/> 捕获为 CSS 与 hydration 快照。当不应访问浏览器 DOM 的纯 SSR 收集场景时，
+    /// 应优先使用分离 context。
+    /// </summary>
     [ECMAScriptName("snapshotFrom")]
     public static CssSnapshot snapshot(CssContext context)
     {
@@ -105,6 +188,12 @@ public static partial class css
             BuildHydrationText(context));
     }
 
+    /// <summary>
+    /// Creates an isolated CSS context with its own rule registry, naming collision checks, and DOM ownership state.
+    /// A null <paramref name="options"/> uses the standard style id and main document target.
+    /// 创建隔离 CSS context，拥有独立的规则 registry、命名碰撞检查和 DOM 所有权状态。null 的
+    /// <paramref name="options"/> 使用标准 style id 与主文档目标。
+    /// </summary>
     public static CssContext context(CssOptions? options = null)
         => createContextCore(options ?? new CssOptions());
 
@@ -128,6 +217,12 @@ public static partial class css
         };
     }
 
+    /// <summary>
+    /// Configures the default CSS context before any registration or hydration has occurred.
+    /// This method cannot retarget an active context because doing so could split a deterministic registry across style elements.
+    /// 在任何注册或 hydration 发生前配置默认 CSS context。该方法不能重新定向已活动的 context，
+    /// 因为那会将确定性 registry 拆分到多个 style 元素。
+    /// </summary>
     public static void configure(CssOptions options)
     {
         if (DefaultContext.HasRegistered || DefaultContext.DomHydrated)
@@ -200,7 +295,7 @@ public static partial class css
         {
             var prelude = child.Prelude?.Trim() ?? "";
 
-            if (child.Kind == CssChildKind.Selector)
+            if (child.Kind == ChildKind.Selector)
             {
                 if (prelude.Length == 0)
                     Fail("Selector child prelude cannot be empty.");
@@ -223,9 +318,9 @@ public static partial class css
         return output.Join("");
     }
 
-    private static string GetGroupAtRuleName(CssChildKind kind, string prelude)
+    private static string GetGroupAtRuleName(ChildKind kind, string prelude)
     {
-        if (kind == CssChildKind.StartingStyle)
+        if (kind == ChildKind.StartingStyle)
         {
             if (prelude.Length != 0)
                 Fail("@starting-style does not accept a prelude.");
@@ -233,18 +328,18 @@ public static partial class css
             return "starting-style";
         }
 
-        var allowsEmpty = kind == CssChildKind.Layer || kind == CssChildKind.Scope;
+        var allowsEmpty = kind == ChildKind.Layer || kind == ChildKind.Scope;
         ValidateAtRulePrelude(prelude, "CSS child prelude", allowsEmpty);
 
-        if (kind == CssChildKind.Media)
+        if (kind == ChildKind.Media)
             return "media";
-        if (kind == CssChildKind.Supports)
+        if (kind == ChildKind.Supports)
             return "supports";
-        if (kind == CssChildKind.Container)
+        if (kind == ChildKind.Container)
             return "container";
-        if (kind == CssChildKind.Layer)
+        if (kind == ChildKind.Layer)
             return "layer";
-        if (kind == CssChildKind.Scope)
+        if (kind == ChildKind.Scope)
             return "scope";
 
         Fail("Unsupported CSS child kind.");

@@ -172,6 +172,34 @@ static string ClassifyValueType(
     IReadOnlyList<string> grammars,
     IReadOnlyDictionary<string, string[]> grammarsByCssName)
 {
+    // Keep grammar additions typed at their actual semantic boundary. The CSS anchor and sizing
+    // functions are not generic values: each belongs to a distinct property family.
+    // 将 grammar 新增内容保留在实际语义边界上。CSS anchor/sizing 函数不是通用值；每种函数都属于
+    // 不同的属性族，不能以 CssValue 统一兜底。
+    if (cssName == "anchor-name")
+        return "CssAnchorNameValue";
+    if (cssName == "anchor-scope")
+        return "CssAnchorScopeValue";
+    if (cssName == "position-anchor")
+        return "CssPositionAnchorValue";
+    if (cssName is "inset" or "inset-block" or "inset-inline")
+        return "CssInsetValue";
+    if (cssName is "top" or "right" or "bottom" or "left")
+        return "CssAnchorPositionValue";
+    if (cssName is "margin" or "margin-block" or "margin-inline")
+        return "CssMarginValue";
+    if (cssName is "margin-top" or "margin-right" or "margin-bottom" or "margin-left" or
+        "margin-block-start" or "margin-block-end" or "margin-inline-start" or "margin-inline-end")
+        return "CssAnchorMarginValue";
+    if (cssName is "width" or "height" or "block-size" or "inline-size" or
+        "min-width" or "min-height" or "min-block-size" or "min-inline-size" or
+        "max-width" or "max-height" or "max-block-size" or "max-inline-size")
+        return "CssSizingValue";
+    if (cssName == "flex-basis")
+        return "CssFlexBasisValue";
+    if (cssName == "column-width")
+        return "CssColumnWidthValue";
+
     if (cssName == "display")
         return "CssDisplayValue";
     if (cssName is "padding" or "padding-block" or "padding-inline")
@@ -345,6 +373,14 @@ static string BuildOutput(int schemaVersion, string webrefCssVersion, IEnumerabl
     builder.AppendLine("{");
     foreach (var property in properties)
     {
+        builder.AppendLine("    /// <summary>");
+        builder.Append("    /// Gets or initializes the typed value for the CSS <c>")
+            .Append(property.CssName)
+            .AppendLine("</c> property; null leaves the declaration unset.");
+        builder.Append("    /// 获取或初始化 CSS <c>")
+            .Append(property.CssName)
+            .AppendLine("</c> 属性的强类型值；null 表示不输出该声明。");
+        builder.AppendLine("    /// </summary>");
         builder.Append("    [global::System.ComponentModel.Description(\"@#");
         builder.Append(property.CssName.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal));
         builder.AppendLine("\")]");

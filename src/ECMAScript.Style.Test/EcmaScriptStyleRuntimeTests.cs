@@ -61,6 +61,44 @@ public sealed class EcmaScriptStyleRuntimeTests
     }
 
     [TestMethod]
+    public async Task Runtime_AnchorAndSizingFactories_EmitStructuredModernCss()
+    {
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+            """
+            import {
+              style, extract, anchorName, anchor, anchorNamedFallback,
+              anchorSizeNamedAxis, anchorSizeNamedAxisFallback, calcSizeValue, insetSides2,
+              fitContent, minContent, px, percent,
+              anchorTop, anchorBottom, anchorBlock, anchorInline
+            } from "./runtime.mjs";
+
+            const card = anchorName("--card");
+            const name = style({
+              "anchor-name": card,
+              width: calcSizeValue(minContent, px(2)),
+              height: anchorSizeNamedAxisFallback(card, anchorInline, px(20)),
+              top: anchorNamedFallback(card, anchorBottom, px(8)),
+              inset: insetSides2(anchor(anchorTop), anchorSizeNamedAxis(card, anchorBlock)),
+              "column-width": fitContent(percent(50))
+            });
+            console.log(JSON.stringify({ name, css: extract() }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var name = json.RootElement.GetProperty("name").GetString();
+        var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
+        Assert.IsNotNull(name);
+        StringAssert.Contains(css, "." + name + "{");
+        StringAssert.Contains(css, "anchor-name:--card;");
+        StringAssert.Contains(css, "width:calc-size(min-content,2px);");
+        StringAssert.Contains(css, "height:anchor-size(--card inline,20px);");
+        StringAssert.Contains(css, "top:anchor(--card bottom,8px);");
+        StringAssert.Contains(css, "inset:anchor(top) anchor-size(--card block);");
+        StringAssert.Contains(css, "column-width:fit-content(50%);");
+    }
+
+    [TestMethod]
     public async Task Runtime_Shadows_SerializesStructuredTokensInStableOrder()
     {
         var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(

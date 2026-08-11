@@ -7090,6 +7090,15 @@ public sealed class MemberClosureTests
 
     private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
     {
+        var configPath = Path.Combine(workingDirectory, "deno.json");
+        // Fixtures provide exact local stubs instead of an installed npm graph. Map the production
+        // specifiers to those stubs so Deno 2 never reaches its package cache or the network.
+        System.IO.File.WriteAllText(
+            configPath,
+            """
+            {"imports":{"vue":"./node_modules/vue/index.mjs","@jazor/vue-runtime/":"./node_modules/@jazor/vue-runtime/"}}
+            """);
+
         var startInfo = new ProcessStartInfo
         {
             FileName = DenoExecutable.Value,
@@ -7101,6 +7110,8 @@ public sealed class MemberClosureTests
         startInfo.ArgumentList.Add("test");
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--allow-all");
+        startInfo.ArgumentList.Add("--config");
+        startInfo.ArgumentList.Add(configPath);
         startInfo.ArgumentList.Add(testFile);
 
         Process process;

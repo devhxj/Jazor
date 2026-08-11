@@ -129,6 +129,7 @@ internal sealed class WebIdlTypeMapper
 
     private readonly Dictionary<string, string> _typedefValueByName = new(StringComparer.Ordinal);
     private readonly HashSet<string> _enumTypeNames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<string>> _enumValuesByTypeName = new(StringComparer.Ordinal);
     private readonly HashSet<string> _dictionaryTypeNames = new(StringComparer.Ordinal);
     public Func<NamedUnionRequest, string>? NamedUnionResolver { get; set; }
     public Func<JsonElement, string?, string, string>? NamedUnionTypeFormatter { get; set; }
@@ -156,9 +157,19 @@ internal sealed class WebIdlTypeMapper
         _typedefValueByName[aliasName] = value;
     }
 
-    public void RegisterEnum(string enumName)
+    public void RegisterEnum(string enumName, IEnumerable<string> values)
     {
         _enumTypeNames.Add(enumName);
+        if (!_enumValuesByTypeName.TryGetValue(enumName, out var enumValues))
+        {
+            enumValues = new HashSet<string>(StringComparer.Ordinal);
+            _enumValuesByTypeName.Add(enumName, enumValues);
+        }
+
+        foreach (var value in values)
+        {
+            enumValues.Add(WebIdlNaming.ToPascalCase(string.IsNullOrEmpty(value) ? "Empty" : value));
+        }
     }
 
     public void RegisterDictionary(string dictionaryName)
@@ -174,6 +185,12 @@ internal sealed class WebIdlTypeMapper
     public bool IsEnumType(string typeName)
     {
         return _enumTypeNames.Contains(typeName);
+    }
+
+    public bool HasEnumValue(string enumTypeName, string enumValue)
+    {
+        return _enumValuesByTypeName.TryGetValue(enumTypeName, out var values)
+            && values.Contains(enumValue);
     }
 
     public bool IsOptionalPrimitive(string typeName)
@@ -265,7 +282,13 @@ internal sealed class WebIdlTypeMapper
                     var idlTypeName = idlType.GetStringOrNull("idlType") ?? defaultValue;
                     var defaultType = PrimitiveTypeMap.TryGetValue(idlTypeName, out var mappedType)
                         ? mappedType
-                        : idlTypeName;
+                        // `undefined` is a lowering sentinel that becomes the caller's
+                        // default type below; it is not an authoring type name.
+                        // `undefined` 是下方回退到调用方默认类型的 lowering 哨兵，
+                        // 并不是作者侧类型名，不能参与命名投影。
+                        : idlTypeName == "undefined"
+                            ? idlTypeName
+                            : WebIdlNaming.ToTypeName(idlTypeName);
 
                     if (qualifyForAlias)
                     {
@@ -287,7 +310,7 @@ internal sealed class WebIdlTypeMapper
                         }
                         else
                         {
-                            sharpType = $"{GetNamespacePrefix(namespaceName)}.{idlTypeName}";
+                            sharpType = $"{GetNamespacePrefix(namespaceName)}.{defaultType}";
                         }
                     }
                     else

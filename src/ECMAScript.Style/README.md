@@ -32,6 +32,23 @@ var actionClass = style(new CssRule
 
 公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。
 
+现代尺寸与锚点定位同样使用专用值域，不需要把 `anchor-size()` 或 `calc-size()` 写回原始字符串：
+
+```csharp
+var cardAnchor = anchorName("--card");
+
+var popoverClass = style(new CssRule
+{
+    AnchorName = cardAnchor,
+    PositionAnchor = cardAnchor,
+    Width = calcSize(minContent, size + rem(1)),
+    Top = anchor(cardAnchor, anchorBottom, rem(0.5)),
+    MarginTop = anchorSize(cardAnchor, anchorBlock)
+});
+```
+
+`CssSizingValue`、`CssAnchorPositionValue`、`CssInsetValue` 与锚点声明值域彼此独立，因此宽度、定位边、简写和锚点名称不会因更新 WebRef grammar 而退化为通用 `CssValue`。
+
 ## 确定性与 hydration
 
 规则名称从内容稳定推导，注册顺序、嵌套规则与 keyframe 输出保持可预测。`document`、`ShadowRoot`、detached 提取和 hydration 共享同一 runtime contract；SSR 只传递应用明确拥有的 snapshot 和 nonce 信息，不隐式建立全局状态。

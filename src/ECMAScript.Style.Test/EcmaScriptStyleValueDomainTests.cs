@@ -9,7 +9,16 @@ public sealed class EcmaScriptStyleValueDomainTests
     [TestMethod]
     public void GeneratedProperties_UseGrammarSpecificNativeUnions()
     {
-        AssertPropertyType(nameof(CssDeclarations.Width), typeof(CssLengthPercentageValue));
+        AssertPropertyType(nameof(CssDeclarations.Width), typeof(CssSizingValue));
+        AssertPropertyType(nameof(CssDeclarations.Height), typeof(CssSizingValue));
+        AssertPropertyType(nameof(CssDeclarations.FlexBasis), typeof(CssFlexBasisValue));
+        AssertPropertyType(nameof(CssDeclarations.ColumnWidth), typeof(CssColumnWidthValue));
+        AssertPropertyType(nameof(CssDeclarations.Top), typeof(CssAnchorPositionValue));
+        AssertPropertyType(nameof(CssDeclarations.Inset), typeof(CssInsetValue));
+        AssertPropertyType(nameof(CssDeclarations.MarginTop), typeof(CssAnchorMarginValue));
+        AssertPropertyType(nameof(CssDeclarations.AnchorName), typeof(CssAnchorNameValue));
+        AssertPropertyType(nameof(CssDeclarations.AnchorScope), typeof(CssAnchorScopeValue));
+        AssertPropertyType(nameof(CssDeclarations.PositionAnchor), typeof(CssPositionAnchorValue));
         AssertPropertyType(nameof(CssDeclarations.Color), typeof(CssColorValue));
         AssertPropertyType(nameof(CssDeclarations.TransitionDuration), typeof(CssTimeValue));
         AssertPropertyType(nameof(CssDeclarations.Opacity), typeof(CssNumberPercentageValue));
@@ -37,6 +46,15 @@ public sealed class EcmaScriptStyleValueDomainTests
         {
             typeof(CssValue),
             typeof(CssLengthPercentageValue),
+            typeof(CssSizingValue),
+            typeof(CssFlexBasisValue),
+            typeof(CssColumnWidthValue),
+            typeof(CssAnchorPositionValue),
+            typeof(CssAnchorMarginValue),
+            typeof(CssInsetValue),
+            typeof(CssAnchorNameValue),
+            typeof(CssAnchorScopeValue),
+            typeof(CssPositionAnchorValue),
             typeof(CssColorValue),
             typeof(CssTimeValue),
             typeof(CssBoxShadowValue),
@@ -56,6 +74,12 @@ public sealed class EcmaScriptStyleValueDomainTests
             typeof(CssRaw),
             typeof(CssLength),
             typeof(CssLengthPercentage),
+            typeof(CssFitContent),
+            typeof(CssAnchorName),
+            typeof(CssAnchor),
+            typeof(CssAnchorSize),
+            typeof(CssCalcSize),
+            typeof(CssInset),
             typeof(CssColor),
             typeof(CssTime),
             typeof(CssBorderWidth),
@@ -124,6 +148,66 @@ public sealed class EcmaScriptStyleValueDomainTests
             .ToArray();
         Assert.HasCount(1, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
         StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssPadding));
+    }
+
+    [TestMethod]
+    public void AnchorAndSizingDomains_ExpressModernGrammarWithoutGenericFallbacks()
+    {
+        var validSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            public static class ValidAnchorStyles
+            {
+                private static readonly CssAnchorName Card = anchorName("--card");
+
+                public static readonly CssRule Rule = new()
+                {
+                    AnchorName = anchorNames(Card, anchorName("--trigger")),
+                    AnchorScope = anchorScopeAll,
+                    PositionAnchor = Card,
+                    Width = calcSize(minContent, size + px(2)),
+                    Height = anchorSize(Card, anchorInline, px(20)),
+                    FlexBasis = flexContent,
+                    ColumnWidth = fitContent(percent(50)),
+                    Top = anchor(Card, anchorBottom, px(8)),
+                    Inset = insetSides(anchor(anchorTop), anchorSize(Card, anchorBlock)),
+                    MarginTop = anchorSize(Card, anchorInline),
+                    Margin = margin(anchorSize(Card, anchorInline), auto)
+                };
+            }
+            """;
+        var validErrors = Compile(validSource).GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.IsEmpty(validErrors, string.Join(Environment.NewLine, validErrors.Select(static error => error.ToString())));
+
+        var invalidSource = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            public static class InvalidAnchorStyles
+            {
+                public static readonly CssRule Rule = new()
+                {
+                    Width = anchor(anchorTop),
+                    Top = calcSize(minContent, size + px(2)),
+                    MarginTop = margin(px(8), px(12)),
+                    AnchorName = anchorSize(anchorInline),
+                    ColumnWidth = percent(100) - rem(2)
+                };
+            }
+            """;
+        var invalidErrors = Compile(invalidSource).GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+            .ToArray();
+
+        Assert.HasCount(5, invalidErrors, string.Join(Environment.NewLine, invalidErrors.Select(static error => error.ToString())));
+        StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssAnchor));
+        StringAssert.Contains(invalidErrors[1].GetMessage(), nameof(CssCalcSize));
+        StringAssert.Contains(invalidErrors[2].GetMessage(), nameof(CssMargin));
+        StringAssert.Contains(invalidErrors[3].GetMessage(), nameof(CssAnchorSize));
+        StringAssert.Contains(invalidErrors[4].GetMessage(), nameof(CssLengthPercentage));
     }
 
     [TestMethod]
