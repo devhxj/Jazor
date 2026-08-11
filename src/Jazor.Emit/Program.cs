@@ -184,27 +184,7 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
             mode,
             requiredImports,
             providedModulePaths);
-        var imports = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["style.mjs"] = "/jazor/style.mjs",
-            ["@jazor/vue-runtime/"] = "/jazor/@jazor/vue-runtime/",
-            ["components/"] = "/jazor/components/",
-            ["System/"] = "/jazor/System/"
-        };
-        foreach (var (specifier, path) in materialization.ImportPaths)
-            imports[specifier] = "/jazor/" + path.Replace('\\', '/');
-
-        var importMap = new { imports };
-        var assets = new
-        {
-            styles = materialization.StylePaths
-                .Distinct(StringComparer.Ordinal)
-                .Select(static path => "/jazor/" + path.Replace('\\', '/'))
-                .ToArray()
-        };
-        var jsonOptions = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-        await File.WriteAllTextAsync(Path.Combine(outputRoot, "importmap.json"), System.Text.Json.JsonSerializer.Serialize(importMap, jsonOptions));
-        await File.WriteAllTextAsync(Path.Combine(outputRoot, "manifest.json"), System.Text.Json.JsonSerializer.Serialize(assets, jsonOptions));
+        await ImportMapWriter.WriteAsync(outputRoot, materialization);
         Console.WriteLine($"manifests={materialization.ManifestPaths.Count} imports={materialization.ImportPaths.Count} out={outputRoot}");
         return 0;
     }

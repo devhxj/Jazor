@@ -13,14 +13,31 @@ internal static class BrowserSmokeTestHelper
         int virtualTimeBudgetMilliseconds = 5000)
     {
         var harnessRoot = Path.GetDirectoryName(indexPath)!;
-        var userDataRoot = Path.Combine(harnessRoot, ".browser-profile-" + Guid.NewGuid().ToString("N"));
+        return await RunBrowserDumpDomAsync(
+            browserPath,
+            new Uri(Path.GetFullPath(indexPath)),
+            harnessRoot,
+            virtualTimeBudgetMilliseconds);
+    }
+
+    public static async Task<BrowserSmokeProcessResult> RunBrowserDumpDomAsync(
+        string browserPath,
+        Uri pageUri,
+        string workingDirectory,
+        int virtualTimeBudgetMilliseconds = 5000)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(browserPath);
+        ArgumentNullException.ThrowIfNull(pageUri);
+        ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+
+        var userDataRoot = Path.Combine(workingDirectory, ".browser-profile-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(userDataRoot);
 
         try
         {
             return await RunProcessAsync(
                 browserPath,
-                harnessRoot,
+                workingDirectory,
                 [
                     "--headless=new",
                     "--disable-gpu",
@@ -33,7 +50,7 @@ internal static class BrowserSmokeTestHelper
                     $"--virtual-time-budget={virtualTimeBudgetMilliseconds}",
                     "--dump-dom",
                     $"--user-data-dir={userDataRoot}",
-                    new Uri(Path.GetFullPath(indexPath)).AbsoluteUri
+                    pageUri.AbsoluteUri
                 ],
                 TimeSpan.FromSeconds(45));
         }

@@ -23,5 +23,6 @@
     <None Include="dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
     <None Include="licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="licenses\VUE-SERVER-RENDERER-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,10 @@
       "development": "dist/vue.runtime.esm-browser.js",
       "production": "dist/vue.runtime.esm-browser.prod.js"
     },
+    "@vue/server-renderer": {
+      "development": "dist/server-renderer.esm-browser.js",
+      "production": "dist/server-renderer.esm-browser.prod.js"
+    },
     "@vue/devtools-api": {
       "development": "dist/devtools-api/index.js",
       "production": "dist/devtools-api/index.js"
@@ -28,6 +32,7 @@
     "dist/devtools-api/api/index.js",
     "dist/devtools-api/api/util.js",
     "licenses/LICENSE",
-    "licenses/VUE-DEVTOOLS-API-LICENSE"
+    "licenses/VUE-DEVTOOLS-API-LICENSE",
+    "licenses/VUE-SERVER-RENDERER-LICENSE"
   ]
 }

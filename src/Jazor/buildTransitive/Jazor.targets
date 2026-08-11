@@ -89,4 +89,30 @@
     <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; toolchain build --toolchain &quot;$(JazorTool)&quot; --manifest &quot;$(_JazorReleaseManifestPath)&quot; --artifacts &quot;$(_JazorReleaseArtifactDir)&quot; --source-root &quot;$(_JazorToolSourceRoot)&quot; --out-root &quot;$(_JazorReleaseOutputDir)&quot; @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
+  <!--
+    Vue SSR imports the generated ESM graph directly, while the browser keeps consuming the
+    optimized bundle above. Materialize a second, self-contained graph only when opted in.
+  -->
+  <Target Name="JazorReleaseSsrArtifacts"
+          AfterTargets="JazorRelease"
+          DependsOnTargets="_ResolveJazorEmitTool"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'release' and '$(JazorSsrEnabled)' == 'true' and Exists('$(TargetPath)')">
+    <PropertyGroup>
+      <_JazorReleaseSsrArtifactDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)jazor-release')), '[\\/]+$', ''))</_JazorReleaseSsrArtifactDir>
+      <_JazorReleaseSsrOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)ssr')), '[\\/]+$', ''))</_JazorReleaseSsrOutputDir>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(_JazorReleaseSsrOutputDir)" Condition="Exists('$(_JazorReleaseSsrOutputDir)')" />
+    <MakeDir Directories="$(_JazorReleaseSsrOutputDir)" />
+
+    <ItemGroup>
+      <_JazorReleaseSsrArtifact Include="$(_JazorReleaseSsrArtifactDir)\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_JazorReleaseSsrArtifact)"
+          DestinationFiles="@(_JazorReleaseSsrArtifact->'$(_JazorReleaseSsrOutputDir)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; manifest materialize --manifest &quot;$(_JazorReleaseSsrOutputDir)\jazor-manifest.json&quot; --out-root &quot;$(_JazorReleaseSsrOutputDir)&quot; --mode Production @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
+  </Target>
+
 </Project>

@@ -72,7 +72,34 @@ The final executable or web host project selects one output mode:
 
 - `JazorMode=none` is the default and writes no artifacts.
 - `JazorMode=debug` scans the host output and referenced assemblies, then writes debug modules and `jazor-manifest.json`.
-- `JazorMode=release` performs its internal materialization in an intermediate directory, then writes only the production bundle and source map through `JazorTool`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
+- `JazorMode=release` performs its internal materialization in an intermediate directory, then writes the production browser bundle and source map through `JazorTool`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
+- `JazorSsrEnabled=true` additionally preserves a materialized raw module graph at `wwwroot/jazor/ssr/` for server rendering. This graph is separate from the optimized browser bundle.
+
+### SSR
+
+ASP.NET Core owns the SSR request pipeline, routing, response document, and static assets. The current renderer executes the generated Vue module in an explicitly configured local Deno process; Deno is not copied into the application output or acquired implicitly by the host.
+
+```xml
+<PropertyGroup>
+  <JazorMode>release</JazorMode>
+  <JazorSsrEnabled>true</JazorSsrEnabled>
+</PropertyGroup>
+```
+
+```csharp
+builder.Services.AddJazorSsr(options =>
+{
+    options.DenoExecutablePath = @"C:\tools\deno\deno.exe";
+});
+
+var app = builder.Build();
+app.UseStaticFiles();
+app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
+```
+
+`UseJazorSsr` uses the existing SPA fallback rules, so static files and mapped endpoints continue to win. It renders with `@vue/server-renderer`, emits the same JSON props for client hydration, and retains the browser import map and styles in the response.
+
+The Deno backend is transitional. Its stable boundary is `IJazorSsrRenderer`; the planned replacement is a Jint renderer that executes a Netpack-produced SSR bundle. Netpack prepares executable server code, while Jint executes it. Neither role requires application `node_modules`, a CDN, or remote imports. Vue server-prefetch state is not automatically transferred to the browser; applications must explicitly include any shared state in their props or another application-owned payload.
 
 ### Razor-to-Vue integration
 
@@ -101,5 +128,5 @@ The existing emit targets continue to handle declared ECMAScript modules indepen
 
 - `JazorMode` defaults to `none`; `debug` and `release` are mutually exclusive build outputs.
 - `JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
-- `debug` writes modules plus `jazor-manifest.json`; `release` clears `JazorDir`, materializes internally, and writes only production bundle assets.
+- `debug` writes modules plus `jazor-manifest.json`; `release` clears `JazorDir`, materializes internally, and writes browser bundle assets. With `JazorSsrEnabled=true`, it also writes the raw SSR graph under `JazorDir\ssr\`.
 - `JazorTool` defaults to `Deno` and is used only by `release`; bundle builds pass the intermediate manifest, artifact root, source root, and output root to the selected `Deno` or `Netpack` lane.

@@ -8,4 +8,10 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Runtime\*.mjs">
+      <LogicalName>Jazor.AspNetCore.Runtime.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

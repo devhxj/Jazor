@@ -31,6 +31,43 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public async Task ImportMapWriter_WritesLocalSsrImportsAlongsideBrowserImports()
+    {
+        using var workspace = new LibraryWorkspace();
+        var vueManifest = workspace.WriteLibrary("vue", "vue3", "3.5.13", "vue");
+        var rendererManifest = workspace.WriteLibrary(
+            "renderer",
+            "vue-server-renderer",
+            "3.5.13",
+            "@vue/server-renderer",
+            new Dictionary<string, string> { ["vue3"] = "3.5.13" });
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var materialization = new LibraryMaterializer().Materialize(
+            [vueManifest, rendererManifest],
+            outputRoot,
+            BuildMode.Production);
+
+        await ImportMapWriter.WriteAsync(outputRoot, materialization);
+
+        using var browserMap = System.Text.Json.JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
+        using var ssrMap = System.Text.Json.JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
+        Assert.AreEqual(
+            "/jazor/vendor/vue3/3.5.13/dist/index.mjs",
+            browserMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
+        Assert.AreEqual(
+            "./vendor/vue3/3.5.13/dist/index.mjs",
+            ssrMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
+        Assert.AreEqual(
+            "./vendor/vue-server-renderer/3.5.13/dist/index.mjs",
+            ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
+        Assert.IsFalse(
+            (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
+                .Contains("node_modules", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void Materialize_RejectsDifferentProvidersForSameLogicalImport()
     {
         using var workspace = new LibraryWorkspace();

@@ -25,6 +25,7 @@
 | [Jazor 架构转型开发计划](./Jazor%20架构转型开发计划.md) | 主线计划、阶段目标和依赖关系 |
 | [Razor SG Final-Document G0 决策记录](./RazorSgFinalDocument.G0.DecisionRecord.md) | 最终 Compilation 输入边界的决策与证据 |
 | [ECMAScript 显式命名迁移计划](./compiler/ECMAScriptNamingMigrationPlan.md) | 取消隐式 PascalCase 到 lowerCamelCase fallback 的执行顺序、Gate 与验收 |
+| [Jazor SSR 实施计划](./ssr/Jazor.Ssr.ImplementationPlan.md) | ASP.NET Core SSR、临时 Deno 后端与未来 Jint + Netpack 替换边界 |
 | `razorvue-transition/` | Razor-to-Vue 路线、WBS、验收和状态分片 |
 | `compiler/` | 编译器实施清单、转换闭包和源映射计划 |
 | `ecmascript/` | ECMAScript 平台执行级计划 |

@@ -137,10 +137,13 @@ public sealed class SdkIntegrationTests
             "jazor/vue3/manifest.json",
             "jazor/vue3/dist/vue.runtime.esm-browser.js",
             "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
+            "jazor/vue3/dist/server-renderer.esm-browser.js",
+            "jazor/vue3/dist/server-renderer.esm-browser.prod.js",
             "jazor/vue3/dist/devtools-api/index.js",
             "jazor/vue3/dist/devtools-api/api/index.js",
             "jazor/vue3/licenses/LICENSE",
             "jazor/vue3/licenses/VUE-DEVTOOLS-API-LICENSE",
+            "jazor/vue3/licenses/VUE-SERVER-RENDERER-LICENSE",
             "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js",
             "tools/net11.0/tooling/vue/licenses/LICENSE");
         AssertPackageEntries(
@@ -201,12 +204,16 @@ public sealed class SdkIntegrationTests
         var devtools = manifest.RootElement.GetProperty("imports").GetProperty("@vue/devtools-api");
         Assert.AreEqual("dist/devtools-api/index.js", devtools.GetProperty("development").GetString());
         Assert.AreEqual("dist/devtools-api/index.js", devtools.GetProperty("production").GetString());
+        var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
+        Assert.AreEqual("dist/server-renderer.esm-browser.js", serverRenderer.GetProperty("development").GetString());
+        Assert.AreEqual("dist/server-renderer.esm-browser.prod.js", serverRenderer.GetProperty("production").GetString());
         var files = manifest.RootElement.GetProperty("files")
             .EnumerateArray()
             .Select(static value => value.GetString())
             .ToArray();
         CollectionAssert.Contains(files, "dist/devtools-api/api/index.js");
         CollectionAssert.Contains(files, "licenses/VUE-DEVTOOLS-API-LICENSE");
+        CollectionAssert.Contains(files, "licenses/VUE-SERVER-RENDERER-LICENSE");
 
         var devtoolsApi = ReadPackageEntryText(package.PackagePath, "jazor/vue3/dist/devtools-api/index.js");
         Assert.IsFalse(
@@ -386,6 +393,92 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "function Boot()");
         StringAssert.Contains(bundle, "export {");
         StringAssert.Contains(bundle, "Boot");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_ReleaseWithSsrEnabled_MaterializesRawModuleGraph()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "SsrReleaseSdkSample");
+        var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release",
+                "-p:JazorSsrEnabled=true"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var browserRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var ssrRoot = Path.Combine(browserRoot, "ssr");
+        Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "bundle.js")), "Release browser bundle was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "jazor-manifest.json")), "SSR application manifest was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "host", "app.mjs")), "SSR raw module graph was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "importmap.json")), "SSR browser import map was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-importmap.json")), "SSR local import map was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "manifest.json")), "SSR asset manifest was not generated.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            "SSR server renderer was not materialized.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "licenses", "VUE-SERVER-RENDERER-LICENSE")),
+            "SSR server renderer license was not materialized.");
+
+        var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
+        StringAssert.Contains(ssrImportMap, "\"@vue/server-renderer\"");
+        Assert.IsFalse(ssrImportMap.Contains("node_modules", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task Publish_LocalJazorPackage_WebSdkHost_ReleaseWithSsrEnabled_CopiesRawModuleGraph()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "SsrPublishSdkSample");
+        var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
+        var projectPath = CreateDefaultOutputWebHostProject(projectRoot);
+        var publish = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "-o",
+                publishOutputRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release",
+                "-p:JazorSsrEnabled=true"
+            ]);
+
+        Assert.AreEqual(0, publish.ExitCode, publish.ToString());
+
+        var publishedSsrRoot = Path.Combine(publishOutputRoot, "wwwroot", "jazor", "ssr");
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
+        Assert.IsTrue(
+            File.Exists(Path.Combine(publishedSsrRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            "Publish output must carry the SSR renderer dependency.");
     }
 
     [TestMethod]
