@@ -11,8 +11,10 @@ namespace Pinia.Counter.Host;
 [Description("@#")]
 public sealed record CounterMultiStoreComputed : Vue3.VueProps
 {
+    [ECMAScriptName("counter")]
     public CounterStore Counter { get; init; } = default!;
 
+    [ECMAScriptName("activity")]
     public ActivityStore Activity { get; init; } = default!;
 }
 
@@ -20,8 +22,10 @@ public sealed record CounterMultiStoreComputed : Vue3.VueProps
 [Description("@#")]
 public abstract class CounterMultiStoreThis
 {
+    [ECMAScriptName("counter")]
     public extern CounterStore Counter { get; }
 
+    [ECMAScriptName("activity")]
     public extern ActivityStore Activity { get; }
 }
 

@@ -1,7 +1,7 @@
 import {
-  clearConfiguredActivePinia,
-  createConfiguredPinia,
-  createPiniaInstallationApp
+  ClearConfiguredActivePinia,
+  CreateConfiguredPinia,
+  CreatePiniaInstallationApp
 } from "host/app.mjs";
 import {
   disposePinia,
@@ -13,8 +13,8 @@ const disposedRoots = new WeakSet();
 
 export function createManagedPiniaRoot() {
   const previousPinia = getActivePinia();
-  const pinia = createConfiguredPinia();
-  const app = createPiniaInstallationApp(pinia);
+  const pinia = CreateConfiguredPinia();
+  const app = CreatePiniaInstallationApp(pinia);
   let disposed = false;
 
   const activate = () => {
@@ -50,7 +50,7 @@ export function createManagedPiniaRoot() {
         if (previousPinia != null && !disposedRoots.has(previousPinia)) {
           setActivePinia(previousPinia);
         } else {
-          clearConfiguredActivePinia();
+          ClearConfiguredActivePinia();
         }
       }
     }

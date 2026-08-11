@@ -44,9 +44,9 @@ export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): P
   await writeText(
     clientEntryPath,
     [
-      'import { boot } from "host/app.mjs";',
+      'import { Boot } from "host/app.mjs";',
       "",
-      'boot("#app");',
+      'Boot("#app");',
       ""
     ].join("\n")
   );

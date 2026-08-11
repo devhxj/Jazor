@@ -10,6 +10,7 @@ namespace Pinia.Counter.Host;
 [Description("@#")]
 public sealed record CounterTestingInitialState : TestingInitialState
 {
+    [ECMAScriptName("counter")]
     public CounterStatePatch Counter { get; init; } = default!;
 }
 
@@ -100,7 +101,7 @@ public static class CounterTestingModule
                     Status = "Seeded from strict createTestingPinia()."
                 }
             },
-            StubActions = new[] { "increment", "decrement" },
+            StubActions = new[] { nameof(CounterStore.Increment), nameof(CounterStore.Decrement) },
             WritableComputed = true,
             StubPatch = true,
             StubReset = true,
@@ -113,13 +114,13 @@ public static class CounterTestingModule
         });
 
     private static bool ShouldStubAction(string actionName, CounterStore store)
-        => actionName == "decrement" && store.Id == "counter";
+        => actionName == nameof(CounterStore.Decrement) && store.Id == "counter";
 
     private static bool ShouldStubTypedAction(string actionName, CounterStore store)
-        => actionName == "increment" && store.Id == "counter" && store.Count >= 12;
+        => actionName == nameof(CounterStore.Increment) && store.Id == "counter" && store.Count >= 12;
 
     private static bool ShouldStubFactoryAction(string actionName, CounterStore store)
-        => actionName == "decrement" && store.Id == "counter" && store.Count >= 18;
+        => actionName == nameof(CounterStore.Decrement) && store.Id == "counter" && store.Count >= 18;
 
     private static Delegate WrapSpy(Delegate? callback)
         => callback ?? ((Action)Noop);

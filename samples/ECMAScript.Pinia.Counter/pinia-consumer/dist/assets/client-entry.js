@@ -2184,8 +2184,8 @@ function createRecord(id, initialDef) {
   });
   return true;
 }
-function normalizeClassComponent(component8) {
-  return isClassComponent(component8) ? component8.__vccOpts : component8;
+function normalizeClassComponent(component) {
+  return isClassComponent(component) ? component.__vccOpts : component;
 }
 function rerender(id, newRender) {
   const record = map.get(id);
@@ -2340,16 +2340,16 @@ var _devtoolsComponentRemoved = /* @__PURE__ */ createDevtoolsComponentHook(
   "component:removed"
   /* COMPONENT_REMOVED */
 );
-var devtoolsComponentRemoved = (component8) => {
+var devtoolsComponentRemoved = (component) => {
   if (devtools$1 && typeof devtools$1.cleanupBuffer === "function" && // remove the component if it wasn't buffered
-  !devtools$1.cleanupBuffer(component8)) {
-    _devtoolsComponentRemoved(component8);
+  !devtools$1.cleanupBuffer(component)) {
+    _devtoolsComponentRemoved(component);
   }
 };
 // @__NO_SIDE_EFFECTS__
 function createDevtoolsComponentHook(hook2) {
-  return (component8) => {
-    emit$1(hook2, component8.appContext.app, component8.uid, component8.parent ? component8.parent.uid : void 0, component8);
+  return (component) => {
+    emit$1(hook2, component.appContext.app, component.uid, component.parent ? component.parent.uid : void 0, component);
   };
 }
 var devtoolsPerfStart = /* @__PURE__ */ createDevtoolsPerformanceHook(
@@ -2361,12 +2361,12 @@ var devtoolsPerfEnd = /* @__PURE__ */ createDevtoolsPerformanceHook(
   /* PERFORMANCE_END */
 );
 function createDevtoolsPerformanceHook(hook2) {
-  return (component8, type, time) => {
-    emit$1(hook2, component8.appContext.app, component8.uid, component8, type, time);
+  return (component, type, time) => {
+    emit$1(hook2, component.appContext.app, component.uid, component, type, time);
   };
 }
-function devtoolsComponentEmit(component8, event, params) {
-  emit$1("component:emit", component8.appContext.app, component8, event, params);
+function devtoolsComponentEmit(component, event, params) {
+  emit$1("component:emit", component.appContext.app, component, event, params);
 }
 var currentRenderingInstance = null;
 var currentScopeId = null;
@@ -3320,17 +3320,17 @@ function createAppAPI(render, hydrate) {
         }
         return app;
       },
-      component(name, component8) {
+      component(name, component) {
         if (true) {
           validateComponentName(name, context.config);
         }
-        if (!component8) {
+        if (!component) {
           return context.components[name];
         }
         if (context.components[name]) {
           warn$1(`Component "${name}" has already been registered in target app.`);
         }
-        context.components[name] = component8;
+        context.components[name] = component;
         return app;
       },
       directive(name, directive) {
@@ -5341,7 +5341,7 @@ function markAttrsAccessed() {
   accessedAttrs = true;
 }
 function renderComponentRoot(instance) {
-  const { type: Component, vnode, proxy, withProxy, propsOptions: [propsOptions], slots, attrs, emit: emit2, render, renderCache, props, data, setupState, ctx, inheritAttrs } = instance;
+  const { type: Component8, vnode, proxy, withProxy, propsOptions: [propsOptions], slots, attrs, emit: emit2, render, renderCache, props, data, setupState, ctx, inheritAttrs } = instance;
   const prev = setCurrentRenderingInstance(instance);
   let result;
   let fallthroughAttrs;
@@ -5360,7 +5360,7 @@ function renderComponentRoot(instance) {
       result = normalizeVNode(render.call(thisProxy, proxyToUse, renderCache, true ? shallowReadonly(props) : props, setupState, data, ctx));
       fallthroughAttrs = attrs;
     } else {
-      const render2 = Component;
+      const render2 = Component8;
       if (attrs === props) {
         markAttrsAccessed();
       }
@@ -5376,7 +5376,7 @@ function renderComponentRoot(instance) {
         slots,
         emit: emit2
       }) : render2(true ? shallowReadonly(props) : props, null));
-      fallthroughAttrs = Component.props ? attrs : getFunctionalFallthrough(attrs);
+      fallthroughAttrs = Component8.props ? attrs : getFunctionalFallthrough(attrs);
     }
   } catch (err) {
     blockStack.length = 0;
@@ -5516,9 +5516,9 @@ var isElementRoot = (vnode) => {
   return vnode.shapeFlag & (6 | 1) || vnode.type === Comment;
 };
 function shouldUpdateComponent(prevVNode, nextVNode, optimized) {
-  const { props: prevProps, children: prevChildren, component: component8 } = prevVNode;
+  const { props: prevProps, children: prevChildren, component } = prevVNode;
   const { props: nextProps, children: nextChildren, patchFlag } = nextVNode;
-  const emits = component8.emitsOptions;
+  const emits = component.emitsOptions;
   if ((prevChildren || nextChildren) && isHmrUpdating) {
     return true;
   }
@@ -6067,24 +6067,24 @@ function setupComponent(instance, isSSR = false, optimized = false) {
 }
 function setupStatefulComponent(instance, isSSR) {
   var _a25;
-  const Component = instance.type;
+  const Component8 = instance.type;
   if (true) {
-    if (Component.name) {
-      validateComponentName(Component.name, instance.appContext.config);
+    if (Component8.name) {
+      validateComponentName(Component8.name, instance.appContext.config);
     }
-    if (Component.components) {
-      const names = Object.keys(Component.components);
+    if (Component8.components) {
+      const names = Object.keys(Component8.components);
       for (let i = 0; i < names.length; i++) {
         validateComponentName(names[i], instance.appContext.config);
       }
     }
-    if (Component.directives) {
-      const names = Object.keys(Component.directives);
+    if (Component8.directives) {
+      const names = Object.keys(Component8.directives);
       for (let i = 0; i < names.length; i++) {
         validateDirectiveName(names[i]);
       }
     }
-    if (Component.compilerOptions && isRuntimeOnly()) {
+    if (Component8.compilerOptions && isRuntimeOnly()) {
       warn$1(`"compilerOptions" is only supported when using a build of Vue that includes the runtime compiler. Since you are using a runtime-only build, the options should be passed via your build tool config instead.`);
     }
   }
@@ -6093,12 +6093,12 @@ function setupStatefulComponent(instance, isSSR) {
   if (true) {
     exposePropsOnRenderContext(instance);
   }
-  const { setup: setup8 } = Component;
-  if (setup8) {
+  const { setup } = Component8;
+  if (setup) {
     pauseTracking();
-    const setupContext = instance.setupContext = setup8.length > 1 ? createSetupContext(instance) : null;
+    const setupContext = instance.setupContext = setup.length > 1 ? createSetupContext(instance) : null;
     const reset = setCurrentInstance(instance);
-    const setupResult = callWithErrorHandling(setup8, instance, 0, [
+    const setupResult = callWithErrorHandling(setup, instance, 0, [
       true ? shallowReadonly(instance.props) : instance.props,
       setupContext
     ]);
@@ -6119,7 +6119,7 @@ function setupStatefulComponent(instance, isSSR) {
       } else {
         instance.asyncDep = setupResult;
         if (!instance.suspense) {
-          const name = (_a25 = Component.name) != null ? _a25 : "Anonymous";
+          const name = (_a25 = Component8.name) != null ? _a25 : "Anonymous";
           warn$1(`Component <${name}>: setup function returned a promise, but no <Suspense> boundary was found in the parent component tree. A component with async setup() must be nested in a <Suspense> in order to be rendered.`);
         }
       }
@@ -6157,27 +6157,27 @@ var compile;
 var installWithProxy;
 var isRuntimeOnly = () => !compile;
 function finishComponentSetup(instance, isSSR, skipOptions) {
-  const Component = instance.type;
+  const Component8 = instance.type;
   if (!instance.render) {
-    if (!isSSR && compile && !Component.render) {
-      const template = Component.template || __VUE_OPTIONS_API__ && resolveMergedOptions(instance).template;
+    if (!isSSR && compile && !Component8.render) {
+      const template = Component8.template || __VUE_OPTIONS_API__ && resolveMergedOptions(instance).template;
       if (template) {
         if (true) {
           startMeasure(instance, `compile`);
         }
         const { isCustomElement, compilerOptions } = instance.appContext.config;
-        const { delimiters, compilerOptions: componentCompilerOptions } = Component;
+        const { delimiters, compilerOptions: componentCompilerOptions } = Component8;
         const finalCompilerOptions = extend(extend({
           isCustomElement,
           delimiters
         }, compilerOptions), componentCompilerOptions);
-        Component.render = compile(template, finalCompilerOptions);
+        Component8.render = compile(template, finalCompilerOptions);
         if (true) {
           endMeasure(instance, `compile`);
         }
       }
     }
-    instance.render = Component.render || NOOP;
+    instance.render = Component8.render || NOOP;
     if (installWithProxy) {
       installWithProxy(instance);
     }
@@ -6192,11 +6192,11 @@ function finishComponentSetup(instance, isSSR, skipOptions) {
       reset();
     }
   }
-  if (!Component.render && instance.render === NOOP && !isSSR) {
-    if (!compile && Component.template) {
+  if (!Component8.render && instance.render === NOOP && !isSSR) {
+    if (!compile && Component8.template) {
       warn$1(`Component provided template option but runtime compilation is not supported in this build of Vue. Configure your bundler to alias "vue" to "vue/dist/vue.esm-bundler.js".`);
     } else {
-      warn$1(`Component is missing template or render function: `, Component);
+      warn$1(`Component is missing template or render function: `, Component8);
     }
   }
 }
@@ -6294,13 +6294,13 @@ function getComponentPublicInstance(instance) {
 }
 var classifyRE = /(?:^|[-_])(\w)/g;
 var classify = (str) => str.replace(classifyRE, (c) => c.toUpperCase()).replace(/[-_]/g, "");
-function getComponentName(Component, includeInferred = true) {
-  return isFunction(Component) ? Component.displayName || Component.name : Component.name || includeInferred && Component.__name;
+function getComponentName(Component8, includeInferred = true) {
+  return isFunction(Component8) ? Component8.displayName || Component8.name : Component8.name || includeInferred && Component8.__name;
 }
-function formatComponentName(instance, Component, isRoot = false) {
-  let name = getComponentName(Component);
-  if (!name && Component.__file) {
-    const match = Component.__file.match(/([^/\\]+)\.\w+$/);
+function formatComponentName(instance, Component8, isRoot = false) {
+  let name = getComponentName(Component8);
+  if (!name && Component8.__file) {
+    const match = Component8.__file.match(/([^/\\]+)\.\w+$/);
     if (match) {
       name = match[1];
     }
@@ -6308,7 +6308,7 @@ function formatComponentName(instance, Component, isRoot = false) {
   if (!name && instance && instance.parent) {
     const inferFromRegistry = (registry) => {
       for (const key in registry) {
-        if (registry[key] === Component) {
+        if (registry[key] === Component8) {
           return key;
         }
       }
@@ -7061,9 +7061,9 @@ var createApp = (...args) => {
   app.mount = (containerOrSelector) => {
     const container = normalizeContainer(containerOrSelector);
     if (!container) return;
-    const component8 = app._component;
-    if (!isFunction(component8) && !component8.render && !component8.template) {
-      component8.template = container.innerHTML;
+    const component = app._component;
+    if (!isFunction(component) && !component.render && !component.template) {
+      component.template = container.innerHTML;
     }
     if (container.nodeType === 1) {
       container.textContent = "";
@@ -9666,16 +9666,16 @@ function setupInspector() {
 }
 function getComponentInspector() {
   return new Promise((resolve) => {
-    function setup8() {
+    function setup() {
       setupInspector();
       resolve(target.__VUE_INSPECTOR__);
     }
     if (!target.__VUE_INSPECTOR__) {
       waitForInspectorInit(() => {
-        setup8();
+        setup();
       });
     } else {
-      setup8();
+      setup();
     }
   });
 }
@@ -12521,7 +12521,7 @@ function createOptionsStore(id, options, pinia, hot) {
   const { state, actions, getters } = options;
   const initialState = pinia.state.value[id];
   let store;
-  function setup8() {
+  function setup() {
     if (!initialState && !hot) {
       pinia.state.value[id] = state ? state() : {};
     }
@@ -12538,10 +12538,10 @@ function createOptionsStore(id, options, pinia, hot) {
       return computedGetters;
     }, {}));
   }
-  store = createSetupStore(id, setup8, options, pinia, hot, true);
+  store = createSetupStore(id, setup, options, pinia, hot, true);
   return store;
 }
-function createSetupStore($id, setup8, options = {}, pinia, hot, isOptionsStore) {
+function createSetupStore($id, setup, options = {}, pinia, hot, isOptionsStore) {
   let scope;
   const optionsForPlugin = assign({
     actions: {}
@@ -12705,7 +12705,7 @@ function createSetupStore($id, setup8, options = {}, pinia, hot, isOptionsStore)
   }, partialStore) : partialStore);
   pinia._s.set($id, store);
   const runWithContext = pinia._a && pinia._a.runWithContext || fallbackRunWithContext;
-  const setupStore = runWithContext(() => pinia._e.run(() => (scope = effectScope()).run(() => setup8({
+  const setupStore = runWithContext(() => pinia._e.run(() => (scope = effectScope()).run(() => setup({
     action
   }))));
   for (const key in setupStore) {
@@ -12863,10 +12863,10 @@ Found in store "${store.$id}".`);
   return store;
 }
 // @__NO_SIDE_EFFECTS__
-function defineStore(id, setup8, setupOptions) {
+function defineStore(id, setup, setupOptions) {
   let options;
-  const isSetupStore = typeof setup8 === "function";
-  options = isSetupStore ? setupOptions : setup8;
+  const isSetupStore = typeof setup === "function";
+  options = isSetupStore ? setupOptions : setup;
   function useStore(pinia, hot) {
     const hasContext = hasInjectionContext();
     pinia = // in test mode, ignore the argument provided as we can always retrieve a
@@ -12881,7 +12881,7 @@ This will fail in production.`);
     pinia = activePinia;
     if (!pinia._s.has(id)) {
       if (isSetupStore) {
-        createSetupStore(id, setup8, options, pinia);
+        createSetupStore(id, setup, options, pinia);
       } else {
         createOptionsStore(id, options, pinia);
       }
@@ -12892,7 +12892,7 @@ This will fail in production.`);
     const store = pinia._s.get(id);
     if (hot) {
       const hotId = "__hot:" + id;
-      const newStore = isSetupStore ? createSetupStore(hotId, setup8, options, pinia, true) : createOptionsStore(hotId, assign({}, options), pinia, true);
+      const newStore = isSetupStore ? createSetupStore(hotId, setup, options, pinia, true) : createOptionsStore(hotId, assign({}, options), pinia, true);
       hot._hotUpdate(newStore);
       delete pinia.state.value[hotId];
       pinia._s.delete(hotId);
@@ -12982,74 +12982,74 @@ function storeToRefs(store) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/stores/counter-store.mjs
-var useCounterStore = defineStore("counter", {
-  state: createState,
+var UseCounterStore = defineStore("counter", {
+  state: CreateState,
   getters: {
-    doubleCount: /* @__PURE__ */ ((__cb) => function() {
+    DoubleCount: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(readDoubleCount)
+    })(ReadDoubleCount)
   },
   actions: {
-    increment: /* @__PURE__ */ ((__cb) => function() {
+    Increment: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(increment),
-    decrement: /* @__PURE__ */ ((__cb) => function() {
+    })(Increment),
+    Decrement: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(decrement)
+    })(Decrement)
   }
 });
-var useProjectedCounterStore = useCounterStore;
-function useCounterStoreRefs(store) {
+var UseProjectedCounterStore = UseCounterStore;
+function UseCounterStoreRefs(store) {
   return storeToRefs(store);
 }
-function useProjectedCounterStoreRefs(store) {
+function UseProjectedCounterStoreRefs(store) {
   return storeToRefs(store);
 }
-function installAuditPlugin(context) {
+function InstallAuditPlugin(context) {
   if (context.store.$id !== "counter") {
     return null;
   }
   let projectedStore = context.store;
   let customState = projectedStore.$state;
-  customState.persistedAt = "plugin:" + context.store.$id;
+  customState.PersistedAt = "plugin:" + context.store.$id;
   return {
-    auditTag: context.store.$id + ":audited"
+    AuditTag: context.store.$id + ":audited"
   };
 }
-function createState() {
+function CreateState() {
   return {
-    count: 2,
-    status: "Store seeded through defineStore()."
+    Count: 2,
+    Status: "Store seeded through defineStore()."
   };
 }
-function readDoubleCount(self2) {
-  return self2.count * 2;
+function ReadDoubleCount(self2) {
+  return self2.Count * 2;
 }
-function increment(self2) {
-  self2.count += 1;
-  self2.status = "increment() updated the store.";
+function Increment(self2) {
+  self2.Count += 1;
+  self2.Status = "increment() updated the store.";
 }
-function decrement(self2) {
-  if (self2.count > 0) {
-    self2.count -= 1;
-    self2.status = "decrement() updated the store.";
+function Decrement(self2) {
+  if (self2.Count > 0) {
+    self2.Count -= 1;
+    self2.Status = "decrement() updated the store.";
     return;
   }
-  self2.status = "decrement() is clamped at zero.";
+  self2.Status = "decrement() is clamped at zero.";
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-app.mjs
-var component = defineComponent({
+var Component = defineComponent({
   name: "PiniaCounterApp",
-  setup
+  setup: Setup
 });
-function setup() {
-  let store = useCounterStore();
-  let refs = useCounterStoreRefs(store);
+function Setup() {
+  let store = UseCounterStore();
+  let refs = UseCounterStoreRefs(store);
   let patchPlusFive = () => {
     store.$patch({
-      count: store.count + 5,
-      status: "Applied $patch({ ... }) from the component."
+      Count: store.Count + 5,
+      Status: "Applied $patch({ ... }) from the component."
     });
     return;
   };
@@ -13070,19 +13070,19 @@ function setup() {
       h("div", {
         class: "counter-grid"
       }, [
-        createMetricCard("count", refs.count.value, "metric-card metric-card--primary"),
-        createMetricCard("doubleCount", refs.doubleCount.value, "metric-card metric-card--secondary")
+        CreateMetricCard("count", refs.Count.value, "metric-card metric-card--primary"),
+        CreateMetricCard("doubleCount", refs.DoubleCount.value, "metric-card metric-card--secondary")
       ]),
       h("p", {
         class: "counter-status"
-      }, refs.status.value),
+      }, refs.Status.value),
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton("Increment", "action-button action-button--accent", store.increment.bind(store)),
-        createActionButton("Decrement", "action-button", store.decrement.bind(store)),
-        createActionButton("Patch +5", "action-button", patchPlusFive),
-        createActionButton("Reset", "action-button action-button--ghost", resetStore)
+        CreateActionButton("Increment", "action-button action-button--accent", store.Increment.bind(store)),
+        CreateActionButton("Decrement", "action-button", store.Decrement.bind(store)),
+        CreateActionButton("Patch +5", "action-button", patchPlusFive),
+        CreateActionButton("Reset", "action-button action-button--ghost", resetStore)
       ]),
       h("ul", {
         class: "counter-notes"
@@ -13094,7 +13094,7 @@ function setup() {
     ]);
   };
 }
-function createMetricCard(label, value, className) {
+function CreateMetricCard(label, value, className) {
   return h("article", {
     class: className
   }, [
@@ -13106,7 +13106,7 @@ function createMetricCard(label, value, className) {
     }, value)
   ]);
 }
-function createActionButton(label, className, handler) {
+function CreateActionButton(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13115,33 +13115,33 @@ function createActionButton(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-cookbook.mjs
-var component2 = defineComponent({
+var Component2 = defineComponent({
   name: "PiniaCounterCookbook",
-  computed: createComputed(),
-  methods: createMethods(),
-  setup: setup2
+  computed: CreateComputed(),
+  methods: CreateMethods(),
+  setup: Setup2
 });
-function createComputed() {
-  return mapState(useProjectedCounterStore, {
-    count: "count",
-    status: "status",
-    doubleCount: "doubleCount",
-    tripleCount: readTripleCount,
-    auditTag: "auditTag"
+function CreateComputed() {
+  return mapState(UseProjectedCounterStore, {
+    Count: "Count",
+    Status: "Status",
+    DoubleCount: "DoubleCount",
+    TripleCount: ReadTripleCount,
+    AuditTag: "AuditTag"
   });
 }
-function createMethods() {
-  return mapActions(useProjectedCounterStore, [
-    "increment",
-    "decrement"
+function CreateMethods() {
+  return mapActions(UseProjectedCounterStore, [
+    "Increment",
+    "Decrement"
   ]);
 }
-function setup2() {
-  let projectedStore = useProjectedCounterStore();
-  let refs = useProjectedCounterStoreRefs(projectedStore);
+function Setup2() {
+  let projectedStore = UseProjectedCounterStore();
+  let refs = UseProjectedCounterStoreRefs(projectedStore);
   let baseStore = projectedStore;
   let customState = projectedStore.$state;
-  customState.persistedAt = "component:" + baseStore.$id;
+  customState.PersistedAt = "component:" + baseStore.$id;
   return () => {
     return h("section", {
       class: "counter-cookbook-shell"
@@ -13149,18 +13149,18 @@ function setup2() {
       h("h2", "Projected plugin cookbook"),
       h("p", "Projected store definitions flow through storeToRefs(), Options API helpers, and direct custom-property/custom-state projections without inventing a separate runtime object."),
       h("ul", [
-        h("li", "auditTag: " + projectedStore.auditTag),
-        h("li", "persistedAt: " + projectedStore.$state.persistedAt),
-        h("li", "countRef: " + refs["count"].value),
-        h("li", "statusRef: " + refs["status"].value),
-        h("li", "doubleCount: " + projectedStore.doubleCount),
-        h("li", "tripleCount: " + readTripleCount(projectedStore))
+        h("li", "auditTag: " + projectedStore.AuditTag),
+        h("li", "persistedAt: " + projectedStore.$state.PersistedAt),
+        h("li", "countRef: " + refs["Count"].value),
+        h("li", "statusRef: " + refs["Status"].value),
+        h("li", "doubleCount: " + projectedStore.DoubleCount),
+        h("li", "tripleCount: " + ReadTripleCount(projectedStore))
       ]),
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton2("Projected increment", "action-button action-button--accent", baseStore.increment.bind(baseStore)),
-        createActionButton2("Projected decrement", "action-button", baseStore.decrement.bind(baseStore))
+        CreateActionButton2("Projected increment", "action-button action-button--accent", baseStore.Increment.bind(baseStore)),
+        CreateActionButton2("Projected decrement", "action-button", baseStore.Decrement.bind(baseStore))
       ]),
       h("p", {
         class: "counter-status"
@@ -13168,28 +13168,28 @@ function setup2() {
     ]);
   };
 }
-function createActionButton2(label, className, handler) {
+function CreateActionButton2(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
     onClick: handler
   }, label);
 }
-function readTripleCount(store) {
-  return store.count * 3;
+function ReadTripleCount(store) {
+  return store.Count * 3;
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-hmr.mjs
-var component3 = defineComponent({
+var Component3 = defineComponent({
   name: "PiniaCounterHmrCookbook",
-  setup: setup3
+  setup: Setup3
 });
-function setup3() {
-  let store = useCounterStore();
-  let projectedStore = useProjectedCounterStore();
+function Setup3() {
+  let store = UseCounterStore();
+  let projectedStore = UseProjectedCounterStore();
   let customState = projectedStore.$state;
   let installHotSnapshot = () => {
-    customState.persistedAt = "hmr:" + projectedStore.$id;
+    customState.PersistedAt = "hmr:" + projectedStore.$id;
     return;
   };
   return () => {
@@ -13202,19 +13202,19 @@ function setup3() {
         class: "counter-notes"
       }, [
         h("li", "store id: " + store.$id),
-        h("li", "auditTag: " + projectedStore.auditTag),
-        h("li", "persistedAt: " + customState.persistedAt),
+        h("li", "auditTag: " + projectedStore.AuditTag),
+        h("li", "persistedAt: " + customState.PersistedAt),
         h("li", "consumer bridge calls import.meta.hot.accept(createCounterHotHandler(import.meta.hot))")
       ]),
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton3("Prime HMR snapshot", "action-button action-button--accent", installHotSnapshot)
+        CreateActionButton3("Prime HMR snapshot", "action-button action-button--accent", installHotSnapshot)
       ])
     ]);
   };
 }
-function createActionButton3(label, className, handler) {
+function CreateActionButton3(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13223,54 +13223,54 @@ function createActionButton3(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-hydration.mjs
-var useHydrationStore = defineStore("counterHydration", setupHydrationStore);
-var useHydrationOptionStore = defineStore("counterHydrationOptions", {
-  state: createHydrationState,
-  hydrate: hydrateOptionStore
+var UseHydrationStore = defineStore("counterHydration", SetupHydrationStore);
+var UseHydrationOptionStore = defineStore("counterHydrationOptions", {
+  state: CreateHydrationState,
+  hydrate: HydrateOptionStore
 });
-var component4 = defineComponent({
+var Component4 = defineComponent({
   name: "PiniaCounterHydrationCookbook",
-  setup: setup4
+  setup: Setup4
 });
-function seedInitialOptionStoreState(pinia) {
+function SeedInitialOptionStoreState(pinia) {
   pinia.state.value["counterHydrationOptions"] = {
-    count: 12,
-    status: "serialized SSR payload"
+    Count: 12,
+    Status: "serialized SSR payload"
   };
 }
-function setupHydrationStore(helpers) {
+function SetupHydrationStore(helpers) {
   let clientOnlyNote = skipHydrate(ref("client-only note seeded in setup store"));
   return {
-    count: 4,
-    status: "setup-store hydration boundary is ready",
-    clientOnlyNote,
-    canHydrateClientOnlyNote: helpers.action(() => {
+    Count: 4,
+    Status: "setup-store hydration boundary is ready",
+    ClientOnlyNote: clientOnlyNote,
+    CanHydrateClientOnlyNote: helpers.action(() => {
       return shouldHydrate(clientOnlyNote);
     }, "canHydrateClientOnlyNote"),
-    refreshClientOnlyNote: helpers.action(() => {
-      clientOnlyNote.value = "client note refreshed at " + useHydrationOptionStore().status;
+    RefreshClientOnlyNote: helpers.action(() => {
+      clientOnlyNote.value = "client note refreshed at " + UseHydrationOptionStore().Status;
       return;
     }, "refreshClientOnlyNote")
   };
 }
-function createHydrationState() {
+function CreateHydrationState() {
   return {
-    count: 8,
-    status: "option-store hydration hook waiting"
+    Count: 8,
+    Status: "option-store hydration hook waiting"
   };
 }
-function hydrateOptionStore(storeState, initialState) {
-  storeState.count = initialState.count;
-  storeState.status = initialState.status + " -> hydrate(storeState, initialState)";
+function HydrateOptionStore(storeState, initialState) {
+  storeState.Count = initialState.Count;
+  storeState.Status = initialState.Status + " -> hydrate(storeState, initialState)";
 }
-function setup4() {
-  let setupStore = useHydrationStore();
-  let optionStore = useHydrationOptionStore();
-  let clientHydrates = computed2(setupStore.canHydrateClientOnlyNote);
-  let reapplyClientNote = setupStore.refreshClientOnlyNote;
+function Setup4() {
+  let setupStore = UseHydrationStore();
+  let optionStore = UseHydrationOptionStore();
+  let clientHydrates = computed2(setupStore.CanHydrateClientOnlyNote);
+  let reapplyClientNote = setupStore.RefreshClientOnlyNote;
   let hydrateSnapshot = () => {
     optionStore.$patch({
-      status: "hydration snapshot captured from client action"
+      Status: "hydration snapshot captured from client action"
     });
     return;
   };
@@ -13285,20 +13285,20 @@ function setup4() {
       }, [
         h("li", "setup store id: counterHydration"),
         h("li", "option store id: " + optionStore.$id),
-        h("li", "client-only note: " + setupStore.clientOnlyNote),
+        h("li", "client-only note: " + setupStore.ClientOnlyNote),
         h("li", "should hydrate client-only note: " + clientHydrates.value),
-        h("li", "option-store status: " + optionStore.status)
+        h("li", "option-store status: " + optionStore.Status)
       ]),
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton4("Refresh client note", "action-button action-button--accent", reapplyClientNote),
-        createActionButton4("Hydration snapshot", "action-button", hydrateSnapshot)
+        CreateActionButton4("Refresh client note", "action-button action-button--accent", reapplyClientNote),
+        CreateActionButton4("Hydration snapshot", "action-button", hydrateSnapshot)
       ])
     ]);
   };
 }
-function createActionButton4(label, className, handler) {
+function CreateActionButton4(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13307,28 +13307,28 @@ function createActionButton4(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-isolation.mjs
-var component5 = defineComponent({
+var Component5 = defineComponent({
   name: "PiniaCounterIsolationCookbook",
-  setup: setup5
+  setup: Setup5
 });
-function setup5() {
-  let leftPinia = createInstalledConfiguredPinia();
-  let rightPinia = createInstalledConfiguredPinia();
-  let leftStore = useCounterStore(leftPinia);
-  let leftProjected = useProjectedCounterStore(leftPinia);
-  let rightStore = useCounterStore(rightPinia);
-  let rightProjected = useProjectedCounterStore(rightPinia);
-  let snapshot = ref(describeSnapshot(leftStore, rightStore, leftProjected, rightProjected));
+function Setup5() {
+  let leftPinia = CreateInstalledConfiguredPinia();
+  let rightPinia = CreateInstalledConfiguredPinia();
+  let leftStore = UseCounterStore(leftPinia);
+  let leftProjected = UseProjectedCounterStore(leftPinia);
+  let rightStore = UseCounterStore(rightPinia);
+  let rightProjected = UseProjectedCounterStore(rightPinia);
+  let snapshot = ref(DescribeSnapshot(leftStore, rightStore, leftProjected, rightProjected));
   let incrementLeftOnly = () => {
-    leftStore.increment();
-    leftProjected.$state.persistedAt = "isolated:left:" + leftStore.count;
-    snapshot.value = describeSnapshot(leftStore, rightStore, leftProjected, rightProjected);
+    leftStore.Increment();
+    leftProjected.$state.PersistedAt = "isolated:left:" + leftStore.Count;
+    snapshot.value = DescribeSnapshot(leftStore, rightStore, leftProjected, rightProjected);
     return;
   };
   let incrementRightOnly = () => {
-    rightStore.increment();
-    rightProjected.$state.persistedAt = "isolated:right:" + rightStore.count;
-    snapshot.value = describeSnapshot(leftStore, rightStore, leftProjected, rightProjected);
+    rightStore.Increment();
+    rightProjected.$state.PersistedAt = "isolated:right:" + rightStore.Count;
+    snapshot.value = DescribeSnapshot(leftStore, rightStore, leftProjected, rightProjected);
     return;
   };
   onUnmounted(() => {
@@ -13346,27 +13346,27 @@ function setup5() {
         class: "counter-notes"
       }, [
         h("li", "snapshot: " + snapshot.value),
-        h("li", "left persistedAt: " + leftProjected.$state.persistedAt),
-        h("li", "right persistedAt: " + rightProjected.$state.persistedAt)
+        h("li", "left persistedAt: " + leftProjected.$state.PersistedAt),
+        h("li", "right persistedAt: " + rightProjected.$state.PersistedAt)
       ]),
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton5("Increment left root", "action-button action-button--accent", incrementLeftOnly),
-        createActionButton5("Increment right root", "action-button", incrementRightOnly)
+        CreateActionButton5("Increment left root", "action-button action-button--accent", incrementLeftOnly),
+        CreateActionButton5("Increment right root", "action-button", incrementRightOnly)
       ])
     ]);
   };
 }
-function createInstalledConfiguredPinia() {
-  let pinia = createConfiguredPinia();
-  createPiniaInstallationApp(pinia);
+function CreateInstalledConfiguredPinia() {
+  let pinia = CreateConfiguredPinia();
+  CreatePiniaInstallationApp(pinia);
   return pinia;
 }
-function describeSnapshot(leftStore, rightStore, leftProjected, rightProjected) {
-  return "left=" + leftStore.count + ", right=" + rightStore.count + ", leftAudit=" + leftProjected.auditTag + ", rightAudit=" + rightProjected.auditTag;
+function DescribeSnapshot(leftStore, rightStore, leftProjected, rightProjected) {
+  return "left=" + leftStore.Count + ", right=" + rightStore.Count + ", leftAudit=" + leftProjected.AuditTag + ", rightAudit=" + rightProjected.AuditTag;
 }
-function createActionButton5(label, className, handler) {
+function CreateActionButton5(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13375,73 +13375,73 @@ function createActionButton5(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/stores/activity-store.mjs
-var useActivityStore = defineStore("activity", {
-  state: createState2,
+var UseActivityStore = defineStore("activity", {
+  state: CreateState2,
   getters: {
-    summary: /* @__PURE__ */ ((__cb) => function() {
+    Summary: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(readSummary)
+    })(ReadSummary)
   },
   actions: {
-    capture: /* @__PURE__ */ ((__cb) => function() {
+    Capture: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(capture),
-    queueReview: /* @__PURE__ */ ((__cb) => function() {
+    })(Capture),
+    QueueReview: /* @__PURE__ */ ((__cb) => function() {
       return __cb(this, ...arguments);
-    })(queueReview)
+    })(QueueReview)
   }
 });
-function createState2() {
+function CreateState2() {
   return {
-    completedActions: 1,
-    pendingReviews: 2,
-    highlight: "Waiting for the next workflow capture."
+    CompletedActions: 1,
+    PendingReviews: 2,
+    Highlight: "Waiting for the next workflow capture."
   };
 }
-function readSummary(self2) {
-  return self2.highlight + " (done: " + self2.completedActions + ", pending: " + self2.pendingReviews + ")";
+function ReadSummary(self2) {
+  return self2.Highlight + " (done: " + self2.CompletedActions + ", pending: " + self2.PendingReviews + ")";
 }
-function capture(self2, source) {
-  self2.completedActions += 1;
-  if (self2.pendingReviews > 0) {
-    self2.pendingReviews -= 1;
+function Capture(self2, source) {
+  self2.CompletedActions += 1;
+  if (self2.PendingReviews > 0) {
+    self2.PendingReviews -= 1;
   }
-  self2.highlight = "capture(" + source + ") updated the activity store.";
+  self2.Highlight = "capture(" + source + ") updated the activity store.";
 }
-function queueReview(self2) {
-  self2.pendingReviews += 1;
-  self2.highlight = "queueReview() recorded another follow-up item.";
+function QueueReview(self2) {
+  self2.PendingReviews += 1;
+  self2.Highlight = "queueReview() recorded another follow-up item.";
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-multi-store.mjs
-var optionsApiSnapshot = ref("mapStores() snapshot will be captured after mount.");
-var optionsApiStoreIds = ref("store ids pending");
-var component6 = defineComponent({
+var OptionsApiSnapshot = ref("mapStores() snapshot will be captured after mount.");
+var OptionsApiStoreIds = ref("store ids pending");
+var Component6 = defineComponent({
   name: "PiniaCounterMultiStore",
-  computed: createComputed2(),
+  computed: CreateComputed2(),
   mounted: /* @__PURE__ */ ((__cb) => function() {
     return __cb(this, ...arguments);
-  })(captureMappedStores),
-  setup: setup6
+  })(CaptureMappedStores),
+  setup: Setup6
 });
-function createComputed2() {
+function CreateComputed2() {
   setMapStoreSuffix("");
-  return mapStores(useCounterStore, useActivityStore);
+  return mapStores(UseCounterStore, UseActivityStore);
 }
-function setup6() {
-  let counter = useCounterStore();
-  let activity = useActivityStore();
+function Setup6() {
+  let counter = UseCounterStore();
+  let activity = UseActivityStore();
   let incrementAndCapture = () => {
-    counter.increment();
-    activity.capture("increment");
+    counter.Increment();
+    activity.Capture("increment");
     return;
   };
-  let queueReview2 = activity.queueReview.bind(activity);
+  let queueReview = activity.QueueReview.bind(activity);
   let liveSummary = computed2(() => {
-    return counter.status + " | " + activity.summary;
+    return counter.Status + " | " + activity.Summary;
   });
   let combinedScore = computed2(() => {
-    return counter.count + activity.completedActions + activity.pendingReviews;
+    return counter.Count + activity.CompletedActions + activity.PendingReviews;
   });
   return () => {
     return h("section", {
@@ -13452,10 +13452,10 @@ function setup6() {
       h("div", {
         class: "counter-summary-grid"
       }, [
-        createMetricCard2("counter.count", counter.count, "metric-card metric-card--primary"),
-        createMetricCard2("activity.done", activity.completedActions, "metric-card metric-card--secondary"),
-        createMetricCard2("activity.pending", activity.pendingReviews, "metric-card metric-card--neutral"),
-        createMetricCard2("combined", combinedScore.value, "metric-card metric-card--accent")
+        CreateMetricCard2("counter.count", counter.Count, "metric-card metric-card--primary"),
+        CreateMetricCard2("activity.done", activity.CompletedActions, "metric-card metric-card--secondary"),
+        CreateMetricCard2("activity.pending", activity.PendingReviews, "metric-card metric-card--neutral"),
+        CreateMetricCard2("combined", combinedScore.value, "metric-card metric-card--accent")
       ]),
       h("p", {
         class: "counter-status"
@@ -13463,24 +13463,24 @@ function setup6() {
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton6("Increment + capture", "action-button action-button--accent", incrementAndCapture),
-        createActionButton6("Queue review", "action-button", queueReview2)
+        CreateActionButton6("Increment + capture", "action-button action-button--accent", incrementAndCapture),
+        CreateActionButton6("Queue review", "action-button", queueReview)
       ]),
       h("ul", {
         class: "counter-notes"
       }, [
-        h("li", "mounted snapshot via mapStores(): " + optionsApiSnapshot.value),
-        h("li", "mapped component store ids: " + optionsApiStoreIds.value),
+        h("li", "mounted snapshot via mapStores(): " + OptionsApiSnapshot.value),
+        h("li", "mapped component store ids: " + OptionsApiStoreIds.value),
         h("li", "direct setup render keeps the live surface readable while Options API captures the heterogeneous store projection.")
       ])
     ]);
   };
 }
-function captureMappedStores(self2) {
-  optionsApiSnapshot.value = self2.counter.status + " | " + self2.activity.summary;
-  optionsApiStoreIds.value = self2.counter.$id + " + " + self2.activity.$id;
+function CaptureMappedStores(self2) {
+  OptionsApiSnapshot.value = self2.counter.Status + " | " + self2.activity.Summary;
+  OptionsApiStoreIds.value = self2.counter.$id + " + " + self2.activity.$id;
 }
-function createMetricCard2(label, value, className) {
+function CreateMetricCard2(label, value, className) {
   return h("article", {
     class: className
   }, [
@@ -13492,7 +13492,7 @@ function createMetricCard2(label, value, className) {
     }, value)
   ]);
 }
-function createActionButton6(label, className, handler) {
+function CreateActionButton6(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13501,46 +13501,46 @@ function createActionButton6(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/components/counter-subscription.mjs
-var component7 = defineComponent({
+var Component7 = defineComponent({
   name: "PiniaCounterSubscriptionCookbook",
-  setup: setup7
+  setup: Setup7
 });
-function setup7() {
-  let store = useCounterStore();
+function Setup7() {
+  let store = UseCounterStore();
   let mutationKind = ref("No mutations observed yet.");
   let storeId = ref(store.$id);
-  let statusSnapshot = ref(store.status);
-  let countSnapshot = ref(store.count);
+  let statusSnapshot = ref(store.Status);
+  let countSnapshot = ref(store.Count);
   let payloadSnapshot = ref("payload appears only for $patch({ ... }) mutations.");
   let eventShape = ref("Debugger events are dev-only and may be unavailable.");
   let notificationCount = ref(0);
   let detach = null;
   let handleMutation = (mutation, state) => {
     notificationCount.value += 1;
-    mutationKind.value = describeMutationType(mutation.type);
+    mutationKind.value = DescribeMutationType(mutation.type);
     storeId.value = mutation.storeId;
-    countSnapshot.value = state.count;
-    statusSnapshot.value = state.status;
-    payloadSnapshot.value = readMutationSummary(mutation);
-    eventShape.value = describeEvents(mutation.events);
+    countSnapshot.value = state.Count;
+    statusSnapshot.value = state.Status;
+    payloadSnapshot.value = ReadMutationSummary(mutation);
+    eventShape.value = DescribeEvents(mutation.events);
     return;
   };
   let applyDirectMutation = () => {
-    store.count += 1;
-    store.status = "Direct assignment updated the counter store.";
+    store.Count += 1;
+    store.Status = "Direct assignment updated the counter store.";
     return;
   };
   let applyObjectPatch = () => {
     store.$patch({
-      count: store.count + 3,
-      status: "Object patch updated the counter store."
+      Count: store.Count + 3,
+      Status: "Object patch updated the counter store."
     });
     return;
   };
   let applyFunctionPatch = () => {
     store.$patch((state) => {
-      state.count += 2;
-      state.status = "Function patch updated the counter store.";
+      state.Count += 2;
+      state.Status = "Function patch updated the counter store.";
       return;
     });
     return;
@@ -13567,9 +13567,9 @@ function setup7() {
       h("div", {
         class: "counter-actions"
       }, [
-        createActionButton7("Direct +1", "action-button action-button--accent", applyDirectMutation),
-        createActionButton7("Object patch", "action-button", applyObjectPatch),
-        createActionButton7("Function patch", "action-button", applyFunctionPatch)
+        CreateActionButton7("Direct +1", "action-button action-button--accent", applyDirectMutation),
+        CreateActionButton7("Object patch", "action-button", applyObjectPatch),
+        CreateActionButton7("Function patch", "action-button", applyFunctionPatch)
       ]),
       h("ul", {
         class: "counter-notes"
@@ -13585,24 +13585,24 @@ function setup7() {
     ]);
   };
 }
-function describeMutationType(type) {
+function DescribeMutationType(type) {
   return (() => {
-    const __swexpr$59f6aa2a1ae075e733124215 = type;
-    if (__swexpr$59f6aa2a1ae075e733124215 === "direct") return "direct assignment";
-    if (__swexpr$59f6aa2a1ae075e733124215 === "patch object") return "$patch({ ... }) object merge";
-    if (__swexpr$59f6aa2a1ae075e733124215 === "patch function") return "$patch((state) => ...) callback";
+    const __swexpr$96f5886a201b4b0350026376 = type;
+    if (__swexpr$96f5886a201b4b0350026376 === "direct") return "direct assignment";
+    if (__swexpr$96f5886a201b4b0350026376 === "patch object") return "$patch({ ... }) object merge";
+    if (__swexpr$96f5886a201b4b0350026376 === "patch function") return "$patch((state) => ...) callback";
     return "unknown mutation";
   })();
 }
-function readMutationSummary(mutation) {
+function ReadMutationSummary(mutation) {
   if (mutation.type === "patch object") {
     let patchMutation = mutation;
     let payload = patchMutation.payload;
-    if (payload.status !== null) {
-      return "payload.status = " + payload.status;
+    if (payload.Status !== null) {
+      return "payload.status = " + payload.Status;
     }
-    if (payload.count !== null) {
-      return "payload.count = " + payload.count;
+    if (payload.Count !== null) {
+      return "payload.count = " + payload.Count;
     }
     return "object patch payload captured without known fields";
   }
@@ -13611,10 +13611,10 @@ function readMutationSummary(mutation) {
   }
   return "direct assignments do not expose a payload object";
 }
-function describeEvents(events) {
+function DescribeEvents(events) {
   return events === null ? "not provided" : "reported";
 }
-function createActionButton7(label, className, handler) {
+function CreateActionButton7(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
@@ -13623,12 +13623,12 @@ function createActionButton7(label, className, handler) {
 }
 
 // ../../../.tmp/sample-smoke/ECMAScript.Pinia.Counter/Release/jazor/host/app.mjs
-function createConfiguredApp() {
+function CreateConfiguredApp() {
   let app = createApp(defineComponent({
     name: "PiniaCounterRoot",
-    render: renderRoot
+    render: RenderRoot
   }));
-  let pinia = createConfiguredPinia();
+  let pinia = CreateConfiguredPinia();
   app.use(pinia);
   app.onUnmount(() => {
     disposePinia(pinia);
@@ -13636,27 +13636,27 @@ function createConfiguredApp() {
   });
   return app;
 }
-function createConfiguredPinia() {
-  let pinia = createPinia().use(installAuditPlugin);
-  seedInitialOptionStoreState(pinia);
+function CreateConfiguredPinia() {
+  let pinia = createPinia().use(InstallAuditPlugin);
+  SeedInitialOptionStoreState(pinia);
   return pinia;
 }
-function createPiniaInstallationApp(pinia) {
+function CreatePiniaInstallationApp(pinia) {
   let app = createApp(defineComponent({
     name: "PiniaConfiguredRootShell",
-    render: renderPiniaInstallationShell
+    render: RenderPiniaInstallationShell
   }));
   app.use(pinia);
   return app;
 }
-function boot(selector) {
-  let app = createConfiguredApp();
+function Boot(selector) {
+  let app = CreateConfiguredApp();
   app.mount(selector);
 }
-function renderPiniaInstallationShell() {
+function RenderPiniaInstallationShell() {
   return h("div");
 }
-function renderRoot() {
+function RenderRoot() {
   return h("main", {
     class: "counter-root"
   }, [
@@ -13676,19 +13676,19 @@ function renderRoot() {
     h("div", {
       class: "counter-stack"
     }, [
-      h(component),
-      h(component2),
-      h(component6),
-      h(component7),
-      h(component4),
-      h(component5),
-      h(component3)
+      h(Component),
+      h(Component2),
+      h(Component6),
+      h(Component7),
+      h(Component4),
+      h(Component5),
+      h(Component3)
     ])
   ]);
 }
 
 // .deno-build/client-entry.mjs
-boot("#app");
+Boot("#app");
 /*! Bundled license information:
 
 @vue/shared/dist/shared.esm-bundler.js:

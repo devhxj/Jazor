@@ -1,13 +1,13 @@
-import { createConfiguredPinia } from "host/app.mjs";
+import { CreateConfiguredPinia } from "host/app.mjs";
 import {
-  createCounterHotHandler,
-  createProjectedCounterHotHandler
+  CreateCounterHotHandler,
+  CreateProjectedCounterHotHandler
 } from "components/counter-hmr.mjs";
 
 export function createHmrBridge(hot) {
-  const pinia = createConfiguredPinia();
-  const counterHandler = createCounterHotHandler(hot);
-  const projectedCounterHandler = createProjectedCounterHotHandler(hot);
+  const pinia = CreateConfiguredPinia();
+  const counterHandler = CreateCounterHotHandler(hot);
+  const projectedCounterHandler = CreateProjectedCounterHotHandler(hot);
 
   return {
     pinia,

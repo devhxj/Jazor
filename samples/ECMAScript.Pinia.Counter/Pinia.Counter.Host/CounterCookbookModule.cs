@@ -47,17 +47,17 @@ public static class CounterCookbookModule
             CounterStoreModule.UseProjectedCounterStore,
             new PiniaStateMapper<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>
             {
-                { "count", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("count") },
-                { "status", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("status") },
-                { "doubleCount", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("doubleCount") },
-                { "tripleCount", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(ReadTripleCount) },
-                { "auditTag", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("auditTag") }
+                { nameof(CounterOptionsComputed.Count), PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(nameof(CounterStore.Count)) },
+                { nameof(CounterOptionsComputed.Status), PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(nameof(CounterStore.Status)) },
+                { nameof(CounterOptionsComputed.DoubleCount), PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(nameof(CounterStore.DoubleCount)) },
+                { nameof(CounterOptionsComputed.TripleCount), PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(ReadTripleCount) },
+                { nameof(CounterOptionsComputed.AuditTag), PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(nameof(CounterPluginExtensions.AuditTag)) }
             });
 
     private static CounterOptionsMethods CreateMethods()
         => MapActions<CounterOptionsMethods, ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>(
             CounterStoreModule.UseProjectedCounterStore,
-            ["increment", "decrement"]);
+            [nameof(CounterStore.Increment), nameof(CounterStore.Decrement)]);
 
     private static VueRenderCallback Setup()
     {
@@ -79,8 +79,8 @@ public static class CounterCookbookModule
             {
                 H("li", "auditTag: " + projectedStore.AsCustomProperties().AuditTag),
                 H("li", "persistedAt: " + projectedStore.AsCustomState().PersistedAt),
-                H("li", "countRef: " + refs["count"]!.Value),
-                H("li", "statusRef: " + refs["status"]!.Value),
+                H("li", "countRef: " + refs[nameof(CounterStore.Count)]!.Value),
+                H("li", "statusRef: " + refs[nameof(CounterStore.Status)]!.Value),
                 H("li", "doubleCount: " + projectedStore.AsStore().DoubleCount),
                 H("li", "tripleCount: " + ReadTripleCount(projectedStore))
             }),

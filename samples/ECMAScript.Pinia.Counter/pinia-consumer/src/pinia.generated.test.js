@@ -1,101 +1,101 @@
 import assert from "node:assert/strict";
 import { setActivePinia } from "pinia";
 import {
-  createFactoryTestingRoot,
-  createTypedTestingRoot,
-  createStrictTestingRoot,
-  createTestingRoot
+  CreateFactoryTestingRoot,
+  CreateTypedTestingRoot,
+  CreateStrictTestingRoot,
+  CreateTestingRoot
 } from "tests/counter-testing.mjs";
-import { createConfiguredPinia } from "host/app.mjs";
-import { useCounterStore, installAuditPlugin } from "stores/counter-store.mjs";
+import { CreateConfiguredPinia } from "host/app.mjs";
+import { UseCounterStore, InstallAuditPlugin } from "stores/counter-store.mjs";
 import {
-  useHydrationOptionStore,
-  useHydrationStore
+  UseHydrationOptionStore,
+  UseHydrationStore
 } from "components/counter-hydration.mjs";
 
 function activateTestingRoot() {
-    setActivePinia(createTestingRoot());
+    setActivePinia(CreateTestingRoot());
 }
 
 Deno.test("generated pinia sample modules seeds counter state through createTestingPinia()", () => {
   activateTestingRoot();
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
-    assert.strictEqual(store.count, 9);
-    assert.strictEqual(store.status, "Seeded from createTestingPinia().");
-    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+    assert.strictEqual(store.Count, 9);
+    assert.strictEqual(store.Status, "Seeded from createTestingPinia().");
+    assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 });
 
 Deno.test("generated pinia sample modules keeps increment live while decrement is stubbed by predicate", () => {
   activateTestingRoot();
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
-    store.increment();
-    assert.strictEqual(store.count, 10);
-    assert.strictEqual(store.status, "increment() updated the store.");
+    store.Increment();
+    assert.strictEqual(store.Count, 10);
+    assert.strictEqual(store.Status, "increment() updated the store.");
 
-    store.decrement();
-    assert.strictEqual(store.count, 10);
-    assert.strictEqual(store.status, "increment() updated the store.");
+    store.Decrement();
+    assert.strictEqual(store.Count, 10);
+    assert.strictEqual(store.Status, "increment() updated the store.");
 });
 
 Deno.test("generated pinia sample modules allows real patch/reset because the testing root disabled those stubs", () => {
   activateTestingRoot();
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
     store.$patch({
-      count: 20,
-      status: "patched from deno"
+      Count: 20,
+      Status: "patched from deno"
     });
-    assert.strictEqual(store.count, 20);
-    assert.strictEqual(store.status, "patched from deno");
+    assert.strictEqual(store.Count, 20);
+    assert.strictEqual(store.Status, "patched from deno");
 
     store.$reset();
-    assert.strictEqual(store.count, 2);
-    assert.strictEqual(store.status, "Store seeded through defineStore().");
+    assert.strictEqual(store.Count, 2);
+    assert.strictEqual(store.Status, "Store seeded through defineStore().");
 });
 
 Deno.test("generated pinia sample modules supports combined typed testing options while keeping runtime shape unchanged", () => {
-    setActivePinia(createTypedTestingRoot());
+    setActivePinia(CreateTypedTestingRoot());
 
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
-    assert.strictEqual(store.count, 12);
-    assert.strictEqual(store.status, "Seeded from combined typed createTestingPinia().");
-    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+    assert.strictEqual(store.Count, 12);
+    assert.strictEqual(store.Status, "Seeded from combined typed createTestingPinia().");
+    assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 
-    store.increment();
-    assert.strictEqual(store.count, 12);
-    assert.strictEqual(store.status, "Seeded from combined typed createTestingPinia().");
+    store.Increment();
+    assert.strictEqual(store.Count, 12);
+    assert.strictEqual(store.Status, "Seeded from combined typed createTestingPinia().");
 
-    store.decrement();
-    assert.strictEqual(store.count, 11);
-    assert.strictEqual(store.status, "decrement() updated the store.");
+    store.Decrement();
+    assert.strictEqual(store.Count, 11);
+    assert.strictEqual(store.Status, "decrement() updated the store.");
 
     store.$patch({
-      count: 21,
-      status: "typed root patch"
+      Count: 21,
+      Status: "typed root patch"
     });
-    assert.strictEqual(store.count, 21);
-    assert.strictEqual(store.status, "typed root patch");
+    assert.strictEqual(store.Count, 21);
+    assert.strictEqual(store.Status, "typed root patch");
 });
 
 Deno.test("generated pinia sample modules supports combined typed testing options through the explicit union factory path", () => {
-    setActivePinia(createFactoryTestingRoot());
+    setActivePinia(CreateFactoryTestingRoot());
 
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
-    assert.strictEqual(store.count, 18);
-    assert.strictEqual(store.status, "Seeded from combined typed factory createTestingPinia().");
-    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+    assert.strictEqual(store.Count, 18);
+    assert.strictEqual(store.Status, "Seeded from combined typed factory createTestingPinia().");
+    assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 
-    store.increment();
-    assert.strictEqual(store.count, 19);
-    assert.strictEqual(store.status, "increment() updated the store.");
+    store.Increment();
+    assert.strictEqual(store.Count, 19);
+    assert.strictEqual(store.Status, "increment() updated the store.");
 
-    store.decrement();
-    assert.strictEqual(store.count, 19);
-    assert.strictEqual(store.status, "increment() updated the store.");
+    store.Decrement();
+    assert.strictEqual(store.Count, 19);
+    assert.strictEqual(store.Status, "increment() updated the store.");
 });
 
 Deno.test("generated pinia sample modules can wrap the generated plugin callback with a JS spy", () => {
@@ -103,67 +103,67 @@ Deno.test("generated pinia sample modules can wrap the generated plugin callback
       store: {
         $id: "counter",
         $state: {
-          persistedAt: ""
+          PersistedAt: ""
         }
       }
     };
     let callCount = 0;
     const spy = (context) => {
       callCount += 1;
-      return installAuditPlugin(context);
+      return InstallAuditPlugin(context);
     };
 
     const extension = spy(pluginContext);
 
     assert.strictEqual(callCount, 1);
     assert.deepStrictEqual(extension, {
-      auditTag: "counter:audited"
+      AuditTag: "counter:audited"
     });
-    assert.strictEqual(pluginContext.store.$state.persistedAt, "plugin:counter");
+    assert.strictEqual(pluginContext.store.$state.PersistedAt, "plugin:counter");
 });
 
 Deno.test("generated pinia sample modules keeps setup-store client-only refs skipped from hydration while option-store hydrate receives seeded state", () => {
-    setActivePinia(createConfiguredPinia());
+    setActivePinia(CreateConfiguredPinia());
 
-    const setupStore = useHydrationStore();
-    const optionStore = useHydrationOptionStore();
+    const setupStore = UseHydrationStore();
+    const optionStore = UseHydrationOptionStore();
 
-    assert.strictEqual(setupStore.canHydrateClientOnlyNote(), false);
-    assert.strictEqual(setupStore.clientOnlyNote, "client-only note seeded in setup store");
-    assert.strictEqual(optionStore.count, 12);
-    assert.strictEqual(optionStore.status, "serialized SSR payload -> hydrate(storeState, initialState)");
+    assert.strictEqual(setupStore.CanHydrateClientOnlyNote(), false);
+    assert.strictEqual(setupStore.ClientOnlyNote, "client-only note seeded in setup store");
+    assert.strictEqual(optionStore.Count, 12);
+    assert.strictEqual(optionStore.Status, "serialized SSR payload -> hydrate(storeState, initialState)");
 
-    setupStore.refreshClientOnlyNote();
+    setupStore.RefreshClientOnlyNote();
     assert.strictEqual(
-      setupStore.clientOnlyNote,
+      setupStore.ClientOnlyNote,
       "client note refreshed at serialized SSR payload -> hydrate(storeState, initialState)"
     );
 });
 
 Deno.test("generated pinia sample modules supports named stubActions plus stubbed patch/reset in a stricter testing root", () => {
-    setActivePinia(createStrictTestingRoot());
+    setActivePinia(CreateStrictTestingRoot());
 
-    const store = useCounterStore();
+    const store = UseCounterStore();
 
-    assert.strictEqual(store.count, 15);
-    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.Count, 15);
+    assert.strictEqual(store.Status, "Seeded from strict createTestingPinia().");
     assert.strictEqual(store.$id, "counter");
-    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+    assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 
-    store.increment();
-    store.decrement();
-    assert.strictEqual(store.count, 15);
-    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
+    store.Increment();
+    store.Decrement();
+    assert.strictEqual(store.Count, 15);
+    assert.strictEqual(store.Status, "Seeded from strict createTestingPinia().");
 
     store.$patch({
-      count: 99,
-      status: "should be blocked"
+      Count: 99,
+      Status: "should be blocked"
     });
-    assert.strictEqual(store.count, 15);
-    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.Count, 15);
+    assert.strictEqual(store.Status, "Seeded from strict createTestingPinia().");
 
     store.$reset();
-    assert.strictEqual(store.count, 15);
-    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
-    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+    assert.strictEqual(store.Count, 15);
+    assert.strictEqual(store.Status, "Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 });

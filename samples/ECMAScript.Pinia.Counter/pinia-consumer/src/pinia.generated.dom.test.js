@@ -3,7 +3,7 @@ import { installDomEnvironment } from "./test-dom.js";
 
 const disposeDomEnvironment = installDomEnvironment();
 const { nextTick } = await import("vue");
-const { createConfiguredApp } = await import("host/app.mjs");
+const { CreateConfiguredApp } = await import("host/app.mjs");
 
 addEventListener("unload", () => {
   disposeDomEnvironment();
@@ -44,7 +44,7 @@ async function withMountedApps(callback) {
 Deno.test("generated pinia app DOM mounts the generated root with projected plugin, multi-store, subscription, and hmr cookbook cards", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
-    const app = createConfiguredApp();
+    const app = CreateConfiguredApp();
 
     app.mount(host);
     mountedApps.push(app);
@@ -72,7 +72,7 @@ Deno.test("generated pinia app DOM mounts the generated root with projected plug
 Deno.test("generated pinia app DOM reacts through the generated multi-store and subscription interactions", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
-    const app = createConfiguredApp();
+    const app = CreateConfiguredApp();
 
     app.mount(host);
     mountedApps.push(app);
@@ -125,7 +125,7 @@ Deno.test("generated pinia app DOM reacts through the generated multi-store and 
 Deno.test("generated pinia app DOM can remount a fresh generated root after unmount cleanup", async () => {
   await withMountedApps(async (mountedApps) => {
     const firstHost = createHost();
-    const firstApp = createConfiguredApp();
+    const firstApp = CreateConfiguredApp();
     const firstPinia = firstApp.config.globalProperties.$pinia;
 
     firstApp.mount(firstHost);
@@ -143,7 +143,7 @@ Deno.test("generated pinia app DOM can remount a fresh generated root after unmo
     firstHost.remove();
 
     const secondHost = createHost();
-    const secondApp = createConfiguredApp();
+    const secondApp = CreateConfiguredApp();
     mountedApps.push(secondApp);
 
     secondApp.mount(secondHost);
